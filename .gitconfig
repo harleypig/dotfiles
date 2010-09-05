@@ -1,0 +1,52 @@
+[user]
+	name = Harley Pig
+	email = harleypig@gmail.com
+
+[core]
+	editor = vim
+	excludesfile = ~/.gitignore_global
+
+[branch]
+	autosetupmerge = true
+
+[merge]
+	tool = vimdiff
+	guitool = kdiff3
+
+[alias]
+	aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
+	au = add -u
+	b  = branch
+	ba = branch -a
+	ci = commit
+	co = checkout
+	df = diff
+	lg = log
+	lp = log --pretty=format:'%h : (%aN) %s' --topo-order --graph
+	pu = pull
+	st = status
+	w = whatchanged
+
+[diff]
+	tool = vimdiff
+	guitool = kdiff3
+
+[apply]
+	whitespace = fix
+
+[color]
+	diff   = auto
+	status = auto
+	branch = auto
+
+[color "branch"]
+	current = green reverse
+	local   = yellow
+	remote  = red
+
+[color "status"]
+	added     = green
+	changed   = red
+	untracked = cyan
+[push]
+	default = current
