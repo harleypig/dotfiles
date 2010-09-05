@@ -1,0 +1,16 @@
+#aid="1"
+#ao="alsa"
+#autoq=100
+#double="yes"
+#framedrop="1"
+#geometry=50%:50%
+#hardframedrop="0"
+#mixer-channel="Master"
+#monitoraspect="16:9"
+#ontop="0"
+#really-quiet="1"
+#srate=48000
+#stop-xscreensaver="yes"
+#vf=pp=de,hqdn3d
+#vo="xv"
+#zoom="1"
