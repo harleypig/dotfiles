@@ -1,0 +1,7 @@
+
+sub afterinit {
+
+  push @DB::typeahead, "{l",
+
+  ;
+}
