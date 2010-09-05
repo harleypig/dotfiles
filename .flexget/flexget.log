@@ -1,0 +1,627 @@
+2010-09-02 12:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-02 12:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 12:14 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-02 12:14 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-02 12:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-02 12:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 12:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 12:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 12:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-02 14:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-02 14:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-02 14:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-02 14:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-02 14:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 14:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 14:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 14:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-02 14:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-02 14:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 14:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 14:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 14:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-02 14:14 INFO     feed          EZTV            Produced 30 entries.
+2010-09-02 14:14 INFO     series        EZTV            Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 14:14 INFO     series        EZTV            Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 14:14 INFO     series        EZTV            Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 14:14 INFO     feed          EZTV            Accepted: 0 (Rejected: 5 Undecided: 25 Failed: 0)
+2010-09-02 14:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-02 14:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 14:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 14:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 14:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 1 Undecided: 24 Failed: 0)
+2010-09-02 14:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 14:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-02 14:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 14:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-02 14:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 14:14 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-02 14:14 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-02 14:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-02 14:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 14:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 14:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 14:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-02 16:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-02 16:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-02 16:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-02 16:14 INFO     feed          KickAssTorrents Produced 40 entries.
+2010-09-02 16:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 16:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 16:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 16:14 INFO     feed          KickAssTorrents Accepted: 1 (Rejected: 1 Undecided: 38 Failed: 0)
+2010-09-02 16:14 INFO     download      KickAssTorrents Downloading: Futurama S06E12 HDTV XviD
+2010-09-02 16:14 INFO     download      KickAssTorrents File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical, download failed.
+2010-09-02 16:14 ERROR    feed          KickAssTorrents Failed Futurama S06E12 HDTV XviD (File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical.)
+2010-09-02 16:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-02 16:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 16:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 16:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 16:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-02 16:14 INFO     feed          EZTV            Produced 30 entries.
+2010-09-02 16:14 INFO     series        EZTV            Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 16:14 INFO     series        EZTV            Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 16:14 INFO     series        EZTV            Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 16:14 INFO     feed          EZTV            Accepted: 0 (Rejected: 5 Undecided: 25 Failed: 0)
+2010-09-02 16:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-02 16:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 16:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 16:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 16:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 1 Undecided: 24 Failed: 0)
+2010-09-02 16:14 INFO     feed          RlsLog          Feed didn't produce any entries. This is likely due to a mis-configured or non-functional input.
+2010-09-02 16:14 INFO     series        RlsLog          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 16:14 INFO     series        RlsLog          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 16:14 INFO     series        RlsLog          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 16:14 INFO     feed          RlsLog          Accepted: 0 (Rejected: 0 Undecided: 0 Failed: 0)
+2010-09-02 16:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-02 16:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 16:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 16:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 16:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-02 18:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-02 18:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-02 18:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-02 18:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-02 18:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 18:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 18:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 18:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 1 Undecided: 24 Failed: 0)
+2010-09-02 18:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-02 18:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 18:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 18:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 18:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-02 18:14 INFO     feed          EZTV            Produced 30 entries.
+2010-09-02 18:14 INFO     series        EZTV            Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 18:14 INFO     series        EZTV            Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 18:14 INFO     series        EZTV            Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 18:14 INFO     feed          EZTV            Accepted: 0 (Rejected: 5 Undecided: 25 Failed: 0)
+2010-09-02 18:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-02 18:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 18:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 18:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 18:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 1 Undecided: 24 Failed: 0)
+2010-09-02 18:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 18:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-02 18:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 18:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-02 18:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 18:14 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-02 18:14 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-02 18:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-02 18:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 18:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 18:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 18:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-02 20:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-02 20:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-02 20:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-02 20:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-02 20:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 20:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 20:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 20:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-02 20:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-02 20:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 20:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 20:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 20:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-02 20:14 INFO     feed          EZTV            Produced 30 entries.
+2010-09-02 20:14 INFO     series        EZTV            Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 20:14 INFO     series        EZTV            Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 20:14 INFO     series        EZTV            Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 20:14 INFO     feed          EZTV            Accepted: 0 (Rejected: 5 Undecided: 25 Failed: 0)
+2010-09-02 20:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-02 20:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 20:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 20:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 20:14 INFO     feed          TorrentReactor  Accepted: 1 (Rejected: 1 Undecided: 23 Failed: 0)
+2010-09-02 20:14 INFO     download      TorrentReactor  Downloading: [Series/TV Shows - Futurama] Futurama S06E12 The Mutants Are Revolting HDTV XviD-NoTV
+2010-09-02 20:14 ERROR    feed          TorrentReactor  Failed [Series/TV Shows - Futurama] Futurama S06E12 The Mutants Are Revolting HDTV XviD-NoTV (unexpected html content)
+2010-09-02 20:14 ERROR    download      TorrentReactor  Unexpected html content received from http://www.torrentreactor.net/torrents/5848939/Futurama-S06E12-The-Mutants-Are-Revolting-HDTV-XviD-NoTV
+2010-09-02 20:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 20:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-02 20:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 20:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-02 20:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-02 20:14 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-02 20:14 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-02 20:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-02 20:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 20:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 20:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 20:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-02 22:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-02 22:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-02 22:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-02 22:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-02 22:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 22:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 22:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 22:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-02 22:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-02 22:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 22:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 22:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 22:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-02 22:14 INFO     feed          EZTV            Produced 30 entries.
+2010-09-02 22:14 INFO     series        EZTV            Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 22:14 INFO     series        EZTV            Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 22:14 INFO     series        EZTV            Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 22:14 INFO     feed          EZTV            Accepted: 1 (Rejected: 4 Undecided: 25 Failed: 0)
+2010-09-02 22:14 INFO     download      EZTV            Downloading: Futurama - The Mutants Are Revolting 6x12 [HDTV - FQM]
+2010-09-02 22:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-02 22:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 22:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 22:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 22:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-02 22:14 INFO     feed          RlsLog          Feed didn't produce any entries. This is likely due to a mis-configured or non-functional input.
+2010-09-02 22:14 INFO     series        RlsLog          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 22:14 INFO     series        RlsLog          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 22:14 INFO     series        RlsLog          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 22:14 INFO     feed          RlsLog          Accepted: 0 (Rejected: 0 Undecided: 0 Failed: 0)
+2010-09-02 22:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-02 22:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-02 22:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-02 22:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-02 22:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 4 Undecided: 21 Failed: 0)
+2010-09-03 00:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 00:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 00:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 00:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 00:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 00:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 00:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 00:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 5 Undecided: 20 Failed: 0)
+2010-09-03 00:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 00:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 00:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 00:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 00:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 00:14 INFO     feed          EZTV            Produced 30 entries.
+2010-09-03 00:14 INFO     series        EZTV            Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 00:14 INFO     series        EZTV            Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 00:14 INFO     series        EZTV            Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 00:14 INFO     feed          EZTV            Accepted: 0 (Rejected: 5 Undecided: 25 Failed: 0)
+2010-09-03 00:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 00:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 00:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 00:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 00:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 00:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 00:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 00:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 00:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 00:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 00:14 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-03 00:14 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-03 00:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 00:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 00:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 00:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 00:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 4 Undecided: 21 Failed: 0)
+2010-09-03 02:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 02:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 02:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 02:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 02:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 02:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 02:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 02:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-03 02:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 02:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 02:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 02:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 02:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 02:14 INFO     feed          EZTV            Produced 30 entries.
+2010-09-03 02:14 INFO     series        EZTV            Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 02:14 INFO     series        EZTV            Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 02:14 INFO     series        EZTV            Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 02:14 INFO     feed          EZTV            Accepted: 0 (Rejected: 5 Undecided: 25 Failed: 0)
+2010-09-03 02:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 02:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 02:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 02:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 02:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 02:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 02:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 02:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 02:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 02:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 02:14 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-03 02:14 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-03 02:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 02:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 02:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 02:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 02:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 4 Undecided: 21 Failed: 0)
+2010-09-03 04:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 04:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 04:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 04:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 04:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 04:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 04:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 04:14 INFO     feed          KickAssTorrents Accepted: 1 (Rejected: 1 Undecided: 23 Failed: 0)
+2010-09-03 04:14 INFO     download      KickAssTorrents Downloading: Futurama Season 6 - Episodes 1-12
+2010-09-03 04:14 INFO     download      KickAssTorrents File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical, download failed.
+2010-09-03 04:14 ERROR    feed          KickAssTorrents Failed Futurama Season 6 - Episodes 1-12 (File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical.)
+2010-09-03 04:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 04:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 04:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 04:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 04:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 04:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 04:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 04:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 04:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 04:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 04:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 04:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 04:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 04:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 04:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 04:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 04:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 04:14 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-03 04:14 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-03 04:15 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 04:15 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 04:15 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 04:15 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 04:15 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 4 Undecided: 21 Failed: 0)
+2010-09-03 06:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 06:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 06:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 06:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 06:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 06:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 06:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 06:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-03 06:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 06:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 06:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 06:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 06:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 06:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 06:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 06:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 06:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 06:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 06:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 06:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-03 06:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 06:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 06:15 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 06:15 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 06:15 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 06:15 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-03 06:15 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-03 06:15 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 06:15 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 06:15 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 06:15 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 06:15 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 4 Undecided: 21 Failed: 0)
+2010-09-03 08:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 08:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 08:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 08:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 08:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 08:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 08:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 08:14 INFO     series        KickAssTorrents Title 'Futurama.S06.720p.HDTV.x264-TPB' looks like series 'Futurama' but I cannot find any episode or id numbering
+2010-09-03 08:14 INFO     feed          KickAssTorrents Accepted: 1 (Rejected: 0 Undecided: 24 Failed: 0)
+2010-09-03 08:14 INFO     download      KickAssTorrents Downloading: Futurama Season 6
+2010-09-03 08:14 INFO     download      KickAssTorrents File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical, download failed.
+2010-09-03 08:14 ERROR    feed          KickAssTorrents Failed Futurama Season 6 (File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical.)
+2010-09-03 08:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 08:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 08:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 08:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 08:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 08:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 08:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 08:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 08:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 08:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 08:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 08:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-03 08:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 08:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 08:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 08:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 08:15 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 08:15 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-03 08:15 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-03 08:15 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 08:15 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 08:15 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 08:15 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 08:15 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 10:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 10:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 10:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 10:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 10:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 10:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 10:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 10:14 INFO     feed          KickAssTorrents Accepted: 1 (Rejected: 1 Undecided: 23 Failed: 0)
+2010-09-03 10:14 INFO     download      KickAssTorrents Downloading: Futurama Season 6 ( Episodes 1 - 12 )
+2010-09-03 10:14 INFO     download      KickAssTorrents File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical, download failed.
+2010-09-03 10:14 ERROR    feed          KickAssTorrents Failed Futurama Season 6 ( Episodes 1 - 12 ) (File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical.)
+2010-09-03 10:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 10:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 10:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 10:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 10:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 10:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 10:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 10:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 10:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 10:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 10:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 10:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 2 Undecided: 23 Failed: 0)
+2010-09-03 10:14 INFO     rlslog        RlsLog          Weeds S06E03 A Yippity Sippity HDTV XviD-FQM skipped due to missing or unsupported (unresolvable) download link
+2010-09-03 10:14 INFO     feed          RlsLog          Produced 6 entries.
+2010-09-03 10:14 INFO     series        RlsLog          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 10:14 INFO     series        RlsLog          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 10:14 INFO     series        RlsLog          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 10:14 INFO     feed          RlsLog          Accepted: 0 (Rejected: 1 Undecided: 5 Failed: 0)
+2010-09-03 10:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 10:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 10:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 10:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 10:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 12:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 12:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 12:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 12:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 12:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 12:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 12:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 12:14 INFO     feed          KickAssTorrents Accepted: 1 (Rejected: 1 Undecided: 23 Failed: 0)
+2010-09-03 12:14 INFO     download      KickAssTorrents Downloading: Futurama Season 6 ( Episodes 1 - 12 )
+2010-09-03 12:14 INFO     download      KickAssTorrents File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical, download failed.
+2010-09-03 12:14 ERROR    feed          KickAssTorrents Failed Futurama Season 6 ( Episodes 1 - 12 ) (File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical.)
+2010-09-03 12:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 12:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 12:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 12:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 12:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 12:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 12:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 12:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 12:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 12:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 12:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 12:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-03 12:14 INFO     rlslog        RlsLog          Lie to Me S02E21 HDTV XviD-LOL skipped due to missing or unsupported (unresolvable) download link
+2010-09-03 12:14 INFO     feed          RlsLog          Produced 5 entries.
+2010-09-03 12:14 INFO     series        RlsLog          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 12:14 INFO     series        RlsLog          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 12:14 INFO     series        RlsLog          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 12:14 INFO     feed          RlsLog          Accepted: 0 (Rejected: 1 Undecided: 4 Failed: 0)
+2010-09-03 12:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 12:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 12:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 12:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 12:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 14:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 14:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 14:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 14:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 14:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 14:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 14:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 14:14 INFO     feed          KickAssTorrents Accepted: 1 (Rejected: 1 Undecided: 23 Failed: 0)
+2010-09-03 14:14 INFO     download      KickAssTorrents Downloading: Futurama Season 6 ( Episodes 1 - 12 )
+2010-09-03 14:14 INFO     download      KickAssTorrents File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical, download failed.
+2010-09-03 14:14 ERROR    feed          KickAssTorrents Failed Futurama Season 6 ( Episodes 1 - 12 ) (File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical.)
+2010-09-03 14:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 14:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 14:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 14:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 14:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 14:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 14:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 14:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 14:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 14:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 14:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 14:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-03 14:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 14:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 14:15 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 14:15 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 14:15 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 14:15 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-03 14:15 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-03 14:15 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 14:15 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 14:15 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 14:15 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 14:15 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 16:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 16:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 16:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 16:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 16:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 16:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 16:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 16:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 1 Undecided: 24 Failed: 0)
+2010-09-03 16:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 16:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 16:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 16:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 16:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 16:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 16:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 16:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 16:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 16:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 16:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 16:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-03 16:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 16:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 16:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 16:14 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-03 16:14 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-03 16:14 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-03 16:14 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-03 16:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 16:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 16:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 16:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 16:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 18:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 18:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 18:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 18:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 18:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 18:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 18:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 18:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-03 18:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 18:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 18:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 18:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 18:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 18:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 18:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 18:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 18:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 18:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 18:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 18:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-03 18:14 INFO     feed          RlsLog          Produced 6 entries.
+2010-09-03 18:14 INFO     series        RlsLog          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 18:14 INFO     series        RlsLog          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 18:14 INFO     series        RlsLog          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 18:14 INFO     feed          RlsLog          Accepted: 0 (Rejected: 1 Undecided: 5 Failed: 0)
+2010-09-03 18:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 18:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 18:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 18:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 18:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-03 20:14 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-03 20:14 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-03 20:14 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-03 20:14 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-03 20:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 20:14 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 20:14 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 20:14 INFO     feed          KickAssTorrents Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-03 20:14 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-03 20:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 20:14 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 20:14 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 20:14 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-03 20:14 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-03 20:14 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-03 20:14 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-03 20:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 20:14 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 20:14 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 20:14 INFO     feed          TorrentReactor  Accepted: 0 (Rejected: 0 Undecided: 25 Failed: 0)
+2010-09-03 20:14 INFO     feed          RlsLog          Produced 6 entries.
+2010-09-03 20:14 INFO     series        RlsLog          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 20:14 INFO     series        RlsLog          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 20:14 INFO     series        RlsLog          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 20:14 INFO     feed          RlsLog          Accepted: 0 (Rejected: 1 Undecided: 5 Failed: 0)
+2010-09-03 20:14 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-03 20:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-03 20:14 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-03 20:14 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-03 20:14 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 3 Undecided: 22 Failed: 0)
+2010-09-04 19:43 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-04 19:43 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-04 19:43 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-04 19:43 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-04 19:43 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-04 19:43 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-04 19:43 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-04 19:43 INFO     feed          KickAssTorrents Accepted: 1 (Rejected: 0 Undecided: 24 Failed: 0)
+2010-09-04 19:43 INFO     download      KickAssTorrents Downloading: Persons Unknown EP11,12 & 13 (nl subs) [RHoek][2Lions-Team]
+2010-09-04 19:43 INFO     download      KickAssTorrents File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical, download failed.
+2010-09-04 19:43 ERROR    feed          KickAssTorrents Failed Persons Unknown EP11,12 & 13 (nl subs) [RHoek][2Lions-Team] (File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical.)
+2010-09-04 19:43 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-04 19:43 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-04 19:43 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-04 19:43 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-04 19:43 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 40 Undecided: 0 Failed: 0)
+2010-09-04 19:44 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-04 19:44 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-04 19:44 INFO     feed          TorrentReactor  Produced 25 entries.
+2010-09-04 19:44 INFO     series        TorrentReactor  Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-04 19:44 INFO     series        TorrentReactor  Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-04 19:44 INFO     series        TorrentReactor  Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-04 19:44 INFO     feed          TorrentReactor  Accepted: 1 (Rejected: 1 Undecided: 23 Failed: 0)
+2010-09-04 19:44 INFO     download      TorrentReactor  Downloading: [Series/TV Shows - Unsorted] Flashpoint.S03E14.The.Other.Lane.HDTV.XviD-2HD
+2010-09-04 19:44 ERROR    feed          TorrentReactor  Failed [Series/TV Shows - Unsorted] Flashpoint.S03E14.The.Other.Lane.HDTV.XviD-2HD (unexpected html content)
+2010-09-04 19:44 ERROR    download      TorrentReactor  Unexpected html content received from http://www.torrentreactor.net/torrents/5850352/Flashpoint-S03E14-The-Other-Lane-HDTV-XviD-2HD
+2010-09-04 19:44 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-04 19:44 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-04 19:44 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-04 19:44 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-04 19:44 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-04 19:44 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-04 19:44 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-04 19:44 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-04 19:44 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-04 19:44 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-04 19:44 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-04 19:44 INFO     feed          BTCHAT          Accepted: 1 (Rejected: 0 Undecided: 24 Failed: 0)
+2010-09-04 19:44 INFO     download      BTCHAT          Downloading: Flashpoint.S03E14.The.Other.Lane.HDTV.XviD-2HD.[VTV].torrent
+2010-09-04 19:45 WARNING  manager                       Trying to set value for `- "CSI` in line 6, but it is already defined in line 5!
+2010-09-04 19:45 WARNING  manager                       Trying to set value for `- "Law & Order` in line 9, but it is already defined in line 8!
+2010-09-04 19:45 WARNING  manager                       Trying to set value for `- "Law and Order` in line 12, but it is already defined in line 11!
+2010-09-04 19:45 INFO     feed          ShowRSS         Produced 40 entries.
+2010-09-04 19:45 INFO     series        ShowRSS         Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-04 19:45 INFO     series        ShowRSS         Auto enabling exact matching for series Cops (reason Cops LAC)
+2010-09-04 19:45 INFO     series        ShowRSS         Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-04 19:45 INFO     series        ShowRSS         Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-04 19:45 INFO     feed          ShowRSS         Accepted: 0 (Rejected: 39 Undecided: 1 Failed: 0)
+2010-09-04 19:46 CRITICAL rss           EZTV            URLError [Errno 110] Connection timed out
+2010-09-04 19:46 INFO     feed          EZTV            Aborting feed (plugin: rss)
+2010-09-04 19:46 INFO     feed          KickAssTorrents Produced 25 entries.
+2010-09-04 19:46 INFO     series        KickAssTorrents Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-04 19:46 INFO     series        KickAssTorrents Auto enabling exact matching for series Cops (reason Cops LAC)
+2010-09-04 19:46 INFO     series        KickAssTorrents Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-04 19:46 INFO     series        KickAssTorrents Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-04 19:46 INFO     feed          KickAssTorrents Accepted: 1 (Rejected: 0 Undecided: 24 Failed: 0)
+2010-09-04 19:46 INFO     download      KickAssTorrents Downloading: Persons Unknown EP11,12 & 13 (nl subs) [RHoek][2Lions-Team]
+2010-09-04 19:46 INFO     download      KickAssTorrents File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical, download failed.
+2010-09-04 19:46 ERROR    feed          KickAssTorrents Failed Persons Unknown EP11,12 & 13 (nl subs) [RHoek][2Lions-Team] (File '/home/harleypig/torrents/torrent/.torrent' already exists and is not identical.)
+2010-09-04 19:46 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-04 19:46 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [1 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-04 19:46 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-04 19:46 INFO     feed          RlsLog          Error retrieving the URL, retrying in 5s. Try [2 of 3]. Error: Could not retrieve url after 3 retries.
+2010-09-04 19:46 WARNING  rlslog        RlsLog          Could not retrieve url: http://www.rlslog.net/category/tv-shows/
+2010-09-04 19:46 CRITICAL rlslog        RlsLog          URLError Could not retrieve url after 3 retries.
+2010-09-04 19:46 INFO     feed          RlsLog          Aborting feed (plugin: rlslog)
+2010-09-04 19:46 INFO     feed          BTCHAT          Produced 25 entries.
+2010-09-04 19:46 INFO     series        BTCHAT          Auto enabling exact matching for series Law and Order (reason Law and Order: Criminal Intent)
+2010-09-04 19:46 INFO     series        BTCHAT          Auto enabling exact matching for series Cops (reason Cops LAC)
+2010-09-04 19:46 INFO     series        BTCHAT          Auto enabling exact matching for series CSI (reason CSI: Miami)
+2010-09-04 19:46 INFO     series        BTCHAT          Auto enabling exact matching for series Law & Order (reason Law & Order: Special Victims Unit)
+2010-09-04 19:46 INFO     feed          BTCHAT          Accepted: 0 (Rejected: 1 Undecided: 24 Failed: 0)
