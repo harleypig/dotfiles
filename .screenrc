@@ -1,0 +1,55 @@
+autodetach on
+defscrollback 30000
+defutf8 on
+startup_message off
+msg_wait 2
+vbell_msg "Bell in %t"
+
+# Allow scrollback
+termcapinfo xterm ti@:te@
+
+caption always
+hardstatus alwayslastline "%{=b}%{G} Screen(s): %{b}%w"
+
+# make Shift-1 select screen 11, etc.
+bind  ) select 10
+bind  ! select 11
+bind  @ select 12
+bind \# select 13
+bind \$ select 14
+bind  % select 15
+bind \^ select 16
+bind  & select 17
+bind  * select 18
+bind  ( select 19
+bind  q select 20
+bind  w select 21
+bind  e select 22
+bind  r select 23
+bind  t select 24
+bind  y select 25
+bind  u select 26
+bind  i select 27
+bind  o select 28
+bind  p select 29
+bind  Q select 30
+bind  W select 31
+bind  E select 32
+bind  R select 33
+bind  T select 34
+bind  Y select 35
+bind  U select 36
+bind  I select 37
+bind  O select 38
+bind  P select 39
+
+chdir
+
+#screen -l -t 'irssi' 0 /bin/bash -c "irssi"
+#screen -l -t 'rtorrent' 0 /bin/bash -c "rtorrent"
+#screen -l -t 'error log' 0 /bin/bash -c "sudo tail -f /var/log/apache2/error*log"
+#screen -l -t 'htop' 0 /bin/bash -c "sudo htop"
+#screen -l -t '*rc' 0 /bin/bash -c "vim .vimrc .screenrc .bash*"
+#screen -l -t 'calendar' 0 /bin/bash -c "calcurse"
+#screen -l -t 'command line' 0
+screen -l -t 'command line' 0
