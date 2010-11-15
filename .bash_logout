@@ -1,7 +1,9 @@
-# ~/.bash_logout: executed by bash(1) when login shell exits.
+[[ -e ~/bash_startup.log ]] && rm ~/bash_startup.log
 
-# when leaving the console clear the screen to increase privacy
-
-if [ "$SHLVL" = 1 ]; then
-    [ -x /usr/bin/clear_console ] && /usr/bin/clear_console -q
+if [ `/usr/bin/whoami` = 'root' ]
+then
+  /bin/chown -R harleypig:harleypig /home/harleypig
 fi
+
+# Clear the screen for security's sake.
+clear

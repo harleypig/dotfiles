@@ -1,21 +1,17 @@
-[[ -f /etc/profile.d/bash-completion ]] && \
-  source /etc/profile.d/bash-completion
+#echo Started .bash_profile ... >> ~/bash_startup.log
 
-[[ -f /usr/share/cdargs/cdargs-bash.sh ]] && \
-  source /usr/share/cdargs/cdargs-bash.sh
+# .bash_profile is run *first* and *only* on ssh (or terminal) but not when
+# shelling out from vim or a new screen instance is being created.
 
-[[ -f ~/.bash_aliases ]] && . ~/.bash_aliases
+export EDITOR=vim
+export HISTCONTROL='ignoreboth:erasedups'
+export HISTFILESIZE=1000
+export HISTSIZE=1000
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export PATH=~/bin:~/.vim/bin/:$PATH
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
 
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-
-# http://www.gnu.org/software/bash/manual/bashref.html#The-Shopt-Builtin
-#shopt -s 
-
-[[ -f ~/.ssh-agent ]] && . ~/.ssh-agent
-#ssh-agent
-
-export PATH=~/bin:~/.vim/bin/:$PATH
+#echo '  ... ended .bash_profile.' >> ~/bash_startup.log
