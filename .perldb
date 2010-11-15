@@ -1,7 +1,11 @@
 
 sub afterinit {
 
-  push @DB::typeahead, "{l",
+  push @DB::typeahead,
+    'use Data::Dumper',
+    '$Data::Dumper::Deparse = 1',
+    '$Data::Dumper::Sortkeys = 1',
+    '{l',
 
   ;
 }

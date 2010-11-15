@@ -48,5 +48,11 @@
 	added     = green
 	changed   = red
 	untracked = cyan
+
 [push]
 	default = current
+
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+	rebase = true

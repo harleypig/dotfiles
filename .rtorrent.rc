@@ -3,6 +3,8 @@ encryption = require
 upload_rate = 100
 use_udp_trackers = yes
 
+scgi_port = localhost:7777
+
 # Based on the recipe found at http://flexget.com/wiki/Cookbook/rTorrent
 # with modifications found elsewhere
 
