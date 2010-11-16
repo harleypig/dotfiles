@@ -1,4 +1,5 @@
 # Found at http://wiki.archlinux.org/index.php/Color_Bash_Prompt
+# Also see http://www.termsys.demon.co.uk/vtansi.htm
 
 # Regular
 
@@ -13,14 +14,14 @@ text_yellow="\e[0;33m"
 
 # Background
 
-background_black="\e[40m"  
-background_blue="\e[44m"  
-background_cyan="\e[46m"  
-background_green="\e[42m"  
-background_purple="\e[45m"  
-background_red="\e[41m"  
-background_white="\e[47m"  
-background_yellow="\e[43m"  
+background_black="\e[40m"
+background_blue="\e[44m"
+background_cyan="\e[46m"
+background_green="\e[42m"
+background_purple="\e[45m"
+background_red="\e[41m"
+background_white="\e[47m"
+background_yellow="\e[43m"
 
 # Bold
 
@@ -56,6 +57,14 @@ cursor_setend="f\]"
 
 cursor_save="\[\033[s\]"
 cursor_restore="\[\033[u\]"
+
+# Erase Text
+erase_eol="\[\033[K\]"
+erase_sol="\[\033[1K\]"
+erase_line="\[\033[2K\]"
+erase_down="\[\033[J\]" # Erase from cursor to bottom of screen
+erase_up="\[\033[1J\]"  # Erase from cursor to top of screen
+erase_screen="\[\033[2J\]"
 
 # Bash allows these prompt strings to be customized by inserting a
 # number of backslash-escaped special characters that are
@@ -94,7 +103,7 @@ cursor_restore="\[\033[u\]"
 #  \[         begin a sequence of non-printing characters, which could be used
 #             to embed a terminal control sequence into the prompt
 #  \]         end a sequence of non-printing characters
-#         
+#
 #  The command number and the history number are usually different:
 #  the history number of a command is its position in the history
 #  list, which may include commands restored from the history file
@@ -106,13 +115,27 @@ cursor_restore="\[\033[u\]"
 #  the description of the shopt command under SHELL BUILTIN COMMANDS
 #  below).
 
-# Display in upper left corner the following information:
-#
-# Date Time Uptime Hostname Username MailCount
+#TODO: 
+#revision control info, like vcscommand status line tool
+#exitstatus="$(let exitstatus=\$? ; if [[ \${exitstatus} != 0 ]]; then echo '${text_red}Exit Status: \${exitstatus}]' ; fi)"
+#uptime='Up $(echo \"scale=2;$(cat /proc/uptime | cut -d \' \' -f 1) / (60 * 60 * 24)\" | bc) days'
+#loadavg='cat /proc/loadavg'
+#du='du -hs $PWD'
 
-mailcount="grep -c ^Message $MAIL"
-datetime="\D{%a %b %d %Y %T %n WeekDay: %w YearDay: %j Week: %V Epoch: %s}"
+cwd="\$(if [ -w \${PWD} ]; then echo '${text_green}'; else echo '${text_red}'; fi)\${PWD}${text_reset}"
+datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
+fortune="\$(fortune -as)"
+freespace="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"
+restore="${text_reset}${cursor_restore}"
+top="${cursor_save}${cursor_setbegin}0;0${cursor_setend}${background_blue}${text_cyan}"
+vim="${text_red}You are shelled from VIm!${text_reset}"
 
-#PS1="\n$datetime\nMail: $($mailcount)\n$(uptime)\nHostname: \H\nUser: \u\nShellname: \s\nTime: \t\ncwd: \w\nbase cwd: \W\n\n\$ "
-
-# http://www.debian-administration.org/article/205/Fancy_Bash_Prompts
+PS1="${top}\$(history -a)${erase_eol}"
+PS1="${PS1}\n ${datetime}${erase_eol}"
+#PS1="${PS1}\n \${uptime}${erase_eol}"
+PS1="${PS1}\n \u@\H:${cwd}${erase_eol}"
+PS1="${PS1}\n ${freespace}${erase_eol}"
+#PS1="${PS1}\n ${exitstatus}${erase_eol}"
+#PS1="${PS1}\n ${fortune}${erase_eol}"
+[[ ! -z ${MYVIMRC} ]] && PS1="${PS1}\n ${vim}${erase_eol}"
+PS1="${PS1}\n ${erase_eol}${restore}${erase_eol}$ "

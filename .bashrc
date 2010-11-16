@@ -16,10 +16,18 @@ shopt -s nocaseglob
 [[ -x /usr/bin/lesspipe ]]                && eval "$(SHELL=/bin/sh lesspipe)"
 [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
 [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
+
+perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
+completion="complete -C ${perldoc} -o nospace -o default perldoc"
+[[ -f ${perldoc} ]] && ${completion}
+
 [[ -f /usr/share/cdargs/cdargs-bash.sh ]] && source /usr/share/cdargs/cdargs-bash.sh
 [[ -f ~/.ssh-agent ]]                     && source ~/.ssh-agent
 [[ -f ~/.bash_aliases ]]                  && source ~/.bash_aliases
 [[ -f ~/.bash_functions ]]                && source ~/.bash_functions
 [[ -f ~/.bash_prompt ]]                   && source ~/.bash_prompt
+
+echo
+fortune
 
 #echo '  ... ended .bashrc.' >> ~/bash_startup.log
