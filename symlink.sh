@@ -30,5 +30,5 @@ ln -s /home/harleypig/projects/dotfiles/.perltidyrc /home/harleypig/.perltidyrc
 ln -s /home/harleypig/projects/dotfiles/.rtorrent.rc /home/harleypig/.rtorrent.rc
 ln -s /home/harleypig/projects/dotfiles/.screenrc /home/harleypig/.screenrc
 ln -s /home/harleypig/projects/dropbox/.dropbox-dist /home/harleypig/.dropbox-dist
-ln -s /home/harleypig/projects/vim/dot_vim/.vim /home/harleypig/.vim
-ln -s /home/harleypig/projects/vim/dot_vim/.vimrc /home/harleypig/.vimrc
+ln -s /home/harleypig/projects/dot_vim/.vim /home/harleypig/.vim
+ln -s /home/harleypig/projects/dot_vim/.vimrc /home/harleypig/.vimrc
