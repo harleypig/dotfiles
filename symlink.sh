@@ -1,34 +1,51 @@
-cd /home/harleypig
-ln -s /home/harleypig/Dropbox/bin /home/harleypig/bin
-ln -s /home/harleypig/Dropbox/dotfiles/.calcurse /home/harleypig/.calcurse
-ln -s /home/harleypig/Dropbox/dotfiles/.cvspass /home/harleypig/.cvspass
-ln -s /home/harleypig/Dropbox/dotfiles/.dzil /home/harleypig/.dzil
-ln -s /home/harleypig/Dropbox/dotfiles/.elinks /home/harleypig/.elinks
-ln -s /home/harleypig/Dropbox/dotfiles/.fbcmd /home/harleypig/.fbcmd
-ln -s /home/harleypig/Dropbox/dotfiles/.flexget /home/harleypig/.flexget
-ln -s /home/harleypig/Dropbox/dotfiles/.gnupg /home/harleypig/.gnupg
-ln -s /home/harleypig/Dropbox/dotfiles/.irssi /home/harleypig/.irssi
-ln -s /home/harleypig/Dropbox/dotfiles/.mutt /home/harleypig/.mutt
-ln -s /home/harleypig/Dropbox/dotfiles/.muttrc /home/harleypig/.muttrc
-ln -s /home/harleypig/Dropbox/dotfiles/.netrc /home/harleypig/.netrc
-ln -s /home/harleypig/Dropbox/dotfiles/.newsbeuter /home/harleypig/.newsbeuter
-ln -s /home/harleypig/Dropbox/dotfiles/.s3cfg /home/harleypig/.s3cfg
-ln -s /home/harleypig/Dropbox/dotfiles/.ssh /home/harleypig/.ssh
-ln -s /home/harleypig/Dropbox/dotfiles/.subversion /home/harleypig/.subversion
-ln -s /home/harleypig/Dropbox/work /home/harleypig/work
-ln -s /home/harleypig/projects/dotfiles/.bash_aliases /home/harleypig/.bash_aliases
-ln -s /home/harleypig/projects/dotfiles/.bash_completion.d /home/harleypig/.bash_completion.d
-ln -s /home/harleypig/projects/dotfiles/.bash_logout /home/harleypig/.bash_logout
-ln -s /home/harleypig/projects/dotfiles/.bash_profile /home/harleypig/.bash_profile
-ln -s /home/harleypig/projects/dotfiles/.bashrc /home/harleypig/.bashrc
-ln -s /home/harleypig/projects/dotfiles/.cvsrc /home/harleypig/.cvsrc
-ln -s /home/harleypig/projects/dotfiles/.gitconfig /home/harleypig/.gitconfig
-ln -s /home/harleypig/projects/dotfiles/.gitignore_global /home/harleypig/.gitignore_global
-ln -s /home/harleypig/projects/dotfiles/.htoprc /home/harleypig/.htoprc
-ln -s /home/harleypig/projects/dotfiles/.perldb /home/harleypig/.perldb
-ln -s /home/harleypig/projects/dotfiles/.perltidyrc /home/harleypig/.perltidyrc
-ln -s /home/harleypig/projects/dotfiles/.rtorrent.rc /home/harleypig/.rtorrent.rc
-ln -s /home/harleypig/projects/dotfiles/.screenrc /home/harleypig/.screenrc
-ln -s /home/harleypig/projects/dropbox/.dropbox-dist /home/harleypig/.dropbox-dist
-ln -s /home/harleypig/projects/dot_vim/.vim /home/harleypig/.vim
-ln -s /home/harleypig/projects/dot_vim/.vimrc /home/harleypig/.vimrc
+#!/bin/bash
+
+[[ -z ${HOME} ]] && $HOME='/home/harleypig'
+
+DOTFILE_DIR="${HOME}/projects/dotfiles"
+
+cd ${HOME}
+
+DOTFILE=
+DOTFILE="${DOTFILE} .aptitude"
+DOTFILE="${DOTFILE} .bash_aliases"
+DOTFILE="${DOTFILE} .bash_completion.d"
+DOTFILE="${DOTFILE} .bash_functions"
+DOTFILE="${DOTFILE} .bash_logout"
+DOTFILE="${DOTFILE} .bash_profile"
+DOTFILE="${DOTFILE} .bash_prompt"
+DOTFILE="${DOTFILE} .bashrc"
+DOTFILE="${DOTFILE} .calcurse"
+DOTFILE="${DOTFILE} .cvsrc"
+DOTFILE="${DOTFILE} .elinks"
+DOTFILE="${DOTFILE} .flexget"
+DOTFILE="${DOTFILE} .git"
+DOTFILE="${DOTFILE} .gitconfig"
+DOTFILE="${DOTFILE} .gitignore_global"
+DOTFILE="${DOTFILE} .htoprc"
+DOTFILE="${DOTFILE} .mplayer"
+DOTFILE="${DOTFILE} .perldb"
+DOTFILE="${DOTFILE} .perltidyrc"
+DOTFILE="${DOTFILE} .rtorrent.rc"
+DOTFILE="${DOTFILE} .screenrc"
+
+for i in ${DOTFILE}
+do
+
+  echo ln -s ${DOTFILE_DIR}/$i ${HOME}/$i
+
+done
+
+#ln -s ${DOTFILE_DIR}/.bash_aliases ${HOME}/.bash_aliases
+#ln -s ${DOTFILE_DIR}/.bash_completion.d ${HOME}/.bash_completion.d
+#ln -s ${DOTFILE_DIR}/.bash_logout ${HOME}/.bash_logout
+#ln -s ${DOTFILE_DIR}/.bash_profile ${HOME}/.bash_profile
+#ln -s ${DOTFILE_DIR}/.bashrc ${HOME}/.bashrc
+#ln -s ${DOTFILE_DIR}/.cvsrc ${HOME}/.cvsrc
+#ln -s ${DOTFILE_DIR}/.gitconfig ${HOME}/.gitconfig
+##ln -s ${DOTFILE_DIR}/.gitignore_global ${HOME}/.gitignore_global
+#ln -s ${DOTFILE_DIR}/.htoprc ${HOME}/.htoprc
+#ln -s ${DOTFILE_DIR}/.perldb ${HOME}/.perldb
+#ln -s ${DOTFILE_DIR}/.perltidyrc ${HOME}/.perltidyrc
+#ln -s ${DOTFILE_DIR}/.screenrc ${HOME}/.screenrc
+
