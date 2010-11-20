@@ -12,58 +12,38 @@ presets:
       - "Law and Order: Special Victims Unit"
       - "Rizzoli & Isles"
       - Bones
-      - Cops L A C
       - Castle
-      - Chuck
-      - City Homicide
       - Cold Case
       - Cops
+      - Cops L A C
       - Covert Affairs
       - Criminal Minds
       - CSI
       - Dirty Jobs
-      - Eleventh Hour
       - Eureka
       - Family Guy
       - Flashpoint
-      - Fringe
       - Futurama
-      - FutureWeapons
       - Ghost Whisperer
-      - How Stuff Works
-      - In Plain Sight
       - Knight Rider
       - Leverage
-      - Lie to Me
-      - Medium
       - Memphis Beat
-      - Mental
-      - Misfits
-      - Modern Marvels
       - Mythbusters
       - NCIS
-      - Neighbors From Hell
+      - No Ordinary Family
       - Numb3rs
-      - Paradox
-      - Past Life
-      - Persons Unknown
       - Primeval
-      - Pulse
       - Robot Chicken
-      - Rubicon
-      - Sanctuary
-      - Sherlock
       - Stargate
       - Supernatural
-      - The Big C
       - The Closer
       - The Forgotten
-      - The Mentalist
       - The Simpsons
-      - Time Warp
+      - The Walking Dead
       - Undercover Boss US
+      - Unnatural History
       - Warehouse 13
-      - Without A Trace
+      - The Walking Dead
 feeds:
   ShowRSS:
     rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
