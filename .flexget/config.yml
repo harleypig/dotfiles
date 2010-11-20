@@ -1,0 +1,65 @@
+presets:
+  TVShows:
+    download: /home/harleypig/torrents/torrent
+    series:
+      - "CSI: Miami"
+      - "CSI: New York"
+      - "Law & Order"
+      - "Law & Order: Criminal Intent"
+      - "Law & Order: Special Victims Unit"
+      - "Law and Order"
+      - "Law and Order: Criminal Intent"
+      - "Law and Order: Special Victims Unit"
+      - "Rizzoli & Isles"
+      - Bones
+      - Castle
+      - Cold Case
+      - Cops
+      - Cops L A C
+      - Covert Affairs
+      - Criminal Minds
+      - CSI
+      - Dirty Jobs
+      - Eureka
+      - Family Guy
+      - Flashpoint
+      - Futurama
+      - Ghost Whisperer
+      - Knight Rider
+      - Leverage
+      - Memphis Beat
+      - Mythbusters
+      - NCIS
+      - No Ordinary Family
+      - Numb3rs
+      - Primeval
+      - Robot Chicken
+      - Stargate
+      - Supernatural
+      - The Closer
+      - The Forgotten
+      - The Simpsons
+      - The Walking Dead
+      - Undercover Boss US
+      - Unnatural History
+      - Warehouse 13
+      - The Walking Dead
+feeds:
+  ShowRSS:
+    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
+    preset: TVShows
+  EZTV:
+    rss: http://ezrss.it/feed/
+    preset: TVShows
+  BTCHAT:
+    rss: http://rss.bt-chat.com/?cat=9
+    preset: TVShows
+  KickAssTorrents:
+    rss: http://www.kickasstorrents.com/tv/?rss=1
+    preset: TVShows
+#  TorrentReactor:
+#    rss: http://www.torrentreactor.net/rss/rss_8.xml
+#    preset: TVShows
+#  RlsLog:
+#    rlslog: http://www.rlslog.net/category/tv-shows/
+#    preset: TVShows
