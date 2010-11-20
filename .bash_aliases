@@ -1,4 +1,4 @@
-echo Started .bash_aliases ... >> ~/bash_startup.log
+#echo Started .bash_aliases ... >> ~/bash_startup.log
 # Some of these aliases are:
 
 # from the bash-it project on github: where's the damn url?
@@ -61,4 +61,4 @@ alias sl=ls
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 alias fixssh='exec ssh-agent bash'
 
-echo '  ... ended .bash_aliases.' >> ~/bash_startup.log
+#echo '  ... ended .bash_aliases.' >> ~/bash_startup.log
