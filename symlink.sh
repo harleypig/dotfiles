@@ -15,7 +15,6 @@ DOTFILE="${DOTFILE} .bash_logout"
 DOTFILE="${DOTFILE} .bash_profile"
 DOTFILE="${DOTFILE} .bash_prompt"
 DOTFILE="${DOTFILE} .bashrc"
-DOTFILE="${DOTFILE} .calcurse"
 DOTFILE="${DOTFILE} .cvsrc"
 DOTFILE="${DOTFILE} .elinks"
 #DOTFILE="${DOTFILE} .flexget" # Not needed for work environment
