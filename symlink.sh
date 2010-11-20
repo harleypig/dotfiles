@@ -18,7 +18,7 @@ DOTFILE="${DOTFILE} .bashrc"
 DOTFILE="${DOTFILE} .calcurse"
 DOTFILE="${DOTFILE} .cvsrc"
 DOTFILE="${DOTFILE} .elinks"
-DOTFILE="${DOTFILE} .flexget" # Not needed for work environment
+DOTFILE="${DOTFILE} .flexget"
 DOTFILE="${DOTFILE} .git"
 DOTFILE="${DOTFILE} .gitconfig"
 DOTFILE="${DOTFILE} .gitignore_global"
@@ -26,7 +26,7 @@ DOTFILE="${DOTFILE} .htoprc"
 DOTFILE="${DOTFILE} .mplayer"
 DOTFILE="${DOTFILE} .perldb"
 DOTFILE="${DOTFILE} .perltidyrc"
-DOTFILE="${DOTFILE} .rtorrent.rc" # Not needed for work environment
+DOTFILE="${DOTFILE} .rtorrent.rc"
 DOTFILE="${DOTFILE} .screenrc"
 
 for i in ${DOTFILE}
