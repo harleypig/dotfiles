@@ -115,7 +115,7 @@ erase_screen="\[\033[2J\]"
 #  the description of the shopt command under SHELL BUILTIN COMMANDS
 #  below).
 
-#TODO: 
+#TODO:
 #revision control info, like vcscommand status line tool
 #exitstatus="$(let exitstatus=\$? ; if [[ \${exitstatus} != 0 ]]; then echo '${text_red}Exit Status: \${exitstatus}]' ; fi)"
 #uptime='Up $(echo \"scale=2;$(cat /proc/uptime | cut -d \' \' -f 1) / (60 * 60 * 24)\" | bc) days'
@@ -127,7 +127,8 @@ datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
 fortune="\$(fortune -as)"
 freespace="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"
 restore="${text_reset}${cursor_restore}"
-top="${cursor_save}${cursor_setbegin}0;0${cursor_setend}${background_blue}${text_cyan}"
+#top="${cursor_save}${cursor_setbegin}0;0${cursor_setend}${text_cyan}"
+top="${text_blue}"
 vim="${text_red}You are shelled from VIm!${text_reset}"
 
 PS1="${top}\$(history -a)${erase_eol}"
@@ -138,4 +139,5 @@ PS1="${PS1}\n ${freespace}${erase_eol}"
 #PS1="${PS1}\n ${exitstatus}${erase_eol}"
 #PS1="${PS1}\n ${fortune}${erase_eol}"
 [[ ! -z ${MYVIMRC} ]] && PS1="${PS1}\n ${vim}${erase_eol}"
-PS1="${PS1}\n ${erase_eol}${restore}${erase_eol}$ "
+#PS1="${PS1}\n ${erase_eol}${restore}${erase_eol}$ "
+PS1="${PS1}\n $ "

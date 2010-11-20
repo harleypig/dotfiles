@@ -1,4 +1,4 @@
-echo Started .bash_aliases ... >> ~/bash_startup.log
+#echo Started .bash_aliases ... >> ~/bash_startup.log
 # Some of these aliases are:
 
 # from the bash-it project on github: where's the damn url?
@@ -29,15 +29,21 @@ then
 
 fi
 
+alias acconfigtest="sudo $(which apachectl) configtest"
+alias acrestart="sudo $(which apachectl) stop ; sleep 3 ; sudo $(which apachectl) start"
+alias acstart="sudo $(which apachectl) start"
+alias acstop="sudo $(which apachectl) stop"
 alias c='clear'
 alias -- -="cd -"
 alias ..='cd ..'
 alias ...='cd ../..'
+alias ....='cd ../../..'
+alias fixssh='exec ssh-agent bash'
 alias ga='git add'
 alias gall='git add .'
-alias gba='git branch -a'
+alias gba='git branch -a -v'
 alias gb='git branch'
-alias gca='git commit -v -a'
+alias gca='git commit -a -v'
 alias gc='git commit -v'
 alias gco='git checkout'
 alias gcount='git shortlog -sn'
@@ -47,10 +53,13 @@ alias gdv='git diff -w "$@" | vim -R -'
 alias gexport='git archive --format zip --output'
 alias g='git'
 alias g='grep'
+alias git_remove_missing_files="git status | awk '/deleted:(.*)/ {print $3}' | xargs git rm"
 alias gl='git pull'
+alias gmv='git mv'
 alias gp='git push'
 alias gpo='git push origin'
-alias gs='git status'
+alias grm='git rm'
+alias gs='git status -s'
 alias h='history'
 alias l='ls -lhA --color=auto'
 alias md='mkdir -p'
@@ -59,6 +68,5 @@ alias realias='source ~/.bash_aliases'
 alias refunction='source ~/.bash_functions'
 alias sl=ls
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
-alias fixssh='exec ssh-agent bash'
 
-echo '  ... ended .bash_aliases.' >> ~/bash_startup.log
+#echo '  ... ended .bash_aliases.' >> ~/bash_startup.log
