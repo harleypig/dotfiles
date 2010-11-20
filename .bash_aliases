@@ -51,7 +51,6 @@ alias gcp='git cherry-pick'
 alias gd='git diff | vim -R -'
 alias gdv='git diff -w "$@" | vim -R -'
 alias gexport='git archive --format zip --output'
-alias g='git'
 alias g='grep'
 alias git_remove_missing_files="git status | awk '/deleted:(.*)/ {print $3}' | xargs git rm"
 alias gl='git pull'
