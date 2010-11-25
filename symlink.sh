@@ -15,7 +15,6 @@ do
 
   [ $d == ${SELF}  ] && continue
   [ $d == 'README' ] && continue
-  [ $d == '.anki'  ] && continue
 
   echo ln -s $d ${HOME}/$d
 
