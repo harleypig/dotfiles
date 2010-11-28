@@ -2,7 +2,7 @@
 
 # .bashrc is called when shelling from vim or creating a new screen instance.
 
-export PATH=~/bin:~/.vim/bin/:~/projects/apache2/bin:$PATH:/var/lib/gems/1.8/bin
+export PATH=~/bin:~/.vim/bin/:~/projects/applications/apache2/bin:$PATH:/var/lib/gems/1.8/bin
 export EDITOR=vim
 export HISTCONTROL='ignoreboth:erasedups'
 export HISTFILESIZE=1000
