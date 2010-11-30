@@ -39,4 +39,7 @@ function geoip() {
 # type 'to project' to change to that directory from anywhere
 
 function bm () { eval $1=$(pwd); }
-function to () { eval dir=\$$1; cd "$dir": }
+function to () { eval dir=\$$1; cd "$dir"; }
+
+# http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
+function tailfile () { tail -f $1 | xargs -IX printf "$(date -u)\t%s\n" X; }
