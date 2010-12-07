@@ -59,6 +59,7 @@ alias gp='git push'
 alias gpo='git push origin'
 alias grm='git rm'
 alias gs='git status -s'
+alias gwtf='git-wtf'
 alias h='history'
 alias l='ls -lhA --color=auto'
 alias md='mkdir -p'
@@ -66,6 +67,7 @@ alias rd=rmdir
 alias realias='source ~/.bash_aliases'
 alias refunction='source ~/.bash_functions'
 alias sl=ls
+alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harleypig.com/logs/error.log'
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 
 #echo '  ... ended .bash_aliases.' >> ~/bash_startup.log
