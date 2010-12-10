@@ -4,18 +4,8 @@
 #
 # $hash{ $_ } = "somestring" for @array;
 #
-# PerlTidy doesn't like this.  I was able to make this work by modifying the
-# code.  If you have a better idea of how to make this work, please let me
-# know. Here's a diff of the Perl::Tidy package I was able to make work:
-#
-# harleypig@sweetums:~/work/test$ diff $(perldoc -l Perl::Tidy) Perl_Tidy.pm 
-# 5670a5671,5672
-# >       for
-# >       foreach
-# 13782c13784
-# <                         && (   $type =~ /^[=\)\]\}Riw]$/
-# ---
-# >                         && (   $type =~ /^[=\)\]\}QRiw]$/
+# PerlTidy doesn't like this.  I made this work by modifying the code.  Please
+# see https://github.com/harleypig/Perl-Tidy to see how I've mangled the code.
 
 ##########################################
 # Basic Options
