@@ -1,6 +1,12 @@
 # Found at http://wiki.archlinux.org/index.php/Color_Bash_Prompt
 # Also see http://www.termsys.demon.co.uk/vtansi.htm
 
+# Get some ideas from:
+#   https://gist.github.com/621452
+#   https://gist.github.com/623142
+#   http://blog.woobling.org/2010/10/ritalin-for-your-ps1.html
+#   http://git.kernel.org/?p=git/git.git;a=blob;f=contrib/completion/git-completion.bash;hb=HEAD
+
 # Regular
 
 text_black="\e[0;30m"
