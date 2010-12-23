@@ -41,13 +41,13 @@
 
 [color "branch"]
 	current = green reverse
-	local   = yellow
-	remote  = red
+	local   = cyan
+	remote  = blue
 
 [color "status"]
 	added     = green
 	changed   = red
-	untracked = cyan
+	untracked = yellow
 
 [push]
 	default = current
@@ -56,5 +56,6 @@
 	remote = origin
 	merge = refs/heads/master
 	rebase = true
+
 [github]
 	user = harleypig

@@ -1,0 +1,10 @@
+Possibly convert things setup and run from .bashrc into a separate file for each application or function it's used for.
+
+Something like
+
+.bashrc.d
+  git - contains functions and aliases and such used for git
+  prompt - contains functions and aliases and such used for the prompt
+  etc...
+
+See https://github.com/jcayzac/dotfiles

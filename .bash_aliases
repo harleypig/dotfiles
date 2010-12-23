@@ -29,16 +29,7 @@ then
 
 fi
 
-alias acconfigtest="sudo $(which apachectl) configtest"
-alias acrestart="sudo $(which apachectl) stop ; sleep 3 ; sudo $(which apachectl) start"
-alias acstart="sudo $(which apachectl) start"
-alias acstop="sudo $(which apachectl) stop"
-alias c='clear'
-alias -- -="cd -"
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-alias fixssh='exec ssh-agent bash'
+# Git
 alias ga='git add'
 alias gall='git add .'
 alias gba='git branch -a -v'
@@ -51,7 +42,6 @@ alias gcp='git cherry-pick'
 alias gd='git diff | vim -R -'
 alias gdv='git diff -w "$@" | vim -R -'
 alias gexport='git archive --format zip --output'
-alias g='grep'
 alias git_remove_missing_files="git status | awk '/deleted:(.*)/ {print \$3}' | xargs git rm"
 alias gl='git pull'
 alias gmv='git mv'
@@ -60,6 +50,24 @@ alias gpo='git push origin'
 alias grm='git rm'
 alias gs='git status -s'
 alias gwtf='git-wtf'
+
+# Apache
+alias acconfigtest="sudo $(which apachectl) configtest"
+alias acrestart="sudo $(which apachectl) stop ; sleep 3 ; sudo $(which apachectl) start"
+alias acstart="sudo $(which apachectl) start"
+alias acstop="sudo $(which apachectl) stop"
+alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harleypig.com/logs/error.log'
+
+# FBcmd
+alias fb='fbcmd'
+
+# System
+alias c='clear'
+alias -- -="cd -"
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias g='grep'
 alias h='history'
 alias l='ls -lhA --color=auto'
 alias md='mkdir -p'
@@ -67,7 +75,9 @@ alias rd=rmdir
 alias realias='source ~/.bash_aliases'
 alias refunction='source ~/.bash_functions'
 alias sl=ls
-alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harleypig.com/logs/error.log'
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
+
+# Kludges
+alias fixssh='exec ssh-agent bash'
 
 #echo '  ... ended .bash_aliases.' >> ~/bash_startup.log
