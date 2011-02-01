@@ -2,15 +2,6 @@ presets:
   TVShows:
     download: /home/harleypig/torrents/torrent
     series:
-      - "CSI: Miami"
-      - "CSI: New York"
-      - "Law & Order"
-      - "Law & Order: Criminal Intent"
-      - "Law & Order: Special Victims Unit"
-      - "Law and Order"
-      - "Law and Order: Criminal Intent"
-      - "Law and Order: Special Victims Unit"
-      - "Rizzoli & Isles"
       - Bones
       - Castle
       - Cold Case
@@ -19,30 +10,40 @@ presets:
       - Covert Affairs
       - Criminal Minds
       - CSI
+      - "CSI: Miami"
+      - "CSI: New York"
       - Dirty Jobs
       - Eureka
+      - Fairly Legal
       - Family Guy
       - Flashpoint
       - Futurama
-      - Ghost Whisperer
-      - Knight Rider
+      - "Harry's Law"
+      - "Law and Order"
+      - "Law and Order: Criminal Intent"
+      - "Law and Order: Special Victims Unit"
+      - "Law & Order"
+      - "Law & Order: Criminal Intent"
+      - "Law & Order: Special Victims Unit"
       - Leverage
       - Memphis Beat
       - Mythbusters
       - NCIS
       - Numb3rs
       - Primeval
+      - "Rizzoli & Isles"
       - Robot Chicken
-      - Supernatural
       - South Park
+      - Supernatural
+      - The Cape
       - The Closer
       - The Forgotten
       - The Simpsons
       - The Walking Dead
+      - The Walking Dead
       - Undercover Boss US
       - Unnatural History
       - Warehouse 13
-      - The Walking Dead
 feeds:
   ShowRSS:
     rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
@@ -54,11 +55,11 @@ feeds:
     rss: http://rss.bt-chat.com/?cat=9
     preset: TVShows
   KickAssTorrents:
-    rss: http://www.kickasstorrents.com/tv/?rss=1
+    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
     preset: TVShows
-#  TorrentReactor:
-#    rss: http://www.torrentreactor.net/rss/rss_8.xml
-#    preset: TVShows
-#  RlsLog:
-#    rlslog: http://www.rlslog.net/category/tv-shows/
-#    preset: TVShows
+  TorrentReactor:
+    rss: http://www.torrentreactor.net/rss/rss_8.xml
+    preset: TVShows
+  RlsLog:
+    rlslog: http://www.rlslog.net/category/tv-shows/
+    preset: TVShows

@@ -43,3 +43,6 @@ function to () { eval dir=\$$1; cd "$dir"; }
 
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
 function tailfile () { tail -f $1 | xargs -IX printf "$(date -u)\t%s\n" X; }
+
+# http://linuxcommando.blogspot.com/2007/10/dictionary-lookup-via-command-line.html
+function define () { clear; curl dict://dict.org/d:$1; }
