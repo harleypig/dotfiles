@@ -6,6 +6,7 @@
 #   https://gist.github.com/623142
 #   http://blog.woobling.org/2010/10/ritalin-for-your-ps1.html
 #   http://git.kernel.org/?p=git/git.git;a=blob;f=contrib/completion/git-completion.bash;hb=HEAD
+#   https://github.com/lvv/git-prompt
 
 # Regular
 
@@ -127,18 +128,23 @@ erase_screen="\[\033[2J\]"
 #uptime='Up $(echo \"scale=2;$(cat /proc/uptime | cut -d \' \' -f 1) / (60 * 60 * 24)\" | bc) days'
 #loadavg='cat /proc/loadavg'
 #du='du -hs $PWD'
-#PS1="${PS1}\n \${uptime}${erase_eol}"
-#PS1="${PS1}\n ${exitstatus}${erase_eol}"
 
 cwd="\$(if [ -w \${PWD} ]; then echo '${text_green}'; else echo '${text_red}'; fi)\${PWD}${text_reset}"
-datetime="\D{%a(%w) %b %d %Y %T %n(%s) DoY: %j Wk: %V}"
-freespace="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) free"
+datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
+fortune="\$(fortune -as)"
+freespace="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"
 restore="${text_reset}${cursor_restore}"
-vim="${text_red}(VIm)${text_reset}"
+#top="${cursor_save}${cursor_setbegin}0;0${cursor_setend}${text_cyan}"
+top="${text_blue}"
+vim="${text_red}You are shelled from VIm!${text_reset}"
 
-PS1="\$(history -a)${erase_eol}"
-[[ ! -z ${MYVIMRC} ]] && PS1="${PS1}\n ${vim}${erase_eol}"
-PS1="${PS1} ${text_blue}${datetime}${erase_eol}"
+PS1="${top}\$(history -a)${erase_eol}"
+PS1="${PS1}\n ${datetime}${erase_eol}"
+#PS1="${PS1}\n \${uptime}${erase_eol}"
 PS1="${PS1}\n \u@\H:${cwd}${erase_eol}"
 PS1="${PS1}\n ${freespace}${erase_eol}"
+#PS1="${PS1}\n ${exitstatus}${erase_eol}"
+#PS1="${PS1}\n ${fortune}${erase_eol}"
+[[ ! -z ${MYVIMRC} ]] && PS1="${PS1}\n ${vim}${erase_eol}"
+#PS1="${PS1}\n ${erase_eol}${restore}${erase_eol}$ "
 PS1="${PS1}\n $ "
