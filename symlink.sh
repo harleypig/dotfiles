@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#debug=echo
+
 [[ -z ${HOME} ]] && $HOME='/home/harleypig'
 
 SELF=$(basename $(readlink -f $0))
@@ -15,7 +17,8 @@ do
 
   [ $d == ${SELF} ] && continue
   [ $d == 'README' ] && continue
+  [ $d == 'TODO' ] && continue
 
-  echo ln -s $d ${HOME}/$d
+  $debug ln -s $d ${HOME}/$d
 
 done
