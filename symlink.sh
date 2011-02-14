@@ -16,6 +16,7 @@ do
   [ $d == ${SELF} ] && continue
   [ $d == 'README' ] && continue
   [ $d == 'TODO' ] && continue
+  [ $d == '.git' ] && continue
 
   $debug ln -s ${DOTFILE_DIR}/$d ${HOME}/$d
 
