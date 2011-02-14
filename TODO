@@ -8,3 +8,10 @@ Something like
   etc...
 
 See https://github.com/jcayzac/dotfiles
+
+Modify symlink.sh to accept parameter which reads a file containing a list of symlinks to create:
+
+symlink.sh harleypig.com
+symlink.sh work.desk
+
+instead of copying all dotfiles blindly.
