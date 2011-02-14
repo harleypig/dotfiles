@@ -7,8 +7,6 @@
 SELF=$(basename $(readlink -f $0))
 DOTFILE_DIR=$(dirname $(readlink -f $0))
 
-cd ${HOME}
-
 # We want to link these files
 DOTFILES=( $(ls -A ${DOTFILE_DIR}) )
 
@@ -19,6 +17,6 @@ do
   [ $d == 'README' ] && continue
   [ $d == 'TODO' ] && continue
 
-  $debug ln -s $d ${HOME}/$d
+  $debug ln -s ${DOTFILE_DIR}/$d ${HOME}/$d
 
 done
