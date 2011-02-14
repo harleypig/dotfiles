@@ -1,0 +1,42 @@
+check_hash = yes
+encryption = require
+upload_rate = 100
+use_udp_trackers = yes
+
+scgi_port = localhost:7777
+
+# Based on the recipe found at http://flexget.com/wiki/Cookbook/rTorrent
+# with modifications found elsewhere
+
+session = /home/harleypig/torrents/session
+
+# Default directory to save the downloaded torrents.
+directory = /home/harleypig/torrents/incomplete
+
+# Watch a directory for new torrents and set the download target path
+schedule = watch_directory_1,10,10,"load_start=/home/harleypig/torrents/torrent/*.torrent,d.set_custom1=/home/harleypig/torrents/complete,d.set_custom2=1"
+schedule = watch_directory_2,10,10,"load_start=/home/harleypig/Dropbox/torrents/*.torrent,d.set_custom1=/home/harleypig/torrents/complete,d.set_custom2=1"
+
+# Stop torrents which have been deleted from watch directory
+schedule = untied_directory,10,10,stop_untied=
+
+# Close torrents when diskspace is low.
+schedule = low_diskspace,5,60,close_low_diskspace=100M
+
+# Stop torrents when reaching upload ratio in percent,
+# when also reaching total upload in bytes, or when
+# reaching final upload ratio in percent.
+# example: stop at ratio 3.0 with at least 200 MB uploaded, or else ratio 20.0
+#schedule = ratio,60,60,"stop_on_ratio=300,200M,2000"
+# stop at ratio 1.5, with at least 200 MB uploaded, or else a ratio of 10.0
+schedule = ratio,60,60,"stop_on_ratio=150,200M,1000"
+
+# Save session data
+schedule = session_save,240,300,session_save=
+
+# Move finished downloads to downloaded
+on_finished = move_complete,"execute=mv,-u,$d.get_base_path=,$d.get_custom1= ;d.set_directory=$d.get_custom1="
+on_finished = set_done_var,d.set_custom2=
+
+# remove incomplete downloads from disk that have been deleted from rTorrent
+on_erase = rm_incomplete,"branch=d.get_custom2=,\"execute={rm,-rf,--,$d.get_base_path=}\""
