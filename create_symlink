@@ -1,0 +1,58 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use FindBin qw( $Bin );
+
+# Create symlinks in $HOME for specified dotfiles.
+
+die "HOME environment variable not set, quitting."
+  unless exists $ENV{ 'HOME' };
+
+die "$ENV{ 'HOME' } does not exist as a directory, quitting."
+  unless -d $ENV{ 'HOME' };
+
+my $system = shift;
+
+my @dotfiles = do {
+
+  my @d;
+
+  if ( defined $system && -f $system ) {
+
+    open my $FH, '<', "$Bin/$system"
+      or die "Unable to open $system for reading: $!\n";
+
+    chomp( @d = <$FH> );
+
+  } else {
+
+    opendir my $DOT, $Bin
+      or die "Unable to open $Bin for reading: $!\n";
+
+    @d = grep { /^\.[\w]/ } readdir $DOT;
+
+    close $DOT or warn "Unable to close $Bin: $!\n";
+
+  }
+
+  @d;
+
+};
+
+for my $dotfile ( @dotfiles ) {
+
+  my $source = "$Bin/$dotfile";
+  my $link   = "$ENV{ 'HOME' }/$dotfile";
+
+  warn "$dotfile does not exist in $Bin, skipping"
+    unless -e $source;
+
+  warn "$link already exists, skipping"
+    if -e $link;
+
+  symlink $source, $link
+    or warn "Unable to link $dotfile to $ENV{ 'HOME' }: $!\n";
+
+}
