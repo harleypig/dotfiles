@@ -136,7 +136,7 @@ freespace="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) availabl
 restore="${text_reset}${cursor_restore}"
 #top="${cursor_save}${cursor_setbegin}0;0${cursor_setend}${text_cyan}"
 top="${text_blue}"
-vim="${text_red}You are shelled from VIm!${text_reset}"
+vim="${text_red}(VIm)${text_reset}"
 
 PS1="${top}\$(history -a)${erase_eol}"
 PS1="${PS1}\n ${datetime}${erase_eol}"
