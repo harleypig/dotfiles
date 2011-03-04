@@ -36,5 +36,6 @@ completion="complete -C ${perldoc} -o nospace -o default perldoc"
 [[ -f ~/.bash_functions ]]                && source ~/.bash_functions
 [[ -f ~/.bash_prompt ]]                   && source ~/.bash_prompt
 [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
+[[ -s ~/.rvm/scripts/rvm ]]               && source ~/.rvm/scripts/rvm # This loads RVM into a shell session.
 
 #echo '  ... ended .bashrc.' >> ~/bash_startup.log
