@@ -46,3 +46,7 @@ function tailfile () { tail -f $1 | xargs -IX printf "$(date -u)\t%s\n" X; }
 
 # http://linuxcommando.blogspot.com/2007/10/dictionary-lookup-via-command-line.html
 function define () { clear; curl dict://dict.org/d:$1; }
+
+# http://www.commandlinefu.com/commands/view/2829/query-wikipedia-via-console-over-dns
+# http://onethingwell.org/post/2858158431/wikipedia-cli
+function wiki() { dig +short txt $1.wp.gd.cx; }
