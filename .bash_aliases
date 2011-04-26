@@ -11,6 +11,21 @@
 if [ -e ~/.ssh/config ]
 then
 
+  # XXX: Ignore, or otherwise handle, wildcard hosts (e.g., facelift*)
+
+  # XXX: Make a function that checks if a master connection is made and, if
+  # not, create one and background it so as to avoid accidental disconnections
+  # (which would disconnect *all* current connections).
+  #
+  # Background connection:
+  #   http://rc.fas.harvard.edu/tipsntricks/sshcontrolmaster
+  #   ssh -Y -C -o ServerAliveInterval=30 -fN ody
+  #
+  # Detecting existing ControlMaster session:
+  #   http://serverfault.com/questions/211213/how-to-tell-if-an-ssh-controlmaster-connection-is-in-use
+  #   ssh -o ControlPath=$socket -O check
+  #   Other goodness there.
+
   # I'm always in screen on my systems.
   # echo -e "\ekHostname\e\" will change the screen title for that tab to the hostname
 
@@ -79,5 +94,8 @@ alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 
 # Kludges
 alias fixssh='exec ssh-agent bash'
+
+# Mechanize Shell
+alias mechsh='perl -MWWW::Mechanize::Shell -eshell'
 
 #echo '  ... ended .bash_aliases.' >> ~/bash_startup.log

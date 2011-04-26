@@ -3,13 +3,17 @@ presets:
     download: /home/harleypig/torrents/torrent
     series:
       - Bedlam
+      - Body of Proof
       - Bones
+      - Breakout Kings
       - Castle
+      - City Homicide
       - Cold Case
       - Cops
       - Cops L A C
       - Covert Affairs
       - Criminal Minds
+      - "Criminal Minds: Suspect Behavior"
       - CSI
       - "CSI: Miami"
       - "CSI: New York"
@@ -20,22 +24,30 @@ presets:
       - Flashpoint
       - Futurama
       - "Harry's Law"
-      - "Law and Order"
+      - In Plain Sight
+      - Law and Order
       - "Law and Order: Criminal Intent"
       - "Law and Order: Special Victims Unit"
+      - "Law and Order: Special Victums Unit"
       - "Law & Order"
       - "Law & Order: Criminal Intent"
       - "Law & Order: Special Victims Unit"
-      - Leverage
+      - "Law & Order: Special Victums Unit"
       - Memphis Beat
       - Mythbusters
       - NCIS
       - Numb3rs
+      - Outlaw
+      - Persons Unknown
       - Primeval
       - "Rizzoli & Isles"
       - Robot Chicken
+      - Sherlock
       - South Park
+      - Stargate Universe
       - Supernatural
+      - Suspect Behavior
+      - The Big C
       - The Cape
       - The Closer
       - The Forgotten
@@ -44,6 +56,7 @@ presets:
       - Undercover Boss US
       - Unnatural History
       - Warehouse 13
+      - Who Do You Think You Are
 feeds:
   ShowRSS:
     rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
@@ -51,12 +64,15 @@ feeds:
   EZTV:
     rss: http://ezrss.it/feed/
     preset: TVShows
+  BTJunkie:
+    rss: http://btjunkie.org/rss.xml?c=4
+    preset: TVShows
   BTCHAT:
     rss: http://rss.bt-chat.com/?cat=9
-    preset: TVShows
-  KickAssTorrents:
-    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
-    preset: TVShows
+    prese#t: TVShows
+#  KickAssTorrents:
+#    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
+#    preset: TVShows
 #  TorrentReactor:
 #    rss: http://www.torrentreactor.net/rss/rss_8.xml
 #    preset: TVShows

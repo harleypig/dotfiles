@@ -1,63 +1,63 @@
 [user]
-	name = Harley Pig
-	email = harleypig@gmail.com
+  name = Harley Pig
+  email = harleypig@gmail.com
 
 [core]
-	editor = vim
-	excludesfile = ~/.gitignore_global
-	autocrlf = input
-	safecrlf = true
+  editor = vim
+  excludesfile = ~/.gitignore_global
+  autocrlf = input
+  safecrlf = true
+  pager = less -FIJRWX
 
 [branch]
-	autosetupmerge = true
+  autosetupmerge = true
 
 [merge]
-	tool = vimdiff
-	guitool = kdiff3
+  tool = vimdiff
+  guitool = kdiff3
 
 [alias]
-	aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
-	au = add -u
-	b  = branch
-	ba = branch -a
-	ci = commit
-	co = checkout
-	df = diff
-	lg = log
-	lp = log --pretty=format:'%h : (%aN) %s' --topo-order --graph
-	pu = pull
-	st = status
-	w = whatchanged
+  aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
+  au = add -u
+  b  = branch
+  ba = branch -a
+  ci = commit
+  co = checkout
+  df = diff
+  lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+  pu = pull
+  st = status
+  w = whatchanged
 
 [diff]
-	tool = vimdiff
-	guitool = kdiff3
+  tool = vimdiff
+  guitool = kdiff3
 
 [apply]
-	whitespace = fix
+  whitespace = fix
 
 [color]
-	diff   = auto
-	status = auto
-	branch = auto
+  diff   = auto
+  status = auto
+  branch = auto
 
 [color "branch"]
-	current = green reverse
-	local   = cyan
-	remote  = blue
+  current = green reverse
+  local   = cyan
+  remote  = blue
 
 [color "status"]
-	added     = green
-	changed   = red
-	untracked = yellow
+  added     = green
+  changed   = red
+  untracked = yellow
 
 [push]
-	default = current
+  default = current
 
 [branch "master"]
-	remote = origin
-	merge = refs/heads/master
-	rebase = true
+  remote = origin
+  merge = refs/heads/master
+  rebase = true
 
 [github]
-	user = harleypig
+  user = harleypig
