@@ -27,6 +27,7 @@ then
   #   Other goodness there.
 
   # I'm always in screen on my systems.
+  # Should still check if we are in screen.  How?
   # echo -e "\ekHostname\e\" will change the screen title for that tab to the hostname
 
   pre_title='echo -e "\\ek'
@@ -34,7 +35,7 @@ then
   reset='&& echo -e "\\ekbash\\e\\"'
   screen='-t screen -RDl'
 
-  for i in $(grep -E '^Host [^*]' ~/.ssh/config | cut -d ' ' -f 2)
+  for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
   do
     alias $i="${pre_title}$i${post_title} $i ${reset}"
   done
