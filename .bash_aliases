@@ -11,8 +11,6 @@
 if [ -e ~/.ssh/config ]
 then
 
-  # XXX: Ignore, or otherwise handle, wildcard hosts (e.g., facelift*)
-
   # XXX: Make a function that checks if a master connection is made and, if
   # not, create one and background it so as to avoid accidental disconnections
   # (which would disconnect *all* current connections).
