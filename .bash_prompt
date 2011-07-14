@@ -130,6 +130,7 @@ erase_screen="\[\033[2J\]"
 #du='du -hs $PWD'
 #fortune="\$(fortune -as)"
 
+# Spaces (anything else?) in the name are causing problems with this.
 cwd="\$(if [ -w \${PWD} ]; then echo '${text_green}'; else echo '${text_red}'; fi)\${PWD}${text_reset}"
 datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
 freespace="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"

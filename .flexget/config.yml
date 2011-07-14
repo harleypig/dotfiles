@@ -3,9 +3,7 @@ presets:
     download: /home/harleypig/torrents/torrent
     series:
       - Bedlam
-      - Body of Proof
       - Bones
-      - Breakout Kings
       - Castle
       - City Homicide
       - Cold Case
@@ -33,6 +31,7 @@ presets:
       - "Law & Order: Criminal Intent"
       - "Law & Order: Special Victims Unit"
       - "Law & Order: Special Victums Unit"
+      - Leverage
       - Memphis Beat
       - Mythbusters
       - NCIS
@@ -46,9 +45,6 @@ presets:
       - South Park
       - Stargate Universe
       - Supernatural
-      - Suspect Behavior
-      - The Big C
-      - The Cape
       - The Closer
       - The Forgotten
       - The Simpsons
@@ -69,10 +65,13 @@ feeds:
     preset: TVShows
   BTCHAT:
     rss: http://rss.bt-chat.com/?cat=9
-    prese#t: TVShows
-#  KickAssTorrents:
-#    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
-#    preset: TVShows
+    preset: TVShows
+  KickAssTorrents:
+    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
+    preset: TVShows
+  TorrentDay:
+    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
+    preset: TVShows
 #  TorrentReactor:
 #    rss: http://www.torrentreactor.net/rss/rss_8.xml
 #    preset: TVShows

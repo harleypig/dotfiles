@@ -91,6 +91,7 @@ alias realias='source ~/.bash_aliases'
 alias refunction='source ~/.bash_functions'
 alias sl=ls
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
+alias cpanm="/usr/local/bin/cpanm -S"
 
 # Kludges
 alias fixssh='exec ssh-agent bash'
