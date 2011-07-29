@@ -43,6 +43,17 @@ then
 
 fi
 
+# Console access
+alias console_fl1='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-20@198.65.168.9'
+alias console_fl2='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-17@198.65.168.9'
+alias console_fl3='echo Do not know console info for facelift3'
+alias console_fl4='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-4-20@198.65.168.9'
+alias console_fl5='echo Do not know console info for facelift5'
+alias console_fl6='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-19@198.65.168.9'
+alias console_fl7='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-22@198.65.168.9'
+alias console_fl8='echo Do not know console info for facelift8'
+alias console_fl9='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-26@198.65.168.9'
+
 # Git
 alias ga='git add'
 alias gall='git add .'
