@@ -4,6 +4,7 @@ defutf8 on
 startup_message off
 msgwait 2
 vbell_msg "Bell in %t"
+zombie xr onerror
 
 # Allow scrollback
 termcapinfo xterm ti@:te@
@@ -45,11 +46,6 @@ bind  P select 39
 
 chdir
 
-#screen -l -t 'irssi'     0 /bin/bash -c "irssi"
-#screen -l -t 'rtorrent'  0 /bin/bash -c "rtorrent"
-#screen -l -t 'newsfeeds' 0 /bin/bash -c "newsbeuter"
-#screen -l -t 'calendar'  0 /bin/bash -c "calcurse"
-#screen -l -t 'facebook'  0 /bin/bash -c "watch -n 150 fbcmd stream"
-#screen -l -t 'mutt'      0 /bin/bash -c "mutt"
-#screen -l -t 'mutt book' 0 /bin/bash -c "zless /usr/share/doc/mutt/manual.txt.gz"
+screen -l -t 'irssi'     0 /bin/bash -c "irssi"
+screen -l -t 'rtorrent'  0 /bin/bash -c "rtorrent"
 screen -l -t 'bash'

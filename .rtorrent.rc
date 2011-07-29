@@ -15,7 +15,7 @@ directory = /home/harleypig/torrents/incomplete
 
 # Watch a directory for new torrents and set the download target path
 schedule = watch_directory_1,10,10,"load_start=/home/harleypig/torrents/torrent/*.torrent,d.set_custom1=/home/harleypig/torrents/complete,d.set_custom2=1"
-schedule = watch_directory_2,10,10,"load_start=/home/harleypig/Dropbox/torrents/*.torrent,d.set_custom1=/home/harleypig/torrents/complete,d.set_custom2=1"
+#schedule = watch_directory_2,10,10,"load_start=/home/harleypig/Dropbox/torrents/*.torrent,d.set_custom1=/home/harleypig/torrents/complete,d.set_custom2=1"
 
 # Stop torrents which have been deleted from watch directory
 schedule = untied_directory,10,10,stop_untied=
