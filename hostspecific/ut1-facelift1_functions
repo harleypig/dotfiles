@@ -1,0 +1,8 @@
+unalias ga gc gca gco grm gmv
+
+function ga  () { gtl ; git add "$@"          ; cd - > /dev/null ; }
+function gc  () { gtl ; git commit -v "$@"    ; cd - > /dev/null ; }
+function gca () { gtl ; git commit -a -v "$@" ; cd - > /dev/null ; }
+function gco () { gtl ; git checkout "$@"     ; cd - > /dev/null ; }
+function grm () { gtl ; git rm "$@"           ; cd - > /dev/null ; }
+function gmv () { gtl ; git mv "$@"           ; cd - > /dev/null ; }

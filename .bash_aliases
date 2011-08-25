@@ -69,6 +69,7 @@ alias gdv='git diff -w "$@" | vim -R -'
 alias gexport='git archive --format zip --output'
 alias git_remove_missing_files="git status | awk '/deleted:(.*)/ {print $3}' | xargs git rm"
 alias gl='git pull'
+alias glall='git pull --all'
 alias gmv='git mv'
 alias gp='git push'
 alias gpo='git push origin'

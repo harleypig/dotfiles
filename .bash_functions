@@ -51,5 +51,9 @@ function define () { clear; curl dict://dict.org/d:$1; }
 # http://onethingwell.org/post/2858158431/wikipedia-cli
 function wiki() { dig +short txt $1.wp.gd.cx; }
 
-# Go to current repos toplevel directory.
+# Go to current git repo toplevel directory.
 function gtl() { cd $(git rev-parse --show-toplevel); }
+
+HOSTSPECIFIC="$(dirname $(readlink ~/.bash_functions))/hostspecific/$(hostname)_functions"
+
+[[ -x ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
