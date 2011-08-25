@@ -1,0 +1,26 @@
+# Maintaining a git repository in the root directory appears to screw up some
+# basic assumptions git is making, so we have to make sure we're at the toplevel
+# of the repo.
+
+A='gtl ; git'
+B='; cd - > /dev/null'
+alias gall="$A add . $B"
+alias gba="$A branch -a -v $B"
+alias gb="$A branch $B"
+alias gcount="$A shortlog -sn $B"
+alias gcp="$A cherry-pick $B"
+alias gd="$A diff | vim -R - $B"
+alias gdv="$A diff -w "$@" | vim -R - $B"
+alias gexport="$A archive --format zip --output $B"
+alias git_remove_missing_files="$A status | awk '/deleted:(.*)/ {print $3}' | xargs git rm $B"
+alias gl="$A pull $B"
+alias glg="$A lg $B"
+alias gp="$A push $B"
+alias gpo="$A push origin $B"
+alias gs="$A status -s $B"
+alias gsl="$A status $B"
+alias gwtf="$A-wtf $B"
+A=
+B=
+
+alias v='vutil'

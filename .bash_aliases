@@ -1,4 +1,3 @@
-#echo Started .bash_aliases ... >> ~/bash_startup.log
 # Some of these aliases are:
 
 # from the bash-it project on github: where's the damn url?
@@ -43,17 +42,6 @@ then
 
 fi
 
-# Console access
-alias console_fl1='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-20@198.65.168.9'
-alias console_fl2='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-17@198.65.168.9'
-alias console_fl3='echo Do not know console info for facelift3'
-alias console_fl4='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-4-20@198.65.168.9'
-alias console_fl5='echo Do not know console info for facelift5'
-alias console_fl6='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-19@198.65.168.9'
-alias console_fl7='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-22@198.65.168.9'
-alias console_fl8='echo Do not know console info for facelift8'
-alias console_fl9='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-16@198.65.168.9'
-
 # Git
 alias ga='git add'
 alias gall='git add .'
@@ -78,16 +66,6 @@ alias grm='git rm'
 alias gs='git status -s'
 alias gwtf='git-wtf'
 
-# Apache
-alias acconfigtest="sudo $(which apachectl) configtest"
-alias acrestart="sudo $(which apachectl) stop ; sleep 3 ; sudo $(which apachectl) start"
-alias acstart="sudo $(which apachectl) start"
-alias acstop="sudo $(which apachectl) stop"
-alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harleypig.com/logs/error.log'
-
-# FBcmd
-alias fb='fbcmd'
-
 # System
 alias c='clear'
 alias -- -="cd -"
@@ -105,13 +83,6 @@ alias sl=ls
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 alias cpanm="/usr/local/bin/cpanm -S"
 
-# Kludges
-alias fixssh='exec ssh-agent bash'
+HOSTSPECIFIC="$(dirname $(readlink ~/.bash_aliases))/hostspecific/$(hostname)_aliases"
 
-# Mechanize Shell
-alias mechsh='perl -MWWW::Mechanize::Shell -eshell'
-
-# VimWiki
-alias vimwiki='vim +VimwikiIndex'
-
-#echo '  ... ended .bash_aliases.' >> ~/bash_startup.log
+[[ -x ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
