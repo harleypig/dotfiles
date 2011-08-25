@@ -11,7 +11,8 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-#[[ $- != *i* ]] && return # We're not running interactively, don't do anything.
+hostname=$(hostname)
+hostname=${hostname%[0-9]*}
 
 if [[ $- = *i* ]]
 then
@@ -19,7 +20,9 @@ then
   shopt -s checkhash
   shopt -s checkwinsize
   shopt -s cmdhist
-  shopt -s dirspell
+
+  [[ ${hostname} != 'ut1-facelift' ]] && shopt -s dirspell
+
   shopt -s dotglob
   shopt -s histappend
   shopt -s histreedit
@@ -30,9 +33,15 @@ then
   [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
 
-  perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
-  completion="complete -C ${perldoc} -o nospace -o default perldoc"
-  [[ -f ${perldoc} ]] && ${completion}
+  if [ ${hostname} != 'ut1-facelift' ]
+  then
+
+    echo 'not facelift!'
+    perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
+    completion="complete -C ${perldoc} -o nospace -o default perldoc"
+    [[ -f ${perldoc} ]] && ${completion}
+
+  fi
 
   [[ -f /usr/share/cdargs/cdargs-bash.sh ]] && source /usr/share/cdargs/cdargs-bash.sh
   [[ -f ~/.ssh-agent ]]                     && source ~/.ssh-agent
