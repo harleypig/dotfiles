@@ -56,4 +56,4 @@ function gtl() { cd $(git rev-parse --show-toplevel); }
 
 HOSTSPECIFIC="$(dirname $(readlink ~/.bash_functions))/hostspecific/$(hostname)_functions"
 
-[[ -x ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
+[[ -f ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}

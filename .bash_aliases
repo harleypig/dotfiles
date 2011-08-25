@@ -85,4 +85,4 @@ alias cpanm="/usr/local/bin/cpanm -S"
 
 HOSTSPECIFIC="$(dirname $(readlink ~/.bash_aliases))/hostspecific/$(hostname)_aliases"
 
-[[ -x ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
+[[ -f ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}

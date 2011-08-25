@@ -3,6 +3,6 @@
 
 HOSTSPECIFIC="$(dirname $(readlink ~/.bash_profile))/hostspecific/$(hostname)_profile"
 
-[[ -x ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
+[[ -f ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
