@@ -44,7 +44,7 @@ schedule = session_save,240,300,session_save=
 http_capath=/etc/ssl/certs
 encoding_list = UTF-8
 # Color / Canvas patch
-done_fg_color = 2
+#done_fg_color = 2
 #done_bg_color = 2
-active_fg_color = 1
+#active_fg_color = 1
 #active_bg_color = 4

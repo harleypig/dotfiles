@@ -2,13 +2,11 @@ presets:
   TVShows:
     download: /home/harleypig/torrents/torrent
     series:
-      - Bedlam
+      - Alphas
       - Bones
       - Castle
       - City Homicide
       - Cold Case
-      - Cops
-      - Cops L A C
       - Covert Affairs
       - Criminal Minds
       - "Criminal Minds: Suspect Behavior"
@@ -17,7 +15,7 @@ presets:
       - "CSI: New York"
       - Dirty Jobs
       - Eureka
-      - Fairly Legal
+      - Falling Skies
       - Family Guy
       - Flashpoint
       - Futurama
@@ -31,7 +29,6 @@ presets:
       - "Law & Order: Criminal Intent"
       - "Law & Order: Special Victims Unit"
       - "Law & Order: Special Victums Unit"
-      - Leverage
       - Memphis Beat
       - Mythbusters
       - NCIS
@@ -41,28 +38,24 @@ presets:
       - Primeval
       - "Rizzoli & Isles"
       - Robot Chicken
-      - Sherlock
       - South Park
-      - Stargate Universe
       - Supernatural
-      - Suspect Behavior
       - The Closer
-      - The Forgotten
       - The Simpsons
       - The Walking Dead
-      - Undercover Boss US
-      - Unnatural History
+      - Undercover Boss
       - Warehouse 13
-      - Who Do You Think You Are
-      - Falling Skies
-      - Necessary Roughness
 feeds:
+  Trailers:
+    apple_trailers: 480p
+    accept_all: yes
+    download: /home/harleypig/Dropbox/Video
   ShowRSS:
     rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
     preset: TVShows
-  EZTV:
-    rss: http://ezrss.it/feed/
-    preset: TVShows
+#  EZTV:
+#    rss: http://ezrss.it/feed/
+#    preset: TVShows
   BTJunkie:
     rss: http://btjunkie.org/rss.xml?c=4
     preset: TVShows
@@ -80,4 +73,4 @@ feeds:
 #    preset: TVShows
 #  RlsLog:
 #    rlslog: http://www.rlslog.net/category/tv-shows/
-#    preset: TVShows
+#    presett: TVShows

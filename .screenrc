@@ -1,10 +1,23 @@
+altscreen on
 autodetach on
 defscrollback 30000
 defutf8 on
-startup_message off
 msgwait 2
+startup_message off
 vbell_msg "Bell in %t"
 zombie xr onerror
+
+# http://stackoverflow.com/questions/1630013/vim-colorschemes-in-screen-putty
+
+# name screen title after currently running command
+# need to add \[\033k\033\\\] to prompt
+shelltitle "$ |bash"
+
+# 256 colors
+#attrcolor b ".I"
+#defbce "on"
+#termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+term screen-256color
 
 # Allow scrollback
 termcapinfo xterm ti@:te@
@@ -46,6 +59,6 @@ bind  P select 39
 
 chdir
 
-screen -l -t 'irssi'     0 /bin/bash -c "irssi"
-screen -l -t 'rtorrent'  0 /bin/bash -c "rtorrent"
+#screen -l -t 'irssi'     0 /bin/bash -c "irssi"
+#screen -l -t 'rtorrent'  0 /bin/bash -c "rtorrent"
 screen -l -t 'bash'

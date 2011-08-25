@@ -2,7 +2,7 @@
 
 # .bashrc is called when shelling from vim or creating a new screen instance.
 
-export PATH=~/bin:~/.vim/bin/:~/projects/applications/apache2/bin:$PATH:/var/lib/gems/1.8/bin
+export PATH=~/bin:~/.vim/bin/:~/projects/applications/apache2/bin:$PATH
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
 export HISTFILESIZE=1000
@@ -42,7 +42,5 @@ then
   [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
 
 fi
-
-[[ -s ~/.rvm/scripts/rvm ]]               && source ~/.rvm/scripts/rvm # This loads RVM into a shell session.
 
 #echo '  ... ended .bashrc.' >> ~/bash_startup.log
