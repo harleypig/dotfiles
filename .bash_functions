@@ -4,7 +4,7 @@
 # commandlinefu.com
 
 # Change to directory and list it
-function cdl() { cd $; l; }
+function cdl() { cd $1; l; }
 
 # Make directory and cd to it
 function mkcd() { mkdir -p -- "$@" && cd "$_"; }
