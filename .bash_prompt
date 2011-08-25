@@ -124,32 +124,42 @@ erase_screen="\[\033[2J\]"
 
 #TODO:
 #exitstatus="$(let exitstatus=\$? ; if [[ \${exitstatus} != 0 ]]; then echo '${text_red}Exit Status: \${exitstatus}]' ; fi)"
-#uptime='Up $(echo \"scale=2;$(cat /proc/uptime | cut -d \' \' -f 1) / (60 * 60 * 24)\" | bc) days'
-#loadavg='cat /proc/loadavg'
-#du='du -hs $PWD'
-#fortune="\$(fortune -as)"
 
-# Spaces (anything else?) in the name are causing problems with this.
+# TODO: Spaces (anything else?) in the directory name are causing problems with this.
 cwd="\$(if [ -w \${PWD} ]; then echo '${text_green}'; else echo '${text_red}'; fi)\${PWD}${text_reset}"
+
 datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
-freespace="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"
-restore="${text_reset}${cursor_restore}"
-dropbox="Dropbox: \$($(which dropbox) status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
-gitbranch="\$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ ( \1 )/')"
+freespace="| \$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"
+loadavg="| LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"
+uptime="Uptime: \$(perl -ne 's/\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days"
+
+DROPBOX=$(which dropbox 2> /dev/null)
+
+if [[ -x ${DROPBOX} ]]
+then
+
+  dropbox="| Dropbox: \$($(which dropbox) status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
+
+fi
+
+GIT=$(which git 2> /dev/null)
+
+if [[ -x ${GIT} ]]
+then
+
+  gitbranch="\$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ ( \1 )/')"
+
+fi
 
 [[ ! -z ${MYVIMRC} ]] && vim="${text_red} (VIm)${text_reset}"
 
-#top="${cursor_save}${cursor_setbegin}0;0${cursor_setend}${text_cyan}"
-top="${text_blue}"
-
+# Start building the prompt
 PS1="\$(history -a)${erase_eol}"
-PS1="${PS1}\n${vim} ${text_blue}${datetime}${erase_eol}"
-#PS1="${PS1}\n \${uptime}${erase_eol}"
-PS1="${PS1}\n \u@\H: ${cwd}${gitbranch}${erase_eol}"
-PS1="${PS1}\n ${freespace} ${dropbox}${erase_eol}"
+PS1="${PS1}\n${vim} ${text_cyan}${datetime}${erase_eol}"
+PS1="${PS1}\n ${uptime} ${loadavg} ${freespace} ${dropbox}${erase_eol}"
+PS1="${PS1}\n${erase_eol}"
 #PS1="${PS1}\n ${exitstatus}${erase_eol}"
-#PS1="${PS1}\n ${fortune}${erase_eol}"
-#PS1="${PS1}\n ${erase_eol}${restore}${erase_eol}$ "
+PS1="${PS1}\n \u@${text_yellow}\H${text_cyan}: ${cwd}${gitbranch}${erase_eol}"
 PS1="${PS1}\n $ ${erase_eol}"
 
 # http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript

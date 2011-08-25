@@ -36,7 +36,6 @@ then
   if [ ${hostname} != 'ut1-facelift' ]
   then
 
-    echo 'not facelift!'
     perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
     completion="complete -C ${perldoc} -o nospace -o default perldoc"
     [[ -f ${perldoc} ]] && ${completion}
