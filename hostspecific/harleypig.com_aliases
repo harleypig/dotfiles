@@ -21,6 +21,7 @@ then
   # echo -e "\ekHostname\e\" will change the screen title for that tab to the hostname
 
   TEMPLATE='echo -e "\\ekNEWTITLE\\e\\" && TERMssh HOST && echo -e "\\ekOLDTITLE\\e\\"'
+  OLDTITLE=$(hostname)
 
   for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
   do
@@ -39,7 +40,7 @@ then
     ALIAS=${TEMPLATE/NEWTITLE/$i}
     ALIAS=${ALIAS/TERM/$NEWTERM}
     ALIAS=${ALIAS/HOST/$i}
-    ALIAS=${ALIAS/OLDTITLE/bash}
+    ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
 
     alias $i="${ALIAS}"
   done
