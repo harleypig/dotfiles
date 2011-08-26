@@ -6,28 +6,33 @@
 # others are my own fault.
 
 # Git
-alias ga='git add'
-alias gall='git add .'
-alias gba='git branch -a -v'
-alias gb='git branch'
-alias gca='git commit -a -v'
-alias gc='git commit -v'
-alias gco='git checkout'
-alias gcount='git shortlog -sn'
-alias gcp='git cherry-pick'
-alias gd='git diff | vim -R -'
-alias gdv='git diff -w "$@" | vim -R -'
-alias gexport='git archive --format zip --output'
-alias git_remove_missing_files="git status | awk '/deleted:(.*)/ {print $3}' | xargs git rm"
-alias gl='git pull'
-alias glall='git pull --all'
-alias gmv='git mv'
-alias gp='git push'
-alias gpo='git push origin'
-alias gpall='git push all --all'
-alias grm='git rm'
-alias gs='git status -s'
-alias gwtf='git-wtf'
+if [[ $(which git) ]]
+then
+
+  alias ga='git add'
+  alias gall='git add .'
+  alias gba='git branch -a -v'
+  alias gb='git branch'
+  alias gca='git commit -a -v'
+  alias gc='git commit -v'
+  alias gco='git checkout'
+  alias gcount='git shortlog -sn'
+  alias gcp='git cherry-pick'
+  alias gd='git diff | vim -R -'
+  alias gdv='git diff -w "$@" | vim -R -'
+  alias gexport='git archive --format zip --output'
+  alias git_remove_missing_files="git status | awk '/deleted:(.*)/ {print $3}' | xargs git rm"
+  alias gl='git pull'
+  alias glall='git pull --all'
+  alias gmv='git mv'
+  alias gp='git push'
+  alias gpo='git push origin'
+  alias gpall='git push all --all'
+  alias grm='git rm'
+  alias gs='git status -s'
+  alias gwtf='git-wtf'
+
+fi
 
 # System
 alias c='clear'
