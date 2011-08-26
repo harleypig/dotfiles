@@ -5,43 +5,6 @@
 
 # others are my own fault.
 
-# If ssh config file exists create shortcuts for the hosts defined there
-
-if [ -e ~/.ssh/config ]
-then
-
-  # XXX: Make a function that checks if a master connection is made and, if
-  # not, create one and background it so as to avoid accidental disconnections
-  # (which would disconnect *all* current connections).
-  #
-  # Background connection:
-  #   http://rc.fas.harvard.edu/tipsntricks/sshcontrolmaster
-  #   ssh -Y -C -o ServerAliveInterval=30 -fN ody
-  #
-  # Detecting existing ControlMaster session:
-  #   http://serverfault.com/questions/211213/how-to-tell-if-an-ssh-controlmaster-connection-is-in-use
-  #   ssh -o ControlPath=$socket -O check
-  #   Other goodness there.
-
-  # I'm always in screen on my systems.
-  # Should still check if we are in screen.  How?
-  # echo -e "\ekHostname\e\" will change the screen title for that tab to the hostname
-
-  pre_title='echo -e "\\ek'
-  post_title='\\e\\" && ssh'
-  reset='&& echo -e "\\ekbash\\e\\"'
-  screen='-t screen -RDl'
-
-  for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
-  do
-    alias $i="${pre_title}$i${post_title} $i ${reset}"
-  done
-
-  # Override basic settings for these servers
-  alias harleypig="${pre_title}harleypig.com${post_title} harleypig -X ${screen} ${reset}"
-
-fi
-
 # Git
 alias ga='git add'
 alias gall='git add .'
