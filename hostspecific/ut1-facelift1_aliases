@@ -24,3 +24,5 @@ A=
 B=
 
 alias v='vutil'
+
+unalias cpanm
