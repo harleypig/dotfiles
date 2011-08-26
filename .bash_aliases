@@ -27,7 +27,7 @@ then
   alias gmv='git mv'
   alias gp='git push'
   alias gpo='git push origin'
-  alias gpall='git push all --all'
+  alias gpall='git push --all'
   alias grm='git rm'
   alias gs='git status -s'
   alias gwtf='git-wtf'
