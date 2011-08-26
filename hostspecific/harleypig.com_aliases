@@ -1,3 +1,85 @@
+# If ssh config file exists create shortcuts for the hosts defined there
+
+if [ -e ~/.ssh/config ]
+then
+
+  # XXX: Make a function that checks if a master connection is made and, if
+  # not, create one and background it so as to avoid accidental disconnections
+  # (which would disconnect *all* current connections).
+  #
+  # Background connection:
+  #   http://rc.fas.harvard.edu/tipsntricks/sshcontrolmaster
+  #   ssh -Y -C -o ServerAliveInterval=30 -fN ody
+  #
+  # Detecting existing ControlMaster session:
+  #   http://serverfault.com/questions/211213/how-to-tell-if-an-ssh-controlmaster-connection-is-in-use
+  #   ssh -o ControlPath=$socket -O check
+  #   Other goodness there.
+
+  # I'm always in screen on my systems.
+  # Should still check if we are in screen.  How?
+  # echo -e "\ekHostname\e\" will change the screen title for that tab to the hostname
+
+  TEMPLATE='echo -e "\\ekNEWTITLE\\e\\" && TERMssh HOST && echo -e "\\ekOLDTITLE\\e\\"'
+
+  for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
+  do
+
+    if [[ $( echo $i | grep -E 'bacon|disting|facelift|release|verio' ) ]]
+    then
+
+      NEWTERM='TERM=xterm '
+
+    else
+
+      NEWTERM=
+
+    fi
+
+    ALIAS=${TEMPLATE/NEWTITLE/$i}
+    ALIAS=${ALIAS/TERM/$NEWTERM}
+    ALIAS=${ALIAS/HOST/$i}
+    ALIAS=${ALIAS/OLDTITLE/bash}
+
+    alias $i="${ALIAS}"
+  done
+
+  # Override basic settings for these servers
+  HARLEYPIG=${TEMPLATE/NEWTITLE/harleypig.com}
+  HARLEYPIG=${HARLEYPIG/TERM/}
+  HARLEYPIG=${HARLEYPIG/HOST/harleypig -X -t screen -RDl}
+  HARLEYPIG=${HARLEYPIG/OLDTITLE/bash}
+  alias harleypig="${HARLEYPIG}"
+
+fi
+
+# Console access
+TEMPLATE='TERM=xterm ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:CONSOLE@198.65.168.9'
+
+FL[1]='1-6-20'
+FL[2]='1-6-17'
+FL[4]='1-4-20'
+FL[6]='1-6-19'
+FL[7]='1-6-22'
+FL[9]='1-6-16'
+
+for i in 1 2 4 6 7 9
+do
+
+  ALIAS=${TEMPLATE/CONSOLE/${FL[$i]}}
+  alias "console_fl$i"="${ALIAS}"
+
+done
+
+UNKNOWN='echo Do not know console info for facelift3'
+
+for i in 3 5 8
+do
+
+  alias "console_fl$i"="echo Do not know console info for facelift$i"
+
+done
+
 # Apache
 alias acconfigtest="sudo $(which apachectl) configtest"
 alias acrestart="sudo $(which apachectl) stop ; sleep 3 ; sudo $(which apachectl) start"
@@ -7,17 +89,6 @@ alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harle
 
 # FBcmd
 alias fb='fbcmd'
-
-# Console access
-alias console_fl1='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-20@198.65.168.9'
-alias console_fl2='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-17@198.65.168.9'
-alias console_fl3='echo Do not know console info for facelift3'
-alias console_fl4='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-4-20@198.65.168.9'
-alias console_fl5='echo Do not know console info for facelift5'
-alias console_fl6='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-19@198.65.168.9'
-alias console_fl7='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-22@198.65.168.9'
-alias console_fl8='echo Do not know console info for facelift8'
-alias console_fl9='ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:1-6-16@198.65.168.9'
 
 # Kludges
 alias fixssh='exec ssh-agent bash'
