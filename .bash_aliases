@@ -1,3 +1,5 @@
+#echo 'Started .bash_aliases ...' >> ~/bash_startup.log
+
 # Some of these aliases are:
 
 # from the bash-it project on github: where's the damn url?
@@ -51,6 +53,8 @@ alias sl=ls
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 alias cpanm="/usr/local/bin/cpanm -S"
 
-HOSTSPECIFIC="$(dirname $(readlink ~/.bash_aliases))/hostspecific/$(hostname)_aliases"
+HOSTSPECIFIC="$(dirname $(readlink ~/.bash_aliases))/hostspecific/$(hostname)"
+SOURCE=$(ls ${HOSTSPECIFIC}/*aliases* 2> /dev/null)
+for s in ${SOURCE}; do source $s; done
 
-[[ -f ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
+#echo '  ... ended .bash_aliases.' >> ~/bash_startup.log

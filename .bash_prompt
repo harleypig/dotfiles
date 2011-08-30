@@ -1,3 +1,5 @@
+#echo 'Started .bash_prompt ...' >> ~/bash_startup.log
+
 # Found at http://wiki.archlinux.org/index.php/Color_Bash_Prompt
 # Also see http://www.termsys.demon.co.uk/vtansi.htm
 
@@ -7,6 +9,8 @@
 #   http://blog.woobling.org/2010/10/ritalin-for-your-ps1.html
 #   http://git.kernel.org/?p=git/git.git;a=blob;f=contrib/completion/git-completion.bash;hb=HEAD
 #   https://github.com/lvv/git-prompt
+
+# Peruse /usr/share/doc/xterm/*
 
 # Regular
 
@@ -73,6 +77,9 @@ erase_down="\[\033[J\]" # Erase from cursor to bottom of screen
 erase_up="\[\033[1J\]"  # Erase from cursor to top of screen
 erase_screen="\[\033[2J\]"
 
+# Yes, this is needed occasionaly!
+blink="\[\033[5m"
+
 # Bash allows these prompt strings to be customized by inserting a
 # number of backslash-escaped special characters that are
 # decoded as follows:
@@ -124,21 +131,23 @@ erase_screen="\[\033[2J\]"
 
 #TODO:
 #exitstatus="$(let exitstatus=\$? ; if [[ \${exitstatus} != 0 ]]; then echo '${text_red}Exit Status: \${exitstatus}]' ; fi)"
+#exitstatus="\$(let exitstatus=\$? ; if [[ \${exitstatus} != 0 ]]; then echo '${text_red}:(${text_reset}'; else echo -ne '${text_green}:)${text_reset}'; fi)"
+# Probably need to use the PROMPT_COMMAND for this
 
-# TODO: Spaces (anything else?) in the directory name are causing problems with this.
-cwd="\$(if [ -w \${PWD} ]; then echo '${text_green}'; else echo '${text_red}'; fi)\${PWD}${text_reset}"
+#_update_prompt() {
+#
+#  local exitstatus="$?"
 
-datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
-freespace="| \$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"
-loadavg="| LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"
-uptime="Uptime: \$(perl -ne 's/\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days"
+  
+function _dir_red_or_green() { if [ -w "${PWD}" ]; then echo -ne ${text_green}; else echo -ne ${text_red}; fi; }
+cwd="\$(_dir_red_or_green)\${PWD}${text_reset}"
 
 DROPBOX=$(which dropbox 2> /dev/null)
 
 if [[ -x ${DROPBOX} ]]
 then
 
-  dropbox="| Dropbox: \$($(which dropbox) status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
+  dropbox="Dropbox: \$($(which dropbox) status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
 
 fi
 
@@ -151,15 +160,59 @@ then
 
 fi
 
-[[ ! -z ${MYVIMRC} ]] && vim="${text_red} (VIm)${text_reset}"
+function _current_song() {
 
-# Start building the prompt
-PS1="\$(history -a)${erase_eol}"
-PS1="${PS1}\n${vim} ${text_cyan}${datetime}${erase_eol}"
-PS1="${PS1}\n ${uptime} ${loadavg} ${freespace} ${dropbox}${erase_eol}"
-PS1="${PS1}\n${erase_eol}"
+  if [[ -f ~/Documents/Grooveshark/currentSong.txt ]]
+  then
+
+    SONG=$(grep playing ~/Documents/Grooveshark/currentSong.txt | cut -d '	' -f 1,2,3)
+
+    if [[ -n ${SONG} ]]
+    then
+
+      echo -ne "${SONG}\\n "
+
+    fi
+  fi
+}
+
+[[ ! -z ${MYVIMRC} ]] && vim="${text_red}${blink}(VIm)${text_reset} "
+
+datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
+
+# Info line
+info[0]="Uptime: \$(perl -ne 's/\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days" # uptime
+info[1]="LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"                                # loadavg
+info[2]="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"            # freespace
+
+[[ -n ${dropbox} ]] && info[3]=${dropbox}
+
+SAVE_IFS="$IFS"
+IFS="|"
+INFOLINE="${info[*]}"
+IFS="$SAVE_IFS"
+INFOLINE="${INFOLINE//|/ | }"
+
+PROMPT[0]="${vim}${text_cyan}${datetime}"
+PROMPT[1]="${INFOLINE}"
+PROMPT[2]="\$(_current_song)"
 #PS1="${PS1}\n ${exitstatus}${erase_eol}"
-PS1="${PS1}\n \u@${text_yellow}\H${text_cyan}: ${cwd}${gitbranch}${erase_eol}"
-PS1="${PS1}\n $ ${erase_eol}"
 
-# http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript
+HOSTSPECIFIC="$(dirname $(readlink ~/.bash_prompt))/hostspecific/$(hostname)"
+SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
+for s in ${SOURCE}; do source $s; done
+
+# Build the prompt
+PS1="${erase_line}\$(history -a)"
+
+for p in "${PROMPT[@]}"
+do
+
+  PS1="${PS1}\n${erase_line} ${text_cyan}${p}${text_reset}"
+
+done
+
+PS1="${PS1}\n${erase_line} ${text_cyan}\u@${text_yellow}\H${text_cyan}: ${cwd}${text_reset}${gitbranch}"
+PS1="${PS1}\n${erase_line}${exitstatus} $ "
+
+#echo '  ... ended .bash_prompt.' >> ~/bash_startup.log

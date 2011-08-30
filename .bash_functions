@@ -1,3 +1,5 @@
+#echo 'Started .bash_functions ...' >> ~/bash_startup.log
+
 # Some of these are found on (and modified to fit):
 #
 # superuser.com
@@ -54,6 +56,11 @@ function wiki() { dig +short txt $1.wp.gd.cx; }
 # Go to current git repo toplevel directory.
 function gtl() { cd $(git rev-parse --show-toplevel); }
 
-HOSTSPECIFIC="$(dirname $(readlink ~/.bash_functions))/hostspecific/$(hostname)_functions"
+# http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript/1687710#1687710
+function set_screen_title { echo -ne "\ek$1\e\\"; }
 
-[[ -f ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
+HOSTSPECIFIC="$(dirname $(readlink ~/.bash_functions))/hostspecific/$(hostname)"
+SOURCE=$(ls ${HOSTSPECIFC}/*functions* 2> /dev/null)
+for s in ${SOURCE}; do source $s; done
+
+#echo '  ... ended .bash_functions.' >> ~/bash_startup.log

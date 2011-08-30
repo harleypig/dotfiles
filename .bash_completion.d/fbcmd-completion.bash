@@ -1,1 +1,0 @@
-/home/harleypig/projects/applications/fbcmd/fbcmd-completion.bash

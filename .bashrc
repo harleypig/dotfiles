@@ -14,15 +14,14 @@ export LC_ALL=en_US.UTF-8
 hostname=$(hostname)
 hostname=${hostname%[0-9]*}
 
+HOSTSPECIFIC="$(dirname $(readlink ~/.bashrc))/hostspecific/$(hostname)"
+
 if [[ $- = *i* ]]
 then
 
   shopt -s checkhash
   shopt -s checkwinsize
   shopt -s cmdhist
-
-  [[ ${hostname} != 'ut1-facelift' ]] && shopt -s dirspell
-
   shopt -s dotglob
   shopt -s histappend
   shopt -s histreedit
@@ -30,24 +29,28 @@ then
   shopt -s nocaseglob
 
   [[ -x /usr/bin/lesspipe ]]                && eval "$(SHELL=/bin/sh lesspipe)"
-  [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
-  [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
 
-  if [ ${hostname} != 'ut1-facelift' ]
+  CDARGS=$(which cdargs 2> /dev/null)
+
+  if [[ -f ${CDARGS} ]]
   then
 
-    perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
-    completion="complete -C ${perldoc} -o nospace -o default perldoc"
-    [[ -f ${perldoc} ]] && ${completion}
+    CDARGS_COMPLETION="$(dirname $(readlink ~/.bashrc))"
+    source ${CDARGS_COMPLETION}/cdargs_completion
 
   fi
 
-  [[ -f /usr/share/cdargs/cdargs-bash.sh ]] && source /usr/share/cdargs/cdargs-bash.sh
   [[ -f ~/.ssh-agent ]]                     && source ~/.ssh-agent
   [[ -f ~/.bash_aliases ]]                  && source ~/.bash_aliases
   [[ -f ~/.bash_functions ]]                && source ~/.bash_functions
   [[ -f ~/.bash_prompt ]]                   && source ~/.bash_prompt
+
+  [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
+  [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
   [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
+
+  SOURCE=$(ls ${HOSTSPECIFIC}/*bashrc* 2> /dev/null)
+  for s in ${SOURCE}; do source $s; done
 
 fi
 

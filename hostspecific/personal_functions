@@ -1,5 +1,9 @@
+#echo "Started personal_functions ..." >> ~/bash_startup.log
+
 # These aren't functions, but they are seeding the bm/to function so I don't have to change directory and bookmark every time I login.
 
 export projects=/home/harleypig/projects
 export dotfiles=/home/harleypig/projects/dotfiles
 export dotvim=/home/harleypig/projects/dot_vim
+
+#echo "  ... ended personal_functions." >> ~/bash_startup.log

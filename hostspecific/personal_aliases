@@ -1,3 +1,5 @@
+#echo "Started personal_aliases ..." >> ~/bash_startup.log
+
 # If ssh config file exists create shortcuts for the hosts defined there
 
 if [ -e ~/.ssh/config ]
@@ -99,3 +101,5 @@ alias mechsh='perl -MWWW::Mechanize::Shell -eshell'
 
 # VimWiki
 alias vimwiki='vim +VimwikiIndex'
+
+#echo "... ended personal_aliases." >> ~/bash_startup.log

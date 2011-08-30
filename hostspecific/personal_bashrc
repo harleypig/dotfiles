@@ -1,0 +1,14 @@
+#echo "Started .personal_bashrc ..." >> ~/bash_startup.log
+
+shopt -s dirspell
+
+if [ ${hostname} != 'ut1-facelift' ]
+then
+
+  perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
+  completion="complete -C ${perldoc} -o nospace -o default perldoc"
+  [[ -f ${perldoc} ]] && ${completion}
+
+fi
+
+#echo "  ... ended .personal_bashrc." >> ~/bash_startup.log
