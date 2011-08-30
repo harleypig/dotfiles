@@ -3,6 +3,17 @@
 
 HOSTSPECIFIC="$(dirname $(readlink ~/.bash_profile))/hostspecific/$(hostname)_profile"
 
-[[ -f ${HOSTSPECIFIC} ]] && source ${HOSTSPECIFIC}
+CAN256=$(find /lib/terminfo /usr/share/terminfo -name 'xterm-256color')
+
+if [ "${CAN256}x" != "x" ]
+then
+
+  export TERM='xterm-256color'
+
+else
+
+  export TERM='xterm-color'
+
+fi
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
