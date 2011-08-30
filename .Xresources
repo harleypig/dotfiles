@@ -1,0 +1,6 @@
+*metaSendsEscape: true
+*customization: -color
+
+XTerm*termName:  xterm-256color
+XTerm*foreground: white
+Xterm*background: black
