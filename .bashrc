@@ -2,6 +2,17 @@
 
 # .bashrc is called when shelling from vim or creating a new screen instance.
 
+function __basedir() {
+
+  d=$(readlink ~/.bash_profile)
+
+  if [ -n "$d" ]; then d=$(dirname "${d}"); else d="${HOME}"; fi
+
+  echo "${d}"
+
+}
+
+
 export PATH=~/bin:~/.vim/bin/:$PATH
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
@@ -45,7 +56,7 @@ then
   [[ -f ~/.bash_functions ]]                && source ~/.bash_functions
   [[ -f ~/.bash_prompt ]]                   && source ~/.bash_prompt
 
-  [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
+#  [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
   [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
 
