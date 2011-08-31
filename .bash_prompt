@@ -1,13 +1,12 @@
 #echo 'Started .bash_prompt ...' >> ~/bash_startup.log
 
-# Found at http://wiki.archlinux.org/index.php/Color_Bash_Prompt
-# Also see http://www.termsys.demon.co.uk/vtansi.htm
-
-# Get some ideas from:
+# Ideas ripped off and made to fit from:
+#   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
+#   http://www.termsys.demon.co.uk/vtansi.htm
 #   https://gist.github.com/621452
 #   https://gist.github.com/623142
-#   http://blog.woobling.org/2010/10/ritalin-for-your-ps1.html
-#   http://git.kernel.org/?p=git/git.git;a=blob;f=contrib/completion/git-completion.bash;hb=HEAD
+
+# Get some ideas from:
 #   https://github.com/lvv/git-prompt
 
 # Peruse /usr/share/doc/xterm/*
@@ -129,90 +128,107 @@ blink="\[\033[5m"
 #  the description of the shopt command under SHELL BUILTIN COMMANDS
 #  below).
 
-#TODO:
-#exitstatus="$(let exitstatus=\$? ; if [[ \${exitstatus} != 0 ]]; then echo '${text_red}Exit Status: \${exitstatus}]' ; fi)"
-#exitstatus="\$(let exitstatus=\$? ; if [[ \${exitstatus} != 0 ]]; then echo '${text_red}:(${text_reset}'; else echo -ne '${text_green}:)${text_reset}'; fi)"
-# Probably need to use the PROMPT_COMMAND for this
+_update_prompt() {
 
-#_update_prompt() {
-#
-#  local exitstatus="$?"
+  local exit="$?"
 
-  
-function _dir_red_or_green() { if [ -w "${PWD}" ]; then echo -ne ${text_green}; else echo -ne ${text_red}; fi; }
-cwd="\$(_dir_red_or_green)\${PWD}${text_reset}"
+  case "$exit" in
+    "0" ) exitstatus="${text_green}:)${text_reset}" ;;
+    *   ) exitstatus="${text_red}:(${text_reset}"   ;;
+  esac
 
-DROPBOX=$(which dropbox 2> /dev/null)
+  cwd=
+  if [ -w "${PWD}" ]; then cwd="${text_green}"; else cwd="${text_red}"; fi
+  cwd="${cwd}${PWD}${text_reset}"
 
-if [[ -x ${DROPBOX} ]]
-then
+  DROPBOX=$(which dropbox 2> /dev/null)
+  dropbox=
+  [[ -x ${DROPBOX} ]] && dropbox="Dropbox: $($DROPBOX status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
 
-  dropbox="Dropbox: \$($(which dropbox) status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
+  vim=
+  [[ -n ${MYVIMRC} ]] && vim="${text_red}${blink}(VIm)${text_reset} "
 
-fi
+  datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
 
-GIT=$(which git 2> /dev/null)
+  vcs=
 
-if [[ -x ${GIT} ]]
-then
+  # Most of this git functionality came from
+  # https://gist.github.com/623142
 
-  gitbranch="\$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ ( \1 )/')"
+  GIT=$(which git 2> /dev/null)
 
-fi
+  if [ -x ${GIT} ]; then
 
-function _current_song() {
+    GITDIR=$(__gitdir)
 
-  if [[ -f ~/Documents/Grooveshark/currentSong.txt ]]
-  then
+    if [ -n "${GITDIR}" ]; then
 
-    SONG=$(grep playing ~/Documents/Grooveshark/currentSong.txt | cut -d '	' -f 1,2,3)
+      branch=$(__git_ps1 " (%s)")
 
-    if [[ -n ${SONG} ]]
-    then
+      if [ -n ${branch} ]; then
 
-      echo -ne "${SONG}\\n "
+        git status --porcelain | perl -ne 'exit 1 if /^ /; exit 2 if /^?/'
 
+        case "$?" in
+          "0" ) vcs="${text_green}"  ;;
+          "1" ) vcs="${text_yellow}" ;;
+          "2" ) vcs="${text_red}"    ;;
+        esac
+
+        vcs="${vcs}${branch}${text_reset}"
+
+      fi
     fi
   fi
+
+  current_song=
+
+  if [[ -f ~/Documents/Grooveshark/currentSong.txt ]]; then
+
+    SONG=$(grep playing ~/Documents/Grooveshark/currentSong.txt | cut -d '	' -f 1,2,3 | tr '\t' ':')
+    SONG="${SONG//:/ : }"
+
+    if [[ -n ${SONG} ]]; then current_song="${SONG}"; fi
+
+  fi
+
+  # Info line
+  declare -a INFO
+
+  INFO[${#INFO[*]}]="Uptime: \$(perl -ne 's/\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days" # uptime
+  INFO[${#INFO[*]}]="LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"                                # loadavg
+  INFO[${#INFO[*]}]="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"            # freespace
+
+  [[ -n ${dropbox} ]] && INFO[${#INFO[*]}]=${dropbox}
+
+  SAVE_IFS="$IFS"
+  IFS="|"
+  infoline="${INFO[*]}"
+  IFS="$SAVE_IFS"
+  infoline="${infoline//|/ | }"
+
+  # Build the prompt
+  declare -a PROMPT
+
+  PROMPT[${#PROMPT[*]}]="${vim}${text_cyan}${datetime}"
+  PROMPT[${#PROMPT[*]}]="${infoline}"
+  [[ -n "${current_song}" ]] && PROMPT[${#PROMPT[*]}]="${current_song}"
+
+  HOSTSPECIFIC="$(dirname $(readlink ~/.bash_prompt))/hostspecific/$(hostname)"
+  SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
+  for s in ${SOURCE}; do source $s; done
+
+  PS1="${erase_line}\$(history -a)"
+
+  for p in "${PROMPT[@]}"; do PS1="${PS1}\n${erase_line} ${text_cyan}${p}${text_reset}"; done
+
+  PS1="${PS1}\n${erase_line}\n${erase_line} ${text_cyan}\u@${text_yellow}\H${text_cyan}: ${cwd}${text_reset}${vcs}"
+  PS1="${PS1}\n${erase_line} ${exitstatus} $ "
+
+  export PS1
+
 }
 
-[[ ! -z ${MYVIMRC} ]] && vim="${text_red}${blink}(VIm)${text_reset} "
-
-datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
-
-# Info line
-info[0]="Uptime: \$(perl -ne 's/\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days" # uptime
-info[1]="LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"                                # loadavg
-info[2]="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"            # freespace
-
-[[ -n ${dropbox} ]] && info[3]=${dropbox}
-
-SAVE_IFS="$IFS"
-IFS="|"
-INFOLINE="${info[*]}"
-IFS="$SAVE_IFS"
-INFOLINE="${INFOLINE//|/ | }"
-
-PROMPT[0]="${vim}${text_cyan}${datetime}"
-PROMPT[1]="${INFOLINE}"
-PROMPT[2]="\$(_current_song)"
-#PS1="${PS1}\n ${exitstatus}${erase_eol}"
-
-HOSTSPECIFIC="$(dirname $(readlink ~/.bash_prompt))/hostspecific/$(hostname)"
-SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
-for s in ${SOURCE}; do source $s; done
-
-# Build the prompt
-PS1="${erase_line}\$(history -a)"
-
-for p in "${PROMPT[@]}"
-do
-
-  PS1="${PS1}\n${erase_line} ${text_cyan}${p}${text_reset}"
-
-done
-
-PS1="${PS1}\n${erase_line} ${text_cyan}\u@${text_yellow}\H${text_cyan}: ${cwd}${text_reset}${gitbranch}"
-PS1="${PS1}\n${erase_line}${exitstatus} $ "
+if [ -n "$PS1" ]; then export PROMPT_COMMAND='_update_prompt'; fi
 
 #echo '  ... ended .bash_prompt.' >> ~/bash_startup.log
