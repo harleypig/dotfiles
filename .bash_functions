@@ -60,7 +60,7 @@ function gtl() { cd $(git rev-parse --show-toplevel); }
 function set_screen_title { echo -ne "\ek$1\e\\"; }
 
 HOSTSPECIFIC="$(dirname $(readlink ~/.bash_functions))/hostspecific/$(hostname)"
-SOURCE=$(ls ${HOSTSPECIFC}/*functions* 2> /dev/null)
+SOURCE=$(ls ${HOSTSPECIFIC}/*functions*)
 for s in ${SOURCE}; do source $s; done
 
 #echo '  ... ended .bash_functions.' >> ~/bash_startup.log
