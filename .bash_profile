@@ -5,7 +5,7 @@ HOSTSPECIFIC="$(dirname $(readlink ~/.bash_profile))/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFC}/*profile* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done
 
-CAN256=$(find /lib/terminfo /usr/share/terminfo -name 'xterm-256color')
+CAN256=$(find /lib/terminfo /usr/share/terminfo -name 'xterm-256color' 2> /dev/null)
 
 if [ "${CAN256}x" != "x" ]
 then
