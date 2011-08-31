@@ -14,7 +14,7 @@ export LC_ALL=en_US.UTF-8
 hostname=$(hostname)
 hostname=${hostname%[0-9]*}
 
-HOSTSPECIFIC="$(dirname $(readlink ~/.bashrc))/hostspecific/$(hostname)"
+HOSTSPECIFIC="$(__basedir ~/.bashrc))/hostspecific/$(hostname)"
 
 if [[ $- = *i* ]]
 then

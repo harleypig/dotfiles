@@ -211,7 +211,7 @@ _update_prompt() {
   PROMPT[${#PROMPT[*]}]="${infoline}"
   [[ -n "${current_song}" ]] && PROMPT[${#PROMPT[*]}]="${current_song}"
 
-  HOSTSPECIFIC="$(dirname $(readlink ~/.bash_prompt))/hostspecific/$(hostname)"
+  HOSTSPECIFIC="$(__basedir ~/.bash_prompt))/hostspecific/$(hostname)"
   SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
   for s in ${SOURCE}; do source $s; done
 
