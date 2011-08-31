@@ -56,7 +56,7 @@ then
   [[ -f ~/.bash_functions ]]                && source ~/.bash_functions
   [[ -f ~/.bash_prompt ]]                   && source ~/.bash_prompt
 
-#  [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
+  [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
   [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
 

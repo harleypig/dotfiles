@@ -53,7 +53,7 @@ alias sl=ls
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 alias cpanm="/usr/local/bin/cpanm -S"
 
-HOSTSPECIFIC="$(__basedir ~/.bash_aliases))/hostspecific/$(hostname)"
+HOSTSPECIFIC="$(__basedir ~/.bash_aliases)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFIC}/*aliases* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done
 

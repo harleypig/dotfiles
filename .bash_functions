@@ -59,7 +59,7 @@ function gtl() { cd $(git rev-parse --show-toplevel); }
 # http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript/1687710#1687710
 function set_screen_title { echo -ne "\ek$1\e\\"; }
 
-HOSTSPECIFIC="$(__basedir ~/.bash_functions))/hostspecific/$(hostname)"
+HOSTSPECIFIC="$(__basedir ~/.bash_functions)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFIC}/*functions* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done
 
