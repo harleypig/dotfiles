@@ -6,3 +6,10 @@ function gca () { gtl ; git commit -a -v "$@" ; cd - > /dev/null ; }
 function gco () { gtl ; git checkout "$@"     ; cd - > /dev/null ; }
 function grm () { gtl ; git rm "$@"           ; cd - > /dev/null ; }
 function gmv () { gtl ; git mv "$@"           ; cd - > /dev/null ; }
+
+# for the bookmark function
+export dotfiles=/root/harleypig/dotfiles
+export dotvim=/root/harleypig/dot_vim
+export home=/root/harleypig
+export util=/root/harleypig/util
+export vutil=/root/harleypig/vutil
