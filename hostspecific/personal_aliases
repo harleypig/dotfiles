@@ -102,4 +102,7 @@ alias mechsh='perl -MWWW::Mechanize::Shell -eshell'
 # VimWiki
 alias vimwiki='vim +VimwikiIndex'
 
+# sudo cpanm
+alias cpanm="/usr/local/bin/cpanm -S"
+
 #echo "... ended personal_aliases." >> ~/bash_startup.log
