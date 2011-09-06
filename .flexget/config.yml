@@ -50,9 +50,9 @@ feeds:
     apple_trailers: 480p
     accept_all: yes
     download: /home/harleypig/Dropbox/Video
-  ShowRSS:
-    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
-    preset: TVShows
+#  ShowRSS:
+#    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
+#    preset: TVShows
 #  EZTV:
 #    rss: http://ezrss.it/feed/
 #    preset: TVShows

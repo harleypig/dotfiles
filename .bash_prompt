@@ -10,57 +10,57 @@
 
 # Regular
 
-text_black="\e[0;30m"
-text_blue="\e[0;34m"
-text_cyan="\e[0;36m"
-text_green="\e[0;32m"
-text_purple="\e[0;35m"
-text_red="\e[0;31m"
-text_white="\e[0;37m"
-text_yellow="\e[0;33m"
+text_black="\[\e[0;30m\]"
+text_blue="\[\e[0;34m\]"
+text_cyan="\[\e[0;36m\]"
+text_green="\[\e[0;32m\]"
+text_purple="\[\e[0;35m\]"
+text_red="\[\e[0;31m\]"
+text_white="\[\e[0;37m\]"
+text_yellow="\[\e[0;33m\]"
 
 # Background
 
-background_black="\e[40m"
-background_blue="\e[44m"
-background_cyan="\e[46m"
-background_green="\e[42m"
-background_purple="\e[45m"
-background_red="\e[41m"
-background_white="\e[47m"
-background_yellow="\e[43m"
+background_black="\[\e[40m\]"
+background_blue="\[\e[44m\]"
+background_cyan="\[\e[46m\]"
+background_green="\[\e[42m\]"
+background_purple="\[\e[45m\]"
+background_red="\[\e[41m\]"
+background_white="\[\e[47m\]"
+background_yellow="\[\e[43m\]"
 
 # Bold
 
-bold_black="\e[1;30m"
-bold_blue="\e[1;34m"
-bold_cyan="\e[1;36m"
-bold_green="\e[1;32m"
-bold_purple="\e[1;35m"
-bold_red="\e[1;31m"
-bold_white="\e[1;37m"
-bold_yellow="\e[1;33m"
+bold_black="\[\e[1;30m\]"
+bold_blue="\[\e[1;34m\]"
+bold_cyan="\[\e[1;36m\]"
+bold_green="\[\e[1;32m\]"
+bold_purple="\[\e[1;35m\]"
+bold_red="\[\e[1;31m\]"
+bold_white="\[\e[1;37m\]"
+bold_yellow="\[\e[1;33m\]"
 
 # Underline
 
-underline_black="\e[4;30m"
-underline_blue="\e[4;34m"
-underline_cyan="\e[4;36m"
-underline_green="\e[4;32m"
-underline_purple="\e[4;35m"
-underline_red="\e[4;31m"
-underline_white="\e[4;37m"
-underline_yellow="\e[4;33m"
+underline_black="\[\e[4;30m\]"
+underline_blue="\[\e[4;34m\]"
+underline_cyan="\[\e[4;36m\]"
+underline_green="\[\e[4;32m\]"
+underline_purple="\[\e[4;35m\]"
+underline_red="\[\e[4;31m\]"
+underline_white="\[\e[4;37m\]"
+underline_yellow="\[\e[4;33m\]"
 
 # Reset
 
-text_reset="\e[0m"
+text_reset="\[\e[0m\]"
 
 # Cursor
 
 # Cursor set \[\033[<row>;<column>]f\]
-cursor_setbegin="\[\033["
-cursor_setend="f\]"
+cursor_setbegin="\[\033[\]"
+cursor_setend="\[f\]"
 
 cursor_save="\[\033[s\]"
 cursor_restore="\[\033[u\]"
@@ -74,7 +74,7 @@ erase_up="\[\033[1J\]"  # Erase from cursor to top of screen
 erase_screen="\[\033[2J\]"
 
 # Yes, this is needed occasionaly!
-blink="\[\033[5m"
+blink="\[\033[5m\]"
 
 # Bash allows these prompt strings to be customized by inserting a
 # number of backslash-escaped special characters that are
@@ -129,28 +129,49 @@ _update_prompt() {
 
   local exit="$?"
 
+#  exec_time="($(perl -MTime::HiRes=time -e 'printf "%.6f", Time::HiRes::time() - $ENV{start_time}')) "
+
   case "$exit" in
-    "0" ) exitstatus="${text_green}:)${text_reset}" ;;
-    *   ) exitstatus="${text_red}:(${text_reset}"   ;;
+    "0" ) exit_status="${text_green}:)${text_reset}" ;;
+    *   ) exit_status="${text_red}:(${text_reset}"   ;;
   esac
 
   cwd=
   if [ -w "${PWD}" ]; then cwd="${text_green}"; else cwd="${text_red}"; fi
-  cwd="${cwd}${PWD}${text_reset}"
+
+  local pwd_max=45
+  local trunc='<'
+  local pwd=$PWD
+
+  if [ ${#pwd} -gt $pwd_max ]; then # truncate on the left
+
+    local pwd_offset=$(( ${#PWD} - $pwd_max ))
+    pwd="${trunc}${pwd:$pwd_offset:$pwd_max}"
+
+  fi
+
+  cwd="${cwd}${pwd}${text_reset}"
 
   DROPBOX=$(which dropbox 2> /dev/null)
   dropbox=
   [[ -x ${DROPBOX} ]] && dropbox="Dropbox: $($DROPBOX status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
 
-  vim=
-  [[ -n ${MYVIMRC} ]] && vim="${text_red}${blink}(VIm)${text_reset} "
+  parent="$(ps -p $PPID -o comm=)"
 
-  datetime="\D{%a %b %d %Y %T %n DoW: %w DoY: %j Wk: %V Epoch: %s}"
+  case "$parent" in
+    "screen" ) parent="" ;;
+    *        ) parent="${text_red}${blink}(${parent})${text_reset} " ;;
+  esac
+
+  datetime="\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
 
   vcs=
 
   # Most of this git functionality came from
   # https://gist.github.com/623142
+
+  # If you want/need multiple repository checking,
+  # have a look at http://glandium.org/blog/?p=170
 
   GIT=$(which git 2> /dev/null)
 
@@ -209,7 +230,7 @@ _update_prompt() {
   # Build the prompt
   declare -a PROMPT
 
-  PROMPT[${#PROMPT[*]}]="${vim}${text_cyan}${datetime}"
+  PROMPT[${#PROMPT[*]}]="${parent}${text_cyan}${datetime}"
   PROMPT[${#PROMPT[*]}]="${infoline}"
   [[ -n "${current_song}" ]] && PROMPT[${#PROMPT[*]}]="${current_song}"
 
@@ -222,11 +243,16 @@ _update_prompt() {
   for p in "${PROMPT[@]}"; do PS1="${PS1}\n${erase_line} ${text_cyan}${p}${text_reset}"; done
 
   PS1="${PS1}\n${erase_line}\n${erase_line} ${text_cyan}\u@${text_yellow}\H${text_cyan}: ${cwd}${text_reset}${vcs}"
-  PS1="${PS1}\n${erase_line} ${exitstatus} $ "
+  PS1="${PS1}\n${erase_line} ${exec_time}${exit_status} $ "
 
   export PS1
+#  trap 'start_timer' DEBUG
 
 }
+
+#function start_timer { export start_time="$(perl -MTime::HiRes=time -e 'printf "%.6f", Time::HiRes::time()')"; echo $start_time; trap DEBUG; }
+
+#trap 'start_timer' DEBUG
 
 if [ -n "$PS1" ]; then export PROMPT_COMMAND='_update_prompt'; fi
 
