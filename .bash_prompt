@@ -160,7 +160,7 @@ _update_prompt() {
 
     if [ -n "${GITDIR}" ]; then
 
-      branch=$(__git_ps1 " (%s)")
+      branch=$(__git_ps1 "%s")
 
       if [ -n ${branch} ]; then
 
@@ -172,7 +172,9 @@ _update_prompt() {
           "2" ) vcs="${text_red}"    ;;
         esac
 
-        vcs="${vcs}${branch}${text_reset}"
+        repo=$(basename $(git rev-parse --show-toplevel))
+
+        vcs=" ${vcs}(${repo}: ${branch})${text_reset}"
 
       fi
     fi
