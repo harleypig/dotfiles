@@ -181,7 +181,7 @@ _update_prompt() {
 
     if [ -n "${GITDIR}" ]; then
 
-      branch=$(__git_ps1 "%s")
+      branch=$(__git_ps1 '%s')
 
       if [ -n ${branch} ]; then
 
