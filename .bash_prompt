@@ -231,7 +231,7 @@ _update_prompt() {
 
       if [ -n "${info}" ]; then
 
-        branch=$(echo    "$info" | perl -ane '$F[0]=~s/[<>]$//;print $F[0]')
+        branch=$(echo    "$info" | perl -ane '$F[0]=~s/[<>=]$//;print $F[0]')
         unstaged=$(echo  "$info" | perl -ane 'print $F[1]=~/\*/')
         staged=$(echo    "$info" | perl -ane 'print $F[1]=~/\+/')
         stashed=$(echo   "$info" | perl -ane 'print $F[1]=~/\$/')
@@ -244,8 +244,8 @@ _update_prompt() {
         if [ -n "$staged" ];   then color="$text_red"; fi
 
         upstream=
-        if [ -n "$behind" ]; then upstream=" !pull!"; fi
-        if [ -n "$ahead" ];  then upstream=" !push!"; fi
+        if [ -n "$behind" ]; then upstream=" ${text_red}!pull!$text_reset"; fi
+        if [ -n "$ahead" ];  then upstream=" ${text_red}!push!$text_reset"; fi
 
         repo=$(basename $(git rev-parse --show-toplevel))
 
