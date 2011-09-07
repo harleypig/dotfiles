@@ -236,8 +236,8 @@ _update_prompt() {
         staged=$(echo    "$info" | perl -ane 'print $F[1]=~/\+/')
         stashed=$(echo   "$info" | perl -ane 'print $F[1]=~/\$/')
         untracked=$(echo "$info" | perl -ane 'print $F[1]=~/\%/')
-        behind=$(echo    "$info" | perl -ane 'print $F[1]=~/\</')
-        ahead=$(echo     "$info" | perl -ane 'print $F[1]=~/\>/')
+        behind=$(echo    "$info" | perl -ane 'print $F[1]=~/\</ || $F[0]=~/\<$/')
+        ahead=$(echo     "$info" | perl -ane 'print $F[1]=~/\>/ || $F[0]=~/\>$/')
 
         color="${text_green}"
         if [ -n "$unstaged" ]; then color="$text_yellow"; fi
