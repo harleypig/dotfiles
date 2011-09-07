@@ -22,11 +22,6 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-hostname=$(hostname)
-hostname=${hostname%[0-9]*}
-
-HOSTSPECIFIC="$(__basedir ~/.bashrc))/hostspecific/$(hostname)"
-
 if [[ $- = *i* ]]
 then
 
@@ -60,6 +55,7 @@ then
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
   [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
 
+  HOSTSPECIFIC="$(__basedir ~/.bashrc))/hostspecific/$(hostname)"
   SOURCE=$(ls ${HOSTSPECIFIC}/*bashrc* 2> /dev/null)
   for s in ${SOURCE}; do source $s; done
 
