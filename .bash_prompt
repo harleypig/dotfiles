@@ -229,11 +229,9 @@ _update_prompt() {
 
       info=$(__git_ps1 '%s')
 
-      echo info: $info
-
       if [ -n "${info}" ]; then
 
-        branch=$(echo    "$info" | perl -ane 'print $F[0]')
+        branch=$(echo    "$info" | perl -ane '$F[0]=~s/[<>]$//;print $F[0]')
         unstaged=$(echo  "$info" | perl -ane 'print $F[1]=~/\*/')
         staged=$(echo    "$info" | perl -ane 'print $F[1]=~/\+/')
         stashed=$(echo   "$info" | perl -ane 'print $F[1]=~/\$/')
