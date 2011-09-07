@@ -26,6 +26,7 @@ then
   alias git_remove_missing_files="git status | awk '/deleted:(.*)/ {print $3}' | xargs git rm"
   alias glall='git pull --all'
   alias gl='git pull'
+  alias glg='git lg'
   alias gmv='git mv'
   alias gpall='git push --all'
   alias gp='git push'
