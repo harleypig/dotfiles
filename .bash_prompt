@@ -297,16 +297,11 @@ _update_prompt() {
   for p in "${PROMPT[@]}"; do PS1="${PS1}\n${erase_line} ${text_cyan}${p}${text_reset}"; done
 
   PS1="${PS1}\n${erase_line}\n${erase_line} ${text_cyan}\u@${text_yellow}\H${text_cyan}: ${cwd}${text_reset}${vcs}"
-  PS1="${PS1}\n${erase_line} ${exec_time}${exit_status} $ "
+  PS1="${PS1}\n${erase_line} ${exit_status} $ "
 
   export PS1
-#  trap 'start_timer' DEBUG
 
 }
-
-#function start_timer { export start_time="$(perl -MTime::HiRes=time -e 'printf "%.6f", Time::HiRes::time()')"; echo $start_time; trap DEBUG; }
-
-#trap 'start_timer' DEBUG
 
 if [ -n "$PS1" ]; then export PROMPT_COMMAND='_update_prompt'; fi
 
