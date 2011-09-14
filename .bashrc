@@ -54,6 +54,7 @@ then
   [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
   [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
+  [[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
 
   HOSTSPECIFIC="$(__basedir ~/.bashrc))/hostspecific/$(hostname)"
   SOURCE=$(ls ${HOSTSPECIFIC}/*bashrc* 2> /dev/null)
