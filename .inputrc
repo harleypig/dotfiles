@@ -1,0 +1,14 @@
+# http://www.reddit.com/r/commandline/comments/kbeoe/you_can_make_readline_and_bash_much_more_user/
+
+$include /etc/inputrc
+
+set input-meta on
+set output-meta on
+set completion-ignore-case on
+set completion-prefix-display-length 2
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+set completion-map-case on
+set mark-directories on
+set mark-symlinnked-directories on
+set visible-stats on

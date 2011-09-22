@@ -5,6 +5,7 @@ sub afterinit {
     'use Data::Dumper',
     '$Data::Dumper::Deparse = 1',
     '$Data::Dumper::Sortkeys = 1',
+    'o windowSize=35',
     '{l',
 
   ;

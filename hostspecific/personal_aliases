@@ -28,7 +28,7 @@ then
   for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
   do
 
-    if [[ $( echo $i | grep -E 'bacon|disting|facelift|release|verio' ) ]]
+    if [[ $( echo $i | grep -E 'bacon|disting|facelift|release|verio|fm2' ) ]]
     then
 
       NEWTERM='TERM=xterm '

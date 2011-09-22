@@ -39,6 +39,7 @@ fi
 
 # System
 alias c='clear'
+alias ~='cd ~'
 alias -- -="cd -"
 alias ..='cd ..'
 alias ...='cd ../..'
@@ -46,13 +47,16 @@ alias ....='cd ../../..'
 alias diffdir='diff -qr'
 alias g='grep'
 alias h='history'
-alias l='ls -lhA --color=auto'
+alias l='ls -lhA --color=auto --group-directories-first'
 alias md='mkdir -p'
 alias rd=rmdir
 alias realias='source ~/.bash_aliases'
 alias refunction='source ~/.bash_functions'
 alias sl=ls
 alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
+
+# https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
+alias pmver="perl -le '\$m = shift; eval qq(require \$m) or die qq(module \"\$m\" is not installed\\n); print \$m->VERSION || \"No Version Available\"'"
 
 HOSTSPECIFIC="$(__basedir ~/.bash_aliases)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFIC}/*aliases* 2> /dev/null)
