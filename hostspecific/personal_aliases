@@ -105,4 +105,6 @@ alias vimwiki='vim +VimwikiIndex'
 # sudo cpanm
 alias cpanm="/usr/local/bin/cpanm -S"
 
+alias l='ls -lhA --color=auto --group-directories-first'
+
 #echo "... ended personal_aliases." >> ~/bash_startup.log
