@@ -62,6 +62,7 @@ TEMPLATE='TERM=xterm ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:CONSOLE@198.65.1
 FL[1]='1-6-20'
 FL[2]='1-6-17'
 FL[4]='1-4-20'
+#FL[5]='1-6-19'
 FL[6]='1-6-19'
 FL[7]='1-6-22'
 FL[9]='1-6-16'

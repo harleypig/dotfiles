@@ -2,3 +2,4 @@ db-config.sqlite
 flexget.log*
 received
 temp
+.config-lock
