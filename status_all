@@ -67,20 +67,27 @@ function git_status {
     behind=$(echo    "$info" | perl -ane 'print $F[1]=~/\</ || $F[0]=~/\<$/')
     ahead=$(echo     "$info" | perl -ane 'print $F[1]=~/\>/ || $F[0]=~/\>$/')
 
-    if [ -n "$unstaged" ]; then msg="${msg} unstaged"; fi
-    if [ -n "$staged" ]; then msg="${msg} staged"; fi
-    if [ -n "$behind" ]; then msg="${msg} pull"; fi
-    if [ -n "$ahead" ]; then msg="${msg} push"; fi
+    UNSTAGED='       -'
+    if [ -n "$unstaged" ]; then UNSTAGED='unstaged'; fi
 
-    repo=$(basename $(git rev-parse --show-toplevel))
+    STAGED='     -'
+    if [ -n "$staged" ]; then STAGED='staged'; fi
 
-    echo " ${repo}: ${branch} ${msg} ${PWD}"
+    BEHIND='   -'
+    if [ -n "$behind" ]; then BEHIND='pull'; fi
+
+    AHEAD='   -'
+    if [ -n "$ahead" ]; then AHEAD='Push'; fi
+
+    REPO=$(basename $(git rev-parse --show-toplevel))
+
+    printf ' %20s ( %10s ): %8s %6s %4s %4s %s\n' ${REPO} ${branch} ${UNSTAGED} ${STAGED} ${BEHIND} ${AHEAD} ${PWD}
 
   fi
 }
 
 ROOTDIR=$PWD
-GITDIRS=( $(find -type d -name '.git' -exec dirname {} \;) )
+GITDIRS=( $(find -type d -name '.git' -exec dirname {} \; | sort) )
 
 for d in "${GITDIRS[@]}"
 do
