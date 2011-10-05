@@ -1,4 +1,9 @@
-unalias ga gc gca gco grm gmv
+#unalias ga gc gca gco grm gmv
+for a in ga gc gca gco grm gmv; do
+
+  [[ -n $(type $a | grep aliased) ]] && unalias $a
+
+done
 
 function ga  () { gtl ; git add "$@"          ; cd - > /dev/null ; }
 function gc  () { gtl ; git commit -v "$@"    ; cd - > /dev/null ; }

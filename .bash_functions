@@ -59,6 +59,34 @@ function gtl() { cd $(git rev-parse --show-toplevel); }
 # http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript/1687710#1687710
 function set_screen_title { echo -ne "\ek$1\e\\"; }
 
+# my own (bad?) idea
+function git_remove_submodule {
+
+  for SUBMODULE in $*; do
+
+    if [ ! -d "${SUBMODULE}" ]; then
+
+      echo "${SUBMODULE} does not exist"
+      continue
+
+    fi
+
+    echo "Removing ${SUBMODULE}"
+
+    for CONFIG in .git/config .gitmodules; do
+
+      git config -f ${CONFIG} --remove-section submodule.${SUBMODULE}
+
+    done
+
+    git rm --cached ${SUBMODULE}
+
+    echo "The ${SUBMODULE} directory has *NOT* been removed!\n"
+
+  done
+
+}
+
 # https://github.com/ndbroadbent/ubuntu_config/blob/master/assets/bashrc/functions.sh
 
 # This doesn't appear to work
