@@ -2,6 +2,7 @@ presets:
   TVShows:
     download: /home/harleypig/torrents/torrent
     series:
+      - A Gifted Man
       - Alphas
       - Bones
       - Castle
@@ -21,6 +22,7 @@ presets:
       - Futurama
       - "Harry's Law"
       - In Plain Sight
+      - Jeff Dunham
       - Law and Order
       - "Law and Order: Criminal Intent"
       - "Law and Order: Special Victims Unit"
@@ -39,23 +41,24 @@ presets:
       - "Rizzoli & Isles"
       - Robot Chicken
       - South Park
+      - Suburgatory
       - Supernatural
+      - Terra Nova
       - The Closer
       - The Simpsons
       - The Walking Dead
-      - Undercover Boss
       - Warehouse 13
 feeds:
   Trailers:
-    apple_trailers: 480p
+    apple_trailers: 720p
     accept_all: yes
     download: /home/harleypig/Dropbox/Video
 #  ShowRSS:
 #    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
 #    preset: TVShows
-#  EZTV:
-#    rss: http://ezrss.it/feed/
-#    preset: TVShows
+  EZTV:
+    rss: http://ezrss.it/feed/
+    preset: TVShows
   BTJunkie:
     rss: http://btjunkie.org/rss.xml?c=4
     preset: TVShows
