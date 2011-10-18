@@ -54,6 +54,7 @@ then
   [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
   [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
+  [[ -f $rvm_path/scripts/completion ]]     && source $rvm_path/scripts/completion
 
   [[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
   [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
