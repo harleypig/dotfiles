@@ -15,7 +15,7 @@ function mkcd() { mkdir -p -- "$@" && cd "$_"; }
 function geoip() {
 
   wget -qO - www.ip2location.com/$1 | \
-  grep "<span id=\"dgLookup__ctl2_lblICountry\">" | \
+  grep -E '<span id=\"dgLookup__ctl2_lblI(Country|Region|City)\">' | \
   sed 's/<[^>]*>//g; s/^[\t]*//; s/&quot;/"/g; s/</</g; s/>/>/g; s/&amp;/\&/g'
 
 }

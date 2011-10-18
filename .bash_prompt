@@ -159,7 +159,7 @@ _update_prompt() {
   parent="$(ps -p $PPID -o comm=)"
 
   case "$parent" in
-    'screen' | 'sshd' )
+    'screen' | 'sshd' | 'xterm' )
         parent="" ;;
     * ) parent="${text_red}${blink}(${parent})${text_reset} " ;;
   esac
