@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# Build an ansi code sequence string for use in a prompt.
+# Expects one or more strings indicating what attributes and colors to use.
+# It's up to the caller to make sure the right order and valid keys are used.
+
+# http://wiki.bash-hackers.org/scripting/terminalcodes
+
+function _build_color_code() {
+
+  declare -A value
+
+  value[off]=0       ; value[bold]=1    ; value[underline]=4 ; value[blink]=5      ; value[reverse]=7  ; value[hide]=8
+  value[black_fg]=30 ; value[red_fg]=31 ; value[green_fg]=32 ; value[yellow_fg]=33 ; value[blue_fg]=34 ; value[magenta_fg]=35 ; value[cyan_fg]=36 ; value[white_fg]=37
+  value[black_bg]=40 ; value[red_bg]=41 ; value[green_bg]=42 ; value[yellow_bg]=43 ; value[blue_bg]=44 ; value[magenta_bg]=45 ; value[cyan_bg]=46 ; value[white_bg]=47
+
+  declare -a codes
+
+  while [ "${1+defined}" ]; do
+
+    if [ -n ${value[$1]} ]; then
+
+      codes[${#codes[*]}]="${value[$1]}"
+
+    fi
+
+    shift
+
+  done
+
+  SAVE_IFS=$IFS
+  IFS=';'
+  code="${codes[*]}"
+  IFS=$SAVE_IFS
+
+  return $code
+
+}
+
+c=_build_color_code 'bold' 'green_fg' 'yellow_bg'
+
+echo $c

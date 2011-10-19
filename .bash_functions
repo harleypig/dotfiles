@@ -147,6 +147,21 @@ function git_remove_submodule {
 #  unset IFS
 #}
 
+# http://vimeo.com/21538711 about 16:30
+# function toggle_trace () {
+#   
+#   if TRACEON eq 1; then
+#     export PS4=
+#     export TRACEON=
+#     set +o xtrace
+#   else
+#     export PS4='+[${BASH_SOURCE}] : ${LINENO} : ${FUNCNAME[0]:+${FUNCNAME[0]}() $ }'
+#     export TRACEON=1
+#     set -o xtrace
+#   fi
+#
+# }
+
 # What is axel?
 # http://axel.alioth.debian.org/ ?
 # https://github.com/emiraga/axel ?
