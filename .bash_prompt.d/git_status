@@ -89,7 +89,7 @@ function __git_status() {
 
         repo=$(basename $(git rev-parse --show-toplevel))
 
-        printf ' %s(%s: %s%s)%s' $status_color $repo $branch $upstream $text_reset
+        printf ' %s(%s: %s%s)%s' $status_color $repo $branch "$upstream" $text_reset
 
       fi
     fi
