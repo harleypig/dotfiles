@@ -1,0 +1,24 @@
+
+dir_readable_color=$(__ansi_code green_fg)
+dir_unreadable_color=$(__ansi_code red_fg)
+
+function __dir_readable() {
+
+  local pwd_max=45 # How long before we truncate?
+  local trunc='<'  # Mark truncated name with this.
+
+  local readable
+  if [ -w "${PWD}" ]; then readable="$dir_readable_color"; else readable="$dir_unreadable_color"; fi
+
+  local pwd=$PWD
+
+  if [ ${#pwd} -gt $pwd_max ]; then # truncate on the left
+
+    local pwd_offset=$(( ${#PWD} - $pwd_max ))
+    pwd="${trunc}${pwd:$pwd_offset:$pwd_max}"
+
+  fi
+
+  echo "$readable$pwd$text_reset"
+
+}

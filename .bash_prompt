@@ -6,124 +6,9 @@
 #   https://gist.github.com/621452
 #   https://gist.github.com/623142
 
-# Peruse /usr/share/doc/xterm/*
-
-# Regular
-
-text_black="\[\e[0;30m\]"
-text_blue="\[\e[0;34m\]"
-text_cyan="\[\e[0;36m\]"
-text_green="\[\e[0;32m\]"
-text_purple="\[\e[0;35m\]"
-text_red="\[\e[0;31m\]"
-text_white="\[\e[0;37m\]"
-text_yellow="\[\e[0;33m\]"
-
-# Background
-
-background_black="\[\e[40m\]"
-background_blue="\[\e[44m\]"
-background_cyan="\[\e[46m\]"
-background_green="\[\e[42m\]"
-background_purple="\[\e[45m\]"
-background_red="\[\e[41m\]"
-background_white="\[\e[47m\]"
-background_yellow="\[\e[43m\]"
-
-# Bold
-
-bold_black="\[\e[1;30m\]"
-bold_blue="\[\e[1;34m\]"
-bold_cyan="\[\e[1;36m\]"
-bold_green="\[\e[1;32m\]"
-bold_purple="\[\e[1;35m\]"
-bold_red="\[\e[1;31m\]"
-bold_white="\[\e[1;37m\]"
-bold_yellow="\[\e[1;33m\]"
-
-# Underline
-
-underline_black="\[\e[4;30m\]"
-underline_blue="\[\e[4;34m\]"
-underline_cyan="\[\e[4;36m\]"
-underline_green="\[\e[4;32m\]"
-underline_purple="\[\e[4;35m\]"
-underline_red="\[\e[4;31m\]"
-underline_white="\[\e[4;37m\]"
-underline_yellow="\[\e[4;33m\]"
-
-# Reset
-
-text_reset="\[\e[0m\]"
-
-# Cursor
-
-# Cursor set \[\033[<row>;<column>]f\]
-cursor_setbegin="\[\033[\]"
-cursor_setend="\[f\]"
-
-cursor_save="\[\033[s\]"
-cursor_restore="\[\033[u\]"
-
-# Erase Text
-erase_eol="\[\033[K\]"
-erase_sol="\[\033[1K\]"
-erase_line="\[\033[2K\]"
-erase_down="\[\033[J\]" # Erase from cursor to bottom of screen
-erase_up="\[\033[1J\]"  # Erase from cursor to top of screen
-erase_screen="\[\033[2J\]"
-
-# Yes, this is needed occasionaly!
-blink="\[\033[5m\]"
-
-# Bash allows these prompt strings to be customized by inserting a
-# number of backslash-escaped special characters that are
-# decoded as follows:
-#
-#  \a         an ASCII bell character (07)
-#  \d         the date in "Weekday Month Date" format (e.g., "Tue May 26")
-#  \D{format} the format is passed to strftime(3) and the result
-#             is inserted into the prompt string an empty format
-#             results in a locale-specific time representation.
-#             The braces are required
-#  \e         an ASCII escape character (033)
-#  \h         the hostname up to the first `.'
-#  \H         the hostname
-#  \j         the number of jobs currently managed by the shell
-#  \l         the basename of the shell's terminal device name
-#  \n         newline
-#  \r         carriage return
-#  \s         the name of the shell, the basename of $0 (the portion following
-#             the final slash)
-#  \t         the current time in 24-hour HH:MM:SS format
-#  \T         the current time in 12-hour HH:MM:SS format
-#  \@         the current time in 12-hour am/pm format
-#  \A         the current time in 24-hour HH:MM format
-#  \u         the username of the current user
-#  \v         the version of bash (e.g., 2.00)
-#  \V         the release of bash, version + patch level (e.g., 2.00.0)
-#  \w         the current working directory, with $HOME abbreviated with a tilde
-#  \W         the basename of the current working directory, with $HOME
-#             abbreviated with a tilde
-#  \!         the history number of this command
-#  \#         the command number of this command
-#  \$         if the effective UID is 0, a #, otherwise a $
-#  \nnn       the character corresponding to the octal number nnn
-#  \\         a backslash
-#  \[         begin a sequence of non-printing characters, which could be used
-#             to embed a terminal control sequence into the prompt
-#  \]         end a sequence of non-printing characters
-#
-#  The command number and the history number are usually different:
-#  the history number of a command is its position in the history
-#  list, which may include commands restored from the history file
-#  (see HISTORY below), while the command number is the position in
-#  the sequence of commands executed during the current shell session.
-#  After the string is decoded, it is expanded via parameter
-#  expansion, command substitution, arithmetic expansion, and quote
-#  removal, subject to the value of the promptvars shell option (see
-#  the description of the shopt command under SHELL BUILTIN COMMANDS
-#  below).
+PROMPT_FUNCTIONS="$(__basedir ~/.bash_prompt)/.bash_prompt.d"
+FUNCS=$(ls ${PROMPT_FUNCTIONS}/* 2> /dev/null)
+for f in ${FUNCS}; do source $f; done
 
 _update_prompt() {
 
@@ -131,155 +16,26 @@ _update_prompt() {
 
 #  exec_time="($(perl -MTime::HiRes=time -e 'printf "%.6f", Time::HiRes::time() - $ENV{start_time}')) "
 
-  case "$exit" in
-    "0" ) exit_status="${text_green}:)${text_reset}" ;;
-    *   ) exit_status="${text_red}:(${text_reset}"   ;;
-  esac
-
-  cwd=
-  if [ -w "${PWD}" ]; then cwd="${text_green}"; else cwd="${text_red}"; fi
-
-  local pwd_max=45
-  local trunc='<'
-  local pwd=$PWD
-
-  if [ ${#pwd} -gt $pwd_max ]; then # truncate on the left
-
-    local pwd_offset=$(( ${#PWD} - $pwd_max ))
-    pwd="${trunc}${pwd:$pwd_offset:$pwd_max}"
-
-  fi
-
-  cwd="${cwd}${pwd}${text_reset}"
-
-  DROPBOX=$(which dropbox 2> /dev/null)
-  dropbox=
-  [[ -x ${DROPBOX} ]] && dropbox="Dropbox: $($DROPBOX status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
-
-  parent="$(ps -p $PPID -o comm=)"
-
-  case "$parent" in
-    'screen' | 'sshd' | 'xterm' )
-        parent="" ;;
-    * ) parent="${text_red}${blink}(${parent})${text_reset} " ;;
-  esac
-
+  current_song=$(__grooveshark_status)
+  cwd=$(__dir_readable)
   datetime="\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
-
-  vcs=
-
-  # Most of this git functionality came from
-  # https://gist.github.com/623142
-
-  # If you want/need multiple repository checking,
-  # have a look at http://glandium.org/blog/?p=170
-
-  GIT=$(which git 2> /dev/null)
-
-  if [ -x ${GIT} ]; then
-
-    GITDIR=$(__gitdir)
-
-    if [ -n "${GITDIR}" ]; then
-
-# from /etc/bash_completion.d/git
-#
-#    3) Consider changing your PS1 to also show the current branch:
-#        PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
-#
-#       The argument to __git_ps1 will be displayed only if you
-#       are currently in a git repository.  The %s token will be
-#       the name of the current branch.
-#
-#       In addition, if you set GIT_PS1_SHOWDIRTYSTATE to a nonempty
-#       value, unstaged (*) and staged (+) changes will be shown next
-#       to the branch name.  You can configure this per-repository
-#       with the bash.showDirtyState variable, which defaults to true
-#       once GIT_PS1_SHOWDIRTYSTATE is enabled.
-#
-#       You can also see if currently something is stashed, by setting
-#       GIT_PS1_SHOWSTASHSTATE to a nonempty value. If something is stashed,
-#       then a '$' will be shown next to the branch name.
-#
-#       If you would like to see if there're untracked files, then you can
-#       set GIT_PS1_SHOWUNTRACKEDFILES to a nonempty value. If there're
-#       untracked files, then a '%' will be shown next to the branch name.
-#
-#       If you would like to see the difference between HEAD and its
-#       upstream, set GIT_PS1_SHOWUPSTREAM="auto".  A "<" indicates
-#       you are behind, ">" indicates you are ahead, and "<>"
-#       indicates you have diverged.  You can further control
-#       behaviour by setting GIT_PS1_SHOWUPSTREAM to a space-separated
-#       list of values:
-#           verbose       show number of commits ahead/behind (+/-) upstream
-#           legacy        don't use the '--count' option available in recent
-#                         versions of git-rev-list
-#           git           always compare HEAD to @{upstream}
-#           svn           always compare HEAD to your SVN upstream
-#       By default, __git_ps1 will compare HEAD to your SVN upstream
-#       if it can find one, or @{upstream} otherwise.  Once you have
-#       set GIT_PS1_SHOWUPSTREAM, you can override it on a
-#       per-repository basis by setting the bash.showUpstream config
-#       variable.
-
-      GIT_PS1_SHOWDIRTYSTATE=1
-      GIT_PS1_SHOWSTASHSTATE=1
-      GIT_PS1_SHOWUNTRACKEDFILES=1
-      GIT_PS1_SHOWUPSTREAM="auto"
-
-      info=$(__git_ps1 '%s')
-
-      if [ -n "${info}" ]; then
-
-        branch=$(echo    "$info" | perl -ane '$F[0]=~s/[<>=]$//;print $F[0]')
-        unstaged=$(echo  "$info" | perl -ane 'print $F[1]=~/\*/')
-        staged=$(echo    "$info" | perl -ane 'print $F[1]=~/\+/')
-        stashed=$(echo   "$info" | perl -ane 'print $F[1]=~/\$/')
-        untracked=$(echo "$info" | perl -ane 'print $F[1]=~/\%/')
-        behind=$(echo    "$info" | perl -ane 'print $F[1]=~/\</ || $F[0]=~/\<$/')
-        ahead=$(echo     "$info" | perl -ane 'print $F[1]=~/\>/ || $F[0]=~/\>$/')
-
-        color="${text_green}"
-        if [ -n "$unstaged" ]; then color="$text_yellow"; fi
-        if [ -n "$staged" ];   then color="$text_red"; fi
-
-        upstream=
-        if [ -n "$behind" ]; then upstream=" ${text_red}!pull!$text_reset"; fi
-        if [ -n "$ahead" ];  then upstream=" ${text_red}!push!$text_reset"; fi
-
-        repo=$(basename $(git rev-parse --show-toplevel))
-
-        vcs=" ${color}(${repo}: ${branch}${upstream})${text_reset}"
-
-      fi
-    fi
-  fi
-
-  current_song=
-
-  if [[ -f ~/Documents/Grooveshark/currentSong.txt ]]; then
-
-    SONG=$(grep playing ~/Documents/Grooveshark/currentSong.txt | cut -d '	' -f 1,2,3 | tr '\t' ':')
-    SONG="${SONG//:/ : }"
-
-    if [[ -n ${SONG} ]]; then current_song="${SONG}"; fi
-
-  fi
+  dropbox=$(__dropbox_status)
+  exit_status=$(__exit_status $exit)
+  parent=$(__parent_process)
+  vcs=$(__git_status)
 
   # Info line
-  declare -a INFO
+  declare -a __JOIN
 
-  INFO[${#INFO[*]}]="Uptime: \$(perl -ne 's/\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days" # uptime
-  INFO[${#INFO[*]}]="LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"                                # loadavg
-  INFO[${#INFO[*]}]="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"            # freespace
+  __JOIN[${#__JOIN[*]}]="Uptime: \$(perl -ne 's/\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days" # uptime
+  __JOIN[${#__JOIN[*]}]="LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"                                # loadavg
+  __JOIN[${#__JOIN[*]}]="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"            # freespace
 
-  [[ -n ${dropbox} ]] && INFO[${#INFO[*]}]=${dropbox}
+  [[ -n ${dropbox} ]] && __JOIN[${#__JOIN[*]}]=${dropbox}
 
-  SAVE_IFS="$IFS"
-  IFS="|"
-  infoline="${INFO[*]}"
-  IFS="$SAVE_IFS"
-  infoline="${infoline//|/ | }"
+  separator='#'
+  infoline=$(__join $separator)
+  infoline="${infoline//$separator/ $separator }"
 
   # Build the prompt
   declare -a PROMPT
@@ -292,12 +48,12 @@ _update_prompt() {
   SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
   for s in ${SOURCE}; do source $s; done
 
-  PS1="${erase_line}\$(history -a)"
+  PS1="\$(history -a)"
 
-  for p in "${PROMPT[@]}"; do PS1="${PS1}\n${erase_line} ${text_cyan}${p}${text_reset}"; done
+  for p in "${PROMPT[@]}"; do PS1="${PS1}\n ${text_cyan}${p}${text_reset}"; done
 
-  PS1="${PS1}\n${erase_line}\n${erase_line} ${text_cyan}\u@${text_yellow}\H${text_cyan}: ${cwd}${text_reset}${vcs}"
-  PS1="${PS1}\n${erase_line} ${exit_status} $ "
+  PS1="${PS1}\n\n ${text_cyan}\u@${text_yellow}\H${text_cyan}: ${cwd}${text_reset}${vcs}"
+  PS1="${PS1}\n ${exit_status} $ "
 
   export PS1
 

@@ -1,0 +1,101 @@
+# Peruse /usr/share/doc/xterm/*
+
+# http://wiki.bash-hackers.org/scripting/terminalcodes
+
+# Bash allows these prompt strings to be customized by inserting a
+# number of backslash-escaped special characters that are
+# decoded as follows:
+#
+#  \a         an ASCII bell character (07)
+#  \d         the date in "Weekday Month Date" format (e.g., "Tue May 26")
+#  \D{format} the format is passed to strftime(3) and the result
+#             is inserted into the prompt string an empty format
+#             results in a locale-specific time representation.
+#             The braces are required
+#  \e         an ASCII escape character (033)
+#  \h         the hostname up to the first `.'
+#  \H         the hostname
+#  \j         the number of jobs currently managed by the shell
+#  \l         the basename of the shell's terminal device name
+#  \n         newline
+#  \r         carriage return
+#  \s         the name of the shell, the basename of $0 (the portion following
+#             the final slash)
+#  \t         the current time in 24-hour HH:MM:SS format
+#  \T         the current time in 12-hour HH:MM:SS format
+#  \@         the current time in 12-hour am/pm format
+#  \A         the current time in 24-hour HH:MM format
+#  \u         the username of the current user
+#  \v         the version of bash (e.g., 2.00)
+#  \V         the release of bash, version + patch level (e.g., 2.00.0)
+#  \w         the current working directory, with $HOME abbreviated with a tilde
+#  \W         the basename of the current working directory, with $HOME
+#             abbreviated with a tilde
+#  \!         the history number of this command
+#  \#         the command number of this command
+#  \$         if the effective UID is 0, a #, otherwise a $
+#  \nnn       the character corresponding to the octal number nnn
+#  \\         a backslash
+#  \[         begin a sequence of non-printing characters, which could be used
+#             to embed a terminal control sequence into the prompt
+#  \]         end a sequence of non-printing characters
+#
+#  The command number and the history number are usually different:
+#  the history number of a command is its position in the history
+#  list, which may include commands restored from the history file
+#  (see HISTORY below), while the command number is the position in
+#  the sequence of commands executed during the current shell session.
+#  After the string is decoded, it is expanded via parameter
+#  expansion, command substitution, arithmetic expansion, and quote
+#  removal, subject to the value of the promptvars shell option (see
+#  the description of the shopt command under SHELL BUILTIN COMMANDS
+#  below).
+
+# Build an ansi code sequence string for use in a prompt.
+# Expects one or more strings indicating what attributes and colors to use.
+# It's up to the caller to make sure the right order and valid keys are used.
+
+declare -A ansi_code
+
+ansi_code[off]=0       ; ansi_code[bold]=1       ; ansi_code[underline]=4 ; ansi_code[blink]=5
+ansi_code[reverse]=7   ; ansi_code[hide]=8       ; ansi_code[black_fg]=30 ; ansi_code[red_fg]=31
+ansi_code[green_fg]=32 ; ansi_code[yellow_fg]=33 ; ansi_code[blue_fg]=34  ; ansi_code[magenta_fg]=35
+ansi_code[cyan_fg]=36  ; ansi_code[white_fg]=37  ; ansi_code[black_bg]=40 ; ansi_code[red_bg]=41
+ansi_code[green_bg]=42 ; ansi_code[yellow_bg]=43 ; ansi_code[blue_bg]=44  ; ansi_code[magenta_bg]=45
+ansi_code[cyan_bg]=46  ; ansi_code[white_bg]=47
+
+function __ansi_code() {
+
+  declare -a codes
+
+  while [ "${1+defined}" ]; do
+
+    if [ -n ${ansi_code[$1]} ]; then
+
+      codes[${#codes[*]}]="${ansi_code[$1]}"
+
+    fi
+
+    shift
+
+  done
+
+  local code
+
+  SAVE_IFS=$IFS
+  IFS=';'
+  code="${codes[*]}"
+  IFS=$SAVE_IFS
+
+  printf '\[\e[%sm\]' $code
+
+}
+
+# Create some commonly used codes
+text_reset=$(__ansi_code off)
+
+text_blink=$(__ansi_code blink)
+text_green=$(__ansi_code green_fg)
+text_red=$(__ansi_code red_fg)
+text_yellow=$(__ansi_code yellow_fg)
+text_cyan=$(__ansi_code cyan_fg)

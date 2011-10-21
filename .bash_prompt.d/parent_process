@@ -1,0 +1,11 @@
+
+function __parent_process() {
+
+  parent="$(ps -p $PPID -o comm=)"
+
+  case "$parent" in
+    'screen' | 'sshd' | 'xterm' ) ;;
+    * ) echo "${text_red}${text_blink}(${parent})${text_reset} " ;;
+  esac
+
+}

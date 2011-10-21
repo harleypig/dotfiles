@@ -59,6 +59,19 @@ function gtl() { cd $(git rev-parse --show-toplevel); }
 # http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript/1687710#1687710
 function set_screen_title { echo -ne "\ek$1\e\\"; }
 
+# join an array. join must be a single character
+# Set the array you want to join in the __JOIN variable.
+
+function __join() {
+
+  SAVE_IFS="$IFS"
+  IFS="$*"
+  local joined="${__JOIN[*]}"
+  IFS="$SAVE_IFS"
+  echo "$joined"
+
+}
+
 # my own (bad?) idea
 function git_remove_submodule {
 
@@ -182,6 +195,10 @@ function git_remove_submodule {
 #    echo "Usage: grooveshark_dl <url> <title (w/o .mp3)>"
 #  fi
 #}
+
+BIGFUNCTIONS="$(__basedir ~/.bash_functions)/.bash_functions.d"
+SOURCE=$(ls ${BIGFUNCTIONS}/* 2> /dev/null)
+for s in ${SOURCE}; do source $s; done
 
 HOSTSPECIFIC="$(__basedir ~/.bash_functions)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFIC}/*functions* 2> /dev/null)

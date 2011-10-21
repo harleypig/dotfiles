@@ -58,6 +58,9 @@ alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 # https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
 alias pmver="perl -le '\$m = shift; eval qq(require \$m) or die qq(module \"\$m\" is not installed\\n); print \$m->VERSION || \"No Version Available\"'"
 
+# http://www.commandlinefu.com/commands/view/5423/view-all-date-formats-quick-reference-help-alias
+alias dateh='date --help|sed "/^ *%a/,/^ *%Z/!d;y/_/!/;s/^ *%\([:a-z]\+\) \+/\1_/gI;s/%/#/g;s/^\([a-y]\|[z:]\+\)_/%%\1_%\1_/I"|while read L;do date "+${L}"|sed y/!#/%%/;done|column -ts_'
+
 HOSTSPECIFIC="$(__basedir ~/.bash_aliases)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFIC}/*aliases* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done
