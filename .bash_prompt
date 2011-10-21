@@ -10,7 +10,9 @@ PROMPT_FUNCTIONS="$(__basedir ~/.bash_prompt)/.bash_prompt.d"
 FUNCS=$(ls ${PROMPT_FUNCTIONS}/* 2> /dev/null)
 for f in ${FUNCS}; do source $f; done
 
-_update_prompt() {
+prompt_color=$(__ansi_code cyan_fg)
+
+__update_prompt() {
 
   local exit="$?"
 
@@ -33,14 +35,14 @@ _update_prompt() {
 
   [[ -n ${dropbox} ]] && __JOIN[${#__JOIN[*]}]=${dropbox}
 
-  separator='#'
+  separator='|'
   infoline=$(__join $separator)
   infoline="${infoline//$separator/ $separator }"
 
   # Build the prompt
   declare -a PROMPT
 
-  PROMPT[${#PROMPT[*]}]="${parent}${text_cyan}${datetime}"
+  PROMPT[${#PROMPT[*]}]="${parent}${prompt_color}${datetime}"
   PROMPT[${#PROMPT[*]}]="${infoline}"
   [[ -n "${current_song}" ]] && PROMPT[${#PROMPT[*]}]="${current_song}"
 
@@ -50,15 +52,15 @@ _update_prompt() {
 
   PS1="\$(history -a)"
 
-  for p in "${PROMPT[@]}"; do PS1="${PS1}\n ${text_cyan}${p}${text_reset}"; done
+  for p in "${PROMPT[@]}"; do PS1="${PS1}\n ${prompt_color}${p}${text_reset}"; done
 
-  PS1="${PS1}\n\n ${text_cyan}\u@${text_yellow}\H${text_cyan}: ${cwd}${text_reset}${vcs}"
+  PS1="${PS1}\n\n ${prompt_color}\u@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
   PS1="${PS1}\n ${exit_status} $ "
 
   export PS1
 
 }
 
-if [ -n "$PS1" ]; then export PROMPT_COMMAND='_update_prompt'; fi
+if [ -n "$PS1" ]; then export PROMPT_COMMAND='__update_prompt'; fi
 
 #echo '  ... ended .bash_prompt.' >> ~/bash_startup.log
