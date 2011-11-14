@@ -55,7 +55,7 @@
 # Expects one or more strings indicating what attributes and colors to use.
 # It's up to the caller to make sure the right order and valid keys are used.
 
-declare -A ansi_code
+# declare -A ansi_code
 
 ansi_code[off]=0       ; ansi_code[bold]=1       ; ansi_code[underline]=4 ; ansi_code[blink]=5
 ansi_code[reverse]=7   ; ansi_code[hide]=8       ; ansi_code[black_fg]=30 ; ansi_code[red_fg]=31
