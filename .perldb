@@ -1,12 +1,18 @@
 
+$DB::deep = 1000; # increase recursion limit
+
 sub afterinit {
+
+  push @$DB::pretype, 'v'
+    unless grep { /^v$/ } @$DB::pretype;
+
+#  push @$DB::pretype, 'l'
+#    unless grep { /^l$/ } @$DB::pretype;
 
   push @DB::typeahead,
     'use Data::Dumper',
     '$Data::Dumper::Deparse = 1',
     '$Data::Dumper::Sortkeys = 1',
     'o windowSize=35',
-    '{l',
-
   ;
 }

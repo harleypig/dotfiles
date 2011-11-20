@@ -7,11 +7,14 @@ use FindBin qw( $Bin );
 
 # Create symlinks in $HOME for specified dotfiles.
 
-die "HOME environment variable not set, quitting."
+die "HOME environment variable not set, quitting.\n"
   unless exists $ENV{ 'HOME' };
 
-die "$ENV{ 'HOME' } does not exist as a directory, quitting."
+die "$ENV{ 'HOME' } does not exist as a directory, quitting.\n"
   unless -d $ENV{ 'HOME' };
+
+die "$ENV{ 'HOME' } is not writable, quitting.\n"
+  unless -w _;
 
 my $system = shift;
 
@@ -37,7 +40,7 @@ my @dotfiles = do {
 
   }
 
-  @d;
+  grep { ! /.git/ } @d;
 
 };
 
@@ -46,10 +49,10 @@ for my $dotfile ( @dotfiles ) {
   my $source = "$Bin/$dotfile";
   my $link   = "$ENV{ 'HOME' }/$dotfile";
 
-  warn "$dotfile does not exist in $Bin, skipping"
+  warn "$dotfile does not exist in $Bin, skipping\n"
     unless -e $source;
 
-  warn "$link already exists, skipping"
+  warn "$link already exists, skipping\n"
     if -e $link;
 
   symlink $source, $link
