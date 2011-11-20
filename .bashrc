@@ -34,7 +34,7 @@ then
   shopt -s histverify
   shopt -s nocaseglob
 
-  [[ -x /usr/bin/lesspipe ]]                && eval "$(SHELL=/bin/sh lesspipe)"
+  [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
 
   CDARGS=$(which cdargs 2> /dev/null)
 
@@ -62,6 +62,8 @@ then
   HOSTSPECIFIC="$(__basedir ~/.bashrc))/hostspecific/$(hostname)"
   SOURCE=$(ls ${HOSTSPECIFIC}/*bashrc* 2> /dev/null)
   for s in ${SOURCE}; do source $s; done
+
+  command cowsay $(fortune -s)
 
 fi
 

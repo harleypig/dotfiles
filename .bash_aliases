@@ -44,6 +44,7 @@ alias -- -="cd -"
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
+alias df='df -h'
 alias h='history'
 alias l='ls -lhA --color=auto'
 alias md='mkdir -p'
