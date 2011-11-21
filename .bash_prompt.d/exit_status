@@ -2,8 +2,8 @@
 # Change these to whatever you want to be displayed for good and bad exit
 # statuses.
 
-good_exit=':)'
-bad_exit=':('
+good_exit_text=':)'
+bad_exit_text=':('
 
 good_exit_color=$(__ansi_code blue_bg yellow_fg)
 bad_exit_color=$(__ansi_code red_bg white_fg)
@@ -12,12 +12,9 @@ function __exit_status() {
 
   # Wrap the exit symbols in appropriate ansi codes.
 
-  good_exit="$good_exit_color$good_exit$text_reset"
-  bad_exit="$bad_exit_color$bad_exit$text_reset"
-
   case "$1" in
-    "0" ) echo "$good_exit" ;;
-    *   ) echo "$bad_exit"  ;;
+    "0" ) echo "$good_exit_color$good_exit_text$text_reset" ;;
+    *   ) echo "$bad_exit_color$bad_exit_text$text_reset" ;;
   esac
 
 }
