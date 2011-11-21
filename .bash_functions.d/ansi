@@ -60,7 +60,9 @@
 if ! declare -A ansi_code > /dev/null 2>&1; then
 
   function __ansi_code() {
-    #do nothing
+
+    echo do nothing > /dev/null
+
   }
 
 else
