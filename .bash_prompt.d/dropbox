@@ -4,8 +4,8 @@ dropbox_bin=$(command -v dropbox)
 
 function __dropbox_status() {
 
-#  [[ -x ${dropbox_bin} ]] && echo "${dropbox_prefix}$($dropbox_bin status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
-  [[ -x ${dropbox_bin} ]] && echo -n "${dropbox_prefix}$($dropbox_bin status)"
+  [[ -x ${dropbox_bin} ]] && echo "${dropbox_prefix}$($dropbox_bin status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
+#  [[ -x ${dropbox_bin} ]] && echo -n "${dropbox_prefix}$($dropbox_bin status)"
 
 }
 
