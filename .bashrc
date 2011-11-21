@@ -41,7 +41,8 @@ then
   if [[ -f ${CDARGS} ]]
   then
 
-    CDARGS_COMPLETION="$(dirname $(readlink ~/.bashrc))"
+    #CDARGS_COMPLETION="$(dirname $(readlink ~/.bashrc))"
+    CDARGS_COMPLETION="$(__basedir ~/.bashrc)"
     source ${CDARGS_COMPLETION}/cdargs_completion
 
   fi
@@ -59,13 +60,12 @@ then
   [[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
   [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
 
-  HOSTSPECIFIC="$(__basedir ~/.bashrc))/hostspecific/$(hostname)"
+  HOSTSPECIFIC="$(__basedir ~/.bashrc)/hostspecific/$(hostname)"
   SOURCE=$(ls ${HOSTSPECIFIC}/*bashrc* 2> /dev/null)
   for s in ${SOURCE}; do source $s; done
 
-  command cowsay $(fortune -s)
+  if [[ -n $(command -v cowsay) ]]; then command cowsay $(fortune -s); fi
 
 fi
 
 #echo '  ... ended .bashrc.' >> ~/bash_startup.log
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
