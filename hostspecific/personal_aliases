@@ -22,7 +22,8 @@ then
   # Should still check if we are in screen.  How?
   # echo -e "\ekHostname\e\" will change the screen title for that tab to the hostname
 
-  TEMPLATE='echo -e "\\ekNEWTITLE\\e\\" && TERMssh HOST && echo -e "\\ekOLDTITLE\\e\\"'
+  #TEMPLATE='echo -e "\\ekNEWTITLE\\e\\" && TERMssh HOST && echo -e "\\ekOLDTITLE\\e\\"'
+  TEMPLATE='set_screen_title NEWTITLE ; TERMssh HOST ; set_screen_title OLDTITLE'
   OLDTITLE=$(hostname)
 
   for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
