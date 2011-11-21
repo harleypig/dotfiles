@@ -55,73 +55,83 @@
 # Expects one or more strings indicating what attributes and colors to use.
 # It's up to the caller to make sure the right order and valid keys are used.
 
-declare -A ansi_code
+#declare -A ansi_code
 
-ansi_code[bold]=$(tput bold)
-ansi_code[dim]=$(tput dim)
-ansi_code[off]=$(tput sgr0)
-ansi_code[underline_on]=$(tput smul)
-ansi_code[underline_off]=$(tput rmul)
-ansi_code[reverse]=$(tput rev)
-ansi_code[stdout_on]=$(tput smso)
-ansi_code[stdout_off]=$(tput rmso)
+if ! declare -A ansi_code > /dev/null 2>&1; then
 
-# 0 = black
-# 1 = red
-# 2 = green
-# 3 = yellow
-# 4 = blue
-# 5 = purple
-# 6 = cyan
-# 7 = white
+  function __ansi_code() {
+    #do nothing
+  }
 
-ansi_code[black_fg]=$(tput setaf 0)
-ansi_code[red_fg]=$(tput setaf 1)
-ansi_code[green_fg]=$(tput setaf 2)
-ansi_code[yellow_fg]=$(tput setaf 3)
-ansi_code[blue_fg]=$(tput setaf 4)
-ansi_code[purple_fg]=$(tput setaf 5)
-ansi_code[cyan_fg]=$(tput setaf 6)
-ansi_code[white_fg]=$(tput setaf 7)
+else
 
-ansi_code[black_bg]=$(tput setab 0)
-ansi_code[red_bg]=$(tput setab 1)
-ansi_code[green_bg]=$(tput setab 2)
-ansi_code[yellow_bg]=$(tput setab 3)
-ansi_code[blue_bg]=$(tput setab 4)
-ansi_code[purple_bg]=$(tput setab 5)
-ansi_code[cyan_bg]=$(tput setab 6)
-ansi_code[white_bg]=$(tput setab 7)
+  ansi_code[bold]=$(tput bold)
+  ansi_code[dim]=$(tput dim)
+  ansi_code[off]=$(tput sgr0)
+  ansi_code[underline_on]=$(tput smul)
+  ansi_code[underline_off]=$(tput rmul)
+  ansi_code[reverse]=$(tput rev)
+  ansi_code[stdout_on]=$(tput smso)
+  ansi_code[stdout_off]=$(tput rmso)
 
-#ansi_code[blink]=5
-#ansi_code[hide]=8
+  # 0 = black
+  # 1 = red
+  # 2 = green
+  # 3 = yellow
+  # 4 = blue
+  # 5 = purple
+  # 6 = cyan
+  # 7 = white
 
-function __ansi_code() {
+  ansi_code[black_fg]=$(tput setaf 0)
+  ansi_code[red_fg]=$(tput setaf 1)
+  ansi_code[green_fg]=$(tput setaf 2)
+  ansi_code[yellow_fg]=$(tput setaf 3)
+  ansi_code[blue_fg]=$(tput setaf 4)
+  ansi_code[purple_fg]=$(tput setaf 5)
+  ansi_code[cyan_fg]=$(tput setaf 6)
+  ansi_code[white_fg]=$(tput setaf 7)
 
-  declare -a codes
+  ansi_code[black_bg]=$(tput setab 0)
+  ansi_code[red_bg]=$(tput setab 1)
+  ansi_code[green_bg]=$(tput setab 2)
+  ansi_code[yellow_bg]=$(tput setab 3)
+  ansi_code[blue_bg]=$(tput setab 4)
+  ansi_code[purple_bg]=$(tput setab 5)
+  ansi_code[cyan_bg]=$(tput setab 6)
+  ansi_code[white_bg]=$(tput setab 7)
 
-  while [ "${1+defined}" ]; do
+  #ansi_code[blink]=5
+  #ansi_code[hide]=8
 
-    if [ -n ${ansi_code[$1]} ]; then
+  function __ansi_code() {
 
-      codes[${#codes[*]}]="${ansi_code[$1]}"
+    declare -a codes
 
-    fi
+    while [ "${1+defined}" ]; do
 
-    shift
+      if [ -n ${ansi_code[$1]} ]; then
 
-  done
+        codes[${#codes[*]}]="${ansi_code[$1]}"
 
-  local code
+      fi
 
-  SAVE_IFS=$IFS
-  IFS=''
-  code="${codes[*]}"
-  IFS=$SAVE_IFS
+      shift
 
-  printf '\[%s\]' $code
+    done
 
-}
+    local code
+
+    SAVE_IFS=$IFS
+    IFS=''
+    code="${codes[*]}"
+    IFS=$SAVE_IFS
+
+    printf '\[%s\]' $code
+
+  }
+
+fi
 
 # Create some commonly used codes
 text_reset=$(__ansi_code off)

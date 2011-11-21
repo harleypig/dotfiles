@@ -62,5 +62,6 @@ __update_prompt() {
 }
 
 if [ -n "$PS1" ]; then export PROMPT_COMMAND='__update_prompt'; fi
+#export PROMPT_COMMAND=
 
 #echo '  ... ended .bash_prompt.' >> ~/bash_startup.log
