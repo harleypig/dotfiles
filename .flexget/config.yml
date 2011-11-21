@@ -20,8 +20,8 @@ presets:
       - Family Guy
       - Flashpoint
       - Futurama
+      - Grimm
       - "Harry's Law"
-      - Hart of Dixie
       - In Plain Sight
       - Jeff Dunham
       - Law and Order
@@ -42,7 +42,6 @@ presets:
       - "Rizzoli & Isles"
       - Robot Chicken
       - South Park
-      - Suburgatory
       - Supernatural
       - Terra Nova
       - The Closer
@@ -60,18 +59,18 @@ feeds:
   EZTV:
     rss: http://ezrss.it/feed/
     preset: TVShows
-  BTJunkie:
-    rss: http://btjunkie.org/rss.xml?c=4
-    preset: TVShows
-  BTCHAT:
-    rss: http://rss.bt-chat.com/?cat=9
-    preset: TVShows
+#  BTJunkie:
+#    rss: http://btjunkie.org/rss.xml?c=4
+#    preset: TVShows
+#  BTCHAT:
+#    rss: http://rss.bt-chat.com/?cat=9
+#    preset: TVShows
   KickAssTorrents:
     rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
     preset: TVShows
-  TorrentDay:
-    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
-    preset: TVShows
+#  TorrentDay:
+#    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
+#    preset: TVShows
 #  TorrentReactor:
 #    rss: http://www.torrentreactor.net/rss/rss_8.xml
 #    preset: TVShows
