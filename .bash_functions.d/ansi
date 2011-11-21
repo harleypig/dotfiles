@@ -61,7 +61,51 @@ if ! declare -A ansi_code > /dev/null 2>&1; then
 
   function __ansi_code() {
 
-    echo do nothing > /dev/null
+    declare -a codes
+
+    while [ "${1+defined}" ]; do
+
+      case $1 in
+
+                 'bold') codes[${#codes[*]}]=$(tput bold) ;;
+                  'dim') codes[${#codes[*]}]=$(tput dim) ;;
+                  'off') codes[${#codes[*]}]=$(tput sgr0) ;;
+         'underline_on') codes[${#codes[*]}]=$(tput smul) ;;
+        'underline_off') codes[${#codes[*]}]=$(tput rmul) ;;
+              'reverse') codes[${#codes[*]}]=$(tput rev) ;;
+            'stdout_on') codes[${#codes[*]}]=$(tput smso) ;;
+           'stdout_off') codes[${#codes[*]}]=$(tput rmso) ;;
+             'black_fg') codes[${#codes[*]}]=$(tput setaf 0) ;;
+               'red_fg') codes[${#codes[*]}]=$(tput setaf 1) ;;
+             'green_fg') codes[${#codes[*]}]=$(tput setaf 2) ;;
+            'yellow_fg') codes[${#codes[*]}]=$(tput setaf 3) ;;
+              'blue_fg') codes[${#codes[*]}]=$(tput setaf 4) ;;
+            'purple_fg') codes[${#codes[*]}]=$(tput setaf 5) ;;
+              'cyan_fg') codes[${#codes[*]}]=$(tput setaf 6) ;;
+             'white_fg') codes[${#codes[*]}]=$(tput setaf 7) ;;
+             'black_bg') codes[${#codes[*]}]=$(tput setab 0) ;;
+               'red_bg') codes[${#codes[*]}]=$(tput setab 1) ;;
+             'green_bg') codes[${#codes[*]}]=$(tput setab 2) ;;
+            'yellow_bg') codes[${#codes[*]}]=$(tput setab 3) ;;
+              'blue_bg') codes[${#codes[*]}]=$(tput setab 4) ;;
+            'purple_bg') codes[${#codes[*]}]=$(tput setab 5) ;;
+              'cyan_bg') codes[${#codes[*]}]=$(tput setab 6) ;;
+             'white_bg') codes[${#codes[*]}]=$(tput setab 7) ;;
+
+      esac
+
+      shift
+
+    done
+
+    local code
+
+    SAVE_IFS=$IFS
+    IFS=''
+    code="${codes[*]}"
+    IFS=$SAVE_IFS
+
+    printf '\[%s\]' $code
 
   }
 
