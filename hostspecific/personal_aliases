@@ -58,7 +58,8 @@ then
 fi
 
 # Console access
-TEMPLATE='TERM=xterm ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:CONSOLE@198.65.168.9'
+#TEMPLATE='TERM=xterm ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:CONSOLE@198.65.168.9'
+TEMPLATE='TERM=xterm ssh -i ~/.ssh/verio_id_rsa ayoung:CONSOLE@198.65.168.9'
 
 FL[1]='1-6-20'
 FL[2]='1-6-17'
