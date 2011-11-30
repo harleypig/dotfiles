@@ -1,20 +1,21 @@
 # http://www.reddit.com/r/commandline/comments/kbeoe/you_can_make_readline_and_bash_much_more_user/
+# https://wiki.archlinux.org/index.php/Readline
 
 $include /etc/inputrc
 
-set input-meta on
-set output-meta on
 set completion-ignore-case on
-set completion-prefix-display-length 2
-set show-all-if-ambiguous on
-set show-all-if-unmodified on
 set completion-map-case on
+set completion-prefix-display-length 2
+set editing-mode vi
+set input-meta on
 set mark-directories on
 set mark-symlinnked-directories on
+set output-meta on
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+set skip-completed-text
 set visible-stats on
 
-# https://wiki.archlinux.org/index.php/Readline
-set editing-mode vi
 "\e[A":history-search-backward
 "\e[B":history-search-forward
 "\e\C-l":"\C-e | less\C-m"
