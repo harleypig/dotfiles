@@ -51,7 +51,8 @@ function define () { clear; curl dict://dict.org/d:$1; }
 
 # http://www.commandlinefu.com/commands/view/2829/query-wikipedia-via-console-over-dns
 # http://onethingwell.org/post/2858158431/wikipedia-cli
-function wiki() { dig +short txt $1.wp.gd.cx; }
+#function wiki() { dig +short txt $1.wp.gd.cx; }
+function wiki() { host -t txt $1.wp.gd.cx; }
 
 # Go to current git repo toplevel directory.
 function gtl() { cd $(git rev-parse --show-toplevel); }

@@ -13,7 +13,7 @@ function __basedir() {
 }
 
 
-export PATH=~/bin:~/.vim/bin/:$PATH
+export PATH=~/bin:~/.vim/bin/:$PATH:~/projects/android-sdk/tools:~/projects/android-sdk/platform-tools
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
 export HISTFILESIZE=1000
