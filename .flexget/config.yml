@@ -1,22 +1,36 @@
 presets:
-  TVShows:
+  global:
     download: /home/harleypig/torrents/torrent
+  IMDB:
+    imdb:
+      min_score: 3.1
+      min_votes: 1000
+      reject_genres:
+        - biography
+        - documentary
+        - game-show
+        - history
+        - music
+        - new
+        - reality-tv
+        - romance
+        - sport
+        - talk-show
+  TV_Series:
     series:
       - A Gifted Man
       - Alphas
       - Bones
       - Castle
       - City Homicide
-      - Cold Case
-      - Covert Affairs
       - Criminal Minds
       - "Criminal Minds: Suspect Behavior"
       - CSI
       - "CSI: Miami"
       - "CSI: New York"
+      - Death Valley
       - Dirty Jobs
       - Eureka
-      - Falling Skies
       - Family Guy
       - Flashpoint
       - Futurama
@@ -35,9 +49,6 @@ presets:
       - Memphis Beat
       - Mythbusters
       - NCIS
-      - Numb3rs
-      - Outlaw
-      - Persons Unknown
       - Primeval
       - "Rizzoli & Isles"
       - Robot Chicken
@@ -49,31 +60,62 @@ presets:
       - The Walking Dead
       - Warehouse 13
 feeds:
-  Trailers:
+  Apple_Trailers:
     apple_trailers: 720p
     accept_all: yes
     download: /home/harleypig/Dropbox/Video
-#  ShowRSS:
-#    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
-#    preset: TVShows
-  EZTV:
+    priority: 5
+  TV_EZTV:
     rss: http://ezrss.it/feed/
-    preset: TVShows
-#  BTJunkie:
-#    rss: http://btjunkie.org/rss.xml?c=4
-#    preset: TVShows
-#  BTCHAT:
-#    rss: http://rss.bt-chat.com/?cat=9
-#    preset: TVShows
-  KickAssTorrents:
+    preset: TV_Series
+    priority: 10
+  TV_ShowRSS:
+    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
+    preset: TV_Series
+    priority: 15
+  TV_KickAssTorrents:
     rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
-    preset: TVShows
-#  TorrentDay:
-#    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
-#    preset: TVShows
-#  TorrentReactor:
-#    rss: http://www.torrentreactor.net/rss/rss_8.xml
-#    preset: TVShows
-#  RlsLog:
-#    rlslog: http://www.rlslog.net/category/tv-shows/
-#    presett: TVShows
+    preset: TV_Series
+    priority: 20
+  TV_RlsLog:
+    rlslog: http://www.rlslog.net/category/tv-shows/
+    preset: TV_Series
+    priority: 25
+  TV_Sceper:
+    scenereleases: http://sceper.eu/category/tv-shows/tv-shows-x264?themedemo=SceneRLSv3
+    preset: TV_Series
+    priority: 30
+  TV_BTJunkie:
+    rss: http://btjunkie.org/rss.xml?c=4
+    preset: TV_Series
+    priority: 35
+  TV_BTCHAT:
+    rss: http://rss.bt-chat.com/?cat=9
+    preset: TV_Series
+    priority: 40
+  TV_TorrentDay:
+    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
+    preset: TV_Series
+    priority: 45
+  TV_TorrentReactor:
+    rss: http://www.torrentreactor.net/rss/rss_8.xml
+    preset: TV_Series
+    priority: 50
+  Mini_Series_Sceper:
+    scenereleases: http://sceper.eu/category/tv-shows/mini-series?themedemo=SceneRLSv3
+    accept_all: yes
+    priority: 55
+  Movies_RlsLog_DVDRip:
+    rlslog: http://www.rlslog.net/category/movies/dvdrip
+    accept_all: yes
+    preset: IMDB
+    priority: 60
+  Movies_RlsLog_DVDScr:
+    rlslog: http://www.rlslog.net/category/movies/dvdscr
+    accept_all: yes
+    preset: IMDB
+    priority: 65
+  EBook_RlsLog:
+    rlslog: http://www.rlslog.net/category/ebook/ebook
+    accept_all: yes
+    priority: 70
