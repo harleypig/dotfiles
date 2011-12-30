@@ -74,6 +74,10 @@ if [[ -n $(command -v colordiff) ]]; then
   alias diffdir='colordiff -qr'
 fi
 
+if [[ -n $(command -v cpandoc) ]]; then
+  alias perldoc='cpandoc'
+fi
+
 HOSTSPECIFIC="$(__basedir ~/.bash_aliases)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFIC}/*aliases* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done

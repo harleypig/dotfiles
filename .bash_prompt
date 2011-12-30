@@ -6,6 +6,11 @@
 #   https://gist.github.com/621452
 #   https://gist.github.com/623142
 
+# TODO:
+
+#   Allow for arbitrary scripts to be run under certain conditions.  E.g.,
+#   directory change for location specific aliases.
+
 PROMPT_FUNCTIONS="$(__basedir ~/.bash_prompt)/.bash_prompt.d"
 FUNCS=$(ls ${PROMPT_FUNCTIONS}/* 2> /dev/null)
 for f in ${FUNCS}; do source $f; done
