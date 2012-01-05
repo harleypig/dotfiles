@@ -42,7 +42,6 @@ Thumbs.db
 ##############
 blib/
 _build/
-cover_db/
 inc/
 Build
 Build.bat
