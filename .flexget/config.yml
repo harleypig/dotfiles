@@ -33,6 +33,7 @@ presets:
       - Family Guy
       - Flashpoint
       - Futurama
+      - Game of Thrones
       - Grimm
       - "Harry's Law"
       - In Plain Sight
@@ -55,6 +56,7 @@ presets:
       - Supernatural
       - Terra Nova
       - The Closer
+      - The Fades
       - The Simpsons
       - The Walking Dead
       - Warehouse 13
@@ -76,10 +78,10 @@ feeds:
     rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
     preset: TV_Series
     priority: 20
-  TV_RlsLog:
-    rlslog: http://www.rlslog.net/category/tv-shows/
-    preset: TV_Series
-    priority: 25
+#  TV_RlsLog:
+#    rlslog: http://www.rlslog.net/category/tv-shows/
+#    preset: TV_Series
+#    priority: 25
   TV_Sceper:
     scenereleases: http://sceper.eu/category/tv-shows/tv-shows-x264?themedemo=SceneRLSv3
     preset: TV_Series
@@ -104,17 +106,17 @@ feeds:
     scenereleases: http://sceper.eu/category/tv-shows/mini-series?themedemo=SceneRLSv3
     accept_all: yes
     priority: 55
-  Movies_RlsLog_DVDRip:
-    rlslog: http://www.rlslog.net/category/movies/dvdrip
-    accept_all: yes
-    preset: IMDB
-    priority: 60
-  Movies_RlsLog_DVDScr:
-    rlslog: http://www.rlslog.net/category/movies/dvdscr
-    accept_all: yes
-    preset: IMDB
-    priority: 65
-  EBook_RlsLog:
-    rlslog: http://www.rlslog.net/category/ebook/ebook
-    accept_all: yes
-    priority: 70
+#  Movies_RlsLog_DVDRip:
+#    rlslog: http://www.rlslog.net/category/movies/dvdrip
+#    accept_all: yes
+#    preset: IMDB
+#    priority: 60
+#  Movies_RlsLog_DVDScr:
+#    rlslog: http://www.rlslog.net/category/movies/dvdscr
+#    accept_all: yes
+#    preset: IMDB
+#    priority: 65
+#  EBook_RlsLog:
+#    rlslog: http://www.rlslog.net/category/ebook/ebook
+#    accept_all: yes
+#    priority: 70

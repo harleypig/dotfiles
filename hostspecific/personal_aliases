@@ -2,6 +2,8 @@
 
 # If ssh config file exists create shortcuts for the hosts defined there
 
+OLDTITLE=$(hostname)
+
 if [ -e ~/.ssh/config ]
 then
 
@@ -24,7 +26,6 @@ then
 
   #TEMPLATE='echo -e "\\ekNEWTITLE\\e\\" && TERMssh HOST && echo -e "\\ekOLDTITLE\\e\\"'
   TEMPLATE='set_screen_title NEWTITLE ; TERMssh HOST ; set_screen_title OLDTITLE'
-  OLDTITLE=$(hostname)
 
   for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
   do
@@ -59,7 +60,7 @@ fi
 
 # Console access
 #TEMPLATE='TERM=xterm ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:CONSOLE@198.65.168.9'
-TEMPLATE='TERM=xterm ssh -i ~/.ssh/verio_id_rsa ayoung:CONSOLE@198.65.168.9'
+TEMPLATE='set_screen_title "Console flNEWTITLE" ; TERM=xterm ssh -i ~/.ssh/verio_id_rsa ayoung:CONSOLE@198.65.168.9 ; set_screen_title OLDTITLE'
 
 FL[1]='1-6-20'
 FL[2]='1-6-17'
@@ -72,12 +73,12 @@ FL[9]='1-6-16'
 for i in 1 2 4 6 7 9
 do
 
-  ALIAS=${TEMPLATE/CONSOLE/${FL[$i]}}
+  ALIAS=${TEMPLATE/NEWTITLE/$i}
+  ALIAS=${ALIAS/CONSOLE/${FL[$i]}}
+  ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
   alias "console_fl$i"="${ALIAS}"
 
 done
-
-UNKNOWN='echo Do not know console info for facelift3'
 
 for i in 3 5 8
 do
@@ -85,6 +86,18 @@ do
   alias "console_fl$i"="echo Do not know console info for facelift$i"
 
 done
+
+TEMPLATE='set_screen_title "Console NEWTITLE" ; TERM=xterm ssh -i ~/.ssh/verio_id_rsa ayoung:CONSOLE@198.65.168.9 ; set_screen_title OLDTITLE'
+
+ALIAS=${TEMPLATE/NEWTITLE/lam99403}
+ALIAS=${ALIAS/CONSOLE/1-4-18}
+ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
+alias "console_lam99403"="${ALIAS}"
+
+ALIAS=${TEMPLATE/NEWTITLE/lam99404}
+ALIAS=${ALIAS/CONSOLE/1-4-12}
+ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
+alias "console_lam99404"="${ALIAS}"
 
 # Apache
 alias acconfigtest="sudo $(which apachectl) configtest"
@@ -109,5 +122,8 @@ alias vimwiki='vim +VimwikiIndex'
 alias cpanm="/usr/local/bin/cpanm -S"
 
 alias l='ls -lhA --color=auto --group-directories-first'
+
+OLDTITLE=
+TEMPLATE=
 
 #echo "... ended personal_aliases." >> ~/bash_startup.log
