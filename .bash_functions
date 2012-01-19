@@ -20,25 +20,13 @@ function geoip() {
 
 }
 
-#function showpsformats () {
-#
-#  local r l a P f=/tmp/ps c='command ps wwo pid:6,user:8,vsize:8,comm:20' IFS=' ';
-#  trap 'exec 66'
-#  exec 66 $f && command ps L | tr -s ' ' >&$f;
-#
-#  while read -u66 l >&/dev/null; do
-#    a=${l/% */};
-#    $c,$a k -${a//%/} -A;
-#    yn "Add $a" && P[$SECONDS]=$a;
-#  done
-#
-#}
-
 # http://www.commandlinefu.com/commands/view/6820/quick-directory-bookmarks
 #
 # /cd/to/very/long/path
 # type 'bm project'
 # type 'to project' to change to that directory from anywhere
+#
+# XXX: Add ability to save bookmark to hostspecific file
 
 function bm() { eval $1=$(pwd); }
 function to() { eval dir=\$$1; cd "$dir"; }
@@ -58,6 +46,7 @@ function wiki() { host -t txt $1.wp.gd.cx; }
 function gtl() { cd $(git rev-parse --show-toplevel); }
 
 # http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript/1687710#1687710
+# XXX: Should check to see if we are in screen and do nothing unless we are.
 function set_screen_title { echo -ne "\ek$1\e\\"; }
 
 # join an array. join must be a single character
@@ -100,6 +89,14 @@ function git_remove_submodule {
   done
 
 }
+
+BIGFUNCTIONS="$(__basedir ~/.bash_functions)/.bash_functions.d"
+SOURCE=$(ls ${BIGFUNCTIONS}/* 2> /dev/null)
+for s in ${SOURCE}; do source $s; done
+
+HOSTSPECIFIC="$(__basedir ~/.bash_functions)/hostspecific/$(hostname)"
+SOURCE=$(ls ${HOSTSPECIFIC}/*functions* 2> /dev/null)
+for s in ${SOURCE}; do source $s; done
 
 # https://github.com/ndbroadbent/ubuntu_config/blob/master/assets/bashrc/functions.sh
 
@@ -163,7 +160,7 @@ function git_remove_submodule {
 
 # http://vimeo.com/21538711 about 16:30
 # function toggle_trace () {
-#   
+#
 #   if TRACEON eq 1; then
 #     export PS4=
 #     export TRACEON=
@@ -197,12 +194,18 @@ function git_remove_submodule {
 #  fi
 #}
 
-BIGFUNCTIONS="$(__basedir ~/.bash_functions)/.bash_functions.d"
-SOURCE=$(ls ${BIGFUNCTIONS}/* 2> /dev/null)
-for s in ${SOURCE}; do source $s; done
-
-HOSTSPECIFIC="$(__basedir ~/.bash_functions)/hostspecific/$(hostname)"
-SOURCE=$(ls ${HOSTSPECIFIC}/*functions* 2> /dev/null)
-for s in ${SOURCE}; do source $s; done
+#function showpsformats () {
+#
+#  local r l a P f=/tmp/ps c='command ps wwo pid:6,user:8,vsize:8,comm:20' IFS=' ';
+#  trap 'exec 66'
+#  exec 66 $f && command ps L | tr -s ' ' >&$f;
+#
+#  while read -u66 l >&/dev/null; do
+#    a=${l/% */};
+#    $c,$a k -${a//%/} -A;
+#    yn "Add $a" && P[$SECONDS]=$a;
+#  done
+#
+#}
 
 #echo '  ... ended .bash_functions.' >> ~/bash_startup.log

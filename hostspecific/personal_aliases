@@ -7,30 +7,16 @@ OLDTITLE=$(hostname)
 if [ -e ~/.ssh/config ]
 then
 
-  # XXX: Make a function that checks if a master connection is made and, if
-  # not, create one and background it so as to avoid accidental disconnections
-  # (which would disconnect *all* current connections).
-  #
-  # Background connection:
-  #   http://rc.fas.harvard.edu/tipsntricks/sshcontrolmaster
-  #   ssh -Y -C -o ServerAliveInterval=30 -fN ody
-  #
-  # Detecting existing ControlMaster session:
-  #   http://serverfault.com/questions/211213/how-to-tell-if-an-ssh-controlmaster-connection-is-in-use
-  #   ssh -o ControlPath=$socket -O check
-  #   Other goodness there.
-
   # I'm always in screen on my systems.
   # Should still check if we are in screen.  How?
   # echo -e "\ekHostname\e\" will change the screen title for that tab to the hostname
 
-  #TEMPLATE='echo -e "\\ekNEWTITLE\\e\\" && TERMssh HOST && echo -e "\\ekOLDTITLE\\e\\"'
   TEMPLATE='set_screen_title NEWTITLE ; TERMssh HOST ; set_screen_title OLDTITLE'
 
   for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
   do
 
-    if [[ $( echo $i | grep -E 'bacon|disting|facelift|release|verio|fm2' ) ]]
+    if [[ $( echo $i | grep -E 'bacon|disting|facelift|lam|release|verio|fm2' ) ]]
     then
 
       NEWTERM='TERM=xterm '
@@ -47,6 +33,16 @@ then
     ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
 
     alias $i="${ALIAS}"
+
+    # Create a master connection if one does not already exist
+    # This should prevent accidental master connection closures.
+    # Are there any drawbacks to using this method?
+
+    # XXX: This did not turn out so well, and the necessity of turning off
+    # strict host key checking is probably not a good idea.
+    #ssh -O check $i > /dev/null 2>&1
+    #if [ "$?" != "0" ]; then ssh -fN -o StrictHostKeyChecking=no $i; fi
+
   done
 
   # Override basic settings for these servers
@@ -59,8 +55,7 @@ then
 fi
 
 # Console access
-#TEMPLATE='TERM=xterm ssh -i ~/.ssh/bmagnusson_id_rsa bmagnusson:CONSOLE@198.65.168.9'
-TEMPLATE='set_screen_title "Console flNEWTITLE" ; TERM=xterm ssh -i ~/.ssh/verio_id_rsa ayoung:CONSOLE@198.65.168.9 ; set_screen_title OLDTITLE'
+TEMPLATE='set_screen_title "console flNEWTITLE" ; TERM=xterm ssh -i ~/.ssh/verio_id_rsa ayoung:CONSOLE@198.65.168.9 ; set_screen_title OLDTITLE'
 
 FL[1]='1-6-20'
 FL[2]='1-6-17'
@@ -87,7 +82,7 @@ do
 
 done
 
-TEMPLATE='set_screen_title "Console NEWTITLE" ; TERM=xterm ssh -i ~/.ssh/verio_id_rsa ayoung:CONSOLE@198.65.168.9 ; set_screen_title OLDTITLE'
+TEMPLATE='set_screen_title "console NEWTITLE" ; TERM=xterm ssh -i ~/.ssh/verio_id_rsa ayoung:CONSOLE@198.65.168.9 ; set_screen_title OLDTITLE'
 
 ALIAS=${TEMPLATE/NEWTITLE/lam99403}
 ALIAS=${ALIAS/CONSOLE/1-4-18}

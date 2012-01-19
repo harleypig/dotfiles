@@ -81,7 +81,7 @@ function git_status {
 
     REPO=$(basename $(git rev-parse --show-toplevel))
 
-    printf ' %20s ( %10s ): %8s %6s %4s %4s %s\n' ${REPO} ${branch} ${UNSTAGED} ${STAGED} ${BEHIND} ${AHEAD} ${PWD}
+    printf ' %40s ( %10s ): %8s %6s %4s %4s %s\n' ${REPO} ${branch} ${UNSTAGED} ${STAGED} ${BEHIND} ${AHEAD} ${PWD}
 
   fi
 }

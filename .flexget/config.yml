@@ -18,6 +18,7 @@ presets:
         - talk-show
   TV_Series:
     series:
+      - Alcatraz
       - A Gifted Man
       - Alphas
       - Bones
@@ -82,10 +83,10 @@ feeds:
 #    rlslog: http://www.rlslog.net/category/tv-shows/
 #    preset: TV_Series
 #    priority: 25
-  TV_Sceper:
-    scenereleases: http://sceper.eu/category/tv-shows/tv-shows-x264?themedemo=SceneRLSv3
-    preset: TV_Series
-    priority: 30
+#  TV_Sceper:
+#    scenereleases: http://sceper.eu/category/tv-shows/tv-shows-x264?themedemo=SceneRLSv3
+#    preset: TV_Series
+#    priority: 30
   TV_BTJunkie:
     rss: http://btjunkie.org/rss.xml?c=4
     preset: TV_Series
@@ -102,10 +103,10 @@ feeds:
     rss: http://www.torrentreactor.net/rss/rss_8.xml
     preset: TV_Series
     priority: 50
-  Mini_Series_Sceper:
-    scenereleases: http://sceper.eu/category/tv-shows/mini-series?themedemo=SceneRLSv3
-    accept_all: yes
-    priority: 55
+#  Mini_Series_Sceper:
+#    scenereleases: http://sceper.eu/category/tv-shows/mini-series?themedemo=SceneRLSv3
+#    accept_all: yes
+#    priority: 55
 #  Movies_RlsLog_DVDRip:
 #    rlslog: http://www.rlslog.net/category/movies/dvdrip
 #    accept_all: yes
