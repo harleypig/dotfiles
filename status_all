@@ -59,6 +59,8 @@ function git_status {
 
   if [ -n "${info}" ]; then
 
+    REPO=$(basename $(git rev-parse --show-toplevel))
+
     branch=$(echo    "$info" | perl -ane '$F[0]=~s/[<>=]$//;print $F[0]')
     unstaged=$(echo  "$info" | perl -ane 'print $F[1]=~/\*/')
     staged=$(echo    "$info" | perl -ane 'print $F[1]=~/\+/')
@@ -67,22 +69,25 @@ function git_status {
     behind=$(echo    "$info" | perl -ane 'print $F[1]=~/\</ || $F[0]=~/\<$/')
     ahead=$(echo     "$info" | perl -ane 'print $F[1]=~/\>/ || $F[0]=~/\>$/')
 
-    UNSTAGED='       -'
-    if [ -n "$unstaged" ]; then UNSTAGED='unstaged'; fi
+    NEEDS_ATTENTION=
 
-    STAGED='     -'
-    if [ -n "$staged" ]; then STAGED='staged'; fi
+    UNSTAGED='-'
+    if [ -n "$unstaged" ]; then UNSTAGED='unstaged'; NEEDS_ATTENTION=1; fi
 
-    BEHIND='   -'
-    if [ -n "$behind" ]; then BEHIND='pull'; fi
+    STAGED='-'
+    if [ -n "$staged" ]; then STAGED='staged'; NEEDS_ATTENTION=1; fi
 
-    AHEAD='   -'
-    if [ -n "$ahead" ]; then AHEAD='Push'; fi
+    BEHIND='-'
+    if [ -n "$behind" ]; then BEHIND='pull'; NEEDS_ATTENTION=1; fi
 
-    REPO=$(basename $(git rev-parse --show-toplevel))
+    AHEAD='-'
+    if [ -n "$ahead" ]; then AHEAD='push'; NEEDS_ATTENTION=1; fi
 
-    printf ' %40s ( %10s ): %8s %6s %4s %4s %s\n' ${REPO} ${branch} ${UNSTAGED} ${STAGED} ${BEHIND} ${AHEAD} ${PWD}
+    if [[ $NEEDS_ATTENTION == 1 ]]; then
 
+      printf ' %40s ( %15s ): %8s %6s %4s %4s %s\n' ${REPO} ${branch} ${UNSTAGED} ${STAGED} ${BEHIND} ${AHEAD} ${PWD}
+
+    fi
   fi
 }
 
