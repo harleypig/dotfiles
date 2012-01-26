@@ -12,9 +12,7 @@ sub afterinit {
 #    unless grep { /^l$/ } @$DB::pretype;
 
   push @DB::typeahead,
-    'use Data::Dumper',
-    '$Data::Dumper::Deparse = 1',
-    '$Data::Dumper::Sortkeys = 1',
+    'use Data::Dump "dump"',
     'o windowSize=35',
   ;
 }
