@@ -11,7 +11,6 @@ function cdl() { cd $1; l; }
 # Make directory and cd to it
 function mkcd() { mkdir -p -- "$@" && cd "$_"; }
 
-# Geolocate an ip
 function geoip() {
 
   wget -qO - www.ip2location.com/$1 | \
@@ -20,16 +19,20 @@ function geoip() {
 
 }
 
-# http://www.commandlinefu.com/commands/view/6820/quick-directory-bookmarks
-#
-# /cd/to/very/long/path
-# type 'bm project'
-# type 'to project' to change to that directory from anywhere
-#
-# XXX: Add ability to save bookmark to hostspecific file
+function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
+function down4me() { curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '/just you/!d;s/<[^>]*>//g'; }
 
-function bm() { eval $1=$(pwd); }
-function to() { eval dir=\$$1; cd "$dir"; }
+# XXX: Move this to the CDARGS section
+## http://www.commandlinefu.com/commands/view/6820/quick-directory-bookmarks
+##
+## /cd/to/very/long/path
+## type 'bm project'
+## type 'to project' to change to that directory from anywhere
+##
+## XXX: Add ability to save bookmark to hostspecific file
+#
+#function bm() { eval $1=$(pwd); }
+#function to() { eval dir=\$$1; cd "$dir"; }
 
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
 function tailfile () { tail -f $1 | xargs -IX printf "$(date -u)\t%s\n" X; }
@@ -52,6 +55,8 @@ function set_screen_title { echo -ne "\ek$1\e\\"; }
 # join an array. join must be a single character
 # Set the array you want to join in the __JOIN variable.
 
+# XXX: Allow for any size separator if IFS can handle \0
+
 function __join() {
 
   SAVE_IFS="$IFS"
@@ -59,34 +64,6 @@ function __join() {
   local joined="${__JOIN[*]}"
   IFS="$SAVE_IFS"
   echo "$joined"
-
-}
-
-# my own (bad?) idea
-function git_remove_submodule {
-
-  for SUBMODULE in $*; do
-
-    if [ ! -d "${SUBMODULE}" ]; then
-
-      echo "${SUBMODULE} does not exist"
-      continue
-
-    fi
-
-    echo "Removing ${SUBMODULE}"
-
-    for CONFIG in .git/config .gitmodules; do
-
-      git config -f ${CONFIG} --remove-section submodule.${SUBMODULE}
-
-    done
-
-    git rm --cached ${SUBMODULE}
-
-    echo "The ${SUBMODULE} directory has *NOT* been removed!\n"
-
-  done
 
 }
 

@@ -5,15 +5,18 @@
 function __basedir() {
 
   d=$(readlink ~/.bash_profile)
-
   if [ -n "$d" ]; then d=$(dirname "${d}"); else d="${HOME}"; fi
-
   echo "${d}"
 
 }
 
 
-export PATH=~/bin:~/.vim/bin/:$PATH:~/projects/android-sdk/tools:~/projects/android-sdk/platform-tools
+PATH="${PATH} ~/bin"
+PATH="${PATH} ~/.vim/bin/"
+#PATH="${PATH} ~/projects/android-sdk/tools"
+#PATH="${PATH} ~/projects/android-sdk/platform-tools"
+export PATH
+
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
 export HISTFILESIZE=1000
@@ -34,18 +37,49 @@ then
   shopt -s histverify
   shopt -s nocaseglob
 
-  [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
+  ########################################################################################
+  # less setup
 
-  CDARGS=$(which cdargs 2> /dev/null)
+  export LESS='--quit-if-one-screen --hilite-search --IGNORE-CASE --status-column --LINE-NUMBERS --RAW-CONTROL-CHARS --hilite-unread --tabs=2'
 
-  if [[ -f ${CDARGS} ]]
-  then
+  # http://www-zeuthen.desy.de/~friebel/unix/lesspipe.html
+  # XXX: figure out how to make syntax hilighting work for source
 
-    #CDARGS_COMPLETION="$(dirname $(readlink ~/.bashrc))"
-    CDARGS_COMPLETION="$(__basedir ~/.bashrc)"
-    source ${CDARGS_COMPLETION}/cdargs_completion
+  # Try to use a more current lesspipe
+  lesspipe=$(command -v lesspipe.sh)
+
+  if [ $? -eq 0 ]; then
+
+    export LESSOPEN="|${lesspipe} %s"
+
+  else
+
+    # Fall back to system lesspipe, if it exists
+    lesspipe=$(command -v lesspipe)
+
+    if [ $? -eq 0 ]; then
+
+      eval "$(SHELL=/bin/sh ${lesspipe})"
+
+    fi
+  fi
+
+  ########################################################################################
+  # cdargs setup
+
+  CDARGS=$(command -v cdargs)
+
+  if [ $? -eq 0 ]; then
+
+    cv () { cdargs "$1" && cd $(cat $HOME/.cdargsresult); }
+    cvadd () { cdargs --add=$(pwd); }
+
+    # XXX: fall back to homegrown bookmark manager if cdargs isn't installed
 
   fi
+
+  ########################################################################################
+  # Simple check and source lines
 
   [[ -f ~/.ssh-agent ]]                     && source ~/.ssh-agent
   [[ -f ~/.bash_aliases ]]                  && source ~/.bash_aliases
@@ -60,9 +94,18 @@ then
   [[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
   [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
 
+  ########################################################################################
+  # Source any files we find in our host specific directory
+
   HOSTSPECIFIC="$(__basedir ~/.bashrc)/hostspecific/$(hostname)"
   SOURCE=$(ls ${HOSTSPECIFIC}/*bashrc* 2> /dev/null)
   for s in ${SOURCE}; do source $s; done
+
+
+  ########################################################################################
+  # Say something funny
+
+  # XXX: add random selection of template
 
   if [[ -n $(command -v cowsay) ]]; then command cowsay $(fortune -s); fi
 
