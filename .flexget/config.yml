@@ -18,8 +18,8 @@ presets:
         - talk-show
   TV_Series:
     series:
-      - Alcatraz
       - A Gifted Man
+      - Alcatraz
       - Alphas
       - Bones
       - Castle
@@ -58,8 +58,10 @@ presets:
       - Terra Nova
       - The Closer
       - The Fades
+      - The Firm
       - The Simpsons
       - The Walking Dead
+      - Touch
       - Warehouse 13
 feeds:
   Apple_Trailers:
@@ -87,10 +89,10 @@ feeds:
 #    scenereleases: http://sceper.eu/category/tv-shows/tv-shows-x264?themedemo=SceneRLSv3
 #    preset: TV_Series
 #    priority: 30
-  TV_BTJunkie:
-    rss: http://btjunkie.org/rss.xml?c=4
-    preset: TV_Series
-    priority: 35
+#  TV_BTJunkie:
+#    rss: http://btjunkie.org/rss.xml?c=4
+#    preset: TV_Series
+#    priority: 35
   TV_BTCHAT:
     rss: http://rss.bt-chat.com/?cat=9
     preset: TV_Series
