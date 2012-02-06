@@ -11,8 +11,8 @@ function __basedir() {
 }
 
 
-PATH="${PATH} ~/bin"
-PATH="${PATH} ~/.vim/bin/"
+PATH="${PATH}:~/bin"
+PATH="${PATH}:~/.vim/bin/"
 #PATH="${PATH} ~/projects/android-sdk/tools"
 #PATH="${PATH} ~/projects/android-sdk/platform-tools"
 export PATH
