@@ -1,6 +1,24 @@
+# Lookit:
+#   http://flexget.com/wiki/Cookbook/UserAtlanta800
+#   http://flexget.com/wiki/Cookbook/Userhyper_ch
+#   http://flexget.com/wiki/Cookbook/Userfoulou
+#   https://github.com/gray/dotfiles/blob/master/.flexget/config.yml
+
 presets:
   global:
     download: /home/harleypig/torrents/torrent
+  premieres:
+    thetvdb_lookup: yes
+    require_field: series_genres
+    regexp:
+      reject:
+        - documentary: {from: series_genres}
+        - talk show: {from: series_genres}
+        - game show: {from: series_genres}
+        - reality: {from: series_genres}
+        - children: {from: series_genres}
+        - home and garden: {from: series_genres}
+    series_premiere: yes
   IMDB:
     imdb:
       min_score: 3.1
@@ -29,14 +47,13 @@ presets:
       - CSI
       - "CSI: Miami"
       - "CSI: New York"
+      - "CSI: NY"
       - Dirty Jobs
-      - Eureka
       - Family Guy
       - Flashpoint
       - Futurama
       - Game of Thrones
       - Grimm
-      - "Harry's Law"
       - In Plain Sight
       - Jeff Dunham
       - Law and Order
@@ -53,6 +70,7 @@ presets:
       - Primeval
       - "Rizzoli & Isles"
       - Robot Chicken
+      - Sherlock
       - South Park
       - Supernatural
       - Terra Nova
@@ -62,7 +80,9 @@ presets:
       - The Simpsons
       - The Walking Dead
       - Touch
+      - Undercover Boss
       - Warehouse 13
+      - Who Do You Think You Are
 feeds:
   Apple_Trailers:
     apple_trailers: 720p
@@ -73,13 +93,25 @@ feeds:
     rss: http://ezrss.it/feed/
     preset: TV_Series
     priority: 10
+  Premieres_EZTV:
+    rss: http://ezrss.it/feed/
+    preset: premieres
+    priority: 10
   TV_ShowRSS:
     rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
     preset: TV_Series
     priority: 15
+  Premieres_ShowRSS:
+    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
+    preset: premieres
+    priority: 15
   TV_KickAssTorrents:
     rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
     preset: TV_Series
+    priority: 20
+  Premieres_KickAssTorrents:
+    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
+    preset: premieres
     priority: 20
 #  TV_RlsLog:
 #    rlslog: http://www.rlslog.net/category/tv-shows/
@@ -97,13 +129,25 @@ feeds:
     rss: http://rss.bt-chat.com/?cat=9
     preset: TV_Series
     priority: 40
+  Premieres_BTCHAT:
+    rss: http://rss.bt-chat.com/?cat=9
+    preset: premieres
+    priority: 40
   TV_TorrentDay:
     rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
     preset: TV_Series
     priority: 45
+  Premieres_TorrentDay:
+    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
+    preset: premieres
+    priority: 45
   TV_TorrentReactor:
     rss: http://www.torrentreactor.net/rss/rss_8.xml
     preset: TV_Series
+    priority: 50
+  Premieres_TorrentReactor:
+    rss: http://www.torrentreactor.net/rss/rss_8.xml
+    preset: premieres
     priority: 50
 #  Mini_Series_Sceper:
 #    scenereleases: http://sceper.eu/category/tv-shows/mini-series?themedemo=SceneRLSv3
