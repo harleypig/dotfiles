@@ -84,6 +84,10 @@ if command -v cpandoc > /dev/null; then
   alias perldoc='cpandoc'
 fi
 
+BIGALIASES="$(__basedir ~/.bash_aliases)/.bash_aliases.d"
+SOURCE=$(ls ${BIGALIASES}/* 2> /dev/null)
+for s in ${SOURCE}; do source $s; done
+
 HOSTSPECIFIC="$(__basedir ~/.bash_aliases)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFIC}/*aliases* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done
