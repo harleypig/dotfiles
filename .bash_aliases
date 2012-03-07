@@ -84,6 +84,8 @@ if command -v cpandoc > /dev/null; then
   alias perldoc='cpandoc'
 fi
 
+alias cpanm='cpanm --mirror http://cpan.cpantesters.org/ -S'
+
 BIGALIASES="$(__basedir ~/.bash_aliases)/.bash_aliases.d"
 SOURCE=$(ls ${BIGALIASES}/* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done
