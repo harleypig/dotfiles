@@ -83,6 +83,8 @@ function git_status {
     AHEAD='-'
     if [ -n "$ahead" ]; then AHEAD='push'; NEEDS_ATTENTION=1; fi
 
+    NEEDS_ATTENTION=1
+
     if [[ $NEEDS_ATTENTION == 1 ]]; then
 
       printf ' %40s ( %15s ): %8s %6s %4s %4s %s\n' ${REPO} ${branch} ${UNSTAGED} ${STAGED} ${BEHIND} ${AHEAD} ${PWD}
