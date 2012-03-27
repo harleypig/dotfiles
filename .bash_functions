@@ -48,6 +48,14 @@ function wiki() { host -t txt $1.wp.gd.cx; }
 # Go to current git repo toplevel directory.
 function gtl() { cd $(git rev-parse --show-toplevel); }
 
+# Get an ordered list of subdirectory sizes
+# http://www.shell-fu.org/lister.php?id=275
+#function dusk() {
+#
+#  du -sk ./* | sort -n | awk 'BEGIN{ pref[1]="K"; pref[2]="M"; pref[3]="G";} { total = total + $1; x = $1; y = 1; while( x > 1024 ) { x = (x + 1023)/1024; y++; } printf("%g%s\t%s\n",int(x*10)/10,pref[y],$2); } END { y = 1; while( total > 1024 ) { total = (total + 1023)/1024; y++; } printf("Total: %g%s\n",int(total*10)/10,pref[y]); }';
+#
+#}
+
 # http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript/1687710#1687710
 # XXX: Should check to see if we are in screen and do nothing unless we are.
 function set_screen_title { echo -ne "\ek$1\e\\"; }
