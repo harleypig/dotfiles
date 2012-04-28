@@ -16,14 +16,15 @@ then
   for i in $(grep -E '^Host ' ~/.ssh/config | grep -v '*' | cut -d ' ' -f 2)
   do
 
-    if [[ $( echo $i | grep -E 'bacon|disting|facelift|lam|release|verio|fm2' ) ]]
+    #if [[ $( echo $i | grep -E 'bacon|disting|facelift|lam|release|verio|fm2' ) ]]
+    if [[ $( echo $i | grep -E 'harley' ) ]]
     then
 
-      NEWTERM='TERM=xterm '
+      NEWTERM=
 
     else
 
-      NEWTERM=
+      NEWTERM='TERM=xterm '
 
     fi
 
