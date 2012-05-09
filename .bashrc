@@ -91,6 +91,7 @@ then
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
   [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
   [[ -f $rvm_path/scripts/completion ]]     && source $rvm_path/scripts/completion
+  [[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
 
   [[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
   [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
