@@ -1,7 +1,7 @@
 
 use Data::Dump 'dump';
 use Devel::Command;
-use DB::Color; # https://github.com/Ovid/DB--Color
+#use DB::Color; # https://github.com/Ovid/DB--Color
 use POSIX 'strftime';
 use Time::HiRes;
 
@@ -19,6 +19,6 @@ sub afterinit {
     '$Data::Dumper::Deparse++',
     'o windowSize=35',
     '> $t0 = [ Time::HiRes::gettimeofday() ]',
-    '< printf "*** Last instruction took %f seconds ***\n", Time::HiRes::tv_interval( $t0, [ Time::HiRes::gettimeofday() ] )',
+    '< printf "\n\n*** Last instruction took %f seconds ***\n\n", Time::HiRes::tv_interval( $t0, [ Time::HiRes::gettimeofday() ] )',
   ;
 }

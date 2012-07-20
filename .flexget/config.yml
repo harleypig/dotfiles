@@ -38,12 +38,10 @@ presets:
     series:
       - A Gifted Man
       - Alcatraz
-      - Alphas
       - Bones
       - Castle
-      - City Homicide
+      - Continuum
       - Criminal Minds
-      - "Criminal Minds: Suspect Behavior"
       - CSI
       - "CSI: Miami"
       - "CSI: New York"
@@ -54,8 +52,6 @@ presets:
       - Futurama
       - Game of Thrones
       - Grimm
-      - Hell On Wheels
-      - In Plain Sight
       - Jeff Dunham
       - Law and Order
       - "Law and Order: Criminal Intent"
@@ -65,24 +61,19 @@ presets:
       - "Law & Order: Criminal Intent"
       - "Law & Order: Special Victims Unit"
       - "Law & Order: Special Victums Unit"
-      - Memphis Beat
       - Mythbusters
       - NCIS
       - Primeval
       - "Rizzoli & Isles"
       - Robot Chicken
-      - Sherlock
+      - Saving Hope
       - South Park
       - Supernatural
-      - Terra Nova
-      - The Almighty Johnsons
       - The Closer
       - The Fades
-      - The Firm
       - The River
       - The Simpsons
       - The Walking Dead
-      - Touch
       - Undercover Boss
       - Unforgettable
       - Warehouse 13
@@ -109,14 +100,14 @@ feeds:
     rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
     preset: premieres
     priority: 15
-  TV_KickAssTorrents:
-    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
-    preset: TV_Series
-    priority: 20
-  Premieres_KickAssTorrents:
-    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
-    preset: premieres
-    priority: 20
+#  TV_KickAssTorrents:
+#    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
+#    preset: TV_Series
+#    priority: 20
+#  Premieres_KickAssTorrents:
+#    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
+#    preset: premieres
+#    priority: 20
 #  TV_RlsLog:
 #    rlslog: http://www.rlslog.net/category/tv-shows/
 #    preset: TV_Series
@@ -129,26 +120,26 @@ feeds:
 #    rss: http://btjunkie.org/rss.xml?c=4
 #    preset: TV_Series
 #    priority: 35
-  TV_BTCHAT:
-    rss: http://rss.bt-chat.com/?cat=9
-    preset: TV_Series
-    priority: 40
+#  TV_BTCHAT:
+#    rss: http://rss.bt-chat.com/?cat=9
+#    preset: TV_Series
+#    priority: 40
   Premieres_BTCHAT:
     rss: http://rss.bt-chat.com/?cat=9
     preset: premieres
     priority: 40
-  TV_TorrentDay:
-    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
-    preset: TV_Series
-    priority: 45
+#  TV_TorrentDay:
+#    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
+#    preset: TV_Series
+#    priority: 45
   Premieres_TorrentDay:
     rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
     preset: premieres
     priority: 45
-  TV_TorrentReactor:
-    rss: http://www.torrentreactor.net/rss/rss_8.xml
-    preset: TV_Series
-    priority: 50
+#  TV_TorrentReactor:
+#    rss: http://www.torrentreactor.net/rss/rss_8.xml
+#    preset: TV_Series
+#    priority: 50
   Premieres_TorrentReactor:
     rss: http://www.torrentreactor.net/rss/rss_8.xml
     preset: premieres
