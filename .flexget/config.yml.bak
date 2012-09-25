@@ -35,15 +35,51 @@ presets:
         - sport
         - talk-show
   TV_Series:
-    import_series:
+    series:
       settings:
-        upgrade: yes
-      from:
-        text:
-          url: http://next-episode.net/PAGES/misc/export_calendar?z&u=harleypig&k=f5978573acadacdc2d12611096045488.ics
-          entry:
-            title: ^SUMMARY:(.*) - [0-9]+x[0-9]+.*$
-            url: ^SUMMARY:(.*) - [0-9]+x[0-9]+.*$
+        shows:
+          upgrade: yes
+      shows:
+        - Bones
+        - Castle
+        - Continuum
+        - Criminal Minds
+        - CSI
+        - "CSI: Miami"
+        - "CSI: New York"
+        - "CSI: NY"
+        - Dirty Jobs
+        - Family Guy
+        - Flashpoint
+        - Futurama
+        - Game of Thrones
+        - Grimm
+        - Law and Order
+        - "Law and Order: Criminal Intent"
+        - "Law and Order: Special Victims Unit"
+        - "Law and Order: Special Victums Unit"
+        - "Law & Order"
+        - "Law & Order: Criminal Intent"
+        - "Law & Order: Special Victims Unit"
+        - "Law & Order: Special Victums Unit"
+        - Major Crimes
+        - Mythbusters
+        - NCIS
+        - Primeval
+        - "Rizzoli & Isles"
+        - Robot Chicken
+        - Saving Hope
+        - South Park
+        - Supernatural
+        - The Closer
+        - The Fades
+        - The River
+        - The Simpsons
+        - The Walking Dead
+        - Undercover Boss
+        - Unforgettable
+        - Warehouse 13
+        - Who Do You Think You Are
 tasks:
   Apple_Trailers:
     apple_trailers: 720p
