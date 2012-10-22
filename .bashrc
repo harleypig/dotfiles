@@ -40,8 +40,7 @@ then
   ########################################################################################
   # less setup
 
-  #export LESS='--quit-if-one-screen --hilite-search --IGNORE-CASE --status-column --LINE-NUMBERS --RAW-CONTROL-CHARS --hilite-unread --tabs=2'
-  export LESS='--hilite-search --IGNORE-CASE --status-column --RAW-CONTROL-CHARS --hilite-unread --tabs=2'
+  export LESS='--hilite-search --IGNORE-CASE --status-column --RAW-CONTROL-CHARS --hilite-unread --tabs=2 -X'
 
   # http://www-zeuthen.desy.de/~friebel/unix/lesspipe.html
   # XXX: figure out how to make syntax hilighting work for source
