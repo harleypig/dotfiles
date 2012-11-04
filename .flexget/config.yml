@@ -9,7 +9,7 @@ presets:
     download: /home/harleypig/torrents/torrent
   premieres:
     thetvdb_lookup: yes
-    require_field: series_genres
+#    require_field: series_genres
     regexp:
       reject:
         - documentary: {from: series_genres}
