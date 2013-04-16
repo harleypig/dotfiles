@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+
+# http://peter.makholm.net/2013/04/10/reviewing_my_own_regular_expression/
  
 use v5.12.0;
  
