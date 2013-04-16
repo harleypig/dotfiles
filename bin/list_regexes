@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+ 
+use v5.12.0;
+ 
+use File::Next;
+use PPI;
+ 
+my $basedir  = shift // '.';
+my $elements = shift // 'Token::Regexp';
+ 
+my $files = File::Next::files( $basedir );
+while(defined( my $file = $files->() )) {
+    next unless $file =~ /\.(?:pm|pl|t)$/;
+ 
+    my $doc = PPI::Document->new( $file, readonly => 1 )
+        or next;
+ 
+    for my $elem ( @{$doc->find($elements) || []} ) {
+        say $elem->content, " at $file:", $elem->line_number;
+    }
+}
