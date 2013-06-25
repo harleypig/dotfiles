@@ -1,5 +1,10 @@
 #echo Started .bashrc ... >> ~/bash_startup.log
 
+# http://www.catonmat.net/series/bash-one-liners-explained
+#   http://www.catonmat.net/blog/bash-one-liners-explained-part-four/
+# http://www.catonmat.net/blog/the-definitive-guide-to-bash-command-line-history/
+#
+
 # .bashrc is called when shelling from vim or creating a new screen instance.
 
 function __basedir() {
@@ -79,6 +84,12 @@ then
   fi
 
   ########################################################################################
+  # man setup
+
+  # http://zameermanji.com/blog/2012/12/30/using-vim-as-manpager/
+  export MANPAGER="/bin/sh -c \"col -b | vim -c 'set ft=man ts=8 nomod nolist nonu noma' -\""
+
+  ########################################################################################
   # Simple check and source lines
 
   [[ -f ~/.ssh-agent ]]                     && source ~/.ssh-agent
@@ -94,6 +105,8 @@ then
 
   [[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
   [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
+
+  [[ -f ~/bin/tokens ]]                     && source ~/bin/tokens
 
   ########################################################################################
   # Source any files we find in our host specific directory

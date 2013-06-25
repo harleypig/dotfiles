@@ -50,6 +50,9 @@ tasks:
     accept_all: yes
     download: /home/harleypig/Dropbox/Video
     priority: 5
+    seen: local  # We don't want accepted entries from this feed to affect actual movie download feeds.
+    set:
+        filename: 'Trailer_{{title}}.mov'
   TV_EZTV:
     rss: http://ezrss.it/feed/
     preset: TV_Series

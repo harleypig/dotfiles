@@ -1,17 +1,31 @@
+# Based on the recipe found at http://flexget.com/wiki/Cookbook/rTorrent
+# with modifications found elsewhere
+
 check_hash = yes
 encryption = require
 upload_rate = 100
 use_udp_trackers = yes
+dht = auto
+dht_port = 6881
+peer_exchange = yes
 
-scgi_port = localhost:7777
-
-# Based on the recipe found at http://flexget.com/wiki/Cookbook/rTorrent
-# with modifications found elsewhere
+#scgi_port = localhost:7777
 
 session = /home/harleypig/torrents/session
 
 # Default directory to save the downloaded torrents.
 directory = /home/harleypig/torrents/incomplete
+
+# Maximum and minimum number of peers to connect to per torrent.
+min_peers = 40
+max_peers = 100
+
+# Same as above but for seeding completed torrents (-1 = same as downloading)
+min_peers_seed = 10
+max_peers_seed = -1
+
+# Maximum number of simultanious uploads per torrent.
+#max_uploads = 15
 
 # Watch a directory for new torrents and set the download target path
 schedule = watch_directory_1,10,10,"load_start=/home/harleypig/torrents/torrent/*.torrent,d.set_custom1=/home/harleypig/torrents/complete,d.set_custom2=1"
@@ -32,10 +46,11 @@ schedule = low_diskspace,5,60,close_low_diskspace=100M
 #schedule = ratio,60,60,"stop_on_ratio=300,200M,2000"
 # stop at ratio 1.5, with at least 200 MB uploaded, or else a ratio of 10.0
 #schedule = ratio,60,60,"stop_on_ratio=150,200M,1000"
-ratio.enable=
-ratio.min.set=150
-ratio.max.set=1000
-ratio.upload.set=200M
+#ratio.enable      =
+#ratio.min.set     = 150
+#ratio.max.set     = 1000
+#ratio.upload.set  = 200M
+#system.method.set = group.seeding.ratio.command,d.close=
 
 # Save session data
 schedule = session_save,240,300,session_save=
@@ -45,7 +60,7 @@ schedule = session_save,240,300,session_save=
 #on_finished = set_done_var,d.set_custom2=
 
 # remove incomplete downloads from disk that have been deleted from rTorrent
-#on_erase = rm_incomplete,"branch=d.get_custom2=,\"execute={rm,-rf,--,$d.get_base_path=}\""
+on_erase = rm_incomplete,"branch=d.get_custom2=,\"execute={rm,-rf,--,$d.get_base_path=}\""
 
 http_capath=/etc/ssl/certs
 encoding_list = UTF-8

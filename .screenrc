@@ -17,10 +17,11 @@ shelltitle "$ |bash"
 #attrcolor b ".I"
 #defbce "on"
 #termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
-term screen-256color
+#term screen-256color
+terminfo xterm* rxvt-unicode
 
 # Allow scrollback
-termcapinfo xterm ti@:te@
+termcapinfo xterm* ti@:te@
 
 caption always
 hardstatus alwayslastline "%{=b}%{G} Screen(s): %{b}%w"

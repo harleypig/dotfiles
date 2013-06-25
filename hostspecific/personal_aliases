@@ -61,12 +61,12 @@ TEMPLATE='set_screen_title "console flNEWTITLE" ; TERM=xterm ssh -i ~/.ssh/verio
 FL[1]='1-6-20'
 FL[2]='1-6-17'
 FL[4]='1-4-20'
-#FL[5]='1-6-19'
-FL[6]='1-6-19'
+FL[5]='1-6-19'
+#FL[6]='1-6-19'
 FL[7]='1-6-22'
 FL[9]='1-6-16'
 
-for i in 1 2 4 6 7 9
+for i in 1 2 4 5 7 9
 do
 
   ALIAS=${TEMPLATE/NEWTITLE/$i}
@@ -76,7 +76,7 @@ do
 
 done
 
-for i in 3 5 8
+for i in 3 6 8
 do
 
   alias "console_fl$i"="echo Do not know console info for facelift$i"
