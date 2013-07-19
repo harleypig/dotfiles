@@ -40,7 +40,7 @@ if command -v git > /dev/null; then
   alias gba='git branch -a -v'
   alias gb='git branch'
   alias gca='git commit -a -v'
-  alias gc='git commit -v'
+  alias gc='git commit -v -m'
   alias gco='git checkout'
   alias gcount='git shortlog -sn'
   alias gcp='git cherry-pick'
