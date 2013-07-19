@@ -91,8 +91,8 @@ __update_prompt() {
   SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
   for s in ${SOURCE}; do source $s; done
 
-  # Append the last command and reread the history file
-  PS1="\$(history -a ; history -n)"
+  # Append the last command, clear the history cache and reread the history file
+  PS1="\$(history -a ; history -c ; history -r)"
 
   for p in "${PROMPT[@]}"; do PS1="${PS1}\n ${prompt_color}${p}${text_reset}"; done
 
