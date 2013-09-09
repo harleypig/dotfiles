@@ -59,8 +59,8 @@
   default = current
 
 [branch "master"]
-  remote = origin
-  merge = refs/heads/master
+  #remote = origin
+  #merge = refs/heads/master
   rebase = true
 
 [github]

@@ -17,7 +17,8 @@ sub afterinit {
     '$Data::Dumper::Quotekeys = ""',
     '$Data::Dumper::Sortkeys++',
     '$Data::Dumper::Deparse++',
-    'o windowSize=35',
+    'o windowSize=40',
+    '{l',
     '> $t0 = [ Time::HiRes::gettimeofday() ]',
     '< printf "\n\n*** Last instruction took %f seconds ***\n\n", Time::HiRes::tv_interval( $t0, [ Time::HiRes::gettimeofday() ] )',
   ;
