@@ -64,5 +64,5 @@
   rebase = true
 
 [github]
-	user = harleypig
-	token = f39a5663758cba5c397493afab5f2ba8b402d43a
+  user = harleypig
+  token = f39a5663758cba5c397493afab5f2ba8b402d43a
