@@ -18,6 +18,7 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias df='df -h'
 alias h='history'
+alias l='ls -Al --color=auto'
 alias md='mkdir -p'
 alias rd=rmdir
 alias realias='source ~/.bash_aliases'
