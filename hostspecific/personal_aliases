@@ -95,6 +95,9 @@ ALIAS=${ALIAS/CONSOLE/1-4-12}
 ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
 alias "console_lam99404"="${ALIAS}"
 
+# ls
+alias l='ls -lhABvXZ --color=auto --group-directories-first'
+
 # Apache
 alias acconfigtest="sudo $(which apachectl) configtest"
 alias acrestart="sudo $(which apachectl) stop ; sleep 3 ; sudo $(which apachectl) start"
@@ -103,21 +106,33 @@ alias acstop="sudo $(which apachectl) stop"
 alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harleypig.com/logs/error.log'
 
 # FBcmd
-alias fb='fbcmd'
+if command -f fbcmd > /dev/null; then alias fb='fbcmd'; fi
 
 # Kludges
 alias fixssh='exec ssh-agent bash'
 
 # Mechanize Shell
-alias mechsh='perl -MWWW::Mechanize::Shell -eshell'
+if perldoc WWW::Mechanize::Shell > /dev/null; then
+  alias mechsh='perl -MWWW::Mechanize::Shell -eshell'
+fi
 
 # VimWiki
+# XXX: Figure out some way to test existence of vimiwiki on current box.
 alias vimwiki='vim +VimwikiIndex'
 
 # sudo cpanm
-alias cpanm="/usr/local/bin/cpanm -S"
+if command -v cpanm > /dev/null; then
+  alias cpanm="/usr/local/bin/cpanm -S"
+fi
 
-alias l='ls -lhABvXZ --color=auto --group-directories-first'
+# Taskwarrior
+
+if command -v task > /dev/null; then
+
+  alias today='task due.after:yesterday due.before:tomorrow'
+  alias overdue='task overdue'
+
+fi
 
 OLDTITLE=
 TEMPLATE=
