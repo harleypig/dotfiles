@@ -22,6 +22,10 @@ function geoip() {
 function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
 function down4me() { curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '/just you/!d;s/<[^>]*>//g'; }
 
+# simple pastebin
+# XXX: Add a way to handle lang option (see http://sprunge.us)
+function sprunge { "$@" | curl -F 'sprunge=<-' http://sprunge.us; }
+
 # XXX: Move this to the CDARGS section
 ## http://www.commandlinefu.com/commands/view/6820/quick-directory-bookmarks
 ##
@@ -38,7 +42,7 @@ function down4me() { curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '
 function tailfile () { tail -f $1 | xargs -IX printf "$(date -u)\t%s\n" X; }
 
 # http://linuxcommando.blogspot.com/2007/10/dictionary-lookup-via-command-line.html
-function define () { clear; curl dict://dict.org/d:$1; }
+function define () { clear; curl dict://dict.org/d:$1 | less; }
 
 # http://www.commandlinefu.com/commands/view/2829/query-wikipedia-via-console-over-dns
 # http://onethingwell.org/post/2858158431/wikipedia-cli

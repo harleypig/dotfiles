@@ -1,15 +1,8 @@
-# Lookit:
-#   http://flexget.com/wiki/Cookbook/UserAtlanta800
-#   http://flexget.com/wiki/Cookbook/Userhyper_ch
-#   http://flexget.com/wiki/Cookbook/Userfoulou
-#   https://github.com/gray/dotfiles/blob/master/.flexget/config.yml
-
-presets:
-  global:
-    download: /home/harleypig/torrents/torrent
+templates:
   premieres:
     thetvdb_lookup: yes
-#    require_field: series_genres
+    download: ~/rtorrent/watch/start/
+    rtorrent_magnet: ~/rtorrent/watch/start/
     regexp:
       reject:
         - documentary: {from: series_genres}
@@ -19,23 +12,10 @@ presets:
         - children: {from: series_genres}
         - home and garden: {from: series_genres}
     series_premiere: yes
-  IMDB:
-    imdb:
-      min_score: 3.1
-      min_votes: 1000
-      reject_genres:
-        - biography
-        - documentary
-        - game-show
-        - history
-        - music
-        - new
-        - reality-tv
-        - romance
-        - sport
-        - talk-show
-  TV_Series:
-    import_series:
+  tv:
+    download: ~/rtorrent/watch/start/
+    rtorrent_magnet: ~/rtorrent/watch/start/
+    configure_series:
       settings:
         upgrade: yes
       from:
@@ -44,90 +24,86 @@ presets:
           entry:
             title: ^SUMMARY:(.*) - [0-9]+x[0-9]+.*$
             url: ^SUMMARY:(.*) - [0-9]+x[0-9]+.*$
+  movies:
+    download: ~/rtorrent/watch/start/
+    rtorrent_magnet: ~/rtorrent/watch/start/
+    imdb:
+      min_score: 5.0
+      min_votes: 500
+      reject_genres:
+        - biography
+        - documentary
+        - game-show
+        - music
+        - talk-show
 tasks:
-  Apple_Trailers:
-    apple_trailers: 720p
-    accept_all: yes
-    download: /home/harleypig/Dropbox/Video
+#  apple_trailers:
+#    rss: http://pipes.yahoo.com/pipes/pipe.run?_id=3a8394a8d15d278e88f115979513d138&_render=rss
+#    accept_all: yes
+#    download: ~/Dropbox/video_trailers/
+#    priority: 1
+#    seen: local  # We don't want accepted entries from this feed to affect actual movie download feeds.
+  tv_ezrss:
+    rss: http://ezrss.it/feed/
+    template: tv
+    priority: 2
+  tv_showrss:
+    rss: http://showrss.info/rss.php?user_id=6174&hd=null&proper=null
+    template: tv
     priority: 5
-    seen: local  # We don't want accepted entries from this feed to affect actual movie download feeds.
-    set:
-      filename: 'Trailer_{{title}}.mov'
-  TV_EZTV:
-    rss: http://ezrss.it/feed/
-    preset: TV_Series
+  tv_kickasstorrents:
+    rss: http://kickass.to/tv/?rss=1
+    template: tv
     priority: 10
-  Premieres_EZTV:
-    rss: http://ezrss.it/feed/
-    preset: premieres
+  tv_btchat:
+    rss: http://rss.bt-chat.com/?group=3
+    template: tv
     priority: 10
-  TV_ShowRSS:
-    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
-    preset: TV_Series
+  tv_torrentz:
+    rss: http://torrentz.eu/feed
+    template: tv
+    priority: 10
+  tv_extratorrent:
+    rss: http://extratorrent.com/rss.xml?cid=8
+    template: tv
+    priority: 10
+  tv_feedburner:
+    rss: http://feeds.feedburner.com/eztv-rss-atom-feeds?format=xml
+    template: tv
+    priority: 10
+  premieres_ezrss:
+    rss: http://ezrss.it/feed/
+    template: premieres
     priority: 15
-  Premieres_ShowRSS:
-    rss: http://showrss.karmorra.info/rss.php?user_id=6174&hd=0&proper=1
-    preset: premieres
-    priority: 15
-  TV_KickAssTorrents:
-    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
-    preset: TV_Series
+  premieres_showrss:
+    rss: http://showrss.karmorra.info/feeds/all.rss
+    template: premieres
     priority: 20
-#  Premieres_KickAssTorrents:
-#    rss: http://www.kickasstorrents.com/tv/2/?field=time_add&sorder=desc&rss=1
-#    preset: premieres
-#    priority: 20
-#  TV_RlsLog:
-#    rlslog: http://www.rlslog.net/category/tv-shows/
-#    preset: TV_Series
-#    priority: 25
-#  TV_Sceper:
-#    scenereleases: http://sceper.eu/category/tv-shows/tv-shows-x264?themedemo=SceneRLSv3
-#    preset: TV_Series
-#    priority: 30
-#  TV_BTJunkie:
-#    rss: http://btjunkie.org/rss.xml?c=4
-#    preset: TV_Series
-#    priority: 35
-#  TV_BTCHAT:
-#    rss: http://rss.bt-chat.com/?cat=9
-#    preset: TV_Series
-#    priority: 40
-  Premieres_BTCHAT:
-    rss: http://rss.bt-chat.com/?cat=9
-    preset: premieres
-    priority: 40
-#  TV_TorrentDay:
-#    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
-#    preset: TV_Series
-#    priority: 45
-  Premieres_TorrentDay:
-    rss: http://www.torrentday.com/get_rss.php?feed=direct&user=harleypig&cat=22,2,14,7&passkey=dfa1b3706146b096df8dbb9069ca41a4
-    preset: premieres
-    priority: 45
-#  TV_TorrentReactor:
-#    rss: http://www.torrentreactor.net/rss/rss_8.xml
-#    preset: TV_Series
-#    priority: 50
-  Premieres_TorrentReactor:
-    rss: http://www.torrentreactor.net/rss/rss_8.xml
-    preset: premieres
-    priority: 50
-#  Mini_Series_Sceper:
-#    scenereleases: http://sceper.eu/category/tv-shows/mini-series?themedemo=SceneRLSv3
-#    accept_all: yes
-#    priority: 55
-#  Movies_RlsLog_DVDRip:
-#    rlslog: http://www.rlslog.net/category/movies/dvdrip
-#    accept_all: yes
-#    preset: IMDB
-#    priority: 60
-#  Movies_RlsLog_DVDScr:
-#    rlslog: http://www.rlslog.net/category/movies/dvdscr
-#    accept_all: yes
-#    preset: IMDB
-#    priority: 65
-#  EBook_RlsLog:
-#    rlslog: http://www.rlslog.net/category/ebook/ebook
-#    accept_all: yes
-#    priority: 70
+  premieres_kickasstorrents:
+    rss: http://kickass.to/tv/?rss=1
+    template: premieres
+    priority: 20
+  premieres_btchat:
+    rss: http://rss.bt-chat.com/?group=3
+    template: premieres
+    priority: 20
+  premieres_torrentz:
+    rss: http://torrentz.eu/feed
+    template: premieres
+    priority: 20
+  premieres_extratorrent:
+    rss: http://extratorrent.com/rss.xml?cid=8
+    template: premieres
+    priority: 20
+  premieres_feedburner:
+    rss: http://feeds.feedburner.com/eztv-rss-atom-feeds?format=xml
+    template: premieres
+    priority: 20
+  rlslog_dvdrips:
+    rlslog: http://www.rlslog.net/category/movies/dvdrip/
+    template: movies
+    priority: 30
+  rlslog_dvdscreeners:
+    rlslog: http://www.rlslog.net/category/movies/dvdscr/
+    template: movies
+    priority: 30

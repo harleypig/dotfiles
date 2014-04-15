@@ -11,24 +11,35 @@ function __basedir() {
 
 }
 
-#CAN256=$(find /lib/terminfo /usr/share/terminfo -name 'xterm-256color' 2> /dev/null)
-#
-#if [ "${CAN256}x" != "x" ]
-#then
-#
-#  TERM='xterm-256color'
-#
-#else
-#
+CAN256=$(find /lib/terminfo /usr/share/terminfo -name 'xterm-256color' 2> /dev/null)
+
+if [ -n $CAN256 ]; then
+
+  if [ -n $TMUX ]; then
+
+    TERM='screen-256color'
+
+  elif [ $TERMCAP =~ screen ]; then
+
+    TERM='screen-256color'
+
+  else
+
+    TERM='xterm-256color'
+
+  fi
+
+else
+
   TERM='xterm-color'
-#
-#fi
+
+fi
+
+export TERM
 
 HOSTSPECIFIC="$(__basedir ~/bash_profile)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFC}/*profile* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done
-
-export TERM
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
 [[ -f ~/.Xresources ]] && xrdb ~/.Xresources

@@ -3,6 +3,10 @@ function __parent_process() {
 
   parent="$(ps -p $PPID -o comm=)"
 
+  # XXX: Use SHLVL to determine depth
+  # XXX: Create a breadcrumb trail
+  # export breadcrumb="${breadcumb} -> ${parent}"
+
   case "$parent" in
     'screen' | 'sshd' | 'xterm' ) ;;
     * ) echo "${text_red}${text_blink}(${parent})${text_reset} " ;;

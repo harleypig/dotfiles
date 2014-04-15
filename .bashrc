@@ -20,8 +20,12 @@ PATH="${PATH}:~/bin"
 PATH="${PATH}:~/.vim/bin/"
 #PATH="${PATH} ~/projects/android-sdk/tools"
 #PATH="${PATH} ~/projects/android-sdk/platform-tools"
-export PATH
 
+if [ -e ~/.gem/ruby/2.1.0/bin ]; then
+  PATH="${PATH}:/home/harleypig/.gem/ruby/2.1.0/bin"
+fi
+
+export PATH
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
 export HISTFILESIZE=1000
@@ -72,9 +76,7 @@ then
   ########################################################################################
   # cdargs setup
 
-  CDARGS=$(command -v cdargs)
-
-  if [ $? -eq 0 ]; then
+  if command -v cdargs > /dev/null; then
 
     cv () { cdargs "$1" && cd $(cat $HOME/.cdargsresult); }
     cvadd () { cdargs --add=$(pwd); }
@@ -87,7 +89,7 @@ then
   # man setup
 
   # http://zameermanji.com/blog/2012/12/30/using-vim-as-manpager/
-  export MANPAGER="/bin/sh -c \"col -b | vim -c 'set ft=man ts=8 nomod nolist nonu noma' -\""
+  export MANPAGER="/bin/sh -c \"col -b | vim -R -c 'set ft=man ts=8 nomod nolist nonu noma' -\""
 
   ########################################################################################
   # Simple check and source lines
@@ -121,7 +123,7 @@ then
 
   # XXX: add random selection of template
 
-  if [[ -n $(command -v cowsay) ]]; then command cowsay $(fortune -s); fi
+  if command -v cowsay > /dev/null; then command cowsay $(fortune -s); fi
 
 fi
 
