@@ -26,6 +26,13 @@ function down4me() { curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '
 # XXX: Add a way to handle lang option (see http://sprunge.us)
 function sprunge { "$@" | curl -F 'sprunge=<-' http://sprunge.us; }
 
+function man2epub {
+
+  name=$1
+  zcat $(man -w $name) | man2html -r - | pandoc -f html -o $name.epub
+
+}
+
 # XXX: Move this to the CDARGS section
 ## http://www.commandlinefu.com/commands/view/6820/quick-directory-bookmarks
 ##

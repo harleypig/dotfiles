@@ -97,7 +97,10 @@ __update_prompt() {
   for p in "${PROMPT[@]}"; do PS1="${PS1}\n ${prompt_color}${p}${text_reset}"; done
 
   PS1="${PS1}\n\n ${prompt_color}\u@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
-  PS1="${PS1}\n Edit keys? 'bind -P | less'"
+
+  text_red=$(__ansi_code red_fg)
+#  PS1="${PS1}\n\n  ${text_red}CHECK OUT http://smartcd.org${prompt_color}\n"
+
   PS1="${PS1}\n ${exit_status} $ "
 
   export PS1

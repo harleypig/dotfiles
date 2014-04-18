@@ -29,6 +29,7 @@
   st = status
   w = whatchanged
   graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
+  find = !git ls-tree -r --name-only HEAD | grep --color $1
 
   # http://www.jukie.net/bart/blog/pimping-out-git-log
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
@@ -65,4 +66,7 @@
 
 [github]
   user = harleypig
-  token = f39a5663758cba5c397493afab5f2ba8b402d43a
+
+[status-tackle]
+  #plugins = UntrackedFiles WorkingTreeChanges IndexChanges UnpushedBranches CompletedFeatureBranches UnmergedFeatureBranches
+  plugins = UntrackedFiles WorkingTreeChanges IndexChanges UnpushedBranches
