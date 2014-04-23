@@ -17,6 +17,12 @@ for f in ${FUNCS}; do source $f; done
 
 prompt_color=$(__ansi_code cyan_fg)
 
+if [ $USER == 'root' ]; then
+  user_color=$(__ansi_code red_fg)
+else
+  user_color=$prompt_color
+fi
+
 __update_prompt() {
 
   local exit="$?"
@@ -96,7 +102,7 @@ __update_prompt() {
 
   for p in "${PROMPT[@]}"; do PS1="${PS1}\n ${prompt_color}${p}${text_reset}"; done
 
-  PS1="${PS1}\n\n ${prompt_color}\u@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
+  PS1="${PS1}\n\n ${user_color}\u${prompt_color}@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
 
   text_red=$(__ansi_code red_fg)
 #  PS1="${PS1}\n\n  ${text_red}CHECK OUT http://smartcd.org${prompt_color}\n"
