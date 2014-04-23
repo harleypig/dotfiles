@@ -5,6 +5,7 @@
 [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
 [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
 [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
+[[ -f ~/.bash_prompt.d/git-prompt ]]      && source ~/.bash_prompt.d/git-prompt
 
 function git_status {
 
