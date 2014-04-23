@@ -105,7 +105,12 @@ then
   [[ -f $rvm_path/scripts/completion ]]     && source $rvm_path/scripts/completion
   [[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
 
-  [[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
+  if [[ -f ~/perl5/perlbrew/etc/bashrc ]]; then
+    source ~/perl5/perlbrew/etc/bashrc
+  elif [[ -f /opt/perl5/etc/bashrc ]]; then
+    source /opt/perl5/etc/bashrc
+  fi
+
   [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
 
   [[ -f ~/bin/tokens ]]                     && source ~/bin/tokens
