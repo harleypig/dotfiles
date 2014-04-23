@@ -1,0 +1,56 @@
+#!/usr/bin/env perl
+
+# Ripped and modified to suit my needs from
+# http://www.dagolden.com/index.php/2134/how-i-manage-new-perls-with-perlbrew/
+
+use v5.10;
+use strict;
+use warnings;
+use autodie qw/:all/;
+
+use IPC::Run3::Simple;
+
+my $version = shift
+  or die "Usage: $0 <perl-version> [additional args to be passed to perlbrew]";
+
+my @args = @ARGV;
+
+my @problem_modules = qw(
+  JSON::XS
+);
+
+my @to_install = ();
+
+my ( $cpus, $err ) = run3([ 'nproc' ]);
+die $err if $err;
+
+$cpus = ( $cpus * 2 ) - 1;
+
+my $perl = $version;
+
+$perl =~ s/^/5\./
+  unless $perl =~ /^5\./;
+
+# install perl
+system( qw/perlbrew install -j/, $cpus, '--as', $version, $perl, @args );
+
+# let's avoid any pod tests when we try to install stuff
+#system( qw/perlbrew exec --with/, $lib, qw/cpanm TAP::Harness::Restricted/ );
+#local $ENV{HARNESS_SUBCLASS} = "TAP::Harness::Restricted";
+
+if ( @problem_modules ) {
+
+  # some things need forcing
+  system( qw/perlbrew exec --with/, $perl, qw/cpanm -f/, @problem_modules );
+
+}
+
+if ( @to_install ) {
+
+  # now install the rest
+  system( qw/perlbrew exec --with/, $perl, qw/cpanm/, @to_install );
+
+  # repeat to catch any circularity problems
+  system( qw/perlbrew exec --with/, $perl, qw/cpanm/, @to_install );
+
+}
