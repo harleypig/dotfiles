@@ -24,7 +24,6 @@ alias rd=rmdir
 alias realias='source ~/.bash_aliases'
 alias refunction='source ~/.bash_functions'
 alias sl=ls
-alias t=task
 
 if ! command -v tree > /dev/null; then
 

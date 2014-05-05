@@ -11,10 +11,11 @@
 # Use the command 'task show' to see all defaults and overrides
 
 # I used 'r!task show' to load in all possible variables and started modifying
-# from there. Unmodified entries are commented out at the bottom of the file.
-
-# Some settings stolen from:
-# https://github.com/garybgenett/tasks/blob/master/.taskrc
+# from there. Unmodified entries are left commented out.
+#
+# Unmodified entries are commented out at the bottom of the file.
+#
+# See man 5 taskrc for explanation of settings.
 
 ########################################################
 # Defaults
@@ -22,31 +23,74 @@
 #default.command=                next
 #default.due
 #default.due=1month !!!BROKEN!!! https://bug.tasktools.org/browse/TW-145
-#defaultheight=                  24
 #default.priority=
 default.priority=                L
 #default.project=
 default.project=                 Personal
-#defaultwidth=                   80
 
 ########################################################
 # Files
 
-data.location=~/.task
+data.location=                   ~/.task
+exit.on.missing.db=              yes
+#gc=                             on
+#locking=                        on
+
+########################################################
+# Extensions
+#
+# XXX: need to do more research on this
+
+extensions=                      on
+
+########################################################
+# Terminal
+
+#avoidlastcolumn=                no
+#defaultheight=                  24
+#defaultwidth=                   80
+#detection=                      off
+editor=                          /usr/bin/vim
+#hyphenate=                      on
+locale=                          en-US.UTF8
+
+########################################################
+# Dates
+
+dateformat.annotation=           YMD HNS
+dateformat.edit=                 YMDTHNSZ
+#dateformat.holiday=             YMD
+dateformat.info=                 YMD HNS
+dateformat.report=               YMD HNS
+dateformat=                      YMD
+#displayweeknumber=              yes
+due=                             30
+weekstart=                       monday
 
 ########################################################
 # Calendar/Holidays
 
 include /usr/share/doc/task/rc/holidays.en-US.rc
 
-#calendar.details=               sparse
 calendar.details=                full
 #calendar.details.report=        list
-#calendar.holidays=              none
+#calendar.details=               sparse
 calendar.holidays=               full
+#calendar.holidays=              none
 #calendar.legend=                yes
 #calendar.offset=                no
 #calendar.offset.value=          -1
+#monthsperline=                  3
+
+########################################################
+# Journal Entries
+
+# XXX: Research this!
+
+#journal.info=                   on
+#journal.time=                   no
+journal.time.start.annotation=   Started...
+journal.time.stop.annotation=    ...stopped.
 
 ########################################################
 # Color theme (uncomment one to use)
@@ -88,8 +132,6 @@ taskd.credentials=Public\/Alan Young\/26d51a63-d61c-4001-85df-8d53200dc4e0
 # UDA
 
 # !!! Need to read up on this!
-
-extensions=                      on
 
 uda.kind.label=                  Kind
 uda.kind.type=                   string
@@ -259,46 +301,27 @@ report.export-remind.sort=       #>>>
 
 #abbreviation.minimum=           2
 #active.indicator=               *
-#avoidlastcolumn=                no
 #bulk=                           3
 #burndown.bias=                  0.666
 #column.padding=                 1
 #complete.all.projects=          no
 #complete.all.tags=              no
 #confirmation=                   yes
-#dateformat.annotation
-#dateformat.edit=                Y-M-D H:N:S
-#dateformat.holiday=             YMD
-#dateformat.info=                Y-M-D H:N:S
-#dateformat.report
-#dateformat=                     Y-M-D
 #debug=                          no
 #debug.tls=                      0
 #dependency.confirmation=        on
 #dependency.indicator=           D
 #dependency.reminder=            on
-#detection=                      off
-#displayweeknumber=              yes
 #dom=                            on
-#due=                            7
-#exit.on.missing.db=             no
 #expressions=                    on
 #extensions=                     off
 #fontunderline=                  yes
 #_forcecolor=                    no
-#gc=                             on
-#hyphenate=                      on
 #indent.annotation=              2
 #indent.report=                  0
-#journal.info=                   on
-#journal.time=                   no
-#journal.time.start.annotation=  Started task
-#journal.time.stop.annotation=   Stopped task
 #json.array=                     off
 #list.all.projects=              no
 #list.all.tags=                  no
-#locale
-#locking=                        on
 #nag=                            You have more urgent tasks.
 #patterns=                       on
 #print.empty.columns=            no
@@ -326,5 +349,4 @@ report.export-remind.sort=       #>>>
 #urgency.tags.coefficient=       1.0
 #urgency.waiting.coefficient=    -3.0
 #verbose=                        yes
-#weekstart=                      sunday
 #xterm.title=                    no

@@ -29,7 +29,7 @@ templates:
     rtorrent_magnet: ~/rtorrent/watch/start/
     imdb:
       min_score: 5.0
-      min_votes: 500
+      min_votes: 100
       reject_genres:
         - biography
         - documentary

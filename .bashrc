@@ -144,7 +144,12 @@ then
 
   # XXX: add random selection of template
 
-  if command -v cowsay > /dev/null; then command cowsay $(fortune -s); fi
+  if command -v cowsay > /dev/null; then
+
+    function cowsay_random () { command cowsay -f $(cowsay -l | perl -ne 'next if /Cow files in .*:/; push @cf, split /\s+/}{ printf "%s", @cf[ rand @cf]') "$@"; }
+
+    cowsay_random $(fortune -s);
+  fi
 
 fi
 

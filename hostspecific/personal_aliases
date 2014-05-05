@@ -106,13 +106,13 @@ alias acstop="sudo $(which apachectl) stop"
 alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harleypig.com/logs/error.log'
 
 # FBcmd
-if command -f fbcmd > /dev/null; then alias fb='fbcmd'; fi
+if command -v fbcmd > /dev/null; then alias fb='fbcmd'; fi
 
 # Kludges
 alias fixssh='exec ssh-agent bash'
 
 # Mechanize Shell
-if perldoc WWW::Mechanize::Shell > /dev/null; then
+if perldoc -l WWW::Mechanize::Shell > /dev/null 2>&1 ; then
   alias mechsh='perl -MWWW::Mechanize::Shell -eshell'
 fi
 
@@ -129,8 +129,12 @@ fi
 
 if command -v task > /dev/null; then
 
-  alias today='task due.after:yesterday due.before:tomorrow'
   alias overdue='task overdue'
+  alias tadd='task add'
+  alias today='task due.after:yesterday due.before:tomorrow'
+  alias tomorrow='task due:tomorrow'
+  alias t=task
+  alias yesterday='task due:yesterday'
 
 fi
 
