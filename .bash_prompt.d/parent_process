@@ -6,6 +6,7 @@ function __parent_process() {
   # XXX: Use SHLVL to determine depth
   # XXX: Create a breadcrumb trail
   # export breadcrumb="${breadcumb} -> ${parent}"
+  #trail="${trail} -> ${parent}"
 
   case "$parent" in
     'screen' | 'sshd' | 'xterm' ) ;;

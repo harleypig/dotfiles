@@ -95,6 +95,23 @@ ALIAS=${ALIAS/CONSOLE/1-4-12}
 ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
 alias "console_lam99404"="${ALIAS}"
 
+TEMPLATE='set_screen_title "NEWTITLE" ; TERM=xterm ssh -i ~/.ssh/verio_id_rsa root@IP ; set_screen_title OLDTITLE'
+
+ALIAS=${TEMPLATE/NEWTITLE/mcp}
+ALIAS=${ALIAS/IP/208.55.160.69}
+ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
+alias "mcp"="${ALIAS}"
+
+ALIAS=${TEMPLATE/NEWTITLE/advlinux6}
+ALIAS=${ALIAS/IP/208.55.160.46}
+ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
+alias "advlinux6"="${ALIAS}"
+
+ALIAS=${TEMPLATE/NEWTITLE/hichew}
+ALIAS=${ALIAS/IP/208.55.161.203}
+ALIAS=${ALIAS/OLDTITLE/$OLDTITLE}
+alias "hichew"="${ALIAS}"
+
 # ls
 alias l='ls -lhABvXZ --color=auto --group-directories-first'
 
