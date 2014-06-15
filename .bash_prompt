@@ -18,7 +18,7 @@ for f in ${FUNCS}; do source $f; done
 prompt_color=$(__ansi_code cyan_fg)
 
 if [ $USER == 'root' ]; then
-  user_color=$(__ansi_code red_fg)
+  user_color=$text_red
 else
   user_color=$prompt_color
 fi

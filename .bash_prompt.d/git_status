@@ -4,9 +4,9 @@
 # If you want/need multiple repository checking,
 # have a look at http://glandium.org/blog/?p=170
 
-git_normal_color=$(__ansi_code green_fg)
-git_unstaged_color=$(__ansi_code yellow_fg)
-git_staged_color=$(__ansi_code red_fg)
+git_normal_color=$text_green
+git_unstaged_color=$text_yellow
+git_staged_color=$text_red
 git_push_color=$(__ansi_code red_bg yellow_fg)
 git_pull_color=$(__ansi_code red_bg yellow_fg)
 git_pull_text='PULL'

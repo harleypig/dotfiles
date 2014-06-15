@@ -1,6 +1,6 @@
 
-dir_readable_color=$(__ansi_code green_fg)
-dir_unreadable_color=$(__ansi_code red_fg)
+dir_readable_color=$text_green
+dir_unreadable_color=$text_red
 
 function __dir_readable() {
 

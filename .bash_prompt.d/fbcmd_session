@@ -1,6 +1,5 @@
 
 logfile="/home/harleypig/fbcmd_fortune.lastrun"
-redtext=$(__ansi_code red_fg)
 
 #2014-05-05 05:50:21 /home/harleypig/bin/fbcmd_fortune begin
 #fbcmd [v1.1] ERROR: STATUS
@@ -9,8 +8,6 @@ redtext=$(__ansi_code red_fg)
 
 function __fbcmd_status() {
 
-  if grep 'ERROR:' $logfile > /dev/null; then
-    echo $redtext fbcmd has an error, see $logfile
-  fi
+  [ -f $logfile ] && grep 'ERROR:' $logfile > /dev/null && echo $text_red fbcmd has an error, see $logfile
 
 }

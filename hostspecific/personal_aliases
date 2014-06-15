@@ -116,11 +116,16 @@ alias "hichew"="${ALIAS}"
 alias l='ls -lhABvXZ --color=auto --group-directories-first'
 
 # Apache
-alias acconfigtest="sudo $(which apachectl) configtest"
-alias acrestart="sudo $(which apachectl) stop ; sleep 3 ; sudo $(which apachectl) start"
-alias acstart="sudo $(which apachectl) start"
-alias acstop="sudo $(which apachectl) stop"
-alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harleypig.com/logs/error.log'
+if command -v apachectl > /dev/null; then
+
+  local apachectl=$(which apachectl)
+  alias acconfigtest="sudo $apachectl configtest"
+  alias acrestart="sudo $apachectl stop ; sleep 3 ; sudo $apachectl start"
+  alias acstart="sudo $apachectl start"
+  alias acstop="sudo $apachectl stop"
+  alias tail_apache_logs='tail -f /home/www/apache2/logs/error.log /home/www/harleypig.com/logs/error.log'
+
+fi
 
 # FBcmd
 if command -v fbcmd > /dev/null; then alias fb='fbcmd'; fi

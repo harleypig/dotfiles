@@ -1,16 +1,13 @@
 
 function __parent_process() {
 
-  parent="$(ps -p $PPID -o comm=)"
+  local parents=$(pstree -sA $PPID)
+  parents=${parents/%-+*/}
+  parents=${parents//bash---/}
+  parents=${parents/systemd---slim---openbox---}
+  parents=${parents/%---pstree/}
+  parents=${parents//---/ : }
 
-  # XXX: Use SHLVL to determine depth
-  # XXX: Create a breadcrumb trail
-  # export breadcrumb="${breadcumb} -> ${parent}"
-  #trail="${trail} -> ${parent}"
-
-  case "$parent" in
-    'screen' | 'sshd' | 'xterm' ) ;;
-    * ) echo "${text_red}${text_blink}(${parent})${text_reset} " ;;
-  esac
+  echo "${text_red}${text_blink}(${parents})${text_reset} "
 
 }
