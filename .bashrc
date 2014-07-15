@@ -74,22 +74,10 @@ then
   fi
 
   ########################################################################################
-  # cdargs setup
-
-  if command -v cdargs > /dev/null; then
-
-    cv () { cdargs "$1" && cd $(cat $HOME/.cdargsresult); }
-    cvadd () { cdargs --add=$(pwd); }
-
-    # XXX: fall back to homegrown bookmark manager if cdargs isn't installed
-
-  fi
-
-  ########################################################################################
   # man setup
 
   # http://zameermanji.com/blog/2012/12/30/using-vim-as-manpager/
-  export MANPAGER="/bin/sh -c \"col -b | vim -R -c 'set ft=man ts=8 nomod nolist nonu noma' -\""
+  #export MANPAGER="/bin/sh -c \"col -b | vim -R -c 'set ft=man ts=8 nomod nolist nonu noma' -\""
 
   ########################################################################################
   # Simple check and source lines
@@ -101,9 +89,14 @@ then
 
   [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
-  [[ -d ~/.bash_completion.d ]]             && source ~/.bash_completion.d/*
   [[ -f $rvm_path/scripts/completion ]]     && source $rvm_path/scripts/completion
   [[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
+
+  if [[ -d ~/.bash_completion.d ]]; then
+     COMPLETION="$(__basedir ~/.bash_completion.d)/.bash_completion.d"
+     SOURCE=$(ls ${COMPLETION}/* 2> /dev/null)
+     for s in ${SOURCE}; do source $s; done
+   fi
 
   if [[ -f ~/perl5/perlbrew/etc/bashrc ]]; then
     source ~/perl5/perlbrew/etc/bashrc
@@ -137,19 +130,6 @@ then
   HOSTSPECIFIC="$(__basedir ~/.bashrc)/hostspecific/$(hostname)"
   SOURCE=$(ls ${HOSTSPECIFIC}/*bashrc* 2> /dev/null)
   for s in ${SOURCE}; do source $s; done
-
-
-  ########################################################################################
-  # Say something funny
-
-  # XXX: add random selection of template
-
-  if command -v cowsay > /dev/null; then
-
-    function cowsay_random () { command cowsay -f $(cowsay -l | perl -ne 'next if /Cow files in .*:/; push @cf, split /\s+/}{ printf "%s", @cf[ rand @cf]') "$@"; }
-
-    cowsay_random $(fortune -s);
-  fi
 
 fi
 

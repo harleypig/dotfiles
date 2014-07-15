@@ -1,0 +1,75 @@
+##################
+# http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
+
+function tailfile () { tail -f $1 | xargs -IX printf "$(date -u)\t%s\n" X; }
+
+##################
+
+function wiki() { host -t txt $1.wp.gd.cx; }
+
+##################
+# XXX: Add a way to handle lang option (see http://sprunge.us)
+
+function pastebinit { "$@" | curl -F 'sprunge=<-' http://sprunge.us; }
+
+##################
+
+function down4me() { curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '/just you/!d;s/<[^>]*>//g'; }
+
+##################
+# $ ? 3 \* 15
+# 45
+
+? () { echo "$*" | bc -l; }
+
+##################
+
+function geoip() {
+
+  wget -qO - www.ip2location.com/$1 | \
+  grep -E '<span id=\"dgLookup__ctl2_lblI(Country|Region|City)\">' | \
+  sed 's/<[^>]*>//g; s/^[\t]*//; s/&quot;/"/g; s/</</g; s/>/>/g; s/&amp;/\&/g'
+
+}
+
+##################
+
+function man2epub {
+
+  name=$1
+
+  if command -v pandoc > /dev/null; then
+    zcat $(man -w $name) | man2html -r - | pandoc -f html -o $name.epub
+  else
+    echo man2epub needs pandoc
+  fi
+
+}
+
+##################
+# Get an ordered list of subdirectory sizes
+# http://www.shell-fu.org/lister.php?id=275
+
+function dusk() {
+
+  du -sk ./* | sort -n | awk 'BEGIN{ pref[1]="K"; pref[2]="M"; pref[3]="G";} { total = total + $1; x = $1; y = 1; while( x > 1024 ) { x = (x + 1023)/1024; y++; } printf("%g%s\t%s\n",int(x*10)/10,pref[y],$2); } END { y = 1; while( total > 1024 ) { total = (total + 1023)/1024; y++; } printf("Total: %g%s\n",int(total*10)/10,pref[y]); }';
+
+}
+
+##################
+# http://vimeo.com/21538711 about 16:30
+
+function toggle_trace () {
+
+  if TRACEON eq 1; then
+    export PS4=
+    export TRACEON=
+    set +o xtrace
+  else
+    export PS4='+[${BASH_SOURCE}] : ${LINENO} : ${FUNCNAME[0]:+${FUNCNAME[0]}() $ }'
+    export TRACEON=1
+    set -o xtrace
+  fi
+
+}
+

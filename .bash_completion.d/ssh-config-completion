@@ -1,0 +1,13 @@
+_ssh() {
+
+  local curw
+  COMPREPLY=()
+  curw=${COMP_WORDS[COMP_CWORD]}
+
+  local ssh_config=$(perl -p -e 'if(s/^host(name)? //i){for$a(split/\s+/){next if$a eq"*";$h{$a}=1}}}{print"$_ "for sort keys%h' ~/.ssh/config)
+
+  COMPREPLY=($(compgen -W '$(echo "$ssh_config")' -- $curw))
+
+}
+
+complete -F _ssh ssh
