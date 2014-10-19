@@ -1,0 +1,41 @@
+__pacman_status() {
+
+  local now=$(date +%s)
+
+  function _diff() {
+    local _date="$@"
+    local _seconds=$(date --date="$_date" +%s)
+
+    local _duration=$(($now - $_seconds))
+    local _days=$(($_duration / (60*60*24) ))
+    local _hours=$(($_duration % (60*60*24) / (60*60) ))
+    local _minutes=$(($_duration % (60*60) / 60))
+
+    local _string
+
+    if [[ $_days -ne 0 ]]; then
+      _string="${_string}${_days}d "
+    fi
+
+    if [[ $_hours -ne 0 ]]; then
+      _string="${_string}${_hours}h "
+    fi
+
+    if [[ $_minutes -ne 0 ]]; then
+      _string="${_string}${_minutes}m "
+    fi
+
+    echo $_string
+  }
+
+#  local _sync_duration='-'
+#  local _last_sync=$(grep "synchronizing package lists" /var/log/pacman.log | tail -1 | cut -c2-17)
+#  [[ -n "$last_sync" ]] && _sync_duration=$((_diff $last_sync))
+
+  local _update_duration='-'
+  local _last_upgrade=$(grep "starting full system upgrade" /var/log/pacman.log | tail -1 | cut -c2-17)
+  [[ -n "$_last_upgrade" ]] && _update_duration=$(_diff $_last_upgrade)
+
+  echo "Pacman - Last update ${_update_duration}"
+
+}
