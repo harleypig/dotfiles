@@ -76,7 +76,7 @@ tasks:
     template: premieres
     priority: 15
   premieres_showrss:
-    rss: http://showrss.karmorra.info/feeds/all.rss
+    rss: http://showrss.info/feeds/all.rss
     template: premieres
     priority: 20
   premieres_kickasstorrents:

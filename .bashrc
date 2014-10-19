@@ -25,7 +25,6 @@ if [ -e ~/.gem/ruby/2.1.0/bin ]; then
   PATH="${PATH}:/home/harleypig/.gem/ruby/2.1.0/bin"
 fi
 
-export PATH
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
 export HISTFILESIZE=1000
@@ -33,6 +32,8 @@ export HISTSIZE=1000
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+export PACMAN='pacmatic'
+export PATH
 
 if [[ $- = *i* ]]
 then

@@ -24,6 +24,7 @@
   ci = commit
   co = checkout
   df = diff
+  d  = difftool
   lp = log --pretty=format:'%h : (%aN) %s' --topo-order --graph
   pu = pull
   st = status
@@ -37,6 +38,9 @@
 [diff]
   tool = vimdiff
   guitool = kdiff3
+
+[difftool]
+  prompt = false
 
 [apply]
   whitespace = fix

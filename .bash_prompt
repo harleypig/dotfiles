@@ -40,6 +40,7 @@ __update_prompt() {
   parent=$(__parent_process)
   vcs=$(__git_status)
   fbcmd=$(__fbcmd_status)
+  pacman_status=$(__pacman_status)
 
   perlv='not installed'
   if command -v perl > /dev/null; then
@@ -106,7 +107,7 @@ __update_prompt() {
   [[ -n "${fbcmd}" ]] && PS1="${PS1}\n\n${fbcmd}${text_reset}"
 
   PS1="${PS1}\n\n ${prompt_color}\u@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
-  PS1="${PS1}\n Edit keys? 'bind -P | less'"
+  PS1="${PS1}\n ${pacman_status} | Edit keys? 'bind -P | less'"
   PS1="${PS1}\n ${exit_status} $ "
 
   export PS1
