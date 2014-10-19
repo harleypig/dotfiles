@@ -18,6 +18,7 @@ function __basedir() {
 
 PATH="${PATH}:~/bin"
 PATH="${PATH}:~/.vim/bin/"
+#PATH="${PATH}:/usr/bin/vendor_perl/"
 #PATH="${PATH} ~/projects/android-sdk/tools"
 #PATH="${PATH} ~/projects/android-sdk/platform-tools"
 
