@@ -25,7 +25,7 @@ fi
 
 __update_prompt() {
 
-  local exit="$?"
+  exit_status=$(__exit_status "${PIPESTATUS[@]}")
 
   # used to join bits of data in one line
   declare -a __JOIN
@@ -36,7 +36,6 @@ __update_prompt() {
   cwd=$(__dir_readable)
   datetime="\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
   dropbox=$(__dropbox_status)
-  exit_status=$(__exit_status $exit)
   parent=$(__parent_process)
   vcs=$(__git_status)
   fbcmd=$(__fbcmd_status)

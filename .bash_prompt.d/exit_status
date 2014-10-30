@@ -10,11 +10,30 @@ bad_exit_color=$(__ansi_code red_bg white_fg)
 
 function __exit_status() {
 
-  # Wrap the exit symbols in appropriate ansi codes.
+  unset __JOIN
 
-  case "$1" in
-    "0" ) echo "$good_exit_color$good_exit_text$text_reset" ;;
-    *   ) echo "$bad_exit_color$bad_exit_text$text_reset" ;;
-  esac
+  for s in "$@"; do
+
+    # Wrap the exit symbols in appropriate ansi codes.
+    #
+    # If a command is still writing to the pipe and a later command exits, the
+    # first command will exit with a status of 141.  This causes confusion
+    # with commands like echo or head.
+    #
+    # Doing this *will* cause confusion if something does exit abnormally but
+    # doesn't throw an appropriate exit status.
+
+    case "$s" in
+      0|141 ) __JOIN[${#__JOIN[*]}]="$good_exit_color$good_exit_text$text_reset" ;;
+      *   ) __JOIN[${#__JOIN[*]}]="$bad_exit_color$bad_exit_text$text_reset" ;;
+    esac
+
+  done
+
+  separator='|'
+  statuscodes=$(__join $separator)
+  statuscodes="${statuscodes//$separator/ $separator }"
+
+  echo $statuscodes
 
 }
