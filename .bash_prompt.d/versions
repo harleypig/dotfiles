@@ -1,0 +1,39 @@
+function __versions () {
+
+  local versionline
+
+  perlv='not installed'
+  if command -v perl > /dev/null; then
+
+    perlv=$(perl -e 'print $]')
+
+  fi
+
+  pythonv='not installed'
+  if command -v python > /dev/null; then
+
+    pythonv=$(python -V 2>&1 | cut -d ' ' -f 2)
+
+  fi
+
+  rubyv='not installed'
+  if command -v ruby > /dev/null; then
+
+    rubyv=$(ruby -v | cut -d ' ' -f 2)
+
+  fi
+
+  # Version line
+
+  unset __JOIN
+  __JOIN[${#__JOIN[*]}]="Perl ${perlv}"
+  __JOIN[${#__JOIN[*]}]="Python ${pythonv}"
+  __JOIN[${#__JOIN[*]}]="Ruby ${rubyv}"
+
+  separator='|'
+  versionline=$(__join $separator)
+  versionline="${versionline//$separator/ $separator }"
+
+  echo $versionline
+
+}

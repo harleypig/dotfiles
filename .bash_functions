@@ -30,6 +30,34 @@ function __join() {
 
 }
 
+function __duration() {
+
+  local _date="$@"
+  local _seconds=$(date --date="$_date" +%s)
+
+  local _duration=$(($now - $_seconds))
+  local _days=$(($_duration / (60*60*24) ))
+  local _hours=$(($_duration % (60*60*24) / (60*60) ))
+  local _minutes=$(($_duration % (60*60) / 60))
+
+  local _string
+
+  if [[ $_days -ne 0 ]]; then
+    _string="${_string}${_days}d "
+  fi
+
+  if [[ $_hours -ne 0 ]]; then
+    _string="${_string}${_hours}h "
+  fi
+
+  if [[ $_minutes -ne 0 ]]; then
+    _string="${_string}${_minutes}m "
+  fi
+
+  echo $_string
+
+}
+
 BIGFUNCTIONS="$(__basedir ~/.bash_functions)/.bash_functions.d"
 SOURCE=$(ls ${BIGFUNCTIONS}/* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done

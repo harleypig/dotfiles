@@ -11,6 +11,9 @@
 #   Allow for arbitrary scripts to be run under certain conditions.  E.g.,
 #   directory change for location specific aliases.
 
+declare -a __JOIN
+declare -a PROMPT
+
 PROMPT_FUNCTIONS="$(__basedir ~/.bash_prompt)/.bash_prompt.d"
 FUNCS=$(ls ${PROMPT_FUNCTIONS}/* 2> /dev/null)
 for f in ${FUNCS}; do source $f; done
@@ -25,42 +28,16 @@ fi
 
 __update_prompt() {
 
-  exit_status=$(__exit_status "${PIPESTATUS[@]}")
+  local exit_status=$(__exit_status "${PIPESTATUS[@]}")
 
-  # used to join bits of data in one line
-  declare -a __JOIN
-
-#  exec_time="($(perl -MTime::HiRes=time -e 'printf "%.6f", Time::HiRes::time() - $ENV{start_time}')) "
-
-  current_song=$(__grooveshark_status)
-  cwd=$(__dir_readable)
-  datetime="\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
-  dropbox=$(__dropbox_status)
-  parent=$(__parent_process)
-  vcs=$(__git_status)
-  fbcmd=$(__fbcmd_status)
-  pacman_status=$(__pacman_status)
-
-  perlv='not installed'
-  if command -v perl > /dev/null; then
-
-    perlv=$(perl -e 'print $]')
-
-  fi
-
-  pythonv='not installed'
-  if command -v python > /dev/null; then
-
-    pythonv=$(python -V 2>&1 | cut -d ' ' -f 2)
-
-  fi
-
-  rubyv='not installed'
-  if command -v ruby > /dev/null; then
-
-    rubyv=$(ruby -v)
-
-  fi
+  local cwd=$(__dir_readable)
+  local datetime="\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
+  local dropbox=$(__dropbox_status)
+  local fbcmd=$(__fbcmd_status)
+  local pacman_status=$(__pacman_status)
+  local parent=$(__parent_process)
+  local vcs=$(__git_status)
+  local versionline=$(__versions)
 
   # Info line
 
@@ -69,34 +46,24 @@ __update_prompt() {
   __JOIN[${#__JOIN[*]}]="LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"                                # loadavg
   __JOIN[${#__JOIN[*]}]="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"            # freespace
 
-  [[ -n ${dropbox} ]] && __JOIN[${#__JOIN[*]}]=${dropbox}
-
   separator='|'
   infoline=$(__join $separator)
   infoline="${infoline//$separator/ $separator }"
 
-  # Version line
-
-  unset __JOIN
-  __JOIN[${#__JOIN[*]}]="Perl ${perlv}"
-  __JOIN[${#__JOIN[*]}]="Python ${pythonv}"
-  __JOIN[${#__JOIN[*]}]="Ruby ${rubyv}"
-
-  separator='|'
-  versionline=$(__join $separator)
-  versionline="${versionline//$separator/ $separator }"
-
   # Build the prompt
-  declare -a PROMPT
 
+  unset PROMPT
   PROMPT[${#PROMPT[*]}]="${parent}${prompt_color}${datetime}"
   PROMPT[${#PROMPT[*]}]="${infoline}"
   PROMPT[${#PROMPT[*]}]="${versionline}"
-  [[ -n "${current_song}" ]] && PROMPT[${#PROMPT[*]}]="${current_song}"
+  PROMPT[${#PROMPT[*]}]="${pacman_status}"
 
-  HOSTSPECIFIC="$(__basedir ~/.bash_prompt)/hostspecific/$(hostname)"
-  SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
-  for s in ${SOURCE}; do source $s; done
+  [[ -n $dropbox ]] && PROMPT[${#PROMPT[*]}]="${dropbox}"
+
+# Need to handle this better
+#  HOSTSPECIFIC="$(__basedir ~/.bash_prompt)/hostspecific/$(hostname)"
+#  SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
+#  for s in ${SOURCE}; do source $s; done
 
   # Append the last command, clear the history cache and reread the history file
   PS1="\$(history -a ; history -c ; history -r)"
@@ -106,7 +73,6 @@ __update_prompt() {
   [[ -n "${fbcmd}" ]] && PS1="${PS1}\n\n${fbcmd}${text_reset}"
 
   PS1="${PS1}\n\n ${prompt_color}\u@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
-  PS1="${PS1}\n ${pacman_status} | Edit keys? 'bind -P | less'"
   PS1="${PS1}\n ${exit_status} $ "
 
   export PS1
