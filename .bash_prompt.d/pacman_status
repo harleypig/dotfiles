@@ -10,6 +10,10 @@ if command -v pacman > /dev/null; then
 
       update_duration="${text_yellow}${update_duration}${text_reset}"
 
+    elif $(echo $update_duration | grep -q '1d'); then
+
+      update_duration="${text_green}${update_duration}${text_reset}"
+
     elif $(echo $update_duration | grep -q '[[:digit:]]d'); then
 
       update_duration="${text_red}${update_duration}${text_reset}"
