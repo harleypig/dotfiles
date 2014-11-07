@@ -26,6 +26,7 @@ function __versions () {
   # Version line
 
   unset __JOIN
+  __JOIN[${#__JOIN[*]}]="$(uname -sr)"
   __JOIN[${#__JOIN[*]}]="Perl ${perlv}"
   __JOIN[${#__JOIN[*]}]="Python ${pythonv}"
   __JOIN[${#__JOIN[*]}]="Ruby ${rubyv}"
