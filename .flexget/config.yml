@@ -1,8 +1,66 @@
 templates:
-  premieres:
-    thetvdb_lookup: yes
+  global:
+    verify_ssl_certificates: no
     download: ~/rtorrent/watch/start/
     rtorrent_magnet: ~/rtorrent/watch/start/
+    magnets: no
+    torrent_alive:
+      min_seeds: 5
+      reject_for: 1 day
+    free_space:
+      path: /home/harleypig
+      space: 1024
+    torrent_scrub: rtorrent
+    content_filter:
+      require:
+        - '*.avi'
+        - '*.mkv'
+        - '*.mp4'
+        - '*.mpeg'
+        - '*.mpg'
+        - '*.part0*'
+        - '*.r0*'
+        - '*.wmv'
+        - '*.rar'
+      reject:
+        - 'password.txt'
+
+  tv_urls:
+    inputs:
+      - rss: { url: 'http://extratorrent.com/rss.xml?cid=8'                        , silent: yes , ascii: yes }
+      - rss: { url: 'http://ezrss.it/feed/'                                        , silent: yes , ascii: yes }
+      - rss: { url: 'http://feeds.feedburner.com/eztv-rss-atom-feeds?format=xml'   , silent: yes , ascii: yes }
+      - rss: { url: 'http://kickass.so/tv/?rss=1'                                  , silent: yes , ascii: yes }
+      - rss: { url: 'http://rss.bt-chat.com/?group=3'                              , silent: yes , ascii: yes }
+      - rss: { url: 'http://sceper.ws/category/tv-shows'                           , silent: yes , ascii: yes }
+      - rss: { url: 'http://showrss.info/feeds/all.rss'                            , silent: yes , ascii: yes }
+      - rss: { url: 'http://showrss.info/rss.php?user_id=6174&hd=null&proper=null' , silent: yes , ascii: yes }
+      - rss: { url: 'https://rss.thepiratebay.se/208'                              , silent: yes , ascii: yes }
+      - rss: { url: 'http://torrentz.eu/feed'                                      , silent: yes , ascii: yes }
+      - rss: { url: 'http://torrentz.eu/feed_verified?q=tv'                        , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/tv-shows/feed'                 , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.torlock.com/television/rss.xml'                    , silent: yes , ascii: yes }
+
+  movie_urls:
+    inputs:
+      - rss: { url: 'http://kickass.so/movies/?rss=1'                         , silent: yes , ascii: yes }
+      - rss: { url: 'http://torrentz.eu/feed_verified?q=movies'               , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/bdrip/feed/'       , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/dvdrip/feed/'      , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/dvdrip-old/feed/'  , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/dvdscr/feed/'      , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/feed/'             , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/hdrip/feed/'       , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/r5/feed/'          , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/rc/feed/'          , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/scr/feed/'         , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/staff-picks/feed/' , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.rlslog.net/category/movies/workprint/feed/'   , silent: yes , ascii: yes }
+      - rss: { url: 'http://www.torlock.com/movies/rss.xml'                   , silent: yes , ascii: yes }
+
+  premieres:
+    series_premiere: yes
+    thetvdb_lookup: yes
     regexp:
       reject:
         - documentary: {from: series_genres}
@@ -11,22 +69,31 @@ templates:
         - reality: {from: series_genres}
         - children: {from: series_genres}
         - home and garden: {from: series_genres}
-    series_premiere: yes
+
   tv:
-    download: ~/rtorrent/watch/start/
-    rtorrent_magnet: ~/rtorrent/watch/start/
+    content_size:
+      max: 2500
+      strict: no
     configure_series:
       settings:
+        tracking: backfill
         upgrade: yes
       from:
         text:
-          url: http://next-episode.net/PAGES/misc/export_calendar?z&u=harleypig&k=f5978573acadacdc2d12611096045488.ics
+          url: http://next-episode.net/calendar.ics?u=harleypig&k=fa215571403f9e8ba3e6a3c5ec413284
           entry:
             title: ^SUMMARY:(.*) - [0-9]+x[0-9]+.*$
             url: ^SUMMARY:(.*) - [0-9]+x[0-9]+.*$
+
   movies:
-    download: ~/rtorrent/watch/start/
-    rtorrent_magnet: ~/rtorrent/watch/start/
+    proper_movies: yes
+    seen_movies: strict
+    content_size:
+      max: 5000
+      strict: no
+    quality:
+      - 720p+
+      - dvdscr+
     imdb:
       min_score: 5.0
       min_votes: 100
@@ -36,74 +103,33 @@ templates:
         - game-show
         - music
         - talk-show
+
 tasks:
-#  apple_trailers:
-#    rss: http://pipes.yahoo.com/pipes/pipe.run?_id=3a8394a8d15d278e88f115979513d138&_render=rss
-#    accept_all: yes
-#    download: ~/Dropbox/video_trailers/
-#    priority: 1
-#    seen: local  # We don't want accepted entries from this feed to affect actual movie download feeds.
-  tv_ezrss:
-    rss: http://ezrss.it/feed/
-    template: tv
-    priority: 2
-  tv_showrss:
-    rss: http://showrss.info/rss.php?user_id=6174&hd=null&proper=null
-    template: tv
-    priority: 5
-  tv_kickasstorrents:
-    rss: http://kickass.to/tv/?rss=1
-    template: tv
+  apple_movie_trailers:
+    template: no_global
+    apple_trailers: 720p
+    accept_all: yes
+    download: ~/Dropbox/video_trailers/
     priority: 10
-  tv_btchat:
-    rss: http://rss.bt-chat.com/?group=3
-    template: tv
-    priority: 10
-  tv_torrentz:
-    rss: http://torrentz.eu/feed
-    template: tv
-    priority: 10
-  tv_extratorrent:
-    rss: http://extratorrent.com/rss.xml?cid=8
-    template: tv
-    priority: 10
-  tv_feedburner:
-    rss: http://feeds.feedburner.com/eztv-rss-atom-feeds?format=xml
-    template: tv
-    priority: 10
-  premieres_ezrss:
-    rss: http://ezrss.it/feed/
-    template: premieres
-    priority: 15
-  premieres_showrss:
-    rss: http://showrss.info/feeds/all.rss
-    template: premieres
+    seen: local  # We don't want accepted entries from this feed to affect actual movie download feeds.
+    free_space:
+      path: /home/harleypig
+      space: 1024
+
+  tv_shows:
+    template: [ tv_urls, tv ]
     priority: 20
-  premieres_kickasstorrents:
-    rss: http://kickass.to/tv/?rss=1
-    template: premieres
-    priority: 20
-  premieres_btchat:
-    rss: http://rss.bt-chat.com/?group=3
-    template: premieres
-    priority: 20
-  premieres_torrentz:
-    rss: http://torrentz.eu/feed
-    template: premieres
-    priority: 20
-  premieres_extratorrent:
-    rss: http://extratorrent.com/rss.xml?cid=8
-    template: premieres
-    priority: 20
-  premieres_feedburner:
-    rss: http://feeds.feedburner.com/eztv-rss-atom-feeds?format=xml
-    template: premieres
-    priority: 20
-  rlslog_dvdrips:
-    rlslog: http://www.rlslog.net/category/movies/dvdrip/
-    template: movies
+
+  premiere_shows:
+    template: [ tv_urls, premieres ]
     priority: 30
-  rlslog_dvdscreeners:
-    rlslog: http://www.rlslog.net/category/movies/dvdscr/
+
+  movie_shows:
+    template: [ movie_urls, movies ]
+    priority: 40
+
+  sceper_movies:
+    sceper: http://sceper.ws/category/movies
+    disable_urlrewriters: [urlrewrite_redirect]
     template: movies
-    priority: 30
+    priority: 40

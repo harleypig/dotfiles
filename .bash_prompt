@@ -72,6 +72,7 @@ __update_prompt() {
 
   [[ -n "${fbcmd}" ]] && PS1="${PS1}\n\n${fbcmd}${text_reset}"
 
+  PS1="${PS1}\n\n${text_yellow}(tmux|ctl-a) new -s session_name | switch -t session_name | list-sessions${text_reset}"
   PS1="${PS1}\n\n ${prompt_color}\u@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
   PS1="${PS1}\n ${exit_status} $ "
 

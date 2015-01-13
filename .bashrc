@@ -24,6 +24,13 @@ function __basedir() {
 #PATH="${PATH} ~/projects/android-sdk/tools"
 #PATH="${PATH} ~/projects/android-sdk/platform-tools"
 
+RUBY=$(command -v ruby)
+
+if [ $? -eq 0 ]; then
+  PATH="$($RUBY -e 'print Gem.user_dir')/bin:${PATH}"
+  export GEM_HOME=$($RUBY -e 'print Gem.user_dir')
+fi
+
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
 export HISTFILESIZE=1000
@@ -82,18 +89,29 @@ then
   ########################################################################################
   # Simple check and source lines
 
-  [[ -f ~/.ssh-agent ]]                     && source ~/.ssh-agent
-  [[ -f ~/.bash_aliases ]]                  && source ~/.bash_aliases
-  [[ -f ~/.bash_functions ]]                && source ~/.bash_functions
-  [[ -f ~/.bash_prompt ]]                   && source ~/.bash_prompt
+  [[ -f ~/.ssh-agent       ]] && source ~/.ssh-agent
+  [[ -f ~/.bash_aliases    ]] && source ~/.bash_aliases
+  [[ -f ~/.bash_functions  ]] && source ~/.bash_functions
+  [[ -f ~/.bash_prompt     ]] && source ~/.bash_prompt
+  [[ -f /.travis/travis.sh ]] && source /.travis/travis.sh
 
-  [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
-  #[[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
-  [[ -f /opt/perl5/etc/bashrc ]]            && source /opt/perl5/etc/bashrc
+  [[ -f /etc/bash_completion           ]] && source /etc/bash_completion
+  [[ -f /etc/profile.d/bash-completion ]] && source /etc/profile.d/bash-completion
+  [[ -f $rvm_path/scripts/completion   ]] && source $rvm_path/scripts/completion
 
-  [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
-  [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
-  [[ -f $rvm_path/scripts/completion ]]     && source $rvm_path/scripts/completion
+  [[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
+
+  if [[ -d ~/.bash_completion.d ]]; then
+     COMPLETION="$(__basedir ~/.bash_completion.d)/.bash_completion.d"
+     SOURCE=$(ls ${COMPLETION}/* 2> /dev/null)
+     for s in ${SOURCE}; do source $s; done
+   fi
+
+  if [[ -f ~/perl5/perlbrew/etc/bashrc ]]; then
+    source ~/perl5/perlbrew/etc/bashrc
+  elif [[ -f /opt/perl5/etc/bashrc ]]; then
+    source /opt/perl5/etc/bashrc
+  fi
 
   [[ $(type setup-bash-complete 2> /dev/null) ]]   && source setup-bash-complete
   [[ -f /opt/perl5/etc/perlbrew-completion.bash ]] && source /opt/perl5/etc/perlbrew-completion.bash
@@ -126,3 +144,5 @@ then
 fi
 
 #echo '  ... ended .bashrc.' >> ~/bash_startup.log
+
+# added by travis gem
