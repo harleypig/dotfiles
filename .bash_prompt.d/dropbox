@@ -1,12 +1,11 @@
-if command -v dropbox > /dev/null; then
+function __dropbox_status() {
+  if command -v dropbox > /dev/null; then
 
-  dropbox_prefix='Dropbox: '
-  dropbox=$(command -v dropbox)
+    dropbox_prefix='Dropbox: '
+    dropbox=$(command -v dropbox)
 
-  function __dropbox_status() {
+      #[[ -x ${dropbox} ]] && echo "${dropbox_prefix}$($dropbox status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
+      [[ -x ${dropbox} ]] && echo -n "${dropbox_prefix}$($dropbox status)"
 
-    #[[ -x ${dropbox} ]] && echo "${dropbox_prefix}$($dropbox status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
-    [[ -x ${dropbox} ]] && echo -n "${dropbox_prefix}$($dropbox status)"
-
-  }
-fi
+  fi
+}

@@ -1,7 +1,13 @@
-
 function __parent_process() {
 
-  local parents=$(pstree -sA $PPID)
+  #local parents=$(pstree -sA $PPID)
+  #local parents=$(pstree -A $PPID)
+  local parents
+
+  if ! eval parents=$(pstree -sA $PPID 2> /dev/null); then
+    eval parents=$(pstree -A $PPID)
+  fi
+
   parents=${parents/%-+*/}
   parents=${parents//bash---/}
   parents=${parents/systemd---slim---openbox---}

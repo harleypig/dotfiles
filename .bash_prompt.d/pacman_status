@@ -1,5 +1,5 @@
-if command -v pacman > /dev/null; then
-  function __pacman_status() {
+function __pacman_status() {
+  if command -v pacman > /dev/null; then
 
     local now=$(date +%s)
     local update_duration='-'
@@ -26,5 +26,5 @@ if command -v pacman > /dev/null; then
 
     echo "Pacman Last Updated: ${update_duration}"
 
-  }
-fi
+  fi
+}
