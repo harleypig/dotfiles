@@ -6,8 +6,9 @@ severity = brutal
 profile-strictness = warn
 # color = 0
 # pager =
-top = 5
-verbose = %m at %f line %l, near '%r' Severity: %s %p\n
+top = 10
+#verbose = %m at %f line %l, near '%r' Severity: %s %p\n
+verbose = %s:%f:%l:%c:%p %m\n
 # include =
 # exclude =
 # single-policy =
@@ -20,7 +21,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 # program-extensions =
 
 # Bitwise operators are usually accidentally used instead of logical boolean operators.
-[-Bangs::ProhibitBitwiseOperators]
+[Bangs::ProhibitBitwiseOperators]
 # set_themes                         = bugs core
 # add_themes                         =
 # severity                           = 5
@@ -28,7 +29,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Commented-out code is usually noise. It should be removed.
-[-Bangs::ProhibitCommentedOutCode]
+[Bangs::ProhibitCommentedOutCode]
 # set_themes                         = bangs maintenance
 # add_themes                         =
 # severity                           = 2
@@ -38,8 +39,20 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 # commentedcoderegex = \$[A-Za-z_].*=
 
 
+# Prohibit loading of debugging modules like Data::Dumper
+[Bangs::ProhibitDebuggingModules]
+# set_themes                         = bangs maintenance
+# add_themes                         =
+# severity                           = 4
+# maximum_violations_per_document    = no_limit
+
+# Module names which are considered to be banned debugging modules.
+# Values that are always included: DDP, DDS, Data::Dump, Data::Dump::Filtered, Data::Dump::Streamer, Data::Dump::Trace, Data::Dumper, Data::Dumper::Concise, Data::Dumper::Concise::Sugar, Data::Dumper::EasyOO, Data::Dumper::Names, Data::Dumper::Simple, Data::PrettyPrintObjects, Data::Printer, Data::Skeleton, Data::TreeDumper, Devel::Dwarn.
+# debugging_modules =
+
+
 # Don't use XXX, TODO, or FIXME.
-[-Bangs::ProhibitFlagComments]
+[Bangs::ProhibitFlagComments]
 # set_themes                         = bangs maintenance
 # add_themes                         =
 # severity                           = 2
@@ -103,7 +116,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Use `List::MoreUtils::any' instead of `grep' in boolean context.
 [BuiltinFunctions::ProhibitBooleanGrep]
-# set_themes                         = core pbp performance
+# set_themes                         = certrec core pbp performance
 # add_themes                         =
 # severity                           = 2
 # maximum_violations_per_document    = no_limit
@@ -147,7 +160,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Write `eval { my $foo; bar($foo) }' instead of `eval "my $foo; bar($foo);"'.
 [BuiltinFunctions::ProhibitStringyEval]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrule core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -158,7 +171,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Write `split /-/, $string' instead of `split '-', $string'.
 [BuiltinFunctions::ProhibitStringySplit]
-# set_themes                         = core cosmetic pbp
+# set_themes                         = certrule core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
 # maximum_violations_per_document    = no_limit
@@ -166,7 +179,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Write `eval { $foo->can($name) }' instead of `UNIVERSAL::can($foo, $name)'.
 [BuiltinFunctions::ProhibitUniversalCan]
-# set_themes                         = core maintenance
+# set_themes                         = certrule core maintenance
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -174,9 +187,17 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Write `eval { $foo->isa($pkg) }' instead of `UNIVERSAL::isa($foo, $pkg)'.
 [BuiltinFunctions::ProhibitUniversalIsa]
-# set_themes                         = core maintenance
+# set_themes                         = certrule core maintenance
 # add_themes                         =
 # severity                           = 3
+# maximum_violations_per_document    = no_limit
+
+
+# Don't pass $_ to built-in functions that assume it, or to most filetest operators.
+[BuiltinFunctions::ProhibitUselessTopic]
+# set_themes                         = core
+# add_themes                         =
+# severity                           = 2
 # maximum_violations_per_document    = no_limit
 
 
@@ -238,7 +259,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Employ `use base' instead of `@ISA'.
 [ClassHierarchies::ProhibitExplicitISA]
-# set_themes                         = core maintenance pbp
+# set_themes                         = certrec core maintenance pbp
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -249,6 +270,14 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 # set_themes                         = bugs core pbp
 # add_themes                         =
 # severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# keep a fat comma on the same line as its quoted word
+[CodeLayout::ProhibitFatCommaNewline]
+# set_themes                         = bugs pulp
+# add_themes                         =
+# severity                           = 3
 # maximum_violations_per_document    = no_limit
 
 
@@ -263,13 +292,20 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 # allow_leading_tabs = 1
 
 
-#
-[-CodeLayout::ProhibitHashBarewords]
+[CodeLayout::ProhibitHashBarewords]
 # set_themes                         = itch
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
 # Cannot programmatically discover what parameters this policy takes.
+
+
+# don't put if after if on same line
+[CodeLayout::ProhibitIfIfSameLine]
+# set_themes                         = bugs pulp
+# add_themes                         =
+# severity                           = 3
+# maximum_violations_per_document    = no_limit
 
 
 # Write `open $handle, $path' instead of `open($handle, $path)'.
@@ -293,6 +329,14 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Complain even if there are non-word characters in the values.
 # strict = 0
+
+
+[CodeLayout::ProhibitSpaceIndentation]
+# set_themes                         = cosmetic
+# add_themes                         =
+# severity                           = 2
+# maximum_violations_per_document    = no_limit
+# Cannot programmatically discover what parameters this policy takes.
 
 
 # Don't use whitespace at the end of lines.
@@ -364,8 +408,16 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Require that all modules have a `use utf8;' statement.
-[-CodeLayout::RequireUseUTF8]
+[CodeLayout::RequireUseUTF8]
 # set_themes                         = swift unicode
+# add_themes                         =
+# severity                           = 3
+# maximum_violations_per_document    = no_limit
+
+
+# Use tabs for indenting, spaces for aligning.
+[CodeLayout::TabIndentSpaceAlign]
+# set_themes                         = cosmetic
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -410,7 +462,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # check Perl version declared against POD features used
-[-Compatibility::PodMinimumVersion]
+[Compatibility::PodMinimumVersion]
 # set_themes                         = compatibility pulp
 # add_themes                         =
 # severity                           = 2
@@ -421,7 +473,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Don't allow three-argument open unless the code uses a version of perl that supports it.
-[-Compatibility::ProhibitThreeArgumentOpen]
+[Compatibility::ProhibitThreeArgumentOpen]
 # set_themes                         = compatibility
 # add_themes                         =
 # severity                           = 5
@@ -437,7 +489,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Write `for(0..20)' instead of `for($i=0; $i<=20; $i++)'.
-[-ControlStructures::ProhibitCStyleForLoops]
+[ControlStructures::ProhibitCStyleForLoops]
 # set_themes                         = core maintenance pbp
 # add_themes                         =
 # severity                           = 2
@@ -478,7 +530,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Don't modify `$_' in list functions.
 [ControlStructures::ProhibitMutatingListFunctions]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrule core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -499,7 +551,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Write `if($condition){ do_something() }' instead of `do_something() if $condition'.
-[-ControlStructures::ProhibitPostfixControls]
+[ControlStructures::ProhibitPostfixControls]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
@@ -523,7 +575,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Don't write code after an unconditional `die, exit, or next'.
 [ControlStructures::ProhibitUnreachableCode]
-# set_themes                         = bugs core
+# set_themes                         = bugs certrec core
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
@@ -538,7 +590,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Check your spelling.
-[-Documentation::PodSpelling]
+[Documentation::PodSpelling]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 1
@@ -570,6 +622,17 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 # maximum_violations_per_document    = no_limit
 
 
+# don't duplicate =head names
+[Documentation::ProhibitDuplicateHeadings]
+# set_themes                         = bugs pulp
+# add_themes                         =
+# severity                           = 3
+# maximum_violations_per_document    = no_limit
+
+# The scope for headings names, meaning to what extent they must not be duplicates.  Choices nested, all.
+# uniqueness = default
+
+
 # don't duplicate L<> links in SEE ALSO
 [Documentation::ProhibitDuplicateSeeAlso]
 # set_themes                         = cosmetic pulp
@@ -583,6 +646,14 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 # set_themes                         = cosmetic pulp
 # add_themes                         =
 # severity                           = 2
+# maximum_violations_per_document    = no_limit
+
+
+# avoid comma at end of section
+[Documentation::ProhibitParagraphEndComma]
+# set_themes                         = cosmetic pulp
+# add_themes                         =
+# severity                           = 1
 # maximum_violations_per_document    = no_limit
 
 
@@ -618,6 +689,14 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 # maximum_violations_per_document    = 1
 
 
+# markup /foo filenames
+[Documentation::RequireFilenameMarkup]
+# set_themes                         = cosmetic pulp
+# add_themes                         =
+# severity                           = 2
+# maximum_violations_per_document    = no_limit
+
+
 # end POD with =cut directive
 [Documentation::RequireFinalCut]
 # set_themes                         = cosmetic pulp
@@ -635,7 +714,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Require that all modules that contain POD have a `=encoding utf8' declaration.
-[-Documentation::RequirePODUseEncodingUTF8]
+[Documentation::RequirePODUseEncodingUTF8]
 # set_themes                         = swift unicode
 # add_themes                         =
 # severity                           = 3
@@ -651,7 +730,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # All POD should be after `__END__'.
-[-Documentation::RequirePodAtEnd]
+[Documentation::RequirePodAtEnd]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 1
@@ -659,7 +738,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Provide text to display with your pod links.
-[-Documentation::RequirePodLinksIncludeText]
+[Documentation::RequirePodLinksIncludeText]
 # set_themes                         = core maintenance
 # add_themes                         =
 # severity                           = 2
@@ -673,7 +752,9 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Organize your POD into the customary sections.
-[-Documentation::RequirePodSections]
+[Documentation::RequirePodSections]
+lib_sections    = NAME | VERSION | SYNOPSIS | EXPORT | SUBROUTINES AND METHODS | AUTHOR | BUGS | SUPPORT | ACKNOWLEDGEMENTS | LICENSE AND COPYRIGHT
+script_sections = NAME | VERSION | SYNOPSIS | EXPORT | SUBROUTINES AND METHODS | AUTHOR | BUGS | SUPPORT | ACKNOWLEDGEMENTS | LICENSE AND COPYRIGHT
 # set_themes                         = core maintenance pbp
 # add_themes                         =
 # severity                           = 2
@@ -695,7 +776,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Per-file editor settings.
-[-Editor::RequireEmacsFileVariables]
+[Editor::RequireEmacsFileVariables]
 # set_themes                         = editor more readability
 # add_themes                         =
 # severity                           = 2
@@ -704,7 +785,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Use functions from Carp instead of `warn' or `die'.
 [ErrorHandling::RequireCarping]
-# set_themes                         = core maintenance pbp
+# set_themes                         = certrule core maintenance pbp
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -725,7 +806,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Use exceptions instead of `die', `croak', or `confess'.
-[-ErrorHandling::RequireUseOfExceptions]
+[ErrorHandling::RequireUseOfExceptions]
 # set_themes                         = maintenance more
 # add_themes                         =
 # severity                           = 4
@@ -745,7 +826,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Write `open my $fh, q{<}, $filename;' instead of `open FH, q{<}, $filename;'.
 [InputOutput::ProhibitBarewordFileHandles]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -761,7 +842,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Use prompt() instead of -t.
 [InputOutput::ProhibitInteractiveTest]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrule core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -777,7 +858,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Never write `select($fh)'.
 [InputOutput::ProhibitOneArgSelect]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrule core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
@@ -793,14 +874,14 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Write `open $fh, q{<}, $filename;' instead of `open $fh, "<$filename";'.
 [InputOutput::ProhibitTwoArgOpen]
-# set_themes                         = bugs core pbp security
+# set_themes                         = bugs certrule core pbp security
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
 
 
 # Write `print {$FH} $foo, $bar;' instead of `print $FH $foo, $bar;'.
-[-InputOutput::RequireBracedFileHandleWithPrint]
+[InputOutput::RequireBracedFileHandleWithPrint]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 1
@@ -808,7 +889,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 
 # Close filehandles as soon as possible after opening them.
-[-InputOutput::RequireBriefOpen]
+[InputOutput::RequireBriefOpen]
 # set_themes                         = core maintenance pbp
 # add_themes                         =
 # severity                           = 4
@@ -821,7 +902,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Write `my $error = close $fh;' instead of `close $fh;'.
 [InputOutput::RequireCheckedClose]
-# set_themes                         = core maintenance
+# set_themes                         = certrule core maintenance
 # add_themes                         =
 # severity                           = 2
 # maximum_violations_per_document    = no_limit
@@ -829,7 +910,7 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Write `my $error = open $fh, $mode, $filename;' instead of `open $fh, $mode, $filename;'.
 [InputOutput::RequireCheckedOpen]
-# set_themes                         = core maintenance
+# set_themes                         = certrule core maintenance
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -837,28 +918,22 @@ verbose = %m at %f line %l, near '%r' Severity: %s %p\n
 
 # Return value of flagged function ignored.
 [InputOutput::RequireCheckedSyscalls]
-# set_themes                         = core maintenance
+functions                            = :builtins
+exclude_functions                    = sleep print
+# set_themes                         = certrule core maintenance
 # add_themes                         =
 # severity                           = 1
 # maximum_violations_per_document    = no_limit
 
-# The set of functions to require checking the return value of.
-# functions = open close print say
-functions = :builtins
-
-# The set of functions to not require checking the return value of.
-exclude_functions = print
-
-
 # Write `open $fh, q{<:encoding(UTF-8)}, $filename;' instead of `open $fh, q{{<:utf8}, $filename;'.
-[-InputOutput::RequireEncodingWithUTF8Layer]
+[InputOutput::RequireEncodingWithUTF8Layer]
 # set_themes                         = bugs core security
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
 
 
-#
+# prohibit multiline maps, not multistatement maps
 [Lax::ProhibitComplexMappings::LinesNotStatements]
 # set_themes                         = complexity lax
 # add_themes                         =
@@ -867,8 +942,8 @@ exclude_functions = print
 # Cannot programmatically discover what parameters this policy takes.
 
 
-#
-[-Lax::ProhibitEmptyQuotes::ExceptAsFallback]
+# empty quotes are okay as the fallback on the rhs of ||
+[Lax::ProhibitEmptyQuotes::ExceptAsFallback]
 # set_themes                         = lax
 # add_themes                         =
 # severity                           = 2
@@ -876,7 +951,7 @@ exclude_functions = print
 # Cannot programmatically discover what parameters this policy takes.
 
 
-#
+# leading zeroes are okay as the first arg to chmod
 [Lax::ProhibitLeadingZeros::ExceptChmod]
 # set_themes                         = bugs lax
 # add_themes                         =
@@ -885,7 +960,7 @@ exclude_functions = print
 # Cannot programmatically discover what parameters this policy takes.
 
 
-#
+# stringy eval is bad, but it's okay just to "require"
 [Lax::ProhibitStringyEval::ExceptForRequire]
 # set_themes                         = danger
 # add_themes                         =
@@ -894,7 +969,7 @@ exclude_functions = print
 # Cannot programmatically discover what parameters this policy takes.
 
 
-#
+# ending your package with a simple, fun true value is okay
 [Lax::RequireEndWithTrueConst]
 # set_themes                         = lax
 # add_themes                         =
@@ -903,7 +978,7 @@ exclude_functions = print
 # Cannot programmatically discover what parameters this policy takes.
 
 
-#
+# you can put strict and warnings before "package"
 [Lax::RequireExplicitPackage::ExceptForPragmata]
 # set_themes                         = risky
 # add_themes                         =
@@ -919,7 +994,7 @@ exclude_functions = print
 
 # Do not use `format'.
 [Miscellanea::ProhibitFormats]
-# set_themes                         = core maintenance pbp
+# set_themes                         = certrule core maintenance pbp
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -950,8 +1025,8 @@ exclude_functions = print
 
 
 # Put source-control keywords in every file.
-[-Miscellanea::RequireRcsKeywords]
-# set_themes                         = core cosmetic pbp
+[Miscellanea::RequireRcsKeywords]
+# set_themes                         = cosmetic deprecated pbp
 # add_themes                         =
 # severity                           = 2
 # maximum_violations_per_document    = no_limit
@@ -1005,7 +1080,7 @@ exclude_functions = print
 
 # Ban modules that aren't blessed by your shop.
 [Modules::ProhibitEvilModules]
-# set_themes                         = bugs core
+# set_themes                         = bugs certrule core
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -1074,13 +1149,12 @@ exclude_functions = print
 
 # End each module with an explicitly `1;' instead of some funky expression.
 [Modules::RequireEndWithOne]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrule core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
 
 
-#
 [Modules::RequireExplicitInclusion]
 # set_themes                         = bugs strictersubs
 # add_themes                         =
@@ -1127,7 +1201,7 @@ exclude_functions = print
 
 
 # Give every module a `$VERSION' number.
-[-Modules::RequireVersionVar]
+[Modules::RequireVersionVar]
 # set_themes                         = core pbp readability
 # add_themes                         =
 # severity                           = 2
@@ -1171,6 +1245,7 @@ exclude_functions = print
 
 # Distinguish different program components by case.
 [NamingConventions::Capitalization]
+file_lexical_variables              = :all_upper
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 1
@@ -1236,9 +1311,121 @@ exclude_functions = print
 # forbid = abstract bases close contract last left no record right second set
 
 
+# Write `sub my_function{}' instead of `sub MyFunction{}'.
+[NamingConventions::ProhibitMixedCaseSubs]
+# set_themes                         = cosmetic deprecated pbp
+# add_themes                         =
+# severity                           = 1
+# maximum_violations_per_document    = no_limit
+
+
+# Write `$my_variable = 42' instead of `$MyVariable = 42'.
+[NamingConventions::ProhibitMixedCaseVars]
+# set_themes                         = cosmetic deprecated pbp
+# add_themes                         =
+# severity                           = 1
+# maximum_violations_per_document    = no_limit
+
+
+# Check module for use of "Dumper"
+[OTRS::ProhibitDumper]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Do no use FetchrowHashref
+[OTRS::ProhibitFetchrowHashref]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# do not use "localtime"
+[OTRS::ProhibitLocaltime]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Do not use "not", "and" and other low precedence operators
+[OTRS::ProhibitLowPrecedenceOps]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Do not use "open"
+[OTRS::ProhibitOpen]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Do not use "push @ISA, ..."
+[OTRS::ProhibitPushISA]
+# set_themes                         = otrs
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Do not use "require"
+[OTRS::ProhibitRequire]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Do not use File::Path's rmtree
+[OTRS::ProhibitRmtree]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Some core functions should not be used
+[OTRS::ProhibitSomeCoreFunctions]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Variable, subroutine, and package names have to be in CamelCase
+[OTRS::RequireCamelCase]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Use parens when a method is called
+[OTRS::RequireParensWithMethods]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
+# Check if modules have a "true" return value
+[OTRS::RequireTrueReturnValueForModules]
+# set_themes                         = otrs otrs_lt_3_3
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+
 # Prohibit indirect object call syntax.
 [Objects::ProhibitIndirectSyntax]
-# set_themes                         = core maintenance pbp
+# set_themes                         = certrule core maintenance pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
@@ -1258,7 +1445,7 @@ exclude_functions = print
 
 # Capture variable used outside conditional.
 [RegularExpressions::ProhibitCaptureWithoutTest]
-# set_themes                         = core maintenance pbp
+# set_themes                         = certrule core maintenance pbp
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -1331,6 +1518,14 @@ exclude_functions = print
 # allow_all_brackets =
 
 
+# Don't use $_ to match against regexes.
+[RegularExpressions::ProhibitUselessTopic]
+# set_themes                         = core
+# add_themes                         =
+# severity                           = 2
+# maximum_violations_per_document    = no_limit
+
+
 # Use `{' and `}' to delimit multi-line regexps.
 [RegularExpressions::RequireBracesForMultiline]
 # set_themes                         = core cosmetic pbp
@@ -1343,7 +1538,7 @@ exclude_functions = print
 
 
 # Always use the `/s' modifier with regular expressions.
-[-RegularExpressions::RequireDotMatchAnything]
+[RegularExpressions::RequireDotMatchAnything]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
@@ -1351,7 +1546,7 @@ exclude_functions = print
 
 
 # Always use the `/x' modifier with regular expressions.
-[-RegularExpressions::RequireExtendedFormatting]
+[RegularExpressions::RequireExtendedFormatting]
 # set_themes                         = core maintenance pbp
 # add_themes                         =
 # severity                           = 3
@@ -1366,7 +1561,7 @@ exclude_functions = print
 
 
 # Always use the `/m' modifier with regular expressions.
-[-RegularExpressions::RequireLineBoundaryMatching]
+[RegularExpressions::RequireLineBoundaryMatching]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
@@ -1392,14 +1587,13 @@ exclude_functions = print
 
 # Don't declare your own `open' function.
 [Subroutines::ProhibitBuiltinHomonyms]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrule core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
 
 
-#
-[-Subroutines::ProhibitCallsToUndeclaredSubs]
+[Subroutines::ProhibitCallsToUndeclaredSubs]
 # set_themes                         = bugs strictersubs
 # add_themes                         =
 # severity                           = 4
@@ -1407,8 +1601,7 @@ exclude_functions = print
 # Cannot programmatically discover what parameters this policy takes.
 
 
-#
-[-Subroutines::ProhibitCallsToUnexportedSubs]
+[Subroutines::ProhibitCallsToUnexportedSubs]
 # set_themes                         = bugs strictersubs
 # add_themes                         =
 # severity                           = 4
@@ -1430,13 +1623,12 @@ exclude_functions = print
 
 # Return failure with bare `return' instead of `return undef'.
 [Subroutines::ProhibitExplicitReturnUndef]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
 
 
-#
 [Subroutines::ProhibitExportingUndeclaredSubs]
 # set_themes                         = bugs strictersubs
 # add_themes                         =
@@ -1464,7 +1656,6 @@ exclude_functions = print
 # maximum_violations_per_document    = no_limit
 
 
-#
 [Subroutines::ProhibitQualifiedSubDeclarations]
 # set_themes                         = bugs strictersubs
 # add_themes                         =
@@ -1474,7 +1665,7 @@ exclude_functions = print
 
 # Behavior of `sort' is not defined if called in scalar context.
 [Subroutines::ProhibitReturnSort]
-# set_themes                         = bugs core
+# set_themes                         = bugs certrule core
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -1482,7 +1673,7 @@ exclude_functions = print
 
 # Don't write `sub my_function (@@) {}'.
 [Subroutines::ProhibitSubroutinePrototypes]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -1490,7 +1681,7 @@ exclude_functions = print
 
 # Prevent unused private subroutines.
 [Subroutines::ProhibitUnusedPrivateSubroutines]
-# set_themes                         = core maintenance
+# set_themes                         = certrec core maintenance
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -1504,7 +1695,7 @@ exclude_functions = print
 
 # Prevent access to private subs in other packages.
 [Subroutines::ProtectPrivateSubs]
-# set_themes                         = core maintenance
+# set_themes                         = certrule core maintenance
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -1538,7 +1729,7 @@ exclude_functions = print
 
 # End every path through a subroutine with an explicit `return' statement.
 [Subroutines::RequireFinalReturn]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
@@ -1550,7 +1741,7 @@ exclude_functions = print
 
 # Prohibit various flavors of `no strict'.
 [TestingAndDebugging::ProhibitNoStrict]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -1561,7 +1752,7 @@ exclude_functions = print
 
 # Prohibit various flavors of `no warnings'.
 [TestingAndDebugging::ProhibitNoWarnings]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
@@ -1575,7 +1766,7 @@ exclude_functions = print
 
 # Don't turn off strict for large blocks of code.
 [TestingAndDebugging::ProhibitProlongedStrictureOverride]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
@@ -1599,7 +1790,7 @@ exclude_functions = print
 
 # Always `use strict'.
 [TestingAndDebugging::RequireUseStrict]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec certrule core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = 1
@@ -1611,7 +1802,7 @@ exclude_functions = print
 
 # Always `use warnings'.
 [TestingAndDebugging::RequireUseWarnings]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrule core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = 1
@@ -1622,7 +1813,7 @@ exclude_functions = print
 
 
 # 80 x 40 for life!
-[-Tics::ProhibitLongLines]
+[Tics::ProhibitLongLines]
 # set_themes                         = tics
 # add_themes                         =
 # severity                           = 2
@@ -1674,7 +1865,21 @@ exclude_functions = print
 # maximum_violations_per_document    = no_limit
 
 
-#
+# Prevent SQL injection in interpolated strings.
+[ValuesAndExpressions::PreventSQLInjection]
+# set_themes                         = security
+# add_themes                         =
+# severity                           = 5
+# maximum_violations_per_document    = no_limit
+
+# A space-separated string listing the methods that return a safely quoted value.
+# quoting_methods = quote_identifier quote
+
+
+# A space-separated string listing the functions that return a safely quoted value.
+# safe_functions =
+
+
 [ValuesAndExpressions::ProhibitAccessOfPrivateData]
 # set_themes                         = maintenance nits
 # add_themes                         =
@@ -1703,7 +1908,7 @@ exclude_functions = print
 
 # Don't use the comma operator as a statement separator.
 [ValuesAndExpressions::ProhibitCommaSeparatedStatements]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrule core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
@@ -1724,7 +1929,7 @@ exclude_functions = print
 
 
 # Don't `use constant FOO => 15'.
-[-ValuesAndExpressions::ProhibitConstantPragma]
+[ValuesAndExpressions::ProhibitConstantPragma]
 # set_themes                         = bugs core pbp
 # add_themes                         =
 # severity                           = 4
@@ -1748,7 +1953,7 @@ exclude_functions = print
 
 
 # Write `q{}' instead of `'''.
-[-ValuesAndExpressions::ProhibitEmptyQuotes]
+[ValuesAndExpressions::ProhibitEmptyQuotes]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
@@ -1772,7 +1977,7 @@ exclude_functions = print
 
 
 # Use concatenation or HEREDOCs instead of literal line breaks in strings.
-[-ValuesAndExpressions::ProhibitImplicitNewlines]
+[ValuesAndExpressions::ProhibitImplicitNewlines]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 3
@@ -1795,7 +2000,7 @@ exclude_functions = print
 
 # Write `oct(755)' instead of `0755'.
 [ValuesAndExpressions::ProhibitLeadingZeros]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -1818,7 +2023,7 @@ exclude_functions = print
 
 # Don't use values that don't explain themselves.
 [ValuesAndExpressions::ProhibitMagicNumbers]
-# set_themes                         = core maintenance
+# set_themes                         = certrec core maintenance
 # add_themes                         =
 # severity                           = 2
 # maximum_violations_per_document    = 10
@@ -1840,7 +2045,7 @@ exclude_functions = print
 
 # Don't mix numeric operators with string operands, or vice-versa.
 [ValuesAndExpressions::ProhibitMismatchedOperators]
-# set_themes                         = bugs core
+# set_themes                         = bugs certrule core
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -1848,7 +2053,7 @@ exclude_functions = print
 
 # Write ` !$foo && $bar || $baz ' instead of ` not $foo && $bar or $baz'.
 [ValuesAndExpressions::ProhibitMixedBooleanOperators]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit
@@ -1926,6 +2131,14 @@ exclude_functions = print
 # maximum_violations_per_document    = no_limit
 
 
+# Putting the constant value on the left side of an equality exposes typos.
+[ValuesAndExpressions::RequireConstantOnLeftSideOfEquality]
+# set_themes                         = more
+# add_themes                         =
+# severity                           = 2
+# maximum_violations_per_document    = no_limit
+
+
 # Require $VERSION to be a constant rather than a computed value.
 [ValuesAndExpressions::RequireConstantVersion]
 # set_themes                         = core maintenance
@@ -1949,7 +2162,7 @@ exclude_functions = print
 
 
 # Write ` 141_234_397.0145 ' instead of ` 141234397.0145 '.
-[-ValuesAndExpressions::RequireNumberSeparators]
+[ValuesAndExpressions::RequireNumberSeparators]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
@@ -2052,14 +2265,14 @@ exclude_functions = print
 
 # Use double colon (::) to separate package name components instead of single quotes (').
 [Variables::ProhibitPerl4PackageNames]
-# set_themes                         = core maintenance
+# set_themes                         = certrec core maintenance
 # add_themes                         =
 # severity                           = 2
 # maximum_violations_per_document    = no_limit
 
 
 # Write `$EVAL_ERROR' instead of `$@'.
-[-Variables::ProhibitPunctuationVars]
+[Variables::ProhibitPunctuationVars]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
@@ -2087,10 +2300,27 @@ exclude_functions = print
 
 # Don't ask for storage you don't need.
 [Variables::ProhibitUnusedVariables]
-# set_themes                         = core maintenance
+# set_themes                         = certrec core maintenance
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
+
+
+# Don't ask for storage you don't need.
+[Variables::ProhibitUnusedVarsStricter]
+# set_themes                         = maintenance trw
+# add_themes                         =
+# severity                           = 3
+# maximum_violations_per_document    = no_limit
+
+# Allow if computed by one of these.
+# allow_if_computed_by =
+
+# Prohibit reference-only variables.
+# prohibit_reference_only_variables = 0
+
+# Allow unused subroutine arguments.
+# allow_unused_subroutine_arguments = 0
 
 
 # prohibit superfluous initializations
@@ -2103,7 +2333,7 @@ exclude_functions = print
 
 # Prevent access to private vars in other packages.
 [Variables::ProtectPrivateVars]
-# set_themes                         = core maintenance
+# set_themes                         = certrule core maintenance
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -2111,7 +2341,7 @@ exclude_functions = print
 
 # Write `local $foo = $bar;' instead of just `local $foo;'.
 [Variables::RequireInitializationForLocalVars]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 3
 # maximum_violations_per_document    = no_limit
@@ -2119,7 +2349,7 @@ exclude_functions = print
 
 # Write `for my $element (@list) {...}' instead of `for $element (@list) {...}'.
 [Variables::RequireLexicalLoopIterators]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 5
 # maximum_violations_per_document    = no_limit
@@ -2127,7 +2357,7 @@ exclude_functions = print
 
 # Magic variables should be assigned as "local".
 [Variables::RequireLocalizedPunctuationVars]
-# set_themes                         = bugs core pbp
+# set_themes                         = bugs certrec core pbp
 # add_themes                         =
 # severity                           = 4
 # maximum_violations_per_document    = no_limit

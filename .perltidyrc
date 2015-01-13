@@ -2,6 +2,8 @@
 # Basic Options
 
 --maximum-line-length=132
+--variable-maximum-line-length
+#--whitespace-cycle=??
 --indent-columns=2
 --notabs
 
@@ -17,6 +19,7 @@
 #--preserve-line-endings
 
 #--iterations=1
+--converge
 
 ##########################################
 # Code Indentation Control
@@ -32,15 +35,13 @@
 #--closing-square-bracket-indentation=0
 #--closing-brace-indentation=0
 
-# deprecated
-#--noindent-closing-paren
-
+--noindent-closing-paren
 --noindent-closing-brace
 
 # deprecated
-#--no-outdent-long-lines
+--no-outdent-long-lines
 # is the same as setting all of these:
---nooutdent-long-quotes
+#--nooutdent-long-quotes
 #--nooutdent-long-comments
 
 --nooutdent-labels
@@ -56,6 +57,8 @@
 --brace-tightness=0
 --block-brace-tightness=0
 
+--tight-secret-operators
+
 --nospace-terminal-semicolon
 --space-for-semicolon
 --add-semicolons
@@ -69,19 +72,22 @@
 --nospace-keyword-paren
 --nospace-function-paren
 --trim-qw
+--trim-pod
 
 ##########################################
 # Comment Controls
 
 --indent-block-comments
+--indent-spaced-block-comments
 --nooutdent-long-comments
 --minimum-space-to-comment=2
-#--fixed-position-side-comment=40
+--fixed-position-side-comment=40
+--noignore-side-comment-lengths
 --hanging-side-comments
 
 --closing-side-comments
 --closing-side-comment-interval=18
---closing-side-comment-maximum-text=15
+--closing-side-comment-maximum-text=20
 --closing-side-comments-balanced
 --closing-side-comment-prefix="## end"
 --closing-side-comment-list="if elsif else unless for foreach sub while until : try catch BEGIN END"
@@ -159,6 +165,7 @@
 --break-at-old-logical-breakpoints
 --break-at-old-keyword-breakpoints
 --break-at-old-ternary-breakpoints
+--break-at-old-attribute-breakpoints
 --keep-interior-semicolons
 
 ##########################################

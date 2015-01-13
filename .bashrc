@@ -16,15 +16,13 @@ function __basedir() {
 }
 
 
-PATH="${PATH}:~/bin"
-PATH="${PATH}:~/.vim/bin/"
-#PATH="${PATH}:/usr/bin/vendor_perl/"
+[[ -d ~/bin                 ]] && PATH="${PATH}:~/bin"
+[[ -d ~/.vim/bin            ]] && PATH="${PATH}:~/.vim/bin/"
+[[ -d ~/.gem/ruby/2.1.0/bin ]] && PATH="${PATH}:~/.gem/ruby/2.1.0/bin"
+[[ -d ~/.rvm/bin            ]] && PATH="${PATH}:~/.rvm/bin"
+
 #PATH="${PATH} ~/projects/android-sdk/tools"
 #PATH="${PATH} ~/projects/android-sdk/platform-tools"
-
-if [ -e ~/.gem/ruby/2.1.0/bin ]; then
-  PATH="${PATH}:/home/harleypig/.gem/ruby/2.1.0/bin"
-fi
 
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
@@ -89,24 +87,16 @@ then
   [[ -f ~/.bash_functions ]]                && source ~/.bash_functions
   [[ -f ~/.bash_prompt ]]                   && source ~/.bash_prompt
 
+  [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
+  #[[ -f ~/perl5/perlbrew/etc/bashrc ]]      && source ~/perl5/perlbrew/etc/bashrc
+  [[ -f /opt/perl5/etc/bashrc ]]            && source /opt/perl5/etc/bashrc
+
   [[ -f /etc/bash_completion ]]             && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]]   && source /etc/profile.d/bash-completion
   [[ -f $rvm_path/scripts/completion ]]     && source $rvm_path/scripts/completion
-  [[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
 
-  if [[ -d ~/.bash_completion.d ]]; then
-     COMPLETION="$(__basedir ~/.bash_completion.d)/.bash_completion.d"
-     SOURCE=$(ls ${COMPLETION}/* 2> /dev/null)
-     for s in ${SOURCE}; do source $s; done
-   fi
-
-  if [[ -f ~/perl5/perlbrew/etc/bashrc ]]; then
-    source ~/perl5/perlbrew/etc/bashrc
-  elif [[ -f /opt/perl5/etc/bashrc ]]; then
-    source /opt/perl5/etc/bashrc
-  fi
-
-  [[ -f $rvm_path/scripts/rvm ]]            && source $rvm_path/scripts/rvm
+  [[ $(type setup-bash-complete 2> /dev/null) ]]   && source setup-bash-complete
+  [[ -f /opt/perl5/etc/perlbrew-completion.bash ]] && source /opt/perl5/etc/perlbrew-completion.bash
 
   [[ -f ~/bin/tokens ]]                     && source ~/bin/tokens
 
