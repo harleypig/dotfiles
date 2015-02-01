@@ -99,6 +99,7 @@ then
   [[ -f /etc/profile.d/bash-completion ]] && source /etc/profile.d/bash-completion
   [[ -f $rvm_path/scripts/completion   ]] && source $rvm_path/scripts/completion
 
+  # App::BashComplete
   [[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
 
   if [[ -d ~/.bash_completion.d ]]; then

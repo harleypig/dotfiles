@@ -72,7 +72,7 @@ templates:
 
   tv:
     content_size:
-      max: 2500
+      max: 1500
       strict: no
     configure_series:
       settings:
@@ -89,14 +89,14 @@ templates:
     proper_movies: yes
     seen_movies: strict
     content_size:
-      max: 5000
+      max: 1500
       strict: no
     quality:
       - 720p+
       - dvdscr+
     imdb:
-      min_score: 5.0
-      min_votes: 100
+      min_score: 7.0
+      min_votes: 1000
       reject_genres:
         - biography
         - documentary
