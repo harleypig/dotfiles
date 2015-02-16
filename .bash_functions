@@ -61,10 +61,16 @@ function __duration() {
 
 # bash-completion for aliases
 # https://unix.stackexchange.com/questions/4219/how-do-i-get-bash-completion-for-command-aliases
+# http://ubuntuforums.org/showthread.php?t=733397
 #
 # alias gco='git checkout'
 # make-completion-wrapper _git _git_checkout git checkout
 # complete -F _git_checkout gco
+#
+# This doesn't work. At least for git.
+#
+# See also:
+# https://stackoverflow.com/questions/342969/how-do-i-get-bash-completion-to-work-with-aliases
 
 function make-completion-wrapper () {
   local function_name="$2"
