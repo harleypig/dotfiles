@@ -118,7 +118,7 @@ alias l='ls -lhABvXZ --color=auto --group-directories-first'
 # Apache
 if command -v apachectl > /dev/null; then
 
-  local apachectl=$(which apachectl)
+  apachectl=$(which apachectl)
   alias acconfigtest="sudo $apachectl configtest"
   alias acrestart="sudo $apachectl stop ; sleep 3 ; sudo $apachectl start"
   alias acstart="sudo $apachectl start"
