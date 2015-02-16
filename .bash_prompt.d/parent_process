@@ -1,11 +1,11 @@
 function __parent_process() {
 
-  #local parents=$(pstree -sA $PPID)
-  #local parents=$(pstree -A $PPID)
   local parents
 
-  if ! eval parents=$(pstree -sA $PPID 2> /dev/null); then
-    eval parents=$(pstree -A $PPID)
+  parents=$(pstree -sA $PPID 2> /dev/null)
+
+  if [ $? -eq 0 ]; then
+    parents=$(pstree -A $PPID 2> /dev/null)
   fi
 
   parents=${parents/%-+*/}
@@ -13,7 +13,10 @@ function __parent_process() {
   parents=${parents/systemd---slim---openbox---}
   parents=${parents/%---pstree/}
   parents=${parents//---/ : }
+  parents=${parents//tmux/}
 
-  echo "${text_red}${text_blink}(${parents})${text_reset} "
+  if [[ -n $parents ]]; then
+    echo "${text_red}${text_blink}(${parents})${text_reset} "
+  fi
 
 }
