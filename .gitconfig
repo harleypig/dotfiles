@@ -63,6 +63,9 @@
 [push]
   default = current
 
+[pull]
+  default = current
+
 [branch "master"]
   #remote = origin
   #merge = refs/heads/master
@@ -74,3 +77,4 @@
 [status-tackle]
   #plugins = UntrackedFiles WorkingTreeChanges IndexChanges UnpushedBranches CompletedFeatureBranches UnmergedFeatureBranches
   plugins = UntrackedFiles WorkingTreeChanges IndexChanges UnpushedBranches
+
