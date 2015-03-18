@@ -15,14 +15,16 @@ function __basedir() {
 
 }
 
-
 [[ -d ~/bin                 ]] && PATH="${PATH}:~/bin"
 [[ -d ~/.vim/bin            ]] && PATH="${PATH}:~/.vim/bin/"
-[[ -d ~/.gem/ruby/2.1.0/bin ]] && PATH="${PATH}:~/.gem/ruby/2.1.0/bin"
+#[[ -d ~/.gem/ruby/2.1.0/bin ]] && PATH="${PATH}:~/.gem/ruby/2.1.0/bin"
 [[ -d ~/.rvm/bin            ]] && PATH="${PATH}:~/.rvm/bin"
 
 #PATH="${PATH} ~/projects/android-sdk/tools"
 #PATH="${PATH} ~/projects/android-sdk/platform-tools"
+
+# Include this here for the GEM_HOME variable
+[[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
 
 RUBY=$(command -v ruby)
 
