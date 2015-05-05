@@ -95,7 +95,7 @@ templates:
       - 720p+
       - dvdscr+
     imdb:
-      min_score: 7.0
+      min_score: 6.0
       min_votes: 1000
       reject_genres:
         - biography
