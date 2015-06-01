@@ -37,6 +37,34 @@ fi
 
 export TERM
 
+if [[ -d ~/.rbenv ]]; then
+
+  PATH="~/.rbenv/plugins/ruby-build/bin:~/.rbenv/bin:${PATH}"
+  eval "$(rbenv init -)"
+
+fi
+
+if [[ -d ~/perl5 ]]; then
+
+  export PERLBREW_HOME=~
+
+elif [[ -d /opt/perl5 ]]; then
+
+  export PERLBREW_HOME=/opt
+
+fi
+
+if [[ -n $PERLBREW_HOME ]]; then
+
+  export PERLBREW_ROOT="${PERLBREW_HOME}/perl5"
+
+  [[ -d $PERLBREW_ROOT/bin        ]] && PATH="${PATH}:$PERLBREW_ROOT/bin"
+  [[ -f $PERLBREW_ROOT/etc/bashrc ]] && source $PERLBREW_ROOT/etc/bashrc
+
+fi
+
+export PATH
+
 HOSTSPECIFIC="$(__basedir ~/bash_profile)/hostspecific/$(hostname)"
 SOURCE=$(ls ${HOSTSPECIFC}/*profile* 2> /dev/null)
 for s in ${SOURCE}; do source $s; done

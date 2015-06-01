@@ -15,16 +15,17 @@ function __basedir() {
 
 }
 
-[[ -d ~/bin                 ]] && PATH="${PATH}:~/bin"
-[[ -d ~/.vim/bin            ]] && PATH="${PATH}:~/.vim/bin/"
-#[[ -d ~/.gem/ruby/2.1.0/bin ]] && PATH="${PATH}:~/.gem/ruby/2.1.0/bin"
-[[ -d ~/.rvm/bin            ]] && PATH="${PATH}:~/.rvm/bin"
+[[ -d ~/bin        ]] && PATH="${PATH}:~/bin"
+[[ -d ~/.vim/bin   ]] && PATH="${PATH}:~/.vim/bin/"
 
-#PATH="${PATH} ~/projects/android-sdk/tools"
-#PATH="${PATH} ~/projects/android-sdk/platform-tools"
+if [[ -d ~/.rvm ]]; then
 
-# Include this here for the GEM_HOME variable
-[[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
+  [[ -d ~/.rvm/bin ]] && PATH="${PATH}:~/.rvm/bin"
+
+  # Include this here for the GEM_HOME variable
+  [[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
+
+fi
 
 RUBY=$(command -v ruby)
 
@@ -107,14 +108,8 @@ then
      for s in ${SOURCE}; do source $s; done
    fi
 
-  if [[ -f ~/perl5/perlbrew/etc/bashrc ]]; then
-    source ~/perl5/perlbrew/etc/bashrc
-  elif [[ -f /opt/perl5/etc/bashrc ]]; then
-    source /opt/perl5/etc/bashrc
-  fi
-
-  [[ $(type setup-bash-complete 2> /dev/null) ]]   && source setup-bash-complete
-  [[ -f /opt/perl5/etc/perlbrew-completion.bash ]] && source /opt/perl5/etc/perlbrew-completion.bash
+  [[ $(type setup-bash-complete 2> /dev/null)       ]] && source setup-bash-complete
+  [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] && source $PERLBREW_ROOT/etc/perlbrew-completion.bash
 
   [[ -f ~/bin/tokens ]]                     && source ~/bin/tokens
 
