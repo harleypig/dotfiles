@@ -15,6 +15,7 @@ sub afterinit {
   push @DB::typeahead,
     '$|++',
     'o windowSize=40',
+    'o inhibit_exit=0',
     '{l',
     '$Data::Dumper::Quotekeys = ""',
     '$Data::Dumper::Sortkeys++',
