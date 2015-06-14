@@ -27,12 +27,22 @@ if [[ -d ~/.rvm ]]; then
 
 fi
 
-RUBY=$(command -v ruby)
+if [[ -d $HOME/projects/android-sdk ]]; then
 
-if [ $? -eq 0 ]; then
-  PATH="$($RUBY -e 'print Gem.user_dir')/bin:${PATH}"
-  export GEM_HOME=$($RUBY -e 'print Gem.user_dir')
+  PATH="${PATH}:~/projects/android-sdk/tools"
+  PATH="${PATH}:~/projects/android-sdk/platform-tools"
+
 fi
+
+## Include this here for the GEM_HOME variable
+#[[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
+#
+#RUBY=$(command -v ruby)
+#
+#if [ $? -eq 0 ]; then
+#  PATH="$($RUBY -e 'print Gem.user_dir')/bin:${PATH}"
+#  export GEM_HOME=$($RUBY -e 'print Gem.user_dir')
+#fi
 
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
@@ -55,6 +65,8 @@ then
   shopt -s histreedit
   shopt -s histverify
   shopt -s nocaseglob
+
+  umask 022
 
   ########################################################################################
   # less setup
@@ -118,10 +130,6 @@ then
   # http://www.chromium.org/chromium-os/developer-guide#TOC-Building-an-image-to-run-in-a-virtu
 
   [[ -d ~/projects/depot_tools ]] && export PATH="${PATH}:~/projects/depot_tools"
-  umask 022
-  export GOOGLE_API_KEY='AIzaSyBIyn_yoeYI4FRmrq2f07Jr8keto1OkjHM'
-  export GOOGLE_DEFAULT_CLIENT_ID='960272373064.apps.googleusercontent.com'
-  export GOOGLE_DEFAULT_CLIENT_SECRET='tGJ1fD6araLkhrulLU8JKdrN'
 
   ########################################################################################
   # CVS settings
