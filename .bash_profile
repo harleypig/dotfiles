@@ -71,3 +71,5 @@ for s in ${SOURCE}; do source $s; done
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
 [[ -f ~/.Xresources ]] && xrdb ~/.Xresources
+
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*

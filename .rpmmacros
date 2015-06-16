@@ -7,3 +7,4 @@
 %_gpg_bin /usr/bin/gpg
 %packager Alan Young <alan.young@verio.net>
 %debug_package %{nil}
+#%__find_requires /home/harleypig/work/test.pl
