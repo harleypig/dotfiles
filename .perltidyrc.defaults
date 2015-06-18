@@ -1,9 +1,13 @@
 ##########################################
+# Default settings as far as I can determine.
+
+
+##########################################
 # Basic Options
 
---indent-columns=2
---maximum-line-length=132
---variable-maximum-line-length
+--indent-columns=4
+--maximum-line-length=80
+--novariable-maximum-line-length
 --whitespace-cycle=0
 
 # Tab Options
@@ -14,9 +18,9 @@
 --nocheck-syntax
 #--perl-syntax-check-flags="-c -T"
 
-#--iterations=1
+--iterations=1
 # Setting converge sets iterations to 4.
---converge
+--noconverge
 
 --look-for-autoloader
 --look-for-selfloader
@@ -32,7 +36,7 @@
 # Indents using indent-columns value.
 --continuation-indentation=2
 
---noline-up-parentheses
+--line-up-parenthesis
 
 --closing-token-indentation=0
 # same as
@@ -42,9 +46,9 @@
 
 --noindent-closing-brace
 
---nooutdent-long-quotes
---nooutdent-long-comments
---nooutdent-labels
+--outdent-long-quotes
+--outdent-long-comments
+--outdent-labels
 
 --nooutdent-keywords
 #--outdent-keyword-list="keyword keyword"
@@ -52,22 +56,22 @@
 ##########################################
 # Whitespace Controls
 
-#--freeze-whitespace
+--freeze-whitespace
 
 #--all-containers-tightness=n
 # same as below all = n.
---paren-tightness=0
+--paren-tightness=1
 --square-bracket-tightness=1
 --brace-tightness=1
 --block-brace-tightness=0
 
---tight-secret-operators
+--notight-secret-operators
 --nospace-terminal-semicolon
 --space-for-semicolon
 --add-semicolons
 --delete-semicolons
 --add-whitespace
---delete-old-whitespace
+--nodelete-old-whitespace
 
 #--want-left-space=
 #--nowant-left-space=
@@ -81,7 +85,7 @@
 --nospace-function-paren
 
 --trim-qw
---trim-pod
+--notrim-pod
 
 ##########################################
 # Comment Controls
@@ -93,18 +97,18 @@
 --indent-block-comments
 --indent-spaced-block-comments
 
---nooutdent-long-comments
---minimum-space-to-comment=2
---fixed-position-side-comment=40
+--outdent-long-comments
+--minimum-space-to-comment=4
+--fixed-position-side-comment=0
 --noignore-side-comment-lengths
 --hanging-side-comments
 
 # Closing Side Comments
 --closing-side-comments
 #--nodelete-closing-side-comments
---closing-side-comment-interval=18
---closing-side-comment-prefix="## end"
---closing-side-comment-list="if elsif else unless for foreach sub while until : try catch BEGIN END"
+--closing-side-comment-interval=6
+#--closing-side-comment-prefix=
+#--closing-side-comment-list=
 --closing-side-comment-maximum-text=20
 --closing-side-comments-balanced
 --closing-side-comment-else-flag=0
@@ -115,26 +119,26 @@
 
 # Outdents to whatever
 # continuation-indenation is set to.
---nooutdent-static-block-comments
+--outdent-static-block-comments
 
 # Static Side Comments
---static-side-comments
---static-side-comment-prefix="##"
+--nostatic-side-comments
+#--static-side-comment-prefix="##"
 
 ##########################################
 # Skipping Selected Sections of Code
 
 --format-skipping
---format-skipping-begin="## BEGIN UNTIDY"
---format-skipping-end="## END UNTIDY"
+#--format-skipping-begin="#<<<"
+#--format-skipping-end="#<<<"
 
 ##########################################
 # Line Break Control
 
 #--nofreeze-newlines
---cuddled-else
+--nocuddled-else
 --noopening-brace-on-new-line
---noopening-sub-brace-on-new-line
+--opening-sub-brace-on-new-line
 --noopening-anonymous-sub-brace-on-new-line
 --nobrace-left-and-indent
 #--brace-left-and-indent-list=
@@ -146,11 +150,11 @@
 #--opening-paren-right
 #--opening-square-bracket-right
 
---vertical-tightness=1
+--vertical-tightness=0
 # is the same as
-#--brace-vertical-tightness=1
-#--paren-vertical-tightness=1
-#--square-bracket-vertical-tightness=1
+#--brace-vertical-tightness=0
+#--paren-vertical-tightness=0
+#--square-bracket-vertical-tightness=0
 
 --vertical-tightness-closing=0
 # is the same as
@@ -159,7 +163,7 @@
 #--square-bracket-vertical-tightness-closing=0
 
 --block-brace-vertical-tightness=0
---block-brace-vertical-tightness-list="if elsif else unless for foreach sub while until : try catch"
+#--block-brace-vertical-tightness-list=
 
 --stack-opening-tokens
 # is the same as
@@ -172,7 +176,7 @@
 #--block-brace-vertical-tightness=2
 #--block-brace-vertical-tightness-list='*'
 
---stack-closing-tokens
+--nostack-closing-tokens
 # is the same as
 #--stack-closing-paren
 #--stack-closing-hash-brace
@@ -195,9 +199,9 @@
 ##########################################
 # Controlling List Formatting
 
---break-at-old-comma-breakpoints
---maximum-fields-per-table=40
---comma-arrow-breakpoints=2
+--nobreak-at-old-comma-breakpoints
+--maximum-fields-per-table=0
+--comma-arrow-breakpoints=5
 
 ##########################################
 # Retaining/Ignoring Existing Line Breaks
@@ -207,7 +211,7 @@
 --break-at-old-ternary-breakpoints
 --break-at-old-attribute-breakpoints
 --noignore-old-breakpoints
---keep-interior-semicolons
+--nokeep-interior-semicolons
 
 ##########################################
 # Blank Line Control
@@ -222,6 +226,6 @@
 --blank-lines-before-subs=1
 --blank-lines-before-packages=1
 --blanks-before-blocks
---long-block-line-count=0
+--long-block-line-count=8
 --maximum-consecutive-blank-lines=1
 --keep-old-blank-lines=1
