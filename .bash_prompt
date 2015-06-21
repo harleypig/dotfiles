@@ -32,7 +32,7 @@ __update_prompt() {
 
   local cwd=$(__dir_readable)
   local datetime="\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
-  local dropbox=$(__dropbox_status)
+  #local dropbox=$(__dropbox_status)
   local fbcmd=$(__fbcmd_status)
   local pacman_status=$(__pacman_status)
   local parent=$(__parent_process)
@@ -58,7 +58,7 @@ __update_prompt() {
   PROMPT[${#PROMPT[*]}]="${versionline}"
   PROMPT[${#PROMPT[*]}]="${pacman_status}"
 
-  [[ -n $dropbox ]] && PROMPT[${#PROMPT[*]}]="${dropbox}"
+  #[[ -n $dropbox ]] && PROMPT[${#PROMPT[*]}]="${dropbox}"
 
 # Need to handle this better
 #  HOSTSPECIFIC="$(__basedir ~/.bash_prompt)/hostspecific/$(hostname)"

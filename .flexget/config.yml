@@ -12,30 +12,28 @@ templates:
       space: 1024
     torrent_scrub: rtorrent
     content_filter:
+      require_mainfile: yes
       require:
         - '*.avi'
         - '*.mkv'
         - '*.mp4'
         - '*.mpeg'
         - '*.mpg'
-        - '*.part0*'
-        - '*.r0*'
         - '*.wmv'
-        - '*.rar'
       reject:
+        - '*.part0*'
         - 'password.txt'
+        - '*.r0*'
+        - '*.rar'
+        - '*.zip'
 
   tv_urls:
     inputs:
       - rss: { url: 'http://extratorrent.com/rss.xml?cid=8'                        , silent: yes , ascii: yes }
-      - rss: { url: 'http://ezrss.it/feed/'                                        , silent: yes , ascii: yes }
-      - rss: { url: 'http://feeds.feedburner.com/eztv-rss-atom-feeds?format=xml'   , silent: yes , ascii: yes }
-      - rss: { url: 'http://kickass.so/tv/?rss=1'                                  , silent: yes , ascii: yes }
-      - rss: { url: 'http://rss.bt-chat.com/?group=3'                              , silent: yes , ascii: yes }
+      - rss: { url: 'http://kat.cr/tv/?rss=1'                                  , silent: yes , ascii: yes }
       - rss: { url: 'http://sceper.ws/category/tv-shows'                           , silent: yes , ascii: yes }
       - rss: { url: 'http://showrss.info/feeds/all.rss'                            , silent: yes , ascii: yes }
       - rss: { url: 'http://showrss.info/rss.php?user_id=6174&hd=null&proper=null' , silent: yes , ascii: yes }
-      - rss: { url: 'https://rss.thepiratebay.se/208'                              , silent: yes , ascii: yes }
       - rss: { url: 'http://torrentz.eu/feed'                                      , silent: yes , ascii: yes }
       - rss: { url: 'http://torrentz.eu/feed_verified?q=tv'                        , silent: yes , ascii: yes }
       - rss: { url: 'http://www.rlslog.net/category/tv-shows/feed'                 , silent: yes , ascii: yes }
@@ -43,7 +41,7 @@ templates:
 
   movie_urls:
     inputs:
-      - rss: { url: 'http://kickass.so/movies/?rss=1'                         , silent: yes , ascii: yes }
+      - rss: { url: 'http://kat.cr/movies/?rss=1'                         , silent: yes , ascii: yes }
       - rss: { url: 'http://torrentz.eu/feed_verified?q=movies'               , silent: yes , ascii: yes }
       - rss: { url: 'http://www.rlslog.net/category/movies/bdrip/feed/'       , silent: yes , ascii: yes }
       - rss: { url: 'http://www.rlslog.net/category/movies/dvdrip/feed/'      , silent: yes , ascii: yes }
