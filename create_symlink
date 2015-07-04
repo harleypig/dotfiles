@@ -40,7 +40,7 @@ my @dotfiles = do {
 
   }
 
-  grep { ! /.git/ } @d;
+  grep { ! /^.git$/ } @d;
 
 };
 
