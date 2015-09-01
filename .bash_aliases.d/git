@@ -1,0 +1,33 @@
+# Aliases and functions for git
+
+if command -v git > /dev/null; then
+
+  function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
+
+  # Go to current git repo toplevel directory.
+  function gtl () { cd $(git rev-parse --show-toplevel); }
+
+  # Go to current git toplevel directory, perform the git command and return
+  # to the original directory.
+  function git_cmd_return () { gtl ; git "$@" ; cd - > /dev/null ; }
+
+  function ga  () { git_cmd_return add "$@" ; }
+  function gca () { git_cmd_return commit -a -v -m "$@" ; }
+  function gc  () { git_cmd_return commit -v -m "$@" ; }
+  function gco () { git_cmd_return checkout "$@" ; }
+  function gf  () { git_cmd_return fetch ; }
+  function gmv () { git_cmd_return mv "$@" ; }
+  function grm () { git_cmd_return rm "$@" ; }
+
+  alias gall='git add .'
+  alias gba='git branch -ra -v'
+  alias gb='git branch'
+  alias gcp='git cherry-pick'
+  alias gd='git diff'
+  alias glg='git lg'
+  alias gl='git pull'
+  alias gpall='git push --all'
+  alias gp='git push'
+  alias gs='git status -s'
+
+fi

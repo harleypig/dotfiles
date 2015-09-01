@@ -1,5 +1,7 @@
 # Peruse /usr/share/doc/xterm/*
 
+# Consider switching to https://github.com/fidian/ansi
+
 # http://wiki.bash-hackers.org/scripting/terminalcodes
 
 # Bash allows these prompt strings to be customized by inserting a

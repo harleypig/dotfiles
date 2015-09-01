@@ -31,33 +31,6 @@ if ! command -v tree > /dev/null; then
 
 fi
 
-# Git
-if command -v git > /dev/null; then
-
-  alias ga='git add'
-  alias gall='git add .'
-  alias gba='git branch -a -v'
-  alias gb='git branch'
-  alias gca='git commit -a -v -m'
-  alias gc='git commit -v -m'
-  alias gco='git checkout'
-  alias gcount='git shortlog -sn'
-  alias gcp='git cherry-pick'
-  alias gd='git diff'
-  alias gexport='git archive --format zip --output'
-  alias glall='git pull --all'
-  alias gl='git pull'
-  alias glg='git lg'
-  alias gmv='git mv'
-  alias gpall='git push --all'
-  alias gp='git push'
-  alias gpo='git push origin'
-  alias grm='git rm'
-  alias gs='git status -s'
-  alias gwtf='git-wtf'
-
-fi
-
 # https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
 #alias pmver="perl -le '\$m = shift; eval qq(require \$m) or die qq(module \"\$m\" is not installed\\n); print \$m->VERSION || \"No Version Available\"'"
 alias pmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
