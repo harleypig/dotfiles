@@ -11,6 +11,8 @@
 #   Allow for arbitrary scripts to be run under certain conditions.  E.g.,
 #   directory change for location specific aliases.
 
+# Add ansiweather: https://github.com/fcambus/ansiweather
+
 declare -a __JOIN
 declare -a PROMPT
 
