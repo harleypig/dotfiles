@@ -7,7 +7,7 @@
 --whitespace-cycle=0
 
 # Tab Options
---noentab-leading-whitespace
+#--noentab-leading-whitespace
 --notabs
 --default-tabsize=8
 

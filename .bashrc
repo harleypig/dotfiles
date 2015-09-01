@@ -128,6 +128,7 @@ then
   [[ -f ~/.bash_functions  ]] && source ~/.bash_functions
   [[ -f ~/.bash_prompt     ]] && source ~/.bash_prompt
   [[ -f /.travis/travis.sh ]] && source /.travis/travis.sh
+  [[ -f /usr/share/nvm/init-nvm.sh ]] && source /usr/share/nvm/init-nvm.sh
 
   [[ -f /etc/bash_completion           ]] && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]] && source /etc/profile.d/bash-completion
@@ -166,3 +167,9 @@ then
 fi
 
 #echo '  ... ended .bashrc.' >> ~/bash_startup.log
+
+PATH="/home/harleypig/perl5/bin${PATH+:}${PATH}"; export PATH;
+PERL5LIB="/home/harleypig/perl5/lib/perl5${PERL5LIB+:}${PERL5LIB}"; export PERL5LIB;
+PERL_LOCAL_LIB_ROOT="/home/harleypig/perl5${PERL_LOCAL_LIB_ROOT+:}${PERL_LOCAL_LIB_ROOT}"; export PERL_LOCAL_LIB_ROOT;
+PERL_MB_OPT="--install_base \"/home/harleypig/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=/home/harleypig/perl5"; export PERL_MM_OPT;

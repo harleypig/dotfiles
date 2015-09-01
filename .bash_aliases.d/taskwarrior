@@ -1,0 +1,19 @@
+# Functions and aliases specific to the taskwarrior program.
+# http://taskwarrior.com
+
+if command -v > /dev/null; then
+
+  function td { yes | task $* done; }
+  function ts { task $* start; }
+
+  alias t='clear ; task'
+  alias health='clear ; task add project:personal.health'
+  alias incubate='clear ; task add project:incubate wait:someday'
+  alias james='clear ; task add project:family.james'
+  alias patrick='clear ; task add project:family.patrick'
+  alias robert='clear ; task add project:family.robert'
+  alias ta='clear ; task add'
+  alias tall='clear ; task all -COMPLETED -DELETED'
+  alias tl='clear ; task sync ; clear ; task'
+
+fi

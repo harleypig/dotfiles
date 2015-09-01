@@ -148,19 +148,6 @@ if [ -n $cpanm ]; then
   alias cpanm="$cpanm -S"
 fi
 
-# Taskwarrior
-
-if command -v task > /dev/null; then
-
-  alias overdue='task overdue'
-  alias tadd='task add'
-  alias today='task due.after:yesterday due.before:tomorrow'
-  alias tomorrow='task due:tomorrow'
-  alias t=task
-  alias yesterday='task due:yesterday'
-
-fi
-
 OLDTITLE=
 TEMPLATE=
 
