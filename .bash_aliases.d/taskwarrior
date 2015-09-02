@@ -3,17 +3,81 @@
 
 if command -v > /dev/null; then
 
-  function td { yes | task $* done; }
+  function tasklike {
+
+    local due
+    local options
+    local parent
+    local recur
+    local tid
+    local wait
+
+    tid=$1
+    shift
+
+    options=
+
+    tag=$(task _get $tid.tag)
+    if [[ -n $tag ]]; then
+      tag=${tag//,/ +}
+      options="${options} +${tag}"
+    fi
+
+    project=$(task _get $tid.project)
+    if [[ -n $project ]]; then
+      options="${options} project:${project}"
+    fi
+
+    priority=$(task _get $tid.priority)
+    if [[ -n $priority ]]; then
+      options="${options} priority:${priority}"
+    fi
+
+    parent=$(task _get $tid.parent)
+    if [[ -n $parent ]]; then
+      tid=$parent
+      recur=$(task _get $tid.recur)
+      options="${options} recur:${recur}"
+    fi
+
+    due=$(task _get $tid.due)
+    if [[ -n $due ]]; then
+      options="${options} due:$due"
+    fi
+
+    wait=$(task _get $tid.wait)
+    if [[ -n $wait ]]; then
+      options="${options} wait:$wait"
+    fi
+
+    scheduled=$(task _get $tid.scheduled)
+    if [[ -n $scheduled ]]; then
+      options="${options} scheduled:$scheduled"
+    fi
+
+    until=$(task _get $tid.until)
+    if [[ -n $until ]]; then
+      options="${options} until:$until"
+    fi
+
+    task add $options "$@"
+
+  }
+
   function ts { task $* start; }
+  function ti { clear ; task $* info ; }
 
   alias t='clear ; task'
+  alias ta='clear ; task add'
+  alias tall='clear ; task all -COMPLETED -DELETED'
+  alias tl='clear ; task sync ; clear ; task'
+
+  alias finance='clear ; task add project:personal.finance'
   alias health='clear ; task add project:personal.health'
   alias incubate='clear ; task add project:incubate wait:someday'
   alias james='clear ; task add project:family.james'
   alias patrick='clear ; task add project:family.patrick'
   alias robert='clear ; task add project:family.robert'
-  alias ta='clear ; task add'
-  alias tall='clear ; task all -COMPLETED -DELETED'
-  alias tl='clear ; task sync ; clear ; task'
+  alias work='clear ; task add project:work'
 
 fi
