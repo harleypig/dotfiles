@@ -1,0 +1,19 @@
+# Aliases and functions for git
+
+if command -v dzil > /dev/null; then
+
+  alias dz='dzil'
+
+  # Run author or release tests, or a single test
+  alias testauthor='AUTHOR_TESTING=1 dzil run prove -lv'
+  alias testrelease='RELEASE_TESTING=1 dzil run prove -lv'
+  alias testtest='dzil run prove -lv'
+
+  alias authordeps='dzil authordeps'
+  alias listdeps='dzil listdeps'
+
+  # XXX: test if bakeini is installed
+  if ( perldoc -l Dist::Zilla::App::Command::bakeini > /dev/null 2>&1 ); then
+    alias bakeini='dzil bakeini'
+  fi
+fi
