@@ -36,7 +36,10 @@ if command -v > /dev/null; then
     parent=$(task _get $tid.parent)
     if [[ -n $parent ]]; then
       tid=$parent
-      recur=$(task _get $tid.recur)
+    fi
+
+    recur=$(task _get $tid.recur)
+    if [[ -n $recur ]]; then
       options="${options} recur:${recur}"
     fi
 
@@ -64,13 +67,14 @@ if command -v > /dev/null; then
 
   }
 
-  function ts { task $* start; }
+  function project { task add pro:project.$* ; }
+  function ts { task $* start ; }
   function ti { clear ; task $* info ; }
 
   alias t='clear ; task'
-  alias ta='clear ; task add'
+  alias ta='task add'
   alias tall='clear ; task all -COMPLETED -DELETED'
-  alias tl='clear ; task sync ; clear ; task'
+  alias tl='task sync ; clear ; task'
 
   alias finance='clear ; task add project:personal.finance'
   alias health='clear ; task add project:personal.health'
