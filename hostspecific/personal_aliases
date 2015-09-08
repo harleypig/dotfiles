@@ -142,12 +142,6 @@ fi
 # XXX: Figure out some way to test existence of vimiwiki on current box.
 alias vimwiki='vim +VimwikiIndex'
 
-# sudo cpanm
-cpanm=$(command -v cpanm)
-if [ -n $cpanm ]; then
-  alias cpanm="$cpanm -S"
-fi
-
 OLDTITLE=
 TEMPLATE=
 

@@ -34,25 +34,6 @@ if [[ -d $HOME/projects/android-sdk ]]; then
 
 fi
 
-if [[ -d ~/perl5 ]]; then
-
-  export PERLBREW_HOME=~
-
-elif [[ -d /opt/perl5 ]]; then
-
-  export PERLBREW_HOME=/opt
-
-fi
-
-if [[ -n $PERLBREW_HOME ]]; then
-
-  export PERLBREW_ROOT="${PERLBREW_HOME}/perl5"
-
-  [[ -d $PERLBREW_ROOT/bin        ]] && PATH="${PATH}:$PERLBREW_ROOT/bin"
-  [[ -f $PERLBREW_ROOT/etc/bashrc ]] && source $PERLBREW_ROOT/etc/bashrc
-
-fi
-
 ## Include this here for the GEM_HOME variable
 #[[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
 #
@@ -141,7 +122,6 @@ then
    fi
 
   [[ $(type setup-bash-complete 2> /dev/null)       ]] && source setup-bash-complete
-  [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] && source $PERLBREW_ROOT/etc/perlbrew-completion.bash
 
   [[ -f ~/bin/tokens ]]                     && source ~/bin/tokens
 

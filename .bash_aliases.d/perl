@@ -1,0 +1,41 @@
+# Aliases and functions for perl
+
+if command -v perl > /dev/null; then
+
+  # XXX: Check for completion capability
+  [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] && source $PERLBREW_ROOT/etc/perlbrew-completion.bash
+
+  # https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
+  #alias pmver="perl -le '\$m = shift; eval qq(require \$m) or die qq(module \"\$m\" is not installed\\n); print \$m->VERSION || \"No Version Available\"'"
+  alias pmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
+
+  if command -v cpandoc > /dev/null; then
+    alias perldoc='cpandoc'
+  fi
+
+  # XXX: If using perlbrew in ~ then don't add sudo ...
+  if command -v cpanm > /dev/null; then
+    #alias cpanm='cpanm --mirror http://cpan.cpantesters.org/ -S'
+    alias cpanm="$cpanm -S"
+  fi
+
+  echo "What does perldoc-complete do? Fix this!"
+  #perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
+  #completion="complete -C ${perldoc} -o nospace -o default perldoc"
+  #[[ -f ${perldoc} ]] && ${completion}
+
+  if command -v perlbrew > /dev/null; then
+
+    if [[ -d ~/perl5 ]]; then
+      export PERLBREW_HOME=~
+    elif [[ -d /opt/perl5 ]]; then
+      export PERLBREW_HOME=/opt
+    fi
+
+    if [[ -n $PERLBREW_HOME ]]; then
+      export PERLBREW_ROOT="${PERLBREW_HOME}/perl5"
+      [[ -d $PERLBREW_ROOT/bin        ]] && PATH="${PATH}:$PERLBREW_ROOT/bin"
+      [[ -f $PERLBREW_ROOT/etc/bashrc ]] && source $PERLBREW_ROOT/etc/bashrc
+    fi
+  fi
+fi

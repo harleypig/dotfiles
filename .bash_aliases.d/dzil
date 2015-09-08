@@ -1,4 +1,4 @@
-# Aliases and functions for git
+# Aliases and functions for dzil
 
 if command -v dzil > /dev/null; then
 
