@@ -2,28 +2,7 @@
 
 if command -v perl > /dev/null; then
 
-  # XXX: Check for completion capability
-  [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] && source $PERLBREW_ROOT/etc/perlbrew-completion.bash
-
-  # https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
-  #alias pmver="perl -le '\$m = shift; eval qq(require \$m) or die qq(module \"\$m\" is not installed\\n); print \$m->VERSION || \"No Version Available\"'"
-  alias pmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
-
-  if command -v cpandoc > /dev/null; then
-    alias perldoc='cpandoc'
-  fi
-
-  # XXX: If using perlbrew in ~ then don't add sudo ...
-  if command -v cpanm > /dev/null; then
-    #alias cpanm='cpanm --mirror http://cpan.cpantesters.org/ -S'
-    alias cpanm="$cpanm -S"
-  fi
-
-  echo "What does perldoc-complete do? Fix this!"
-  #perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
-  #completion="complete -C ${perldoc} -o nospace -o default perldoc"
-  #[[ -f ${perldoc} ]] && ${completion}
-
+  ### perlbrew
   if command -v perlbrew > /dev/null; then
 
     if [[ -d ~/perl5 ]]; then
@@ -38,4 +17,49 @@ if command -v perl > /dev/null; then
       [[ -f $PERLBREW_ROOT/etc/bashrc ]] && source $PERLBREW_ROOT/etc/bashrc
     fi
   fi
+
+  ### dzil
+  if command -v dzil > /dev/null; then
+
+    alias dz='dzil'
+
+    # Run author or release tests, or a single test
+    alias testauthor='AUTHOR_TESTING=1 dzil run prove -lv'
+    alias testrelease='RELEASE_TESTING=1 dzil run prove -lv'
+    alias testtest='dzil run prove -lv'
+
+    alias authordeps='dzil authordeps'
+    alias listdeps='dzil listdeps'
+
+    # XXX: test if bakeini is installed
+    if ( perldoc -l Dist::Zilla::App::Command::bakeini > /dev/null 2>&1 ); then
+      alias bakeini='dzil bakeini'
+    fi
+  fi
+
+  # https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
+  #alias pmver="perl -le '\$m = shift; eval qq(require \$m) or die qq(module \"\$m\" is not installed\\n); print \$m->VERSION || \"No Version Available\"'"
+  alias pmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
+
+  ### perldoc
+  if command -v cpandoc > /dev/null; then
+    alias perldoc='cpandoc'
+  fi
+
+  echo "What does perldoc-complete do? Fix this!"
+  #perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
+  #completion="complete -C ${perldoc} -o nospace -o default perldoc"
+  #[[ -f ${perldoc} ]] && ${completion}
+
+  ### cpanm
+  # XXX: If using perlbrew in ~ then don't add sudo ...
+  if command -v cpanm > /dev/null; then
+    #alias cpanm='cpanm --mirror http://cpan.cpantesters.org/ -S'
+    alias cpanm="cpanm -S"
+  fi
+
+  ### completion
+  # XXX: Check for completion capability
+  [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] && source $PERLBREW_ROOT/etc/perlbrew-completion.bash
+
 fi
