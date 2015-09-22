@@ -68,20 +68,27 @@ if command -v > /dev/null; then
   }
 
   function project { task add pro:project.$* ; }
+  function tanno { tid=$1 ; shift ; task $tid annotate $* ; }
   function ts { task $* start ; }
-  function ti { clear ; task $* info ; }
+  function ti { task $* info ; }
 
-  alias t='clear ; task'
+  alias t='task'
   alias ta='task add'
-  alias tall='clear ; task all -COMPLETED -DELETED'
-  alias tl='task sync ; clear ; task'
+  alias tall='task all -COMPLETED -DELETED'
+  alias tl='task sync ; task'
+  alias context='task context'
 
-  alias finance='clear ; task add project:personal.finance'
-  alias health='clear ; task add project:personal.health'
-  alias incubate='clear ; task add project:incubate wait:someday'
-  alias james='clear ; task add project:family.james'
-  alias patrick='clear ; task add project:family.patrick'
-  alias robert='clear ; task add project:family.robert'
-  alias work='clear ; task add project:work'
+  alias alan='task add project:family.alan'
+  alias deedee='task add project:family.deedee'
+  alias carrie='task add project:family.carrie'
+  alias james='task add project:family.james'
+  alias patrick='task add project:family.patrick'
+  alias robert='task add project:family.robert'
+
+  alias finance='task add project:personal.finance'
+  alias health='task add project:personal.health'
+  alias incubate='task add project:incubate wait:someday'
+  alias school='task add project:personal.school'
+  alias work='task add project:work'
 
 fi

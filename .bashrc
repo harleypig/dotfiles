@@ -1,7 +1,7 @@
 #echo Started .bashrc ... >> ~/bash_startup.log
 
 # http://www.catonmat.net/series/bash-one-liners-explained
-#   http://www.catonmat.net/blog/bash-one-liners-explained-part-four/
+# http://www.catonmat.net/blog/bash-one-liners-explained-part-four/
 # http://www.catonmat.net/blog/the-definitive-guide-to-bash-command-line-history/
 #
 
@@ -18,31 +18,12 @@ function __basedir() {
 [[ -d ~/bin        ]] && PATH="${PATH}:~/bin"
 [[ -d ~/.vim/bin   ]] && PATH="${PATH}:~/.vim/bin/"
 
-if [[ -d ~/.rvm ]]; then
-
-  [[ -d ~/.rvm/bin ]] && PATH="${PATH}:~/.rvm/bin"
-
-  # Include this here for the GEM_HOME variable
-  [[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
-
-fi
-
 if [[ -d $HOME/projects/android-sdk ]]; then
 
   PATH="${PATH}:~/projects/android-sdk/tools"
   PATH="${PATH}:~/projects/android-sdk/platform-tools"
 
 fi
-
-## Include this here for the GEM_HOME variable
-#[[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
-#
-#RUBY=$(command -v ruby)
-#
-#if [ $? -eq 0 ]; then
-#  PATH="$($RUBY -e 'print Gem.user_dir')/bin:${PATH}"
-#  export GEM_HOME=$($RUBY -e 'print Gem.user_dir')
-#fi
 
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
@@ -144,12 +125,13 @@ then
   SOURCE=$(ls ${HOSTSPECIFIC}/*bashrc* 2> /dev/null)
   for s in ${SOURCE}; do source $s; done
 
+  ########################################################################################
+  # Source any private files
+
+  PRIVATE="${HOME}/.bash_private.d"
+  SOURCE=$(ls ${PRIVATE}/* 2> /dev/null)
+  for s in ${SOURCE}; do source $s; done
+
 fi
 
 #echo '  ... ended .bashrc.' >> ~/bash_startup.log
-
-PATH="/home/harleypig/perl5/bin${PATH+:}${PATH}"; export PATH;
-PERL5LIB="/home/harleypig/perl5/lib/perl5${PERL5LIB+:}${PERL5LIB}"; export PERL5LIB;
-PERL_LOCAL_LIB_ROOT="/home/harleypig/perl5${PERL_LOCAL_LIB_ROOT+:}${PERL_LOCAL_LIB_ROOT}"; export PERL_LOCAL_LIB_ROOT;
-PERL_MB_OPT="--install_base \"/home/harleypig/perl5\""; export PERL_MB_OPT;
-PERL_MM_OPT="INSTALL_BASE=/home/harleypig/perl5"; export PERL_MM_OPT;

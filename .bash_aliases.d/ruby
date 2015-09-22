@@ -1,0 +1,15 @@
+RUBY=$(command -v ruby)
+
+if [ $? -eq 0 ]; then
+  export GEM_HOME=$($RUBY -e 'print Gem.user_dir')
+  export PATH="${GEM_HOME}/bin:${PATH}"
+fi
+
+if [[ -d ~/.rvm ]]; then
+
+  [[ -d ~/.rvm/bin ]] && PATH="${PATH}:~/.rvm/bin"
+
+  # Include this here for the GEM_HOME variable
+  [[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
+
+fi

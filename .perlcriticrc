@@ -366,7 +366,7 @@ verbose = %s:%f:%l:%c:%p %m\n
 # maximum_violations_per_document    = no_limit
 
 # Require that all modules have a `use utf8;' statement.
-[CodeLayout::RequireUseUTF8]
+[-CodeLayout::RequireUseUTF8]
 # set_themes                         = swift unicode
 # add_themes                         =
 # severity                           = 3
@@ -703,7 +703,7 @@ script_sections = NAME | VERSION | SYNOPSIS | EXPORT | SUBROUTINES AND METHODS |
 # language =
 
 # Per-file editor settings.
-[Editor::RequireEmacsFileVariables]
+[-Editor::RequireEmacsFileVariables]
 # set_themes                         = editor more readability
 # add_themes                         =
 # severity                           = 2
@@ -911,7 +911,7 @@ exclude_functions                    = sleep print
 # maximum_violations_per_document    = no_limit
 
 # Forbid a bare `## no critic'
-[Miscellanea::ProhibitUnrestrictedNoCritic]
+[-Miscellanea::ProhibitUnrestrictedNoCritic]
 # set_themes                         = core maintenance
 # add_themes                         =
 # severity                           = 3
@@ -925,7 +925,7 @@ exclude_functions                    = sleep print
 # maximum_violations_per_document    = no_limit
 
 # Put source-control keywords in every file.
-[Miscellanea::RequireRcsKeywords]
+[-Miscellanea::RequireRcsKeywords]
 # set_themes                         = cosmetic deprecated pbp
 # add_themes                         =
 # severity                           = 2
@@ -1075,14 +1075,14 @@ exclude_functions                    = sleep print
 # maximum_violations_per_document    = no_limit
 
 # Require a `use 5.006;' or similar.
-[Modules::RequirePerlVersion]
+[-Modules::RequirePerlVersion]
 # set_themes                         = compatibility more
 # add_themes                         =
 # severity                           = 1
 # maximum_violations_per_document    = no_limit
 
 # Give every module a `$VERSION' number.
-[Modules::RequireVersionVar]
+[-Modules::RequireVersionVar]
 # set_themes                         = core pbp readability
 # add_themes                         =
 # severity                           = 2
@@ -2264,7 +2264,7 @@ file_lexical_variables              = :all_upper
 # maximum_violations_per_document    = no_limit
 
 # simple policy for keeping your shebang line uniform
-[logicLAB::RequireSheBang]
+[-logicLAB::RequireSheBang]
 # set_themes                         = logiclab
 # add_themes                         =
 # severity                           = 3
