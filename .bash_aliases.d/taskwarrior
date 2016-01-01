@@ -1,94 +1,76 @@
+#!/bin/bash
+
 # Functions and aliases specific to the taskwarrior program.
 # http://taskwarrior.com
 
-if command -v > /dev/null; then
+task=$(command -v task)
 
-  function tasklike {
+if [ "$task" != '' ]; then
 
-    local due
-    local options
-    local parent
-    local recur
-    local tid
-    local wait
+  function te     { $task $* edit  ; }
+  function ti     { $task $* info  ; }
+  function tstart { $task $* start ; }
+  function tstop  { $task $* stop  ; }
 
-    tid=$1
-    shift
+  function _task_command {
 
-    options=
-
-    tag=$(task _get $tid.tag)
-    if [[ -n $tag ]]; then
-      tag=${tag//,/ +}
-      options="${options} +${tag}"
-    fi
-
-    project=$(task _get $tid.project)
-    if [[ -n $project ]]; then
-      options="${options} project:${project}"
-    fi
-
-    priority=$(task _get $tid.priority)
-    if [[ -n $priority ]]; then
-      options="${options} priority:${priority}"
-    fi
-
-    parent=$(task _get $tid.parent)
-    if [[ -n $parent ]]; then
-      tid=$parent
-    fi
-
-    recur=$(task _get $tid.recur)
-    if [[ -n $recur ]]; then
-      options="${options} recur:${recur}"
-    fi
-
-    due=$(task _get $tid.due)
-    if [[ -n $due ]]; then
-      options="${options} due:$due"
-    fi
-
-    wait=$(task _get $tid.wait)
-    if [[ -n $wait ]]; then
-      options="${options} wait:$wait"
-    fi
-
-    scheduled=$(task _get $tid.scheduled)
-    if [[ -n $scheduled ]]; then
-      options="${options} scheduled:$scheduled"
-    fi
-
-    until=$(task _get $tid.until)
-    if [[ -n $until ]]; then
-      options="${options} until:$until"
-    fi
-
-    task add $options "$@"
+    command=$1 ; tid=$2
+    shift      ; shift
+    $task $tid $command $*
 
   }
 
-  function project { task add pro:project.$* ; }
-  function tanno { tid=$1 ; shift ; task $tid annotate $* ; }
-  function ts { task $* start ; }
-  function ti { task $* info ; }
+  function tanno { _task_command annotate $* ; }
+  function tm    { _task_command mod      $* ; }
+  function td    { _task_command done     $* ; }
 
-  alias t='task'
-  alias ta='task add'
-  alias tall='task all -COMPLETED -DELETED'
-  alias tl='task sync ; task'
-  alias context='task context'
+  function _task_report_or_add {
 
-  alias alan='task add project:family.alan'
-  alias deedee='task add project:family.deedee'
-  alias carrie='task add project:family.carrie'
-  alias james='task add project:family.james'
-  alias patrick='task add project:family.patrick'
-  alias robert='task add project:family.robert'
+    project=$1
+    shift
 
-  alias finance='task add project:personal.finance'
-  alias health='task add project:personal.health'
-  alias incubate='task add project:incubate wait:someday'
-  alias school='task add project:personal.school'
-  alias work='task add project:work'
+    if [ "$#" -eq 0 ]; then
+      report=${project##*.}
+      $task $report
+    else
+      [ "$project" == 'incubate' ] && project="${project} wait:someday"
+      $task add project:$project $*
+    fi
+  }
+
+  for c in alan deedee carrie james robert patrick; do
+    eval "function $c { _task_report_or_add family.$c \$* ; }"
+  done
+
+  for p in auto finance game health school spiritual; do
+    eval "function $p { _task_report_or_add personal.$p \$* ; }"
+  done
+
+  for p in incubate work; do
+    eval "function $p { _task_report_or_add $p \$* ; }"
+  done
+
+  function _task_completed_but_not_done {
+
+    tag=$1 ; tid=$2
+    shift  ; shift
+
+    if [ "$#" -eq 0 ]; then
+      echo "You must explain why this task wasn't done."
+      return
+    else
+      $task $tid annotate $*
+      $task $tid done $tag
+    fi
+  }
+
+  function tskip { _task_completed_but_not_done +skip $* ; }
+  function tfail { _task_completed_but_not_done +fail $* ; }
+
+  alias context="$task context"
+  alias tall="$task all -COMPLETED -DELETED"
+  alias ta="$task add"
+  alias ts="$task sync"
+  alias t="$task"
 
 fi
