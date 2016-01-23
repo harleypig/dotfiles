@@ -7,10 +7,8 @@ task=$(command -v task)
 
 if [ "$task" != '' ]; then
 
-  function te     { $task $* edit  ; }
-  function ti     { $task $* info  ; }
-  function tstart { $task $* start ; }
-  function tstop  { $task $* stop  ; }
+  taskdatadir=$($task _get rc.data.location)
+  taskdatadir=${taskdatadir//\~/"$HOME"}
 
   function _task_command {
 
@@ -20,9 +18,13 @@ if [ "$task" != '' ]; then
 
   }
 
-  function tanno { _task_command annotate $* ; }
-  function tm    { _task_command mod      $* ; }
-  function td    { _task_command done     $* ; }
+  function tanno  { _task_command annotate $* ; }
+  function td     { _task_command done     $* ; }
+  function te     { _task_command edit     $* ; }
+  function ti     { _task_command info     $* ; }
+  function tm     { _task_command mod      $* ; }
+  function tstart { _task_command start    $* ; }
+  function tstop  { _task_command stop     $* ; }
 
   function _task_report_or_add {
 
@@ -38,18 +40,6 @@ if [ "$task" != '' ]; then
     fi
   }
 
-  for c in alan deedee carrie james robert patrick; do
-    eval "function $c { _task_report_or_add family.$c \$* ; }"
-  done
-
-  for p in auto finance game health school spiritual; do
-    eval "function $p { _task_report_or_add personal.$p \$* ; }"
-  done
-
-  for p in incubate work; do
-    eval "function $p { _task_report_or_add $p \$* ; }"
-  done
-
   function _task_completed_but_not_done {
 
     tag=$1 ; tid=$2
@@ -63,6 +53,16 @@ if [ "$task" != '' ]; then
       $task $tid done $tag
     fi
   }
+
+  shortcutsfile="${taskdatadir}/make_shortcuts"
+
+  if [ -f $shortcutsfile ]; then
+    while read -r line ; do
+      name=${line%% *}
+      parms=${line#* }
+      eval "function $name { $parms \$* ; }"
+    done < <(cat $shortcutsfile)
+  fi
 
   function tskip { _task_completed_but_not_done +skip $* ; }
   function tfail { _task_completed_but_not_done +fail $* ; }
