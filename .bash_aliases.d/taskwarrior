@@ -18,13 +18,28 @@ if [ "$task" != '' ]; then
 
   }
 
-  function tanno  { _task_command annotate $* ; }
-  function td     { _task_command done     $* ; }
-  function te     { _task_command edit     $* ; }
-  function ti     { _task_command info     $* ; }
-  function tm     { _task_command mod      $* ; }
-  function tstart { _task_command start    $* ; }
-  function tstop  { _task_command stop     $* ; }
+  declare -A TASK_COMMANDS
+  TASK_COMMANDS=(
+    [tanno]="annotate"
+    [td]="done"
+    [te]="edit"
+    [ti]="info"
+    [tm]="mod"
+    [tstart]="start"
+    [tstop]="stop"
+  )
+
+  for func in "${!TASK_COMMANDS[@]}"; do
+    eval "function $func { _task_command ${TASK_COMMANDS[$func]} \$* ; }"
+  done
+
+#  function tanno  { _task_command annotate $* ; }
+#  function td     { _task_command done     $* ; }
+#  function te     { _task_command edit     $* ; }
+#  function ti     { _task_command info     $* ; }
+#  function tm     { _task_command mod      $* ; }
+#  function tstart { _task_command start    $* ; }
+#  function tstop  { _task_command stop     $* ; }
 
   function _task_report_or_add {
 
@@ -54,16 +69,6 @@ if [ "$task" != '' ]; then
     fi
   }
 
-  shortcutsfile="${taskdatadir}/make_shortcuts"
-
-  if [ -f $shortcutsfile ]; then
-    while read -r line ; do
-      name=${line%% *}
-      parms=${line#* }
-      eval "function $name { $parms \$* ; }"
-    done < <(cat $shortcutsfile)
-  fi
-
   function tskip { _task_completed_but_not_done +skip $* ; }
   function tfail { _task_completed_but_not_done +fail $* ; }
 
@@ -73,4 +78,13 @@ if [ "$task" != '' ]; then
   alias ts="$task sync"
   alias t="$task"
 
+  shortcutsfile="${taskdatadir}/make_shortcuts"
+
+  if [ -f $shortcutsfile ]; then
+    while read -r line ; do
+      name=${line%% *}
+      parms=${line#* }
+      eval "function $name { $parms \$* ; }"
+    done < <(cat $shortcutsfile)
+  fi
 fi
