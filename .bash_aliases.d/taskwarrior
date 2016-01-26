@@ -70,6 +70,28 @@ if [ "$task" != '' ]; then
   function tskip { _task_completed_but_not_done +skip "$*" ; }
   function tfail { _task_completed_but_not_done +fail "$*" ; }
 
+  function task_last_id {
+
+    local last_id
+    last_id=$($task newest rc.verbose=nothing limit:1)
+    last_id=${last_id# *}
+    last_id=${last_id%% *}
+    echo "$last_id"
+
+  }
+
+  function task_last_uuid {
+
+    local last_id
+    local last_uuid
+
+    last_id=$(task_last_id)
+    last_uuid=$($task "$last_id" _uuids)
+
+    echo "$last_uuid"
+
+  }
+
   # shellcheck disable=SC2139
   {
     alias context="$task context"
