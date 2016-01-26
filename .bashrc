@@ -16,7 +16,8 @@ function __basedir() {
 }
 
 [[ -d ~/bin        ]] && PATH="${PATH}:~/bin"
-[[ -d ~/.vim/bin   ]] && PATH="${PATH}:~/.vim/bin/"
+[[ -d ~/.vim/bin   ]] && PATH="${PATH}:~/.vim/bin"
+[[ -d ~/.cabal/bin ]] && PATH="${PATH}:~/.cabal/bin"
 
 if [[ -d $HOME/projects/android-sdk ]]; then
 
@@ -131,6 +132,8 @@ then
   PRIVATE="${HOME}/.bash_private.d"
   SOURCE=$(ls ${PRIVATE}/* 2> /dev/null)
   for s in ${SOURCE}; do source $s; done
+
+  [[ -f ~/.sekrets ]] && source ~/.sekrets
 
 fi
 

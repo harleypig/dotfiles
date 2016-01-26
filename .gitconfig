@@ -77,5 +77,3 @@
 [status-tackle]
   #plugins = UntrackedFiles WorkingTreeChanges IndexChanges UnpushedBranches CompletedFeatureBranches UnmergedFeatureBranches
   plugins = UntrackedFiles WorkingTreeChanges IndexChanges UnpushedBranches
-[ghi]
-	token = 022b09666759559e349e920054924f5caa5abde9
