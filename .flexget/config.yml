@@ -1,3 +1,14 @@
+web_server:
+  bind: 0.0.0.0
+  port: 5050
+api: yes
+webui: yes
+
+schedules:
+  - tasks: '*'
+    interval:
+      hours: 1
+
 templates:
   global:
     verify_ssl_certificates: no
@@ -14,18 +25,19 @@ templates:
     content_filter:
       require_mainfile: yes
       require:
-        - '*.avi'
         - '*.mkv'
         - '*.mp4'
         - '*.mpeg'
         - '*.mpg'
         - '*.wmv'
       reject:
+        - '*.avi'
         - '*.part0*'
         - 'password.txt'
         - '*.r0*'
         - '*.rar'
         - '*.zip'
+        - '*hevc*'
 
   tv_urls:
     inputs:
