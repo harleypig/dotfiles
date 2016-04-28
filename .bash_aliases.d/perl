@@ -1,3 +1,5 @@
+#!/bin/bash -x
+
 # Aliases and functions for perl
 
 if command -v perl > /dev/null; then
@@ -107,7 +109,7 @@ if command -v perl > /dev/null; then
     alias perldoc='cpandoc'
   fi
 
-  echo "What does perldoc-complete do? Fix this!"
+  #echo "What does perldoc-complete do? Fix this!"
   #perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
   #completion="complete -C ${perldoc} -o nospace -o default perldoc"
   #[[ -f ${perldoc} ]] && ${completion}
