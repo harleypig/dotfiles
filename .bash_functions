@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #echo 'Started .bash_functions ...' >> ~/bash_startup.log
 
 # Some of these are found on (and modified to fit):
@@ -11,25 +13,43 @@ function cdl() { cd $1; l; }
 # Make directory and cd to it
 function mkcd() { mkdir -p -- "$@" && cd "$_"; }
 
+######################################################################################
 # http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript/1687710#1687710
 # XXX: Should check to see if we are in screen and do nothing unless we are.
 # XXX: Should check to see if we are in screen or tmux and make appropriate calls.
 function set_screen_title { echo -ne "\ek$1\e\\"; }
 
+######################################################################################
 # join an array. join must be a single character
-# Set the array you want to join in the __JOIN variable.
+## Set the array you want to join in the __JOIN variable.
 
-# XXX: Allow for any size separator if IFS can handle \0
+## XXX: Allow for any size separator if IFS can handle \0
 
-function __join() {
+#function __join() {
+#
+#  SAVE_IFS="$IFS"
+#  IFS="$*"
+#  local joined="${__JOIN[*]}"
+#  IFS="$SAVE_IFS"
+#  echo "$joined"
+#
+#}
 
-  SAVE_IFS="$IFS"
-  IFS="$*"
-  local joined="${__JOIN[*]}"
-  IFS="$SAVE_IFS"
-  echo "$joined"
+# I don't remember where I found this. This allows for arbitrary sized arrays.
+# Example:
+#   __join <delimiter> "${ARRAY[@]}"
+#   joined=$(__join <delimiter> "${ARRAY[@]}"
+
+function __join {
+
+  local delim=$1 ; shift
+  echo -n "$1"   ; shift
+
+  printf "%s" "${@/#/$delim}"
 
 }
+
+######################################################################################
 
 function __duration() {
 

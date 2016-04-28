@@ -31,9 +31,9 @@ function __versions () {
   __JOIN[${#__JOIN[*]}]="Python ${pythonv}"
   __JOIN[${#__JOIN[*]}]="Ruby ${rubyv}"
 
-  separator='|'
-  versionline=$(__join $separator)
-  versionline="${versionline//$separator/ $separator }"
+  separator=' | '
+  versionline=$(__join "$separator" "${__JOIN[@]}")
+  #versionline="${versionline//$separator/ $separator }"
 
   echo $versionline
 
