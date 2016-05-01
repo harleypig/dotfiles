@@ -32,7 +32,7 @@ if command -v perl > /dev/null; then
     COMPLETION_UTIL="${COMPLETION_UTIL} podpath"
 
     for CU in $COMPLETION_UTIL; do
-      [ command -v $CU > /dev/null ] && complete -C $CU $CU
+      command -v $CU > /dev/null && complete -C $CU $CU
     done
   fi
 
@@ -47,7 +47,8 @@ if command -v perl > /dev/null; then
 
     if [[ -n $PERLBREW_HOME ]]; then
 
-      export PATH="${PERLBREW_HOME}/bin:${PATH}"
+      PATH="${PERLBREW_HOME}/bin:${PATH}"
+
       export PERL5LIB="${PERLBREW_HOME}/lib/perl5:${PERL5LIB}"
       export PERLBREW_ROOT="${PERLBREW_HOME}/perl5"
       export PERL_LOCAL_LIB_ROOT="${PERLBREW_HOME}:${PERL_LOCAL_LIB_ROOT}"
