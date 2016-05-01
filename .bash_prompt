@@ -16,9 +16,8 @@
 declare -a __JOIN
 declare -a PROMPT
 
-PROMPT_FUNCTIONS="$(__basedir ~/.bash_prompt)/.bash_prompt.d"
-FUNCS=$(ls ${PROMPT_FUNCTIONS}/* 2> /dev/null)
-for f in ${FUNCS}; do source $f; done
+__buildpath 'PROMPT_FUNCTIONS' "${BASH_SOURCE}" "/.bash_prompt.d/*"
+for f in $(ls $PROMPT_FUNCTIONS 2> /dev/null); do source $f; done
 
 prompt_color=$(__ansi_code cyan_fg)
 

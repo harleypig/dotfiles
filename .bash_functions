@@ -109,12 +109,10 @@ function make-completion-wrapper () {
   echo "$function"
 }
 
-BIGFUNCTIONS="$(__basedir ~/.bash_functions)/.bash_functions.d"
-SOURCE=$(ls ${BIGFUNCTIONS}/* 2> /dev/null)
-for s in ${SOURCE}; do source $s; done
+__buildpath 'BIGFUNCTIONS' "${BASH_SOURCE}" "/.bash_functions.d/*"
+for s in $(ls $BIGFUNCTIONS 2> /dev/null); do source $s; done
 
-HOSTSPECIFIC="$(__basedir ~/.bash_functions)/hostspecific/$(hostname)"
-SOURCE=$(ls ${HOSTSPECIFIC}/*functions* 2> /dev/null)
-for s in ${SOURCE}; do source $s; done
+__buildpath 'HOSTSPECIFIC' "${BASH_SOURCE}" "/hostspecific/$(hostname)/*functions*"
+for s in $(ls $HOSTSPECIFIC 2> /dev/null); do source $s; done
 
 #echo '  ... ended .bash_functions.' >> ~/bash_startup.log

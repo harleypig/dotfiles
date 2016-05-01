@@ -1,41 +1,23 @@
 # .bash_profile is run *first* and *only* on ssh (or terminal) but not when
 # shelling out from vim or a new screen instance is being created.
 
-function __basedir() {
+# These functions are needed before we load the main functions file, so we do
+# it here. We don't export them here because if something gets messed up here,
+# we can't access the terminal, even from a non-gui login! Yipes!
 
-  d=$(readlink ~/.bash_profile)
+function __realdir { printf -v "$1" "%s" $(dirname $(readlink -nf "$2")) ; }
 
-  if [ -n "$d" ]; then d=$(dirname "${d}"); else d="${HOME}"; fi
+function __buildpath {
 
-  echo "${d}"
+  local varname=$1 ; shift
+  local source=$1  ; shift
+  local addon=$1   ; shift
+
+  __realdir 'REALDIR' "$source"
+
+  printf -v "$varname" "${REALDIR}${addon}"
 
 }
-
-CAN256=$(find /lib/terminfo /usr/share/terminfo -name 'xterm-256color' 2> /dev/null)
-
-if [ -n $CAN256 ]; then
-
-  if [ -n $TMUX ]; then
-
-    TERM='screen-256color'
-
-  elif [ $TERMCAP =~ screen ]; then
-
-    TERM='screen-256color'
-
-  else
-
-    TERM='xterm-256color'
-
-  fi
-
-else
-
-  TERM='xterm-color'
-
-fi
-
-export TERM
 
 if [[ -d ~/.rbenv ]]; then
 
@@ -44,9 +26,8 @@ if [[ -d ~/.rbenv ]]; then
 
 fi
 
-HOSTSPECIFIC="$(__basedir ~/bash_profile)/hostspecific/$(hostname)"
-SOURCE=$(ls ${HOSTSPECIFC}/*profile* 2> /dev/null)
-for s in ${SOURCE}; do source $s; done
+__buildpath 'HOSTSPECIFIC' "${BASH_SOURCE}" "/hostspecific/$(hostname)/*profile*"
+for s in $(ls $HOSTSPECIFIC 2> /dev/null); do source $s; done
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
 [[ -f ~/.Xresources ]] && xrdb ~/.Xresources

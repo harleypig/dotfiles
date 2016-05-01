@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #echo 'Started .bash_aliases ...' >> ~/bash_startup.log
 
 # Some of these aliases are:
@@ -49,12 +51,10 @@ if command -v colordiff > /dev/null; then
   alias diffdir='colordiff -qr'
 fi
 
-BIGALIASES="$(__basedir ~/.bash_aliases)/.bash_aliases.d"
-SOURCE=$(ls ${BIGALIASES}/* 2> /dev/null)
-for s in ${SOURCE}; do source $s; done
+__buildpath 'BIGALIASES' "${BASH_SOURCE}" "/.bash_aliases.d/*"
+for s in $(ls $BIGALIASES 2> /dev/null); do source $s; done
 
-HOSTSPECIFIC="$(__basedir ~/.bash_aliases)/hostspecific/$(hostname)"
-SOURCE=$(ls ${HOSTSPECIFIC}/*aliases* 2> /dev/null)
-for s in ${SOURCE}; do source $s; done
+__buildpath 'HOSTSPECIFIC' "${BASH_SOURCE}" "/hostspecific/$(hostname)/*aliases*"
+for s in $(ls $HOSTSPECIFIC 2> /dev/null); do source $s; done
 
 #echo '  ... ended .bash_aliases.' >> ~/bash_startup.log
