@@ -67,8 +67,11 @@ if [ "$task" != '' ]; then
     fi
   }
 
-  function tskip { _task_completed_but_not_done +skip "$*" ; }
-  function tfail { _task_completed_but_not_done +fail "$*" ; }
+  # shellcheck disable=SC2048 disable=SC2086
+  {
+    function tskip { _task_completed_but_not_done +skip $* ; }
+    function tfail { _task_completed_but_not_done +fail $* ; }
+  }
 
   function task_last_id {
 
@@ -97,6 +100,7 @@ if [ "$task" != '' ]; then
     alias context="$task context"
     alias tall="$task all -COMPLETED -DELETED"
     alias ta="$task add"
+    alias trecurring="$task all status:recurring"
     alias ts="$task sync"
     alias t="$task"
   }

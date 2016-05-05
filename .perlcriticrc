@@ -501,7 +501,7 @@ verbose = %s:%f:%l:%c:%p %m\n
 # maximum_violations_per_document    = no_limit
 
 # Write `if($condition){ do_something() }' instead of `do_something() if $condition'.
-[ControlStructures::ProhibitPostfixControls]
+[-ControlStructures::ProhibitPostfixControls]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
@@ -1832,7 +1832,7 @@ file_lexical_variables              = :all_upper
 # maximum_violations_per_document    = no_limit
 
 # Write `q{}' instead of `'''.
-[ValuesAndExpressions::ProhibitEmptyQuotes]
+[-ValuesAndExpressions::ProhibitEmptyQuotes]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 2
