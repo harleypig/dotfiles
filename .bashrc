@@ -29,10 +29,8 @@ function __buildpath {
 }
 export -f __buildpath
 
-[[ -d ~/bin            ]] && PATH="${PATH}:~/bin"
-[[ -d ~/.vim/bin       ]] && PATH="${PATH}:~/.vim/bin"
-[[ -d ~/.cabal/bin     ]] && PATH="${PATH}:~/.cabal/bin"
-[[ -d ~/.minecraft/bin ]] && PATH="${PATH}:~/.minecraft/bin"
+########################################################################
+# PATH setup
 
 if [[ -d $HOME/projects/android-sdk ]]; then
 
@@ -40,6 +38,40 @@ if [[ -d $HOME/projects/android-sdk ]]; then
   PATH="${PATH}:~/projects/android-sdk/platform-tools"
 
 fi
+
+if [[ -d ~/.rbenv ]]; then
+
+  PATH="~/.rbenv/plugins/ruby-build/bin:~/.rbenv/bin:${PATH}"
+  eval "$(rbenv init -)"
+
+fi
+
+# Do not alphabetize, order is important here.
+
+BIN_DIRS="${BIN_DIRS} ~/bin"
+BIN_DIRS="${BIN_DIRS} ~/.vim/bin"
+BIN_DIRS="${BIN_DIRS} ~/.cabal/bin"
+BIN_DIRS="${BIN_DIRS} ~/.minecraft/bin"
+BIN_DIRS="${BIN_DIRS} ~/Dropbox/bin"
+BIN_DIRS="${BIN_DIRS} ~/videos/bin"
+BIN_DIRS="${BIN_DIRS} ~/projects/depot_tools"
+BIN_DIRS="${BIN_DIRS} ~/projects/dotfiles/bin"
+
+for d in $BIN_DIRS; do
+
+  dir=${d//\~/"$HOME"}
+  dir=$(readlink -nf $dir)
+
+  if [ -d $dir ] && [[ $PATH != *"$dir"* ]]; then
+      PATH="${PATH}:${dir}"
+
+  fi
+done
+
+export PATH
+
+########################################################################
+# Environment Variables
 
 export EDITOR=vim
 export HISTCONTROL='ignorespace:erasedups'
@@ -49,7 +81,8 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 export PACMAN='pacmatic'
-export PATH
+
+########################################################################
 
 if [[ $- = *i* ]]
 then
@@ -67,6 +100,7 @@ then
 
   ########################################################################################
   # less setup
+  # XXX: this section should be in its own file in a .d directory.
 
   export LESS='--hilite-search --IGNORE-CASE --status-column --RAW-CONTROL-CHARS --hilite-unread --tabs=2 -X'
 
@@ -101,16 +135,22 @@ then
   ########################################################################################
   # Simple check and source lines
 
+  # This eval needs to be included in .bashrc because some of it will be lost
+  # when switching to an interactive shell.
+  if [[ -d ~/.rbenv ]]; then
+    eval "$(rbenv init -)"
+  fi
+
+  [[ -f ~/.Xresources                  ]] && xrdb ~/.Xresources
+  [[ -s "$HOME/.rvm/scripts/rvm"       ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
   [[ -f /etc/bash_completion           ]] && source /etc/bash_completion
   [[ -f /etc/profile.d/bash-completion ]] && source /etc/profile.d/bash-completion
-
-  [[ -f ~/.ssh-agent       ]] && source ~/.ssh-agent
-  [[ -f ~/.bash_aliases    ]] && source ~/.bash_aliases
-  [[ -f ~/.bash_functions  ]] && source ~/.bash_functions
-  [[ -f ~/.bash_prompt     ]] && source ~/.bash_prompt
-  [[ -f /.travis/travis.sh ]] && source /.travis/travis.sh
-  [[ -f /usr/share/nvm/init-nvm.sh ]] && source /usr/share/nvm/init-nvm.sh
-
+  [[ -f ~/.ssh-agent                   ]] && source ~/.ssh-agent
+  [[ -f ~/.bash_aliases                ]] && source ~/.bash_aliases
+  [[ -f ~/.bash_functions              ]] && source ~/.bash_functions
+  [[ -f ~/.bash_prompt                 ]] && source ~/.bash_prompt
+  [[ -f /.travis/travis.sh             ]] && source /.travis/travis.sh
+  [[ -f /usr/share/nvm/init-nvm.sh     ]] && source /usr/share/nvm/init-nvm.sh
   [[ -f $rvm_path/scripts/completion   ]] && source $rvm_path/scripts/completion
 
   command -v npm > /dev/null 2>&1 && source <(npm completion)
@@ -123,12 +163,6 @@ then
   [[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
 
   [[ -f ~/bin/tokens ]] && source ~/bin/tokens
-
-  ########################################################################################
-  # If google's depot_file repo is found in a known place, add it to the path.
-  # http://www.chromium.org/chromium-os/developer-guide#TOC-Building-an-image-to-run-in-a-virtu
-
-  [[ -d ~/projects/depot_tools ]] && export PATH="${PATH}:~/projects/depot_tools"
 
   ########################################################################################
   # CVS settings
