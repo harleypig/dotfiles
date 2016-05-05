@@ -80,3 +80,6 @@
 
 [fetch]
   prune = 1
+
+[ghi]
+  token = b6aae46605051665584104e5734faef6be6b4c51
