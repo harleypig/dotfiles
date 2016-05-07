@@ -49,6 +49,19 @@ function __join {
 
 }
 
+# if __is_array_empty "${ARRAY[@]}"; then do stuff for empty array; fi
+function __is_array_empty {
+
+  local is_empty=0
+
+  if [ "${#@}" -ne 0 ]; then
+    is_empty=1
+  fi
+
+  return $is_empty
+
+}
+
 ######################################################################################
 
 function __duration() {

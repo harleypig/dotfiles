@@ -15,3 +15,6 @@ symlink.sh harleypig.com
 symlink.sh work.desk
 
 instead of copying all dotfiles blindly.
+
+try using rsync instead:
+  https://github.com/mathiasbynens/dotfiles/blob/master/bootstrap.sh

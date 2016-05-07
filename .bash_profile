@@ -19,15 +19,6 @@ function __buildpath {
 
 }
 
-#function __join {
-#
-#  local delim=$1 ; shift
-#  echo -n "$1"   ; shift
-#
-#  printf "%s" "${@/#/$delim}"
-#
-#}
-
 ########################################################################
 # PATH setup
 
@@ -70,31 +61,7 @@ for d in $BIN_DIRS; do
   fi
 done
 
-# This is a nice idea, but too many things downline expect certain things to
-# be in place and add them if they aren't there in exactly the right format.
-
-## Clean up and remove duplicate paths
-#
-#CP=()
-#
-#for p in $(echo $PATH | tr -s ':' ' '); do
-#
-#  path=${p//\~/$HOME}
-#  path=$(readlink -nf $path)
-#
-#  # Don't check for existence; sometimes a path is ephemeral.
-#  if [[ $CLEAN_PATH != *"$path"* ]]; then
-#    CP+=($path)
-#
-#  fi
-#done
-#
-#CLEANED_PATH=$(__join ':' "${CP[@]}")
-#
-##echo "        PATH: ${PATH}"
-##echo "CLEANED_PATH: ${CLEANED_PATH}"
-#PATH=$CLEANED_PATH
-
+PATH="${PATH}:."
 export PATH
 
 ########################################################################
