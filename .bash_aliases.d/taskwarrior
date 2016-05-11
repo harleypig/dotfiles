@@ -3,14 +3,28 @@
 # Functions and aliases specific to the taskwarrior program.
 # http://taskwarrior.com
 
-task=$(command -v task)
+taskpath=$(command -v task)
 
-if [ "$task" != '' ]; then
+if [ "$taskpath" != '' ]; then
+
+  _task () {
+
+    # shellcheck disable=SC2086 disable=SC2048
+    $taskpath $*
+    #echo "$taskpath $*"
+
+    if task commands | grep -Eq "$1|$2\s.*RW"; then
+      $taskpath sync
+    fi
+
+  }
+
+  task=_task
 
   taskdatadir=$($task _get rc.data.location)
   taskdatadir=${taskdatadir//\~/"$HOME"}
 
-  function _task_command {
+  _task_command () {
 
     command=$1 ; tid=$2
     shift      ; shift
@@ -31,10 +45,10 @@ if [ "$task" != '' ]; then
   )
 
   for func in "${!TASK_COMMANDS[@]}"; do
-    eval "function $func { _task_command ${TASK_COMMANDS[$func]} \$* ; }"
+    eval "$func () { _task_command ${TASK_COMMANDS[$func]} \$* ; }"
   done
 
-  function _task_report_or_add {
+  _task_report_or_add () {
 
     project=$1
     shift
@@ -50,7 +64,7 @@ if [ "$task" != '' ]; then
     fi
   }
 
-  function _task_completed_but_not_done {
+  _task_completed_but_not_done () {
 
     tag=$1 ; tid=$2
     shift  ; shift
@@ -69,11 +83,11 @@ if [ "$task" != '' ]; then
 
   # shellcheck disable=SC2048 disable=SC2086
   {
-    function tskip { _task_completed_but_not_done +skip $* ; }
-    function tfail { _task_completed_but_not_done +fail $* ; }
+    tskip () { _task_completed_but_not_done +skip $* ; }
+    tfail () { _task_completed_but_not_done +fail $* ; }
   }
 
-  function task_last_id {
+  task_last_id () {
 
     local last_id
     last_id=$($task newest rc.verbose=nothing limit:1)
@@ -83,7 +97,7 @@ if [ "$task" != '' ]; then
 
   }
 
-  function task_last_uuid {
+  task_last_uuid () {
 
     local last_id
     local last_uuid
@@ -111,7 +125,7 @@ if [ "$task" != '' ]; then
     while read -r line ; do
       name=${line%% *}
       parms=${line#* }
-      eval "function $name { $parms \$* ; }"
+      eval "$name () { $parms \$* ; }"
     done < <(cat "$shortcutsfile")
   fi
 fi
