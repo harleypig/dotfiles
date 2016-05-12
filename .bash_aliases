@@ -1,6 +1,6 @@
 #!/bin/bash
 
-__debugit "$LINENO Entering ..."
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
 
 # Some of these aliases are:
 
@@ -57,4 +57,4 @@ for s in $(ls $BIGALIASES 2> /dev/null); do source $s; done
 __buildpath 'HOSTSPECIFIC' "${BASH_SOURCE}" "/hostspecific/$(hostname)/*aliases*"
 for s in $(ls $HOSTSPECIFIC 2> /dev/null); do source $s; done
 
-__debugit "$LINENO Exiting ..."
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."

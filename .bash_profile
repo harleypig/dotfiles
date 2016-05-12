@@ -9,11 +9,11 @@
 
 __debugit () {
   if [ -f ~/.dot_debug ]; then
-    echo "${BASH_SOURCE}:$@" >> ~/.dotfiles_$$.log
+    echo "$@" >> ~/.dotfiles_$$.log
   fi
 }
 
-__debugit "$LINENO Entering ..."
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
 
 __realdir () { printf -v "$1" '%s' $(dirname $(readlink -nf "$2")) ; }
 
@@ -93,6 +93,6 @@ export PATH
 
 __source_host_specific '*profile*'
 
-[[ -f ~/.bashrc ]] && . ~/.bashrc
+[[ -f $HOME/.bashrc ]] && source $HOME/.bashrc
 
-__debugit "${LINENO} Exiting ..."
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."

@@ -1,4 +1,6 @@
-#echo 'Started .bash_prompt ...' >> ~/bash_startup.log
+#!/bin/bash
+
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
 
 # Ideas ripped off and made to fit from:
 #   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
@@ -84,4 +86,4 @@ __update_prompt() {
 if [ -n "$PS1" ]; then export PROMPT_COMMAND='__update_prompt'; fi
 #export PROMPT_COMMAND=
 
-#echo '  ... ended .bash_prompt.' >> ~/bash_startup.log
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#echo 'Started .bash_functions ...' >> ~/bash_startup.log
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
 
 # Some of these are found on (and modified to fit):
 #
@@ -128,4 +128,4 @@ for s in $(ls $BIGFUNCTIONS 2> /dev/null); do source $s; done
 __buildpath 'HOSTSPECIFIC' "${BASH_SOURCE}" "/hostspecific/$(hostname)/*functions*"
 for s in $(ls $HOSTSPECIFIC 2> /dev/null); do source $s; done
 
-#echo '  ... ended .bash_functions.' >> ~/bash_startup.log
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."

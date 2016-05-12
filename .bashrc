@@ -10,19 +10,16 @@
 
 __debugit () {
   if [ -f ~/.dot_debug ]; then
-    echo "${BASH_SOURCE}:$@" >> ~/.dotfiles_$$.log
+    echo "$@" >> ~/.dotfiles_$$.log
   fi
 }
-export -f __debugit
 
-__debugit "$LINENO Entering ..."
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
 
 # XXX: Does __can256 belong in the general utlities file?
 __can256 () { [ $(tput Co 2> /dev/null || tput colors 2> /dev/null || echo 0) -gt 2 ] ; }
-export -f __can256
 
 __realdir () { printf -v "$1" "%s" $(dirname $(readlink -nf "$2")) ; }
-export -f __realdir
 
 __buildpath () {
 
@@ -35,7 +32,6 @@ __buildpath () {
   printf -v "$varname" '%s' "${REALDIR}${endpoint}"
 
 }
-export -f __buildpath
 
 __source_host_specific () {
 
@@ -55,7 +51,6 @@ __source_host_specific () {
 
   done
 }
-export -f __source_host_specific
 
 ########################################################################
 # PATH setup
@@ -110,7 +105,7 @@ export PACMAN='pacmatic'
 
 if [[ $- != *i* ]]; then
   # non-interactive shell, nothing else to do.
-  __debugit "$LINENO Non-interactive shell, done."
+  __debugit "${BASH_SOURCE#$HOME/}:$LINENO Non-interactive shell, done."
   return
 fi
 
@@ -211,4 +206,4 @@ for s in $(ls ${PRIVATE} 2> /dev/null); do source $s; done
 
 [[ -f ~/.sekrets ]] && source ~/.sekrets
 
-__debugit "$LINENO Entering ..."
+__debugit "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."
