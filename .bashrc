@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# http://www.catonmat.net/series/bash-one-liners-explained
-# http://www.catonmat.net/blog/bash-one-liners-explained-part-four/
-# http://www.catonmat.net/blog/the-definitive-guide-to-bash-command-line-history/
-
-# .bashrc is called when shelling from vim or creating a new screen instance.
-
-# We repeat these here and export for general use. See .bash_profile for more info.
-
 __debugit () {
   if [ -f ~/.dot_debug ]; then
     echo "$@" >> ~/.dotfiles_$$.log
@@ -51,6 +43,20 @@ __source_host_specific () {
 
   done
 }
+
+########################################################################
+
+if [[ $- == *i* ]]; then
+  __debugit "${BASH_SOURCE#$HOME/} We are interactive ..."
+else
+  __debugit "${BASH_SOURCE#$HOME/} We are *not* interactive ..."
+fi
+
+if shopt -q login_shell; then
+  __debugit "${BASH_SOURCE#$HOME/} We are in a login shell ..."
+else
+  __debugit "${BASH_SOURCE#$HOME/} We are *not* in a login shell ..."
+fi
 
 ########################################################################
 # PATH setup
