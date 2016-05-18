@@ -30,15 +30,25 @@ __debugit "${DEBUG_PREFIX}:$LINENO Entering ..."
 # NOTE: Does not validate the path or file.
 # Expects, in order:
 #   The name of the variable to be set.
-#   The name of the file to fully qualify.
+#   The name of the path to fully qualify.
 
-__realdir () { printf -v "$1" "%s" $(dirname $(readlink -nf "$2")) ; }
+__realpath () {
+
+  local varname=$1  ; shift
+  local filename=$1 ; shift
+
+  fqfn=${filename//\~/$HOME}
+  fqfn=$(readlink -nf $fqfn)
+
+  printf -v "${varname}" "%s" "$fqfn"
+
+}
 
 # Builds a fully qualified path and sets $1 to the value.
 # NOTE: Does not validate the path or file.
 # Expects, in order:
 #   The name of the variable to be set.
-#   The name of the file to fully qualify.
+#   The name of the file to determine where to load files from.
 #   The endpoint the path should have.
 
 __buildpath () {
@@ -47,17 +57,20 @@ __buildpath () {
   local sourcefile=$1 ; shift
   local endpoint=$1   ; shift
 
-  __realdir 'REALDIR' "$sourcefile"
+  __realpath 'realpath' "$sourcefile"
+  realpath=$(dirname $realpath)
 
-  printf -v "$varname" '%s' "${REALDIR}${endpoint}"
+  printf -v "$varname" '%s' "${realpath}${endpoint}"
 
 }
 
 # Sources all files found in $1.
 __source_files () {
 
-  for s in $(ls "$1" 2> /dev/null); do
-    __debugit "${DEBUG_PREFIX}:$LINENO Sourcing $s ..."
+  __debugit "${DEBUG_PREFIX}:${LINENO} Trying to source $1 ..."
+
+  for s in $(ls $1 2> /dev/null); do
+    __debugit "${DEBUG_PREFIX}:${LINENO} Sourcing $s ..."
     source $s
 
   done
@@ -66,7 +79,7 @@ __source_files () {
 # Sources all files found in either a hostspecific directory or a default directory.
 __source_host_specific () {
 
-  local endpoint=$1
+  local endpoint="$1"
   local hostname=$(hostname)
 
   __buildpath 'path' "${BASH_SOURCE}" '/hostspecific'
@@ -119,8 +132,7 @@ BIN_DIRS="${BIN_DIRS} ~/projects/android-sdk/platform-tools"
 
 for d in $BIN_DIRS; do
 
-  dir=${d//\~/$HOME}
-  dir=$(readlink -nf $dir)
+  __realpath 'dir' "$d"
 
   if [[ -d $dir ]] && [[ $PATH != *"$dir"* ]]; then
       PATH="${PATH}:${dir}"
@@ -153,28 +165,20 @@ umask 022
 ########################################################################################
 # Load application specific files.
 
-
+__buildpath 'SOURCES' "${BASH_SOURCE}" "/.bash_sources.d/*"
+__source_files "$SOURCES"
 
 ########################################################################################
 # Simple check and source lines
 
-# This eval needs to be included in .bashrc because some of it will be lost
-# when switching to an interactive shell.
-if [[ -d ~/.rbenv ]]; then
-  eval "$(rbenv init -)"
-fi
-
 [[ -f ~/.Xresources                  ]] && xrdb ~/.Xresources
-[[ -s "$HOME/.rvm/scripts/rvm"       ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 [[ -f /etc/bash_completion           ]] && source /etc/bash_completion
 [[ -f /etc/profile.d/bash-completion ]] && source /etc/profile.d/bash-completion
 [[ -f ~/.ssh-agent                   ]] && source ~/.ssh-agent
-[[ -f ~/.bash_aliases                ]] && source ~/.bash_aliases
 [[ -f ~/.bash_functions              ]] && source ~/.bash_functions
 [[ -f ~/.bash_prompt                 ]] && source ~/.bash_prompt
 [[ -f /.travis/travis.sh             ]] && source /.travis/travis.sh
 [[ -f /usr/share/nvm/init-nvm.sh     ]] && source /usr/share/nvm/init-nvm.sh
-[[ -f $rvm_path/scripts/completion   ]] && source $rvm_path/scripts/completion
 
 command -v npm > /dev/null 2>&1 && source <(npm completion)
 

@@ -1,15 +1,20 @@
+#!/bin/bash
+
 RUBY=$(command -v ruby)
 
 if [ $? -eq 0 ]; then
+
   export GEM_HOME=$($RUBY -e 'print Gem.user_dir')
   export PATH="${GEM_HOME}/bin:${PATH}"
-fi
 
-if [[ -d ~/.rvm ]]; then
+  [[ -d $HOME/.rvm/bin         ]] && PATH="${PATH}:~/.rvm/bin"
+  [[ -f $HOME/.rvm/scripts/rvm ]] && source $HOME/.rvm/scripts/rvm
 
-  [[ -d ~/.rvm/bin ]] && PATH="${PATH}:~/.rvm/bin"
+  if [[ -d $HOME/.rbenv ]]; then
+    eval "$(rbenv init -)"
 
-  # Include this here for the GEM_HOME variable
-  [[ -f ~/.rvm/scripts/rvm ]] && source ~/.rvm/scripts/rvm
+  fi
+
+  [[ -f $HOME/.rvm//scripts/completion ]] && source $HOME/.rvm/scripts/completion
 
 fi
