@@ -10,10 +10,36 @@ __debugit () {
 
 __debugit "${DEBUG_PREFIX}:$LINENO Entering ..."
 
-# XXX: Does __can256 belong in the general utlities file?
-__can256 () { [ $(tput Co 2> /dev/null || tput colors 2> /dev/null || echo 0) -gt 2 ] ; }
+########################################################################
+# Don't delete this, it's for figuring things out sometimes.
+
+#if [[ $- == *i* ]]; then
+#  __debugit "${DEBUG_PREFIX} We are interactive ..."
+#else
+#  __debugit "${DEBUG_PREFIX} We are *not* interactive ..."
+#fi
+#
+#if shopt -q login_shell; then
+#  __debugit "${DEBUG_PREFIX} We are in a login shell ..."
+#else
+#  __debugit "${DEBUG_PREFIX} We are *not* in a login shell ..."
+#fi
+########################################################################
+
+# Determines the fully qualified path of a file and sets $1 to the path.
+# NOTE: Does not validate the path or file.
+# Expects, in order:
+#   The name of the variable to be set.
+#   The name of the file to fully qualify.
 
 __realdir () { printf -v "$1" "%s" $(dirname $(readlink -nf "$2")) ; }
+
+# Builds a fully qualified path and sets $1 to the value.
+# NOTE: Does not validate the path or file.
+# Expects, in order:
+#   The name of the variable to be set.
+#   The name of the file to fully qualify.
+#   The endpoint the path should have.
 
 __buildpath () {
 
@@ -27,7 +53,7 @@ __buildpath () {
 
 }
 
-
+# Sources all files found in $1.
 __source_files () {
 
   for s in $(ls "$1" 2> /dev/null); do
@@ -37,6 +63,7 @@ __source_files () {
   done
 }
 
+# Sources all files found in either a hostspecific directory or a default directory.
 __source_host_specific () {
 
   local endpoint=$1
@@ -55,19 +82,17 @@ __source_host_specific () {
 }
 
 ########################################################################
-# Don't delete this, it's for figuring things out sometimes.
+# Environment Variables
 
-#if [[ $- == *i* ]]; then
-#  __debugit "${DEBUG_PREFIX} We are interactive ..."
-#else
-#  __debugit "${DEBUG_PREFIX} We are *not* interactive ..."
-#fi
-#
-#if shopt -q login_shell; then
-#  __debugit "${DEBUG_PREFIX} We are in a login shell ..."
-#else
-#  __debugit "${DEBUG_PREFIX} We are *not* in a login shell ..."
-#fi
+export EDITOR=vim
+export HISTCONTROL='ignorespace:erasedups'
+export HISTFILESIZE=1000
+export HISTSIZE=1000
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+command -v pacmatic > /dev/null 2>&1 && export PACMAN='pacmatic'
 
 ########################################################################
 # PATH setup
@@ -107,18 +132,6 @@ PATH="${PATH}:."
 export PATH
 
 ########################################################################
-# Environment Variables
-
-export EDITOR=vim
-export HISTCONTROL='ignorespace:erasedups'
-export HISTFILESIZE=1000
-export HISTSIZE=1000
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-export PACMAN='pacmatic'
-
-########################################################################
 
 if [[ $- != *i* ]]; then
   # non-interactive shell, nothing else to do.
@@ -136,6 +149,11 @@ shopt -s histverify
 shopt -s nocaseglob
 
 umask 022
+
+########################################################################################
+# Load application specific files.
+
+
 
 ########################################################################################
 # Simple check and source lines
@@ -173,13 +191,14 @@ fi
 ########################################################################################
 # Source any files we find in our host specific directory
 
-__buildpath 'HOSTSPECIFIC' "${BASH_SOURCE}" "/hostspecific/$(hostname)/*bashrc*"
-__source_files $HOSTSPECIFIC
+__source_host_specific '*bashrc*'
+#__buildpath 'HOSTSPECIFIC' "${BASH_SOURCE}" "/hostspecific/$(hostname)/*bashrc*"
+#__source_files $HOSTSPECIFIC
 
 ########################################################################################
 # Source any private files
 
-PRIVATE="${HOME}/.bash_private.d"
+__buildpath 'PRIVATE' "${HOME}" '/.bash_private.d'
 __source_files $PRIVATE
 
 [[ -f ~/.sekrets ]] && source ~/.sekrets
