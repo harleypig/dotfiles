@@ -1,12 +1,14 @@
 #!/bin/bash
 
+DEBUG_PREFIX=${BASH_SOURCE#$HOME/}
+
 __debugit () {
   if [ -f ~/.dot_debug ]; then
-    echo "$@" >> ~/.dotfiles_$$.log
+    echo "$@" >> ~/.dotfiles_$$_$(date +%s).log
   fi
 }
 
-__debugit "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
+__debugit "${DEBUG_PREFIX}:$LINENO Entering ..."
 
 # XXX: Does __can256 belong in the general utlities file?
 __can256 () { [ $(tput Co 2> /dev/null || tput colors 2> /dev/null || echo 0) -gt 2 ] ; }
@@ -25,6 +27,16 @@ __buildpath () {
 
 }
 
+
+__source_files () {
+
+  for s in $(ls "$1" 2> /dev/null); do
+    __debugit "${DEBUG_PREFIX}:$LINENO Sourcing $s ..."
+    source $s
+
+  done
+}
+
 __source_host_specific () {
 
   local endpoint=$1
@@ -38,25 +50,24 @@ __source_host_specific () {
     path="${path}/default/${endpoint}"
   fi
 
-  for s in $(ls $path 2> /dev/null); do
-    source $s
+  __source_files $path
 
-  done
 }
 
 ########################################################################
+# Don't delete this, it's for figuring things out sometimes.
 
-if [[ $- == *i* ]]; then
-  __debugit "${BASH_SOURCE#$HOME/} We are interactive ..."
-else
-  __debugit "${BASH_SOURCE#$HOME/} We are *not* interactive ..."
-fi
-
-if shopt -q login_shell; then
-  __debugit "${BASH_SOURCE#$HOME/} We are in a login shell ..."
-else
-  __debugit "${BASH_SOURCE#$HOME/} We are *not* in a login shell ..."
-fi
+#if [[ $- == *i* ]]; then
+#  __debugit "${DEBUG_PREFIX} We are interactive ..."
+#else
+#  __debugit "${DEBUG_PREFIX} We are *not* interactive ..."
+#fi
+#
+#if shopt -q login_shell; then
+#  __debugit "${DEBUG_PREFIX} We are in a login shell ..."
+#else
+#  __debugit "${DEBUG_PREFIX} We are *not* in a login shell ..."
+#fi
 
 ########################################################################
 # PATH setup
@@ -111,7 +122,7 @@ export PACMAN='pacmatic'
 
 if [[ $- != *i* ]]; then
   # non-interactive shell, nothing else to do.
-  __debugit "${BASH_SOURCE#$HOME/}:$LINENO Non-interactive shell, done."
+  __debugit "${DEBUG_PREFIX}:$LINENO Non-interactive shell, done."
   return
 fi
 
@@ -125,40 +136,6 @@ shopt -s histverify
 shopt -s nocaseglob
 
 umask 022
-
-########################################################################################
-# less setup
-# XXX: this section should be in its own file in a .d directory.
-
-export LESS='--hilite-search --IGNORE-CASE --status-column --RAW-CONTROL-CHARS --hilite-unread --tabs=2 -X'
-
-# http://www-zeuthen.desy.de/~friebel/unix/lesspipe.html
-# XXX: figure out how to make syntax hilighting work for source
-
-# Try to use a more current lesspipe
-lesspipe=$(command -v lesspipe.sh)
-
-if [ $? -eq 0 ]; then
-
-  export LESSOPEN="|${lesspipe} %s"
-
-else
-
-  # Fall back to system lesspipe, if it exists
-  lesspipe=$(command -v lesspipe)
-
-  if [ $? -eq 0 ]; then
-
-    eval "$(SHELL=/bin/sh ${lesspipe})"
-
-  fi
-fi
-
-########################################################################################
-# man setup
-
-# http://zameermanji.com/blog/2012/12/30/using-vim-as-manpager/
-#export MANPAGER="/bin/sh -c \"col -b | vim -R -c 'set ft=man ts=8 nomod nolist nonu noma' -\""
 
 ########################################################################################
 # Simple check and source lines
@@ -185,7 +162,8 @@ command -v npm > /dev/null 2>&1 && source <(npm completion)
 
 if [[ -d ~/.bash_completion.d ]]; then
   __buildpath 'COMPLETION' "${BASH_SOURCE}" '/.bash_completion.d/*'
-  for s in $(ls $COMPLETION 2> /dev/null); do source $s; done
+  __source_files $COMPLETION
+#  for s in $(ls $COMPLETION 2> /dev/null); do source $s; done
 fi
 
 [[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
@@ -193,23 +171,17 @@ fi
 [[ -f ~/bin/tokens ]] && source ~/bin/tokens
 
 ########################################################################################
-# CVS settings
-
-export CVS_RSH='ssh'
-export CVSROOT='harleypig@cvs.vwh.net:/cvsroot'
-
-########################################################################################
 # Source any files we find in our host specific directory
 
 __buildpath 'HOSTSPECIFIC' "${BASH_SOURCE}" "/hostspecific/$(hostname)/*bashrc*"
-for s in $(ls ${HOSTSPECIFIC} 2> /dev/null); do source $s; done
+__source_files $HOSTSPECIFIC
 
 ########################################################################################
 # Source any private files
 
 PRIVATE="${HOME}/.bash_private.d"
-for s in $(ls ${PRIVATE} 2> /dev/null); do source $s; done
+__source_files $PRIVATE
 
 [[ -f ~/.sekrets ]] && source ~/.sekrets
 
-__debugit "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."
+__debugit "${DEBUG_PREFIX}:$LINENO Exiting ..."

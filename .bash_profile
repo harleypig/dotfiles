@@ -1,6 +1,6 @@
 __debugit () {
   if [ -f ~/.dot_debug ]; then
-    echo "$@" >> ~/.dotfiles_$$.log
+    echo "$@" >> ~/.dotfiles_$$_$(date +%s).log
   fi
 }
 
