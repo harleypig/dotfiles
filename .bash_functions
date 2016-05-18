@@ -92,6 +92,10 @@ function __duration() {
 
 }
 
+# Don't remember where I got this. Returns true if the current terminal can do
+# 256 colors, otherwise it returns false.
+can256 () { [ $(tput Co 2> /dev/null || tput colors 2> /dev/null || echo 0) -gt 2 ] ; }
+
 # bash-completion for aliases
 # https://unix.stackexchange.com/questions/4219/how-do-i-get-bash-completion-for-command-aliases
 # http://ubuntuforums.org/showthread.php?t=733397

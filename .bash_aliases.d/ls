@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# https://wiki.archlinux.org/index.php/Core_Utilities#ls
+eval $(dircolors -b)
+

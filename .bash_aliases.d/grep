@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# https://wiki.archlinux.org/index.php/Core_Utilities#grep
+export GREP_COLOR="1;33"
+alias grep='grep --color=auto'
+alias g='grep --color=auto'
+
