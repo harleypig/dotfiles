@@ -3,7 +3,7 @@ function __pacman_status() {
 
     local now=$(date +%s)
     local update_duration='-'
-    local last_update=$(grep "starting full system upgrade" /var/log/pacman.log | tail -1 | cut -c2-17)
+    local last_update=$(grep -a "starting full system upgrade" /var/log/pacman.log | tail -1 | cut -c2-17)
     [[ -n "$last_update" ]] && update_duration=$(__duration $last_update)
 
     if $(echo $update_duration | grep -q '[234]d'); then
