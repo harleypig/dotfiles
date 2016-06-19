@@ -98,9 +98,6 @@ __source_host_specific () {
 # Environment Variables
 
 export EDITOR=vim
-export HISTCONTROL='ignorespace:erasedups'
-export HISTFILESIZE=1000
-export HISTSIZE=1000
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -153,11 +150,7 @@ fi
 
 shopt -s checkhash
 shopt -s checkwinsize
-shopt -s cmdhist
 shopt -s dotglob
-shopt -s histappend
-shopt -s histreedit
-shopt -s histverify
 shopt -s nocaseglob
 
 umask 022

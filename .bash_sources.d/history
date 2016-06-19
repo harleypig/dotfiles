@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Settings for history
+
+export HISTCONTROL='ignorespace:erasedups'
+export HISTFILESIZE=1000
+export HISTSIZE=1000
+
+shopt -s cmdhist
+shopt -s histappend
+shopt -s histreedit
+shopt -s histverify
