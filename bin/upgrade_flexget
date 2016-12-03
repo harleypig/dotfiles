@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# See the 'How to use GIT checkout' section of the README.rst file.
+
+FLEXGET_DIR='/home/harleypig/projects/flexget'
+
+if [[ -d $FLEXGET_DIR ]]; then
+  echo $FLEXGET_DIR does not exist
+  exit
+fi
+
+FLEXGET_BIN="${FLEXGET_DIR}/bin"
+FLEXUI_DIR="${FLEXGET_DIR}/flexget/ui"
+
+flexget="${FLEXGET_BIN}/flexget"
+pip="${FLEXGET_BIN}/pip"
+
+stop_daemon="${flexget} daemon stop"
+start_daemon="${flexget} daemon start -d"
+upgrade="${pip} install --upgrade -e ${FLEXGET_DIR}"
+virtenv="$(which virtualenv) --clear --always-copy ${FLEXGET_DIR}"
+
+cd $FLEXGET_DIR
+$stop_daemon
+
+while ( pgrep flexget > /dev/null 2>&1 ); do
+  sleep 1
+done
+
+# update flexget
+git pull
+virtualenv --clear --always-copy $FLEXGET_DIR
+$upgrade
+
+# update ui
+cd $FLEXUI_DIR
+npm install
+bower update
+gulp build
+
+cd $FLEXGET_DIR
+$start_daemon

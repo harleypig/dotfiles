@@ -8,4 +8,6 @@ while ( pgrep flexget > /dev/null 2>&1 ); do
   sleep 1
 done
 
+$flexget database cleanup
+$flexget database vacuum
 $flexget daemon start -d

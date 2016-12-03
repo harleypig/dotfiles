@@ -1,3 +1,5 @@
+# See http://flexget.com/Cookbook/Users for examples
+
 web_server:
   bind: 0.0.0.0
   port: 5050
@@ -13,15 +15,10 @@ templates:
   global:
     verify_ssl_certificates: no
     download: /home/harleypig/videos/torrents/
-    rtorrent_magnet: /home/harleypig/videos/torrents/
-    magnets: yes
-    torrent_alive:
-      min_seeds: 5
+    magnets: no
     free_space:
-      path: /home/harleypig
+      path: /home/media
       space: 1024
-#    torrent_scrub: rtorrent
-    qbittorrent: yes
     content_filter:
       require_mainfile: yes
       require:
@@ -39,25 +36,43 @@ templates:
         - '*.zip'
         - '*hevc*'
 
+# broken tv urls
+#      - rss: { url: 'http://kat.cr/tv/?rss=1'                                      , silent: yes , ascii: yes }
+#      - rss: { url: 'http://sceper.ws/feed'                                        , silent: yes , ascii: yes }
+#      - rss: { url: 'http://showrss.info/rss.php?user_id=6174&hd=null&proper=null' , silent: yes , ascii: yes }
+#      - rss: { url: 'https://torrentreactor.com/rss.php?cid=8'                     , silent: yes , ascii: yes  }
+#      - rss: { url: 'http://torrentz.eu/feed'                                      , silent: yes , ascii: yes }
+#      - rss: { url: 'http://torrentz.eu/feed_verified?q=tv'                        , silent: yes , ascii: yes }
+#      - rss: { url: 'http://www.torlock.com/television/rss.xml'                    , silent: yes , ascii: yes }
+
   tv_urls:
     inputs:
-      - rss: { url: 'http://extratorrent.cc/rss.xml?cid=8'                         , silent: yes , ascii: yes }
-#      - rss: { url: 'http://kat.cr/tv/?rss=1'                                      , silent: yes , ascii: yes }
-      - rss: { url: 'http://sceper.ws/feed'                                        , silent: yes , ascii: yes }
-      - rss: { url: 'http://showrss.info/feeds/all.rss'                            , silent: yes , ascii: yes }
-      - rss: { url: 'https://torrentreactor.com/rss.php?cid=8'                     , silent: yes , ascii: yes  }
-      - rss: { url: 'http://torrentz.eu/feed'                                      , silent: yes , ascii: yes }
-      - rss: { url: 'http://torrentz.eu/feed_verified?q=tv'                        , silent: yes , ascii: yes }
-#      - rss: { url: 'http://www.torlock.com/television/rss.xml'                    , silent: yes , ascii: yes }
-#      - rss: { url: 'http://showrss.info/rss.php?user_id=6174&hd=null&proper=null' , silent: yes , ascii: yes }
-      - rss: { url: 'https://showrss.info/user/82621.rss?magnets=false&namespaces=true&name=clean&quality=null&re=null', silent: yes, ascii: yes }
+      - rss: { ascii: true, silent: true, url: 'http://extratorrent.cc/rss.xml?cid=8' }
+      - rss: { ascii: true, silent: true, url: 'https://eztv.ag/ezrss.xml' }
+      - rss: { ascii: true, silent: true, url: 'http://showrss.info/feeds/all.rss' }
+      - rss: { ascii: true, silent: true, url: 'https://isohunt.to/rss/rss.xml' }
+      - rss: { ascii: true, silent: true, url: 'https://rarbg.to/rss.php?categories=18;41' }
+      - rss: { ascii: true, silent: true, url: 'https://showrss.info/user/82621.rss?magnets=false&namespaces=true&name=clean&quality=null&re=null' }
+      - rss: { ascii: true, silent: true, url: 'https://www.limetorrents.cc/rss/' }
+      - rss: { ascii: true, silent: true, url: 'https://yts.ag/rss' }
+#      - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss2/8' }
+      - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss.xml?cid=8'}
+
+# broken movie urls
+#      - rss: { url: 'http://kat.cr/movies/?rss=1'                          , silent: yes , ascii: yes }
+#      - rss: { url: 'https://torrentreactor.com/rss.php?cid=5'             , silent: yes , ascii: yes  }
+#      - rss: { url: 'http://torrentz.eu/feed_verified?q=movies'            , silent: yes , ascii: yes }
+#      - rss: { url: 'http://www.torlock.com/movies/rss.xml'                , silent: yes , ascii: yes }
 
   movie_urls:
     inputs:
-#      - rss: { url: 'http://kat.cr/movies/?rss=1'                             , silent: yes , ascii: yes }
-      - rss: { url: 'https://torrentreactor.com/rss.php?cid=5'                , silent: yes , ascii: yes  }
-      - rss: { url: 'http://torrentz.eu/feed_verified?q=movies'               , silent: yes , ascii: yes }
-#      - rss: { url: 'http://www.torlock.com/movies/rss.xml'                   , silent: yes , ascii: yes }
+      - rss: { ascii: true, silent: true, url: 'http://extratorrent.cc/rss.xml?cid=4'}
+      - rss: { ascii: true, silent: true, url: 'https://isohunt.to/rss/rss.xml'}
+      - rss: { ascii: true, silent: true, url: 'https://rarbg.to/rss.php?categories=17;42;44;45;46;47' }
+      - rss: { ascii: true, silent: true, url: 'https://www.limetorrents.cc/rss/'}
+      - rss: { ascii: true, silent: true, url: 'https://yts.ag/rss'}
+#      - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss2/4'}
+      - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss.xml?cid=4'}
 
   premieres:
     series_premiere: yes
@@ -75,22 +90,25 @@ templates:
     content_size:
       max: 1500
       strict: no
+    exists_series:
+      path: /home/media2/tv/
+      allow_different_qualities: better
     configure_series:
       settings:
-        tracking: backfill
+        tracking: no
         upgrade: yes
       from:
         text:
           url: http://next-episode.net/calendar.ics?u=harleypig&k=fa215571403f9e8ba3e6a3c5ec413284
           entry:
-            title: ^SUMMARY:(.*) - [0-9]+x[0-9]+.*$
-            url: ^SUMMARY:(.*) - [0-9]+x[0-9]+.*$
+            title: ^SUMMARY:(.*?) - s[0-9]+e[0-9]+.*$
+            url: ^SUMMARY:(.*?) - s[0-9]+e[0-9]+.*$
 
   movies:
     proper_movies: yes
-    seen_movies: strict
+    seen_movies: loose
     content_size:
-      max: 1500
+      max: 2000
       strict: no
     quality:
       - 720p+
@@ -110,12 +128,13 @@ templates:
 
 tasks:
   apple_movie_trailers:
-    template: no_global
-    apple_trailers: 480p
     accept_all: yes
-    download: /home/media2/trailers
+    apple_trailers: 480p
+    download: /home/media/trailers
     priority: 10
     seen: local  # We don't want accepted entries from this feed to affect actual movie download feeds.
+    template: no_global
+
     free_space:
       path: /home/media2
       space: 1024
@@ -124,16 +143,70 @@ tasks:
     template: [ tv_urls, tv ]
     priority: 20
 
-  premiere_shows:
-    template: [ tv_urls, premieres ]
+  tv_nzb:
+    template: [ tv_urls, tv ]
+    priority: 25
+    sabnzbd:
+      #key: 8c71303c16a3985b7d25cc05130520fa
+      key: 6e232785a3ae5dbff25b6073461a1d9b
+      url: http://127.0.0.1:8085/sabnzbd/api?
+
+  tv_sceper:
+    priority: 20
+    sceper: http://sceper.ws/category/tv-shows
+    template: tv
+
+  tv_premieres:
     priority: 30
+    template: [ tv_urls, premieres ]
+
+  tv_backfill:
+    manual: yes
+    priority: 1
+    template: [tv_urls, tv]
+    disable: retry_failed
+    discover:
+      what:
+        - next_series_episodes:
+            from_start: yes
+            backfill: yes
+      from:
+        - 1337x: yes
+        - limetorrents: { category: tv, order_by: seeds }
+        - extratorrent: { category: tv }
+        - rarbg: { category: [1,18,41], sorted_by: seeders, use_tvdb: yes }
+        - piratebay: { category: tv, sort_by: seeds }
 
   movie_shows:
-    template: [ movie_urls, movies ]
     priority: 40
+    template: [ movie_urls, movies ]
 
   sceper_movies:
-    sceper: http://sceper.ws/feed
-#    disable_urlrewriters: [urlrewrite_redirect]
-    template: movies
     priority: 40
+    sceper: http://sceper.ws/category/movies
+    template: movies
+
+  # This task will find episodes that are not in the db and add them.
+  # http://flexget.com/Cookbook/Series/sync_series
+
+  sync-series:
+    manual: yes
+    filesystem:
+      path:
+        - /home/media2/tv
+        - /home/media2/tv_permanent
+        - /home/media/tv
+      regexp: '.*\.(mp4|mkv|mpeg|mpg|wmv)$'
+      recursive: yes
+    disable: builtins
+    next_series_episodes:
+      from_start: yes
+    configure_series:
+      settings:
+        set:
+          tracking: no
+      from:
+        filesystem:
+          - /home/media2/tv
+          - /home/media2/tv_permanent
+          - /home/media/tv
