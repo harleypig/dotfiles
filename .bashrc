@@ -173,6 +173,8 @@ __source_files "$SOURCES"
 [[ -f /.travis/travis.sh             ]] && source /.travis/travis.sh
 [[ -f /usr/share/nvm/init-nvm.sh     ]] && source /usr/share/nvm/init-nvm.sh
 
+[[ -z $SSH_AUTH_SOCK && -f ~/.ssh-agent ]] && source ~/.ssh-agent
+
 command -v npm > /dev/null 2>&1 && source <(npm completion)
 
 if [[ -d ~/.bash_completion.d ]]; then
