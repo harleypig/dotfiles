@@ -167,13 +167,12 @@ __source_files "$SOURCES"
 [[ -f ~/.Xresources                  ]] && xrdb ~/.Xresources
 [[ -f /etc/bash_completion           ]] && source /etc/bash_completion
 [[ -f /etc/profile.d/bash-completion ]] && source /etc/profile.d/bash-completion
-[[ -f ~/.ssh-agent                   ]] && source ~/.ssh-agent
 [[ -f ~/.bash_functions              ]] && source ~/.bash_functions
 [[ -f ~/.bash_prompt                 ]] && source ~/.bash_prompt
 [[ -f /.travis/travis.sh             ]] && source /.travis/travis.sh
 [[ -f /usr/share/nvm/init-nvm.sh     ]] && source /usr/share/nvm/init-nvm.sh
 
-[[ -z $SSH_AUTH_SOCK && -f ~/.ssh-agent ]] && source ~/.ssh-agent
+[[ -z $SSH_AUTH_SOCK && -f ~/.ssh-agent && -r ~/.ssh-agent ]] && source ~/.ssh-agent
 
 command -v npm > /dev/null 2>&1 && source <(npm completion)
 
