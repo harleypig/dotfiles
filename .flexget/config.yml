@@ -1,5 +1,21 @@
 # See http://flexget.com/Cookbook/Users for examples
 
+# To re-seed the series database, do the following
+
+# flexget series list --porcelain > somefile
+
+# munge somefile to do this command for each series:
+# flexget series forget seriesname
+
+# Forget what we've seen as far as series is concerned
+# for s in $(fg status --porcelain | grep '^ tv' | cut -d '|' -f 1); do fg seen forget $s; done
+
+# Discover what episodes already exists in the path(s) defined in sync-series below.
+# flexget execute --task sync-series --learn --disable-tracking
+
+# Fill in the missing episodes (is there a way to limit this to one or some series?)
+# flexget execute --task tv-backfill
+
 web_server:
   bind: 0.0.0.0
   port: 5050
@@ -36,6 +52,7 @@ templates:
         - '*.rar'
         - '*.zip'
         - '*hevc*'
+        - '*265*'
 
 # broken tv urls
 #      - rss: { url: 'http://kat.cr/tv/?rss=1'                                      , silent: yes , ascii: yes }
@@ -92,7 +109,11 @@ templates:
       max: 1500
       strict: no
     exists_series:
-      path: /home/media2/tv/
+      path:
+        - /home/media2/tv/
+        - /home/media2/tv_permanent/
+        - /home/media/tv_watching/
+        - /home/media/tv/
       allow_different_qualities: better
     configure_series:
       settings:
@@ -166,6 +187,7 @@ tasks:
     priority: 1
     template: [tv_urls, tv]
     disable: retry_failed
+    max_reruns: 3
     discover:
       what:
         - next_series_episodes:
@@ -187,16 +209,15 @@ tasks:
     sceper: http://sceper.ws/category/movies
     template: movies
 
-  # This task will find episodes that are not in the db and add them.
-  # http://flexget.com/Cookbook/Series/sync_series
-
   sync-series:
+    exec: echo "Found {{title}} ..."
+    template: no_global
     manual: yes
     filesystem:
       path:
         - /home/media2/tv
         - /home/media2/tv_permanent
-        - /home/media/tv
+        - /home/media/tv_watching
       regexp: '.*\.(mp4|mkv|mpeg|mpg|wmv)$'
       recursive: yes
     disable: builtins
@@ -210,4 +231,4 @@ tasks:
         filesystem:
           - /home/media2/tv
           - /home/media2/tv_permanent
-          - /home/media/tv
+          - /home/media/tv_watching
