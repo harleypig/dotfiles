@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#DEBUG=echo
+
+PROGNAME=$(basename $0)
+LOGFILE="/home/harleypig/videos/logs/${PROGNAME}_$(date +%Y%m%d-%H%M%S).log"
+CURL=$(which curl)
+UNZIP=$(which unzip)
+FILENAME='ipfilter.zip'
+URL="http://upd.emule-security.org/ipfilter.zip"
+WORK_DIR="/home/harleypig/videos/data"
+
+cd $WORK_DIR
+$DEBUG $CURL -LSsO $URL >> $LOGFILE 2>&1
+$DEBUG $UNZIP -f -o $FILENAME >> $LOGFILE 2>&1

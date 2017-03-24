@@ -55,13 +55,15 @@ templates:
         - '*265*'
 
 # broken tv urls
-#      - rss: { url: 'http://kat.cr/tv/?rss=1'                                      , silent: yes , ascii: yes }
-#      - rss: { url: 'http://sceper.ws/feed'                                        , silent: yes , ascii: yes }
-#      - rss: { url: 'http://showrss.info/rss.php?user_id=6174&hd=null&proper=null' , silent: yes , ascii: yes }
-#      - rss: { url: 'https://torrentreactor.com/rss.php?cid=8'                     , silent: yes , ascii: yes  }
-#      - rss: { url: 'http://torrentz.eu/feed'                                      , silent: yes , ascii: yes }
-#      - rss: { url: 'http://torrentz.eu/feed_verified?q=tv'                        , silent: yes , ascii: yes }
-#      - rss: { url: 'http://www.torlock.com/television/rss.xml'                    , silent: yes , ascii: yes }
+#      - rss: { ascii: true, silent: true, url: 'http://kat.cr/tv/?rss=1' }
+#      - rss: { ascii: true, silent: true, url: 'https://alphareign.se/api?apikey=58798c34f0e15' }
+#      - rss: { ascii: true, silent: true, url: 'http://sceper.ws/feed' }
+#      - rss: { ascii: true, silent: true, url: 'http://showrss.info/rss.php?user_id=6174&hd=null&proper=null' }
+#      - rss: { ascii: true, silent: true, url: 'https://torrentreactor.com/rss.php?cid=8' }
+#      - rss: { ascii: true, silent: true, url: 'http://torrentz.eu/feed' }
+#      - rss: { ascii: true, silent: true, url: 'http://torrentz.eu/feed_verified?q=tv' }
+#      - rss: { ascii: true, silent: true, url: 'http://www.torlock.com/television/rss.xml' }
+#      - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss2/8' }
 
   tv_urls:
     inputs:
@@ -73,14 +75,15 @@ templates:
       - rss: { ascii: true, silent: true, url: 'https://showrss.info/user/82621.rss?magnets=false&namespaces=true&name=clean&quality=null&re=null' }
       - rss: { ascii: true, silent: true, url: 'https://www.limetorrents.cc/rss/' }
       - rss: { ascii: true, silent: true, url: 'https://yts.ag/rss' }
-#      - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss2/8' }
       - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss.xml?cid=8'}
 
 # broken movie urls
-#      - rss: { url: 'http://kat.cr/movies/?rss=1'                          , silent: yes , ascii: yes }
-#      - rss: { url: 'https://torrentreactor.com/rss.php?cid=5'             , silent: yes , ascii: yes  }
-#      - rss: { url: 'http://torrentz.eu/feed_verified?q=movies'            , silent: yes , ascii: yes }
-#      - rss: { url: 'http://www.torlock.com/movies/rss.xml'                , silent: yes , ascii: yes }
+#      - rss: { ascii: true, silent: true, url: 'http://kat.cr/movies/?rss=1' }
+#      - rss: { ascii: true, silent: true, url: 'https://alphareign.se/api?apikey=58798c34f0e15' }
+#      - rss: { ascii: true, silent: true, url: 'https://torrentreactor.com/rss.php?cid=5' }
+#      - rss: { ascii: true, silent: true, url: 'http://torrentz.eu/feed_verified?q=movies'}
+#      - rss: { ascii: true, silent: true, url: 'http://www.torlock.com/movies/rss.xml' }
+#      - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss2/4'}
 
   movie_urls:
     inputs:
@@ -89,7 +92,6 @@ templates:
       - rss: { ascii: true, silent: true, url: 'https://rarbg.to/rss.php?categories=17;42;44;45;46;47' }
       - rss: { ascii: true, silent: true, url: 'https://www.limetorrents.cc/rss/'}
       - rss: { ascii: true, silent: true, url: 'https://yts.ag/rss'}
-#      - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss2/4'}
       - rss: { ascii: true, silent: true, url: 'http://www.torrentdownloads.me/rss.xml?cid=4'}
 
   premieres:
@@ -158,7 +160,7 @@ tasks:
     template: no_global
 
     free_space:
-      path: /home/media2
+      path: /home/media
       space: 1024
 
   tv_shows:
@@ -173,10 +175,10 @@ tasks:
       key: 6e232785a3ae5dbff25b6073461a1d9b
       url: http://127.0.0.1:8085/sabnzbd/api?
 
-  tv_sceper:
-    priority: 20
-    sceper: http://sceper.ws/category/tv-shows
-    template: tv
+#  tv_sceper:
+#    priority: 20
+#    sceper: http://sceper.ws/category/tv-shows
+#    template: tv
 
   tv_premieres:
     priority: 30
@@ -204,13 +206,12 @@ tasks:
     priority: 40
     template: [ movie_urls, movies ]
 
-  sceper_movies:
-    priority: 40
-    sceper: http://sceper.ws/category/movies
-    template: movies
+#  sceper_movies:
+#    priority: 40
+#    sceper: http://sceper.ws/category/movies
+#    template: movies
 
   sync-series:
-    exec: echo "Found {{title}} ..."
     template: no_global
     manual: yes
     filesystem:

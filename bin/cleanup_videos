@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd /home/harleypig/Dropbox/video_temp
+rm */*.{nfo,png,jpg,jpeg,PNG,JPG,JPEG,txt,srt}
+rm -fr */Sample
+rm -fr */Subs
+rmdir *

@@ -199,6 +199,9 @@ __source_host_specific '*bashrc*'
 __buildpath 'PRIVATE' "${HOME}" '/.bash_private.d'
 __source_files $PRIVATE
 
-[[ -f ~/.sekrets ]] && source ~/.sekrets
+__source_files ~/.secrets
 
 __debugit "${DEBUG_PREFIX}:$LINENO Exiting ..."
+
+export NVM_DIR="$HOME/projects/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
