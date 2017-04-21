@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Look into
+# https://gist.github.com/goodmami/6556701
+# as a way to log to syslog.
+
 DEBUG_PREFIX=${BASH_SOURCE#$HOME/}
 
 __debugit () {
