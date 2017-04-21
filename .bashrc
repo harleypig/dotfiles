@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Look into
-# https://gist.github.com/goodmami/6556701
+#   https://gist.github.com/goodmami/6556701
+#   https://github.com/deanrather/bash-logger/blob/master/bash-logger.sh
 # as a way to log to syslog.
 
 DEBUG_PREFIX=${BASH_SOURCE#$HOME/}
