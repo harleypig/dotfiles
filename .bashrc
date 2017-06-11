@@ -7,11 +7,24 @@
 
 DEBUG_PREFIX=${BASH_SOURCE#$HOME/}
 
-__debugit () {
-  if [ -f ~/.dot_debug ]; then
-    echo "$@" >> ~/.dotfiles_$$_$(date +%s).log
-  fi
-}
+if ! [ -f ~/.bash_functions ]; then
+  echo "~/.bash_functions does not exist"
+  exit 1
+fi
+
+source ~/.bash_functions
+
+## See function at
+## https://github.com/wschlich/bashinator/blob/master/bashinator.lib.0.sh#L940
+## for ideas on building a better prefix.
+#
+#DEBUG_PREFIX=${BASH_SOURCE#$HOME/}
+#
+#__debugit () {
+#  if [ -f ~/.dot_debug ]; then
+#    echo "$@" >> ~/.dotfiles_$$_$(date +%s).log
+#  fi
+#}
 
 __debugit "${DEBUG_PREFIX}:$LINENO Entering ..."
 
@@ -31,73 +44,73 @@ __debugit "${DEBUG_PREFIX}:$LINENO Entering ..."
 #fi
 ########################################################################
 
-# Determines the fully qualified path of a file and sets $1 to the path.
-# NOTE: Does not validate the path or file.
-# Expects, in order:
-#   The name of the variable to be set.
-#   The name of the path to fully qualify.
-
-__realpath () {
-
-  local varname=$1  ; shift
-  local filename=$1 ; shift
-
-  fqfn=${filename//\~/$HOME}
-  fqfn=$(readlink -nf $fqfn)
-
-  printf -v "${varname}" "%s" "$fqfn"
-
-}
-
-# Builds a fully qualified path and sets $1 to the value.
-# NOTE: Does not validate the path or file.
-# Expects, in order:
-#   The name of the variable to be set.
-#   The name of the file to determine where to load files from.
-#   The endpoint the path should have.
-
-__buildpath () {
-
-  local varname=$1    ; shift
-  local sourcefile=$1 ; shift
-  local endpoint=$1   ; shift
-
-  __realpath 'realpath' "$sourcefile"
-  realpath=$(dirname $realpath)
-
-  printf -v "$varname" '%s' "${realpath}${endpoint}"
-
-}
-
-# Sources all files found in $1.
-__source_files () {
-
-  __debugit "${DEBUG_PREFIX}:${LINENO} Trying to source $1 ..."
-
-  for s in $(ls $1 2> /dev/null); do
-    __debugit "${DEBUG_PREFIX}:${LINENO} Sourcing $s ..."
-    source $s
-
-  done
-}
-
-# Sources all files found in either a hostspecific directory or a default directory.
-__source_host_specific () {
-
-  local endpoint="$1"
-  local hostname=$(hostname)
-
-  __buildpath 'path' "${BASH_SOURCE}" '/hostspecific'
-
-  if [ -d "${path}/${hostname}" ]; then
-    path="${path}/${hostname}/${endpoint}"
-  else
-    path="${path}/default/${endpoint}"
-  fi
-
-  __source_files $path
-
-}
+## Determines the fully qualified path of a file and sets $1 to the path.
+## NOTE: Does not validate the path or file.
+## Expects, in order:
+##   The name of the variable to be set.
+##   The name of the path to fully qualify.
+#
+#__realpath () {
+#
+#  local varname=$1  ; shift
+#  local filename=$1 ; shift
+#
+#  fqfn=${filename//\~/$HOME}
+#  fqfn=$(readlink -nf $fqfn)
+#
+#  printf -v "${varname}" "%s" "$fqfn"
+#
+#}
+#
+## Builds a fully qualified path and sets $1 to the value.
+## NOTE: Does not validate the path or file.
+## Expects, in order:
+##   The name of the variable to be set.
+##   The name of the file to determine where to load files from.
+##   The endpoint the path should have.
+#
+#__buildpath () {
+#
+#  local varname=$1    ; shift
+#  local sourcefile=$1 ; shift
+#  local endpoint=$1   ; shift
+#
+#  __realpath 'realpath' "$sourcefile"
+#  realpath=$(dirname $realpath)
+#
+#  printf -v "$varname" '%s' "${realpath}${endpoint}"
+#
+#}
+#
+## Sources all files found in $1.
+#__source_files () {
+#
+#  __debugit "${DEBUG_PREFIX}:${LINENO} Trying to source $1 ..."
+#
+#  for s in $(ls $1 2> /dev/null); do
+#    __debugit "${DEBUG_PREFIX}:${LINENO} Sourcing $s ..."
+#    source $s
+#
+#  done
+#}
+#
+## Sources all files found in either a hostspecific directory or a default directory.
+#__source_host_specific () {
+#
+#  local endpoint="$1"
+#  local hostname=$(hostname)
+#
+#  __buildpath 'path' "${BASH_SOURCE}" '/hostspecific'
+#
+#  if [ -d "${path}/${hostname}" ]; then
+#    path="${path}/${hostname}/${endpoint}"
+#  else
+#    path="${path}/default/${endpoint}"
+#  fi
+#
+#  __source_files $path
+#
+#}
 
 ########################################################################
 # Environment Variables
@@ -107,7 +120,9 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-command -v pacmatic > /dev/null 2>&1 && export PACMAN='pacmatic'
+if command -v pacman > /dev/null; then
+  command -v pacmatic > /dev/null 2>&1 && export PACMAN='pacmatic'
+fi
 
 ########################################################################
 # PATH setup
@@ -172,7 +187,7 @@ __source_files "$SOURCES"
 [[ -f ~/.Xresources                  ]] && xrdb ~/.Xresources
 [[ -f /etc/bash_completion           ]] && source /etc/bash_completion
 [[ -f /etc/profile.d/bash-completion ]] && source /etc/profile.d/bash-completion
-[[ -f ~/.bash_functions              ]] && source ~/.bash_functions
+#[[ -f ~/.bash_functions              ]] && source ~/.bash_functions
 [[ -f ~/.bash_prompt                 ]] && source ~/.bash_prompt
 [[ -f /.travis/travis.sh             ]] && source /.travis/travis.sh
 [[ -f /usr/share/nvm/init-nvm.sh     ]] && source /usr/share/nvm/init-nvm.sh

@@ -1,6 +1,11 @@
+# Some ideas came from these places ...
+#
+# http://www.jukie.net/bart/blog/pimping-out-git-log
+# https://news.ycombinator.com/item?id=14045787
+
 [user]
-  name = Harley Pig
-  email = harleypig@gmail.com
+  name = Alan Young
+  email = harleypig@harleypig.com
 
 [core]
   editor = vim
@@ -15,25 +20,35 @@
 [merge]
   tool = vimdiff
   guitool = kdiff3
+  conflictstyle = diff3
 
 [alias]
   aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
+
+  # Shorten common commands
   au = add -u
   b  = branch
   ba = branch -a
   ci = commit
   co = checkout
   df = diff
-  d  = difftool
-  lp = log --pretty=format:'%h : (%aN) %s' --topo-order --graph
+  dt = difftool
+
+  prune = fetch --prune
   pu = pull
   st = status
-  w = whatchanged
+
   graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
   find = !git ls-tree -r --name-only HEAD | grep --color $1
 
-  # http://www.jukie.net/bart/blog/pimping-out-git-log
+  # Log related aliases
+  hist = log --pretty=format:\"%C(yellow)%h%C(reset) %C(green)%ad%C(reset) %C(red)|%C(reset) %s %C(bold blue)[%an]%C(reset)%C(yellow)%d%C(reset)\" --graph --date=short
+  lp = log --pretty=format:'%h : (%aN) %s' --topo-order --graph
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+  lg2 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen%cn%Creset %Cblue(%cr)%Creset' --abbrev-commit --date=relative
+
+  # Ick. No.
+  #lg3 = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 
 [diff]
   tool = vimdiff
@@ -61,7 +76,8 @@
   untracked = yellow
 
 [push]
-  default = current
+  default = simple
+  followTags = true
 
 [pull]
   default = current
@@ -74,9 +90,22 @@
 [github]
   user = harleypig
 
+[status]
+  showUntrackedFiles = all
+
 [status-tackle]
   #plugins = UntrackedFiles WorkingTreeChanges IndexChanges UnpushedBranches CompletedFeatureBranches UnmergedFeatureBranches
   plugins = UntrackedFiles WorkingTreeChanges IndexChanges UnpushedBranches
 
 [fetch]
   prune = true
+
+[transfer]
+  fsckobjects = true
+
+[stash]
+  showPatch = true
+
+[rebase]
+  autostash = true
+  autoSquash = true

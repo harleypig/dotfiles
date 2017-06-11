@@ -2,6 +2,11 @@
 
 # Aliases and functions for git
 
+# Check the following for more ideas:
+#
+# https://gist.github.com/chrismccoy/8775224
+# https://gitlab.com/mikegerwitz/git-shortmaps
+
 GIT=$(command -v git 2> /dev/null)
 
 if [ -n $GIT ]; then
