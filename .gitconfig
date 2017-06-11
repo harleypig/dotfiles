@@ -23,29 +23,45 @@
   conflictstyle = diff3
 
 [alias]
+  # Show the defined aliases
   aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
 
   # Shorten common commands
-  au = add -u
-  b  = branch
-  ba = branch -a
-  ci = commit
-  co = checkout
-  df = diff
-  dt = difftool
+  a     = add
+  aa    = add --all
+  ai    = add --interactive
+  au    = add -u
 
+  b     = branch
+  ba    = branch -a
+  ball  = branch -ar
+
+  c     = commit
+  cb    = commit --branch
+  ci    = commit --interactive
+  co    = checkout
+
+  d     = diff
+  dc    = diff --cached
+  ds    = diff --stat -r
+  dt    = difftool
+
+  find  = !git ls-tree -r --name-only HEAD | grep --color $1
   prune = fetch --prune
-  pu = pull
-  st = status
+  p    = pull
 
-  graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
-  find = !git ls-tree -r --name-only HEAD | grep --color $1
+  s    = status
+  ss   = status -s
+  st   = status -sb
 
   # Log related aliases
+  graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
   hist = log --pretty=format:\"%C(yellow)%h%C(reset) %C(green)%ad%C(reset) %C(red)|%C(reset) %s %C(bold blue)[%an]%C(reset)%C(yellow)%d%C(reset)\" --graph --date=short
-  lp = log --pretty=format:'%h : (%aN) %s' --topo-order --graph
-  lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
-  lg2 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen%cn%Creset %Cblue(%cr)%Creset' --abbrev-commit --date=relative
+  lc   = log ORIG_HEAD.. --stat --no-merges
+  lg   = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+  lg2  = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen%cn%Creset %Cblue(%cr)%Creset' --abbrev-commit --date=relative
+  lp   = log --pretty=format:'%h : (%aN) %s' --topo-order --graph
+  new  = !sh -c 'git log $1@{1}..$1@{0} "$@"'
 
   # Ick. No.
   #lg3 = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
