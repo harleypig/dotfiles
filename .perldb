@@ -22,5 +22,7 @@ sub afterinit {
     '$Data::Dumper::Deparse++',
     '> $t0 = [ Time::HiRes::gettimeofday() ]',
     '< printf "\n\n*** Last instruction took %f seconds ***\n\n", Time::HiRes::tv_interval( $t0, [ Time::HiRes::gettimeofday() ] )',
+    '!!clear',
+    'l',
   ;
 }
