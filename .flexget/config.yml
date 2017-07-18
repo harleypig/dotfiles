@@ -14,7 +14,7 @@
 # flexget execute --task sync-series --learn --disable-tracking
 
 # Fill in the missing episodes (is there a way to limit this to one or some series?)
-# flexget execute --task tv-backfill
+# flexget execute --task tv_backfill
 
 web_server:
   bind: 0.0.0.0

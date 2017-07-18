@@ -146,6 +146,7 @@ BIN_DIRS="${BIN_DIRS} ~/projects/depot_tools"
 BIN_DIRS="${BIN_DIRS} ~/projects/dotfiles/bin"
 BIN_DIRS="${BIN_DIRS} ~/projects/android-sdk/tools"
 BIN_DIRS="${BIN_DIRS} ~/projects/android-sdk/platform-tools"
+BIN_DIRS="${BIN_DIRS} /usr/lib/dart/bin"
 
 for d in $BIN_DIRS; do
 
@@ -168,12 +169,22 @@ if [[ $- != *i* ]]; then
   return
 fi
 
+# Check in a lookup table for a command before searching the path.
+#   force a rescan for one or more commands: hash -d command command ...
+#   force a complete rescan: hash -r
 shopt -s checkhash
+
+# Update the window/terminal size variables after each command.
 shopt -s checkwinsize
+
 shopt -s dotglob
 shopt -s nocaseglob
 
 umask 022
+
+########################################################################################
+# This is for hman.
+export BROWSER='chromium-browser'
 
 ########################################################################################
 # Load application specific files.
