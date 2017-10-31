@@ -124,42 +124,10 @@ if command -v pacman > /dev/null; then
   command -v pacmatic > /dev/null 2>&1 && export PACMAN='pacmatic'
 fi
 
-########################################################################
-# PATH setup
-
-if [[ -d ~/.rbenv ]]; then
-
-  PATH="~/.rbenv/plugins/ruby-build/bin:~/.rbenv/bin:${PATH}"
-  eval "$(rbenv init -)"
-
+if [[ -d "${HOME}/projects/go" ]]; then
+  export GOROOT="${HOME}/projects/go"
+  export GOPATH="${HOME}/.go"
 fi
-
-# Do not alphabetize, order is important here.
-
-BIN_DIRS="${BIN_DIRS} ~/bin"
-BIN_DIRS="${BIN_DIRS} ~/.vim/bin"
-BIN_DIRS="${BIN_DIRS} ~/.cabal/bin"
-BIN_DIRS="${BIN_DIRS} ~/.minecraft/bin"
-BIN_DIRS="${BIN_DIRS} ~/Dropbox/bin"
-BIN_DIRS="${BIN_DIRS} ~/videos/bin"
-BIN_DIRS="${BIN_DIRS} ~/projects/depot_tools"
-BIN_DIRS="${BIN_DIRS} ~/projects/dotfiles/bin"
-BIN_DIRS="${BIN_DIRS} ~/projects/android-sdk/tools"
-BIN_DIRS="${BIN_DIRS} ~/projects/android-sdk/platform-tools"
-BIN_DIRS="${BIN_DIRS} /usr/lib/dart/bin"
-
-for d in $BIN_DIRS; do
-
-  __realpath 'dir' "$d"
-
-  if [[ -d $dir ]] && [[ $PATH != *"$dir"* ]]; then
-      PATH="${PATH}:${dir}"
-
-  fi
-done
-
-PATH="${PATH}:."
-export PATH
 
 ########################################################################
 
@@ -203,6 +171,12 @@ __source_files "$SOURCES"
 [[ -f /.travis/travis.sh             ]] && source /.travis/travis.sh
 [[ -f /usr/share/nvm/init-nvm.sh     ]] && source /usr/share/nvm/init-nvm.sh
 
+if [[ -d "${HOME}/projects/nvm" ]]; then
+  export NVM_DIR="$HOME/projects/nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && source "${NVM_DIR}/nvm.sh"
+
+fi
+
 [[ -z $SSH_AUTH_SOCK && -f ~/.ssh-agent && -r ~/.ssh-agent ]] && source ~/.ssh-agent
 
 command -v npm > /dev/null 2>&1 && source <(npm completion)
@@ -234,5 +208,45 @@ __source_files ~/.secrets
 
 __debugit "${DEBUG_PREFIX}:$LINENO Exiting ..."
 
-export NVM_DIR="$HOME/projects/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+########################################################################
+# PATH setup
+
+# Run this last to allow for other stuff above modifying the path
+
+if [[ -d ~/.rbenv ]]; then
+
+  PATH="~/.rbenv/plugins/ruby-build/bin:~/.rbenv/bin:${PATH}"
+  eval "$(rbenv init -)"
+
+fi
+
+# Do not alphabetize, order is important here.
+# XXX: Use add_path function instead here.
+# XXX: Add cleanup ability to add_path function.
+
+BIN_DIRS="${BIN_DIRS} ${HOME}/bin"
+BIN_DIRS="${BIN_DIRS} ${HOME}/.vim/bin"
+BIN_DIRS="${BIN_DIRS} ${HOME}/.cabal/bin"
+BIN_DIRS="${BIN_DIRS} ${HOME}/.minecraft/bin"
+BIN_DIRS="${BIN_DIRS} ${HOME}/Dropbox/bin"
+BIN_DIRS="${BIN_DIRS} ${HOME}/videos/bin"
+BIN_DIRS="${BIN_DIRS} ${HOME}/projects/depot_tools"
+BIN_DIRS="${BIN_DIRS} ${HOME}/projects/dotfiles/bin"
+BIN_DIRS="${BIN_DIRS} ${HOME}/projects/android-sdk/tools"
+BIN_DIRS="${BIN_DIRS} ${HOME}/projects/android-sdk/platform-tools"
+BIN_DIRS="${BIN_DIRS} /usr/lib/dart/bin"
+BIN_DIRS="${BIN_DIRS} ${GOROOT}/bin"
+BIN_DIRS="${BIN_DIRS} ${GOPATH}/bin"
+
+for d in $BIN_DIRS; do
+
+  __realpath 'dir' "$d"
+
+  if [[ -d $dir ]] && [[ $PATH != *"$dir"* ]]; then
+      PATH="${PATH}:${dir}"
+
+  fi
+done
+
+PATH="${PATH}:."
+export PATH
