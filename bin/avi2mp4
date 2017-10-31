@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if ! handbrake=$(command -v HandBrakeCLI); then
+  echo "Cannot find the HandBrakeCLI app, exiting."
+  exit 1
+fi
+
+backup_dir='/home/harleypig/videos/backup'
+log_dir='/home/harleypig/videos/log'
+
+mkdir -p $backup_dir
+mkdir -p $log_dir
+
+source=$1
+source_dir=$(dirname $source)
+source_name=$(basename $source .avi)
+dest="$source_dir/${source_name}.mp4"
+logfile="$log_dir/avi2mp4_${source_name}.log"
+
+echo Converting $source_name ...
+$handbrake -i $source -o $dest > $logfile 2>&1
+
+echo Backing up $source_name ...
+mv $source $backup_dir >> $logfile 2>&1

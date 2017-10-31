@@ -1,0 +1,96 @@
+#!/usr/bin/env perl
+
+use 5.20.0;
+
+use strict;
+use warnings FATAL => 'all';
+use autodie;
+
+use Carp;
+use XML::LibXML;
+use YAML::Syck;
+
+my $file = shift
+  or die "Must provide name of file to convert to yaml.\n";
+
+die "$file does not exist.\n"
+  unless -e $file;
+
+die "$file is not a file.\n"
+  unless -f _;
+
+sub collapse {
+
+  my ( $xml ) = @_;
+
+  croak "Expecting XML::LibXML::Element"
+    unless $xml->isa( 'XML::LibXML::Element' );
+
+  my ( %attributes, %data, $text );
+
+  _add_kv( \%attributes, $_->nodeName, $_->value )
+    for $xml->attributes;
+
+  _add_kv( \%data, 'attributes', \%attributes );
+
+  my $nr_attrs = keys %attributes;
+  my $nr_elems = 0;
+
+  for my $child ( $xml->childNodes ) {
+
+    if ( $child->isa( 'XML::LibXML::Element' ) ) {
+
+      my $n = $child->nodeName;
+
+      next if $n =~ /^id|updated$/;
+
+      $nr_elems++;
+
+      my $v = collapse( $child );
+
+      _add_kv( \%data, $n, $v )
+        if defined $v;
+
+    } elsif ( $child->isa( 'XML::LibXML::Text' ) ) {
+
+      $text .= $child->data;
+
+    }
+  }
+
+  return $nr_attrs + $nr_elems ? \%data
+       : ! defined $text       ? {}
+       :                         $text;
+
+}
+
+sub _add_kv {
+
+  my ( $d, $k, $v ) = @_;
+
+  if ( defined $d->{ $k } ) {
+
+    if ( ref $d->{ $k } eq 'ARRAY' ) {
+      push @{ $d->{ $k} }, $v;
+    } else {
+      $d->{ $k } = [ $d->{ $k }, $v ];
+    }
+
+  } elsif ( ref $v =~ /^ARRAY|HASH$/ ) {
+
+    push @{ $d->{ $k } }, $v;
+
+  } else {
+
+    $d->{ $k } = $v;
+
+  }
+
+  return 1;
+
+}
+
+my $xml  = XML::LibXML->load_xml( location => $file );
+my $data = collapse( $xml->documentElement );
+
+DumpFile( "${file}.yml", $data );

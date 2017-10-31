@@ -1,0 +1,233 @@
+#!/usr/bin/perl
+
+use 5.006;
+
+use strict;
+use warnings;
+
+use Carp;
+use Digest::SHA 'sha1_hex';
+use File::Find::Rule;
+use File::Slurp;
+use File::Temp;
+use IPC::Run3::Simple;
+use Regexp::Common 'ANSIescape';
+
+# Directory to save html files to
+croak 'Must provide directory to store output in' if @ARGV == 0;
+
+my $html_dir = shift;
+croak 'directory cannot be undefined' if $html_dir eq '';
+croak "$html_dir does not exist or is not a directory" unless -d $html_dir;
+
+# :h tags-file-format
+# {tagname} TAB {tagfile} TAB {tagaddress}
+# {tagfile}:{tagname} TAB {tagfile} TAB {tagaddress}
+# {tagname} TAB {tagfile} TAB {tagaddress} {term} {field} ..
+
+# The second format is obsolete, so I'm not going to worry about it until
+# I run into it.
+
+# We need to search for, and replace, three different bits of text in the help
+# files:
+#
+# 'Keyword' with a link to the file and location. E.g., 'textwidth' would be
+# replaced with '<a href="options.html#textwidth">textwidth</a>'.
+#
+# 'Keyword section' with a href location. E.g., the 'textwidth' section header
+# in 'options.txt' would be replaced with <a
+# name="'textwidth'"></a>'textwidth'
+#
+# 'Filename' with a link to the file. E.g, 'options.txt' would be replaced
+# with <a href="options.html">options.txt</a>.
+
+# The entry in the tags file for 'textwidth' looks like this
+#
+# 'textwidth'<TAB>options.txt<TAB>/*'textwidth'*
+#
+# This needs to be in the tag hash and looking like
+#
+# $tag{ "'textwidth'"   } = '<a href="options.html#'textwidth'">textwidth</a>';
+# $tag{ "*'textwidth'*" } = '<a name="\'textwidth\'"></a>*\'textwidth\'*';
+# $tag{ "options.txt"   } = '<a href="options.html">options.txt</a>';
+
+# According to ':h help-writing' we need to worry about marking up the
+# following:
+#
+# header line: *helpfile_name.txt* For vim version last change date
+# *tagname*: This should only ever appear once in any doc file
+# |tagname|: This should link back to the above *tagname*
+# 'tagname': This is supposed to be an option, but it's not always
+
+my $keyword_tmpl  = '<a href="<<FILE>>.html#<<KEYWORD>>"><<KEYWORD>></a>';
+my $section_tmpl  = '*<a name="<<KEYWORD>>"></a><<KEYWORD>>*';
+my $filename_tmpl = '<a href="<<FILE>>.html"><<FILE>>.txt</a>';
+
+## no critic qw( ValuesAndExpressions::RestrictLongStrings )
+my $html_tmpl = q{<html>
+<head>
+  <title><<FILE>></title>
+</head>
+<body>
+<pre><<CONTENT>></pre>
+</body>
+</html>};
+## use critic
+
+{
+  my @doc_dirs = do {
+
+    # Thanks to Christian Brabandt for the final solution.
+    # https://groups.google.com/d/msg/vim_use/tGQdQX4MB68/kqP4mdR5hZsJ
+    # The following command returns a comma delimited list of directories
+    my @cmd = ( qw( vim -u ~/.vimrc -Esc ), 'verbose echo &rtp|q' );
+
+    #my ( $out, $err, $syserr, $time ) = run3( \@cmd );
+    #carp "Took $time seconds to run @cmd";
+
+    my ( $out, $err, $syserr ) = run3( \@cmd );
+
+    croak "err: ($syserr) $err" if $syserr;
+    croak "out should be empty ($out)" if $out ne '';
+
+    # vim looks for a doc directory in each directory found in the runtime path.
+
+    # In testing, it appears as though vim files are read first and then any
+    # user docs.  Any conflicts are silently overwritten with the new
+    # information. This appears to be in the opposite order in which rtp reports
+    # the path.
+
+    reverse
+      grep { -d $_ }
+      map  { "$_/doc" }
+      split /,/, $err;
+
+  };
+
+  sub doc_dirs { return @doc_dirs }
+
+}
+
+{
+  my ( @tags, @lookup );
+
+  sub parse_tags_files {
+
+    my ( %tag, %lookup );
+
+    if ( ! @tags ) {
+
+      my @tags_files = File::Find::Rule->name( 'tags' )->in( doc_dirs() );
+
+      for my $tags_file ( @tags_files ) {
+
+        open my $TAGS, '<', $tags_file or do {
+          carp "Unable to open $tags_file ($!), skipping ...";
+          next;
+        };
+
+        while ( defined( my $line = <$TAGS> ) ) {
+
+          chomp $line;
+
+          my ( $tagname, $tagfile, $tagaddress ) = split /\s/, $line,
+            3; ## no critic qw( ValuesAndExpressions::ProhibitMagicNumbers )
+
+          # ignore special tags
+          next if $tagname =~ /^!_TAG_/;
+
+          # ignore 1 character tags, just too many possible matches
+          next if length $tagname == 1;
+
+          croak "tagname should not be blank at $tags_file line $."    if $tagname eq '';
+          croak "tagfile should not be blank at $tags_file line $."    if $tagfile eq '';
+          croak "tagaddress should not be blank at $tags_file line $." if $tagaddress eq '';
+
+          # I'm just curious, do any of these ever have whitespace?
+          carp "tagname ($tagname, $tags_file, $.) has whitespace"       if $tagname =~ /\s/;
+          carp "tagfile ($tagfile, $tags_file, $.) has whitespace"       if $tagfile =~ /\s/;
+          carp "tagaddress ($tagaddress, $tags_file, $.) has whitespace" if $tagaddress =~ /\s/;
+
+          ## no critic qw( RegularExpressions::ProhibitEscapedMetacharacters )
+          $tagfile =~ s/\.txt$//;
+
+          my %template_hash = ( KEYWORD => $tagname, FILE => $tagfile );
+
+          my $tmpl = $tagname =~ /\.txt$/ ? $filename_tmpl : $keyword_tmpl;
+          $tmpl =~ s/<<([^>]+)>>/$template_hash{ $1 }/g;
+
+          my $tagname_hash = sha1_hex( $tagname );
+          $tag{ $tagname }         = $tagname_hash;
+          $lookup{ $tagname_hash } = $tmpl;
+
+          $tagaddress =~ s/;".*$//;    # We don't need to handle any extended information.
+          $tagaddress =~ s/\\\\/\\/g;  # Doubled backslashes need to be fixed.
+          $tagaddress =~ s/^\///;
+
+          ( $tmpl = $section_tmpl ) =~ s/<<([^>]+)>>/$template_hash{ $1 }/g;
+
+          my $tagaddress_hash = sha1_hex( $tagaddress );
+          $tag{ $tagaddress }         = $tagaddress_hash;
+          $lookup{ $tagaddress_hash } = $tmpl;
+
+        } ## end while ( defined( my ...))
+      } ## end for my $tags_file ...
+
+      @tags = map { [ $_, $tag{ $_ } ] }
+        sort { length $b <=> length $a } keys %tag;
+
+      @lookup = map { [ $_, $lookup{ $_ } ] } sort keys %lookup;
+
+    } ## end if ( ! @tags )
+
+    return ( \@tags, \@lookup );
+
+  } ## end sub parse_tags_files
+}
+
+sub convert_doc_files {
+
+  ## no critic qw( RegularExpressions::ProhibitEscapedMetacharacters )
+  my @doc_files = File::Find::Rule->name( qr/\.txt$/ )->in( doc_dirs() );
+
+  my ( $tags, $lookups ) = parse_tags_files();
+
+  for my $doc ( @doc_files ) {
+
+    my $text = read_file( $doc );
+
+    # First pass ...
+    for my $tag ( @$tags ) { ## no critic qw( References::ProhibitDoubleSigils )
+
+      my $rx      = "\Q$tag->[0]\E";
+      my $replace = "\c@$tag->[1]\c@";
+
+      $text =~ s/$rx/$replace/g;
+
+    }
+
+    # Second pass ...
+    for my $lookup ( @$lookups ) { ## no critic qw( References::ProhibitDoubleSigils )
+
+      ## no critic qw( ValuesAndExpressions::ProhibitAccessOfPrivateData )
+      my $rx      = "\c@$lookup->[0]\c@";
+      my $replace = $lookup->[1];
+
+      $DB::single = 1 if $text =~ /$rx/;
+      $text =~ s/$rx/$replace/g;
+
+    }
+
+    $DB::single = 1;
+
+    my $outfile = sprintf "$html_dir/%s", ( $doc =~ s/\.txt$// )[0];
+
+    write_file( $outfile, $text );
+
+  } ## end for my $doc ( @doc_files)
+
+  return 1;
+
+} ## end sub convert_doc_files
+
+convert_doc_files();

@@ -1,13 +1,15 @@
 #!/bin/bash
 
+# Merge Dropbox version here
+#
 # See the 'How to use GIT checkout' section of the README.rst file.
 
 FLEXGET_DIR='/home/harleypig/projects/flexget'
 
-if [[ -d $FLEXGET_DIR ]]; then
+[[ -d $FLEXGET_DIR ]] || {
   echo $FLEXGET_DIR does not exist
-  exit
-fi
+  exit 1
+}
 
 FLEXGET_BIN="${FLEXGET_DIR}/bin"
 FLEXUI_DIR="${FLEXGET_DIR}/flexget/ui"
@@ -20,23 +22,48 @@ start_daemon="${flexget} daemon start -d"
 upgrade="${pip} install --upgrade -e ${FLEXGET_DIR}"
 virtenv="$(which virtualenv) --clear --always-copy ${FLEXGET_DIR}"
 
-cd $FLEXGET_DIR
+cd $FLEXGET_DIR || {
+  echo "Unable to change to $FLEXGET_DIR"
+  exit 1
+}
+
 $stop_daemon
 
-while ( pgrep flexget > /dev/null 2>&1 ); do
+#while ( pgrep flexget > /dev/null 2>&1 ); do
+#  sleep 1
+#done
+
+printf 'Waiting for daemon to go away '
+
+flexget_status=$($flexget daemon status | grep 'There does not appear to be a daemon running')
+
+while ( $flexget_status -eq 1 ); do
+  printf '.'
   sleep 1
+  flexget_status=$($flexget daemon status | grep 'There does not appear to be a daemon running')
 done
+
+printf '\n'
+exit
 
 # update flexget
 git pull
-virtualenv --clear --always-copy $FLEXGET_DIR
+$virtenv $FLEXGET_DIR
 $upgrade
 
 # update ui
-cd $FLEXUI_DIR
+cd $FLEXUI_DIR || {
+  echo "Unable to change to $FLEXUI_DIR"
+  exit 1
+}
+
 npm install
 bower update
 gulp build
 
-cd $FLEXGET_DIR
+cd $FLEXGET_DIR || {
+  echo "Unable to change to $FLEXGET_DIR"
+  exit 1
+}
+
 $start_daemon
