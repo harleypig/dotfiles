@@ -1,0 +1,189 @@
+#!/bin/bash
+
+# Utility
+
+# shellcheck disable=SC2086
+function join() {
+  local delim=','
+  printf '%s' $1 ; shift
+  printf '%s' "${@/#/$delim}"
+}
+
+# According to git help diff (in the RAW OUTPUT FORMAT section)
+# --raw has the following format:
+#
+# in-place edit  :100644 100644 bcd1234... 0123456... M file0
+# copy-edit      :100644 100644 abcd123... 1234567... C68 file1 file2
+# rename-edit    :100644 100644 abcd123... 1234567... R86 file1 file3
+# create         :000000 100644 0000000... 1234567... A file4
+# delete         :100644 000000 1234567... 0000000... D file5
+# unmerged       :000000 000000 0000000... 0000000... U file6
+#
+# There is also a 'T' and 'X' status. T is for a change in type and X is an
+# unknown change type and is probably a bug.
+
+# For purposes of this script, copy-edit and rename-edit are identical, so
+# we'll just put all copy-edit changes in the 'renamed' array.
+
+#declare -a modified copied renamed created deleted unmerged changetype unknown
+declare -a csvlines
+
+# Passing associative arrays to functions in bash < 4.3 is a pita. So we'll
+# just have to work with a known index for the array.
+
+# fields=( $timestamp $srcmode $dstmode $srchash $dsthash $file1 $file2 $message )
+
+TIMESTAMP_IX=0
+SRCMOD_IX=1
+DSTMOD_IX=2
+# shellcheck disable=SC2034
+SRCHASH_IX=3
+# shellcheck disable=SC2034
+DSTHASH_IX=4
+FILE1_IX=5
+# shellcheck disable=SC2034
+FILE2_IX=6
+MESSAGE_IX=7
+
+function modified() {
+  local -a fields
+  fields=( "$@" )
+
+  timestamp="${fields[TIMESTAMP_IX]}"
+  message="${fields[MESSAGE_IX]}"
+  filename="${fields[FILE1_IX]}"
+  mode1="${fields[SRCMOD_IX]}"
+  mode2="${fields[DSTMOD_IX]}"
+
+  csvlines+=( "modified,$timestamp,$filename,$message" )
+
+  # Did the mode change?
+
+  if [ "$mode1" != '000000' ] && [ "$mode1" != "$mode2" ]; then
+    csvlines+=( "modified,$timestamp,$filename,\"mode changed from $mode1 to $mode2\"" )
+  fi
+
+}
+
+function created() {
+  local -a fields
+  fields=( "$@" )
+
+  timestamp="${fields[TIMESTAMP_IX]}"
+  message="${fields[MESSAGE_IX]}"
+  filename="${fields[FILE1_IX]}"
+
+  csvlines+=( "added,$timestamp,$filename,$message" )
+
+}
+
+function deleted() {
+  local -a fields
+  fields=( "$@" )
+
+  timestamp="${fields[TIMESTAMP_IX]}"
+  message="${fields[MESSAGE_IX]}"
+  filename="${fields[FILE1_IX]}"
+
+  csvlines+=( "removed,$timestamp,$filename,$message" )
+
+}
+
+function renamed() {
+  local -a fields
+  fields=( "$@" )
+
+  timestamp="${fields[TIMESTAMP_IX]}"
+  message="${fields[MESSAGE_IX]}"
+  filename="${fields[FILE1_IX]}"
+
+  csvlines+=( "moved,$timestamp,$filename,$message" )
+
+}
+
+function copied() { echo "COPIED not handled"; }
+function unmerged() { echo "UNMERGED not handled";  }
+function changetype() { echo "CHANGETYPE not handled";  }
+function unknown() { echo "UNKNOWN not handled";  }
+
+function dump_csv() {
+  declare -a sorted
+
+  # sort by first column, then second (numerically), with commas (,) being the
+  # separator.
+  IFS=$'\n' sorted=($(sort -t ',' -k 1,2n <<<"${csvlines[*]}"))
+
+  printf '%s\n' "${sorted[@]}"
+}
+
+# We are forcing the output to be of the form:
+#
+#   \0epoch commit message
+#   \0list of files affected by commit
+#
+# So we need to do multiple reads; first, read the timestamp and the commit
+# message, then loop through the files and do what is needed for each type of
+# change.
+
+# A record looks like:
+#
+# RECORD: 1509469817 move some files from scattered locations
+#
+# or
+#
+# RECORD:
+#
+# :000000 100755 0000000... 443df30... A  bin/avi2mkv
+# :000000 100755 0000000... f75843b... A  bin/avi2mp4
+# :000000 100644 0000000... 9c50c14... A  bin/awkmusic
+# :000000 100755 0000000... b7b4559... A  bin/bash_colors
+# :000000 100755 0000000... 6271e14... A  bin/bash_colors.py
+# :000000 100644 0000000... c833931... A  bin/birthday_quotes
+#
+# So we can check for the existence of numbers in the first part of the string
+# ...
+
+# shellcheck disable=SC2086
+while IFS= read -r -d '' record; do
+  [ -z "$record" ] && continue
+
+  if [[ $record == [0-9]* ]]; then
+    # we're reading the timestamp and commit message
+
+    header=$(echo "$record" | tr -s '[:space]')
+    read -r timestamp message < <(echo "$header")
+
+    # csvify message
+    message="${message//"/\\"}"
+    message="${message//,/\\,}"
+    message="\"$message\""
+
+  else
+    while read -r srcmode dstmode srchash dsthash change file1 file2; do
+      [[ -z $srcmode ]] && continue
+
+      srcmode="${srcmode/:/}"
+      srchash="${srchash//\./}"
+      dsthash="${dsthash//\./}"
+      change="${change:0:1}"
+
+      # !!! This order is depended on by the _IX variables defined near the
+      # top of this file.
+      fields=( $timestamp $srcmode $dstmode $srchash $dsthash $file1 "$file2" "$message" )
+
+      # shellcheck disable=SC2086
+      case "$change" in
+        M) modified   "${fields[@]}" ;;
+        R) renamed    "${fields[@]}" ;;
+        C) renamed    "${fields[@]}" ;;
+        A) created    "${fields[@]}" ;;
+        U) unmerged   "${fields[@]}" ;;
+        D) deleted    "${fields[@]}" ;;
+        T) changetype "${fields[@]}" ;;
+        X) unknown    "${fields[@]}" ;;
+      esac
+    done < <(echo "$record")
+  fi
+done < <(git log --date=format:%s --format="%x00%ad %s%x00" --raw "$@")
+
+dump_csv
