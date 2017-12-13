@@ -7,12 +7,13 @@
 
 DEBUG_PREFIX=${BASH_SOURCE#$HOME/}
 
-if ! [ -f ~/.bash_functions ]; then
-  echo "~/.bash_functions does not exist"
+if ! [ -f "$HOME/.bash_functions" ]; then
+  echo "$HOME/.bash_functions does not exist"
   exit 1
 fi
 
-source ~/.bash_functions
+# shellcheck source=/home/harleypig/.bash_functions
+source "$HOME/.bash_functions"
 
 ## See function at
 ## https://github.com/wschlich/bashinator/blob/master/bashinator.lib.0.sh#L940
@@ -21,8 +22,8 @@ source ~/.bash_functions
 #DEBUG_PREFIX=${BASH_SOURCE#$HOME/}
 #
 #__debugit () {
-#  if [ -f ~/.dot_debug ]; then
-#    echo "$@" >> ~/.dotfiles_$$_$(date +%s).log
+#  if [ -f $HOME/.dot_debug ]; then
+#    echo "$@" >> $HOME/.dotfiles_$$_$(date +%s).log
 #  fi
 #}
 
@@ -55,7 +56,7 @@ __debugit "${DEBUG_PREFIX}:$LINENO Entering ..."
 #  local varname=$1  ; shift
 #  local filename=$1 ; shift
 #
-#  fqfn=${filename//\~/$HOME}
+#  fqfn=${filename//\$HOME/$HOME}
 #  fqfn=$(readlink -nf $fqfn)
 #
 #  printf -v "${varname}" "%s" "$fqfn"
@@ -157,39 +158,50 @@ export BROWSER='chromium-browser'
 ########################################################################################
 # Load application specific files.
 
+# shellcheck disable=SC2128
 __buildpath 'SOURCES' "${BASH_SOURCE}" "/.bash_sources.d/*"
 __source_files "$SOURCES"
 
 ########################################################################################
 # Simple check and source lines
 
-[[ -f ~/.Xresources                  ]] && xrdb ~/.Xresources
-[[ -f /etc/bash_completion           ]] && source /etc/bash_completion
-[[ -f /etc/profile.d/bash-completion ]] && source /etc/profile.d/bash-completion
-#[[ -f ~/.bash_functions              ]] && source ~/.bash_functions
-[[ -f ~/.bash_prompt                 ]] && source ~/.bash_prompt
-[[ -f /.travis/travis.sh             ]] && source /.travis/travis.sh
-[[ -f /usr/share/nvm/init-nvm.sh     ]] && source /usr/share/nvm/init-nvm.sh
+[[ -f $HOME/.Xresources ]] && xrdb "$HOME/.Xresources"
+
+# Order matters, don't mess with the order.
+declare -a FILES
+
+FILES+=('/etc/bash_completion')
+FILES+=('/etc/profile.d/bash-completion')
+FILES+=("$HOME/.bash_prompt")
+FILES+=('/.travis/travis.sh')
+FILES+=('/usr/share/nvm/init-nvm.sh')
+FILES+=('.task/completion/task-completion.sh')
+
+for file in "${FILES[@]}"; do
+  # shellcheck disable=SC1090
+  [[ -f $file ]] && source "$file"
+done
 
 if [[ -d "${HOME}/projects/nvm" ]]; then
   export NVM_DIR="$HOME/projects/nvm"
-  [ -s "$NVM_DIR/nvm.sh" ] && source "${NVM_DIR}/nvm.sh"
-
+  # shellcheck disable=SC1090
+  [[ -s "$NVM_DIR/nvm.sh" ]] && source "${NVM_DIR}/nvm.sh"
 fi
 
-[[ -z $SSH_AUTH_SOCK && -f ~/.ssh-agent && -r ~/.ssh-agent ]] && source ~/.ssh-agent
+# shellcheck disable=SC1090
+[[ -z $SSH_AUTH_SOCK && -f $HOME/.ssh-agent && -r $HOME/.ssh-agent ]] && source "$HOME/.ssh-agent"
 
+# shellcheck disable=SC1090
 command -v npm > /dev/null 2>&1 && source <(npm completion)
 
-if [[ -d ~/.bash_completion.d ]]; then
+if [[ -d $HOME/.bash_completion.d ]]; then
+  # shellcheck disable=SC2128
   __buildpath 'COMPLETION' "${BASH_SOURCE}" '/.bash_completion.d/*'
-  __source_files $COMPLETION
-#  for s in $(ls $COMPLETION 2> /dev/null); do source $s; done
+  __source_files "$COMPLETION"
 fi
 
-[[ $(type setup-bash-complete 2> /dev/null) ]] && source setup-bash-complete
-
-[[ -f ~/bin/tokens ]] && source ~/bin/tokens
+# shellcheck disable=SC1090
+[[ -f $HOME/bin/tokens ]] && source "$HOME/bin/tokens"
 
 ########################################################################################
 # Source any files we find in our host specific directory
@@ -202,9 +214,8 @@ __source_host_specific '*bashrc*'
 # Source any private files
 
 __buildpath 'PRIVATE' "${HOME}" '/.bash_private.d'
-__source_files $PRIVATE
-
-__source_files ~/.secrets
+__source_files "$PRIVATE"
+__source_files "$HOME/.secrets"
 
 __debugit "${DEBUG_PREFIX}:$LINENO Exiting ..."
 
@@ -213,9 +224,9 @@ __debugit "${DEBUG_PREFIX}:$LINENO Exiting ..."
 
 # Run this last to allow for other stuff above modifying the path
 
-if [[ -d ~/.rbenv ]]; then
+if [[ -d $HOME/.rbenv ]]; then
 
-  PATH="~/.rbenv/plugins/ruby-build/bin:~/.rbenv/bin:${PATH}"
+  PATH="$HOME/.rbenv/plugins/ruby-build/bin:$HOME/.rbenv/bin:${PATH}"
   eval "$(rbenv init -)"
 
 fi
@@ -242,9 +253,9 @@ for d in $BIN_DIRS; do
 
   __realpath 'dir' "$d"
 
+  # shellcheck disable=SC2154
   if [[ -d $dir ]] && [[ $PATH != *"$dir"* ]]; then
-      PATH="${PATH}:${dir}"
-
+    PATH="${PATH}:${dir}"
   fi
 done
 

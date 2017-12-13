@@ -1,12 +1,529 @@
 #!/bin/bash
+# vim: set ts=2 sw=2 tw=78 :
 
+##############################################################################
 # Settings for history
 
-export HISTCONTROL='ignorespace:erasedups'
-export HISTFILESIZE=1000
-export HISTSIZE=1000
+# The comments are copied directly from the bash man page.  Some settings are
+# copied from the .bash_sensible file (see that for the url for that project).
+
+##############################################################################
+# history bash command
+
+# history [n]
+# history -c
+# history -d offset
+# history -anrw [filename]
+# history -p arg [arg ...]
+# history -s arg [arg ...]
+
+# With no options, display the command history list with line numbers. Lines
+# listed with a * have been modified. An argument of n lists only the last
+# n lines. If the shell variable HISTTIMEFORMAT is set and not null, it is
+# used as a format string for strftime(3) to display the time stamp associated
+# with each displayed history entry. No intervening blank is printed between
+# the formatted time stamp and the history line. If filename is supplied, it
+# is used as the name of the history file; if not, the value of HISTFILE is
+# used. Options, if supplied, have the following meanings:
+
+# -c Clear the history list by deleting all the entries.
+# -d offset Delete the history entry at position offset.
+# -a Append the ``new'' history lines (history lines entered since the
+# beginning of the current bash session) to the history file.
+# -n Read the history lines not already read from the history file into the
+# current history list. These are lines appended to the history file since
+# the beginning of the current bash session.
+# -r Read the contents of the history file and append them to the current
+# history list.
+# -w Write the current history list to the history file, overwriting the
+# history file's contents.
+# -p Perform history substitution on the following args and display the result
+# on the standard output. Does not store the results in the history list.
+# Each arg must be quoted to disable normal history expansion.
+# -s Store the args in the history list as a single entry. The last command in
+# the history list is removed before the args are added.
+
+# If the HISTTIMEFORMAT variable is set, the time stamp information associated
+# with each history entry is written to the history file, marked with the his‐
+# tory comment character. When the history file is read, lines beginning with
+# the history comment character followed immediately by a digit are
+# interpreted as timestamps for the previous history line. The return value is
+# 0 unless an invalid option is encountered, an error occurs while reading or
+# writing the history file, an invalid offset is supplied as an argument to
+# -d, or the history expansion supplied as an argument to -p fails.
+
+##############################################################################
+# HISTORY - how it works
+
+# When the -o history option to the set builtin is enabled, the shell provides
+# access to the command history, the list of commands previously typed. The
+# value of the HISTSIZE variable is used as the number of commands to save in
+# a history list. The text of the last HISTSIZE commands (default 500) is
+# saved. The shell stores each command in the history list prior to parameter
+# and variable expansion (see EXPANSION above) but after history expansion is
+# performed, subject to the values of the shell variables HISTIGNORE and
+# HISTCONTROL.
+
+# On startup, the history is initialized from the file named by the variable
+# HISTFILE (default ~/.bash_history). The file named by the value of HISTFILE
+# is truncated, if necessary, to contain no more than the number of lines
+# specified by the value of HISTFILESIZE. If HISTFILESIZE is unset, or set to
+# null, a non-numeric value, or a numeric value less than zero, the history
+# file is not truncated. When the history file is read, lines beginning with
+# the history comment character followed immediately by a digit are
+# interpreted as timestamps for the preceding history line. These timestamps
+# are optionally displayed depending on the value of the HISTTIMEFORMAT
+# variable. When a shell with history enabled exits, the last $HISTSIZE lines
+# are copied from the history list to $HISTFILE. If the histappend shell
+# option is enabled (see the description of shopt under SHELL BUILTIN COMMANDS
+# below), the lines are appended to the history file, otherwise the history
+# file is overwritten. If HISTFILE is unset, or if the history file is
+# unwritable, the history is not saved. If the HISTTIMEFORMAT variable is set,
+# time stamps are written to the history file, marked with the history comment
+# character, so they may be preserved across shell sessions. This uses the
+# history comment character to distinguish timestamps from other history
+# lines. After saving the history, the history file is truncated to contain no
+# more than HISTFILESIZE lines. If HISTFILESIZE is unset, or set to null,
+# a non-numeric value, or a numeric value less than zero, the history file is
+# not truncated.
+
+# The builtin command fc (see SHELL BUILTIN COMMANDS below) may be used to
+# list or edit and re-execute a portion of the history list. The history
+# builtin may be used to display or modify the history list and manipulate the
+# history file. When using command-line editing, search commands are available
+# in each editing mode that provide access to the history list.
+
+# The shell allows control over which commands are saved on the history list.
+# The HISTCONTROL and HISTIGNORE variables may be set to cause the shell to
+# save only a subset of the commands entered. The cmdhist shell option, if
+# enabled, causes the shell to attempt to save each line of a multi-line
+# command in the same history entry, adding semicolons where necessary to
+# preserve syntactic correctness. The lithist shell option causes the shell to
+# save the command with embedded newlines instead of semicolons. See the
+# description of the shopt builtin below under SHELL BUILTIN COMMANDS for
+# information on setting and unsetting shell options.
+
+# HISTORY EXPANSION
+
+# The shell supports a history expansion feature that is similar to the
+# history expansion in csh. This section describes what syntax features are
+# available. This feature is enabled by default for interactive shells, and
+# can be disabled using the +H option to the set builtin command (see SHELL
+# BUILTIN COMMANDS below). Non-interactive shells do not perform history
+# expansion by default.
+
+# History expansions introduce words from the history list into the input
+# stream, making it easy to repeat commands, insert the arguments to
+# a previous command into the current input line, or fix errors in previous
+# commands quickly.
+
+# History expansion is performed immediately after a complete line is read,
+# before the shell breaks it into words. It takes place in two parts. The
+# first is to determine which line from the history list to use during
+# substitution. The second is to select portions of that line for inclusion
+# into the current one. The line selected from the history is the event, and
+# the portions of that line that are acted upon are words. Various modifiers
+# are available to manipulate the selected words. The line is broken into
+# words in the same fashion as when reading input, so that several
+# metacharacter-separated words surrounded by quotes are considered one word.
+# History expansions are introduced by the appearance of the history expansion
+# character, which is ! by default. Only backslash (\) and single quotes can
+# quote the history expansion character.
+
+# Several characters inhibit history expansion if found immediately following
+# the history expansion character, even if it is unquoted: space, tab,
+# newline, carriage return, and =. If the extglob shell option is enabled,
+# ( will also inhibit expansion.
+
+# Several shell options settable with the shopt builtin may be used to tailor
+# the behavior of history expansion. If the histverify shell option is enabled
+# (see the description of the shopt builtin below), and readline is being
+# used, history substitutions are not immediately passed to the shell parser.
+# Instead, the expanded line is reloaded into the readline editing buffer for
+# further modification. If readline is being used, and the histreedit shell
+# option is enabled, a failed history substitution will be reloaded into the
+# readline editing buffer for correction. The -p option to the history builtin
+# command may be used to see what a history expansion will do before using it.
+# The -s option to the history builtin may be used to add commands to the end
+# of the history list without actually executing them, so that they are
+# available for subsequent recall.
+
+# The shell allows control of the various characters used by the history
+# expansion mechanism (see the description of histchars above under Shell
+# Variables). The shell uses the history comment character to mark history
+# timestamps when writing the history file.
+
+# Event Designators
+
+# An event designator is a reference to a command line entry in the history
+# list. Unless the reference is absolute, events are relative to the current
+# position in the history list.
+
+# ! Start a history substitution, except when followed by a blank, newline,
+# carriage return, = or ( (when the extglob shell option is enabled using the
+# shopt builtin).
+
+# !n Refer to command line n.
+
+# !-n Refer to the current command minus n.
+
+# !! Refer to the previous command. This is a synonym for `!-1'.
+
+# !string
+
+# Refer to the most recent command preceding the current position in the
+# history list starting with string.
+
+# !?string[?]
+
+# Refer to the most recent command preceding the current position in the
+# history list containing string. The trailing ? may be omitted if string is
+# followed immediately by a newline.
+
+# ^string1^string2^
+
+# Quick substitution. Repeat the previous command, replacing string1 with
+# string2. Equivalent to ``!!:s/string1/string2/'' (see Modifiers below).
+
+# !#
+# The entire command line typed so far.
+
+# Word Designators
+
+# Word designators are used to select desired words from the event.
+# A : separates the event specification from the word designator. It may be
+# omitted if the word designator begins with a ^, $, *, -, or %. Words are
+# numbered from the beginning of the line, with the first word being denoted
+# by 0 (zero). Words are inserted into the current line separated by single
+# spaces.
+
+# 0 (zero)
+
+# The zeroth word. For the shell, this is the command word.
+
+# n The nth word.
+
+# ^ The first argument. That is, word 1.
+
+# $ The last word. This is usually the last argument, but will expand to the
+# zeroth word if there is only one word in the line.
+
+# % The word matched by the most recent `?string?' search.
+
+# x-y A range of words; `-y' abbreviates `0-y'.
+
+# * All of the words but the zeroth. This is a synonym for `1-$'. It is not an
+# error to use * if there is just one word in the event; the empty string is
+# returned in that case.
+
+# x* Abbreviates x-$.
+
+# x- Abbreviates x-$ like x*, but omits the last word.
+
+# If a word designator is supplied without an event specification, the
+# previous command is used as the event.
+
+# Modifiers
+
+# After the optional word designator, there may appear a sequence of one or more of the following modifiers, each preceded by a `:'.
+
+# h Remove a trailing filename component, leaving only the head.
+# t Remove all leading filename components, leaving the tail.
+# r Remove a trailing suffix of the form .xxx, leaving the basename.
+# e Remove all but the trailing suffix.
+# p Print the new command but do not execute it.
+# q Quote the substituted words, escaping further substitutions.
+# x Quote the substituted words as with q, but break into words at blanks and newlines.
+
+# s/old/new/
+
+# Substitute new for the first occurrence of old in the event line. Any
+# delimiter can be used in place of /. The final delimiter is optional if it
+# is the last character of the event line. The delimiter may be quoted in old
+# and new with a single backslash. If & appears in new, it is replaced by old.
+# A single backslash will quote the &. If old is null, it is set to the last
+# old substituted, or, if no previous history substitutions took place, the
+# last string in a !?string[?] search.
+
+# & Repeat the previous substitution.
+
+# g
+
+# Cause changes to be applied over the entire event line. This is used in
+# conjunction with `:s' (e.g., `:gs/old/new/') or `:&'. If used with `:s', any
+# delimiter can be used in place of /, and the final delimiter is optional if
+# it is the last character of the event line. An a may be used as a synonym
+# for
+
+# g.
+
+# G Apply the following `s' modifier once to each word in the event line.
+
+##############################################################################
+# Shell variables
+
+HISTCONTROL="erasedups:ignoreboth"
+
+# A colon-separated list of values controlling how commands are saved on the
+# history list. If the list of values includes ignorespace, lines which begin
+# with a space character are not saved in the history list. A value of
+# ignoredups causes lines matching the previous history entry to not be saved.
+# A value of ignoreboth is shorthand for ignorespace and ignoredups. A value
+# of erasedups causes all previous lines matching the current line to be
+# removed from the history list before that line is saved. Any value not in
+# the above list is ignored. If HISTCONTROL is unset, or does not include
+# a valid value, all lines read by the shell parser are saved on the history
+# list, subject to the value of HISTIGNORE. The second and subsequent lines of
+# a multi-line compound command are not tested, and are added to the history
+# regardless of the value of HISTCONTROL.
+
+# HISTFILE
+
+# The name of the file in which command history is saved (see HISTORY below).
+# The default value is ~/.bash_history. If unset, the command history is not
+# saved when a shell exits.
+
+HISTFILESIZE=100000
+
+# From the bash-sensible project: Huge history. Doesn't appear to slow things
+# down, so why not?
+
+# The maximum number of lines contained in the history file. When this
+# variable is assigned a value, the history file is truncated, if necessary,
+# to contain no more than that number of lines by removing the oldest entries.
+# The history file is also truncated to this size after writing it when
+# a shell exits. If the value is 0, the history file is truncated to zero
+# size. Non-numeric values and numeric values less than zero inhibit
+# truncation. The shell sets the default value to the value of HISTSIZE after
+# reading any startup files.
+
+HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
+
+# A colon-separated list of patterns used to decide which command lines should
+# be saved on the history list. Each pattern is anchored at the beginning of
+# the line and must match the complete line (no implicit `*' is appended).
+# Each pattern is tested against the line after the checks specified by
+# HISTCONTROL are applied. In addition to the normal shell pattern matching
+# characters, `&' matches the previous history line. `&' may be escaped using
+# a backslash; the backslash is removed before attempting a match. The second
+# and subsequent lines of a multi-line compound command are not tested, and
+# are added to the history regardless of the value of HISTIGNORE.
+
+HISTSIZE=500000
+
+# From the bash-sensible project: Huge history. Doesn't appear to slow things
+# down, so why not?
+
+# The number of commands to remember in the command history (see HISTORY
+# below). If the value is 0, commands are not saved in the history list.
+# Numeric values less than zero result in every command being saved on the
+# history list (there is no limit). The shell sets the default value to 500
+# after reading any startup files.
+
+HISTTIMEFORMAT='%F %T '
+
+# If this variable is set and not null, its value is used as a format string
+# for strftime(3) to print the time stamp associated with each history entry
+# displayed by the history builtin. If this variable is set, time stamps are
+# written to the history file so they may be preserved across shell sessions.
+# This uses the history comment character to distinguish timestamps from other
+# history lines.
+
+# histchars
+
+# The two or three characters which control history expansion and tokenization
+# (see HISTORY EXPANSION below). The first character is the history expansion
+# character, the character which signals the start of a history expansion,
+# normally `!'. The second character is the quick substitution character,
+# which is used as shorthand for re-running the previous command entered,
+# substituting one string for another in the command. The default is `^'. The
+# optional third character is the character which indicates that the remainder
+# of the line is a comment when found as the first character of a word,
+# normally `#'. The history comment character causes history substitution to
+# be skipped for the remaining words on the line. It does not necessarily
+# cause the shell parser to treat the rest of the line as a comment.
+
+##############################################################################
+# shopt options
+
+# shopt -s histverify
+
+shopt -s histappend
+
+# If set, the history list is appended to the file named by the value of the
+# HISTFILE variable when the shell exits, rather than overwriting the file.
+
+shopt -s histreedit
+
+# If set, and readline is being used, a user is given the opportunity to
+# re-edit a failed history substitution.
+
+shopt -s histverify
+
+# If set, and readline is being used, the results of history substitution are
+# not immediately passed to the shell parser. Instead, the resulting line is
+# loaded into the readline editing buffer, allowing further modification.
 
 shopt -s cmdhist
-shopt -s histappend
-shopt -s histreedit
-shopt -s histverify
+
+# If set, bash attempts to save all lines of a multiple-line command in the
+# same history entry. This allows easy re-editing of multi-line commands.
+
+# shopt -s lithist
+
+# If set, and the cmdhist option is enabled, multi-line commands are saved to
+# the history with embedded newlines rather than using semicolon separators
+# where possible.
+
+##############################################################################
+# Readline variables and commands
+# Note: These can, and I think should, be set in .inputrc.
+
+# history-preserve-point (Off)
+
+# If set to On, the history code attempts to place point at the same location
+# on each history line retrieved with previous-history or next-history.
+
+# history-size (0)
+
+# Set the maximum number of history entries saved in the history list. If set
+# to zero, any existing history entries are deleted and no new entries are
+# saved. If set to a value less than zero, the number of history entries is
+# not limited. By default, the number of history entries is not limited.
+
+# mark-modified-lines (Off)
+
+# If set to On, history lines that have been modified are displayed with
+# a preceding asterisk (*).
+
+# revert-all-at-newline (Off)
+
+# If set to On, readline will undo all changes to history lines before
+# returning when accept-line is executed. By default, history lines may be
+# modified and retain individual undo lists across calls to readline. BASH(1)
+# General Commands Manual BASH(1)
+
+# accept-line (Newline, Return)
+
+# Accept the line regardless of where the cursor is. If this line is
+# non-empty, add it to the history list according to the state of the
+# HISTCONTROL variable. If the line is a modified history line, then restore
+# the history line to its original state.
+
+# previous-history (C-p)
+
+# Fetch the previous command from the history list, moving back in the list.
+
+# next-history (C-n)
+
+# Fetch the next command from the history list, moving forward in the list.
+
+# beginning-of-history (M-<)
+
+# Move to the first line in the history.
+
+# end-of-history (M->)
+
+# Move to the end of the input history, i.e., the line currently being
+# entered.
+
+# reverse-search-history (C-r)
+
+# Search backward starting at the current line and moving `up' through the
+# history as necessary. This is an incremental search.
+
+# forward-search-history (C-s)
+
+# Search forward starting at the current line and moving `down' through the
+# history as necessary. This is an incremental search.
+
+# non-incremental-reverse-search-history (M-p)
+
+# Search backward through the history starting at the current line using
+# a non-incremental search for a string supplied by the user.
+
+# non-incremental-forward-search-history (M-n)
+
+# Search forward through the history using a non-incremental search for
+# a string supplied by the user.
+
+# history-search-forward
+
+# Search forward through the history for the string of characters between the
+# start of the current line and the point. This is a non-incremental search.
+
+# history-search-backward
+
+# Search backward through the history for the string of characters between the
+# start of the current line and the point. This is a non-incremental search.
+
+# yank-nth-arg (M-C-y)
+
+# Insert the first argument to the previous command (usually the second word
+# on the previous line) at point. With an argument n, insert the nth word from
+# the previous command (the words in the previous command begin with word 0).
+# A negative argument inserts the nth word from the end of the previous com‐
+# mand. Once the argument n is computed, the argument is extracted as if the
+# "!n" history expansion had been specified.
+
+# yank-last-arg (M-., M-_)
+
+# Insert the last argument to the previous command (the last word of the
+# previous history entry). With a numeric argument, behave exactly like
+# yank-nth-arg. Successive calls to yank-last-arg move back through the
+# history list, inserting the last word (or the word specified by the argument
+# to the first call) of each line in turn. Any numeric argument supplied to
+# these successive calls determines the direction to move through the history.
+# A negative argument switches the direction through the history (back or
+# forward). The history expansion facilities are used to extract the last
+# word, as if the "!$" history expansion had been specified.
+
+# shell-expand-line (M-C-e)
+
+# Expand the line as the shell does. This performs alias and history expansion
+# as well as all of the shell word expansions. See HISTORY EXPANSION below for
+# a description of history expansion.
+
+# history-expand-line (M-^)
+
+# Perform history expansion on the current line. See HISTORY EXPANSION below
+# for a description of history expansion.
+
+bind Space:magic-space
+
+# Perform history expansion on the current line and insert a space. See
+# HISTORY EXPANSION below for a description of history expansion.
+
+# alias-expand-line
+
+# Perform alias expansion on the current line. See ALIASES above for
+# a description of alias expansion.
+
+# history-and-alias-expand-line
+
+# Perform history and alias expansion on the current line.
+
+# insert-last-argument (M-., M-_)
+
+# A synonym for yank-last-arg.
+
+# operate-and-get-next (C-o)
+
+# Accept the current line for execution and fetch the next line relative to
+# the current line from the history for editing. Any argument is ignored.
+
+# edit-and-execute-command (C-xC-e)
+
+# Invoke an editor on the current command line, and execute the result as
+# shell commands. Bash attempts to invoke $VISUAL, $EDITOR, and emacs as the
+# editor, in that order.
+
+# dynamic-complete-history (M-TAB)
+
+# Attempt completion on the text before point, comparing the text against
+# lines from the history list for possible completion matches.
+
+# dabbrev-expand
+
+# Attempt menu completion on the text before point, comparing the text against
+# lines from the history list for possible completion matches.

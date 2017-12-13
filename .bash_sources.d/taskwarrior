@@ -7,11 +7,9 @@ taskpath=$(command -v task)
 
 if [ "$taskpath" != '' ]; then
 
-  _task () {
+  __task() {
 
-    # shellcheck disable=SC2086 disable=SC2048
-    $taskpath $*
-    #echo "$taskpath $*"
+    $taskpath "$@"
 
     if task commands | grep -Eq "$1|$2\s.*RW"; then
       $taskpath sync
@@ -19,75 +17,70 @@ if [ "$taskpath" != '' ]; then
 
   }
 
-  task=_task
+  task=__task
 
   taskdatadir=$($task _get rc.data.location)
   taskdatadir=${taskdatadir//\~/"$HOME"}
 
-  _task_command () {
+  _task_command() {
 
-    command=$1 ; tid=$2
-    shift      ; shift
-    # shellcheck disable=SC2086 disable=SC2048
-    $task $tid $command $*
+    command=$1
+    tid=$2
+    shift
+    shift
+    "$task" "$tid" "$command" "$@"
 
   }
 
   declare -A TASK_COMMANDS
   TASK_COMMANDS=(
-    [tanno]="annotate"
-    [td]="done"
-    [te]="edit"
-    [ti]="info"
-    [tm]="mod"
-    [tstart]="start"
-    [tstop]="stop"
+    [tanno]='annotate'
+    [td]='done'
+    [te]='edit'
+    [ti]='info'
+    [tm]='mod'
+    [tstart]='start'
+    [tstop]='stop'
   )
 
   for func in "${!TASK_COMMANDS[@]}"; do
-    eval "$func () { _task_command ${TASK_COMMANDS[$func]} \$* ; }"
+    eval "$func () { _task_command ${TASK_COMMANDS[$func]} \"\$@\" ; }"
   done
 
-  _task_report_or_add () {
+  _task_report_or_add() {
 
     project=$1
     shift
 
     if [ "$#" -eq 0 ]; then
       report=${project##*.}
-      # shellcheck disable=SC2086
-      $task $report
+      "$task" "$report"
     else
       [ "$project" == 'incubate' ] && project="${project} wait:someday"
-      # shellcheck disable=SC2086 disable=SC2048
-      $task add project:$project $*
+      $task add "project:$project" "$@"
     fi
   }
 
-  _task_completed_but_not_done () {
+  _task_completed_but_not_done() {
 
-    tag=$1 ; tid=$2
-    shift  ; shift
-
-    # shellcheck disable=SC2048 disable=SC2086
+    tag=$1
+    tid=$2
+    shift
+    shift
 
     if [ "$#" -eq 0 ]; then
       echo "You must explain why this task wasn't done."
       return
     else
-      $task $tid annotate $*
-      # shellcheck disable=SC1010
-      $task $tid done $tag
+      "$task" "$tid" annotate "$@"
+      "$task" "$tid" 'done' "$tag"
     fi
   }
 
-  # shellcheck disable=SC2048 disable=SC2086
-  {
-    tskip () { _task_completed_but_not_done +skip $* ; }
-    tfail () { _task_completed_but_not_done +fail $* ; }
-  }
+  tskip() { _task_completed_but_not_done +skip "$@"; }
+  tfail() { _task_completed_but_not_done +fail "$@"; }
 
-  task_last_id () {
+  task_last_id() {
 
     local last_id
     last_id=$($task newest rc.verbose=nothing limit:1)
@@ -97,7 +90,7 @@ if [ "$taskpath" != '' ]; then
 
   }
 
-  task_last_uuid () {
+  task_last_uuid() {
 
     local last_id
     local last_uuid
@@ -122,10 +115,10 @@ if [ "$taskpath" != '' ]; then
   shortcutsfile="${taskdatadir}/make_shortcuts"
 
   if [ -f "$shortcutsfile" ]; then
-    while read -r line ; do
+    while read -r line; do
       name=${line%% *}
       parms=${line#* }
-      eval "$name () { $parms \$* ; }"
+      eval "$name () { $parms \"\$@\" ; }"
     done < <(cat "$shortcutsfile")
   fi
 fi
