@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Merge Dropbox version here
-#
 # See the 'How to use GIT checkout' section of the README.rst file.
 
 FLEXGET_DIR='/home/harleypig/projects/flexget'
