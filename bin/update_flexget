@@ -3,11 +3,17 @@
 # See the 'How to use GIT checkout' section of the README.rst file.
 
 FLEXGET_DIR='/home/harleypig/projects/flexget'
-cd $FLEXGET_DIR || { echo "Unable to change to $FLEXGET_DIR, exiting" ; exit 1 ; }
+
+cd $FLEXGET_DIR || {
+  echo "Unable to change to $FLEXGET_DIR, exiting"
+  exit 1
+}
+
+set_title "$(basename "$0")"
 
 bin/flexget daemon stop
 
-while ( pgrep -x flexget 1> /dev/null 2>&1 ); do
+while (pgrep -x flexget 1>/dev/null 2>&1); do
   dots="${dots}."
   echo -ne "waiting for flexget to stop $dots\r"
   sleep 1

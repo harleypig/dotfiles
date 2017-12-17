@@ -1,9 +1,9 @@
 #!/bin/bash
 
-BASE_DIR="$HOME/projects/ffmpeg"
+BASE_DIR="$HOME/projects/node"
 
 cd "$BASE_DIR" || {
-  echo "Unable to cd to $BASE_DIR, exiting."
+  echo "Unable to change to $BASE_DIR, exiting."
   exit 1
 }
 
@@ -14,13 +14,13 @@ git clean -xf
 
 # update flexget
 git fetch --all --tags
-git pull
+git tag | tail -n 1
 
 ./configure
 
 # shellcheck disable=SC2086
 {
   dash_j="-j $(($(nproc) - 1))"
-  make $dash_j
-  make check $dash_j && sudo make install
+  make $dash_j doc # this will build node first if needed
+  make test $dash_j && sudo make install
 }

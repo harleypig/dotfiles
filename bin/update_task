@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_DIR="$HOME/projects/ffmpeg"
+BASE_DIR="$HOME/projects/taskwarrior/task"
 
 cd "$BASE_DIR" || {
   echo "Unable to cd to $BASE_DIR, exiting."
@@ -16,11 +16,6 @@ git clean -xf
 git fetch --all --tags
 git pull
 
-./configure
-
-# shellcheck disable=SC2086
-{
-  dash_j="-j $(($(nproc) - 1))"
-  make $dash_j
-  make check $dash_j && sudo make install
-}
+cmake -DCMAKE_BUILD_TYPE=release .
+make
+make test && sudo make install
