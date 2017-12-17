@@ -1,0 +1,24 @@
+#!/bin/bash
+
+BASE_DIR="$HOME/projects/ffmpeg"
+
+cd "$BASE_DIR" || {
+  echo "Unable to cd to $BASE_DIR, exiting."
+  exit 1
+}
+
+# start clean
+git clean -xf
+
+# update flexget
+git fetch --all
+git pull
+
+./configure
+
+# shellcheck disable=SC2086
+{
+  dash_j="-j $(($(nproc) - 1))"
+  make $dash_j
+  make check $dash_j && sudo make install
+}
