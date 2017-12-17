@@ -3,14 +3,10 @@
 # See the 'How to use GIT checkout' section of the README.rst file.
 
 FLEXGET_DIR='/home/harleypig/projects/flexget'
-
-[[ -d $FLEXGET_DIR ]] || {
-  echo $FLEXGET_DIR does not exist
-  exit 1
-}
+cd $FLEXGET_DIR || { echo "Unable to change to $FLEXGET_DIR, exiting" ; exit 1 ; }
 
 FLEXGET_BIN="${FLEXGET_DIR}/bin"
-FLEXUI_DIR="${FLEXGET_DIR}/flexget/ui"
+FLEXUI_DIR="${FLEXGET_DIR}/flexget/ui/v2"
 
 flexget="${FLEXGET_BIN}/flexget"
 pip="${FLEXGET_BIN}/pip"
@@ -20,48 +16,32 @@ start_daemon="${flexget} daemon start -d"
 upgrade="${pip} install --upgrade -e ${FLEXGET_DIR}"
 virtenv="$(which virtualenv) --clear --always-copy ${FLEXGET_DIR}"
 
-cd $FLEXGET_DIR || {
-  echo "Unable to change to $FLEXGET_DIR"
-  exit 1
-}
+cd $FLEXGET_DIR || { echo "Unable to change to $FLEXGET_DIR" ; exit 1 ; }
 
 $stop_daemon
 
-#while ( pgrep flexget > /dev/null 2>&1 ); do
-#  sleep 1
-#done
-
-printf 'Waiting for daemon to go away '
-
-flexget_status=$($flexget daemon status | grep 'There does not appear to be a daemon running')
-
-while ( $flexget_status -eq 1 ); do
-  printf '.'
+while ( pgrep -x flexget 1> /dev/null 2>&1 ); do
+  dots="${dots}."
+  echo -ne "waiting for flexget to stop ${dots}\r"
   sleep 1
-  flexget_status=$($flexget daemon status | grep 'There does not appear to be a daemon running')
 done
 
-printf '\n'
-exit
+echo
+
+# start clean
+git clean -xf
 
 # update flexget
+git fetch --all
 git pull
 $virtenv $FLEXGET_DIR
 $upgrade
 
 # update ui
-cd $FLEXUI_DIR || {
-  echo "Unable to change to $FLEXUI_DIR"
-  exit 1
-}
+cd $FLEXUI_DIR || { echo "Unable to change to $FLEXUI_DIR, exiting." ; exit 1 ; }
 
 npm install
-bower update
-gulp build
+npm run build
 
-cd $FLEXGET_DIR || {
-  echo "Unable to change to $FLEXGET_DIR"
-  exit 1
-}
-
+cd $FLEXGET_DIR || { echo "Unable to change to $FLEXGET_DIR, exiting." ; exit 1 ; }
 $start_daemon
