@@ -16,11 +16,11 @@
 # Fill in the missing episodes (is there a way to limit this to one or some series?)
 # flexget execute --task tv_backfill
 
-web_server:
-  bind: 0.0.0.0
-  port: 5050
-  web_ui: yes
-  run_v2: yes
+#web_server:
+#  bind: 0.0.0.0
+#  port: 5050
+#  web_ui: yes
+#  run_v2: yes
 
 schedules:
   - tasks: '*'
