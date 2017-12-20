@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# How often do we switch the root image?
+delay=$((15*60))
+
+while true; do
+
+  pic=$(~/bin/wallpaper.sweetums)
+  hsetroot -full $pic
+  sleep $delay
+
+done

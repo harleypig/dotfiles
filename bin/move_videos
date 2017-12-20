@@ -1,0 +1,119 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+#use Data::Dumper;
+use File::Basename;
+use File::Copy;
+use IPC::Run3::Simple;
+use URI::Escape;
+
+my ( $dropbox, $err ) = run3([qw( which dropbox )]);
+die "Unable to find dropbox executable: $err" if $err;
+
+my $base_path   = '/home/harleypig';
+my $source_dir  = "${base_path}/Dropbox/video_harleydev";
+my $target_dir  = "${base_path}/Dropbox/video_temp";
+my $uptodate_rx = ':\s+up\s+to\s+date';
+
+sub get_files {
+
+  my ( $dir ) = @_;
+
+  opendir my $DH, $dir
+    or die "Unable to open $dir: $!\n";
+
+  my ( @files, @dirs, @unknown );
+
+  for my $entry ( readdir $DH ) {
+
+    next if $entry =~ /^\.\.?$/;
+    my $fqpn = "$dir/$entry";
+
+    push @{ -f $fqpn ? \@files : -d _ ? \@dirs : \@unknown }, $fqpn;
+
+  }
+
+  warn "Unknown file type: $_"
+    for @unknown;
+
+  ( \@files, \@dirs );
+
+};
+
+sub get_files_status {
+
+  my ( $files ) = @_;
+
+  my $args = {
+    'cmd'    => [ $dropbox, 'filestatus', @$files ],
+    'stdout' => \my @files_status,
+  };
+
+  run3( $args );
+
+  return \@files_status;
+
+}
+
+sub get_dir_status {
+
+  my ( $dir ) = @_;
+
+  # Most of the time the directory will have 'syncing' if something is being
+  # synced in the directory ...
+
+  my ( $dir_status ) = get_files_status( [ $dir ] );
+
+  return if $dir_status->[0] !~ /$uptodate_rx$/;
+
+  # ... but it's not reliable.  We have to double check all files in the
+  # directory tree.
+
+  my ( $files, $dirs ) = get_files( $dir );
+
+  my $files_status = get_files_status( $files );
+
+  return if grep { ! /$uptodate_rx$/ } @$files_status;
+
+  for ( @$dirs ) {
+
+    return unless get_dir_status( $_ );
+
+  }
+
+  return 1;
+
+}
+
+my ( $files, $dirs ) = get_files( $source_dir );
+
+if ( @$files ) {
+
+  my $files_status = get_files_status( $files );
+
+  for my $f ( @$files_status ) {
+
+    next unless $f =~ s/$uptodate_rx$//;
+
+    my $basename = basename( $f );
+
+    move( $f, "$target_dir/$basename" )
+      or warn "Unable to move $f: $!\n";
+
+  }
+}
+
+if ( @$dirs ){
+  for my $d ( @$dirs ) {
+
+    next unless get_dir_status( $d );
+
+    my $basedir = basename( $d );
+
+    move( $d, "$target_dir/$basedir" )
+      or warn "Unable to move $d: $!\n";
+
+  }
+}

@@ -1,0 +1,716 @@
+#!/usr/bin/perl
+
+# XXX !!! Contains sensitive data
+
+# Based heavily on the article found at
+# http://www.perlmonks.org/?node_id=649742
+
+use strict;
+use warnings;
+
+use Data::Dumper;
+use Digest::MD5 'md5_hex';
+use IO::Socket::SSL;
+use Mail::IMAPClient;
+
+my $unhandled_messages_dir = '/home/harleypig/.message_headers';
+
+# Can we reduce this to
+#
+# If <condition> [AND|OR <condition>[...]] <action>
+#
+# <condition> is
+#   <mail part> equals|contains <list>
+#     <mail part> is a header name or 'body' or coderef
+#     <list> is comma separated
+#
+# <action> is copy|move|delete|remove_tag|coderef
+#   copy, move and remove_tag include <folder>
+
+my $test_rules = q{
+
+If List-ID contains
+  8youngpeople.yahoogroups.com
+  dev-cpp-users.lists.sourceforge.net
+then move to Trash
+
+If List-ID contains
+  announce.openvz.org
+  debian.openvz.org
+move to OpenVZ
+
+If List-ID contains
+  sllug-jobs-announce.sllug.org
+  jobs.perl.org
+move to Jobs
+
+If List-ID contains
+  soaplite.yahoogroups.com
+  cpan-daily.theoryx5.uwinnipeg.ca
+  modperl.perl.apache.org
+  poe.perl.org
+move to Perl
+
+If List-ID contains
+  mailman.openvz.org
+  mailman.gilgamesh.babyl.dyndns.org
+  mailman.linuxfromscratch.org
+  mailman.pm.org
+  mailman.utos.org
+  mailman.centos.org
+  mailman.theoryx5.uwinnipeg.ca
+  mailman.studio.imagemagick.org
+move to List Reminders
+
+If List-ID contains announce.utos.org move to UG/UTOS
+If List-ID contains biglist4.spryweb.com move to Bizarre
+If List-ID contains centos-announce.centos.org move to CentOS
+If List-ID contains centos-virt.centos.org move to CentOS/Virtualization
+If List-ID contains chromium-extensions.chromium.org move to ChromiumExtensions
+If List-ID contains devel.openvz.org move to OpenVZ/Dev
+If List-ID contains dzp-GitFmtChanges.harleypig.github.com move to GitHub
+If List-ID contains fbcmd.googlegroups.com move to FBCmd
+If List-ID contains gitflow-users.googlegroups.com move to GitFlow
+If List-ID contains hlfs-dev.linuxfromscratch.org move to HLFS
+If List-ID contains ledger-cli.googlegroups.com move to LedgerCLI
+If List-ID contains magick-users.imagemagick.org move to ImageMagick
+If List-ID contains newsbeuter.googlegroups.com move to Newsbeuter
+If List-ID contains plug.plug.org move to UG/PLUG
+If List-ID contains premium.thisistrue.com move to ThisIsTrue
+If List-ID contains project-censored-l.lists.sonoma.edu move to Project Censored
+If List-ID contains screen-users.gnu.org move to Screen
+If List-ID contains sllug-members.sllug.org move to UG/SLLUG
+If List-ID contains ujsug.googlegroups.com move to UG/UJSUG
+If List-ID contains users.openvz.org move to OpenVZ/Users
+If List-ID contains uug-list.uug.byu.edu move to UG/UUG
+If List-ID contains vcs-home.lists.madduck.net move to VCS Home
+If List-ID contains vim_use.googlegroups.com move to VIm
+If List-ID contains webadmin-announce.lists.sourceforge.net move to Webmin
+If List-ID contains xul-talk.lists.sourceforge.net move to XUL
+If List-ID contains list.heroicstories.com move to Heroic Stories
+If List-ID contains kde-announce.kde.org move to KDE/Announce
+If List-ID contains module-build.perl.org move to Perl
+
+};
+
+my %lists = (
+
+  # Added to Rules above
+  '<8youngpeople.yahoogroups.com>' => 'Trash',
+  'announce.openvz.org' => 'OpenVZ',
+  '<biglist4.spryweb.com>' => 'Bizarre',
+  'BYU Unix Users Group <uug-list.uug.byu.edu>' => 'UG/UUG',
+  '"CentOS announcements \(security and general\) will be posted to this  list." <centos-announce.centos.org>' => 'CentOS',
+  '<chromium-extensions.chromium.org>' => 'ChromiumExtensions',
+  'CPAN daily updates list <cpan-daily.theoryx5.uwinnipeg.ca>' => 'Trash',
+  'debian.openvz.org' => 'OpenVZ',
+  'Dev-C++ users mailing list <dev-cpp-users.lists.sourceforge.net>' => 'Trash',
+  'devel.openvz.org' => 'OpenVZ/Dev',
+  'Discussion about the virtualization on CentOS  <centos-virt.centos.org>' => 'CentOS/Virtualization',
+  'Discussion list for storing ~ under VCS control  <vcs-home.lists.madduck.net>' => 'VCS Home',
+  '<dzp-GitFmtChanges.harleypig.github.com>' => 'GitHub',
+  '<fbcmd.googlegroups.com>' => 'FBCmd',
+  'General GNU Screen discussion <screen-users.gnu.org>' => 'Screen',
+  '<gitflow-users.googlegroups.com>' => 'GitFlow',
+  'Hardened LFS Development List <hlfs-dev.linuxfromscratch.org>' => 'HLFS',
+  'HeroicStories <list.heroicstories.com>' => 'Heroic Stories',
+  'ImageMagick User List <magick-users.imagemagick.org>' => 'ImageMagick',
+  '"Job announcements regarding Linux or OpenSource Software."  <sllug-jobs-announce.sllug.org>' => 'Jobs',
+  '<jobs.perl.org>' => 'Jobs',
+  '<ledger-cli.googlegroups.com>' => 'LedgerCLI',
+  '<mailman.gilgamesh.babyl.dyndns.org>' => 'List Reminders',
+  '<mailman.linuxfromscratch.org>' => 'List Reminders',
+  '<mailman.pm.org>' => 'List Reminders',
+  'Mailman site list <mailman.centos.org>' => 'List Reminders',
+  'Mailman site list <mailman.theoryx5.uwinnipeg.ca>' => 'List Reminders',
+  '<mailman.studio.imagemagick.org>' => 'List Reminders',
+  '<mailman.utos.org>' => 'List Reminders',
+  'moderated list for KDE related announcements <kde-announce.kde.org>' => 'KDE/Announce',
+  '<modperl.perl.apache.org>' => 'Perl',
+  '<module-build.perl.org>' => 'Perl',
+  '<newsbeuter.googlegroups.com>' => 'Newsbeuter',
+  '<poe.perl.org>' => 'Perl',
+  'PREMIUM This is True <premium.thisistrue.com>' => 'ThisIsTrue',
+  '<project-censored-l.lists.sonoma.edu>' => 'Project Censored',
+  'Provo Linux Users Group <plug.plug.org>' => 'UG/PLUG',
+  'Salt Lake Linux Users Group Discussions <sllug-members.sllug.org>' => 'UG/SLLUG',
+  '"site-wide list \(for reminders etc.\)" <mailman.openvz.org>' => 'List Reminders',
+  '<soaplite.yahoogroups.com>' => 'Perl',
+  '<ujsug.googlegroups.com>' => 'UG/UJSUG',
+  'users.openvz.org' => 'OpenVZ/Users',
+  'Utah Open Source News and Announcements <announce.utos.org>' => 'UG/UTOS',
+  '<vim_use.googlegroups.com>' => 'VIm',
+  'Webmin announcements <webadmin-announce.lists.sourceforge.net>' => 'Webmin',
+  'XUL Interop Discussion Mailing List <xul-talk.lists.sourceforge.net>' => 'XUL',
+
+  # Add new lines below here unless you add them to test_rules above.
+  'A Free weekly newsletter with hand-picked articles and news about  Perl <perlweekly.perlweekly.com>' => 'Perl',
+  'Bug reports for the GNU Bourne Again SHell <bug-bash.gnu.org>' => 'Bash',
+  '<datetime.perl.org>' => 'Perl/DateTime',
+  '<dbi-announce.perl.org>' => 'Perl',
+  '<debugger.perl.org>' => 'Perl/Debugger',
+  '<develnytprof-dev.googlegroups.com>' => 'Perl',
+  'FSDN@LISTS.LDS.ORG' => 'FSDN',
+  '<fwp.perl.org>' => 'Perl/FWP',
+  'GitHub Inbox <harleypig.github.com>' => 'GitHub',
+  '<irssi-users.dragoncat.net>' => 'Irssi',
+  '<mailman.lists.ibiblio.org>' => 'List Reminders',
+  'metacpan.lists.scsys.co.uk' => 'Perl/MetaCPAN',
+  '<pep.perl.org>' => 'Perl',
+  'Perl Best Practices <pbp-pm.pm.org>' => 'Perl',
+  'Salt Lake Linux User Group Announcements <sllug-announce.sllug.org>' => 'UG/SLLUG',
+  'The mini-Annals of Improbable Research <mini-air.air.harvard.edu>' => 'Mini Air',
+  '<utahjs.googlegroups.com>' => 'UG/UJSUG',
+  '<vimwiki.googlegroups.com>' => 'VIm',
+  'xml-compile.lists.scsys.co.uk' => 'XML/Compile',
+  '"Discussion about the Arch User Repository \(AUR\)"  <aur-general.archlinux.org>' => 'ArchLinux/General',
+  'Arch Linux packaging commits <arch-commits.archlinux.org>' => 'ArchLinux/Commits',
+  'General Discussion about Arch Linux <arch-general.archlinux.org>' => 'ArchLinux/General',
+  'Public mailing list for Arch Linux development  <arch-dev-public.archlinux.org>' => 'ArchLinux/Dev',
+  'Arch Linux projects development discussion  <arch-projects.archlinux.org>' => 'ArchLinux/General',
+  'Arch Linux Release Engineering <arch-releng.archlinux.org>' => 'ArchLinux/Release',
+  '"Arch User Repository \(AUR\) Development" <aur-dev.archlinux.org>' => 'ArchLinux/AUR',
+  '<fsdn.ldsmail.net>' => 'FSDN',
+
+);
+
+my %from = (
+
+  '"Brian Magnusson" <brian.magnusson@verio.net>' => 'Verio',
+  '"Deanna Heikkinen" <deanna.heikkinen@verio.net>' => 'Verio',
+  '"Glenn Siegel" <glen.siegel@verio.net>' => 'Verio',
+#  '"3-bureau-monitoring" <v7zHBOsO770s9vjY@dicepnet.com>' => '',
+#  'adpfeedback@adp.com' => '',
+  '"Adult FriendFinder"<team@adultfriendfinder.com>' => 'Trash',
+  'Adult FriendFinder<team@adultfriendfinder.com>' => 'Trash',
+  '"Agile Development Practices" <cs@listserve.sqe.com>' => 'Trash',
+#  'Alan Young <alansyoungiii@gmail.com>' => '',
+#  'Alan Young <buzz+z12jy53gaxalh5thy04cdligpqy0xng4n5o@gmail.com>' => '',
+#  'Allison Snyder <allison.snyder@usu.edu>' => '',
+  'Allison Snyder <allison.snyder@usu.edu>' => 'KidsSchool',
+  '"ALT.com"<team@alt.com>' => 'Trash',
+  'ALT.com<team@alt.com>' => 'Trash',
+  '"Amazon.com" <books-store@amazon.com>' => 'Amazon',
+  '"Amazon.com" <customer-reviews-messages@amazon.com>' => 'Amazon',
+  '"Amazon.com" <LocalDeals@amazon.com>' => 'Amazon',
+  '"Amazon.com" <store-news@amazon.com>' => 'Amazon',
+  'Amazon.com <store-news@amazon.com>' => 'Trash',
+  '"Amazon.com" <vfe-campaign-response@amazon.com>' => 'Amazon',
+  'Amazon.com <vfe-campaign-response@amazon.com>' => 'Amazon',
+  'AmazonLocal Deals <LocalDeals@amazon.com>' => 'Amazon',
+  'Amazon Marketplace <marketplace-messages@amazon.com>' => 'Amazon',
+  'Amazon Web Services <no-reply-aws@amazon.com>' => 'Amazon',
+#  'Android Market <noreply-android-market@google.com>' => '',
+  'Andy Hunt <andy@pragmaticbookshelf.com>' => 'Trash',
+#  '"Atari" <atari@reply.digitalriver.com>' => '',
+  '"Atari" <atari@reply.digitalriver.com>' => 'Trash',
+  '"Audible.com" <newsletters@audible.com>' => 'Trash',
+  '"auto-confirm@amazon.com" <auto-confirm@amazon.com>' => 'Amazon',
+  'Barbara Boxer <info@pacforachange.com>' => 'Trash',
+  '"Becky Bond, CREDO Action" <act@credoaction.com>' => 'Trash',
+  'Becky Bond, CREDO Action <act@credoaction.com>' => 'Trash',
+  '"BigHappyBuddha.com" <ryan@bighappybuddha.com>' => 'Trash',
+  'billing@linode.com' => 'Linode',
+  'Blake Anderson <blake.anderson@contractor.verio.net>' => 'Verio',
+  '"Blip.fm" <noreply@blip.fm>' => 'Trash',
+  'Blip.fm <noreply@blip.fm>' => 'Trash',
+  'Bmarkham@bareinternational.com' => 'Trash',
+  '"BMW PROMOTION." <canfinhomesl@bsnl.in>' => 'Trash',
+  '"Brian Magnusson" <brian.magnusson@contractor.verio.net>' => 'Verio',
+  'Brian Magnusson <brian.magnusson@contractor.verio.net>' => 'Verio',
+  'Bursar@wgu.edu' => 'WGU',
+#  '"BYU Alumni Association" <alumni-email@byu.edu>' => '',
+  'BYU Alumni Association <alumni-email@byu.edu>' => 'Trash',
+  '"BYU Alumni" <studentalumni@byu.edu>' => 'Trash',
+  '"Cafe Rio Online Order Confirmation" <donotreply@caferio.com>' => 'CafeRio',
+  'Casual Male XL <info@mail.casualmale.com>' => 'Trash',
+  '"Catherine Young" <cat@cybertime.net>' => 'Personal',
+  'Classmates.com <ClassmatesEmail@classmates.com>' => 'Trash',
+  '"CM Journal Webcasts" <cs@listserve.sqe.com>' => 'Trash',
+#  '"Codesion" <cbu_customers@collab.net>' => '',
+  '"Columbia House" <columbiahousedvd@mail.columbiahousedvd.com>' => 'Trash',
+  '"Columbia House DVD Club" <columbiahouse@e.columbiahouse.com>' => 'Trash',
+  'Columbia House DVD Club <columbiahouse@mail.columbiahouse.com>' => 'Trash',
+  'CommuterLink@utah.gov' => 'CommuterLink',
+  'CompUSA.com <CompUSA@compusaonline.com>' => 'Trash',
+  '"Computerworld Research" <computerworld_research@cw.computerworld.com>' => 'Trash',
+#  '"Computerworld Resources"  <computerworld_resources@cwresources.computerworld.com>' => '',
+  '"Computerworld Resources"  <computerworld_resources@cwresources.computerworld.com>' => 'Trash',
+  '"Creately Newsletter" <news@creately.com>' => 'Trash',
+  '"Customer Care" <customercare@plentyoffish.com>' => 'Trash',
+  'Customer Care <customercare@plentyoffish.com>' => 'Trash',
+  'Dallin Millington <dallin.millington@nebo.edu>' => 'KidsSchool',
+  'Dark Reading <DarkReading@e.techwebresources.com>' => 'Trash',
+  'Dark Reading Weekly <email@techwebnewsletters.com>' => 'Trash',
+#  'Daryl Mastin <Daryl_Mastin@BYU.EDU>' => '',
+  'dclare@bareinternational.com' => 'Trash',
+#  '"Dell " <Dell@dellhome.usa.dell.com>' => '',
+#  '"Dell" <Dell@dellhome.usa.dell.com>' => '',
+  '"Dell " <Dell@dellhome.usa.dell.com>' => 'Trash',
+  'Deseret Bookshelf <dbmail@deseretbook.com>' => 'Trash',
+  'Diigo <service@diigo.com>' => 'Diigo',
+#  '"Downom Vinter" <downom.vinter@eniabol23.com>' => '',
+  'Dropbox <no-reply@dropbox.com>' => 'Dropbox',
+  '"drugstore.com" <drugstore@e.drugstore.com>' => 'Trash',
+  'drugstore.com <drugstore@e.drugstore.com>' => 'Trash',
+  '"Eddie Bauer" <EddieBauerEmail@e.eddiebauer.com>' => 'Trash',
+  'EFFector list <editor@eff.org>' => 'EFF',
+  '"eHarmony" <ehsupport@e.eharmony.com>' => 'Trash',
+  'eHarmony <ehsupport@e.eharmony.com>' => 'Trash',
+  '"ESL Music" <info@eslmusic.com>' => 'Trash',
+#  '"Esplin Eye Center, David Esplin, O.D. " <Dr.esplin@websystem2.com>' => '',
+  'Eventful <events@eventful.com>' => 'Trash',
+#  'events@idevnews.com' => '',
+  'exfm <notifications@ex.fm>' => 'Trash',
+#  'Fabien Roehlinger <fabi.roehlinger@androidpit.com>' => '',
+  'Facebook <notification+v5ki1vm@facebookmail.com>' => 'Facebook/Notifications',
+  'Facebook <update+v5ki1vm@facebookmail.com>' => 'Facebook',
+  '"Family Tree" <apps+v5ki1vm@facebookappmail.com>' => 'Trash',
+  'Federal Student Aid <FederalStudentAidFAFSA@cpsemail.ed.gov>' => 'WGU',
+  'Fidelity.Alerts@fidelity.com' => 'Trash',
+  'Fidelity.Alerts@Fidelity.com' => 'Trash',
+  'Fidelity Investments <Fidelity.Alerts@fidelity.com>' => 'Trash',
+  'finaid@wgu.edu' => 'WGU',
+  'FinanceWorks <alerts@financeworks.com>' => 'Trash',
+  'FinanceWorks <bill-reminder@financeworks.com>' => 'Trash',
+  'Formspring <noreply@formspring.me>' => 'Trash',
+  '"forum@linuxquestions.org" <forum@linuxquestions.org>' => 'LinuxQuestions',
+  '"FranklinCovey" <eServices@franklincoveyemail.com>' => 'Trash',
+  'FranklinCovey <eServices@franklincoveyemail.com>' => 'Trash',
+  '"FranklinCovey Training" <email@franklincoveytraining.com>' => 'Trash',
+  'Fred Clift <fclift@verio.net>' => 'Verio',
+  'Freecode <noreply@freecode.com>' => 'Trash',
+  'Freelancer.com <noreply@freelancer.com>' => 'Trash',
+  'Freelancer.com <noreply@getafreelancer.com>' => 'Trash',
+  'Freelancer.com Support <noreply@freelancer.com>' => 'Trash',
+  'Freelancer.com Support <noreply@getafreelancer.com>' => 'Trash',
+  '"freshmeat.net" <noreply@freshmeat.net>' => 'Trash',
+  'freshmeat.net <noreply@freshmeat.net>' => 'Trash',
+  'gcalcli@googlecode.com' => 'Google/gcalcli',
+  'GetGlue <noreply@getglue.com>' => 'Trash',
+  '"GetItOn"<team@getiton.com>' => 'Trash',
+  'GetItOn<team@getiton.com>' => 'Trash',
+  'Gist <accounts@gist.com>' => 'Gist',
+  'Git Version Control System Group Members <group-digests@linkedin.com>' => 'Git',
+  'Glue <digest@getglue.com>' => 'Trash',
+  'Goodreads <no-reply@mail.goodreads.com>' => 'Trash',
+  'Google Apps update alerts <no-reply@google.com>' => 'Google/Apps',
+  'Google Calendar <calendar-notification@google.com>' => 'Google/Calendar',
+  'Google Voice <voice-noreply@google.com>' => 'Google/Voice',
+  '"Great Engagement Rings" <ring@interpretyourmindonline.us>' => 'Trash',
+  'grodriguez@bareinternational.com' => 'Trash',
+#  '"Grooveshark.com" <mailman@grooveshark.com>' => '',
+  'Grooveshark.com <mailman@grooveshark.com>' => 'Grooveshark',
+  'Hewlett-Packard <us-news@your.hp.com>' => 'Trash',
+  'Hiveminder <do_not_reply@hiveminder.com>' => 'Trash',
+  'HP Business Promotions <us-specials@info.hp.com>' => 'Trash',
+  '"HRI-Top5" <hri-top5@topfive.com>' => 'Top5',
+  'HRI-Top5 <hri-top5@topfive.com>' => 'Top5',
+  '"HSH Reminders" <reminders@highscorehouse.com>' => 'HSH',
+  '"HSRUpdates" <updates@hsrupdates.com>' => 'Trash',
+  'Hulu Queue Alert <queue-updates@hulu.com>' => 'Trash',
+  '"IDG Connect "<IDGConnect@idgconnect-resources.com>' => 'Trash',
+  'IDG Connect <IDGConnect@idgconnect-resources.com>' => 'Trash',
+  '"IDG Connect International "<IDGConnect@idgconnect-resources.com>' => 'Trash',
+#  '"Inbox Astronomy" <outreach@stsci.edu>' => '',
+  '"Inbox Astronomy" <outreach@stsci.edu>' => 'Trash',
+  'Inbox Astronomy <outreach@stsci.edu>' => 'Trash',
+  'InformationWeek <InformationWeek@e.techwebresources.com>' => 'Trash',
+  'IntuitElectronicFilingCenter@intuit.com' => 'Intuit',
+  '=?iso-8859-1?B?Um9iZXJ0IEhhbGYgVGVjaG5vbG9neQ==?=  <message@email.roberthalftechnology.com>' => 'RHI',
+  '"ITwhitepapers.com Resources"  <online_resources@online.itwhitepapers.com>' => 'Trash',
+  'ITwhitepapers.com Resources <online_resources@online.itwhitepapers.com>' => 'Trash',
+  'Jeremy Jackson <jejackson@verio.net>' => 'Verio',
+  '"John Babatsikos, Dark Reading" <DarkReading@techwebcontent.com>' => 'DarkReading',
+  '"Johnston, Cassie \(04210\)" <cassie.johnston@rhi.com>', => 'RHI',
+  'Kaye Brockbank <kaye.brockbank@nebo.edu>' => 'KidsSchool',
+  'Kevin Wald <kevin.wald@contractor.verio.net>' => 'Verio',
+  '"King Size Customer Service" <kingsizedirect@email.kingsizedirect.com>' => 'KingSizeDirect',
+  '"KingSizeDirect" <kingsizedirect@email.kingsizedirect.com>' => 'KingSizeDirect',
+  'KingSizeDirect <kingsizedirect@email.kingsizedirect.com>' => 'KingSizeDirect',
+  '"Kongregate.com" <email@kongregate-emails.com>' => 'Trash',
+  'Kongregate.com <email@kongregate-emails.com>' => 'Trash',
+  'Lavasoft <Lavasoft@member.lavasoft.com>' => 'Trash',
+  '"Lavasoft" <support@em.lavasoft.com>' => 'Trash',
+  '"LDS Living" <customerservice@email.ldsliving.com>' => 'Trash',
+  'LDS Living <customerservice@ldsliving.com>' => 'Trash',
+  '"LinkedIn Ads" <linkedin@em.linkedin.com>' => 'Trash',
+  'LinkedIn Connections <connections@linkedin.com>' => 'LinkedIn',
+  'LinkedIn Today <news@linkedin.com>' => 'LinkedIn',
+  'LinkedIn Updates <updates@linkedin.com>' => 'LinkedIn/Updates',
+  'Linode Alerts <noreply@linode.com>' => 'Linode/Alerts',
+  '"Linux Journal" <linuxjournal@texterity.com>' => 'LinuxJournal',
+  '"Linux Journal" <noreply@lists.linuxjournal.com>' => 'LinuxJournal',
+  'lswiger@bareinternational.com' => 'Trash',
+  'Lumosity <newsletter@email.lumosity.com>' => 'Lumosity',
+  '"MACU Account Activity" <techsupport@macu.com>' => 'MACU',
+#  'Mail Delivery Subsystem <mailer-daemon@googlemail.com>' => '',
+  '"MAKE" no-reply@makezine.com' => 'MakeOnline',
+  'MAKE no-reply@makezine.com' => 'MakeOnline',
+  '"Make: Online" <no-reply@makezine.com>' => 'MakeOnline',
+  'mcrockett@wgu.edu' => 'WGU',
+  '"Michael Kieschnick, CREDO Mobile" <credo.service@credomobile.com>' => 'Trash',
+  'MindMeister News <news@mindmeister.com>' => 'Trash',
+  '"MindTouch, Inc." <communications@mindtouch.com>' => 'Trash',
+  '"Mint.com" <team@mint.com>' => 'Trash',
+  '"Monster Industry News" <monster@e0.monster.com>' => 'Trash',
+  'Monster <jagent@route.monster.com>' => 'Trash',
+  '"Monster Job Search Agent" <jagent@route.monster.com>' => 'Trash',
+  '"Motorola" <motorola@email-motorola.com>' => 'Trash',
+  'Mountain America Credit Union<techsupport@macu.com>' => 'MACU',
+  'MySQL <do-not-reply@oracle.com>' => 'MySQL',
+  'MySQL <mysql-newsletter@sun.com>' => 'MySQL',
+#  '"Nakib, Stephane" <stephane.nakib@pearson.com>' => '',
+#  '"Name.com" <support@name.com>' => '',
+  'Naymz Support <support@naymz.com>' => 'Trash',
+  '"Nebo School District" <sis-support@nebo.edu>' => 'KidsSchool',
+  '"Netted by the Webbys" <netted@netted.net>' => 'Netted',
+  'Netted by the Webbys <netted@netted.net>' => 'Netted',
+#  'noreply@name.com' => '',
+#  'noreply@sysadminpedia.com' => '',
+  'notifications@macu.org' => 'MACU',
+  '"NVIDIA" <news@nvidia.com>' => 'Trash',
+  'OkCupid! <bounces@mail1.oknotify2.com>' => 'Trash',
+  '"Olusegun Aganga"<info.foreign.affairsdept@cbnofnigeria.co.cc>' => 'Oreilly',
+  'Open Source <groups-noreply@linkedin.com>' => 'LinkedIn/OpenSource',
+  'Open Source Softwares Group Members <group-digests@linkedin.com>' => 'Trash',
+  'orders@dominos.com' => 'Dominos',
+  '"O\'Reilly Media" <oreilly@post.oreilly.com>' => 'Oreilly',
+  '"O\'Reilly MySQL Conference & Expo" <conferences@post.oreilly.com>' => 'Oreilly',
+  '"O\'Reilly Open Source Convention" <conferences@post.oreilly.com>' => 'Oreilly',
+  '"O\'Reilly Webcasts" <webcast@post.oreilly.com>' => 'Trash',
+  '"Overstock.com" <Sale@Sales.Overstock.com>' => 'Trash',
+  'Overstock.com <Sale@Sales.Overstock.com>' => 'Trash',
+#  '"Peachpit" <usergroups@peachpit.com>' => '',
+  'Perl Mongers <groups-noreply@linkedin.com>' => 'Perl',
+  'Pictarine <mr.roboto@pictarine.com>' => 'Trash',
+  '"Plentyoffish Matches" <customercare@plentyoffish.com>' => 'Trash',
+  '"Programmer\'s Paradise" <ppmail@programmers.com>' => 'Trash',
+  'Programmer\s Paradise <ppmail@programmers.com>' => 'Trash',
+#  '"Project Censored/Media Freedom Foundation"  <contact@mediafreedominternational.org>' => '',
+  'Project Censored/Media Freedom Foundation <contact@mediafreedominternational.org>' => 'Trash',
+  '"Qik" <news@qik.com>' => 'Notifications',
+  '"Raditaz // Music Moves" <Raditaz__Music_Moves@mail.vresp.com>' => 'Trash',
+  '"Railway Interchange" <railwayinterchange@progressiverailroading.com>' => 'Trash',
+  'Rainmaker <support@rainmaker.cc>' => 'Rainmaker',
+  'Rally Notification <do-not-reply@rallydev.com>' => 'Rally/Notifications',
+  '<Renewals@godaddy.com>' => 'GoDaddy',
+#  '"Representative Jason Chaffetz" <UT03JCIMA@mail.house.gov>' => '',
+  '"Roku" <roku@email.roku.com>' => 'Roku',
+  '"Roku" <rokuplayer@roku.com>' => 'Roku',
+  'Roku <rokuplayer@roku.com>' => 'Roku',
+  '"Scot & Maurine Proctor" <list@list.ldsmag.com>' => 'Trash',
+  'Scot & Maurine Proctor <list@list.ldsmag.com>' => 'Trash',
+  'Scott Wiersdorf <scott.wiersdorf@contractor.verio.net>' => 'Verio',
+#  '"seignoux.benoir"  <fz7qhzhc6bprvno3vd2t5egstgu3lhaajodgfpro4pbdsuhrmyvi7vbsi4yn5wjo@im.agni.lindenlab.com>' => '',
+  'Shop New Balance <shopnb@shopnewbalance.com>' => 'Trash',
+#  '"Simon Malls l More Choices" <customercare@simon.com>' => '',
+  'Software Association of Oregon <stephanie.el-hajj@sao.org>' => 'Trash',
+  '"Spanish Fork Junior High (Robert Fleming)" <robert.fleming@nebo.edu>' => 'KidsSchool',
+  '"SpeedDate.com" <speeddate@e.speeddatemail.com>' => 'Trash',
+#  '"SquareTrade Warranties" <warrantysupport@squaretrade.com>' => '',
+#  '"Stephanie El-Hajj" <stephanie.el-hajj@sao.org>' => '',
+  'StumbleUpon <service@stumbleupon.com>' => 'Trash',
+  '<support@godaddy.com>' => 'GoDaddy',
+#  '"SutraWorlds Technologies Sdn Bhd" <sales@sutraworlds.com>' => '',
+#  '"Suzanne Seager (SMS)"  <18018045167.18016862170.MZll7H_G1P@txt.voice.google.com>' => '',
+  '"T.A. McCann - Gist" <marketing@gist.com>' => 'Trash',
+  'techsupport@macu.org' => 'MACU',
+  '"TechXtend/Programmer\'s Paradise" <txmail@techxtend.com>' => 'Trash',
+  'The Perl Foundation Group Members <group-digests@linkedin.com>' => 'Perl',
+  'The Utilikilts Company <news@utilikilts.com>' => 'Trash',
+  '"ThinkGeek Overlords" <overlords@email.thinkgeek.com>' => 'ThinkGeek',
+  'tjacques@bareinternational.com' => 'Trash',
+  '"T-Mobile USA" <billing@paperless.t-mobile.com>' => 'TMobile',
+#  'TPG <ralinquiry02@sbtpg.com>' => '',
+  '"Tree Notification" <notifications@ancestry.com>' => 'Trash',
+  'Tree Notification <notifications@ancestry.com>' => 'Trash',
+  '"TripleScores" <Credit927@fantile.info>' => 'Trash',
+  'T-Shirt Hell Members <TSHmembers@tshirthell.com>' => 'TShirtHell',
+  'T-Shirt Hell <newshirts@tshirthell.com>' => 'TShirtHell',
+  'TurboTax Team <TurboTax@info1.turbotax.com>' => 'TurboTax',
+  'Twitter <follow-uneyrlcvt=tznvy.pbz-311a1@postmaster.twitter.com>' => 'Twitter',
+  'UDOTTraffic@utah.gov' => 'CommuterLink',
+  '"Urban Dictionary" <daily@urbandictionary.com>' => 'Urban Dictionary',
+#  '"=?UTF-8?B?R2V2YWxpYQ==?=" <Gevalia@snowpaper.info>' => '',
+#  '"=?UTF-8?B?VGVsbmljIENvbW11bml0eSBUZWFt?=" <feedback@telnic.org>' => '',
+#  '"=?UTF-8?B?VHJhdmVsIFJld2FyZHM=?=" <VacationDepot@gatherhuman.info>' => '',
+  '=?utf-8?Q?Archie=20at=20Udemy?= <archie@udemy.com>' => 'Trash',
+  '=?utf-8?Q?Netted=20by=20the=20Webbys?= <netted@netted.net>' => 'Netted',
+  '=?utf-8?q?Prizes=2Eorg?= <noreply@prizes.org>' => 'Trash',
+  '"=?utf-8?Q?SourceForge.net=20Update?="  <sourceforge@newsletters.sourceforge.net>' => 'SourceForge/Newsletter',
+  '=?utf-8?q?Vistaprint?= <vistaprint@e.vistaprint.com>' => 'Trash',
+  '"=?UTF-8?Q?Walmart?=" <newsletters@walmart.com>' => 'Trash',
+  '"Verizon Wireless" <verizonwireless@email.vzwshop.com>' => 'Trash',
+  '"VoicesOn "<VoicesOn@voiceson-resources.com>' => 'Trash',
+  '"Vutil Advisory" <alan.young@contractor.verio.net>' => 'Trash',
+  'Vutil Advisory <alan.young@contractor.verio.net>' => 'Verio/VutilAdvisory',
+  'Walt Disney Pictures <news@fos.go.com>' => 'Trash',
+  '"Weekly**Circular" <iFjv66I4ZIauZJnX@bhdevhts.com>' => 'Trash',
+  'Whatever <no-reply@wordpress.com>' => 'Notifications',
+  '"Woot" <no-reply@woot.com>' => 'Notifications',
+  '"Woot Tracking Bot" <noreply@noreply.woot.com>' => 'W00T',
+#  '"World Science" <emailnews@world-science.net>' => '',
+  'Xpress Bill Pay <no-reply@xpressbillpay.com>' => 'XPressBillPay',
+  'YNAB News <noreply@youneedabudget.com>' => 'YNAB',
+  'YouTube <noreply@youtube.com>' => 'YouTube',
+  'YouTube <service@youtube.com>' => 'YouTube',
+  'Zoosk Mail <mail@messaging.zoosk.com>' => 'Trash',
+  '"POF" <customercare@pof.com>' => 'Trash',
+  'Western Governors University Students and Alumni Group Members  <group-digests@linkedin.com>' => 'LinkedIn/WGU',
+  'Zoosk Personals <mail@messaging.zoosk.com>' => 'Trash',
+  '"Dell " <Dell@Dellhome.usa.dell.com>' => 'Trash',
+  '"Monster" <monster@e0.monster.com>' => 'Trash',
+  'aur-notify@archlinux.org' => 'ArchLinux/Notify',
+  '"C CNET" <noreply@salviadragon.com>' => 'Trash',
+  '"Dark Reading Weekly" <InformationWeek@techweb.com>' => 'Trash',
+  '"FranklinPlanner" <eServices@franklincoveyemail.com>' => 'Trash',
+  '"Lulu.com" <lulu@reply.bronto.com>' => 'Trash',
+  'Formspring <email@formspring.me>' => 'Trash',
+  'NOVICA Reward Statement <journal@novica.com>' => 'Trash',
+  'Software Association of Oregon <daniel.lee@sao.org>' => 'Trash',
+  'Utah IT Jobs - Hosted by CN-tec Group Members  <group-digests@linkedin.com>' => 'LinkedIn',
+
+);
+
+my %to = (
+
+  '"groceries@harleypig.com" <groceries@harleypig.com>' => 'Trash',
+  'announce@openvz.org' => 'OpenVZ',
+  'fsdn@lists.lds.org' => 'FSDN',
+  'FSDN@LISTS.LDS.ORG' => 'FSDN',
+  'surplus@listserv.byu.edu' => 'BYU Surplus',
+  'emarket@harleypig.com' => 'Spam',
+  'announce@bugzilla.org' => 'Bugzilla/Announce',
+  'openculture@harleypig.com' => 'OpenCulture',
+  '"Alan Young" <alan.young@contractor.verio.net>' => 'Verio',
+  '"Alan Young" <alan.young@contractor.verio.net>' => 'Personal',
+  'fafsa@harleypig.com' => 'WGU',
+  'jobs@harleypig.com' => 'HSH',
+  'wgu@harleypig.com' => 'WGU',
+  'ayoun24@my.wgu.edu;wgu@harleypig.com' => 'WGU',
+  'archlinux@harleypig.com' => 'ArchLinux',
+  'aur-general@archlinux.org' => 'ArchLinux/General',
+  '"Alan Young" <alan.young@verio.net>' => 'Verio',
+  '"Brian Magnusson" <brian.magnusson@verio.net>' => 'Verio',
+  '"PMO-Hi-Chew Core Team" <PMO-Hi-ChewCoreTeam@verio.net>' => 'Verio',
+  'alan.young@contractor.verio.net' => 'Verio',
+
+);
+
+# Connect to the IMAP server via SSL
+my $socket = IO::Socket::SSL->new(
+
+  'PeerAddr' => 'imap.gmail.com',
+  'PeerPort' => 993,
+
+) or die "Failed to create socket: $@";
+
+# Build up a client attached to the SSL socket.
+# Login is automatic as usual when we provide User and Password
+my $client = Mail::IMAPClient->new(
+
+   'Socket'   => $socket,
+   'User'     => 'alansyoungiii',
+   'Password' => 'j!nx4#vmt',
+
+) or die "Failed to create mail client: $@";
+
+my %xlist = $client->xlist_folders
+  or die sprintf "Unable to get xlist: %s\n", $client->LastError;
+
+my $work_folder = $xlist{ 1 ? 'Inbox' : 'AllMail' };
+
+my @folders = $client->folders
+  or die sprintf "Unable to get folder list: %s\n", $client->LastError;
+
+my %folders; @folders{ @folders } = undef;
+
+$client->select( $work_folder )
+  or die sprintf "Unable to select %s: %s\n", $work_folder, $client->LastError;
+
+my @msgs = $client->messages
+  or die sprintf "Unable to get messages: %s\n", $client->LastError;
+
+my ( %unhandled_listid, %unhandled_from, %unhandled_to, $count, @remove_msgs );
+
+for my $msg ( @msgs ) {
+
+  $count++;
+  printf "Handling msg id %d, %d of %d (% 3d%%)\n", $msg, $count, scalar @msgs, int ( ( $count / scalar @msgs ) * 100 );
+
+  my $raw = $client->fetch( "$msg BODY.PEEK[HEADER]" ) or do {
+    warn sprintf "Unable to get headers (%s), skipping\n", $client->LastError;
+    next;
+  };
+
+  if ( ! $raw->[2] || $raw->[2] eq '' ) {
+
+    warn "wtf is this? ", Dumper $raw;
+    next;
+
+  }
+
+  ( undef, my @raw ) = split /\n([\w-]*):\s+/, "\n$raw->[2]";
+
+  my %header;
+
+  for ( my $i = 0 ; $i < @raw ; $i += 2 ) {
+
+    my $h = lc $raw[$i];
+    $h =~ s/\W//g;
+
+    ( my $v =  $raw[$i+1] ) =~ s/[\cM\cJ]+/ /;
+    $v =~ s/^\s*(.*?)\s*$/$1/;
+
+    if ( exists $header{ $h } ) {
+
+      if ( ref $header{ $h } eq 'ARRAY' ) {
+
+        push @{ $header{ $h } }, $v;
+
+      } else {
+
+        $header{ $h } = [ $header{ $h }, $v ];
+
+      }
+    } else { $header{ $h } = $v }
+  }
+
+  my $handled;
+
+  # Handle lists
+  if ( exists $header{ 'listid' } && ! ref $header{ 'listid' } ) {
+
+    my $listid = $header{ 'listid' };
+
+    if ( exists $lists{ $listid } ) {
+
+      my $folder = $lists{ $listid };
+      $handled ||= copy_message( $client, $folder, $msg );
+
+    } else {
+
+      $unhandled_listid{ $listid }++;
+
+    }
+  }
+
+  # Handle specific From
+  if ( exists $header{ 'from' } && ! ref $header{ 'from' } ) {
+
+    my $from = $header{ 'from' };
+
+    $handled ||= copy_message( $client, $from{ $from }, $msg )
+      if exists $from{ $from };
+
+  }
+
+  # Handle specific To
+  if ( exists $header{ 'to' } && ! ref $header{ 'to' } ) {
+
+    my $to = $header{ 'to' };
+
+    $handled ||= copy_message( $client, $to{ $to }, $msg )
+      if $to ne '' && exists $to{ $to };
+
+  }
+
+  unless ( $handled ) {
+
+    my $file;
+
+    if ( exists $header{ 'messageid' } ) {
+
+      my $msgid_md5 = md5_hex( $header{ 'messageid' } );
+      $file = "$unhandled_messages_dir/$msgid_md5";
+
+    } else {
+
+      $file = "$unhandled_messages_dir/$msg";
+
+    }
+
+    write_file( $file, Dumper \%header );
+
+    $unhandled_from{ $header{ 'from' } }++;
+    $unhandled_to{ $header{ 'to' } }++;
+
+  }
+}
+
+$client->delete_message( @remove_msgs );
+$client->expunge;
+$client->logout;
+
+if ( keys %unhandled_listid ) {
+
+  my $file = "$unhandled_messages_dir/unhandled_listids";
+  my $content = sprintf "Unhandled list ids:\n%s\n", join "\n", sort keys %unhandled_listid;
+  write_file( $file, $content );
+
+}
+
+if ( keys %unhandled_from ) {
+
+  my $file = "$unhandled_messages_dir/unhandled_froms";
+  my $content = sprintf "Unhandled froms:\n%s\n", join "\n", sort keys %unhandled_from;
+  write_file( $file, $content );
+
+}
+
+if ( keys %unhandled_to ) {
+
+  my $file = "$unhandled_messages_dir/unhandled_tos";
+  my $content = sprintf "Unhandled tos:\n%s\n", join "\n", sort keys %unhandled_to;
+  write_file( $file, $content );
+
+}
+
+# Done.
+#############################################################################################
+
+sub copy_message {
+
+  my ( $client, $folder, $msg ) = @_;
+
+  return if $folder eq '';
+
+  if ( ! grep { $_ eq $folder } @folders ) {
+
+    $client->create( $folder ) or do {
+      warn sprintf "Unable to create %s: %s\n", $folder, $client->LastError;
+      return undef;
+    };
+
+    push @folders, $folder;
+
+  }
+
+  $folder = $xlist{ $folder }
+    if exists $xlist{ $folder };
+
+  $client->copy( $folder, $msg ) or do {
+    warn sprintf "Unable to copy message: %s\n", $client->LastError;
+    return undef;
+  };
+
+  push @remove_msgs, $msg;
+  return 1;
+
+}
+
+sub write_file {
+
+  my ( $filename, $content ) = @_;
+
+  if ( open my $FH, '>', $filename ) {
+
+    print $FH $content;
+
+  } else {
+
+    warn "Unable to open $filename: $!\n";
+
+  }
+}

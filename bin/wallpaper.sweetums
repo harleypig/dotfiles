@@ -1,0 +1,61 @@
+#!/usr/bin/perl
+
+# This script loads images files found in specified directories and checks if
+# they have been displayed as a root image yet.  If they have, then they will
+# be ignored until all images have been displayed.
+
+use strict;
+use warnings;
+
+use File::Find::Rule qw( :Type );
+use IPC::Run3;
+use List::AllUtils 'shuffle';
+
+my $seen = '/home/harleypig/.seen_wallpaper';
+
+my @dirs = do {
+
+  my @dropbox = qw(
+    /home/harleypig/Dropbox/wallpaper
+    /home/harleypig/Dropbox/wallpaper_download
+  );
+
+  grep { -e $_ && -d _ } @dropbox;
+
+};
+
+my @seen = -e $seen ? do {
+
+  open my $SEEN, '<', $seen
+    or die "Unable to open $seen for reading: $!";
+
+  <$SEEN>;
+
+} : ();
+
+chomp @seen;
+
+@seen = do {
+
+  my %seen;
+  @seen{ @seen } = undef;
+  sort keys %seen;
+
+};
+
+my @pics = File::Find::Rule->type( 'image/*' )
+                           ->exec( sub { ! grep { /\Q$_[2]/ } @seen } )
+                           ->in( @dirs );
+
+die "Nothing seen, nothing found.  This is a problem.\n"
+  if @seen == 0 and @pics == 0;
+
+@seen = () if @pics < 2;
+
+push @seen, ( shuffle @pics )[0];
+
+open my $SEEN, '>', $seen
+  or die "Unable to open $seen for writing: $!\n";
+
+print $SEEN "$_\n" for @seen;
+print $seen[-1];

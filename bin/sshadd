@@ -1,0 +1,8 @@
+#!/bin/bash
+
+eval $(cat ~/.ssh-agent)
+
+for i in $(cat ~/.ssh/active)
+do
+  ssh-add ~/.ssh/$i
+done

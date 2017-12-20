@@ -1,0 +1,396 @@
+#! /bin/bash
+#: Title       : vm-create
+#: Date Created: Sat Jan 29 01:54:07 PST 2011 
+#: Last Edit   : Wed Feb  9 13:24:14 PST 2011
+#: Author      : please_try_again
+#: Version     : 1.0
+#: Description : install OS from the Internet or local iso in a kvm vm
+# ~~~~
+prg=$(basename $0)
+which virt-install &> /dev/null || Error "virt-install not installed"
+[ "x$(ps ax | grep libvirtd | awk '!/grep/ { print $1 }')" == "x" ] && Error "libvirtd is not running" 
+VIRTINST_VER=$(virt-install --version | sed 's|^0||;s|\.||g')
+LIVIRT_VER=$(libvirtd --version | sed 's|[^0-9]*\([0-9]\)|\1|;s|\.||g;s|^0||')
+
+# ~~~~
+# DEFINE THE VARIABLES IN THIS SECTIONS TO MATCH YOUR SYSTEM
+
+IMGPATH=/home/harleypig/.images # where to put the vm images. 
+ISOPATH=/home/harleypig/Downloads # where to save iso images
+IMPPATH=/import 	# where to mount storage pools
+POOLNAME=install	# pollname for remote install
+POOLPATH=/var/lib/libvirt/images/install
+
+# your gateway (unless set in the environment variable GATEWAY) 
+GW=192.168.101.1 		
+
+# YOU MIGHT EDIT THE DEFAULTS BELOW
+
+DEF_HYPERVISOR=qemu 	# qemu or xen
+#DEF_HOST=				# default to localhost
+DEF_CONNECT=${VIRSH_DEFAULT_CONNECT_URI:-${DEF_HYPERVISOR}://$DEF_HOST/system}
+DEF_RAM=512
+DEF_CPUS=1
+DEF_ARCH=i386
+DEF_KERN=generic26
+DEF_VIDEO=vga	 		# cirrus, vga or vmvga
+DEF_AUDIO=default		# AC97 if the hypervisor supports it, otherwise it will be ES1370.
+DEF_VMSIZE=10			# default size of virtual machines (10GB)
+
+DISPLAYOPTS=" --vnc --vnclisten=0.0.0.0"
+[ $VIRTINST_VER -gt 5003 ] && BOOTOPTS=" --boot=cdrom,hd,network"
+
+# network defaults
+DEF_BRIDGE=br0
+DEF_NIC=eth0
+DEF_NAT=virbr0
+DEF_NETWORK=nat	        # nat or bridge
+DEF_NETMASK=0xffffff00	# should be fine for a class C network
+CREATEBRIDGE=1			# create bridge if needed
+STARTVIRBR=1			# start virtual network (NAT) if needed
+
+# You might change distros default versions
+
+fedora_ver=14
+opensuse_ver=11.3
+opensuseM6_ver=11.4 ; opensuseM6_rel=1034
+ubuntu_ver=maverick ; ubuntu_rel=10.10
+debian_ver=lenny ; debian_rel=508
+mandriva_ver=2010.2
+archlinux_ver=2011.08.19
+centos_ver=5.5
+freebsd_ver="8.2" ; freebsd_rel="-RC3"
+openbsd_ver="4.8"
+netbsd_ver="5.1"
+dflybsd_ver="2.8.2" ; dflybsd_rel=REL
+
+# You might add/change ditros urls.
+
+debian_url="ftp://ftp.osuosl.org/debian/dists/VER/main/installer-ARCH/"
+fedora_url="ftp://ftp.osuosl.org/pub/fedora/linux/releases/VER/Fedora/ARCH/os/"
+mandriva_url="ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/VER/i586/"
+ubuntu_url="ftp://ftp.osuosl.org/pub/ubuntu/dists/VER/main/installer-ARCH/"
+archlinux_iso="ftp://ftp.osuosl.org/pub/archlinux/iso/VER/archlinux-VER-netinstall-ARCH.iso"
+centos_iso="http://centos.arcticnetwork.ca/VER/isos/ARCH/CentOS-VER-ARCH-netinstall.iso"
+debian_iso="ftp://debian.osuosl.org/debian-cd/current/ARCH/iso-cd/debian-REL-ARCH-netinst.iso"
+fedora_iso="ftp://ftp.osuosl.org/pub/fedora/linux/releases/VER/Fedora/ARCH/iso/Fedora-VER-ARCH-netinst.iso"
+mandriva_iso="ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/VER/ARCH/install/images/boot.iso"
+opensuse_iso="http://download.opensuse.org/distribution/VER/iso/openSUSE-VER-NET-ARCH.iso"
+ubuntu_iso="ftp://ftp.osuosl.org/pub/ubuntu/dists/VER/main/installer-ARCH/current/images/netboot/mini.iso"
+freebsd_iso="ftp://ftp.freebsd.org/pub/FreeBSD/releases/ARCH/ISO-IMAGES/VER/FreeBSD-VERREL-ARCH-bootonly.iso"
+openbsd_iso="ftp://ftp.openbsd.org/pub/OpenBSD/VER/ARCH/install${openbsd_ver/./}.iso"
+netbsd_iso="ftp://ftp.netbsd.org/pub/NetBSD/iso/VER/ARCHcd-VER.iso"
+dflybsd_iso="ftp://ftp.dragonflybsd.org/iso-images/dfly-ARCH-2.8.2_REL.iso.bz2"
+opensuseM6_iso="http://download.opensuse.org/distribution/11.4-Milestone6/iso/openSUSE-NET-BuildREL-ARCH.iso"
+#netbsd_iso="ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-VER/ARCH/installation/cdrom/boot.iso"
+
+# ~~~
+# You should not modify the script blelow this point.
+
+# recognized OS types to this day.
+OSTYPES="debianetch debianlenny debiansqueeze \
+fedora5 fedora6 fedora7 fedora8 fedora9 fedora10 fedora11 fedora12 fedora13 \
+generic24 generic26 \
+virtio26 \
+mandriva2009 mandriva2010 \
+mes5 mes5.1 \
+rhel2.1 rhel3 rhel4 rhel5 rhel5.4 rhel6 \
+sles10 sles11 \
+ubuntuhardy ubuntuintrepid ubuntujaunty ubuntukarmic \
+generic \
+msdos \
+netware4 netware5 netware6 \
+opensolaris solaris10 solaris9 \
+freebsd6 freebsd7 \
+openbsd4 \
+vista win2k win2k3 win2k8 win7 winxp winxp64"
+
+[ $VIRTINST_VER -lt 5003 ] && Error "virt-install 0.500.3 or newer required"
+[ $VIRTINST_VER -ge 5004 ] && OSTYPES="$OSTYPES fedora14 ubuntulucid freebsd8"
+[ $VIRTINST_VER -ge 5005 ] && OSTYPES="$OSTYPES ubuntumaverick"
+[ $LIVIRT_VER -ge 87 ] && Y="-- "
+
+# valid xen and qemu MAC addresses
+qemu_mac="52:54:00:"
+xen_mac="00:16:3e:"
+
+# ~~~
+# use the popup library if found
+which popup &>/dev/null && source $(which popup)
+
+# use popup functions if available
+function Error { declare -F | grep -q error || exec echo "Error: $*" ; error "$*" ;}
+function Warn  { declare -F | grep -q warn  && warn  "$*" || echo "Warning: $*" ;}
+
+# ~~~
+
+function chkarg { [ "${1:0:1}" == "-" ] && Error "invalid argument: $1" ;}
+function chkopt { [ "x$1" == "x" ] && Error "you should provide a vm name" ;}
+
+function syntax {
+if [ "$1" == "-d" ] ; then
+	# show defaults
+	grep '^DEF_' $0 | sed '/\[/d;/^[	]/d;s/#.*//;/=\$.*/d;s/"//g' | awk -F "=" '{ sub(/^ /,"", $2) ; printf "%-20s\t%s\n", $1, $2}'
+else
+	cat << EOFSYNTAX
+usage:
+   $prg vm name
+
+options:
+	-c --connect <host>    : remote host where to create the vm
+	-r --ram <ram in MB>   : amount of ram (default 512MB)
+	-a --arch <i386|amd64> : architecture (i386 or amd64)
+	-o --os <os variant>   : os variant (example: fedora14, mandriva2010)
+	-u --url <os>          : os (fedora, debian, ubuntu, opensuse, mandriva) 
+	-i --iso <img.iso>     : iso image 
+	-p --path <directory>  : where to store vm images
+	-s --size <size>       : size of virtual machine in GB
+	-V --virtio            : same as -o virtio26
+	-v --video             : video device: cirrus, vga* or vmvga (for kvm)
+	-R --release           : OS version to install (other than default)
+	-S --sound             : enable sound device (ac97)
+	-l --sdl               : use sdl display rather than vnc
+	-L --live              : boot live CD
+	-b --bridge <bridge>   : use network bridge (otherwise use DEF_NETWORK if defined or 'nat')
+	-e --eth <nic>         : network interface to use for bridge (otherwise use DEF_NIC if defined or eth0)
+	-x --xen               : use Xen hypervisor rather than kvm	
+	-t --try               : just print but not execute the command
+	-h --help              : show this help
+	-d --defaults          : show defaults
+
+recognized OS variants    :
+`echo $OSTYPES | fmt`
+
+available guest systems   :
+$(awk -F "=" '/^[a-zA-Z0-9]*_url=|^[a-zA-Z0-9]*_iso=/ { sub(/_.*/,"",$1); print $1 }' $0 | sort -u | tr "\n" " ")
+EOFSYNTAX
+fi
+exit
+}
+
+function createBridge {
+	[ "x$gw" == "x" ] && Error "no gateway defined"
+	ping -q -c 1 -W 2 $gw > /dev/null || Error "gateway $gw is unreachable"
+	echo  " - creating bridge $1"
+	brctl addbr $1 
+	ifconfig $2 0.0.0.0 promisc 
+	brctl addif $1 $2
+	ifconfig $1 inet $3 netmask $DEF_NETMASK
+	brctl stp $br on
+	route del default 2>/dev/null
+	route add default gw $gw 2>/dev/null
+}
+
+function importPool {
+	virsh -c $hyp pool-dumpxml $1 2>/dev/null | grep -q $2 && {
+		virsh -c $hyp pool-info $1 | grep -q running || virsh -c $hyp pool-start $1
+		virsh -c $hyp pool-refresh $1
+		return
+	}
+	virsh -c $hyp pool-list --all | grep -q "\b$1\b" && virsh -c $hyp pool-destroy $1 2>/dev/null
+	virsh -c $hyp pool-list --all | grep -q "\b$1\b" && virsh -c $hyp pool-undefine $1 2>/dev/null
+	$SSH mkdir -m 600 $POOLPATH 2>/dev/null
+	virsh -c $hyp pool-create-as $1 netfs $2 $ISOPATH -- -- $Y$POOLPATH
+}
+
+function getarch {
+	case $arch in
+	amd64)
+		case $os in
+			fedora|mandriva|archlinux)  arch=x86_64 ;;
+		esac
+	;;
+	i386)
+		case $os in
+			mandriva|opensuse*)  arch=i586 ;;
+			archlinux)  arch=i686 ;;
+		esac
+	;;
+	esac
+}
+
+# find out if we need to download a netinstall iso image
+function geturl {
+	getarch
+	[ "$rflag" ] && url=${1}_iso || url=${1}_url ; url=${!url}
+	[ "$url" ] || { url=${1}_iso ; url=${!url} ; iflag=1 ; }
+	url=$(echo $url | sed "s|VER|$VER|g;s|ARCH|$arch|g;s|REL|$REL|g")	
+	[ "$url" ] || Error "No url defined for $1"
+	if [ "$iflag" ] ; then
+		[ -d $ISOPATH ] && cd $ISOPATH || Error "$ISOPATH doesn't exist"
+		isoimg=$(basename $url .bz2)
+		[ $tflag -eq 0 ] && ( [ -f ./$isoimg ] || wget -v $url )
+		[ -f ./$isoimg.bz2 ] && bunzip2 -v $isoimg.bz2
+		if [ "$rflag" ] ; then
+			[ $tflag -eq 0 ] && importPool $POOLNAME $HOSTNAME
+			url=" --disk vol=$POOLNAME/$isoimg,device=cdrom"
+		else
+			url=" --cdrom=$ISOPATH/$isoimg"
+		fi
+		cd - >/dev/null
+	else
+		url=" --location=$url"
+	fi
+}
+
+function chkMAC {
+	Mac=$(echo ${1:0:9} | tr "[:upper:]" "[:lower:]")
+	[ "$Mac" == "$MAC" ] || Error "invalid $HV MAC address: $1"
+	[ "$(echo ${1:9} | sed 's|[^:]*||g')" == "::" ] || Error "invalid $HV MAC address: $1"
+	a=$(echo ${1:9} | sed 's|:||g;s|[^0-9a-fA-F]*||g')
+	[ ${#a} -eq 6 ] || Error "invalid $HV MAC address: $1"
+}
+
+# ~~~
+
+uflag=0 ; vflag=0 ; bflag=0 ; sflag=0 ; dflag=0 ; tflag=0 ; lflag=0 ; aflag=0 
+url=""
+
+# evaluate arguments
+args=`getopt -q -u -o c:r:a:o:u:i:p:s:b:e:m:R:v:xSVlLhdt -l connect:,ram:,arch:,os:,url:,iso:,path:,size:,bridge:,eth:,mac:,release:,video:,xen,virtio,sdl,sound,live,help,defaults,try -- "$@"`
+
+set -- $args
+for i; do
+	case "$i" in
+		-c|--connect)  shift; chkarg $1 ; host="$1" ; HYP="+ssh://$host/system" ; shift ;;
+		-r|--ram)      shift; chkarg $1 ; ram="$1" ; shift ;;
+		-a|--arch)     shift; chkarg $1 ; arch="$1" ; shift ;;
+		-o|--os)       shift; chkarg $1 ; ostype="$1" ; shift ;;
+		-i|--iso)      shift; chkarg $1 ; iso="$1" ; uflag=$(($uflag | 1)) ; shift ;;
+		-u|--url)      shift; chkarg $1 ; os="$1" ; uflag=$(($uflag | 2)) ; shift ;;
+		-p|--path)     shift; chkarg $1 ; imgpath="$1" ; shift ;;
+		-s|--size)     shift; chkarg $1 ; vmsize="$1" ; shift ;;
+		-b|--bridge)   shift; chkarg $1 ; br="$1"  ; bflag=1  ; shift ;;
+		-e|--eth)  	   shift; chkarg $1 ; nic="$1" ; shift ;;
+		-m|--mac)  	   shift; chkarg $1 ; mac="$1" ; shift ;;
+		-R|--release)  shift; chkarg $1 ; VER="$1" ; shift ;;
+		-v|--video)    shift; chkarg $1 ; video="$1" ; shift ;;
+		-x|--xen)      XEN=xen ; shift ;;
+		-V|--virtio)   vflag=1 ; shift ;;
+		-S|--sound)    aflag=1 ; shift ;;
+		-l|--sdl)  	   sflag=1 ; shift ;;
+		-L|--live) 	   lflag=1 ; shift ;;
+		-t|--try)      tflag=1 ; shift ;;
+		-d|--defaults) syntax -d ;;
+		-h|--help)     syntax ;;
+		--) shift ;    chkopt $1 ; vm=$1 ; shift ;;
+	esac
+done
+
+HV=${XEN:-${DEF_HYPERVISOR}}
+[ "$XEN" ] && hyp=${HV}///system
+[ "$HYP" ] && hyp=${HV}${HYP}
+hyp=${hyp:-$DEF_CONNECT}
+host=${host:-$HOSTNAME}
+ram=${ram:-$DEF_RAM}
+arch=${arch/i[456]/i3} ; arch=${arch/x86_/amd}
+arch=${arch:-$DEF_ARCH}
+ver=${os}_ver ; ver=${!ver}
+VER=${VER:-$ver}
+REL=${os}_rel ; REL=${!REL}
+MAC=${HV}_mac ; MAC=${!MAC}
+[ "$host" == "$HOSTNAME" ] || { rflag=1 ; iflag=1 ; SSH="ssh root@$host" ; }
+
+if [ $uflag -ge 3 ] ; then
+	Error "options --url and --iso are mutually exclusive."
+elif [ $uflag -ge 2 ] ; then
+	geturl $os
+elif [ $uflag -ge 1 ] ; then
+	[ "$rflag" ] && Error "remote install from a local iso is unsupported."
+	[ -f "$iso" ] && iso=" --cdrom=$iso" || Error "iso image $os not found."
+elif [ $uflag -ge 0 ] ; then
+	Error "No OS or iso image specified."
+fi
+
+# ~~~
+# OS and version
+[ "$os" ] && OSDESC=" ($os $VER)"
+desc="$vm$OSDESC - vm guest on host $host"
+
+# determine os variant from os name if option --os not given  
+[ "$ostype" ] || ostype=$os$VER
+[ "${OSTYPES%$ostype*}" == "$OSTYPES" ] && ostype=$os$VER
+[ "${OSTYPES%$ostype*}" == "$OSTYPES" ] && ostype=$(echo $os${OSTYPES##*$os} | sed 's| .*||')
+[ "${OSTYPES%$ostype*}" == "$OSTYPES" -a $vflag -gt 0 ] && ostype=virtio26  
+[ "${OSTYPES%$ostype*}" == "$OSTYPES" ] && ostype=$DEF_KERN  
+[ "ostype" ] || ostype=generic  
+
+arch=${arch/i3/i6} ; arch=${arch/amd/x86_}
+# ~~~
+# get size of vm 
+vmsize=${vmsize:-$DEF_VMSIZE}
+
+# get destination path,
+IMGPATH=${IMGPATH:-/var/lib/libvirt/images}
+imgpath=${imgpath:-$IMGPATH}
+
+if [ "$rflag" ] ; then
+	DISKOPTS=" --disk pool=default,size=$vmsize"
+else
+	# check if there is enough space to store image locally. 
+	hyp=$DEF_CONNECT
+	[ -d $imgpath ] || Error "Destination directory $imgpath doesn't exist."
+	[ $(($vmsize + 1)) -gt $(df -Phl $imgpath | awk '/G/ { sub(/G/,"", $4) ; print $4 }') ] && Error "Not enough space available on $imgpath" 
+	imgname=${imgpath}/${vm}.img
+	if [ $lflag -ge 1 ] ; then
+		DISKOPTS=" --nodisk"
+		[ $VIRTINST_VER -gt 5003 ] && BOOTOPTS=" --boot=cdrom"
+	else
+		DISKOPTS=" --disk path=${imgname},size=$vmsize"
+	fi
+fi
+
+# ~~~
+# networking 
+gw=${GATEWAY:-$GW}
+
+# which networking method to use
+if [ $bflag -eq 1 -o "$DEF_NETWORK" == "bridge" ] ; then
+	br=${br:-$DEF_BRIDGE}
+	nic=${nic:-$DEF_NIC}
+	# create bridge on localhost if needed
+	if [ "$rflag" ] ; then
+		if [ $tflag -eq 0 ] ; then
+			$SSH brctl show | grep -q "^$br[ 	]" || Error "bridge $br not present on host $host" 
+		fi
+	else
+		if [ "x$CREATEBRIDGE" == "x1" -a $tflag -eq 0 ] ; then
+			net=$(ifconfig $nic | awk '/inet addr/ { sub(/addr:/,"",$2) ; print $2 }')
+			brctl show | grep -q "^$br[ 	]" && echo "bridge $br already set" || createBridge $br $nic $net 
+		fi
+	fi
+	NETOPTS=" --network bridge=$br"
+else
+	# start virtual network (NAT) if needed
+	if [ "x$STARTVIRBR" == "x1" ] ; then
+		virsh -c $hyp net-list | grep -q 'active' || virsh -c $hyp net-start default
+		NETOPTS=" --network network=default" 
+	fi
+fi
+
+case $os in
+	openbsd) NETOPTS="$NETOPTS,model=e1000" ;;
+	netbsd)  NETOPTS="$NETOPTS,model=ne2k_pci" ; ACPI=" --noacpi" ; ostype=openbsd4 ;;
+	dflybsd) NETOPTS="$NETOPTS,model=e1000" ; ostype=freebsd7 ;;
+	opensuse) ostype=sles11 ;;
+esac
+
+[ "$ostype" ] && ostype=" --os-variant=$ostype"
+
+# get MAC address from option -m or /etc/ethers.
+[ "$mac" ] || mac=`$SSH grep $vm /etc/ethers 2>/dev/null | awk '{print $1}'`
+[ "$mac" ] && chkMAC $mac
+[ "$mac" ] && NETOPTS="$NETOPTS,mac=$mac"
+
+# ~~~
+# display and graphic adapter
+[ $sflag -eq 1 ] && DISPLAYOPTS=" --sdl"
+[ "$video" ] || video=$DEF_VIDEO
+[ $aflag -ge 1 ] && audio=" --soundhw=$DEF_AUDIO"
+
+# ~~~
+if [ $tflag -ge 1 ] ; then
+	printf "\nvirt-install --connect=$hyp --ram=$ram --arch=$arch --vcpus=$DEF_CPUS --video=$video${audio} --description=\"$desc\"${ostype}${url}${iso}${ACPI}${BOOTOPTS}${DISKOPTS}${NETOPTS}${DISPLAYOPTS} --name=$vm\n\n" | sed 's|--|\n--|g'
+else
+	virt-install --connect=$hyp --ram=$ram --arch=$arch --vcpus=$DEF_CPUS --video=$video${audio} --description="$desc"${ostype}${url}${iso}${ACPI}${BOOTOPTS}${DISKOPTS}${NETOPTS}${DISPLAYOPTS} --name=$vm
+fi

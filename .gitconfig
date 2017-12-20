@@ -46,7 +46,7 @@
   user = harleypig
 
 [transfer]
-  fsckobjects = true
+  #fsckobjects = true
 
 ##################################################################################
 

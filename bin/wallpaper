@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+
+# This script changes KDE's wallpaper.  It depends on the wdiget found at
+# http://kde-look.org/content/show.php?content=115147
+
+use strict;
+use warnings;
+
+use File::Find::Rule qw( :Type );
+use IPC::Run3;
+use List::AllUtils 'shuffle';
+
+my $seen = '/home/harleypig/bin/.seen_wallpaper';
+
+my @dirs = do {
+
+  my @cmd = qw( kde4-config --path wallpaper );
+  run3 \@cmd, undef, \my $out, \my $err;
+
+  die "Couldn't find path to images: $err\n" if $err;
+
+  chomp $out;
+
+  ( qw( /home/harleypig/Dropbox/wallpaper ), split /:/, $out );
+
+};
+
+my @seen = -e $seen ? do {
+
+  open my $SEEN, '<', $seen
+    or die "Unable to open $seen for reading: $!";
+
+  <$SEEN>;
+
+} : ();
+
+chomp @seen;
+
+@seen = do {
+
+  my %seen;
+  @seen{ @seen } = undef;
+  sort keys %seen;
+
+};
+
+my @pics = File::Find::Rule->type( 'image/*' )
+                           ->exec( sub { ! grep { /\Q$_[2]/ } @seen } )
+                           ->in( @dirs );
+
+die "Nothing seen, nothing found.  This is a problem.\n"
+  if @seen == 0 and @pics == 0;
+
+@seen = () if @pics < 2;
+
+push @seen, ( shuffle @pics )[0];
+
+open my $SEEN, '>', $seen
+  or die "Unable to open $seen for writing: $!\n";
+
+print $SEEN "$_\n" for @seen;
+print $seen[-1];

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+bucket="harleypig-dropbox"
+
+accessKey=$(grep access_key .s3cfg | cut -d ' ' -f 3)
+accessKeyId="-o accessKeyId=${accessKey}"
+
+secretKey=$(grep secret_key .s3cfg | cut -d ' ' -f 3)
+secretAccessKey="-o secretAccessKey=${secretKey}"
+
+mount="/home/harleypig/s3bucket"
+
+s3fs $bucket $accessKeyId $secretAccessKey $mount
