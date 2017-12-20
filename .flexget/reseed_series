@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# To re-seed the series database, do the following
+
+fg="$HOME/projects/flexget/bin/flexget"
+
+#-----------------------------------------------------------------------------------------------
+# Forget what shows we have tracked.
+
+readarray -t series < <($fg series list --porcelain | tail -n +3 | cut -d '|' -f 1 | sed 's/[[:space:]]*$//')
+
+for show in "${series[@]}"; do
+  $fg series forget "$show"
+done
+
+#-----------------------------------------------------------------------------------------------
+# Forget what we've seen as far as series is concerned
+
+readarray -t tasks < <($fg status --porcelain | grep '^tv_' | cut -d '|' -f 1 | sed 's/[[:space:]]*$//')
+
+for task in "${tasks[@]}"; do
+  [[ $task == 'tv_premieres' ]] && continue
+  $fg seen forget "$task"
+done
+
+#-----------------------------------------------------------------------------------------------
+# Discover what episodes already exists in the path(s) defined in sync-series in the config.
+
+$fg execute --task sync-series --learn --disable-tracking
+
+#-----------------------------------------------------------------------------------------------
+# Fill in the missing episodes (is there a way to limit this to one or some series?)
+
+$fg execute --task tv_backfill
