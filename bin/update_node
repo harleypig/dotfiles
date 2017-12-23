@@ -24,3 +24,5 @@ git tag | tail -n 1
   make $dash_j doc # this will build node first if needed
   make test $dash_j && sudo make install
 }
+
+set_title 'done_updating'

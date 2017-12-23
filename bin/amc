@@ -6,7 +6,7 @@
 # See the forum thread about the amc script:
 # https://www.filebot.net/forums/viewtopic.php?t=215
 
-FILEBOT="/usr/bin/filebot"
+FILEBOT=$(which filebot)
 PROGNAME=$(basename $0)
 
 BASE_DIR='/home/harleypig/videos'
@@ -47,7 +47,9 @@ OPTS="${OPTS} --log-file $LOGFILE"
 OPTS="${OPTS} --def excludeList=${EXCLUDE_FILE}"
 OPTS="${OPTS} --def @${OPTIONS_FILE}"
 OPTS="${OPTS} --def unsortedFormat=${BASE_DIR}/unsorted/{file.structurePathTail}"
-OPTS="${OPTS} --def minFileSize=41943040"
+#OPTS="${OPTS} --def minFileSize=41943040"
+#OPTS="${OPTS} --def minFileSize=10000000"
+OPTS="${OPTS} --def minFileSize=1000000"
 
 $FILEBOT $OPTS "$@" > /dev/null 2> $SCRIPTLOG
 #echo $FILEBOT $OPTS

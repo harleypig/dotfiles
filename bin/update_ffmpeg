@@ -24,3 +24,5 @@ git pull
   make $dash_j
   make check $dash_j && sudo make install
 }
+
+set_title 'done_updating'

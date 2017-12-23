@@ -9,3 +9,5 @@ PURGE='sudo apt purge'
 PURGE_RC=$(dpkg -l | awk '/^rc/ {print $2}')
 
 $UPDATE && $UPGRADE && $AUTOREMOVE && $PURGE "$PURGE_RC"
+
+set_title 'done_updating'

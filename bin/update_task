@@ -19,3 +19,5 @@ git pull
 cmake -DCMAKE_BUILD_TYPE=release .
 make
 make test && sudo make install
+
+set_title 'done_updating'
