@@ -32,6 +32,8 @@ bin/pip install --upgrade -r requirements.txt
 bin/python setup.py develop
 bin/pip install --upgrade -e .
 bin/flexget check || echo "Config did not pass check, see https://flexget.com/UpgradeActions for possible info."
+bin/flexget database cleanup
+bin/flexget database vacuum
 bin/flexget daemon start -d
 
 set_title 'done_updating'
