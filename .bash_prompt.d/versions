@@ -32,7 +32,7 @@ function __versions () {
   __JOIN[${#__JOIN[*]}]="Ruby ${rubyv}"
 
   separator=' | '
-  versionline=$(__join "$separator" "${__JOIN[@]}")
+  versionline=$(join_array "$separator" "${__JOIN[@]}")
   #versionline="${versionline//$separator/ $separator }"
 
   echo $versionline

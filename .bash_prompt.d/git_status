@@ -7,8 +7,8 @@
 git_normal_color=$text_green
 git_unstaged_color=$text_yellow
 git_staged_color=$text_red
-git_push_color=$(__ansi_code red_bg yellow_fg)
-git_pull_color=$(__ansi_code red_bg yellow_fg)
+git_push_color=$(ansi red_bg yellow_fg)
+git_pull_color=$(ansi red_bg yellow_fg)
 git_pull_text='PULL'
 git_push_text='PUSH'
 

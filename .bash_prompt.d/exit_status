@@ -31,7 +31,7 @@ function __exit_status() {
   done
 
   separator=' | '
-  statuscodes=$(__join "$separator" "${__JOIN[@]}")
+  statuscodes=$(join_array "$separator" "${__JOIN[@]}")
   #statuscodes="${statuscodes//$separator/ $separator }"
 
   echo $statuscodes

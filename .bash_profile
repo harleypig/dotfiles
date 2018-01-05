@@ -6,9 +6,26 @@
 #
 # See https://unix.stackexchange.com/a/154971/9032
 
-# We know this file exists, or else there's a real bad problem. Also, each of
-# these files will be shellchecked as well. Tell shellcheck to ignore this
-# problem.
-#
+########################################################################
+# Environment Variables
+
+export EDITOR=vim
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+if command -v pacman > /dev/null; then
+  command -v pacmatic > /dev/null 2>&1 && export PACMAN='pacmatic'
+fi
+
+if [[ -d "${HOME}/projects/go" ]]; then
+  export GOROOT="${HOME}/projects/go"
+  export GOPATH="${HOME}/.go"
+fi
+
+########################################################################################
+# This is for hman.
+export BROWSER='chromium-browser'
+
 # shellcheck disable=SC1090
 [[ -f $HOME/.bashrc ]] && source "$HOME/.bashrc"

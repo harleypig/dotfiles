@@ -6,6 +6,7 @@
 #
 # https://gist.github.com/chrismccoy/8775224
 # https://gitlab.com/mikegerwitz/git-shortmaps
+# https://github.com/scmbreeze/scm_breeze
 
 GIT=$(command -v git 2> /dev/null)
 

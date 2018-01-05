@@ -3,11 +3,7 @@
 ##################
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
 
-function tailfile() { tail -f $1 | xargs -IX printf "$(date -u)\t%s\n" X; }
-
-##################
-
-function wiki() { host -t txt $1.wp.gd.cx; }
+function tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
 
 ##################
 # XXX: Add a way to handle lang option (see http://sprunge.us)
@@ -19,18 +15,12 @@ function pastebinit() { "$@" | curl -F 'sprunge=<-' http://sprunge.us; }
 function down4me() { curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '/just you/!d;s/<[^>]*>//g'; }
 
 ##################
-# $ ? 3 \* 15
-# 45
-
-?() { echo "$*" | bc -l; }
-
-##################
 
 function geoip() {
 
-  wget -qO - www.ip2location.com/$1 |
-    grep -E '<span id=\"dgLookup__ctl2_lblI(Country|Region|City)\">' |
-    sed 's/<[^>]*>//g; s/^[\t]*//; s/&quot;/"/g; s/</</g; s/>/>/g; s/&amp;/\&/g'
+  wget -qO - "www.ip2location.com/$1" \
+    | grep -E '<span id=\"dgLookup__ctl2_lblI(Country|Region|City)\">' \
+    | sed 's/<[^>]*>//g; s/^[\t]*//; s/&quot;/"/g; s/</</g; s/>/>/g; s/&amp;/\&/g'
 
 }
 
@@ -41,7 +31,7 @@ function man2epub() {
   name=$1
 
   if command -v pandoc >/dev/null; then
-    zcat $(man -w $name) | man2html -r - | pandoc -f html -o $name.epub
+    zcat "$(man -w "$name")" | man2html -r - | pandoc -f html -o "$name.epub"
   else
     echo man2epub needs pandoc
   fi
@@ -77,9 +67,135 @@ function toggle_trace() {
 
 #####################
 # screen and tmux both recognize this
+# http://stackoverflow.com/questions/1687642/set-screen-title-from-shellscript/1687710#1687710
 
-function set_title() {
-  printf "\033k$1\033\\"
+# shellcheck disable=SC1003
+function set_title() { printf '\ek%s\e\\' "$1"; }
+export -f set_title
+
+#-----------------------------------------------------------------------
+# Some of these are found on (and modified to fit):
+#
+# superuser.com
+# commandlinefu.com
+
+# Change to directory and list it
+# shellcheck disable=SC2164
+function cdl() {
+  cd "$1"
+  l
 }
 
-export -f set_title
+export -f cdl
+
+# Make directory and cd to it
+# shellcheck disable=SC2164
+function mkcd() { mkdir -p -- "$@" && cd "$_"; }
+export -f mkcd
+
+######################################################################################
+# I don't remember where I found this. This allows for arbitrary sized arrays
+# and delimiters.
+
+# Example:
+#   join_array <delimiter> "${ARRAY[@]}"
+#   joined=$(join_array <delimiter> "${ARRAY[@]}"
+
+function join_array() {
+  local delim=$1
+  shift
+  printf '%s' "$1"
+  shift
+  printf '%s' "${@/#/$delim}"
+}
+
+export -f join_array
+
+# if __is_array_empty "${ARRAY[@]}"; then do stuff for empty array; fi
+function __is_array_empty() {
+  local is_empty=0
+  [[ ${#@} -ne 0 ]] && is_empty=1
+
+  #  if [ "${#@}" -ne 0 ]; then
+  #    is_empty=1
+  #  fi
+
+  return $is_empty
+
+}
+
+export -f __is_array_empty
+
+######################################################################################
+
+function __duration() {
+
+  local _date="$1"
+
+  local _seconds
+  _seconds=$(date --date="$_date" +%s)
+
+  local _now
+  _now=$(date +%s)
+
+  local _duration=$((_now - _seconds))
+  local _days=$((_duration / (60 * 60 * 24)))
+  local _hours=$((_duration % (60 * 60 * 24) / (60 * 60)))
+  local _minutes=$((_duration % (60 * 60) / 60))
+
+  local _string
+
+  if [[ $_days -ne 0 ]]; then
+    _string="$_string${_days}d "
+  fi
+
+  if [[ $_hours -ne 0 ]]; then
+    _string="$_string${_hours}h "
+  fi
+
+  if [[ $_minutes -ne 0 ]]; then
+    _string="$_string${_minutes}m "
+  fi
+
+  echo "$_string"
+
+}
+
+export -f __duration
+
+# Don't remember where I got this. Returns true if the current terminal can do
+# 256 colors, otherwise it returns false.
+can256() { [ "$(tput Co 2>/dev/null || tput colors 2>/dev/null || echo 0)" -gt 2 ]; }
+
+# bash-completion for aliases
+# https://unix.stackexchange.com/questions/4219/how-do-i-get-bash-completion-for-command-aliases
+# http://ubuntuforums.org/showthread.php?t=733397
+#
+# alias gco='git checkout'
+# make-completion-wrapper _git _git_checkout git checkout
+# complete -F _git_checkout gco
+#
+# This doesn't work. At least for git.
+#
+# See also:
+# https://stackoverflow.com/questions/342969/how-do-i-get-bash-completion-to-work-with-aliases
+
+# shellcheck disable=SC2124,2027
+function make-completion-wrapper() {
+  local function_name="$2"
+  local arg_count=$(($# - 3))
+  local comp_function_name="$1"
+  shift 2
+  local function="
+    function $function_name {
+      ((COMP_CWORD+=$arg_count))
+      COMP_WORDS=( $@ \${COMP_WORDS[@]:1} )
+      "$comp_function_name"
+      return 0
+    }"
+  eval "$function"
+  echo "$function_name"
+  echo "$function"
+}
+
+debug "Exiting ..."

@@ -25,7 +25,7 @@ REMOVE+=('*.url')
 REMOVE+=('*.website')
 REMOVE+=('*.xml')
 
-function __join {
+function join_array {
 
   local d=$1
   shift;
@@ -40,7 +40,7 @@ if cd $VIDEOS 2> /dev/null; then
   clear
   echo "Changed to ${PWD} ..."
 
-  iname="( -iname $(__join ' -o -iname ' "${REMOVE[@]}") )"
+  iname="( -iname $(join_array ' -o -iname ' "${REMOVE[@]}") )"
 
   echo "Deleting unwanted files ..."
   find $VIDEOS -type f $iname -delete

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-__debugit "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
+debug "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
 
 # Ideas ripped off and made to fit from:
 #   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
@@ -8,71 +8,25 @@ __debugit "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
 #   https://gist.github.com/621452
 #   https://gist.github.com/623142
 
-# TODO:
-
-#   Allow for arbitrary scripts to be run under certain conditions.  E.g.,
-#   directory change for location specific aliases.
-
-# Add ansiweather: https://github.com/fcambus/ansiweather
-
-# Bash allows these prompt strings to be customized by inserting a
-# number of backslash-escaped special characters that are
-# decoded as follows:
-#
-#  \a         an ASCII bell character (07)
-#  \d         the date in "Weekday Month Date" format (e.g., "Tue May 26")
-#  \D{format} the format is passed to strftime(3) and the result
-#             is inserted into the prompt string an empty format
-#             results in a locale-specific time representation.
-#             The braces are required
-#  \e         an ASCII escape character (033)
-#  \h         the hostname up to the first `.'
-#  \H         the hostname
-#  \j         the number of jobs currently managed by the shell
-#  \l         the basename of the shell's terminal device name
-#  \n         newline
-#  \r         carriage return
-#  \s         the name of the shell, the basename of $0 (the portion following
-#             the final slash)
-#  \t         the current time in 24-hour HH:MM:SS format
-#  \T         the current time in 12-hour HH:MM:SS format
-#  \@         the current time in 12-hour am/pm format
-#  \A         the current time in 24-hour HH:MM format
-#  \u         the username of the current user
-#  \v         the version of bash (e.g., 2.00)
-#  \V         the release of bash, version + patch level (e.g., 2.00.0)
-#  \w         the current working directory, with $HOME abbreviated with a tilde
-#  \W         the basename of the current working directory, with $HOME
-#             abbreviated with a tilde
-#  \!         the history number of this command
-#  \#         the command number of this command
-#  \$         if the effective UID is 0, a #, otherwise a $
-#  \nnn       the character corresponding to the octal number nnn
-#  \\         a backslash
-#  \[         begin a sequence of non-printing characters, which could be used
-#             to embed a terminal control sequence into the prompt
-#  \]         end a sequence of non-printing characters
-#
-#  The command number and the history number are usually different:
-#  the history number of a command is its position in the history
-#  list, which may include commands restored from the history file
-#  (see HISTORY below), while the command number is the position in
-#  the sequence of commands executed during the current shell session.
-#  After the string is decoded, it is expanded via parameter
-#  expansion, command substitution, arithmetic expansion, and quote
-#  removal, subject to the value of the promptvars shell option (see
-#  the description of the shopt command under SHELL BUILTIN COMMANDS
-#  below).
-
 declare -a __JOIN
 declare -a PROMPT
 
-__buildpath 'PROMPT_FUNCTIONS' "${BASH_SOURCE}" "/.bash_prompt.d/*"
-for f in $(ls $PROMPT_FUNCTIONS 2> /dev/null); do source $f; done
+__buildpath 'PROMPT_FUNCTIONS' "${BASH_SOURCE[0]}" "/.bash_prompt.d"
 
-prompt_color=$(__ansi_code cyan_fg)
+# shellcheck disable=SC1090
+for f in $PROMPT_FUNCTIONS; do source "$f"; done
 
-if [ $USER == 'root' ]; then
+# Setup ansi codes
+text_reset=$(ansi off)
+#text_green=$(ansi green_fg)
+text_red=$(ansi red_fg)
+text_yellow=$(ansi yellow_fg)
+text_cyan=$(ansi cyan_fg)
+
+prompt_color=$text_cyan
+
+if [ "$USER" == 'root' ]; then
+  # shellcheck disable=SC2154
   user_color=$text_red
 else
   user_color=$prompt_color
@@ -80,26 +34,42 @@ fi
 
 __update_prompt() {
 
-  local exit_status=$(__exit_status "${PIPESTATUS[@]}")
+  local exit_status
+  exit_status=$(__exit_status "${PIPESTATUS[@]}")
 
-  local cwd=$(__dir_readable)
-  local datetime="\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
-  #local dropbox=$(__dropbox_status)
-  local fbcmd=$(__fbcmd_status)
-  local pacman_status=$(__pacman_status)
-  local parent=$(__parent_process)
-  local vcs=$(__git_status)
-  local versionline=$(__versions)
+  local cwd
+  cwd=$(__dir_readable)
+
+  # '\D' is a format specifier for bash prompts. See bash manpage, PROMPTING section.
+  local datetime="\\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
+
+  #local dropbox
+  #dropbox=$(__dropbox_status)
+
+  #local fbcmd
+  #fbcmd=$(__fbcmd_status)
+
+  local pacman_status
+  pacman_status=$(__pacman_status)
+
+  local parent
+  parent=$(__parent_process)
+
+  local vcs
+  vcs=$(__git_status)
+
+  local versionline
+  versionline=$(__versions)
 
   # Info line
 
   unset __JOIN
-  __JOIN[${#__JOIN[*]}]="Uptime: \$(perl -ne 's/\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days" # uptime
+  __JOIN[${#__JOIN[*]}]="Uptime: \$(perl -ne 's/\\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days" # uptime
   __JOIN[${#__JOIN[*]}]="LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"                                # loadavg
   __JOIN[${#__JOIN[*]}]="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"            # freespace
 
   separator=' | '
-  infoline=$(__join "$separator" "${__JOIN[@]}")
+  infoline=$(join_array "$separator" "${__JOIN[@]}")
 #  infoline="${infoline//$separator/ $separator }"
 
   # Build the prompt
@@ -120,19 +90,20 @@ __update_prompt() {
   # Append the last command, clear the history cache and reread the history file
   PS1="\$(history -a ; history -c ; history -r)"
 
-  for p in "${PROMPT[@]}"; do PS1="${PS1}\n ${prompt_color}${p}${text_reset}"; done
+  for p in "${PROMPT[@]}"; do PS1="${PS1}\\n ${prompt_color}${p}${text_reset}"; done
 
-  [[ -n "${fbcmd}" ]] && PS1="${PS1}\n\n${fbcmd}${text_reset}"
+  #[[ -n "${fbcmd}" ]] && PS1="${PS1}\n\n${fbcmd}${text_reset}"
 
-  PS1="${PS1}\n\n${text_yellow}(tmux|ctl-a) new -s session_name | switch -t session_name | list-sessions${text_reset}"
-  PS1="${PS1}\n\n ${prompt_color}\u@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
-  PS1="${PS1}\n ${exit_status} $ "
+  PS1="${PS1}\\n\\n${text_yellow}(tmux|ctl-a) new -s session_name | switch -t session_name | list-sessions${text_reset}"
+  PS1="${PS1}\\n\\n ${user_color}\\u@${text_yellow}\\H${prompt_color}: ${cwd}${text_reset}${vcs}"
+  PS1="${PS1}\\n ${exit_status} $ "
 
-  export PS1
+  #export PS1
 
 }
 
-if [ -n "$PS1" ]; then export PROMPT_COMMAND='__update_prompt'; fi
+if [ -n "$PS1" ]; then PROMPT_COMMAND='__update_prompt'; fi
+#if [ -n "$PS1" ]; then export PROMPT_COMMAND='__update_prompt'; fi
 #export PROMPT_COMMAND=
 
-__debugit "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."
+debug "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."
