@@ -7,37 +7,31 @@
 function debug() {
   [[ ! -f ~/.dot_debug ]] && return 0
 
-  local datestamp filename function lineno prefix
+#  {
+#    printf '\nBASH_SOURCE'
+#    printf ' : %s' "${BASH_SOURCE[@]}"
+#    printf '\nFUNCNAME'
+#    printf ' : %s' "${FUNCNAME[@]}"
+#    printf '\nBASH_LINENO'
+#    printf ' : %s' "${BASH_LINENO[@]}"
+#    printf '\n'
+#  } >>"$HOME/.dotfiles.log"
+
+  local datestamp filename funcname lineno prefix
 
   datestamp=$(date +'[%Y%m%d %H:%M:%S]')
   filename=$(basename "${BASH_SOURCE[1]:-$0}")
   funcname="${FUNCNAME[1]}"
-  [[ $funcname == 'main' ]] && funcname='-'
   lineno="${BASH_LINENO[0]}"
 
-  prefix=$(printf '%s[%s:%s:%s]' "$datestamp" "$filename" "$function" "$lineno")
+  [[ $funcname =~ ^main|source$ ]] && funcname='not in func'
 
-  printf '%s: %s\n' "$prefix" "$*" >> "$HOME/.dotfiles.log"
+  prefix=$(printf '%s[%s:%s:%s]' "$datestamp" "$filename" "$funcname" "$lineno")
+
+  printf '%s: %s\n' "$prefix" "$*" >>"$HOME/.dotfiles.log"
 }
 
 export -f debug
-
-debug "After defining debug ..."
-
-########################################################################
-# Don't delete this, it's for figuring things out sometimes.
-
-if [[ $- == *i* ]]; then
-  debug "We are interactive ..."
-else
-  debug "We are *not* interactive ..."
-fi
-
-if shopt -q login_shell; then
-  debug "We are in a login shell ..."
-else
-  debug "We are *not* in a login shell ..."
-fi
 
 #-----------------------------------------------------------------------
 # Determines the fully qualified path of a file and sets $1 to the path.
@@ -64,11 +58,16 @@ export -f realpath
 #-----------------------------------------------------------------------
 # Sources all files found in $1.
 function source_dir() {
-  debug "Loading files in $1 ..."
+  local dir="$1"
 
-  #local -a files
-  #files=$(find "$1" -type f)
-  readarray -t files < <(find "$1" -type f)
+  [[ ! -d $dir ]] && {
+    debug "$dir does not exist or is not a directory"
+    return
+  }
+
+  debug "Loading files in $dir ..."
+
+  readarray -t files < <(find "$dir" -type f)
 
   for s in "${files[@]}"; do
     debug "Sourcing $s ..."
@@ -78,4 +77,3 @@ function source_dir() {
 }
 
 export -f source_dir
-

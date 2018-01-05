@@ -1,6 +1,7 @@
 #!/bin/bash
 
-debug "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
+debug "Entering ..."
+debug ".bash_dir: $DOT_BASH_DIR"
 
 # Ideas ripped off and made to fit from:
 #   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
@@ -11,17 +12,15 @@ debug "${BASH_SOURCE#$HOME/}:$LINENO Entering ..."
 declare -a __JOIN
 declare -a PROMPT
 
-__buildpath 'PROMPT_FUNCTIONS' "${BASH_SOURCE[0]}" "/.bash_prompt.d"
-
-# shellcheck disable=SC1090
-for f in $PROMPT_FUNCTIONS; do source "$f"; done
+# shellcheck disable=SC1091
+source_dir "$DOT_BASH_DIR/.bash_prompt.d"
 
 # Setup ansi codes
-text_reset=$(ansi off)
-#text_green=$(ansi green_fg)
-text_red=$(ansi red_fg)
-text_yellow=$(ansi yellow_fg)
-text_cyan=$(ansi cyan_fg)
+#text_reset=$(ansi off)
+##text_green=$(ansi green_fg)
+#text_red=$(ansi red_fg)
+#text_yellow=$(ansi yellow_fg)
+##text_cyan=$(ansi cyan_fg)
 
 prompt_color=$text_cyan
 

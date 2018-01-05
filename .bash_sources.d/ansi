@@ -14,7 +14,7 @@
 
 if ! declare -A ansi_code > /dev/null 2>&1; then
 
-  function __ansi_code() {
+  function ansi() {
 
     declare -a codes
 
@@ -102,7 +102,7 @@ else
   ansi_code[cyan_bg]=$(tput setab 6)
   ansi_code[white_bg]=$(tput setab 7)
 
-  function __ansi_code() {
+  function ansi() {
 
     declare -a codes
 
@@ -131,13 +131,15 @@ else
 
 fi
 
-# Create some commonly used codes
-text_reset=$(__ansi_code off)
+export -f ansi
 
-text_green=$(__ansi_code green_fg)
-text_red=$(__ansi_code red_fg)
-text_yellow=$(__ansi_code yellow_fg)
-text_cyan=$(__ansi_code cyan_fg)
+# Create some commonly used codes
+text_reset=$(ansi off)
+
+text_green=$(ansi green_fg)
+text_red=$(ansi red_fg)
+text_yellow=$(ansi yellow_fg)
+text_cyan=$(ansi cyan_fg)
 
 # http://mywiki.wooledge.org/BashFAQ/037
 

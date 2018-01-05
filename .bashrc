@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Look into
-#   https://gist.github.com/goodmami/6556701
-#   https://github.com/deanrather/bash-logger/blob/master/bash-logger.sh
-# as a way to log to syslog.
-
 if ! [ -f "$HOME/.bash_functions" ]; then
   echo "$HOME/.bash_functions does not exist"
   exit 1
@@ -33,24 +28,44 @@ fi
 
 ########################################################################
 
-if [[ $- != *i* ]]; then
-  # non-interactive shell, nothing else to do.
-  debug "Non-interactive shell, done."
-  return
-fi
+# .bash_* (aside from .bash_prompt and .bashrc) are expected to be in whatever
+# directory the repo is in. .bash_prompt and .bashrc should be linked to the
+# same place, so DOT_BASH_DIR will be used for sourcing support files.
 
+DOT_BASH_DIR=$(dirname "$(realpath "$HOME/.bash_profile")")
+debug ".bash_dir: $DOT_BASH_DIR"
+
+########################################################################
 debug "Setting up shell options ..."
 
-# Check in a lookup table for a command before searching the path.
-#   force a rescan for one or more commands: hash -d command command ...
-#   force a complete rescan: hash -r
+CDPATH="."
+PROMPT_DIRTRIM=2
+HISTCONTROL="erasedups:ignoreboth"
+HISTFILESIZE=100000
+HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
+HISTSIZE=500000
+HISTTIMEFORMAT='%F %T '
+
+bind "set completion-ignore-case on"
+bind "set completion-map-case on"
+bind "set mark-symlinked-directories on"
+bind "set show-all-if-ambiguous on"
+bind Space:magic-space
+
+shopt -s autocd 2> /dev/null
+shopt -s cdable_vars
+shopt -s cdspell 2> /dev/null
 shopt -s checkhash
-
-# Update the window/terminal size variables after each command.
 shopt -s checkwinsize
-
+shopt -s cmdhist
+shopt -s dirspell 2> /dev/null
 shopt -s dotglob
+shopt -s globstar 2> /dev/null
+shopt -s histappend
+shopt -s histreedit
+shopt -s histverify
 shopt -s nocaseglob
+shopt -s nocaseglob;
 
 umask 022
 
@@ -67,7 +82,6 @@ declare -a FILES
 # Order matters, don't mess with the order.
 FILES+=('/etc/bash_completion')
 FILES+=('/etc/profile.d/bash-completion')
-FILES+=("$HOME/.bash_prompt")
 FILES+=('/.travis/travis.sh')
 FILES+=('/usr/share/nvm/init-nvm.sh')
 FILES+=('.task/completion/task-completion.sh')
@@ -90,40 +104,34 @@ command -v npm > /dev/null 2>&1 && source <(npm completion)
 [[ -f $HOME/bin/tokens ]] && source "$HOME/bin/tokens"
 
 ########################################################################################
-# Load application specific files.
+# Setup prompt command
 
-source_files="$(realpath "${BASH_SOURCE[0]}")/.bash_sources.d"
-debug "source_files: $source_files"
+# shellcheck disable=SC1090
+source "$DOT_BASH_DIR/.bash_prompt"
+
+########################################################################################
+# Load source files
 
 # shellcheck disable=SC1091
-source source_dir "$SOURCES"
+source_dir "$DOT_BASH_DIR/.bash_sources.d"
 
 ########################################################################################
 # Source any files we find in our host specific directory
 
-host_sources="$(realpath "${BASH_SOURCE[0]}")/$HOSTNAME"
-debug "host_sources: $host_sources"
-
 # shellcheck disable=SC1091
-source source_dir "$host_sources"
+source_dir "$DOT_BASH_DIR/$HOSTNAME"
 
 ########################################################################################
 # Source any local files
 
-local_files="$HOME/.bash_local"
-debug "local_files: $local_files"
-
 # shellcheck disable=SC1091
-source source_dir "$local_files"
+source_dir "$HOME/.bash_local"
 
 ########################################################################################
 # Source sekrets.
 
-sekret_files="$HOME/.sekrets"
-debug "sekret_files: $sekret_files"
-
 # shellcheck disable=SC1091
-source source_dir "$sekret_files"
+source_dir "$HOME/.sekrets"
 
 ########################################################################
 # PATH setup
@@ -155,7 +163,7 @@ BIN_DIRS="${BIN_DIRS} ${GOPATH}/bin"
 
 for d in $BIN_DIRS; do
 
-  realpath 'dir' "$d"
+  dir=$(realpath "$d")
 
   # shellcheck disable=SC2154
   if [[ -d $dir ]] && [[ $PATH != *"$dir"* ]]; then
@@ -167,4 +175,3 @@ PATH="${PATH}:."
 export PATH
 
 debug "Exiting ..."
-

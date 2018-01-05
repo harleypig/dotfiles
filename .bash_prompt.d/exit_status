@@ -5,8 +5,8 @@
 good_exit_text=':)'
 bad_exit_text=':('
 
-good_exit_color=$(__ansi_code blue_bg yellow_fg)
-bad_exit_color=$(__ansi_code red_bg white_fg)
+good_exit_color=$(ansi blue_bg yellow_fg)
+bad_exit_color=$(ansi red_bg white_fg)
 
 function __exit_status() {
 
