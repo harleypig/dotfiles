@@ -104,16 +104,16 @@ command -v npm > /dev/null 2>&1 && source <(npm completion)
 [[ -f $HOME/bin/tokens ]] && source "$HOME/bin/tokens"
 
 ########################################################################################
-# Setup prompt command
-
-# shellcheck disable=SC1090
-source "$DOT_BASH_DIR/.bash_prompt"
-
-########################################################################################
 # Load source files
 
 # shellcheck disable=SC1091
 source_dir "$DOT_BASH_DIR/.bash_sources.d"
+
+########################################################################################
+# Setup prompt command
+
+# shellcheck disable=SC1090
+source "$DOT_BASH_DIR/.bash_prompt"
 
 ########################################################################################
 # Source any files we find in our host specific directory
