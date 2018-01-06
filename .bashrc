@@ -11,7 +11,7 @@ source "$HOME/.bash_functions"
 
 debug "After loading functions ..."
 
-########################################################################
+#---------------------------------------------------------------------------------------
 # Don't delete this, it's for figuring things out sometimes.
 
 if [[ $- == *i* ]]; then
@@ -26,7 +26,7 @@ else
   debug "We are *not* in a login shell ..."
 fi
 
-########################################################################
+#---------------------------------------------------------------------------------------
 
 # .bash_* (aside from .bash_prompt and .bashrc) are expected to be in whatever
 # directory the repo is in. .bash_prompt and .bashrc should be linked to the
@@ -35,7 +35,7 @@ fi
 DOT_BASH_DIR=$(dirname "$(realpath "$HOME/.bash_profile")")
 debug ".bash_dir: $DOT_BASH_DIR"
 
-########################################################################
+#---------------------------------------------------------------------------------------
 debug "Setting up shell options ..."
 
 CDPATH="."
@@ -69,7 +69,7 @@ shopt -s nocaseglob;
 
 umask 022
 
-########################################################################################
+#---------------------------------------------------------------------------------------
 # Simple check and source lines
 
 # shellcheck disable=SC1090
@@ -103,37 +103,37 @@ command -v npm > /dev/null 2>&1 && source <(npm completion)
 # shellcheck disable=SC1090
 [[ -f $HOME/bin/tokens ]] && source "$HOME/bin/tokens"
 
-########################################################################################
+#---------------------------------------------------------------------------------------
 # Load source files
 
 # shellcheck disable=SC1091
 source_dir "$DOT_BASH_DIR/.bash_sources.d"
 
-########################################################################################
+#---------------------------------------------------------------------------------------
 # Setup prompt command
 
 # shellcheck disable=SC1090
 source "$DOT_BASH_DIR/.bash_prompt"
 
-########################################################################################
+#---------------------------------------------------------------------------------------
 # Source any files we find in our host specific directory
 
 # shellcheck disable=SC1091
 source_dir "$DOT_BASH_DIR/$HOSTNAME"
 
-########################################################################################
+#---------------------------------------------------------------------------------------
 # Source any local files
 
 # shellcheck disable=SC1091
 source_dir "$HOME/.bash_local"
 
-########################################################################################
+#---------------------------------------------------------------------------------------
 # Source sekrets.
 
 # shellcheck disable=SC1091
 source_dir "$HOME/.sekrets"
 
-########################################################################
+#---------------------------------------------------------------------------------------
 # PATH setup
 
 # Run this last to allow for other stuff above modifying the path

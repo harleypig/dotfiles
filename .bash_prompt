@@ -15,21 +15,17 @@ declare -a PROMPT
 # shellcheck disable=SC1091
 source_dir "$DOT_BASH_DIR/.bash_prompt.d"
 
-# Setup ansi codes
-#text_reset=$(ansi off)
-##text_green=$(ansi green_fg)
-#text_red=$(ansi red_fg)
-#text_yellow=$(ansi yellow_fg)
-##text_cyan=$(ansi cyan_fg)
-
-prompt_color=$text_cyan
+prompt_color=$(ansi cyan_fg)
 
 if [ "$USER" == 'root' ]; then
   # shellcheck disable=SC2154
-  user_color=$text_red
+  user_color=$(ansi red_fg)
 else
-  user_color=$prompt_color
+  user_color=$(ansi cyan_fg)
 fi
+
+text_reset=$(ansi off)
+text_yellow=$(ansi yellow_fg)
 
 __update_prompt() {
 
