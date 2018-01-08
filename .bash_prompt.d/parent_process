@@ -1,22 +1,16 @@
+#!/bin/bash
+
 function __parent_process() {
 
   local parents
 
-  parents=$(pstree -sA $PPID 2> /dev/null)
-
-  if [ $? -eq 0 ]; then
-    parents=$(pstree -A $PPID 2> /dev/null)
-  fi
+  parents=$(pstree -A $PPID 2> /dev/null) || { return 1 ; }
 
   parents=${parents/%-+*/}
-  parents=${parents//bash---/}
-  parents=${parents/systemd---slim---openbox---}
-  parents=${parents/%---pstree/}
-  parents=${parents//---/ : }
   parents=${parents//tmux/}
+  parents=${parents//---bash/}
+  parents=${parents//---pstree/}
 
-  if [[ -n $parents ]]; then
-    echo "${text_red}${text_blink}(${parents})${text_reset} "
-  fi
+  [[ -n $parents ]] && printf '\[%s\](%s)\[%s\]' "$(ansi fg bright_yellow bg red)" "$parents" "$(ansi off)"
 
 }

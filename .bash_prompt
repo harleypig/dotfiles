@@ -1,7 +1,6 @@
 #!/bin/bash
 
 debug "Entering ..."
-debug ".bash_dir: $DOT_BASH_DIR"
 
 # Ideas ripped off and made to fit from:
 #   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
@@ -9,23 +8,22 @@ debug ".bash_dir: $DOT_BASH_DIR"
 #   https://gist.github.com/621452
 #   https://gist.github.com/623142
 
-declare -a __JOIN
-declare -a PROMPT
-
 # shellcheck disable=SC1091
 source_dir "$DOT_BASH_DIR/.bash_prompt.d"
 
-prompt_color=$(ansi cyan_fg)
+# Setup color variables
+# shellcheck disable=SC1117
+{
+  if [ "$USER" == 'root' ]; then
+    user_color="\[$(ansi fg bright_red)\]"
+  else
+    user_color="\[$(ansi fg bright_cyan)\]"
+  fi
 
-if [ "$USER" == 'root' ]; then
-  # shellcheck disable=SC2154
-  user_color=$(ansi red_fg)
-else
-  user_color=$(ansi cyan_fg)
-fi
-
-text_reset=$(ansi off)
-text_yellow=$(ansi yellow_fg)
+  prompt_color="\[$(ansi fg cyan)\]"
+  text_reset="\[$(ansi off)\]"
+  text_yellow="\[$(ansi fg yellow)\]"
+}
 
 __update_prompt() {
 
@@ -36,13 +34,7 @@ __update_prompt() {
   cwd=$(__dir_readable)
 
   # '\D' is a format specifier for bash prompts. See bash manpage, PROMPTING section.
-  local datetime="\\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}"
-
-  #local dropbox
-  #dropbox=$(__dropbox_status)
-
-  #local fbcmd
-  #fbcmd=$(__fbcmd_status)
+  local datetime='\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}'
 
   local pacman_status
   pacman_status=$(__pacman_status)
@@ -56,49 +48,24 @@ __update_prompt() {
   local versionline
   versionline=$(__versions)
 
-  # Info line
+  local sysinfo
+  sysinfo=$(__sysinfo)
 
-  unset __JOIN
-  __JOIN[${#__JOIN[*]}]="Uptime: \$(perl -ne 's/\\s.*\$//;printf\"%.2f\",\$_/(60*60*24)' /proc/uptime) days" # uptime
-  __JOIN[${#__JOIN[*]}]="LoadAvg: \$(cat /proc/loadavg | cut -d ' ' -f 1-3)"                                # loadavg
-  __JOIN[${#__JOIN[*]}]="\$(df -hP . | grep -v 'Avail' | tr -s ' ' | cut -d ' ' -f 4) available"            # freespace
-
-  separator=' | '
-  infoline=$(join_array "$separator" "${__JOIN[@]}")
-#  infoline="${infoline//$separator/ $separator }"
-
-  # Build the prompt
-
-  unset PROMPT
-  PROMPT[${#PROMPT[*]}]="${parent}${prompt_color}${datetime}"
-  PROMPT[${#PROMPT[*]}]="${infoline}"
-  PROMPT[${#PROMPT[*]}]="${versionline}"
-  PROMPT[${#PROMPT[*]}]="${pacman_status}"
-
-  #[[ -n $dropbox ]] && PROMPT[${#PROMPT[*]}]="${dropbox}"
-
-# Need to handle this better
-#  HOSTSPECIFIC="$(__basedir ~/.bash_prompt)/hostspecific/$(hostname)"
-#  SOURCE="$(ls ${HOSTSPECIFC}/*prompt* 2> /dev/null)"
-#  for s in ${SOURCE}; do source $s; done
-
-  # Append the last command, clear the history cache and reread the history file
-  PS1="\$(history -a ; history -c ; history -r)"
-
-  for p in "${PROMPT[@]}"; do PS1="${PS1}\\n ${prompt_color}${p}${text_reset}"; done
-
-  #[[ -n "${fbcmd}" ]] && PS1="${PS1}\n\n${fbcmd}${text_reset}"
-
-  PS1="${PS1}\\n\\n${text_yellow}(tmux|ctl-a) new -s session_name | switch -t session_name | list-sessions${text_reset}"
-  PS1="${PS1}\\n\\n ${user_color}\\u@${text_yellow}\\H${prompt_color}: ${cwd}${text_reset}${vcs}"
-  PS1="${PS1}\\n ${exit_status} $ "
-
-  #export PS1
-
+  # Build the prompt.
+  # shellcheck disable=SC1117
+  {
+    # Append the last command, clear the history cache and reread the history file
+    PS1='$(ansi off)$(history -a ; history -c ; history -r)'
+    PS1+="\n${parent}${parent:+ }${prompt_color}${datetime}"
+    PS1+="\n${sysinfo}"
+    PS1+="\n${versionline}"
+    PS1+="\n${pacman_status}"
+    #PS1+="\n\n${text_yellow}(tmux|ctl-a) new -s session_name | switch -t session_name | list-sessions${text_reset}"
+    PS1+="\n${user_color}\u${prompt_color}@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
+    PS1+="\n${exit_status} $ "
+  }
 }
 
-if [ -n "$PS1" ]; then PROMPT_COMMAND='__update_prompt'; fi
-#if [ -n "$PS1" ]; then export PROMPT_COMMAND='__update_prompt'; fi
-#export PROMPT_COMMAND=
+[[ -n "$PS1" ]] && PROMPT_COMMAND='__update_prompt'
 
-debug "${BASH_SOURCE#$HOME/}:$LINENO Exiting ..."
+debug "Exiting ..."

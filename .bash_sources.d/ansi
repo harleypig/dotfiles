@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# shellcheck disable=SC1117
+
 # Peruse /usr/share/doc/xterm/*
 
 # https://github.com/fidian/ansi has some good ideas, and some interesting
@@ -6,149 +10,98 @@
 
 # http://wiki.bash-hackers.org/scripting/terminalcodes
 
-# Build an ansi code sequence string for use in a prompt.
-# Expects one or more strings indicating what attributes and colors to use.
-# It's up to the caller to make sure the right order and valid keys are used.
+# Convert rgb (0-255 0-255 0-255) to 8-bit 0-255
+# XXX: Figure out how to do hex
 
-#TPUT=$(command -f tput)
+# CF=6/256
+# 8bit=$(( 16 + (($1 * $CF) * 36) + (($2 * $CF) * 6) + ($3 * $CF) ))
 
-if ! declare -A ansi_code > /dev/null 2>&1; then
+declare -xA ansi_code
 
-  function ansi() {
+function ansi() {
+  local key="$*"
+  key="${key// /_}"
+  debug "key: $key"
 
-    declare -a codes
-
-    while [ "${1+defined}" ]; do
-
-      case $1 in
-
-                 'bold') codes[${#codes[*]}]=$(tput bold) ;;
-                  'dim') codes[${#codes[*]}]=$(tput dim) ;;
-                  'off') codes[${#codes[*]}]=$(tput sgr0) ;;
-         'underline_on') codes[${#codes[*]}]=$(tput smul) ;;
-        'underline_off') codes[${#codes[*]}]=$(tput rmul) ;;
-              'reverse') codes[${#codes[*]}]=$(tput rev) ;;
-            'stdout_on') codes[${#codes[*]}]=$(tput smso) ;;
-           'stdout_off') codes[${#codes[*]}]=$(tput rmso) ;;
-             'black_fg') codes[${#codes[*]}]=$(tput setaf 0) ;;
-               'red_fg') codes[${#codes[*]}]=$(tput setaf 1) ;;
-             'green_fg') codes[${#codes[*]}]=$(tput setaf 2) ;;
-            'yellow_fg') codes[${#codes[*]}]=$(tput setaf 3) ;;
-              'blue_fg') codes[${#codes[*]}]=$(tput setaf 4) ;;
-            'purple_fg') codes[${#codes[*]}]=$(tput setaf 5) ;;
-              'cyan_fg') codes[${#codes[*]}]=$(tput setaf 6) ;;
-             'white_fg') codes[${#codes[*]}]=$(tput setaf 7) ;;
-             'black_bg') codes[${#codes[*]}]=$(tput setab 0) ;;
-               'red_bg') codes[${#codes[*]}]=$(tput setab 1) ;;
-             'green_bg') codes[${#codes[*]}]=$(tput setab 2) ;;
-            'yellow_bg') codes[${#codes[*]}]=$(tput setab 3) ;;
-              'blue_bg') codes[${#codes[*]}]=$(tput setab 4) ;;
-            'purple_bg') codes[${#codes[*]}]=$(tput setab 5) ;;
-              'cyan_bg') codes[${#codes[*]}]=$(tput setab 6) ;;
-             'white_bg') codes[${#codes[*]}]=$(tput setab 7) ;;
-
-      esac
-
-      shift
-
-    done
-
-    local code
-
-    SAVE_IFS=$IFS
-    IFS=''
-    code="${codes[*]}"
-    IFS=$SAVE_IFS
-
-    printf '\[%s\]' $code
-
+  [[ -v ansi_code[$key] ]] && {
+    debug "found key: $key"
+    printf '%s' "${ansi_code[$key]}"
+    return
   }
 
-else
+  # convert convenience values to what tput understands
 
-  ansi_code[bold]=$(tput bold)
-  ansi_code[dim]=$(tput dim)
-  ansi_code[off]=$(tput sgr0)
-  ansi_code[underline_on]=$(tput smul)
-  ansi_code[underline_off]=$(tput rmul)
-  ansi_code[reverse]=$(tput rev)
-  ansi_code[stdout_on]=$(tput smso)
-  ansi_code[stdout_off]=$(tput rmso)
+  local -A color
 
-  # 0 = black
-  # 1 = red
-  # 2 = green
-  # 3 = yellow
-  # 4 = blue
-  # 5 = purple
-  # 6 = cyan
-  # 7 = white
+  color[black]=0
+  color[red]=1
+  color[green]=2
+  color[yellow]=3
+  color[blue]=4
+  color[purple]=5
+  color[cyan]=6
+  color[white]=7
+  color[bright_black]=8
+  color[bright_red]=9
+  color[bright_green]=11
+  color[bright_yellow]=11
+  color[bright_blue]=12
+  color[bright_purple]=13
+  color[bright_cyan]=14
+  color[bright_white]=15
 
-  ansi_code[black_fg]=$(tput setaf 0)
-  ansi_code[red_fg]=$(tput setaf 1)
-  ansi_code[green_fg]=$(tput setaf 2)
-  ansi_code[yellow_fg]=$(tput setaf 3)
-  ansi_code[blue_fg]=$(tput setaf 4)
-  ansi_code[purple_fg]=$(tput setaf 5)
-  ansi_code[cyan_fg]=$(tput setaf 6)
-  ansi_code[white_fg]=$(tput setaf 7)
+  local seq
 
-  ansi_code[black_bg]=$(tput setab 0)
-  ansi_code[red_bg]=$(tput setab 1)
-  ansi_code[green_bg]=$(tput setab 2)
-  ansi_code[yellow_bg]=$(tput setab 3)
-  ansi_code[blue_bg]=$(tput setab 4)
-  ansi_code[purple_bg]=$(tput setab 5)
-  ansi_code[cyan_bg]=$(tput setab 6)
-  ansi_code[white_bg]=$(tput setab 7)
+  while [ $# -ge 1 ]; do
+    case $1 in
+               bell) debug 'bell'          ; seq+=$(tput bel)  ;;
+        italics_off) debug 'italics_off'   ; seq+=$(tput ritm) ;;
+         italics_on) debug 'italics_on'    ; seq+=$(tput sitm) ;;
+                off) debug 'off'           ; seq+=$(tput sgr0) ;;
+            reverse) debug 'reverse'       ; seq+=$(tput rev)  ;;
+         stdout_off) debug 'stdout_off'    ; seq+=$(tput rmso) ;;
+          stdout_on) debug 'stdout_on'     ; seq+=$(tput smso) ;;
+      underline_off) debug 'underline_off' ; seq+=$(tput rmul) ;;
+       underline_on) debug 'underline_on'  ; seq+=$(tput smul) ;;
 
-  function ansi() {
+      fg)
+        shift
+        c=$1
+        [[ -v color[$c] ]] && c=${color[$c]}
+        debug "fg $c"
+        seq+=$(tput setaf $c)
+        ;;
 
-    declare -a codes
+      bg)
+        shift
+        c=$1
+        [[ -v ${color[$c]} ]] && c=${color[$c]}
+        debug "bg $c"
+        seq+=$(tput setab $c)
+        ;;
 
-    while [ "${1+defined}" ]; do
+      *) debug "*: $1" ; seq+=$(tput "$2") ;;
+    esac
 
-      if [ -n ${ansi_code[$1]} ]; then
+    shift
+  done
 
-        codes[${#codes[*]}]="${ansi_code[$1]}"
-
-      fi
-
-      shift
-
-    done
-
-    local code
-
-    SAVE_IFS=$IFS
-    IFS=''
-    code="${codes[*]}"
-    IFS=$SAVE_IFS
-
-    printf '\[%s\]' $code
-
-  }
-
-fi
+  debug "adding key: $key"
+  ansi_code[$key]="$seq"
+  printf '%s' "${ansi_code[key]}"
+  return
+}
 
 export -f ansi
 
-# Create some commonly used codes
-text_reset=$(ansi off)
-
-text_green=$(ansi green_fg)
-text_red=$(ansi red_fg)
-text_yellow=$(ansi yellow_fg)
-text_cyan=$(ansi cyan_fg)
-
 # http://mywiki.wooledge.org/BashFAQ/037
 
-colors256() {
+function colors256() {
   local c i j
 
   printf "Standard 16 colors\n"
   for ((c = 0; c < 17; c++)); do
-    printf "|%s%3d%s" "$(tput setaf "$c")" "$c" "$(tput sgr0)"
+    printf "|%s%3d%s" "$(ansi fg "$c")" "$c" "$(ansi off)"
   done
   printf "|\n\n"
 
@@ -156,14 +109,16 @@ colors256() {
   for ((c = 16, i = j = 0; c < 232; c++, i++)); do
     printf "|"
     ((i > 5 && (i = 0, ++j))) && printf " |"
-    ((j > 5 && (j = 0, 1)))   && printf "\b \n|"
-    printf "%s%3d%s" "$(tput setaf "$c")" "$c" "$(tput sgr0)"
+    ((j > 5 && (j = 0, 1))) && printf "\b \n|"
+    printf "%s%3d%s" "$(ansi fg "$c")" "$c" "$(ansi off)"
   done
   printf "|\n\n"
 
   printf "Greyscale 232 to 255 for 256 colors\n"
-  for ((; c < 256; c++)); do
-    printf "|%s%3d%s" "$(tput setaf "$c")" "$c" "$(tput sgr0)"
+  for (( ; c < 256; c++)); do
+    printf "|%s%3d%s" "$(ansi fg "$c")" "$c" "$(ansi off)"
   done
   printf "|\n"
 }
+
+export -f colors256
