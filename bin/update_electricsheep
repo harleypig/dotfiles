@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# wxWidgets
+cd ~/projects/electricsheep/wxWidgets || {
+  echo "Can't change to wxwidgets directory."
+  set_title "ERROR"
+  exit 1
+}
+
+set_title "$(basename "$0")_wxwidgets"
+
+git clean -xf
+git fetch --tags --all
+git pull
+git submodule update --init
+./autogen.sh
+./configure --with-x11
+make -j $(($(nproc)-1))
+sudo make install
+sudo ldconfig
+
+# flam3
+# Can't get it to work.
+
+# electricsheep
+cd ~/projects/electricsheep/electricsheep/client_generic || {
+  echo "Can't change to electricsheep directory."
+  set_title "ERROR"
+  exit 1
+}
+
+set_title "$(basename "$0")_electricsheep"
+
+git clean -xf
+git fetch --tags --all
+git pull
+git submodule update --init
+./autogen.sh
+./configure
+make -j $(($(nproc)-1))
+sudo make install
+
+set_title "done_updating"

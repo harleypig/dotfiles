@@ -11,8 +11,11 @@ if [ "$taskpath" != '' ]; then
 
     $taskpath "$@"
 
-    if task commands | grep -Eq "$1|$2\s.*RW"; then
-      $taskpath sync
+    if task _show | grep -q taskd.server; then
+      # shellcheck disable=SC1117
+      if task commands | grep -Eq "$1|$2\s.*RW"; then
+        $taskpath sync
+      fi
     fi
 
   }

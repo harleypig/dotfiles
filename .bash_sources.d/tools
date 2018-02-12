@@ -113,18 +113,13 @@ export -f join_array
 
 # if __is_array_empty "${ARRAY[@]}"; then do stuff for empty array; fi
 function __is_array_empty() {
-  local is_empty=0
-  [[ ${#@} -ne 0 ]] && is_empty=1
-
-  #  if [ "${#@}" -ne 0 ]; then
-  #    is_empty=1
-  #  fi
-
-  return $is_empty
-
+  [[ ${#@} -ne 0 ]] && return 1
+  return 0
 }
 
 export -f __is_array_empty
+
+# See http://www.fvue.nl/wiki/Bash:_Check_if_array_element_exists
 
 ######################################################################################
 
