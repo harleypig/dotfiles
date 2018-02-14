@@ -1,2 +1,188 @@
 .aptitude/cache
 .flexget/cached_resources/
+
+# re-evaluate
+.local/share/akonadi/*
+.local/share/akonadi_migration_agent/*
+.local/share/applications/*
+.local/share/buku/*
+.local/share/cinnamon/*
+.local/share/Colossal Order/*
+.local/share/contacts/*
+.local/share/data/*
+.local/share/desktop-directories/*
+.local/share/gegl-0.2/*
+.local/share/gvfs-metadata/*
+.local/share/HPE/*
+.local/share/icc/*
+.local/share/icons/*
+.local/share/keyrings/*
+.local/share/knucklecracker/*
+.local/share/locale/*
+.local/share/mime/*
+.local/share/MONO development team/*
+.local/share/NBTExplorer.exe_Url_e2a75a3cc41471254aa622392c3a288c5e2e476a/*
+.local/share/spotify/*
+.local/share/Steam/*
+.local/share/supertuxkart/*
+.local/share/Trash/*
+.local/share/unity-webapps/*
+.local/share/vlc/*
+.local/share/vulkan/*
+.local/share/webbrowser-app/*
+.local/share/Zeal/*
+.config/gtk-2.0/*
+.config/Symless/*
+.config/hexchat/*
+.config/git/*
+.config/configstore/*
+.config/supertuxkart/*
+.config/libreoffice/*
+.config/libreoffice/4/*
+.config/Zeal/*
+.config/Google/*
+.config/DjVuLibre/*
+.config/0ad/*
+.config/0ad/logs/*
+.config/0ad/config/*
+.config/google-googletalkplugin/*
+.config/AtomZombieData/*
+.config/AtomZombieData/profiles/*
+.config/AtomZombieData/mods/*
+.config/bstudio/*
+.config/bstudio/Local Storage/*
+.config/bstudio/Cache/*
+.config/bstudio/Application Cache/*
+.config/bstudio/GPUCache/*
+.config/bstudio/databases/*
+.config/pulse/*
+.config/descent-underground-launcher/*
+.config/descent-underground-launcher/Cache/*
+.config/descent-underground-launcher/GPUCache/*
+.config/ghb/*
+.config/ghb/EncodeLogs/*
+.config/nemo/*
+.config/ubuntu-ui-toolkit/*
+.config/htop/*
+.config/unity3d/*
+.config/unity3d/DefaultCompany/*
+.config/unity3d/Knuckle Cracker LLC/*
+.config/unity3d/Knuckle Cracker/*
+.config/unity3d/Colossal Order/*
+.config/vlc/*
+.config/calibre/*
+.config/calibre/plugins/*
+.config/calibre/conversion/*
+.config/calibre/fonts/*
+.config/calibre/metadata_sources/*
+.config/VirtualBox/*
+.config/Synergy/*
+.config/Epic/*
+.config/Epic/Epic Games/*
+.config/Epic/Descent/*
+.config/Epic/UnrealEngine/*
+.config/spotify/*
+.config/spotify/Users/*
+.config/spotify/User Data/*
+.config/mate/*
+.config/mate/panel2.d/*
+.config/gtk-3.0/*
+.config/icedtea-web/*
+.config/icedtea-web/security/*
+.config/easytag/*
+.config/LightTable/*
+.config/LightTable/ltcache/*
+.config/LightTable/plugins/*
+.config/LightTable/Local Storage/*
+.config/LightTable/Cache/*
+.config/LightTable/logs/*
+.config/LightTable/metadata/*
+.config/LightTable/User/*
+.config/LightTable/GPUCache/*
+.config/transmission/*
+.config/transmission/torrents/*
+.config/transmission/resume/*
+.config/transmission/blocklists/*
+.config/xplayer/*
+.config/pitivi/*
+.config/dconf/*
+.config/caja/*
+.config/menus/*
+.config/menus/applications-merged/*
+.config/xed/*
+.config/banshee-1/*
+.config/banshee-1/addin-db-001/*
+.config/creeperworld3/*
+.config/.mono/*
+.config/.mono/certs/*
+.config/smplayer/*
+.config/smplayer/file_settings/*
+.config/nmapsi4/*
+.config/FreetuxTV/*
+.config/linuxmint/*
+.config/qBittorrent/*
+.config/qBittorrent/rss/*
+.config/session/*
+.config/NBTExplorer/*
+.config/pix/*
+.config/enchant/*
+.config/Skype/*
+.config/Mousepad/*
+.config/totem/*
+.config/gthumb/*
+.config/akonadi/*
+.config/autostart/*
+.config/chromium/*
+.config/chromium/Avatars/*
+.config/chromium/Safe Browsing/*
+.config/chromium/SSLErrorAssistant/*
+.config/chromium/Dictionaries/*
+.config/chromium/FileTypePolicies/*
+.config/chromium/CertificateTransparency/*
+.config/chromium/EVWhitelist/*
+.config/chromium/ShaderCache/*
+.config/chromium/Default/*
+.config/Code/*
+.config/Code/Local Storage/*
+.config/Code/Cache/*
+.config/Code/User/*
+.config/Code/GPUCache/*
+.config/Electron/*
+.config/Electron/Local Storage/*
+.config/Electron/GPUCache/*
+
+#.local/share/Steam/appcache/*
+.local/share/Steam/appcache/httpcache/*
+.local/share/Steam/config/avatarcache/*
+#.local/share/Steam/config/htmlcache/*
+.local/share/Steam/config/htmlcache/Cache/*
+.local/share/Steam/config/htmlcache/GPUCache/*
+.local/share/Steam/depotcache/*
+.local/share/Steam/steamapps/common/Black Mesa/steam_shader_cache/*
+.local/share/Steam/steamapps/common/Cities_Skylines/steam_shader_cache/*
+.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/csgo/cache/*
+.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/csgo/maps/soundcache/*
+.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/csgo/resource/flash/econ/weapons/cached/*
+.local/share/Steam/steamapps/common/Counter-Strike Global Offensive/steam_shader_cache/*
+.local/share/Steam/steamapps/common/Counter-Strike Source/cstrike/cache/*
+.local/share/Steam/steamapps/common/Creeper World 3/steam_shader_cache/*
+.local/share/Steam/steamapps/common/Portal 2/portal2_dlc1/maps/soundcache/*
+.local/share/Steam/steamapps/common/Portal 2/portal2_dlc2/maps/soundcache/*
+.local/share/Steam/steamapps/common/Portal 2/portal2/maps/soundcache/*
+.local/share/Steam/steamapps/common/Portal 2/steam_shader_cache/*
+.local/share/Steam/steamapps/common/Portal/steam_shader_cache/*
+.local/share/Steam/steamapps/shadercache/*
+.local/share/Steam/steamapps/shadercache/255710/nvidiav1/GLCache/*
+.local/share/Steam/steamapps/shadercache/280220/nvidiav1/GLCache/*
+.local/share/Steam/steamapps/shadercache/730/nvidiav1/GLCache/*
+.local/share/Steam/steam/cached/*
+.local/share/Steam/userdata/9000233/config/shaderhitcache/*
+.local/share/Steam/userdata/9000233/ugcmsgcache/*
+.local/share/Steam/WINDOWSTEMPDIR_FONTCONFIG_CACHE/*
+.local/share/webbrowser-app/Cache2/*
+.local/share/Zeal/Zeal/docsets/AngularJS.docset/Contents/Resources/Documents/angularjs/code.angularjs.org/1.4.5/docs/error/$cacheFactory/*
+.local/share/Zeal/Zeal/docsets/CMake.docset/Contents/Resources/Documents/www.cmake.org/cmake/help/v3.3/prop_cache/*
+.local/share/Zeal/Zeal/docsets/CMake.docset/Contents/Resources/Documents/www.cmake.org/cmake/help/v3.3/_sources/prop_cache/*
+.local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Cache/*
+.local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Caches/*
+.local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/CacheStorage/*

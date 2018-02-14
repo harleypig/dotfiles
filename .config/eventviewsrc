@@ -1,0 +1,19 @@
+[Agenda View]
+agendaViewItemIcons=\x01\x01\x01\x01\x01\x01\x00\x00\x00\x00
+
+[Internal Settings]
+Decorations At Agenda View Top=thisdayinhistory,datenums,hebrew,picoftheday
+
+[KOrganizer Plugins]
+SelectedPlugins=thisdayinhistory,datenums
+
+[Month View]
+monthViewItemIcons=\x01\x01\x01\x00\x00\x01\x00\x00\x00\x00
+
+[Resources Colors]
+11=193,212,231
+12=208,231,193
+4=13,67,63
+
+[Timescale]
+Timescale Timezones=
