@@ -1,6 +1,26 @@
 #!/bin/bash
 
 ##################
+# https://codereview.stackexchange.com/questions/187439/using-extdebug-to-display-where-a-function-was-defined
+
+function where() {
+  while (($# > 0)); do
+    cmd="$1"
+    info=$(type "$cmd")
+
+    case $info in
+      *function*)
+        shopt -s extdebug
+        declare -F "$cmd"
+        shopt -u extdebug
+        ;;
+      *) echo "$info" ;;
+    esac
+    shift
+  done
+}
+
+##################
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
 
 function tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
@@ -75,7 +95,7 @@ export -f set_title
 
 #-----------------------------------------------------------------------
 # Some of these are found on (and modified to fit):
-#
+
 # superuser.com
 # commandlinefu.com
 
@@ -165,13 +185,13 @@ can256() { [ "$(tput Co 2>/dev/null || tput colors 2>/dev/null || echo 0)" -gt 2
 # bash-completion for aliases
 # https://unix.stackexchange.com/questions/4219/how-do-i-get-bash-completion-for-command-aliases
 # http://ubuntuforums.org/showthread.php?t=733397
-#
+
 # alias gco='git checkout'
 # make-completion-wrapper _git _git_checkout git checkout
 # complete -F _git_checkout gco
-#
+
 # This doesn't work. At least for git.
-#
+
 # See also:
 # https://stackoverflow.com/questions/342969/how-do-i-get-bash-completion-to-work-with-aliases
 
