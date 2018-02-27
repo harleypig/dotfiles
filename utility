@@ -1,0 +1,51 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------------
+function warn() { printf '%s\n' "$*" >&2; }
+
+#----------------------------------------------------------------------------
+function debug() { ((DEBUG)) && warn "$*"; }
+#function debug() {
+#  ((DEBUG)) || return
+#
+#  local stack=
+#
+#  for ((idx=${#BASH_SOURCE[@]}-1 ; idx>=0 ; idx-- )); do
+#    
+#  done
+#
+#  stack="${BASH_SOURCE[*]}"
+#  warn "$stack: $*"
+#}
+
+#----------------------------------------------------------------------------
+function log() { ((VERBOSE)) && warn "$*"; }
+
+#----------------------------------------------------------------------------
+function die() {
+  (($#)) && warn "$*"
+  exit 1
+}
+
+#----------------------------------------------------------------------------
+# If we are not being run as bash, die.
+[[ $BASH == '/bin/bash' ]] || die "$0 is not a bash script and should not be sourcing this utility file."
+
+#----------------------------------------------------------------------------
+# Are we being sourced? If not error and die.
+# shellcheck disable=SC2091
+$(return &> /dev/null) || die 'This utility script must only be sourced.'
+
+#----------------------------------------------------------------------------
+# In some cases, specifically scripts called by datastage, the environment is
+# not setup quite right. Try to fix this.
+EXPECTED_USER=$(id -un)
+
+if [[ $USER != "$EXPECTED_USER" ]]; then
+  [[ -z $TERM ]] && export TERM='xterm'
+  export USER="$EXPECTED_USER"
+  HOME=$(grep "$USER" /etc/passwd | cut -d ':' -f 6)
+  export HOME
+  # shellcheck disable=SC1090
+  source "$HOME/.bash_profile"
+fi
