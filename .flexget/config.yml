@@ -198,7 +198,7 @@ tasks:
       from:
         - 1337x: yes
         - limetorrents: { category: tv, order_by: seeds }
-        - extratorrent: { category: tv }
+          #- extratorrent: { category: tv }
         - rarbg: { category: [1,18,41], sorted_by: seeders, use_tvdb: yes }
         - piratebay: { category: tv, sort_by: seeds }
 

@@ -1,23 +1,39 @@
 #!/bin/bash
 
-BASE_DIR="$HOME/projects/taskwarrior/task"
+TASKW_DIR="$HOME/projects/taskwarrior/task"
+TIMEW_DIR="$HOME/projects/taskwarrior/timewarrior"
 
-cd "$BASE_DIR" || {
-  echo "Unable to cd to $BASE_DIR, exiting."
+function update() {
+  # start clean
+  git clean -xf
+
+  # update repo
+  git fetch --all --tags
+  git pull --recurse-submodules
+  git submodule update
+
+  # make the project
+  cmake -DCMAKE_BUILD_TYPE=release .
+  make
+  make test && sudo make install
+}
+
+set_title 'update taskwarrior'
+
+cd "$TASKW_DIR" || {
+  echo "Unable to cd to $TASKW_DIR, exiting."
   exit 1
 }
 
-set_title "$(basename "$0")"
+update
 
-# start clean
-git clean -xf
+set_title 'update timewarrior'
 
-# update flexget
-git fetch --all --tags
-git pull
+cd "$TIMEW_DIR" || {
+  echo "Unable to cd to $TIMEW_DIR, exiting."
+  exit 1
+}
 
-cmake -DCMAKE_BUILD_TYPE=release .
-make
-make test && sudo make install
+update
 
 set_title 'done_updating'

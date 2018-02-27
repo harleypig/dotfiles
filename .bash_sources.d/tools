@@ -117,16 +117,34 @@ export -f mkcd
 # I don't remember where I found this. This allows for arbitrary sized arrays
 # and delimiters.
 
-# Example:
-#   join_array <delimiter> "${ARRAY[@]}"
-#   joined=$(join_array <delimiter> "${ARRAY[@]}"
+## Example:
+##   join_array <delimiter> "${ARRAY[@]}"
+##   joined=$(join_array <delimiter> "${ARRAY[@]}"
+#
+#function join_array() {
+#  local delim=$1
+#  shift
+#  printf '%s' "$1"
+#  shift
+#  printf '%s' "${@/#/$delim}"
+#}
+
+# SOMEARRAY=('one' 'two' 'three')
+# SOMEVAR=$(join_array : 'SOMEARRAY')     => one:two:three
+# SOMEVAR=$(join_array ' : ' 'SOMEARRAY') => one : two : three
 
 function join_array() {
   local delim=$1
   shift
-  printf '%s' "$1"
-  shift
-  printf '%s' "${@/#/$delim}"
+
+  local -a array
+  eval "array=(\"\${$1[@]}\")"
+
+  first="${array[0]}"
+  rest=("${array[@]:1}")
+
+  printf '%s' "$first"
+  printf '%s' "${rest[@]/#/$delim}"
 }
 
 export -f join_array

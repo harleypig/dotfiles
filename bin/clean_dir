@@ -4,7 +4,7 @@
 
 VIDEOS='/home/harleypig/videos/NeedsSorting'
 
-REMOVE=()
+declare -a REMOVE
 REMOVE+=('*.gif')
 REMOVE+=('*hevc*')
 REMOVE+=('*.htm')
@@ -25,25 +25,15 @@ REMOVE+=('*.url')
 REMOVE+=('*.website')
 REMOVE+=('*.xml')
 
-function join_array {
-
-  local d=$1
-  shift;
-  echo -n "$1"
-  shift
-  printf "%s" "${@/#/$d}"
-
-}
-
 if cd $VIDEOS 2> /dev/null; then
 
   clear
   echo "Changed to ${PWD} ..."
 
-  iname="( -iname $(join_array ' -o -iname ' "${REMOVE[@]}") )"
+  iname="( -iname $(join_array ' -o -iname ' 'REMOVE') )"
 
   echo "Deleting unwanted files ..."
-  find $VIDEOS -type f $iname -delete
+  find $VIDEOS -type f "$iname" -delete
 
   echo "Moving wanted files ..."
   find $VIDEOS -mindepth 2 -type f -exec mv '{}' . \;
