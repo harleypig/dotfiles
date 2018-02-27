@@ -27,7 +27,7 @@ source_dir "$DOT_BASH_DIR/.bash_prompt.d"
 
 __update_prompt() {
 
-  local exit_status
+  # don't use local exit_status here because it wipes out PIPESTATUS.
   exit_status=$(__exit_status "${PIPESTATUS[@]}")
 
   local cwd

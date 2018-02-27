@@ -75,7 +75,7 @@ function ansi() {
       bg)
         shift
         c=$1
-        [[ -v ${color[$c]} ]] && c=${color[$c]}
+        [[ -v color[$c] ]] && c=${color[$c]}
         debug "bg $c"
         seq+=$(tput setab $c)
         ;;
@@ -91,8 +91,6 @@ function ansi() {
   printf '%s' "${ansi_code[key]}"
   return
 }
-
-export -f ansi
 
 # http://mywiki.wooledge.org/BashFAQ/037
 

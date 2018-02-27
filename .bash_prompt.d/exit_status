@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# shellcheck disable=SC1090
+source "$(dirname "$(realpath ~/.bash_profile)")/utility"
 
 # Change these to whatever you want to be displayed for good and bad exit
 # statuses.
@@ -5,12 +9,11 @@
 good_exit_text=':)'
 bad_exit_text=':('
 
-good_exit_color=$(ansi bg blue fg yellow)
-bad_exit_color=$(ansi bg red fg white)
-
 function __exit_status() {
 
-  unset __JOIN
+  debug "exit status parms: $*"
+
+  local -a status
 
   for s in "$@"; do
 
@@ -23,17 +26,17 @@ function __exit_status() {
     # Doing this *will* cause confusion if something does exit abnormally but
     # doesn't throw an appropriate exit status.
 
+    debug "s: $s"
+
     case "$s" in
-      0|141 ) __JOIN[${#__JOIN[*]}]="$good_exit_color$good_exit_text$text_reset" ;;
-      *   ) __JOIN[${#__JOIN[*]}]="$bad_exit_color$bad_exit_text$text_reset" ;;
+      0|141 ) status+=("$(ansi bg blue fg yellow)$good_exit_text$(ansi off)") ;;
+      *) status+=("$(ansi bg red fg white)$bad_exit_text$(ansi off)") ;;
     esac
 
   done
 
-  separator=' | '
-  statuscodes=$(join_array "$separator" "${__JOIN[@]}")
-  #statuscodes="${statuscodes//$separator/ $separator }"
+  statuscodes=$(join_array ' | ' 'status')
 
-  echo $statuscodes
+  echo "$statuscodes"
 
 }
