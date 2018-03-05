@@ -67,13 +67,17 @@ function source_dir() {
 
   debug "Loading files in $dir ..."
 
-  readarray -t files < <(find "$dir" -type f)
+  readarray -t files < <(find "$dir" -type f | sort)
+
+  debug "Found ${#files[@]} files in $dir ..."
 
   for s in "${files[@]}"; do
     debug "Sourcing $s ..."
     # shellcheck disable=SC1090
     source "$s"
   done
+
+  debug "Done loading files in $dir."
 }
 
 export -f source_dir
