@@ -1,30 +1,51 @@
 #!/bin/bash
 
 #----------------------------------------------------------------------------
+# If we are not being run as bash, die.
+
+#[[ $BASH == '/bin/bash' ]] || die "$0 is not a bash script and should not be sourcing this utility file."
+
+if [ "$BASH" != '/bin/bash' ]; then
+  echo 'This utility file is not being sourced as a bash file, exiting.'
+  exit 1
+fi
+
+#----------------------------------------------------------------------------
 function warn() { printf '%s\n' "$*" >&2; }
-
-#----------------------------------------------------------------------------
-function debug() { ((DEBUG)) && warn "$*"; }
-#function debug() {
-#  ((DEBUG)) || return
-#
-#  local stack=
-#
-#  for ((idx=${#BASH_SOURCE[@]}-1 ; idx>=0 ; idx-- )); do
-#    
-#  done
-#
-#  stack="${BASH_SOURCE[*]}"
-#  warn "$stack: $*"
-#}
-
-#----------------------------------------------------------------------------
-function log() { ((VERBOSE)) && warn "$*"; }
 
 #----------------------------------------------------------------------------
 function die() {
   (($#)) && warn "$*"
   exit 1
+}
+
+#----------------------------------------------------------------------------
+function debug() {
+  ((DEBUG)) || return
+
+  local -a stacks=
+  local -i lineno_ix stacks_ix=0
+
+  echo "${BASH_LINENO[*]}"
+
+  for ((bs_ix = ${#BASH_SOURCE[@]} - 1; bs_ix >= 0; bs_ix--)); do
+    name="$(basename "${BASH_SOURCE[$bs_ix]}")"
+
+    lineno_ix=$((bs_ix-1))
+    lineno="${BASH_LINENO[$lineno_ix]}"
+
+    [[ -z $name ]] && continue
+    [[ $name == 'utility' ]] && continue # Don't include the name of this script
+
+    # We're using stacks with join_array, which doesn't count as usage to shellcheck
+    # shellcheck disable=SC2034
+    stacks[$stacks_ix]="$name($lineno)"
+    ((stacks_ix++))
+  done
+
+  local stack=
+  stack=$(join_array ':' 'stacks')
+  warn "[$stack]: $*"
 }
 
 #----------------------------------------------------------------------------
@@ -37,15 +58,39 @@ function die() {
 $(return &> /dev/null) || die 'This utility script must only be sourced.'
 
 #----------------------------------------------------------------------------
-# In some cases, specifically scripts called by datastage, the environment is
-# not setup quite right. Try to fix this.
-EXPECTED_USER=$(id -un)
+function is_integer() { [[ $1 != *[!0-9]* ]] && return 0; return 1; }
 
-if [[ $USER != "$EXPECTED_USER" ]]; then
-  [[ -z $TERM ]] && export TERM='xterm'
-  export USER="$EXPECTED_USER"
-  HOME=$(grep "$USER" /etc/passwd | cut -d ':' -f 6)
-  export HOME
-  # shellcheck disable=SC1090
-  source "$HOME/.bash_profile"
-fi
+#----------------------------------------------------------------------------
+function is_alpha() { [[ $1 != *[!0-9a-zA-Z]* ]] && return 0; return 1; }
+
+#----------------------------------------------------------------------------
+function is_dirempty() { [[ -n "$(find "$1" -maxdepth 0 -empty -print)" ]] && return 0; return 1; }
+
+#----------------------------------------------------------------------------
+function anykey() { read -n 1 -r -s -p "${1:-Press any key to continue ...}"; }
+
+#-----------------------------------------------------------------------------
+# shellcheck disable=SC2120
+function yesno() {
+  local -u yn
+
+  while true; do
+    # shellcheck disable=SC2162
+    read -N1 -p "${1:-Yes or no?} " yn
+
+    case $yn in
+      Y | N)
+        printf '%s' "$yn"
+        return
+        ;;
+      Q)
+        warn 'Exiting...'
+        exit 1
+        ;;
+      *)
+        warn 'Please enter a Y or a N'
+        ;;
+    esac
+  done
+}
+

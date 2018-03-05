@@ -9,6 +9,8 @@ if [ "$taskpath" != '' ]; then
 
   __task() {
 
+    perl -MTaskwarrior::Kusarigama -e '' &> /dev/null && PERL5LIB="$PERL5LIB:$HOME/.task/lib"
+
     $taskpath "$@"
 
     if task _show | grep -q taskd.server; then

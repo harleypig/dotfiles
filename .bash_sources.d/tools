@@ -137,11 +137,16 @@ function join_array() {
   local delim=$1
   shift
 
-  local -a array
-  eval "array=(\"\${$1[@]}\")"
+  [[ $1 == '__array__' ]] && {
+    echo "Don't use var name __array__ for your array, that's what join_array is using." >&2
+    return 1
+  }
 
-  first="${array[0]}"
-  rest=("${array[@]:1}")
+  local -a __array__
+  eval "__array__=(\"\${$1[@]}\")"
+
+  first="${__array__[0]}"
+  rest=("${__array__[@]:1}")
 
   printf '%s' "$first"
   printf '%s' "${rest[@]/#/$delim}"

@@ -65,13 +65,17 @@ if [[ -n $GIT ]]; then
 
   ignore = dirty
 
+  If branch is not provided the default of 'master' will be used.
+
 EOH
+
+      return 1
     fi
 
     repo=$1
     name=$2
     name_dir="$vim_bundles/$name"
-    branch=$3
+    branch=${3:-master}
 
     [[ -d $name_dir ]] || mkdir -p "$name"
 
