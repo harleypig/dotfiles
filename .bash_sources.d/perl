@@ -1,14 +1,15 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # Aliases and functions for perl
 
-if command -v perl > /dev/null; then
+if command -v perl &>/dev/null; then
 
   ### environment variables
   export PERL5LIB="lib"
 
   ### bash completion related setup
   if [[ -f /home/harleypig/.config/shcompgen.bashrc ]]; then
+    # shellcheck disable=SC1091
     source /home/harleypig/.config/shcompgen.bashrc
   else
 
@@ -32,12 +33,12 @@ if command -v perl > /dev/null; then
     COMPLETION_UTIL="${COMPLETION_UTIL} podpath"
 
     for CU in $COMPLETION_UTIL; do
-      command -v $CU > /dev/null && complete -C $CU $CU
+      command -v "$CU" &>/dev/null && complete -C "$CU" "$CU"
     done
   fi
 
   ### perlbrew
-  if command -v perlbrew > /dev/null; then
+  if command -v perlbrew &>/dev/null; then
 
     if [[ -d $HOME/perl5 ]]; then
       export PERLBREW_HOME=$HOME
@@ -55,17 +56,22 @@ if command -v perl > /dev/null; then
       export PERL_MB_OPT="--install_base \"${PERLBREW_HOME}\""
       export PERL_MM_OPT="INSTALL_BASE=${PERLBREW_HOME}"
 
-      [[ -d $PERLBREW_ROOT/bin        ]] && PATH="${PATH}:$PERLBREW_ROOT/bin"
+      [[ -d $PERLBREW_ROOT/bin ]] && PATH="${PATH}:$PERLBREW_ROOT/bin"
+      # shellcheck disable=SC1090
       [[ -f $PERLBREW_ROOT/etc/bashrc ]] && source $PERLBREW_ROOT/etc/bashrc
 
     fi
   fi
 
   ### dzil
-  if command -v dzil > /dev/null; then
+  DZIL=$(command -v dzil)
+  echo "DZIL: $DZIL"
+  command -v dzil
+  echo "^"
 
-    DZIL=$(command -v dzil)
-    alias dz=$DZIL
+  # shellcheck disable=SC2139
+  if [[ -n $DZIL ]]; then
+    alias dz="$DZIL"
 
     # Run author or release tests, or a single test
     alias dztestauthor="AUTHOR_TESTING=1 ${DZIL} run prove -l"
@@ -81,13 +87,13 @@ if command -v perl > /dev/null; then
     alias listdeps="${DZIL} listdeps"
 
     # XXX: test if bakeini is installed
-    if ( perldoc -l Dist::Zilla::App::Command::bakeini > /dev/null 2>&1 ); then
-      alias bakeini="${DZIL} bakeini"
-    fi
+    #if (perldoc -l Dist::Zilla::App::Command::bakeini >/dev/null 2>&1); then
+    perl -MDist::Zilla::App::Command::bakeini -e '' &> /dev/null && alias bakeini="${DZIL} bakeini"
+    #fi
   fi
 
   ### prove
-  if command -v prove > /dev/null; then
+  if command -v prove >/dev/null; then
 
     # Run author or release tests, or a single test
     alias testauthor='AUTHOR_TESTING=1 prove -l'
@@ -106,7 +112,7 @@ if command -v perl > /dev/null; then
   alias pmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
 
   ### perldoc
-  if command -v cpandoc > /dev/null; then
+  if command -v cpandoc >/dev/null; then
     alias perldoc='cpandoc'
   fi
 
@@ -116,14 +122,19 @@ if command -v perl > /dev/null; then
   #[[ -f ${perldoc} ]] && ${completion}
 
   ### cpanm
-  # XXX: If using perlbrew in ~ then don't add sudo ...
-  if command -v cpanm > /dev/null; then
-    #alias cpanm='cpanm --mirror http://cpan.cpantesters.org/ -S'
-    alias cpanm="cpanm -S"
+  declare cpanm_bin
+  cpanm_bin=$(command -v cpanm)
+
+  # Alias cpanm -S only if cpanm is installed and it's not installed in the home directory.
+  if [[ -n $cpanm_bin ]]; then
+    if [[ $cpanm_bin != $HOME/* ]]; then
+      alias cpanm="cpanm -S"
+    fi
   fi
 
   ### completion
   # XXX: Check for completion capability
+  # shellcheck disable=SC1090
   [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] && source $PERLBREW_ROOT/etc/perlbrew-completion.bash
 
 fi
