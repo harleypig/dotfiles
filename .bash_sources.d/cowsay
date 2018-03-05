@@ -1,63 +1,6 @@
-# XXX: add random selection of template
+#!/bin/bash
 
-if command -v cowsay > /dev/null; then
-
+if command -v cowsay &> /dev/null; then
   cowfile=$(cowsay -l | perl -ne 'next if /Cow files in .*:/; push @cf, split /\s+/}{ printf "%s", @cf[ rand @cf]')
-
-  function cowsay_random () { command cowsay -f  "$@"; }
-
-
-  cowsay_random $(fortune -s);
-
+  cowsay -f $cowfile $(fortune -s)
 fi
-
-
-#cow{say,think} version 3.03, (c) 1999 Tony Monroe
-#Usage: cowsay [-bdgpstwy] [-h] [-e eyes] [-f cowfile] 
-#          [-l] [-n] [-T tongue] [-W wrapcolumn] [message]
-
-#       Cowsay  generates  an  ASCII  picture of a cow saying something
-#       provided by the user.  If run with no arguments, it accepts standard
-#       input, word-wraps the message given at about 40 columns, and prints
-#       the cow saying the given message on standard output.
-#
-#       To aid in the use of arbitrary messages with arbitrary whitespace, use
-#       the -n option.  If it is specified, the given message will not be
-#       word-wrapped.  This is possibly useful if you want to make the cow
-#       think  or  speak  in figlet(6).  If -n is specified, there must not be
-#       any command-line arguments left after all the switches have been
-#       processed.
-#
-#       The -W specifies roughly where the message should be wrapped.  The
-#       default is equivalent to -W 40 i.e. wrap words at or before the 40th
-#       column.
-#
-#       If any command-line arguments are left over after all switches have
-#       been processed, they become the cow's message.  The program will not
-#       accept standard input for a message in this case.
-#
-#       There  are  several  provided modes which change the appearance of the
-#       cow depending on its particular emotional/physical state.  The -b
-#       option initiates Borg mode; -d causes the cow to appear dead; -g
-#       invokes greedy mode; -p causes a state of paranoia to come over the
-#       cow; -s makes the cow appear thoroughly stoned; -t yields a tired cow;
-#       -w is somewhat the opposite of -t, and initiates wired mode; -y brings
-#       on the cow's youthful appearance.
-#
-#       The user may specify the -e option to select the appearance of the
-#       cow's eyes, in which case the first two characters of the argument
-#       string eye_string will be used.  The default eyes are 'oo'.  The
-#       tongue is  similarly  con‐ figurable through -T and tongue_string; it
-#       must be two characters and does not appear by default.  However, it
-#       does appear in the 'dead' and 'stoned' modes.  Any configuration done
-#       by -e and -T will be lost if one of the pro‐ vided modes is used.
-#
-#       The -f option specifies a particular cow picture file (``cowfile'') to
-#       use.  If the cowfile spec contains '/' then it will be interpreted as
-#       a path relative to the current directory.  Otherwise, cowsay will
-#       search  the  path specified in the COWPATH environment variable.  To
-#       list all cowfiles on the current COWPATH, invoke cowsay with the -l
-#       switch.
-#
-#       If the program is invoked as cowthink then the cow will think its
-#       message instead of saying it.
