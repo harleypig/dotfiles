@@ -98,7 +98,7 @@ if [[ -d "${HOME}/projects/nvm" ]]; then
 fi
 
 # shellcheck disable=SC1090
-command -v npm > /dev/null 2>&1 && source <(npm completion)
+command -v npm &> /dev/null && source <(npm completion)
 
 # shellcheck disable=SC1090
 [[ -f $HOME/bin/tokens ]] && source "$HOME/bin/tokens"
@@ -138,7 +138,8 @@ source_dir "$HOME/.sekrets"
 
 # Run this last to allow for other stuff above modifying the path
 
-if [[ -d $HOME/.rbenv ]]; then
+rbenv_bin=$(command -v rbenv &>/dev/null)
+if [[ -d $HOME/.rbenv ]] && [[ -n $rbenv_bin ]]; then
   PATH="$HOME/.rbenv/plugins/ruby-build/bin:$HOME/.rbenv/bin:${PATH}"
   eval "$(rbenv init -)"
 fi
