@@ -1,20 +1,23 @@
 #!/bin/bash
 
-RUBY=$(command -v ruby)
+RUBY=$(command -v ruby &> /dev/null)
 
-if [ $? -eq 0 ]; then
+# shellcheck disable=SC1090
+if [[ -n $RUBY ]]; then
 
-  export GEM_HOME=$($RUBY -e 'print Gem.user_dir')
+  declare -x GEM_HOME
+  GEM_HOME=$($RUBY -e 'print Gem.user_dir')
+
   export PATH="${GEM_HOME}/bin:${PATH}"
 
-  [[ -d $HOME/.rvm/bin         ]] && PATH="${PATH}:~/.rvm/bin"
-  [[ -f $HOME/.rvm/scripts/rvm ]] && source $HOME/.rvm/scripts/rvm
+  [[ -d $HOME/.rvm/bin         ]] && PATH="${PATH}:$HOME/.rvm/bin"
+  [[ -f $HOME/.rvm/scripts/rvm ]] && source "$HOME/.rvm/scripts/rvm"
 
   if [[ -d $HOME/.rbenv ]]; then
     eval "$(rbenv init -)"
 
   fi
 
-  [[ -f $HOME/.rvm//scripts/completion ]] && source $HOME/.rvm/scripts/completion
+  [[ -f $HOME/.rvm//scripts/completion ]] && source "$HOME/.rvm/scripts/completion"
 
 fi
