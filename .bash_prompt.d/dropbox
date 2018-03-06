@@ -1,11 +1,12 @@
-function __dropbox_status() {
-  if command -v dropbox > /dev/null; then
+#!/bin/bash
 
-    dropbox_prefix='Dropbox: '
-    dropbox=$(command -v dropbox)
+debug "Setting up dropbox ..."
 
-      #[[ -x ${dropbox} ]] && echo "${dropbox_prefix}$($dropbox status | perl -07 -pe 's/\n+$//;s/\n+/ : /g')"
-      [[ -x ${dropbox} ]] && echo -n "${dropbox_prefix}$($dropbox status)"
+if command -v dropbox &>/dev/null; then
+  function __dropbox_status() {
+    debug "Entering and exiting ${FUNCNAME[0]}."
+    echo "Dropbox: $(dropbox status)"
+  }
+fi
 
-  fi
-}
+debug "... done setting up drobpox."

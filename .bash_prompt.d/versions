@@ -1,27 +1,27 @@
 #!/bin/bash
 
-function __versions () {
+function __versions() {
 
   local versionline
 
   perlv='not installed'
-  if command -v perl > /dev/null; then
+  if command -v perl &>/dev/null; then
     perlv=$(perl -e 'print $]')
   fi
 
   pythonv='not installed'
-  if command -v python > /dev/null; then
+  if command -v python &>/dev/null; then
     pythonv=$(python -V 2>&1 | cut -d ' ' -f 2)
   fi
 
   rubyv='not installed'
-  if command -v ruby > /dev/null; then
+  if command -v ruby &>/dev/null; then
     rubyv=$(ruby -v | cut -d ' ' -f 2)
   fi
 
   # Version line
 
-  local -a  versions
+  local -a versions
   versions+=("$(uname -sr)")
   versions+=("Perl $perlv")
   versions+=("Python $pythonv")

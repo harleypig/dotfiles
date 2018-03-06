@@ -1,7 +1,9 @@
+#!/bin/bash
 
-#text_reset=$(ansi off)
+debug "Setting up dir_readable ..."
 
 function __dir_readable() {
+  debug "Entering ${FUNCNAME[0]} ..."
 
   local pwd_max=45 # How long before we truncate?
   local trunc='<'  # Mark truncated name with this.
@@ -13,11 +15,14 @@ function __dir_readable() {
 
   if [ ${#pwd} -gt $pwd_max ]; then # truncate on the left
 
-    local pwd_offset=$(( ${#PWD} - $pwd_max ))
+    local pwd_offset=$(( ${#PWD} - pwd_max ))
     pwd="${trunc}${pwd:$pwd_offset:$pwd_max}"
 
   fi
 
-  echo "$readable$pwd$text_reset"
+  debug "... exiting ${FUNCNAME[0]}."
+  echo "$readable$pwd$(ansi off)"
 
 }
+
+deub "... done setting up dir_readable."

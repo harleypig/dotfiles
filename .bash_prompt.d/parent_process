@@ -10,6 +10,7 @@ function __parent_process() {
   parents=${parents//tmux/}
   parents=${parents//---bash/}
   parents=${parents//---pstree/}
+  parents=${parents//gnome-terminal-}
 
   [[ -n $parents ]] && printf '\[%s\](%s)\[%s\]' "$(ansi fg bright_yellow bg red)" "$parents" "$(ansi off)"
 
