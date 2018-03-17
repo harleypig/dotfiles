@@ -16,76 +16,69 @@
 # CF=6/256
 # 8bit=$(( 16 + (($1 * $CF) * 36) + (($2 * $CF) * 6) + ($3 * $CF) ))
 
-declare -A ansi_color
-
-ansi_color[black]=0
-ansi_color[red]=1
-ansi_color[green]=2
-ansi_color[yellow]=3
-ansi_color[blue]=4
-ansi_color[purple]=5
-ansi_color[cyan]=6
-ansi_color[white]=7
-ansi_color[bright_black]=8
-ansi_color[bright_red]=9
-ansi_color[bright_green]=10
-ansi_color[bright_yellow]=11
-ansi_color[bright_blue]=12
-ansi_color[bright_purple]=13
-ansi_color[bright_cyan]=14
-ansi_color[bright_white]=15
-
-export ansi_color
+declare -xA ansi_code
 
 function ansi() {
   # convert convenience values to what tput understands
+
+  local -A color
+
+  color[black]=0
+  color[red]=1
+  color[green]=2
+  color[yellow]=3
+  color[blue]=4
+  color[purple]=5
+  color[cyan]=6
+  color[white]=7
+  color[bright_black]=8
+  color[bright_red]=9
+  color[bright_green]=11
+  color[bright_yellow]=11
+  color[bright_blue]=12
+  color[bright_purple]=13
+  color[bright_cyan]=14
+  color[bright_white]=15
+
   local seq
 
-  debug "parms: $*"
-
   while [ $# -ge 1 ]; do
-    case $1 in # termcap version (see 'less' setup file)
-               bell) seq+="$(tput bel)"  ;;
-               bold) seq+="$(tput bold)" ;; # md
-                dim) seq+="$(tput dim)"  ;; # mh
-        italics_off) seq+="$(tput ritm)" ;;
-         italics_on) seq+="$(tput sitm)" ;;
-                off) seq+="$(tput sgr0)" ;; # me
-      reverse | rev) seq+="$(tput rev)"  ;; # mr
-         stdout_off) seq+="$(tput rmso)" ;;
-          stdout_on) seq+="$(tput smso)" ;;
-      underline_off) seq+="$(tput rmul)" ;; # ue
-       underline_on) seq+="$(tput smul)" ;; # us
+    case $1 in
+               bell) debug 'bell'          ; seq+=$(tput bel)  ;;
+        italics_off) debug 'italics_off'   ; seq+=$(tput ritm) ;;
+         italics_on) debug 'italics_on'    ; seq+=$(tput sitm) ;;
+                off) debug 'off'           ; seq+=$(tput sgr0) ;;
+            reverse) debug 'reverse'       ; seq+=$(tput rev)  ;;
+         stdout_off) debug 'stdout_off'    ; seq+=$(tput rmso) ;;
+          stdout_on) debug 'stdout_on'     ; seq+=$(tput smso) ;;
+      underline_off) debug 'underline_off' ; seq+=$(tput rmul) ;;
+       underline_on) debug 'underline_on'  ; seq+=$(tput smul) ;;
 
       fg)
         shift
         c=$1
-        [[ -v ansi_color[$c] ]] && c=${ansi_color[$c]}
-        seq+="$(tput setaf $c)"
+        [[ -v color[$c] ]] && c=${color[$c]}
+        debug "fg $c"
+        seq+=$(tput setaf $c)
         ;;
 
       bg)
         shift
         c=$1
-        [[ -v ansi_color[$c] ]] && c=${ansi_color[$c]}
-        seq+="$(tput setab $c)"
+        [[ -v color[$c] ]] && c=${color[$c]}
+        debug "bg $c"
+        seq+=$(tput setab $c)
         ;;
 
-      *)
-        debug "*: $1"
-        seq+="$(tput "$1")"
-        ;;
+      *) debug "*: $1" ; seq+=$(tput "$2") ;;
     esac
 
     shift
   done
 
-  debug "$seq"
-  echo "$seq"
+  printf '%s' "$seq"
   return
 }
-
-export -f ansi
 
 # http://mywiki.wooledge.org/BashFAQ/037
 
