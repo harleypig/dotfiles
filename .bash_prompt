@@ -1,6 +1,6 @@
 #!/bin/bash
 
-debug "Entering ..."
+debug "Entering .bash_prompt ..."
 
 # Ideas ripped off and made to fit from:
 #   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
@@ -12,23 +12,12 @@ debug "Entering ..."
 source_dir "$DOT_BASH_DIR/.bash_prompt.d"
 
 # Setup color variables
-# shellcheck disable=SC1117
-{
-  if [ "$USER" == 'root' ]; then
-    user_color="\[$(ansi fg bright_red)\]"
-  else
-    user_color="\[$(ansi fg bright_cyan)\]"
-  fi
-
-  prompt_color="\[$(ansi fg cyan)\]"
-  text_reset="\[$(ansi off)\]"
-  text_yellow="\[$(ansi fg yellow)\]"
-}
-
 __update_prompt() {
 
   # don't use local exit_status here because it wipes out PIPESTATUS.
   exit_status=$(__exit_status "${PIPESTATUS[@]}")
+
+  debug "Entering ${FUNCNAME[0]} ..."
 
   local cwd
   cwd=$(__dir_readable)
@@ -54,8 +43,23 @@ __update_prompt() {
   # Build the prompt.
   # shellcheck disable=SC1117
   {
+    if [ "$USER" == 'root' ]; then
+      user_color="\[$(ansi fg bright_red)\]"
+    else
+      user_color="\[$(ansi fg bright_cyan)\]"
+    fi
+
+    prompt_color="\[$(ansi fg cyan)\]"
+    text_reset="\[$(ansi off)\]"
+    text_yellow="\[$(ansi fg yellow)\]"
+
     # Append the last command, clear the history cache and reread the history file
-    PS1='$(ansi off)$(history -a ; history -c ; history -r)'
+    PS1="${text_reset}$(
+      history -a
+      history -c
+      history -r
+    )"
+
     PS1+="\n${parent}${parent:+ }${prompt_color}${datetime}"
     PS1+="\n${sysinfo}"
     PS1+="\n${versionline}"
@@ -66,6 +70,6 @@ __update_prompt() {
   }
 }
 
-[[ -n "$PS1" ]] && PROMPT_COMMAND='__update_prompt'
+[[ -n $PS1 ]] && PROMPT_COMMAND='__update_prompt'
 
-debug "Exiting ..."
+debug "Exiting .bash_prompt ..."
