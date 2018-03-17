@@ -25,4 +25,4 @@ function __dir_readable() {
 
 }
 
-deub "... done setting up dir_readable."
+debug "... done setting up dir_readable."
