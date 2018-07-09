@@ -87,3 +87,5 @@ function where() {
     TOGGLE_extglob=
   }
 }
+
+where "$@"

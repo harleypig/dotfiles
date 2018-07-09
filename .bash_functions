@@ -40,20 +40,20 @@ export -f debug
 #   The name of the variable to be set.
 #   The name of the path to fully qualify.
 
-function realpath() {
-
-  local filename=$1
-
-  fqfn=${filename//\~/$HOME}
-  fqfn=$(readlink -nf "$fqfn")
-
-  debug "filename: $filename fqfn: $fqfn"
-
-  printf '%s' "$fqfn"
-
-}
-
-export -f realpath
+#function realpath() {
+#
+#  local filename=$1
+#
+#  fqfn=${filename//\~/$HOME}
+#  fqfn=$(readlink -nf "$fqfn")
+#
+#  debug "filename: $filename fqfn: $fqfn"
+#
+#  printf '%s' "$fqfn"
+#
+#}
+#
+#export -f realpath
 
 #-----------------------------------------------------------------------
 # Sources all files found in $1.

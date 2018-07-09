@@ -8,6 +8,7 @@
 # things to try, but I don't like the way they're doing things. So I'll keep
 # my own stuff for now.
 
+# http://mywiki.wooledge.org/BashFAQ/037
 # http://wiki.bash-hackers.org/scripting/terminalcodes
 
 # Convert rgb (0-255 0-255 0-255) to 8-bit 0-255

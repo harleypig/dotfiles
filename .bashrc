@@ -32,7 +32,8 @@ fi
 # directory the repo is in. .bash_prompt and .bashrc should be linked to the
 # same place, so DOT_BASH_DIR will be used for sourcing support files.
 
-DOT_BASH_DIR=$(dirname "$(realpath "$HOME/.bash_profile")")
+#DOT_BASH_DIR=$(dirname "$(realpath "$HOME/.bash_profile")")
+DOT_BASH_DIR=$(dirname "$(readlink -nf "$HOME/.bash_profile")")
 debug ".bash_dir: $DOT_BASH_DIR"
 
 #---------------------------------------------------------------------------------------
@@ -164,7 +165,8 @@ BIN_DIRS="${BIN_DIRS} ${GOPATH}/bin"
 
 for d in $BIN_DIRS; do
 
-  dir=$(realpath "$d")
+  #dir=$(realpath "$d")
+  dir=$(readlink -nf "$d")
 
   # shellcheck disable=SC2154
   if [[ -d $dir ]] && [[ $PATH != *"$dir"* ]]; then
