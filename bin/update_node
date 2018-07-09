@@ -22,7 +22,9 @@ git tag | tail -n 1
 {
   dash_j="-j $(($(nproc) - 1))"
   make $dash_j doc # this will build node first if needed
-  make test $dash_j && sudo make install
+  make test $dash_j && \
+  notify-send --urgency=normal "sudo call, password may be required" && \
+  sudo make install
 }
 
 set_title 'done_updating'

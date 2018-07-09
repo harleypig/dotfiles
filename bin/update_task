@@ -3,6 +3,8 @@
 TASKW_DIR="$HOME/projects/taskwarrior/task"
 TIMEW_DIR="$HOME/projects/taskwarrior/timewarrior"
 
+function notify() { notify-send --urgency=normal "sudo call, password may be required"; }
+
 function update() {
   # start clean
   git clean -xf
@@ -15,7 +17,7 @@ function update() {
   # make the project
   cmake -DCMAKE_BUILD_TYPE=release .
   make
-  make test && sudo make install
+  make test && notify && sudo make install
 }
 
 set_title 'update taskwarrior'

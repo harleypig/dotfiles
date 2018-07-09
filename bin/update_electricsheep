@@ -16,7 +16,9 @@ git submodule update --init
 ./autogen.sh
 ./configure --with-x11
 make -j $(($(nproc)-1))
+notify-send --urgency=normal "sudo call, password may be required"
 sudo make install
+notify-send --urgency=normal "sudo call, password may be required"
 sudo ldconfig
 
 # flam3
@@ -38,6 +40,7 @@ git submodule update --init
 ./autogen.sh
 ./configure
 make -j $(($(nproc)-1))
+notify-send --urgency=normal "sudo call, password may be required"
 sudo make install
 
 set_title "done_updating"

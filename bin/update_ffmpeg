@@ -22,7 +22,9 @@ git pull
 {
   dash_j="-j $(($(nproc) - 1))"
   make $dash_j
-  make check $dash_j && sudo make install
+  make check $dash_j && \
+  notify-send --urgency=normal "sudo call, password may be required" && \
+  sudo make install
 }
 
 set_title 'done_updating'

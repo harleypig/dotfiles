@@ -176,3 +176,5 @@ PATH="${PATH}:."
 export PATH
 
 debug "Exiting ..."
+
+alias one='echo two three'

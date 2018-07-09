@@ -1,0 +1,15 @@
+#!/bin/bash
+
+declare -a skip
+
+skip=('bork')
+skip+=('hostspecific')
+skip+=('README')
+skip+=('TODO')
+skip+=('utility')
+
+for file in $HOME/projects/dotfiles/*; do
+  base_file="$(basename "$file")"
+  [[ "${skip[*]}" == *$base_file* ]] && continue
+  ok symlink "$base_file" "$file"
+done

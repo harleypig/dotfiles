@@ -18,9 +18,11 @@ if command -v pacman > /dev/null; then
   command -v pacmatic > /dev/null 2>&1 && export PACMAN='pacmatic'
 fi
 
-if [[ -d "${HOME}/projects/go" ]]; then
-  export GOROOT="${HOME}/projects/go"
-  export GOPATH="${HOME}/.go"
+echo "Does go exist in projects? ($HOME/projects/go)"
+if [[ -d "$HOME/projects/go" ]]; then
+  export GOROOT="$HOME/projects/go"
+  export GOPATH="$HOME/.go"
+  export GOBIN="$HOME/.go/bin"
 fi
 
 #---------------------------------------------------------------------------------------

@@ -339,7 +339,7 @@ verbose = %s:%f:%l:%c:%p %m\n
 # except_expression_blocks = 1
 
 # Must run code through perltidy.
-[CodeLayout::RequireTidyCode]
+[-CodeLayout::RequireTidyCode]
 # set_themes                         = core cosmetic pbp
 # add_themes                         =
 # severity                           = 1

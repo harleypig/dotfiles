@@ -1,0 +1,89 @@
+#!/bin/bash
+
+function where() {
+
+  local cmd cmd_type cmd_path
+  local -i lineno
+  local -a location skip_location
+
+  location=("/etc/bash*")
+  location+=("/etc/profile*")
+  location+=("/etc/skel")
+  location+=("$HOME/.bash*")
+  location+=("$HOME/.profile*")
+
+  skip_location=("$HOME/.bash_history")
+  skip_location+=("$HOME/.bash_logout")
+
+  shopt -q extglob && {
+    TOGGLE_extglob=1
+    shopt -s extglob
+  }
+
+  while (($# > 0)); do
+    cmd="$1"
+    shift
+
+    cmd_type=$(type -t "$cmd" 2>/dev/null) || {
+      echo "$cmd is not found" >&2
+      continue
+    }
+
+    case $cmd_type in
+      keyword | builtin) printf '%s:%s\n' "$cmd" "$cmd_type" ;;
+
+      file)
+        cmd_path=$(type -p "$cmd")
+        printf '%s:%s:%s\n' "$cmd" "$cmd_type" "$cmd_path"
+        ;;
+
+      function)
+        shopt -q extdebug || {
+          TOGGLE_extdebug=1
+          shopt -s extdebug
+        }
+
+        work="$(declare -F "$cmd")"
+
+        [[ -n $TOGGLE_extdebug ]] && {
+          shopt -u extdebug
+          TOGGLE_extdebug=
+        }
+
+        cmd_path="$(readlink -mns "${work##* }")"
+        work="${work#* }"
+        lineno="${work%% *}"
+
+        printf '%s:%s:%d:%s\n' "$cmd" "$cmd_type" "$lineno" "$cmd_path"
+        ;;
+
+      alias)
+        # shellcheck disable=SC2068
+        readarray -t dirs < <(find ${location[@]} -maxdepth 0 2>/dev/null)
+
+        def=$(alias "$cmd" | sed 's/^alias\s\+\([^=]*=\).*$/\1/')
+
+        for d in "${dirs[@]}"; do
+          [[ ${skip_location[*]} == *$d* ]] && continue
+
+          rx='^(?:\s*[^#]*)?alias(?:\s+--)?\s+\Q'
+
+          # shellcheck disable=SC2086
+          found=$(grep -PHsrn -- "$rx$def" $d 2>/dev/null) && {
+            cmd_path="$(readlink -mns "${found%%:*}")"
+            found="${found#*:}"
+            lineno="${found%%:*}"
+            printf '%s:%s:%d:%s\n' "$cmd" "$cmd_type" "$lineno" "$cmd_path"
+          }
+        done
+        ;;
+
+      *) echo "Unexpected command type ($cmd_type) for $cmd." >&2 ;;
+    esac
+  done
+
+  [[ -n $TOGGLE_extglob ]] && {
+    shopt -u extglob
+    TOGGLE_extglob=
+  }
+}
