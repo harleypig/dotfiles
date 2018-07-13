@@ -14,20 +14,22 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-if command -v pacman > /dev/null; then
-  command -v pacmatic > /dev/null 2>&1 && export PACMAN='pacmatic'
-fi
-
-echo "Does go exist in projects? ($HOME/projects/go)"
-if [[ -d "$HOME/projects/go" ]]; then
-  export GOROOT="$HOME/projects/go"
-  export GOPATH="$HOME/.go"
-  export GOBIN="$HOME/.go/bin"
-fi
-
-#---------------------------------------------------------------------------------------
-# This is for hman.
 export BROWSER='chromium-browser'
+
+export DOTFILES
+DOTFILES="$(dirname "$(readlink -nf "$HOME/.bash_profile")")"
+
+# $HOME/.bashrc needs to exist so things like shelling from vim will load the
+# dotfiles correctly. Warn if .bashrc doesn't point to the .bashrc in
+# DOTFILES. If it doesn't exist, create the link.
+
+if [[ ! -f $HOME/.bashrc ]]; then
+  ln -s "$DOTFILES/.bashrc"
+else
+  [[ $(readlink -nf "$HOME/.bashrc") == "$DOTFILES/.bashrc" ]] || {
+    echo "$HOME/.bashrc is not linked to DOTFILES version."
+  }
+fi
 
 # shellcheck disable=SC1090
 [[ -f $HOME/.bashrc ]] && source "$HOME/.bashrc"

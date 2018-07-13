@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ -d "$HOME/projects/go" ]]; then
+  export GOROOT="$HOME/projects/go"
+  export GOPATH="$HOME/.go"
+  export GOBIN="$HOME/.go/bin"
+fi

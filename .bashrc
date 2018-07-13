@@ -1,15 +1,52 @@
 #!/bin/bash
 
-if ! [ -f "$HOME/.bash_functions" ]; then
-  echo "$HOME/.bash_functions does not exist"
-  exit 1
-fi
+#---------------------------------------------------------------------------------------
+# See function at
+# https://github.com/wschlich/bashinator/blob/master/bashinator.lib.0.sh#L940
+# for ideas on building a better prefix.
 
-# All other scripts depend on the functions defined here.
-# shellcheck source=/home/harleypig/.bash_functions
-source "$HOME/.bash_functions"
+function debug() {
+  [[ -f $HOME/.dot_debug ]] || return 0
 
-debug "After loading functions ..."
+  local src func lineno
+
+  src=$(basename "${BASH_SOURCE[1]:-$0}:")
+  func="${FUNCNAME[1]}:"
+  lineno="${BASH_LINENO[0]}"
+
+  [[ $func =~ ^(main|source):$ ]] && func=
+
+  echo "[$src$func$lineno] $*" >> "$HOME/.dotfiles.log"
+}
+
+export -f debug
+
+#-----------------------------------------------------------------------
+# Sources all files found in $1.
+function source_dir() {
+  local dir="$1"
+
+  [[ -d $dir ]] || {
+    debug "$dir does not exist or is not a directory"
+    return
+  }
+
+  debug "Loading files in $dir ..."
+
+  readarray -t files < <(find "$dir" -type f | sort)
+
+  debug "Found ${#files[@]} files in $dir ..."
+
+  for s in "${files[@]}"; do
+    debug "Sourcing $s ..."
+    source "$s"
+  done
+
+  debug "Done loading files in $dir."
+}
+
+export -f source_dir
+
 
 #---------------------------------------------------------------------------------------
 # Don't delete this, it's for figuring things out sometimes.
@@ -25,16 +62,6 @@ if shopt -q login_shell; then
 else
   debug "We are *not* in a login shell ..."
 fi
-
-#---------------------------------------------------------------------------------------
-
-# .bash_* (aside from .bash_prompt and .bashrc) are expected to be in whatever
-# directory the repo is in. .bash_prompt and .bashrc should be linked to the
-# same place, so DOT_BASH_DIR will be used for sourcing support files.
-
-#DOT_BASH_DIR=$(dirname "$(realpath "$HOME/.bash_profile")")
-DOT_BASH_DIR=$(dirname "$(readlink -nf "$HOME/.bash_profile")")
-debug ".bash_dir: $DOT_BASH_DIR"
 
 #---------------------------------------------------------------------------------------
 debug "Setting up shell options ..."
@@ -71,112 +98,65 @@ shopt -s nocaseglob;
 umask 022
 
 #---------------------------------------------------------------------------------------
-# Simple check and source lines
-
-# shellcheck disable=SC1090
-[[ -z $SSH_AUTH_SOCK && -r $HOME/.ssh-agent ]] && source "$HOME/.ssh-agent"
-
-[[ -f $HOME/.Xresources ]] && xrdb "$HOME/.Xresources"
-
-declare -a FILES
+# Turn on bash completion
 
 # Order matters, don't mess with the order.
+declare -a FILES
 FILES+=('/etc/bash_completion')
 FILES+=('/etc/profile.d/bash-completion')
-FILES+=('/.travis/travis.sh')
-FILES+=('/usr/share/nvm/init-nvm.sh')
-FILES+=('.task/completion/task-completion.sh')
 
 for file in "${FILES[@]}"; do
-  # shellcheck disable=SC1090
   [[ -f $file ]] && source "$file"
 done
 
-if [[ -d "${HOME}/projects/nvm" ]]; then
-  export NVM_DIR="$HOME/projects/nvm"
-  # shellcheck disable=SC1090
-  [[ -s "$NVM_DIR/nvm.sh" ]] && source "${NVM_DIR}/nvm.sh"
-fi
-
-# shellcheck disable=SC1090
-command -v npm &> /dev/null && source <(npm completion)
-
-# shellcheck disable=SC1090
-[[ -f $HOME/bin/tokens ]] && source "$HOME/bin/tokens"
-
 #---------------------------------------------------------------------------------------
-# Load source files
+# Simple check and source lines
 
-# shellcheck disable=SC1091
-source_dir "$DOT_BASH_DIR/.bash_sources.d"
+#[[ -z $SSH_AUTH_SOCK && -r $DOTFILES/.ssh-agent ]] && source "$DOTFILES/.ssh-agent"
+[[ -f $DOTFILES/.Xresources ]] && xrdb "$DOTFILES/.Xresources"
+[[ -f $DOTFILES/bin/tokens ]] && source "$DOTFILES/bin/tokens"
 
-#---------------------------------------------------------------------------------------
-# Setup prompt command
+source_dir "$DOTFILES/.bash_sources.d"
+source_dir "$DOTFILES/$HOSTNAME"
+source_dir "$DOTFILES/.sekrets"
+source_dir "$HOME/.bash_profile.d"
+source_dir "$HOME/.bashrc.d"
 
-# shellcheck disable=SC1090
-source "$DOT_BASH_DIR/.bash_prompt"
-
-#---------------------------------------------------------------------------------------
-# Source any files we find in our host specific directory
-
-# shellcheck disable=SC1091
-source_dir "$DOT_BASH_DIR/$HOSTNAME"
-
-#---------------------------------------------------------------------------------------
-# Source any local files
-
-# shellcheck disable=SC1091
-source_dir "$HOME/.bash_local"
-
-#---------------------------------------------------------------------------------------
-# Source sekrets.
-
-# shellcheck disable=SC1091
-source_dir "$HOME/.sekrets"
+source "$DOTFILES/.bash_prompt"
 
 #---------------------------------------------------------------------------------------
 # PATH setup
 
 # Run this last to allow for other stuff above modifying the path
 
-rbenv_bin=$(command -v rbenv &>/dev/null)
-if [[ -d $HOME/.rbenv ]] && [[ -n $rbenv_bin ]]; then
-  PATH="$HOME/.rbenv/plugins/ruby-build/bin:$HOME/.rbenv/bin:${PATH}"
-  eval "$(rbenv init -)"
-fi
-
 # Do not alphabetize, order is important here.
 # XXX: Use add_path function instead here.
 # XXX: Add cleanup ability to add_path function.
 
-BIN_DIRS="${BIN_DIRS} ${HOME}/bin"
-BIN_DIRS="${BIN_DIRS} ${HOME}/.vim/bin"
-BIN_DIRS="${BIN_DIRS} ${HOME}/.cabal/bin"
-BIN_DIRS="${BIN_DIRS} ${HOME}/.minecraft/bin"
-BIN_DIRS="${BIN_DIRS} ${HOME}/Dropbox/bin"
-BIN_DIRS="${BIN_DIRS} ${HOME}/videos/bin"
-BIN_DIRS="${BIN_DIRS} ${HOME}/projects/depot_tools"
-BIN_DIRS="${BIN_DIRS} ${HOME}/projects/dotfiles/bin"
-BIN_DIRS="${BIN_DIRS} ${HOME}/projects/android-sdk/tools"
-BIN_DIRS="${BIN_DIRS} ${HOME}/projects/android-sdk/platform-tools"
-BIN_DIRS="${BIN_DIRS} /usr/lib/dart/bin"
-BIN_DIRS="${BIN_DIRS} ${GOROOT}/bin"
-BIN_DIRS="${BIN_DIRS} ${GOPATH}/bin"
+declare -a BIN_DIRS
+BIN_DIRS=("$HOME/bin")
+BIN_DIRS+=("$HOME/.vim/bin")
+BIN_DIRS+=("$HOME/.cabal/bin")
+BIN_DIRS+=("$HOME/.minecraft/bin")
+BIN_DIRS+=("$HOME/Dropbox/bin")
+BIN_DIRS+=("$HOME/videos/bin")
+BIN_DIRS+=("$HOME/projects/depot_tools")
+BIN_DIRS+=("$HOME/projects/dotfiles/bin")
+#BIN_DIRS+=("$HOME/projects/android-sdk/tools")
+#BIN_DIRS+=("$HOME/projects/android-sdk/platform-tools")
+BIN_DIRS+=("/usr/lib/dart/bin")
+BIN_DIRS+=("${GOROOT}/bin")
+BIN_DIRS+=("${GOPATH}/bin")
 
-for d in $BIN_DIRS; do
-
-  #dir=$(realpath "$d")
+for d in "${BIN_DIRS[@]}"; do
   dir=$(readlink -nf "$d")
 
-  # shellcheck disable=SC2154
-  if [[ -d $dir ]] && [[ $PATH != *"$dir"* ]]; then
-    PATH="${PATH}:${dir}"
-  fi
+  [[ -d $dir ]] || continue
+  [[ $PATH != *"$dir"* ]] || continue
+  PATH="${PATH}:${dir}"
+
 done
 
-PATH="${PATH}:."
-export PATH
+export PATH="${PATH}:."
 
 debug "Exiting ..."
-
-alias one='echo two three'
