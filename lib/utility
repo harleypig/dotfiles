@@ -1,0 +1,592 @@
+#!/bin/bash
+
+# XXX: try/catch?
+# XXX: exceptions? some kind of error-handling
+# XXX: import option so only 'source utility func1 func2 ...' is ever needed
+# XXX: logging (more than debug?)
+# XXX: locking
+# XXX: queue handling
+# XXX: parallel processes
+# XXX: ipc
+# XXX: parameter handling
+# XXX: trap handling
+# XXX: signal handling
+
+# Maybe steal some ideas from:
+# https://github.com/niieani/bash-oo-framework
+
+#----------------------------------------------------------------------------
+# Documentation
+
+: << POD
+=head1 NAME
+
+utility - utilities used in libraries
+
+=head1 SYNOPSIS
+
+  source utility
+
+=head1 OPTIONS
+
+There are no options for this file
+
+=head1 DESCRIPTION
+
+This file contains various utility functions that are used in library files,
+and can be used in any bash based script.
+
+=head1 NOTES
+
+This file will run various checks, detailed below.
+
+=head2 Enviroment Check
+
+If this file is not being called in a bash environment, or as a bash script,
+it will exit with an error message.
+
+=head2 Check If Sourced
+
+If this file is not sourced, e.g. C<source utility>, this file will exit with
+an error message.
+
+If this file is called with C<-?>, C<-h> or C<--help> a usage message will be
+shown instead of an error message.
+
+=head2 Check For User Setup
+
+If the C<USER> environment variable and the output of C<id -un> do not match,
+then an attempt will be made to set the environment up correctly, changing the
+environment variables C<USER>, C<HOME>, and C<TERM> appropriately and
+attempting to load the correct C<.bash_profile>.
+
+This is needed mainly for datastage scripts. No one else should be affected.
+
+=head1 FUNCTIONS
+
+=cut
+POD
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 warn
+
+Usage: warn "message"
+
+C<warn> will print whatever is sent to it to STDERR.
+
+Equivalent to C<echo 'Message' E<gt>&2>
+
+=cut
+POD
+
+function warn() { printf '%s\n' "$*" >&2; }
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 die
+
+Usage: die "message"
+
+C<die> will call C<warn> with "message" and then C<exit 1>.
+
+=cut
+POD
+
+# XXX: Do we want to add the option to exit with specified error code?
+
+function die() {
+  (($#)) && warn "$*"
+  exit 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 debug
+
+Usage: debug "message"
+
+C<debug> will check if the environment variable C<DEBUG> is true, and if not,
+silently return with a 0 return code.
+
+Otherwise, C<debug> will determine the function call stack and C<warn> the
+"message" with the stack at the beginning of the line.
+
+Example:
+
+  [somefunc(3):func(99)]: message
+
+=cut
+POD
+
+#function debug() {
+#  ((DEBUG)) || return
+#
+#  local -a stacks
+#  local curfile stack src display_src
+#
+#  for ((ix = ${#BASH_SOURCE[@]} - 1; ix >= 0; ix--)); do
+#    src="$(basename "${BASH_SOURCE[ix]}")"
+#
+#    [[ $src == 'utility' ]] && continue
+#
+#    if [[ $src != "$curfile" ]]; then
+#      curfile="$src"
+#      display_src="$src:"
+#    else
+#      display_src=
+#    fi
+#
+#    func="${FUNCNAME[ix]}"
+#    [[ $func =~ main|source ]] && func=
+#    [[ -n $func ]] && func+=':'
+#
+#    lineno="${BASH_LINENO[ix - 1]}"
+#
+#    stacks+=("$display_src$func$lineno")
+#  done
+#
+#  stack=$(join_array '|' 'stacks')
+#  warn "[$stack]: $*"
+#}
+
+function debug() {
+  ((DEBUG)) || return
+
+  local lineno func file trace
+  local -a el
+  local -i lvl=0
+
+  while true; do
+    caller=$(caller $lvl) || break
+    read -r lineno func file <<< "$caller"
+
+    file="$(basename "$file"):"
+    func+=':'
+
+    [[ $func == 'main:' ]] && func=
+
+    el+=("[$file$func$lineno]")
+
+    ((lvl++))
+  done
+
+  for (( ix=lvl-1; ix >= 0; ix-- )); do
+    trace+="${el[ix]}"
+  done
+
+  warn "$trace $*"
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 show_usage
+
+usage: show_usage
+       show_usage 'message'
+
+C<show_usage> will display the contents of the I<SYNOPSIS> and I<OPTIONS>
+sections of the documentation in your script. If you pass in an optional
+message, it will be display at the beginning of the help screen.
+
+=cut
+POD
+
+function show_usage() {
+  debug "Entered ${FUNCNAME[0]} ..."
+  debug "Parms ($#): $*"
+
+  ((DEBUG)) && {
+    for ((ix = 0; ix < ${#BASH_SOURCE[@]}; ix++)); do
+      debug "BASH_SOURCE[$ix]: ${BASH_SOURCE[ix]}"
+    done
+  }
+
+  local -a usage_opts
+  usage_opts=('-verbose' 1)
+
+  [[ -n $1 ]] && usage_opts+=('-msg' "$*")
+
+  debug "usage ${usage_opts[*]} ${BASH_SOURCE[1]}"
+
+  # usage is a perl script located in tools/bin that is modified from the
+  # pod2usage script.
+
+  usage_file=${BASH_SOURCE[2]}
+  [[ -z $usage_file ]] && usage_file=${BASH_SOURCE[1]}
+
+  usage_file_basename="$(basename "$usage_file")"
+  no_usage=0
+
+  # shellcheck disable=SC2086,SC2128
+  usage "${usage_opts[@]}" "$usage_file" || {
+    warn "$usage_file_basename does not have usage documentation"
+    ((no_usage++))
+  }
+
+  if man -w "$usage_file_basename" &> /dev/null; then
+    warn "Please see man page for more details."
+    warn "Try: man $usage_file_basename"
+  else
+    warn "$usage_file_basename does not have a man page."
+    ((no_usage++))
+  fi
+
+  ((no_usage)) && warn "Bug the author of $usage_file_basename to write documentation."
+
+  debug "... exiting subprocess via ${FUNCNAME[0]}."
+  exit 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 parm_check
+
+Usage: parm_check "$@"
+
+C<parm_check> will check the parameter list. Currently this function only
+looks for '-?', '-h' or '--help' and execute C<show_usage> if they exist in
+the parameter list.
+
+=cut
+POD
+
+function parm_check() { [[ $* == *-[\?h]* ]] && return 2; }
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is_integer
+
+Usage: if [[ is_integer 32 ]]; then echo "Is a number!"; fi
+
+C<is_integer> does a simple check if the value is a number and returns 0 if it
+is, 1 otherwise.
+
+=cut
+POD
+
+function is_integer() {
+  [[ $1 != *[!0-9]* ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is_alpha
+
+Usage: if [[ is_alpha 32 ]]; then echo "Is alphanumeric!"; fi
+
+C<is_alpha> does a simple check if the value is an alphanumeric and returns
+0 if it is, 1 otherwise.
+
+=cut
+POD
+
+function is_alpha() {
+  [[ $1 != *[!0-9a-zA-Z]* ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is_char
+
+Usage: if [[ is_char 'a' ]]; then echo "Is a char!"; fi
+
+C<is_char> does a simple check if the value is a single character and returns
+0 if it is, 1 otherwise.
+
+=cut
+POD
+
+function is_char() {
+  [[ ${#1} -eq 1 ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is_date
+
+Usage: if [[ is_date 20180702 ]]; then echo "valid date"; fi
+
+C<is_date> determines if a date is valid.
+
+NOTE: This function makes a good faith effort, but there are too many ways in
+which a date can be formatted.
+
+=cut
+POD
+
+function is_date() {
+  date -d "$1" &> /dev/null && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is_dir_empty
+
+Usage: if [[ is_dirempty "E<36>dir" ]]; then echo "E<36>dir is empty"; fi
+
+C<is_dirempty> detects if a directory and, if it is, returns 0, otherwise 1.
+
+=cut
+POD
+
+function is_dirempty() {
+  [[ -n "$(find "$1" -maxdepth 0 -empty -print)" ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is_varname
+
+Usage: is_varname "E<36>variable"
+
+Determines whether the string in C<E<36>variable> is a valid variable name.
+Returns 0 if it is, 1 if it isn't.
+
+=cut
+POD
+
+function is_varname() {
+  # If varname is a single character then it can't be and underscore '_'.
+  [[ $1 == [A-Za-z] ]] && return 0
+  [[ $1 == [A-Za-z_][A-Za-z0-9_]* ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 qualify_filename
+
+Usage: filename=E<36>(qualify_filename "E<36>filename") || die "bad filename"
+
+Checks if the value is a valid filename and if it exists is it readable, or if
+it does not exist can we create it. If it is readable or creatable, returns 0.
+Otherwise returns 1.
+
+This function expects a path to a filename, relative or absolute, and will
+print a fully canonicalized path to the filename.
+
+This function expects the path to the filename to exist and will return an
+error if it does not.
+
+=cut
+POD
+
+function qualify_filename() {
+  local filename="$1"
+
+  fqdn="$(/usr/bin/realpath -qeL "$(dirname "$filename")")" || {
+    warn "Unable to canonicalize directory for filename:
+$(namei "$filename")"
+    return 1
+  }
+
+  filename="$fqdn/$(basename "$filename")"
+  debug "fqfn: $filename"
+
+  if [[ -f $filename ]]; then
+    debug "$filename exists ..."
+
+    [[ -r $filename ]] || {
+      warn "filename exists but is not readable:
+$(namei "$filename")"
+      return 1
+    }
+
+    debug "... and is readable"
+
+  elif [[ -e $filename ]]; then
+    warn "$filename exists but is not a file"
+    return 1
+
+  else
+    debug "$filename does not exist ..."
+
+    truncate --size 0 "$filename" || {
+      warn "$filename does not exist and cannot create it:
+$(namei "$filename")"
+      return 1
+    }
+
+    debug "... and is writable"
+
+    rm "$filename" || die "Unable to remove test file ($filename), exiting."
+  fi
+
+  printf '%s' "$filename"
+  return 0
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 anykey
+
+Usage: anykey ['prompt']
+
+C<anykey> will prompt and wait for a single keypress.
+
+C<anykey> accepts an optional value that will be used as the prompt. If
+nothing is passed in, the default prompt is 'Press any key to continue ...'
+
+=cut
+POD
+
+function anykey() { read -n 1 -r -s -p "${1:-Press any key to continue ...}"; }
+
+#-----------------------------------------------------------------------------
+: << POD
+=head2 yesno
+
+Usage: answer=E<36>(yesno ['prompt'])
+
+C<yesno> will prompt and wait for either a 'Y' or an 'N' as input. Anything
+else will be ignored, the user will be warned and prompted again. The input is
+case-insensitive.
+
+C<yesno> accepts an optional value that will be used as the prompt. If nothing
+is passed in, the default prompt is 'Yes or no?'.
+
+=cut
+POD
+
+# shellcheck disable=SC2120
+function yesno() {
+  local -u yn
+
+  while true; do
+    # shellcheck disable=SC2162
+    read -N1 -p "${1:-Yes or no?} " yn
+
+    case $yn in
+      Y | N)
+        printf '%s' "$yn"
+        return
+        ;;
+      Q)
+        warn 'Exiting...'
+        exit 1
+        ;;
+      *)
+        warn 'Please enter a Y or a N'
+        ;;
+    esac
+  done
+}
+
+#-----------------------------------------------------------------------------
+: << POD
+=head2 fill_template
+
+Usage: newstring=E<36>(fill_template C<string to be processed>)
+
+C<fill_template> will parse the string passed in and replace %WORD% with the
+value of the environment variable WORD.
+
+E.g., if environment variable C<PRJHOME> was equal to C</nas_pp/test/cap>, then
+the string I<Your home directory is %PRJHOME%.> would be returned as I<Your
+home directory is /nas_pp/test/cap.>
+
+=cut
+POD
+
+# From bash manpage:
+
+# An additional binary operator, =~, is available, with the same precedence as
+# == and !=. When it is used, the string to the right of the operator is
+# considered an extended regular expression and matched accordingly (as in
+# regex(3)). The return value is 0 if the string matches the pattern, and
+# 1 otherwise. If the regular expression is syntactically incorrect, the
+# conditional expression's return value is 2. If the shell option nocasematch
+# is enabled, the match is performed without regard to the case of alphabetic
+# characters. Any part of the pattern may be quoted to force the quoted
+# portion to be matched as a string. Bracket expressions in regular
+# expressions must be treated carefully, since normal quoting characters lose
+# their meanings between brackets. If the pattern is stored in a shell
+# variable, quoting the variable expansion forces the entire pattern to be
+# matched as a string. Substrings matched by parenthesized subexpressions
+# within the regular expression are saved in the array variable BASH_REMATCH.
+# The element of BASH_REMATCH with index 0 is the portion of the string
+# matching the entire regular expression. The element of BASH_REMATCH with
+# index n is the portion of the string matching the nth paren‐ thesized
+# subexpression.
+
+function fill_template() {
+  debug "Entered ${FUNCNAME[0]} ..."
+
+  [[ -z $1 ]] && Usage "fill_template requires a string to process."
+  s="$*"
+
+  local CHECKVAR='!!EMPTY!!'
+  local regex='%([^%]*)%'
+  local rc=0
+
+  [[ $s =~ $regex ]] || {
+    rc=$?
+    ((rc > 2)) && warn "Unknown error from =~ in fill_template."
+    ((rc == 2)) && warn "Syntax error in fill_template's regex."
+    ((rc == 1)) && warn "No %variable%'s found in string '%s'."
+    return $rc
+  }
+
+  while [[ $s =~ $regex ]]; do
+    debug "    Match: ${BASH_REMATCH[0]}"
+    debug "1st group: ${BASH_REMATCH[1]}"
+    debug "    value: ${!BASH_REMATCH[1]:-$CHECKVAR}"
+
+    local value="${!BASH_REMATCH[1]:-$CHECKVAR}"
+
+    [[ $value == "$CHECKVAR" ]] && {
+      warn "Variable '${BASH_REMATCH[1]}' is not a set environment variable."
+      value="!!${BASH_REMATCH[1]}!!"
+    }
+
+    s=${s//${BASH_REMATCH[0]}/$value}
+  done
+
+  debug "rc: $rc"
+  ((rc > 0)) && return $rc
+
+  debug "Leaving ${FUNCNAME[0]} ..."
+  printf '%s' "$s"
+}
+
+#----------------------------------------------------------------------------
+[[ $BASH == '/bin/bash' ]] || die "$0 is not a bash script and should not be sourcing this utility file."
+
+#----------------------------------------------------------------------------
+# Do we need to show usage and are we being sourced?
+
+declare UTILITY_SOURCED=0
+
+# shellcheck disable=SC2091
+$(return &> /dev/null) && UTILITY_SOURCED=1
+
+[[ -z $PARMS_NOT_CHECKED ]] && PARMS_NOT_CHECKED=1
+
+if ((PARMS_NOT_CHECKED)); then
+  ((PARMS_NOT_CHECKED--))
+  parm_check "$@"
+  (($? == 2)) && show_usage ''
+fi
+
+((UTILITY_SOURCED)) || die "$(basename "$0") must only be sourced."
+
+#----------------------------------------------------------------------------
+# In some cases, specifically scripts called by datastage, the environment is
+# not setup quite right. Try to fix this.
+
+EXPECTED_USER=$(id -un)
+
+if [[ $USER != "$EXPECTED_USER" ]]; then
+  [[ -z $TERM ]] && export TERM='xterm'
+  export USER="$EXPECTED_USER"
+  HOME=$(grep "$USER" /etc/passwd | cut -d ':' -f 6)
+  export HOME
+  # shellcheck disable=SC1090
+  source "$HOME/.bash_profile"
+fi
