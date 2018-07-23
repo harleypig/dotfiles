@@ -1,11 +1,17 @@
 #!/bin/bash
 
+return 0
+
 # Functions and aliases specific to the taskwarrior program.
 # http://taskwarrior.com
 
 taskpath=$(command -v task)
 
-if [ "$taskpath" != '' ]; then
+if [[ -n "$taskpath" ]]; then
+
+  task_completion="$HOME/.task/completion/task-completion.sh"
+  # shellcheck disable=SC1090
+  [[ -f $task_completion ]] && source "$task_completion"
 
   __task() {
 

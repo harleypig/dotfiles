@@ -4,7 +4,9 @@
 
 NPM=$(command -v npm 2> /dev/null)
 
-if [ -n $NPM ]; then
+if [[ -n $NPM ]]; then
+  # shellcheck disable=SC1090
+  source <(npm completion)
 
   alias ni='npm install'
   alias nis='npm install --save'
@@ -24,5 +26,4 @@ if [ -n $NPM ]; then
   alias nr='npm run'
   alias nls='npm list'
   alias nlsg='npm list --global'
-
 fi

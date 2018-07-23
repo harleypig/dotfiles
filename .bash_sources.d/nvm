@@ -1,0 +1,12 @@
+#!/bin/bash
+
+nvm_init='/usr/share/nvm/init-nvm.sh'
+
+# shellcheck disable=SC1090
+[[ -f $nvm_init ]] && source $nvm_init
+
+if [[ -d "$HOME/projects/nvm" ]]; then
+  export NVM_DIR="$HOME/projects/nvm"
+  # shellcheck disable=SC1090
+  [[ -s "$NVM_DIR/nvm.sh" ]] && source "${NVM_DIR}/nvm.sh"
+fi

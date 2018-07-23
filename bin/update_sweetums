@@ -4,12 +4,19 @@ set_title "$(basename "$0")"
 
 function notify() { notify-send --urgency=normal "sudo call, password may be required"; }
 
-UPDATE='notify && sudo apt update'
-UPGRADE='notify && sudo apt dist-upgrade'
-AUTOREMOVE='notify && sudo apt autoremove --purge'
-PURGE='notify && sudo apt purge'
+UPDATE='sudo apt update'
+UPGRADE='sudo apt dist-upgrade'
+AUTOREMOVE='sudo apt autoremove --purge'
+PURGE='sudo apt purge'
 PURGE_RC=$(dpkg -l | awk '/^rc/ {print $2}')
 
-$UPDATE && $UPGRADE && $AUTOREMOVE && $PURGE "$PURGE_RC"
+notify && \
+$UPDATE && \
+notify && \
+$UPGRADE && \
+notify && \
+$AUTOREMOVE && \
+notify && \
+$PURGE "$PURGE_RC"
 
 set_title 'done_updating'

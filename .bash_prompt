@@ -9,7 +9,7 @@ debug "Entering .bash_prompt ..."
 #   https://gist.github.com/623142
 
 # shellcheck disable=SC1091
-source_dir "$DOT_BASH_DIR/.bash_prompt.d"
+source_dir "$DOTFILES/.bash_prompt.d"
 
 # Setup color variables
 __update_prompt() {
