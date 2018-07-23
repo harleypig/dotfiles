@@ -1,0 +1,4 @@
+#!/bin/bash
+
+printf '=%.0s' {1..40}
+echo
