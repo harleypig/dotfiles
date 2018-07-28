@@ -1,16 +1,11 @@
 #!/bin/bash
 
-#############################################################################
-# Do we need to show usage and are we being sourced?
-
-declare PARSE_PARAMS_SOURCED=0
-
-# shellcheck disable=SC2091
-$(return &> /dev/null) && PARSE_PARAMS_SOURCED=1
-
 source utility
 
-((PARSE_PARAMS_SOURCED)) || die "$(basename "$0") must only be sourced."
+#############################################################################
+# Are we being sourced?
+
+[[ ${BASH_SOURCE[0]} == "$0" ]] && die "$(basename "$0") must only be sourced."
 
 #----------------------------------------------------------------------------
 # Check version of getopt.
