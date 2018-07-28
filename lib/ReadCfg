@@ -1,19 +1,15 @@
 #!/bin/bash
 
-#############################################################################
-# Do we need to show usage and are we being sourced?
-
-declare READ_CFG_SOURCED=0
-
-# shellcheck disable=SC2091
-$(return &> /dev/null) && READ_CFG_SOURCED=1
-
-# shellcheck disable=SC1091
 source utility
 
-((READ_CFG_SOURCED)) || die "$(basename "$0") must only be sourced."
+#############################################################################
+# Are we being sourced?
 
-# shellcheck disable=SC1091
+[[ ${BASH_SOURCE[0]} == "$0" ]] && die "$(basename "$0") must only be sourced."
+
+#############################################################################
+# Load libraries
+
 source ParseParams
 
 #############################################################################

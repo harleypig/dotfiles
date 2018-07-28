@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Most of these should probably be in their own library files.
+
 # XXX: try/catch?
 # XXX: exceptions? some kind of error-handling
 # XXX: import option so only 'source utility func1 func2 ...' is ever needed
@@ -53,15 +55,6 @@ an error message.
 If this file is called with C<-?>, C<-h> or C<--help> a usage message will be
 shown instead of an error message.
 
-=head2 Check For User Setup
-
-If the C<USER> environment variable and the output of C<id -un> do not match,
-then an attempt will be made to set the environment up correctly, changing the
-environment variables C<USER>, C<HOME>, and C<TERM> appropriately and
-attempting to load the correct C<.bash_profile>.
-
-This is needed mainly for datastage scripts. No one else should be affected.
-
 =head1 FUNCTIONS
 
 =cut
@@ -93,7 +86,7 @@ C<die> will call C<warn> with "message" and then C<exit 1>.
 =cut
 POD
 
-# XXX: Do we want to add the option to exit with specified error code?
+# XXX: #2 Add ability to specify exit code when die'ing
 
 function die() {
   (($#)) && warn "$*"
@@ -114,41 +107,12 @@ Otherwise, C<debug> will determine the function call stack and C<warn> the
 
 Example:
 
-  [somefunc(3):func(99)]: message
+  [file:86]: message
+  [file:func:99]: message
+  [parentfile:3][file:func:88] message
 
 =cut
 POD
-
-#function debug() {
-#  ((DEBUG)) || return
-#
-#  local -a stacks
-#  local curfile stack src display_src
-#
-#  for ((ix = ${#BASH_SOURCE[@]} - 1; ix >= 0; ix--)); do
-#    src="$(basename "${BASH_SOURCE[ix]}")"
-#
-#    [[ $src == 'utility' ]] && continue
-#
-#    if [[ $src != "$curfile" ]]; then
-#      curfile="$src"
-#      display_src="$src:"
-#    else
-#      display_src=
-#    fi
-#
-#    func="${FUNCNAME[ix]}"
-#    [[ $func =~ main|source ]] && func=
-#    [[ -n $func ]] && func+=':'
-#
-#    lineno="${BASH_LINENO[ix - 1]}"
-#
-#    stacks+=("$display_src$func$lineno")
-#  done
-#
-#  stack=$(join_array '|' 'stacks')
-#  warn "[$stack]: $*"
-#}
 
 function debug() {
   ((DEBUG)) || return
@@ -220,6 +184,7 @@ function show_usage() {
 
   # shellcheck disable=SC2086,SC2128
   usage "${usage_opts[@]}" "$usage_file" || {
+    # XXX: #1 show_usage is incorrectly report missing usage documentation
     warn "$usage_file_basename does not have usage documentation"
     ((no_usage++))
   }
@@ -237,21 +202,6 @@ function show_usage() {
   debug "... exiting subprocess via ${FUNCNAME[0]}."
   exit 1
 }
-
-#----------------------------------------------------------------------------
-: << POD
-=head2 parm_check
-
-Usage: parm_check "$@"
-
-C<parm_check> will check the parameter list. Currently this function only
-looks for '-?', '-h' or '--help' and execute C<show_usage> if they exist in
-the parameter list.
-
-=cut
-POD
-
-function parm_check() { [[ $* == *-[\?h]* ]] && return 2; }
 
 #----------------------------------------------------------------------------
 : << POD
@@ -352,7 +302,7 @@ Returns 0 if it is, 1 if it isn't.
 POD
 
 function is_varname() {
-  # If varname is a single character then it can't be and underscore '_'.
+  # If varname is a single character then it can't be an underscore '_'.
   [[ $1 == [A-Za-z] ]] && return 0
   [[ $1 == [A-Za-z_][A-Za-z0-9_]* ]] && return 0
   return 1
@@ -561,32 +511,9 @@ function fill_template() {
 #----------------------------------------------------------------------------
 # Do we need to show usage and are we being sourced?
 
-declare UTILITY_SOURCED=0
+[[ -z $PARMS_CHECKED ]] && {
+  PARMS_CHECKED=1
+  [[ $* == *-[\?h]* ]] && show_usage ''
+}
 
-# shellcheck disable=SC2091
-$(return &> /dev/null) && UTILITY_SOURCED=1
-
-[[ -z $PARMS_NOT_CHECKED ]] && PARMS_NOT_CHECKED=1
-
-if ((PARMS_NOT_CHECKED)); then
-  ((PARMS_NOT_CHECKED--))
-  parm_check "$@"
-  (($? == 2)) && show_usage ''
-fi
-
-((UTILITY_SOURCED)) || die "$(basename "$0") must only be sourced."
-
-#----------------------------------------------------------------------------
-# In some cases, specifically scripts called by datastage, the environment is
-# not setup quite right. Try to fix this.
-
-EXPECTED_USER=$(id -un)
-
-if [[ $USER != "$EXPECTED_USER" ]]; then
-  [[ -z $TERM ]] && export TERM='xterm'
-  export USER="$EXPECTED_USER"
-  HOME=$(grep "$USER" /etc/passwd | cut -d ':' -f 6)
-  export HOME
-  # shellcheck disable=SC1090
-  source "$HOME/.bash_profile"
-fi
+[[ ${BASH_SOURCE[0]} == "$0" ]] && die "$(basename "$0") must only be sourced."
