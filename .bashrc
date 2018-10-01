@@ -81,19 +81,19 @@ bind "set show-all-if-ambiguous on"
 bind Space:magic-space
 
 shopt -s autocd 2> /dev/null
-shopt -s cdable_vars
 shopt -s cdspell 2> /dev/null
+shopt -s dirspell 2> /dev/null
+shopt -s globstar 2> /dev/null
+
+shopt -s cdable_vars
 shopt -s checkhash
 shopt -s checkwinsize
 shopt -s cmdhist
-shopt -s dirspell 2> /dev/null
 shopt -s dotglob
-shopt -s globstar 2> /dev/null
 shopt -s histappend
 shopt -s histreedit
 shopt -s histverify
 shopt -s nocaseglob
-shopt -s nocaseglob;
 
 umask 022
 
@@ -134,6 +134,8 @@ source "$DOTFILES/.bash_prompt"
 # XXX: Add cleanup ability to add_path function.
 
 declare -a BIN_DIRS
+BIN_DIRS=("$DOTFILES/lib")
+BIN_DIRS=("$DOTFILES/bin")
 BIN_DIRS=("$HOME/bin")
 BIN_DIRS+=("$HOME/.vim/bin")
 BIN_DIRS+=("$HOME/.cabal/bin")
@@ -141,7 +143,6 @@ BIN_DIRS+=("$HOME/.minecraft/bin")
 BIN_DIRS+=("$HOME/Dropbox/bin")
 BIN_DIRS+=("$HOME/videos/bin")
 BIN_DIRS+=("$HOME/projects/depot_tools")
-BIN_DIRS+=("$HOME/projects/dotfiles/bin")
 #BIN_DIRS+=("$HOME/projects/android-sdk/tools")
 #BIN_DIRS+=("$HOME/projects/android-sdk/platform-tools")
 BIN_DIRS+=("/usr/lib/dart/bin")

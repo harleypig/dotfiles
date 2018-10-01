@@ -3,22 +3,22 @@
 ##################
 # https://codereview.stackexchange.com/questions/187439/using-extdebug-to-display-where-a-function-was-defined
 
-function where() {
-  while (($# > 0)); do
-    cmd="$1"
-    info=$(type "$cmd")
-
-    case $info in
-      *function*)
-        shopt -s extdebug
-        declare -F "$cmd"
-        shopt -u extdebug
-        ;;
-      *) echo "$info" ;;
-    esac
-    shift
-  done
-}
+#function where() {
+#  while (($# > 0)); do
+#    cmd="$1"
+#    info=$(type "$cmd")
+#
+#    case $info in
+#      *function*)
+#        shopt -s extdebug
+#        declare -F "$cmd"
+#        shopt -u extdebug
+#        ;;
+#      *) echo "$info" ;;
+#    esac
+#    shift
+#  done
+#}
 
 ##################
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
