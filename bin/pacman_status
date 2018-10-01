@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if command -v pacman &> /dev/null; then
+
+  #local now=$(date +%s)
+  declare update_duration='-'
+
+  declare last_update
+  last_update=$(grep -a "starting full system upgrade" /var/log/pacman.log | tail -1 | cut -c2-17)
+
+  [[ -n $last_update ]] && update_duration=$(__duration "$last_update")
+
+  if echo "$update_duration" | grep -q '[234]d'; then
+    update_duration="$(ansi fg yellow)$update_duration$(ansi off)"
+
+  elif echo "$update_duration" | grep -q '1d'; then
+    update_duration="$(ansi fg green)$update_duration$(ansi off)"
+
+  elif echo "$update_duration" | grep -q '[[:digit:]]d'; then
+    update_duration="$(ansi fg red)$update_duration$(ansi off)"
+
+  else
+    update_duration="$(ansi fg green)$update_duration$(ansi off)"
+
+  fi
+
+  echo "Pacman Last Updated: $update_duration"
+fi
