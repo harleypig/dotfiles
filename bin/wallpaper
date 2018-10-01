@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 
-# This script changes KDE's wallpaper.  It depends on the wdiget found at
-# http://kde-look.org/content/show.php?content=115147
+# This script loads images files found in specified directories and checks if
+# they have been displayed as a root image yet.  If they have, then they will
+# be ignored until all images have been displayed.
 
 use strict;
 use warnings;
@@ -10,18 +11,16 @@ use File::Find::Rule qw( :Type );
 use IPC::Run3;
 use List::AllUtils 'shuffle';
 
-my $seen = '/home/harleypig/bin/.seen_wallpaper';
+my $seen = '/home/harleypig/.seen_wallpaper';
 
 my @dirs = do {
 
-  my @cmd = qw( kde4-config --path wallpaper );
-  run3 \@cmd, undef, \my $out, \my $err;
+  my @dropbox = qw(
+    /home/harleypig/Dropbox/wallpaper
+    /home/harleypig/Dropbox/wallpaper_download
+  );
 
-  die "Couldn't find path to images: $err\n" if $err;
-
-  chomp $out;
-
-  ( qw( /home/harleypig/Dropbox/wallpaper ), split /:/, $out );
+  grep { -e $_ && -d _ } @dropbox;
 
 };
 
