@@ -26,7 +26,8 @@ __update_prompt() {
   local datetime='\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}'
 
   local pacman_status
-  pacman_status=$(__pacman_status)
+  #pacman_status=$(__pacman_status)
+  pacman_status=$(pacman_status)
 
   local parent
   parent=$(__parent_process)
