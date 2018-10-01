@@ -67,9 +67,6 @@ if command -v perl &>/dev/null; then
 
   ### dzil
   DZIL=$(command -v dzil)
-  echo "DZIL: $DZIL"
-  command -v dzil
-  echo "^"
 
   # shellcheck disable=SC2139
   if [[ -n $DZIL ]]; then
