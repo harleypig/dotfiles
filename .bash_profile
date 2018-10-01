@@ -14,7 +14,7 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-export BROWSER='chromium-browser'
+command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
 
 DOTFILES="$(dirname "$(readlink -nf "$HOME/.bash_profile")")"
 export DOTFILES
@@ -24,7 +24,7 @@ export DOTFILES
 # DOTFILES. If it doesn't exist, create the link.
 
 if [[ ! -f $HOME/.bashrc ]]; then
-  ln -s "$DOTFILES/.bashrc"
+  ln -s "$DOTFILES/.bashrc" "$HOME/.bashrc"
 else
   [[ $(readlink -nf "$HOME/.bashrc") == "$DOTFILES/.bashrc" ]] || {
     echo "$HOME/.bashrc is not linked to DOTFILES version."

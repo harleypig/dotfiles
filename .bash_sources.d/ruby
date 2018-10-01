@@ -6,16 +6,16 @@ if [[ -n $RUBY ]]; then
 
   rbenv_bin=$(command -v rbenv &>/dev/null)
   if [[ -d $HOME/.rbenv ]] && [[ -n $rbenv_bin ]]; then
-    PATH="$HOME/.rbenv/plugins/ruby-build/bin:$HOME/.rbenv/bin:${PATH}"
+    PATH="$HOME/.rbenv/plugins/ruby-build/bin:$HOME/.rbenv/bin:$PATH"
     eval "$(rbenv init -)"
   fi
 
   declare -x GEM_HOME
   GEM_HOME=$($RUBY -e 'print Gem.user_dir')
 
-  export PATH="${GEM_HOME}/bin:${PATH}"
+  export PATH="$GEM_HOME/bin:$PATH"
 
-  [[ -d $HOME/.rvm/bin         ]] && PATH="${PATH}:$HOME/.rvm/bin"
+  [[ -d $HOME/.rvm/bin         ]] && PATH="$PATH:$HOME/.rvm/bin"
   [[ -f $HOME/.rvm/scripts/rvm ]] && source "$HOME/.rvm/scripts/rvm"
 
   if [[ -d $HOME/.rbenv ]]; then
@@ -23,6 +23,6 @@ if [[ -n $RUBY ]]; then
 
   fi
 
-  [[ -f $HOME/.rvm//scripts/completion ]] && source "$HOME/.rvm/scripts/completion"
+  [[ -f $HOME/.rvm/scripts/completion ]] && source "$HOME/.rvm/scripts/completion"
 
 fi

@@ -14,5 +14,3 @@ alias df='df -h'
 alias h='history'
 alias md='mkdir -p'
 alias rd=rmdir
-alias realias='source ~/.bash_aliases'
-alias refunction='source ~/.bash_functions'
