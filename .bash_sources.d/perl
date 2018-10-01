@@ -13,24 +13,24 @@ if command -v perl &>/dev/null; then
     source /home/harleypig/.config/shcompgen.bashrc
   else
 
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmbin"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmcat"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmchkver"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmcore"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmcost"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmdoc"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmedit"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pminfo"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmless"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmlines"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmlist"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmman"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmpath"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmstripper"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmuninst"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmversion"
-    COMPLETION_UTIL="${COMPLETION_UTIL} pmxs"
-    COMPLETION_UTIL="${COMPLETION_UTIL} podpath"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmbin"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmcat"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmchkver"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmcore"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmcost"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmdoc"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmedit"
+    COMPLETION_UTIL="$COMPLETION_UTIL pminfo"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmless"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmlines"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmlist"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmman"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmpath"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmstripper"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmuninst"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmversion"
+    COMPLETION_UTIL="$COMPLETION_UTIL pmxs"
+    COMPLETION_UTIL="$COMPLETION_UTIL podpath"
 
     for CU in $COMPLETION_UTIL; do
       command -v "$CU" &>/dev/null && complete -C "$CU" "$CU"
@@ -48,17 +48,19 @@ if command -v perl &>/dev/null; then
 
     if [[ -n $PERLBREW_HOME ]]; then
 
-      PATH="${PERLBREW_HOME}/bin:${PATH}"
+      PATH="$PERLBREW_HOME/bin:$PATH"
 
-      export PERL5LIB="${PERLBREW_HOME}/lib/perl5:${PERL5LIB}"
-      export PERLBREW_ROOT="${PERLBREW_HOME}/perl5"
-      export PERL_LOCAL_LIB_ROOT="${PERLBREW_HOME}:${PERL_LOCAL_LIB_ROOT}"
-      export PERL_MB_OPT="--install_base \"${PERLBREW_HOME}\""
-      export PERL_MM_OPT="INSTALL_BASE=${PERLBREW_HOME}"
+      export PERL5LIB="$PERLBREW_HOME/lib/perl5:$PERL5LIB"
+      export PERLBREW_ROOT="$PERLBREW_HOME/perl5"
+      export PERL_LOCAL_LIB_ROOT="$PERLBREW_HOME:$PERL_LOCAL_LIB_ROOT"
+      export PERL_MB_OPT="--install_base \"$PERLBREW_HOME\""
+      export PERL_MM_OPT="INSTALL_BASE=$PERLBREW_HOME"
 
-      [[ -d $PERLBREW_ROOT/bin ]] && PATH="${PATH}:$PERLBREW_ROOT/bin"
+      [[ -d $PERLBREW_ROOT/bin ]] && PATH="$PATH:$PERLBREW_ROOT/bin"
       # shellcheck disable=SC1090
       [[ -f $PERLBREW_ROOT/etc/bashrc ]] && source $PERLBREW_ROOT/etc/bashrc
+
+      export PATH
 
     fi
   fi
@@ -74,21 +76,21 @@ if command -v perl &>/dev/null; then
     alias dz="$DZIL"
 
     # Run author or release tests, or a single test
-    alias dztestauthor="AUTHOR_TESTING=1 ${DZIL} run prove -l"
-    alias dztestauthorv="AUTHOR_TESTING=1 ${DZIL} run prove -lv"
-    alias dztestauthorall="AUTHOR_TESTING=1 ${DZIL} run prove -l xt/author/*.t"
-    alias dztestrelease="RELEASE_TESTING=1 ${DZIL} run prove -l"
-    alias dztestreleasev="RELEASE_TESTING=1 ${DZIL} run prove -lv"
-    alias dztestreleaseall="RELEASE_TESTING=1 ${DZIL} run prove -l xt/release/*.t"
-    alias dztesttest="${DZIL} run prove -l"
-    alias dztesttestv="${DZIL} run prove -lv"
+    alias dztestauthor="AUTHOR_TESTING=1 $DZIL run prove -l"
+    alias dztestauthorv="AUTHOR_TESTING=1 $DZIL run prove -lv"
+    alias dztestauthorall="AUTHOR_TESTING=1 $DZIL run prove -l xt/author/*.t"
+    alias dztestrelease="RELEASE_TESTING=1 $DZIL run prove -l"
+    alias dztestreleasev="RELEASE_TESTING=1 $DZIL run prove -lv"
+    alias dztestreleaseall="RELEASE_TESTING=1 $DZIL run prove -l xt/release/*.t"
+    alias dztesttest="$DZIL run prove -l"
+    alias dztesttestv="$DZIL run prove -lv"
 
-    alias authordeps="${DZIL} authordeps"
-    alias listdeps="${DZIL} listdeps"
+    alias authordeps="$DZIL authordeps"
+    alias listdeps="$DZIL listdeps"
 
     # XXX: test if bakeini is installed
     #if (perldoc -l Dist::Zilla::App::Command::bakeini >/dev/null 2>&1); then
-    perl -MDist::Zilla::App::Command::bakeini -e '' &> /dev/null && alias bakeini="${DZIL} bakeini"
+    perl -MDist::Zilla::App::Command::bakeini -e '' &> /dev/null && alias bakeini="$DZIL bakeini"
     #fi
   fi
 
@@ -118,8 +120,8 @@ if command -v perl &>/dev/null; then
 
   #echo "What does perldoc-complete do? Fix this!"
   #perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
-  #completion="complete -C ${perldoc} -o nospace -o default perldoc"
-  #[[ -f ${perldoc} ]] && ${completion}
+  #completion="complete -C $perldoc -o nospace -o default perldoc"
+  #[[ -f $perldoc ]] && $completion
 
   ### cpanm
   declare cpanm_bin
