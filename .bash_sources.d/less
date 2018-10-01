@@ -47,9 +47,10 @@ export LESS_TERMCAP_mr
 
 #------------------------------------------------------
 # dim (used for?)
+# Doesn't appear to be a tput command for dim, ignore this for now.
 
-LESS_TERMCAP_mh=$(ansi dim)
-export LESS_TERMCAP_mh
+#LESS_TERMCAP_mh=$(ansi dim)
+#export LESS_TERMCAP_mh
 
 #------------------------------------------------------
 # konsole and gnome-terminal require this

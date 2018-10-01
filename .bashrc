@@ -23,6 +23,7 @@ export -f debug
 
 #-----------------------------------------------------------------------
 # Sources all files found in $1.
+
 function source_dir() {
   local dir="$1"
 
@@ -47,7 +48,6 @@ function source_dir() {
 
 export -f source_dir
 
-
 #---------------------------------------------------------------------------------------
 # Don't delete this, it's for figuring things out sometimes.
 
@@ -64,38 +64,51 @@ else
 fi
 
 #---------------------------------------------------------------------------------------
-debug "Setting up shell options ..."
+# PATH setup
 
-CDPATH="."
-PROMPT_DIRTRIM=2
-HISTCONTROL="erasedups:ignoreboth"
-HISTFILESIZE=100000
-HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
-HISTSIZE=500000
-HISTTIMEFORMAT='%F %T '
+# Completely rebuild the path to my specifications.
 
-bind "set completion-ignore-case on"
-bind "set completion-map-case on"
-bind "set mark-symlinked-directories on"
-bind "set show-all-if-ambiguous on"
-bind Space:magic-space
+# Run this last to allow for other stuff above modifying the path
 
-shopt -s autocd 2> /dev/null
-shopt -s cdspell 2> /dev/null
-shopt -s dirspell 2> /dev/null
-shopt -s globstar 2> /dev/null
+declare -a BIN_DIRS
 
-shopt -s cdable_vars
-shopt -s checkhash
-shopt -s checkwinsize
-shopt -s cmdhist
-shopt -s dotglob
-shopt -s histappend
-shopt -s histreedit
-shopt -s histverify
-shopt -s nocaseglob
+IFS=':' read -ra BIN_DIRS <<< "$PATH"
 
-umask 022
+# !!! Do not alphabetize, order is important here.
+
+[[ -n $GOROOT ]] && BIN_DIRS+=("$GOROOT/bin")
+[[ -n $GOPATH ]] && BIN_DIRS+=("$GOPATH/bin")
+BIN_DIRS+=("/usr/lib/dart/bin")
+
+BIN_DIRS+=("$DOTFILES/lib")
+BIN_DIRS+=("$DOTFILES/bin")
+
+BIN_DIRS+=("$HOME/bin")
+BIN_DIRS+=("$HOME/.vim/bin")
+BIN_DIRS+=("$HOME/.cabal/bin")
+BIN_DIRS+=("$HOME/.minecraft/bin")
+BIN_DIRS+=("$HOME/Dropbox/bin")
+BIN_DIRS+=("$HOME/videos/bin")
+BIN_DIRS+=("$HOME/projects/depot_tools")
+#BIN_DIRS+=("$HOME/projects/android-sdk/tools")
+#BIN_DIRS+=("$HOME/projects/android-sdk/platform-tools")
+
+declare NEWPATH
+
+for d in "${BIN_DIRS[@]}"; do
+  [[ $d == '.' ]] && continue
+
+  dir=$(readlink -ne "$d")
+
+  [[ -z $dir ]] && continue
+  [[ -d $dir ]] || continue
+  [[ $NEWPATH != *"$dir"* ]] || continue
+
+  NEWPATH="$NEWPATH:$dir"
+
+done
+
+export PATH="$NEWPATH:."
 
 #---------------------------------------------------------------------------------------
 # Turn on bash completion
@@ -113,51 +126,16 @@ done
 # Simple check and source lines
 
 #[[ -z $SSH_AUTH_SOCK && -r $DOTFILES/.ssh-agent ]] && source "$DOTFILES/.ssh-agent"
-[[ -f $DOTFILES/.Xresources ]] && xrdb "$DOTFILES/.Xresources"
-[[ -f $DOTFILES/bin/tokens ]] && source "$DOTFILES/bin/tokens"
+[[ -f $DOTFILES/.Xresources ]] && command -v xrdb &> /dev/null && xrdb "$DOTFILES/.Xresources"
+#[[ -f $DOTFILES/bin/tokens ]] && source "$DOTFILES/bin/tokens"
 
 source_dir "$DOTFILES/.bash_sources.d"
 source_dir "$DOTFILES/$HOSTNAME"
-source_dir "$DOTFILES/.sekrets"
+#source_dir "$DOTFILES/.sekrets"
 source_dir "$HOME/.bash_profile.d"
 source_dir "$HOME/.bashrc.d"
 
-source "$DOTFILES/.bash_prompt"
-
 #---------------------------------------------------------------------------------------
-# PATH setup
-
-# Run this last to allow for other stuff above modifying the path
-
-# Do not alphabetize, order is important here.
-# XXX: Use add_path function instead here.
-# XXX: Add cleanup ability to add_path function.
-
-declare -a BIN_DIRS
-BIN_DIRS=("$DOTFILES/lib")
-BIN_DIRS=("$DOTFILES/bin")
-BIN_DIRS=("$HOME/bin")
-BIN_DIRS+=("$HOME/.vim/bin")
-BIN_DIRS+=("$HOME/.cabal/bin")
-BIN_DIRS+=("$HOME/.minecraft/bin")
-BIN_DIRS+=("$HOME/Dropbox/bin")
-BIN_DIRS+=("$HOME/videos/bin")
-BIN_DIRS+=("$HOME/projects/depot_tools")
-#BIN_DIRS+=("$HOME/projects/android-sdk/tools")
-#BIN_DIRS+=("$HOME/projects/android-sdk/platform-tools")
-BIN_DIRS+=("/usr/lib/dart/bin")
-BIN_DIRS+=("${GOROOT}/bin")
-BIN_DIRS+=("${GOPATH}/bin")
-
-for d in "${BIN_DIRS[@]}"; do
-  dir=$(readlink -nf "$d")
-
-  [[ -d $dir ]] || continue
-  [[ $PATH != *"$dir"* ]] || continue
-  PATH="${PATH}:${dir}"
-
-done
-
-export PATH="${PATH}:."
+source "$DOTFILES/.bash_prompt"
 
 debug "Exiting ..."
