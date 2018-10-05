@@ -66,21 +66,16 @@ _update_prompt() {
   # don't use 'local exit_status' here because it wipes out PIPESTATUS.
   exit_status=$(_exit_status "${PIPESTATUS[@]}")
 
-  local vcs
-  vcs=$(__git_status)
-
   # Build the prompt.
   # shellcheck disable=SC1117
   {
-    if [ "$USER" == 'root' ]; then
-      user_color="\[$(ansi fg bright_red)\]"
-    else
-      user_color="\[$(ansi fg bright_cyan)\]"
-    fi
-
     prompt_color="\[$(ansi fg cyan)\]"
     color_off="\[$(ansi off)\]"
-    text_yellow="\[$(ansi fg yellow)\]"
+
+    user="$(ansi fg bright_cyan)\u${prompt_color}"
+    [[ $USER == 'root' ]] && user="$(ansi fg bright_red)\u"
+
+    hostname="$(ansi fg yellow)\H${prompt_color}"
 
     # Append the last command, clear the history cache and reread the history file
     PS1="${color_off}$(
@@ -90,9 +85,7 @@ _update_prompt() {
     )\n${prompt_color}"
 
     PS1+="$(pacman_status)\n"
-    PS1+="$(_parent)"
-    PS1+="${user_color}\u${prompt_color}@${text_yellow}\H${prompt_color}: "
-    PS1+="$(dir_readable)${color_off}${vcs}\n"
+    PS1+="$(_parent)${user}@${hostname}: $(dir_readable)${color_off}$(git_status)\n"
     PS1+="${exit_status} $ "
   }
 }

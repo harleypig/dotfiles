@@ -64,6 +64,11 @@ else
 fi
 
 #---------------------------------------------------------------------------------------
+# Force 256 color support
+
+export TERM='xterm-256color'
+
+#---------------------------------------------------------------------------------------
 # PATH setup
 
 # Completely rebuild the path to my specifications.

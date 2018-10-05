@@ -28,11 +28,11 @@ info=$(__git_ps1 '%s')
 
 # shellcheck disable=SC1117
 if [ -n "$info" ]; then
-  git_normal_color="\[$(ansi fg green)\]"
+  git_normal_color=$(ansi fg green)
   git_unstaged_color=$(ansi fg yellow)
   git_staged_color=$(ansi fg red)
-  git_push_color="\[$(ansi bg red fg yellow)\]"
-  git_pull_color="\[$(ansi bg red fg yellow)\]"
+  git_push_color=$(ansi bg red fg yellow)
+  git_pull_color=$(ansi bg red fg yellow)
   color_off=$(ansi off)
 
   git_pull_text='PULL'
@@ -57,5 +57,4 @@ if [ -n "$info" ]; then
   repo="$(basename "$(git rev-parse --show-toplevel)"): "
 
   printf ' %s(%s%s%s)%s' "$status_color" "$repo" "$branch" "$upstream" "$color_off"
-
 fi
