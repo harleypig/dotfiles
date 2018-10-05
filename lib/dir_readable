@@ -1,10 +1,6 @@
 #!/bin/bash
 
-debug "Setting up dir_readable ..."
-
-function __dir_readable() {
-  debug "Entering ${FUNCNAME[0]} ..."
-
+function _dir_readable() {
   local pwd_max=45 # How long before we truncate?
   local trunc='<'  # Mark truncated name with this.
 
@@ -20,9 +16,8 @@ function __dir_readable() {
 
   fi
 
-  debug "... exiting ${FUNCNAME[0]}."
   echo "$readable$pwd$(ansi off)"
 
 }
 
-debug "... done setting up dir_readable."
+_dir_readable "$@"

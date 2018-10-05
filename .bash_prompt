@@ -11,35 +11,79 @@ debug "Entering .bash_prompt ..."
 # shellcheck disable=SC1091
 source_dir "$DOTFILES/.bash_prompt.d"
 
-# Setup color variables
-__update_prompt() {
+#----------------------------------------------------------------------------
+function _parent_process() {
 
-  # don't use local exit_status here because it wipes out PIPESTATUS.
-  exit_status=$(__exit_status "${PIPESTATUS[@]}")
+  local parents
 
-  debug "Entering ${FUNCNAME[0]} ..."
+  parents=$(pstree -A $PPID 2> /dev/null) || { return 1; }
+
+  parents=${parents/%-+*/}
+  parents=${parents//tmux/}
+  parents=${parents//sshd/}
+  parents=${parents//---bash/}
+  parents=${parents//---pstree/}
+  parents=${parents//gnome-terminal-/}
+  parents=${parents//: server/}
+
+  [[ -n $parents ]] \
+    && printf '\[%s\](%s)\[%s\] ' "$(ansi fg bright_yellow bg red)" "$parents" "$(ansi off)"
+
+}
+
+#----------------------------------------------------------------------------
+function _exit_status() {
+  good_exit_text=':)'
+  bad_exit_text=':('
+
+  local -a status
+
+  for s in "$@"; do
+
+    # Wrap the exit symbols in appropriate ansi codes.
+
+    # If a command is still writing to the pipe and a later command exits, the
+    # first command will exit with a status of 141.  This causes confusion
+    # with commands like echo or head.
+
+    # Doing this *will* cause confusion if something does exit abnormally but
+    # doesn't throw an appropriate exit status.
+
+    case "$s" in
+      0 | 141) status+=("$(ansi bg blue fg yellow)$good_exit_text$(ansi off)") ;;
+      *) status+=("$(ansi bg red fg white)$bad_exit_text$(ansi off)") ;;
+    esac
+  done
+
+  statuscodes=$(join_array ' | ' 'status')
+
+  printf '\[%s\]' "$statuscodes"
+}
+
+#----------------------------------------------------------------------------
+_update_prompt() {
+
+  # don't use 'local exit_status' here because it wipes out PIPESTATUS.
+  exit_status=$(_exit_status "${PIPESTATUS[@]}")
 
   local cwd
-  cwd=$(__dir_readable)
+  cwd=$(dir_readable)
 
-  # '\D' is a format specifier for bash prompts. See bash manpage, PROMPTING section.
-  local datetime='\D{%a %b %d %Y %T %nDoW: %w DoY: %j Wk: %V Epoch: %s}'
 
   local pacman_status
-  #pacman_status=$(__pacman_status)
   pacman_status=$(pacman_status)
 
   local parent
-  parent=$(__parent_process)
+  parent=$(_parent_process)
 
   local vcs
   vcs=$(__git_status)
 
-  local versionline
-  versionline=$(__versions)
+  #local versionline
+  #versionline=$(__versions)
 
-  local sysinfo
-  sysinfo=$(__sysinfo)
+  #local sysinfo
+  #sysinfo=$(__sysinfo)
 
   # Build the prompt.
   # shellcheck disable=SC1117
@@ -61,16 +105,18 @@ __update_prompt() {
       history -r
     )"
 
-    PS1+="\n${parent}${parent:+ }${prompt_color}${datetime}"
-    PS1+="\n${sysinfo}"
-    PS1+="\n${versionline}"
-    PS1+="\n${pacman_status}"
-    #PS1+="\n\n${text_yellow}(tmux|ctl-a) new -s session_name | switch -t session_name | list-sessions${text_reset}"
-    PS1+="\n${user_color}\u${prompt_color}@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
+    PS1+="\n${prompt_color}${pacman_status}"
+    PS1+="\n${parent}${user_color}\u${prompt_color}@${text_yellow}\H${prompt_color}: $(dir_readable)${text_reset}${vcs}"
     PS1+="\n${exit_status} $ "
+
+    #PS1+="\n${parent}${parent:+ }${prompt_color}${datetime}"
+    #PS1+="\n${sysinfo}"
+    #PS1+="\n${versionline}"
+    #PS1+="\n${pacman_status}"
+    ##PS1+="\n\n${text_yellow}(tmux|ctl-a) new -s session_name | switch -t session_name | list-sessions${text_reset}"
+    #PS1+="\n${user_color}\u${prompt_color}@${text_yellow}\H${prompt_color}: ${cwd}${text_reset}${vcs}"
+    #PS1+="\n${exit_status} $ "
   }
 }
 
-[[ -n $PS1 ]] && PROMPT_COMMAND='__update_prompt'
-
-debug "Exiting .bash_prompt ..."
+[[ -n $PS1 ]] && PROMPT_COMMAND='_update_prompt'
