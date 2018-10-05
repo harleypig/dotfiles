@@ -1,15 +1,10 @@
 #!/bin/bash
 
-debug "Entering .bash_prompt ..."
-
 # Ideas ripped off and made to fit from:
 #   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
 #   http://www.termsys.demon.co.uk/vtansi.htm
 #   https://gist.github.com/621452
 #   https://gist.github.com/623142
-
-# shellcheck disable=SC1091
-source_dir "$DOTFILES/.bash_prompt.d"
 
 #----------------------------------------------------------------------------
 function _parent() {
