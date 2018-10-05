@@ -13,6 +13,7 @@ git_push_color=$(ansi bg red fg yellow)
 git_pull_color=$(ansi bg red fg yellow)
 git_pull_text='PULL'
 git_push_text='PUSH'
+color_off=$(ansi off)
 
 if command -v git &>/dev/null; then
 
@@ -49,22 +50,18 @@ if command -v git &>/dev/null; then
       if [ -n "$staged" ]; then status_color="$git_staged_color"; fi
 
       upstream=
-      if [ -n "$behind" ]; then upstream=" $git_pull_color$git_pull_text$(ansi off)"; fi
-      if [ -n "$ahead" ]; then upstream=" $git_push_color$git_push_text$(ansi off)"; fi
+      if [ -n "$behind" ]; then upstream=" $git_pull_color$git_pull_text$color_off"; fi
+      if [ -n "$ahead" ]; then upstream=" $git_push_color$git_push_text$color_off"; fi
 
       repo=
       if [[ $(git rev-parse --is-bare-repository) == 'false' ]]; then
         repo="$(basename "$(git rev-parse --show-toplevel)"): "
       fi
 
-      printf ' %s(%s%s%s)%s' "$status_color" "$repo" "$branch" "$upstream" "$(ansi off)"
+      printf ' %s(%s%s%s)%s' "$status_color" "$repo" "$branch" "$upstream" "$color_off"
 
     fi
-
-    debug "... exiting ${FUNCNAME[0]}."
-
   }
-
 else
   function __git_status() { printf ''; }
 
