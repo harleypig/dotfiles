@@ -6,6 +6,9 @@
 #   https://gist.github.com/621452
 #   https://gist.github.com/623142
 
+# XXX: Incorporate this somehow?
+#      https://www.commandlinefu.com/commands/view/7916/put-a-console-clock-in-top-right-corner
+
 #----------------------------------------------------------------------------
 function _parent() {
 
