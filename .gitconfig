@@ -82,6 +82,8 @@
 
   find = !git ls-tree -r --name-only HEAD | grep --color $1
 
+  ignored = !git ls-tree --others -i --exclude-standard
+  
   m    = merge
 
   p    = pull
