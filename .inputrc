@@ -14,8 +14,13 @@ set mark-symlinked-directories on
 set output-meta on
 set show-all-if-ambiguous on
 set show-all-if-unmodified on
+set show-mode-in-prompt on
 set skip-completed-text
 set visible-stats on
+
+# Adds [INS] or [CMD] to prompt
+set vi-ins-mode-string \1[INS] \e[6 q\2
+set vi-cmd-mode-string \1[CMD] \e[2 q\2
 
 "\e[A":history-search-backward
 "\e[B":history-search-forward

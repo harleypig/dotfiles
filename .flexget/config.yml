@@ -30,7 +30,7 @@ schedules:
 templates:
   global:
     verify_ssl_certificates: no
-    download: /home/harleypig/videos/torrents/
+    download: /home/media/.torrents/
     magnets: no
     free_space:
       path: /home/media
@@ -112,9 +112,9 @@ templates:
       strict: no
     exists_series:
       path:
-        - /home/media2/tv/
-        - /home/media2/tv_permanent/
-        - /home/media/tv_watching/
+        #        - /home/media2/tv/
+        #        - /home/media2/tv_permanent/
+        #        - /home/media/tv_watching/
         - /home/media/tv/
       allow_different_qualities: better
     configure_series:
@@ -216,9 +216,10 @@ tasks:
     manual: yes
     filesystem:
       path:
-        - /home/media2/tv
-        - /home/media2/tv_permanent
-        - /home/media/tv_watching
+        #        - /home/media2/tv
+        #        - /home/media2/tv_permanent
+        #        - /home/media/tv_watching
+        - /home/media/tv
       regexp: '.*\.(mp4|mkv|mpeg|mpg|wmv)$'
       recursive: yes
     disable: builtins
@@ -230,6 +231,7 @@ tasks:
           tracking: no
       from:
         filesystem:
-          - /home/media2/tv
-          - /home/media2/tv_permanent
-          - /home/media/tv_watching
+          #          - /home/media2/tv
+          #          - /home/media2/tv_permanent
+          #          - /home/media/tv_watching
+          - /home/media/tv

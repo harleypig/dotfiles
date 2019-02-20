@@ -100,6 +100,9 @@ BIN_DIRS+=("$HOME/projects/depot_tools")
 
 declare NEWPATH
 
+# If using ccache, it needs to be first on the path
+[[ -d /usr/lib/ccache/bin ]] && NEWPATH=':/usr/lib/ccache/bin'
+
 for d in "${BIN_DIRS[@]}"; do
   [[ $d == '.' ]] && continue
 

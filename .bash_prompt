@@ -17,11 +17,12 @@ function _parent() {
   parents=$(pstree -A $PPID 2> /dev/null) || { return 1; }
 
   parents=${parents/%-+*/}
-  parents=${parents//tmux/}
-  parents=${parents//sshd/}
   parents=${parents//---bash/}
   parents=${parents//---pstree/}
   parents=${parents//gnome-terminal-/}
+  parents=${parents//tmux/}
+  parents=${parents//sshd/}
+  parents=${parents//login/}
   parents=${parents//: server/}
 
   [[ -n $parents ]] \
@@ -75,6 +76,9 @@ _update_prompt() {
 
     hostname="$(ansi fg yellow)\H${prompt_color}"
 
+    system_reboot="$(system_needs_reboot)"
+    pacman_status="$(pacman_status)"
+
     # Append the last command, clear the history cache and reread the history file
     PS1="${color_off}$(
       history -a
@@ -82,7 +86,8 @@ _update_prompt() {
       history -r
     )\n${prompt_color}"
 
-    PS1+="$(pacman_status)\n"
+    [[ -n $system_reboot ]] && PS1+="${system_reboot}\n"
+    [[ -n $pacman_status ]] && PS1+="${pacman_status}\n"
     PS1+="$(_parent)${user}@${hostname}: $(dir_readable)${color_off}$(git_status)\n"
     PS1+="${exit_status} $ "
   }

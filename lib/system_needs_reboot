@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# This works on Arch Linux. Don't know about anything else.
+
+# file /boot/vmlinuz-linux:
+# /boot/vmlinuz-linux: Linux kernel x86 boot executable bzImage, version 4.18.14-arch1-1-ARCH (builduser@heftig-9905) #1 SMP PREEMPT Sat Oct 13 13:42:37 UTC 2018, RO-rootFS, swap_dev 0x5, Normal VGA
+
+# uname -r:
+# 4.18.12-arch1-1-ARCH
+
+vmlinuz='/boot/vmlinuz-linux'
+
+l=$(file $vmlinuz)
+read -ra latest <<< "$l"
+
+current=$(uname -r)
+
+if [[ ${latest[7]} != 'version' ]]; then
+  echo "file $vmlinuz has unexpected format, quitting"
+  exit
+
+elif [[ ${latest[8]} != "$current" ]]; then
+  echo "$(ansi bg red fg yellow bold)REBOOT$(ansi off) - Current: $current Latest: ${latest[8]}"
+
+fi

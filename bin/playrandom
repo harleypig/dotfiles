@@ -1,0 +1,4 @@
+#!/bin/bash
+
+s="$(comm -13 <(sort -u .played) <(find . -type f -printf '%P\n' | sort -u) | shuf -n 1 | tee -a .played)"
+mplayer "$s"

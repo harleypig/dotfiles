@@ -145,4 +145,7 @@ alias vimwiki='vim +VimwikiIndex'
 OLDTITLE=
 TEMPLATE=
 
+# Play random file as movie
+alias watchrandom='find -type f -print0 | shuf -z -n 1 | xargs -L1 --null mplayer'
+
 #echo "... ended personal_aliases." >> ~/bash_startup.log
