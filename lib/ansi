@@ -59,21 +59,13 @@ function _ansi() {
 
     case $cmd in
       bell) seq+=$(tput bel) ;;
-
       reverse | rev) seq+=$(tput rev) ;;
-
       italics_on) seq+=$(tput sitm) ;;
-
       italics_off) seq+=$(tput ritm) ;;
-
       stdout_on) seq+=$(tput smso) ;;
-
       stdout_off) seq+=$(tput rmso) ;;
-
       underline_on) seq+=$(tput smul) ;;
-
       underline_off) seq+=$(tput rmul) ;;
-
       off) seq+=$(tput sgr0) ;;
 
       fg | bg)
