@@ -1,17 +1,17 @@
 # Some ideas came from these places ...
 #
 # http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples
+# https://gist.github.com/felipesabino/6391408
 # https://git.wiki.kernel.org/index.php/Aliases
 # https://news.ycombinator.com/item?id=14045787
-# http://www.jukie.net/bart/blog/pimping-out-git-log
-# https://gist.github.com/felipesabino/6391408
 # http://vimcasts.org/episodes/synchronizing-plugins-with-git-submodules-and-pathogen/
+# http://www.jukie.net/bart/blog/pimping-out-git-log
 
 # Check these pages out for more ideas ...
 #
-# http://gggritso.com/human-git-aliases
-# https://stackoverflow.com/questions/3321492/git-alias-with-positional-parameters
+# https://gggritso.com/human-git-aliases
 # https://github.com/GitAlias/gitalias/blob/master/gitalias.txt
+# https://stackoverflow.com/questions/3321492/git-alias-with-positional-parameters
 
 ##################################################################################
 

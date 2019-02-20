@@ -52,7 +52,7 @@ if [ -n "$info" ]; then
 
   upstream=
   if [ -n "$behind" ]; then upstream=" $git_pull_color$git_pull_text$color_off"; fi
-  if [ -n "$ahead" ]; then upstream=" $git_push_color$git_push_text$color_off"; fi
+  if [[ ! -f .nopush && -n "$ahead" ]]; then upstream=" $git_push_color$git_push_text$color_off"; fi
 
   repo="$(basename "$(git rev-parse --show-toplevel)"): "
 

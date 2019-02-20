@@ -166,40 +166,33 @@ export -f __is_array_empty
 
 ######################################################################################
 
-function __duration() {
+function duration() {
 
-  local _date="$1"
+  local ddate="$1"
 
-  local _seconds
-  _seconds=$(date --date="$_date" +%s)
+  local seconds
+  seconds=$(date --date="$ddate" +%s)
 
-  local _now
-  _now=$(date +%s)
+  local now
+  now=$(date +%s)
 
-  local _duration=$((_now - _seconds))
-  local _days=$((_duration / (60 * 60 * 24)))
-  local _hours=$((_duration % (60 * 60 * 24) / (60 * 60)))
-  local _minutes=$((_duration % (60 * 60) / 60))
+  local duration=$((now - seconds))
 
-  local _string
+  local days=$((duration / (60 * 60 * 24)))
+  local hours=$((duration % (60 * 60 * 24) / (60 * 60)))
+  local minutes=$((duration % (60 * 60) / 60))
 
-  if [[ $_days -ne 0 ]]; then
-    _string="$_string${_days}d "
-  fi
+  local string
 
-  if [[ $_hours -ne 0 ]]; then
-    _string="$_string${_hours}h "
-  fi
+  [[ $days -ne 0 ]] && string="$string${days}d "
+  [[ $hours -ne 0 ]] && string="$string${hours}h "
+  [[ $minutes -ne 0 ]] && string="$string${minutes}m"
 
-  if [[ $_minutes -ne 0 ]]; then
-    _string="$_string${_minutes}m "
-  fi
-
-  echo "$_string"
+  [[ -n $string ]] && echo "$string"
 
 }
 
-export -f __duration
+export -f duration
 
 # Don't remember where I got this. Returns true if the current terminal can do
 # 256 colors, otherwise it returns false.
