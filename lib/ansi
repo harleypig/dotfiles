@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# shellcheck disable=SC1117
-
 # Peruse /usr/share/doc/xterm/*
 
 # https://github.com/fidian/ansi has some good ideas, and some interesting
@@ -49,38 +47,53 @@ function _ansi() {
     local bg='setab'
   }
 
-  local seq
+  local str
+  local FIRST=''
+  local LAST=''
 
   while [ $# -ge 1 ]; do
     cmd=$1
     shift
 
-    debug "$cmd $1"
-
+    local seq
+    
     case $cmd in
-      bell) seq+=$(tput bel) ;;
-      reverse | rev) seq+=$(tput rev) ;;
-      italics_on) seq+=$(tput sitm) ;;
-      italics_off) seq+=$(tput ritm) ;;
-      stdout_on) seq+=$(tput smso) ;;
-      stdout_off) seq+=$(tput rmso) ;;
-      underline_on) seq+=$(tput smul) ;;
-      underline_off) seq+=$(tput rmul) ;;
-      off) seq+=$(tput sgr0) ;;
+      -sb)
+        FIRST='\\['
+        LAST='\\]'
+        ;;
+        
+      -n)
+        FIRST='\001'
+        LAST='\002'
+        ;;
+        
+      bell) seq=$(tput bel) ;;
+      reverse | rev) seq=$(tput rev) ;;
+      italics_on) seq=$(tput sitm) ;;
+      italics_off) seq=$(tput ritm) ;;
+      stdout_on) seq=$(tput smso) ;;
+      stdout_off) seq=$(tput rmso) ;;
+      underline_on) seq=$(tput smul) ;;
+      underline_off) seq=$(tput rmul) ;;
+      off) seq=$(tput sgr0) ;;
 
       fg | bg)
         c=$1
-        [[ -v color[$c] ]] && c=${color[$c]}
-        seq+=$(tput "${!cmd}" $c)
+        # shellcheck disable=SC2244
+        [[ ${color[$c]+isset} ]] && c=${color[$c]}
+        seq=$(tput "${!cmd}" $c)
         shift
         ;;
 
-      *) seq+=$(tput "$cmd") ;;
+      *) seq=$(tput "$cmd") ;;
 
     esac
+    
+    str+="$FIRST$seq$LAST"
   done
 
-  printf '%s' "$seq"
+  printf '%s' "$str"
   return
 }
 
