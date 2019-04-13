@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# History environment variables belong in rc because they are only useful when
+# in interactive mode.
+
+[[ $- == *i* ]] || return 0
+
+HISTCONTROL="erasedups:ignoreboth"
+HISTFILESIZE=100000
+HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
+HISTSIZE=500000
+HISTTIMEFORMAT='%F %T '
+
+shopt -s cmdhist
+shopt -s histappend
+shopt -s histreedit
+shopt -s histverify
+
+alias h='history'
