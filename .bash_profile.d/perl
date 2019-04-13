@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Environment variables for perl and perl related stuff
+
+if command -v perl &>/dev/null; then
+
+  ### environment variables
+  export PERL5LIB="lib"
+
+  ### perlbrew
+  if command -v perlbrew &>/dev/null; then
+
+    if [[ -d $HOME/perl5 ]]; then
+      export PERLBREW_HOME=$HOME
+    elif [[ -d /opt/perl5 ]]; then
+      export PERLBREW_HOME=/opt
+    fi
+
+    if [[ -n $PERLBREW_HOME ]]; then
+
+      export PERL5LIB="$PERLBREW_HOME/lib/perl5:$PERL5LIB"
+      export PERLBREW_ROOT="$PERLBREW_HOME/perl5"
+      export PERL_LOCAL_LIB_ROOT="$PERLBREW_HOME:$PERL_LOCAL_LIB_ROOT"
+      export PERL_MB_OPT="--install_base \"$PERLBREW_HOME\""
+      export PERL_MM_OPT="INSTALL_BASE=$PERLBREW_HOME"
+
+      PATH="$PERLBREW_HOME/bin:$PATH"
+
+      [[ -d $PERLBREW_ROOT/bin ]] && PATH="$PATH:$PERLBREW_ROOT/bin"
+
+      export PATH
+
+    fi
+  fi
+fi
