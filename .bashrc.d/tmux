@@ -1,0 +1,26 @@
+#!/bin/bash
+
+[[ $- == *i* ]] || return 0
+
+# swap this window to the left
+alias swapl='tmux swap-window -t -1'
+
+# swap this window to the right
+alias swapr='tmux swap-window -t +1'
+
+# swap this window with the one passed in
+alias swapw='tmux swap-window -t'
+
+# shellcheck disable=SC1083
+circled_digits=$(printf %s \${$'\xEA',\`,{a..s}} | iconv -f UTF-16BE)
+
+tmux_winidx_circled() {
+  local winidx
+  winidx=$(tmux display-message -p '#I')
+
+  if ((winidx > 20)); then
+    echo "($winidx)"
+  else
+    echo "${circled_digits:winidx:1}"
+  fi
+}
