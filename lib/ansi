@@ -56,18 +56,18 @@ function _ansi() {
     shift
 
     local seq
-    
+
     case $cmd in
       -sb)
         FIRST='\\['
         LAST='\\]'
         ;;
-        
+
       -n)
         FIRST='\001'
         LAST='\002'
         ;;
-        
+
       bell) seq=$(tput bel) ;;
       reverse | rev) seq=$(tput rev) ;;
       italics_on) seq=$(tput sitm) ;;
@@ -89,7 +89,7 @@ function _ansi() {
       *) seq=$(tput "$cmd") ;;
 
     esac
-    
+
     str+="$FIRST$seq$LAST"
   done
 
