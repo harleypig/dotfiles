@@ -1,0 +1,21 @@
+#!/bin/bash
+
+[[ $- == *i* ]] || return 0
+
+command -v ruby &> /dev/null || return 0
+
+if command -v rbenv &> /dev/null; then
+  if [[ -d $HOME/.rbenv ]]; then
+    PATH="$HOME/.rbenv/plugins/ruby-build/bin:$HOME/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+  fi
+fi
+
+declare -x GEM_HOME
+GEM_HOME=$(ruby -e 'print Gem.user_dir')
+
+export PATH="$GEM_HOME/bin:$PATH"
+
+[[ -d $HOME/.rvm/bin ]] && PATH="$PATH:$HOME/.rvm/bin"
+[[ -f $HOME/.rvm/scripts/rvm ]] && source "$HOME/.rvm/scripts/rvm"
+[[ -f $HOME/.rvm/scripts/completion ]] && source "$HOME/.rvm/scripts/completion"

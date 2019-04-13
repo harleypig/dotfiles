@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Look into cdots instead of the below setup.
+# http://www.fvue.nl/wiki/Bash_cd_alias:_cdots
+
+[[ $- == *i* ]] || return 0
+
+# System
+alias c='clear'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias df='df -h'
+alias h='history'
+alias md='mkdir -p'
+alias rd=rmdir
+
+# XXX: Move to tools/bin so we can accept multiple filenames
+function vimwhich() { vim "$(command -v "$1")"; }

@@ -1,0 +1,108 @@
+#!/bin/bash
+
+[[ $- == *i* ]] || return 0
+
+# Aliases and functions for perl
+
+command -v perl &> /dev/null || return 0
+
+### bash completion related setup
+if [[ -f /home/harleypig/.config/shcompgen.bashrc ]]; then
+  # shellcheck disable=SC1091
+  source /home/harleypig/.config/shcompgen.bashrc
+else
+
+  COMPLETION_UTIL="$COMPLETION_UTIL pmbin"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmcat"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmchkver"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmcore"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmcost"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmdoc"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmedit"
+  COMPLETION_UTIL="$COMPLETION_UTIL pminfo"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmless"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmlines"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmlist"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmman"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmpath"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmstripper"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmuninst"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmversion"
+  COMPLETION_UTIL="$COMPLETION_UTIL pmxs"
+  COMPLETION_UTIL="$COMPLETION_UTIL podpath"
+
+  for CU in $COMPLETION_UTIL; do
+    command -v "$CU" &> /dev/null && complete -C "$CU" "$CU"
+  done
+fi
+
+### dzil
+DZIL=$(command -v dzil)
+
+# shellcheck disable=SC2139
+if [[ -n $DZIL ]]; then
+  alias dz="$DZIL"
+
+  # Run author or release tests, or a single test
+  alias dztestauthor="AUTHOR_TESTING=1 $DZIL run prove -l"
+  alias dztestauthorv="AUTHOR_TESTING=1 $DZIL run prove -lv"
+  alias dztestauthorall="AUTHOR_TESTING=1 $DZIL run prove -l xt/author/*.t"
+  alias dztestrelease="RELEASE_TESTING=1 $DZIL run prove -l"
+  alias dztestreleasev="RELEASE_TESTING=1 $DZIL run prove -lv"
+  alias dztestreleaseall="RELEASE_TESTING=1 $DZIL run prove -l xt/release/*.t"
+  alias dztesttest="$DZIL run prove -l"
+  alias dztesttestv="$DZIL run prove -lv"
+
+  alias authordeps="$DZIL authordeps"
+  alias listdeps="$DZIL listdeps"
+
+  # XXX: test if bakeini is installed
+  #if (perldoc -l Dist::Zilla::App::Command::bakeini >/dev/null 2>&1); then
+  perl -MDist::Zilla::App::Command::bakeini -e '' &> /dev/null && alias bakeini="$DZIL bakeini"
+  #fi
+fi
+
+### prove
+if command -v prove > /dev/null; then
+
+  # Run author or release tests, or a single test
+  alias testauthor='AUTHOR_TESTING=1 prove -l'
+  alias testauthorv='AUTHOR_TESTING=1 prove -lv'
+  alias testauthorall='AUTHOR_TESTING=1 prove -l xt/author/*.t'
+  alias testrelease='RELEASE_TESTING=1 prove -l'
+  alias testreleasev='RELEASE_TESTING=1 prove -lv'
+  alias testreleaseall='RELEASE_TESTING=1 prove -l xt/release/*.t'
+  alias testtest='prove -l'
+  alias testtestv='prove -lv'
+
+fi
+
+# https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
+#alias pmver="perl -le '\$m = shift; eval qq(require \$m) or die qq(module \"\$m\" is not installed\\n); print \$m->VERSION || \"No Version Available\"'"
+alias pmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
+
+### perldoc
+if command -v cpandoc > /dev/null; then
+  alias perldoc='cpandoc'
+fi
+
+#echo "What does perldoc-complete do? Fix this!"
+#perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
+#completion="complete -C $perldoc -o nospace -o default perldoc"
+#[[ -f $perldoc ]] && $completion
+
+### cpanm
+declare cpanm_bin
+cpanm_bin=$(command -v cpanm)
+
+# Alias cpanm -S only if cpanm is installed and it's not installed in the home directory.
+if [[ -n $cpanm_bin ]]; then
+  if [[ $cpanm_bin != $HOME/* ]]; then
+    alias cpanm="cpanm -S"
+  fi
+fi
+
+### completion
+# XXX: Check for completion capability
+# shellcheck disable=SC1090
+[[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] && source "$PERLBREW_ROOT/etc/perlbrew-completion.bash"
