@@ -34,16 +34,15 @@ function gtl() {
   }
 }
 
-# Go to current git toplevel directory, perform the git command and return
-# to the original directory.
-function git_cmd_return() {
-  gtl || return 1
-  git "$@"
-  # shellcheck disable=SC2164
-  cd - > /dev/null
-}
+## Go to current git toplevel directory, perform the git command and return
+## to the original directory.
+#function git_cmd_return() {
+#  gtl || return 1
+#  git "$@"
+#  # shellcheck disable=SC2164
+#  cd - > /dev/null
+#}
 
-# Do any of these need git_cmd_return?
 function ga() { git add "$@"; }
 function gca() { git commit -a -v -m "$@"; }
 function gc() { git commit -v -m "$@"; }

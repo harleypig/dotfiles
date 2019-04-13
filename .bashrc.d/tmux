@@ -11,6 +11,10 @@ alias swapr='tmux swap-window -t +1'
 # swap this window with the one passed in
 alias swapw='tmux swap-window -t'
 
+# shellcheck disable=SC1003
+function set_title() { printf '\ek%s\e\\' "$1"; }
+export -f set_title
+
 # shellcheck disable=SC1083
 circled_digits=$(printf %s \${$'\xEA',\`,{a..s}} | iconv -f UTF-16BE)
 
