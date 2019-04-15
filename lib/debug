@@ -1,0 +1,42 @@
+#!/bin/bash
+
+sourced() { [[ ${FUNCNAME[1]} == 'source' ]]; }
+
+sourced || {
+  echo "debug must only be sourced" >&2
+  exit 1
+}
+
+debug() {
+  ((DEBUG)) || return 0
+
+  msg="$*"
+  (($#)) || { read -rst 1 msg; }
+
+  local lineno func file trace
+  local -a el
+  local -i lvl=0
+
+  while true; do
+    caller=$(caller $lvl) || break
+    read -r lineno func file <<< "$caller"
+
+    file="$(basename "$file"):"
+    func+=':'
+
+    [[ $func =~ main:|source: ]] && func=
+
+    prefix=$(printf '[%s%s%03d]' "$file" "$func" "$lineno")
+    el+=("$prefix")
+
+    ((lvl++))
+  done
+
+  for ((ix = lvl - 1; ix >= 0; ix--)); do
+    trace+="${el[ix]}"
+  done
+
+  printf '%s %s\n' "$trace" "$msg" >&2;
+}
+
+export -f debug sourced
