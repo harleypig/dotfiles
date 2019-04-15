@@ -19,3 +19,5 @@ export PATH="$GEM_HOME/bin:$PATH"
 [[ -d $HOME/.rvm/bin ]] && PATH="$PATH:$HOME/.rvm/bin"
 [[ -f $HOME/.rvm/scripts/rvm ]] && source "$HOME/.rvm/scripts/rvm"
 [[ -f $HOME/.rvm/scripts/completion ]] && source "$HOME/.rvm/scripts/completion"
+
+true

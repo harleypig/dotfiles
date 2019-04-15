@@ -1,149 +1,235 @@
 #!/bin/bash
 
-#---------------------------------------------------------------------------------------
-# See function at
-# https://github.com/wschlich/bashinator/blob/master/bashinator.lib.0.sh#L940
-# for ideas on building a better prefix.
+# XXX: Do I need to check for interactive or login here? or leave it to the
+# loaded scripts to handle?
 
-function debug() {
-  [[ -f $HOME/.dot_debug ]] || return 0
+##############################################################################
+# Don't delete this, it's for figuring things out sometimes.
+# XXX: Maybe move this into debug?
 
-  local src func lineno
+((DEBUG)) && {
+  if [[ $- == *i* ]]; then
+    debug "We are interactive ..."
+  else
+    debug "We are *not* interactive ..."
+  fi
 
-  src=$(basename "${BASH_SOURCE[1]:-$0}:")
-  func="${FUNCNAME[1]}:"
-  lineno="${BASH_LINENO[0]}"
-
-  [[ $func =~ ^(main|source):$ ]] && func=
-
-  echo "[$src$func$lineno] $*" >> "$HOME/.dotfiles.log"
+  if shopt -q login_shell; then
+    debug "We are in a login shell ..."
+  else
+    debug "We are *not* in a login shell ..."
+  fi
 }
 
-export -f debug
+# XXX: Use $GLOBAL_LIB instead
+source /nas_pp/etl/scripts/lib/debug
 
-#-----------------------------------------------------------------------
-# Sources all files found in $1.
+##############################################################################
+# this function takes one directory path and adds it to the existing path
+function addpath() {
+  debug "adding $1 to path"
+  PATH="${PATH}:$1"
+}
 
-function source_dir() {
-  local dir="$1"
+##############################################################################
+# If this tty can support 256 colors, set it.
 
-  [[ -d $dir ]] || {
-    debug "$dir does not exist or is not a directory"
-    return
+if [[ -z $TERM ]] && test -t; then
+  if nc=$(tput colors); then
+    [[ $nc -eq 256 ]] && TERM='xterm-256color'
+  else
+    debug 'unknown terminal type'
+  fi
+fi
+
+##############################################################################
+# Source global definitions
+
+declare -a global=()
+
+global+=('/etc/bashrc')
+global+=('/etc/bash_completion')
+global+=('/etc/profile.d/bash-completion')
+
+for f in "${global[@]}"; do
+  [[ -r $f ]] && {
+    debug "Sourcing $f ..."
+    source "$f" || debug "... unable to source $f"
   }
+done
 
-  debug "Loading files in $dir ..."
+unset global
 
-  readarray -t files < <(find "$dir" -type f | sort)
+##############################################################################
+declare -a rcdirs
 
-  debug "Found ${#files[@]} files in $dir ..."
+rcdirs+=("$DOTFILES/.bashrc.d")
+rcdirs+=("$HOME/.bashrc.d")
 
-  for s in "${files[@]}"; do
-    debug "Sourcing $s ..."
-    source "$s"
+for rcdir in "${rcdirs[@]}"; do
+  [[ -d $rcdir ]] || continue
+
+  readarray -t rcfiles < <(/usr/bin/find "$rcdir" -iname '*_rc' | /usr/bin/sort)
+
+  for rcfile in "${rcfiles[@]}"; do
+    [[ -r $rcfile ]] && {
+      debug "Sourcing $rcfile ..."
+      source "$rcfile" || debug "... unable to source $rcfile"
+    }
+  done
+done
+
+unset rcdirs rcdir rcfiles rcfile
+
+##############################################################################
+# Final cleanup of PATH and LD_LIBRARY_PATH environment variables. There are
+# some duplicate paths, some paths that don't exist and some paths should come
+# at the beginning of the path, while others should appear at the end of the
+# path.
+
+#-----------------------------------------------------------------------------
+get_real_dir() {
+  local d=$1
+
+  # What is the real path for $d?
+  dir=$(readlink -ne "$d") || return 1
+
+  # does $dir exist?
+  [[ -z $dir ]] && return 1
+
+  # is $dir a directory?
+  [[ -d $dir ]] || return 1
+
+  echo "$dir"
+  return 0
+}
+
+#-----------------------------------------------------------------------------
+# join with colon
+# No, IFS=':' echo "$*" does not work.
+# XXX: will echo -e "${@// /:}" work?
+
+jwc() {
+  local IFS=':'
+  echo "$*"
+  return 0
+}
+
+#-----------------------------------------------------------------------------
+declare -A SHOULD_BE_FIRST SHOULD_BE_LAST SHOULD_BE_IGNORED SHOULD_BE_STRIPPED
+
+build_path() {
+  local path="${1?Must pass path}"
+
+  declare -a PATHS PATH_FIRST PATH_NEW PATH_LAST
+  declare -A PATH_CHECK
+
+  IFS=':' read -ra PATHS <<< "${!path}"
+
+  for d in "${PATHS[@]}"; do
+    debug "Checking $d ..."
+
+    # Ignore blank entries
+    [[ -z $d ]] && continue
+
+    # Ignore dot
+    [[ $d == '.' ]] && continue
+
+    # Have we already handled this directory?
+    [[ ${PATH_CHECK[$d]+isset} ]] && continue
+
+    if [[ ${SHOULD_BE_IGNORED[$d]+isset} ]]; then
+      PATH_NEW+=("$d")
+      PATH_CHECK[$d]=1
+      debug "IGNORE: $d"
+      continue
+
+    elif [[ ${SHOULD_BE_STRIPPED[$d]+isset} ]]; then
+      PATH_CHECK[$dir]=1
+      debug "STRIP: $d"
+      continue
+    fi
+
+    # Get the real path, if it really exists.
+    dir=$(get_real_dir "$d") || continue
+
+    # Have we already handled this directory?
+    [[ ${PATH_CHECK[$dir]+isset} ]] && continue
+
+    if [[ ${SHOULD_BE_STRIPPED[$dir]+isset} ]]; then
+      debug "STRIP: $dir"
+
+    elif [[ ${SHOULD_BE_FIRST[$dir]+isset} ]]; then
+      PATH_FIRST+=("$dir")
+      debug "FIRST: $dir"
+
+    elif [[ ${SHOULD_BE_LAST[$dir]+isset} ]]; then
+      PATH_LAST+=("$dir")
+      debug "LAST: $dir"
+
+    else
+      PATH_NEW+=("$dir")
+      debug "DIR: $dir"
+    fi
+
+    PATH_CHECK[$dir]=1
   done
 
-  debug "Done loading files in $dir."
+  jwc "${PATH_FIRST[@]}" "${PATH_NEW[@]}" "${PATH_LAST[@]}"
+
+  return 0
 }
 
-export -f source_dir
+#-----------------------------------------------------------------------------
+# Entries in PATH_SHOULD_BE_{FIRST,LAST} should be the 'real' path; i.e., the
+# path returned from the above 'get_real_dir' function.
 
-#---------------------------------------------------------------------------------------
-# Don't delete this, it's for figuring things out sometimes.
+# These paths should appear at the beginning of the PATH list.
+#PATH_SHOULD_BE_FIRST['/first']=1
 
-if [[ $- == *i* ]]; then
-  debug "We are interactive ..."
-else
-  debug "We are *not* interactive ..."
-fi
+# These paths should appear at the end of the PATH list.
+#SHOULD_BE_LAST['/last']=1
 
-if shopt -q login_shell; then
-  debug "We are in a login shell ..."
-else
-  debug "We are *not* in a login shell ..."
-fi
+#-----------------------------------------------------------------------------
+# Cleanup PATH variable
+debug "Cleaning path ..."
 
-#---------------------------------------------------------------------------------------
-# Force 256 color support
-
-export TERM='xterm-256color'
-
-#---------------------------------------------------------------------------------------
-# PATH setup
-
-# Completely rebuild the path to my specifications.
-
-# Run this last to allow for other stuff above modifying the path
-
-declare -a BIN_DIRS
-
-IFS=':' read -ra BIN_DIRS <<< "$PATH"
-
-# !!! Do not alphabetize, order is important here.
-
-[[ -n $GOROOT ]] && BIN_DIRS+=("$GOROOT/bin")
-[[ -n $GOPATH ]] && BIN_DIRS+=("$GOPATH/bin")
-BIN_DIRS+=("/usr/lib/dart/bin")
-
-BIN_DIRS+=("$DOTFILES/lib")
-BIN_DIRS+=("$DOTFILES/bin")
-
-BIN_DIRS+=("$HOME/bin")
-BIN_DIRS+=("$HOME/.vim/bin")
-BIN_DIRS+=("$HOME/.cabal/bin")
-BIN_DIRS+=("$HOME/.minecraft/bin")
-BIN_DIRS+=("$HOME/Dropbox/bin")
-BIN_DIRS+=("$HOME/videos/bin")
-BIN_DIRS+=("$HOME/projects/depot_tools")
-#BIN_DIRS+=("$HOME/projects/android-sdk/tools")
-#BIN_DIRS+=("$HOME/projects/android-sdk/platform-tools")
-
-declare NEWPATH
+#SHOULD_BE_FIRST=()
+#SHOULD_BE_LAST=()
+#SHOULD_BE_IGNORED=()
+#SHOULD_BE_STRIPPED=()
 
 # If using ccache, it needs to be first on the path
-[[ -d /usr/lib/ccache/bin ]] && NEWPATH=':/usr/lib/ccache/bin'
+SHOULD_BE_FIRST['/usr/lib/ccache/bin']=1
 
-for d in "${BIN_DIRS[@]}"; do
-  [[ $d == '.' ]] && continue
-
-  dir=$(readlink -ne "$d")
-
-  [[ -z $dir ]] && continue
-  [[ -d $dir ]] || continue
-  [[ $NEWPATH != *"$dir"* ]] || continue
-
-  NEWPATH="$NEWPATH:$dir"
-
-done
-
+NEWPATH=$(build_path 'PATH')
 export PATH="$NEWPATH:."
 
-#---------------------------------------------------------------------------------------
-# Turn on bash completion
+#-----------------------------------------------------------------------------
+# Cleanup LD_LIBRARY_PATH variable
+debug "Cleaning ld library path ..."
 
-# Order matters, don't mess with the order.
-declare -a FILES
-FILES+=('/etc/bash_completion')
-FILES+=('/etc/profile.d/bash-completion')
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib:/usr/lib64"
 
-for file in "${FILES[@]}"; do
-  [[ -f $file ]] && source "$file"
-done
+SHOULD_BE_FIRST=()
+#SHOULD_BE_LAST=()
+#SHOULD_BE_IGNORED=()
+#SHOULD_BE_STRIPPED=()
 
-#---------------------------------------------------------------------------------------
-# Simple check and source lines
+SHOULD_BE_FIRST['/usr/lib']=1
+SHOULD_BE_FIRST['/usr/lib64']=1
 
-#[[ -z $SSH_AUTH_SOCK && -r $DOTFILES/.ssh-agent ]] && source "$DOTFILES/.ssh-agent"
+NEWLDPATH=$(build_path 'LD_LIBRARY_PATH')
+export LD_LIBRARY_PATH="$NEWLDPATH"
+
+unset -f get_real_dir jwc build_path debug
+unset NEWPATH NEWLDPATH SHOULD_BE_FIRST SHOULD_BE_LAST
+unset SHOULD_BE_IGNORED SHOULD_BE_STRIPPED f
+
+#-----------------------------------------------------------------------------
+# Miscellaneous
+
 [[ -f $DOTFILES/.Xresources ]] && command -v xrdb &> /dev/null && xrdb "$DOTFILES/.Xresources"
-#[[ -f $DOTFILES/bin/tokens ]] && source "$DOTFILES/bin/tokens"
 
-source_dir "$DOTFILES/.bash_sources.d"
-source_dir "$DOTFILES/$HOSTNAME"
-#source_dir "$DOTFILES/.sekrets"
-source_dir "$HOME/.bash_profile.d"
-source_dir "$HOME/.bashrc.d"
-
-#---------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 source "$DOTFILES/.bash_prompt"
-
-debug "Exiting ..."

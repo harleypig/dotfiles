@@ -106,3 +106,5 @@ fi
 # XXX: Check for completion capability
 # shellcheck disable=SC1090
 [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] && source "$PERLBREW_ROOT/etc/perlbrew-completion.bash"
+
+true

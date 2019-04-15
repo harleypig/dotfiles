@@ -1,73 +1,201 @@
 #!/bin/bash
 
-# For debugging login files, do:
-#
-# ssh -t localhost "PS4='+[\$BASH_SOURCE:\$LINENO]: ' BASH_XTRACEFD=7 bash -xl 7> login.trace"
-#
-# See https://unix.stackexchange.com/a/154971/9032
+# Debug tty login (ssh user@server):
+# ssh -t localhost "PS4='[\$BASH_SOURCE[0]:\$LINENO]: ' bash -xl" |& tee login.log
 
-#---------------------------------------------------------------------------------------
-# Environment Variables
+# Debug no tty login (ssh user@server somecommand)
+# ssh localhost "PS4='[\$BASH_SOURCE[0]:\$LINENO]: ' bash -xl" |& tee login.log
 
-export EDITOR=vim
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
+################################################################################
+# Base Global variables
 
-command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
+if [[ -L ${BASH_SOURCE[0]} ]]; then
+  DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
+  GLOBAL_DIR="$(dirname "$DOTFILES")"
 
-DOTFILES="$(dirname "$(readlink -nf "$HOME/.bash_profile")")"
-export DOTFILES
+  # shellcheck disable=SC2164
+  cd "$DOTFILES"
+  GLOBAL_DIR="$(git rev-parse --show-toplevel 2> /dev/null)" \
+    || echo "Unable to determine top level of repository, weird things are going to happen."
 
-# These should not be exported
-
-CDPATH="."
-PROMPT_DIRTRIM=2
-HISTCONTROL="erasedups:ignoreboth"
-HISTFILESIZE=100000
-HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
-HISTSIZE=500000
-HISTTIMEFORMAT='%F %T '
-
-#---------------------------------------------------------------------------------------
-debug "Setting up shell options ..."
-
-bind "set completion-ignore-case on"
-bind "set completion-map-case on"
-bind "set mark-symlinked-directories on"
-bind "set show-all-if-ambiguous on"
-bind Space:magic-space
-
-shopt -s autocd 2> /dev/null
-shopt -s cdspell 2> /dev/null
-shopt -s dirspell 2> /dev/null
-shopt -s globstar 2> /dev/null
-
-shopt -s cdable_vars
-shopt -s checkhash
-shopt -s checkwinsize
-shopt -s cmdhist
-shopt -s dotglob
-shopt -s histappend
-shopt -s histreedit
-shopt -s histverify
-shopt -s nocaseglob
-
-umask 022
-
-#---------------------------------------------------------------------------------------
-# $HOME/.bashrc needs to exist so things like shelling from vim will load the
-# dotfiles correctly. Warn if .bashrc doesn't point to the .bashrc in
-# DOTFILES. If it doesn't exist, create the link.
-
-if [[ ! -f $HOME/.bashrc ]]; then
-  ln -s "$DOTFILES/.bashrc" "$HOME/.bashrc"
 else
-  [[ $(readlink -nf "$HOME/.bashrc") == "$DOTFILES/.bashrc" ]] || {
-    echo "$HOME/.bashrc is not linked to DOTFILES version."
-  }
+  DOTFILES="$HOME"
+  GLOBAL_DIR="$HOME"
+
+  cat << EOT
+
+This .bash_profile is developed to be linked and executed from a repository as
+a symbolic link. This is not being done here and results will be unreliable.
+
+EOT
 fi
 
-#---------------------------------------------------------------------------------------
-# shellcheck disable=SC1090
-[[ -f $HOME/.bashrc ]] && source "$HOME/.bashrc"
+export GLOBAL_LIB="$GLOBAL_DIR/lib"
+export GLOBAL_BIN="$GLOBAL_DIR/bin"
+
+export DOTFILES GLOBAL_DIR
+
+##############################################################################
+# Don't delete this, it's for figuring things out sometimes.
+# XXX: Maybe move this into debug?
+
+((DEBUG)) && {
+  if [[ $- == *i* ]]; then
+    debug "We are interactive ..."
+  else
+    debug "We are *not* interactive ..."
+  fi
+
+  if shopt -q login_shell; then
+    debug "We are in a login shell ..."
+  else
+    debug "We are *not* in a login shell ..."
+  fi
+}
+
+# XXX: Use $GLOBAL_LIB instead (but how to solve the chicken and the egg
+# problem?)
+source "$GLOBAL_LIB/debug"
+
+##############################################################################
+# This script, and any scripts in the .bash_profile.d directories, should
+# focus on setting environment variables.
+
+# Including a function at this level should be considered, and very rarely
+# done.
+
+# It is recommended that the only time a function is included at this level is
+# to provide a script that absolutely every script ever called, either
+# interactive (ssh) or not (ssh login:8,) will need to use said function. Even
+# then, it would probably be better to load the function through other means.
+
+# this function takes one directory path and adds it to the existing path
+function addpath() {
+  debug "adding $1 to path"
+  PATH="${PATH}:$1"
+}
+
+declare -a BIN_DIRS
+
+# !!! Do not alphabetize, order is important here.
+
+BIN_DIRS+=("$GLOBAL_LIB")
+BIN_DIRS+=("$GLOBAL_BIN")
+BIN_DIRS+=("$HOME/bin")
+BIN_DIRS+=('/usr/lib/ccache/bin')
+BIN_DIRS+=("/usr/lib/dart/bin")
+BIN_DIRS+=("$HOME/bin")
+BIN_DIRS+=("$HOME/.vim/bin")
+BIN_DIRS+=("$HOME/.cabal/bin")
+BIN_DIRS+=("$HOME/.minecraft/bin")
+BIN_DIRS+=("$HOME/Dropbox/bin")
+BIN_DIRS+=("$HOME/videos/bin")
+BIN_DIRS+=("$HOME/projects/depot_tools")
+BIN_DIRS+=("$HOME/projects/android-sdk/tools")
+BIN_DIRS+=("$HOME/projects/android-sdk/platform-tools")
+
+for d in "${BIN_DIRS[@]}"; do
+  addpath "$d"
+done
+
+unset BIN_DIRS
+
+################################################################################
+# Check if various dotfiles are linked properly
+
+# XXX: Add cleanup routine (e.g., .screenrc is no longer needed, links to it
+#      should be removed.
+
+# XXX: Add a way to check for links to arbitrary locations (e.g. .vim and
+#      .vimrc might be in their own repository).
+
+nochecklinks="$HOME/.nochecklinks"
+
+if [[ ! -e $nochecklinks ]]; then
+  debug "Checking dotfiles ..."
+
+  declare -a CHECK_DOTFILES
+
+  CHECK_DOTFILES+=('.bash_logout')
+  CHECK_DOTFILES+=('.bashrc')
+  CHECK_DOTFILES+=('.cvsrc')
+  CHECK_DOTFILES+=('.flexget')
+  CHECK_DOTFILES+=('.gitconfig')
+  CHECK_DOTFILES+=('.gitignore')
+  CHECK_DOTFILES+=('.gitignore_global')
+  CHECK_DOTFILES+=('.htoprc')
+  CHECK_DOTFILES+=('.inputrc')
+  CHECK_DOTFILES+=('.mplayer')
+  CHECK_DOTFILES+=('.perlcriticrc')
+  CHECK_DOTFILES+=('.perldb')
+  CHECK_DOTFILES+=('.perltidyrc')
+  CHECK_DOTFILES+=('.tmux.conf')
+
+  badlinks=0
+
+  for checkfile in "${CHECK_DOTFILES[@]}"; do
+    if [[ ! -e $HOME/$checkfile ]]; then
+      debug "Linking $DOTFILES/$checkfile ..."
+      ln -s "$DOTFILES/$checkfile" "$HOME/$checkfile"
+
+    else
+      debug "$DOTFILES/$checkfile exists, checking if it's ours ..."
+      linkdir=$(dirname "$(readlink -nf "$checkfile")")
+
+      if [[ $linkdir != "$DOTFILES" ]]; then
+        echo "$checkfile is not linked to $DOTFILES"
+        badlinks=1
+      fi
+    fi
+  done
+
+  if ((badlinks)); then
+    cat << EOT
+
+Move those files out of the way and then run '. .bash_profile' if you want to
+fix those.
+
+If you like those files the way they are, then run '> $nochecklinks' and they
+will be ignored.
+
+EOT
+  fi
+
+  unset CHECK_DOTFILES badlinks checkfile
+fi
+
+unset nochecklinks
+
+##############################################################################
+declare -a profiledirs
+
+profiledirs+=("$DOTFILES/.bash_profile.d")
+profiledirs+=("$HOME/.bash_profile.d")
+
+for profiledir in "${profiledirs[@]}"; do
+  [[ -d $profiledir ]] || continue
+
+  readarray -t profilefiles < <(/usr/bin/find "$profiledir" -iname '*_profile' | /usr/bin/sort)
+
+  for profilefile in "${profilefiles[@]}"; do
+    [[ -r $profilefile ]] && {
+      debug "Sourcing $profilefile ..."
+      source "$profilefile" || debug "... unable to source $profilefile"
+    }
+  done
+done
+
+unset profiledirs profiledir profilefiles profilefile
+
+################################################################################
+# XXX: Move these. To general_profile?
+export LANG=en_US.utf-8
+export LC_ALL=en_US.utf-8
+
+################################################################################
+# Get the aliases and functions
+
+debug "Sourcing $DOTFILES/.bashrc"
+[[ -f $DOTFILES/.bashrc ]] && source "$DOTFILES/.bashrc"
+
+unset addpath
