@@ -17,3 +17,6 @@ alias rd=rmdir
 
 # XXX: Move to tools/bin so we can accept multiple filenames
 function vimwhich() { vim "$(command -v "$1")"; }
+
+alias dumppath='echo -e ${PATH//:/\\n}'
+alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
