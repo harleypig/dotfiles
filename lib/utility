@@ -1,6 +1,15 @@
 #!/bin/bash
 
-# Most of these should probably be in their own library files.
+# XXX: The majority of these functions need to be moved off to their own
+#      libraries and loaded only when called.
+
+# Don't let 'set -x' run when sourcing this script. You'll get a crap ton of junk.
+#setx=$(set -o | grep xtrace | tr -s '[[:space:]]' ' ' | cut -d ' ' -f 2 ' ')
+#[[ $setx -eq 'on' ]] && set +x
+set +x
+
+# XXX: Figure out a way to detect if 'set -x' is in play and turn it back on
+#      at the end of this file.
 
 # XXX: try/catch?
 # XXX: exceptions? some kind of error-handling
@@ -16,6 +25,9 @@
 
 # Maybe steal some ideas from:
 # https://github.com/niieani/bash-oo-framework
+
+#----------------------------------------------------------------------------
+source $GLOBAL_LIB/debug
 
 #----------------------------------------------------------------------------
 # Documentation
@@ -62,6 +74,20 @@ POD
 
 #----------------------------------------------------------------------------
 : << POD
+=head2 sourced
+
+Usage: sourced || die "Must be sourced."
+
+Returns true (0) or false (1) depending on if we have been sourced.
+
+=cut
+POD
+
+# see scripts/lib/debug
+#function sourced() { [[ ${FUNCNAME[1]} == 'source' ]]; }
+
+#----------------------------------------------------------------------------
+: << POD
 =head2 warn
 
 Usage: warn "message"
@@ -80,18 +106,52 @@ function warn() { printf '%s\n' "$*" >&2; }
 =head2 die
 
 Usage: die "message"
+       die 2 "message"
+       someprog || die "message"
 
 C<die> will call C<warn> with "message" and then C<exit 1>.
+
+C<die> returns the most recent return code unless you provide a status code as
+the second parameter.
 
 =cut
 POD
 
-# XXX: #2 Add ability to specify exit code when die'ing
-
 function die() {
+  # Grab most recent return code
+  local rc=$?
+
+  if is_integer "$1"; then
+    rc=$1
+    shift
+  fi
+
   (($#)) && warn "$*"
-  exit 1
+
+  [[ $rc -eq 0 ]] && rc=1
+
+  exit "${rc:-1}"
 }
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 verbose
+
+Usage: verbose "message"
+
+C<verbose> will check if the environment variable C<VERBOSE> is true, and if not,
+silently return with a 0 return code.
+
+Otherwise, C<verbose> will C<warn> the message passed in.
+
+Example:
+
+  verbose 'message to display if VERBOSE=1'
+
+=cut
+POD
+
+verbose() { ((VERBOSE)) && warn "$*"; }
 
 #----------------------------------------------------------------------------
 : << POD
@@ -107,40 +167,38 @@ Otherwise, C<debug> will determine the function call stack and C<warn> the
 
 Example:
 
-  [file:86]: message
-  [file:func:99]: message
-  [parentfile:3][file:func:88] message
+  [somefunc(3):func(99)]: message
 
 =cut
 POD
 
-function debug() {
-  ((DEBUG)) || return
-
-  local lineno func file trace
-  local -a el
-  local -i lvl=0
-
-  while true; do
-    caller=$(caller $lvl) || break
-    read -r lineno func file <<< "$caller"
-
-    file="$(basename "$file"):"
-    func+=':'
-
-    [[ $func == 'main:' ]] && func=
-
-    el+=("[$file$func$lineno]")
-
-    ((lvl++))
-  done
-
-  for (( ix=lvl-1; ix >= 0; ix-- )); do
-    trace+="${el[ix]}"
-  done
-
-  warn "$trace $*"
-}
+#function debug() {
+#  ((DEBUG)) || return 0
+#
+#  local lineno func file trace
+#  local -a el
+#  local -i lvl=0
+#
+#  while true; do
+#    caller=$(caller $lvl) || break
+#    read -r lineno func file <<< "$caller"
+#
+#    file="$(basename "$file"):"
+#    func+=':'
+#
+#    [[ $func == 'main:' ]] && func=
+#
+#    el+=("[$file$func$lineno]")
+#
+#    ((lvl++))
+#  done
+#
+#  for ((ix = lvl - 1; ix >= 0; ix--)); do
+#    trace+="${el[ix]}"
+#  done
+#
+#  warn "$trace $*"
+#}
 
 #----------------------------------------------------------------------------
 : << POD
@@ -258,9 +316,16 @@ function is_char() {
 : << POD
 =head2 is_date
 
-Usage: if [[ is_date 20180702 ]]; then echo "valid date"; fi
+Usage:
+  if [[ is_date 20180702 ]]; then echo "valid date"; fi
+  new_date=E<36>(is_date '20180702' '%A') || die "Invalid date"
 
-C<is_date> determines if a date is valid.
+C<is_date> determines if a date is valid and optionally returns the date in
+the specified format.
+
+The second parameter is expected to be a valid C<date> format, minus the plus
+(+) sign. If the second parameter is not a valid format this function will
+return 1, as invalid.
 
 NOTE: This function makes a good faith effort, but there are too many ways in
 which a date can be formatted.
@@ -269,13 +334,20 @@ which a date can be formatted.
 POD
 
 function is_date() {
-  date -d "$1" &> /dev/null && return 0
+  [[ -z $1 ]] && return 1
+
+  if [[ -n $2 ]]; then
+    date -d "$1" "+$2" && return 0
+  else
+    date -d "$1" &> /dev/null && return 0
+  fi
+
   return 1
 }
 
 #----------------------------------------------------------------------------
 : << POD
-=head2 is_dir_empty
+=head2 is_dirempty
 
 Usage: if [[ is_dirempty "E<36>dir" ]]; then echo "E<36>dir is empty"; fi
 
@@ -310,9 +382,9 @@ function is_varname() {
 
 #----------------------------------------------------------------------------
 : << POD
-=head2 qualify_filename
+=head2 verify_filename
 
-Usage: filename=E<36>(qualify_filename "E<36>filename") || die "bad filename"
+Usage: filename=E<36>(verify_filename "E<36>filename") || die "bad filename"
 
 Checks if the value is a valid filename and if it exists is it readable, or if
 it does not exist can we create it. If it is readable or creatable, returns 0.
@@ -327,12 +399,12 @@ error if it does not.
 =cut
 POD
 
-function qualify_filename() {
+function verify_filename() {
   local filename="$1"
 
-  fqdn="$(/usr/bin/realpath -qeL "$(dirname "$filename")")" || {
+  fqdn="$(readlink -f "$(dirname "$filename")")" || {
     warn "Unable to canonicalize directory for filename:
-$(namei "$filename")"
+$(namei -lx "$filename")"
     return 1
   }
 
@@ -437,9 +509,12 @@ Usage: newstring=E<36>(fill_template C<string to be processed>)
 C<fill_template> will parse the string passed in and replace %WORD% with the
 value of the environment variable WORD.
 
-E.g., if environment variable C<PRJHOME> was equal to C</nas_pp/test/cap>, then
-the string I<Your home directory is %PRJHOME%.> would be returned as I<Your
-home directory is /nas_pp/test/cap.>
+E.g., if environment variable C<PRJHOME> was equal to C</nas_pp/test/cap>,
+then the string I<Your home directory is %PRJHOME%.> would be returned as
+I<Your home directory is /nas_pp/test/cap.>
+
+If you set DELIM to a single character, that character will be used as
+a delimiter instead of '%'.
 
 =cut
 POD
@@ -465,14 +540,17 @@ POD
 # index n is the portion of the string matching the nth paren‐ thesized
 # subexpression.
 
+# XXX: Figure out a way to allow a delimiter to be escaped. E.g., \% should
+# not be counted as the start or end of a variable name.
+
 function fill_template() {
   debug "Entered ${FUNCNAME[0]} ..."
 
-  [[ -z $1 ]] && Usage "fill_template requires a string to process."
+  [[ -z $1 ]] && Usage "${FUNCNAME[0]} requires a string to process."
   s="$*"
 
-  local CHECKVAR='!!EMPTY!!'
-  local regex='%([^%]*)%'
+  local DELIM="${DELIM:-%}"
+  local regex="$DELIM([^$DELIM]*)$DELIM"
   local rc=0
 
   [[ $s =~ $regex ]] || {
@@ -486,14 +564,20 @@ function fill_template() {
   while [[ $s =~ $regex ]]; do
     debug "    Match: ${BASH_REMATCH[0]}"
     debug "1st group: ${BASH_REMATCH[1]}"
-    debug "    value: ${!BASH_REMATCH[1]:-$CHECKVAR}"
 
-    local value="${!BASH_REMATCH[1]:-$CHECKVAR}"
+    # If the variable does not exist in the environment, then warn, otherwise
+    # replace with nothing.
 
-    [[ $value == "$CHECKVAR" ]] && {
-      warn "Variable '${BASH_REMATCH[1]}' is not a set environment variable."
+    local value
+
+    if [[ -v ${BASH_REMATCH[1]} ]]; then
+      value="${!BASH_REMATCH[1]}"
+
+    else
+      warn "Variable '${BASH_REMATCH[1]}' does not exist in the environment"
       value="!!${BASH_REMATCH[1]}!!"
-    }
+
+    fi
 
     s=${s//${BASH_REMATCH[0]}/$value}
   done
@@ -506,14 +590,93 @@ function fill_template() {
 }
 
 #----------------------------------------------------------------------------
-[[ $BASH == '/bin/bash' ]] || die "$0 is not a bash script and should not be sourcing this utility file."
+# Load libraries on demand
+
+: << POD
+=head1 EXTERNAL LIBRARIES
+
+These are convenience functions that will source the relevant libraries and
+call the requested function.
+
+If you've already sourced utility, then you don't need to remember if you need
+to source or just use a library.
+
+=cut
+POD
+
+function _load_library() {
+  [[ -z $1 ]] && die "_load_library is expecting a library name"
+
+  local libname=$1
+  shift
+
+  debug "Sourcing $libname library ..."
+  source "$libname" || die "_load_library failed"
+  debug "Calling $libname function with original parameters ..."
+  $libname "$@"
+}
+
+: << POD
+=head2 GetAuth
+
+Sources the GetAuth library and calls it.
+
+Read the GetAuth manpage--C<man GetAuth>--for details.
+
+=cut
+POD
+
+function GetAuth() { _load_library "${FUNCNAME[0]}" "$@"; }
+
+: << POD
+=head2 parse_params
+
+Sources the ParseParams library and calls the parse_params function.
+
+Read the ParseParams manpage--C<man ParseParams>--for details.
+
+=cut
+POD
+
+# XXX: Maybe?
+
+#      function parse_params() { _load_library 'ParseParams' "${FUNCNAME[0]}" "$@"; }
+
+#      Would required _load_library expect two params first, causing GetAuth
+#      to look like:
+
+#      function GetAuth() { _load_library "${FUNCNAME[0]}" "${FUNCNAME[0]}" "$@"; }
+
+#      or, perhaps making _load_library duplicate them if one is empty, making
+#      the following identical:
+
+#      function GetAuth() { _load_library '' "${FUNCNAME[0]}" "$@"; }
+#      function GetAuth() { _load_library "${FUNCNAME[0]}" '' "$@"; }
+
+function parse_params() {
+  debug "Sourcing ParseParams library ..."
+  source ParseParams || die "ParseParams failed"
+  debug "Calling real function with original parameters ..."
+  parse_params "$@"
+}
 
 #----------------------------------------------------------------------------
 # Do we need to show usage and are we being sourced?
 
-[[ -z $PARMS_CHECKED ]] && {
-  PARMS_CHECKED=1
-  [[ $* == *-[\?h]* ]] && show_usage ''
-}
+# This broke parameters that have a legitimate use, such as some-parm-with-h-in-it.
+#[[ -z $PARMS_CHECKED ]] && {
+#  PARMS_CHECKED=1
+#  [[ $* == *-[\?h]* ]] && show_usage ''
+#}
 
-[[ ${BASH_SOURCE[0]} == "$0" ]] && die "$(basename "$0") must only be sourced."
+# I ran into an edge case with the '$(return &> /dev/null)' check.  See
+# https://stackoverflow.com/questions/51526628/checking-if-current-file-is-being-sourced-using-return-yields-reversed-result-af
+# for a discussion on the problem.
+
+# Using '$(return 0 &> /dev/null)' solves this problem, but the following is
+# a more idiomatic way to do this.
+
+#[[ ${BASH_SOURCE[0]} == "$0" ]] && die "$(basename "$0") must only be sourced."
+
+sourced || die 'utility must only be sourced'
+#[[ $setx -eq 'on' ]] && set -x

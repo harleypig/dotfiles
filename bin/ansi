@@ -24,22 +24,22 @@ function _ansi() {
 
   local -A color
 
-  color[black]=0
-  color[red]=1
-  color[green]=2
-  color[yellow]=3
-  color[blue]=4
-  color[purple]=5
-  color[cyan]=6
-  color[white]=7
-  color[bright_black]=8
-  color[bright_red]=9
-  color[bright_green]=11
-  color[bright_yellow]=11
-  color[bright_blue]=12
-  color[bright_purple]=13
-  color[bright_cyan]=14
-  color[bright_white]=15
+  color['black']=0
+  color['red']=1
+  color['green']=2
+  color['yellow']=3
+  color['blue']=4
+  color['purple']=5
+  color['cyan']=6
+  color['white']=7
+  color['bright_black']=8
+  color['bright_red']=9
+  color['bright_green']=10
+  color['bright_yellow']=11
+  color['bright_blue']=12
+  color['bright_purple']=13
+  color['bright_cyan']=14
+  color['bright_white']=15
 
   # shellcheck disable=SC2034
   {
@@ -80,8 +80,7 @@ function _ansi() {
 
       fg | bg)
         c=$1
-        # shellcheck disable=SC2244
-        [[ ${color[$c]+isset} ]] && c=${color[$c]}
+        [[ ${color[$c]+isset} -eq 0 ]] && c=${color[$c]}
         seq=$(tput "${!cmd}" $c)
         shift
         ;;
