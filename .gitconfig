@@ -19,6 +19,9 @@
   email = harleypig@harleypig.com
   name  = Alan Young
 
+[include]
+  path = .gitconfig.user
+
 [core]
   autocrlf     = input
   compression  = 9
