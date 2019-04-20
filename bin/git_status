@@ -15,9 +15,21 @@ git rev-parse &> /dev/null || exit 0
 [[ $(git rev-parse --is-bare-repository) == 'true' ]] && exit 0
 
 # Do we have access to __git_ps1?
-[[ -f /usr/share/git/completion/git-prompt.sh ]] || exit 0
+declare -a locs
+locs+=('/usr/share/git-core/contrib/completion/git-prompt.sh')
+locs+=('/usr/share/git/completion/git-prompt.sh')
 
-source /usr/share/git/completion/git-prompt.sh
+locfound=0
+
+for loc in "${locs[@]}"; do
+  [[ -r "$loc" ]] && {
+    source "$loc"
+    locfound=1
+    break
+  }
+done
+
+((locfound)) || exit 0
 
 GIT_PS1_SHOWDIRTYSTATE=1
 GIT_PS1_SHOWSTASHSTATE=1
