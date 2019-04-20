@@ -74,7 +74,7 @@ _update_prompt() {
     user="$(ansi -n fg bright_cyan)\u${prompt_color}"
     [[ $USER == 'root' ]] && user="$(ansi -n fg bright_red)\u"
 
-    hostname="$(ansi -n fg yellow)\H${prompt_color}"
+    hostname="$(ansi -n fg yellow)\h${prompt_color}"
 
     system_reboot="$(system_needs_reboot)"
     pacman_status="$(pacman_status)"
