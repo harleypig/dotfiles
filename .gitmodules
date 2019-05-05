@@ -5,3 +5,4 @@
 [submodule ".tmux/git-status"]
 	path = .tmux/git-status
 	url = https://github.com/drmad/tmux-git.git
+	ignore = dirty
