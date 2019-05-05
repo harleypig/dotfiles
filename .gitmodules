@@ -2,7 +2,3 @@
 	path = .tmux/prefix-highlight
 	url = https://github.com/tmux-plugins/tmux-prefix-highlight.git
 	ignore = dirty
-[submodule ".tmux/git-status"]
-	path = .tmux/git-status
-	url = https://github.com/drmad/tmux-git.git
-	ignore = dirty
