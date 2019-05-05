@@ -20,3 +20,5 @@ function vimwhich() { vim "$(command -v "$1")"; }
 
 alias dumppath='echo -e ${PATH//:/\\n}'
 alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
+
+alias dotfiles='cd $DOTFILES'
