@@ -13,10 +13,15 @@ if [[ -L ${BASH_SOURCE[0]} ]]; then
   DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
   GLOBAL_DIR="$(dirname "$DOTFILES")"
 
+  OLDPWD="$PWD"
+
   # shellcheck disable=SC2164
   cd "$DOTFILES"
   GLOBAL_DIR="$(git rev-parse --show-toplevel 2> /dev/null)" \
     || echo "Unable to determine top level of repository, weird things are going to happen."
+
+  cd "$OLDPWD"
+  unset OLDPWD
 
 else
   DOTFILES="$HOME"
