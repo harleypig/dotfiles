@@ -9,3 +9,5 @@
 	url = https://github.com/tmux-plugins/tpm
 	branch = master
 	ignore = dirty
+[submodule ".vim/bundle/.tmux/tpm"]
+	ignore = dirty
