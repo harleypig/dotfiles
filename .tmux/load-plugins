@@ -1,0 +1,14 @@
+#!/bin/bash
+
+PLUGINS_DIR="${DOTFILES?Expecting to run under custom environment}/.tmux"
+
+IFS=' ' read -ra plugins < <(tmux start-server\; show-option -gqv '@plugins')
+
+for p in "${plugins[@]}"; do
+  readarray -t files < <(find "$PLUGINS_DIR/$p" -iname '*.tmux')
+
+  for f in "${files[@]}"; do
+    echo "Found $f" >> "$HOME/tmux.log"
+    $f &> "$HOME/tmux.log"
+  done
+done
