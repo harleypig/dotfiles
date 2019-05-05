@@ -1,8 +1,8 @@
-[submodule ".tmux/plugins/tpm"]
-	path = .tmux/plugins/tpm
+[submodule ".tmux/tpm"]
+	path = .tmux/tpm
 	url = https://github.com/tmux-plugins/tpm
-[submodule ".tmux/plugins/prefix-highlight"]
-	path = .tmux/plugins/prefix-highlight
+	ignore = dirty
+[submodule ".tmux/prefix-highlight"]
+	path = .tmux/prefix-highlight
 	url = https://github.com/tmux-plugins/tmux-prefix-highlight.git
-[submodule ".vim/bundle/.tmux/tpm"]
 	ignore = dirty
