@@ -4,10 +4,5 @@
 [submodule ".tmux/plugins/prefix-highlight"]
 	path = .tmux/plugins/prefix-highlight
 	url = https://github.com/tmux-plugins/tmux-prefix-highlight.git
-[submodule ".vim/bundle/.tmux"]
-	path = .vim/bundle/.tmux
-	url = https://github.com/tmux-plugins/tpm
-	branch = master
-	ignore = dirty
 [submodule ".vim/bundle/.tmux/tpm"]
 	ignore = dirty
