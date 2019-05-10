@@ -23,7 +23,6 @@
   path = .gitconfig.user
 
 [core]
-  autocrlf     = input
   compression  = 9
   editor       = vim
   excludesfile = ~/.gitignore_global
