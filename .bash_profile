@@ -44,22 +44,21 @@ export DOTFILES GLOBAL_DIR
 # Don't delete this, it's for figuring things out sometimes.
 # XXX: Maybe move this into debug?
 
-((DEBUG)) && {
-  if [[ $- == *i* ]]; then
-    debug "We are interactive ..."
-  else
-    debug "We are *not* interactive ..."
-  fi
+#((DEBUG)) && {
+#  if [[ $- == *i* ]]; then
+#    debug "We are interactive ..."
+#  else
+#    debug "We are *not* interactive ..."
+#  fi
+#
+#  if shopt -q login_shell; then
+#    debug "We are in a login shell ..."
+#  else
+#    debug "We are *not* in a login shell ..."
+#  fi
+#}
 
-  if shopt -q login_shell; then
-    debug "We are in a login shell ..."
-  else
-    debug "We are *not* in a login shell ..."
-  fi
-}
-
-# XXX: Use $GLOBAL_LIB instead (but how to solve the chicken and the egg
-# problem?)
+debug() { true; }
 source "$GLOBAL_LIB/debug"
 
 ##############################################################################
