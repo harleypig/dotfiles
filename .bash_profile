@@ -59,7 +59,7 @@ export DOTFILES GLOBAL_DIR
 #}
 
 debug() { true; }
-source "$GLOBAL_LIB/debug"
+source "$GLOBAL_LIB/Debug"
 
 ##############################################################################
 # This script, and any scripts in the .bash_profile.d directories, should
