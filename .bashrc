@@ -7,22 +7,22 @@
 # Don't delete this, it's for figuring things out sometimes.
 # XXX: Maybe move this into debug?
 
-((DEBUG)) && {
-  if [[ $- == *i* ]]; then
-    debug "We are interactive ..."
-  else
-    debug "We are *not* interactive ..."
-  fi
+#((DEBUG)) && {
+#  if [[ $- == *i* ]]; then
+#    debug "We are interactive ..."
+#  else
+#    debug "We are *not* interactive ..."
+#  fi
+#
+#  if shopt -q login_shell; then
+#    debug "We are in a login shell ..."
+#  else
+#    debug "We are *not* in a login shell ..."
+#  fi
+#}
 
-  if shopt -q login_shell; then
-    debug "We are in a login shell ..."
-  else
-    debug "We are *not* in a login shell ..."
-  fi
-}
-
-# XXX: Use $GLOBAL_LIB instead
-source /nas_pp/etl/scripts/lib/debug
+debug() { true; }
+source $GLOBAL_LIB/Debug
 
 ##############################################################################
 # this function takes one directory path and adds it to the existing path
