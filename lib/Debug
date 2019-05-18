@@ -1,11 +1,46 @@
 #!/bin/bash
 
+#----------------------------------------------------------------------------
+: << POD
+=head2 sourced
+
+Usage: sourced || die "Must be sourced."
+
+Returns true (0) or false (1) depending on if we have been sourced.
+
+=cut
+POD
+
+# see scripts/lib/debug
+#function sourced() { [[ ${FUNCNAME[1]} == 'source' ]]; }
+
 sourced() { [[ ${FUNCNAME[1]} == 'source' ]]; }
 
 sourced || {
   echo "debug must only be sourced" >&2
   exit 1
 }
+
+export -f sourced
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 debug
+
+Usage: debug "message"
+
+C<debug> will check if the environment variable C<DEBUG> is true, and if not,
+silently return with a 0 return code.
+
+Otherwise, C<debug> will determine the function call stack and C<warn> the
+"message" with the stack at the beginning of the line.
+
+Example:
+
+  [somefunc(3):func(99)]: message
+
+=cut
+POD
 
 debug() {
   ((DEBUG)) || return 0
@@ -39,4 +74,4 @@ debug() {
   printf '%s %s\n' "$trace" "$msg" >&2;
 }
 
-export -f debug sourced
+export -f debug
