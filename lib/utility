@@ -74,20 +74,6 @@ POD
 
 #----------------------------------------------------------------------------
 : << POD
-=head2 sourced
-
-Usage: sourced || die "Must be sourced."
-
-Returns true (0) or false (1) depending on if we have been sourced.
-
-=cut
-POD
-
-# see scripts/lib/debug
-#function sourced() { [[ ${FUNCNAME[1]} == 'source' ]]; }
-
-#----------------------------------------------------------------------------
-: << POD
 =head2 warn
 
 Usage: warn "message"
@@ -152,53 +138,6 @@ Example:
 POD
 
 verbose() { ((VERBOSE)) && warn "$*"; }
-
-#----------------------------------------------------------------------------
-: << POD
-=head2 debug
-
-Usage: debug "message"
-
-C<debug> will check if the environment variable C<DEBUG> is true, and if not,
-silently return with a 0 return code.
-
-Otherwise, C<debug> will determine the function call stack and C<warn> the
-"message" with the stack at the beginning of the line.
-
-Example:
-
-  [somefunc(3):func(99)]: message
-
-=cut
-POD
-
-#function debug() {
-#  ((DEBUG)) || return 0
-#
-#  local lineno func file trace
-#  local -a el
-#  local -i lvl=0
-#
-#  while true; do
-#    caller=$(caller $lvl) || break
-#    read -r lineno func file <<< "$caller"
-#
-#    file="$(basename "$file"):"
-#    func+=':'
-#
-#    [[ $func == 'main:' ]] && func=
-#
-#    el+=("[$file$func$lineno]")
-#
-#    ((lvl++))
-#  done
-#
-#  for ((ix = lvl - 1; ix >= 0; ix--)); do
-#    trace+="${el[ix]}"
-#  done
-#
-#  warn "$trace $*"
-#}
 
 #----------------------------------------------------------------------------
 : << POD
