@@ -3,83 +3,75 @@
 # XXX: Do I need to check for interactive or login here? or leave it to the
 # loaded scripts to handle?
 
-##############################################################################
-# Don't delete this, it's for figuring things out sometimes.
-# XXX: Maybe move this into debug?
-
-#((DEBUG)) && {
-#  if [[ $- == *i* ]]; then
-#    debug "We are interactive ..."
-#  else
-#    debug "We are *not* interactive ..."
-#  fi
-#
-#  if shopt -q login_shell; then
-#    debug "We are in a login shell ..."
-#  else
-#    debug "We are *not* in a login shell ..."
-#  fi
-#}
-
 debug() { true; }
-source $GLOBAL_LIB/Debug
+
+source "$GLOBAL_LIB/Debug"
+source "$GLOBAL_LIB/BashCompletions"
+source "$GLOBAL_LIB/LoadRCs"
 
 ##############################################################################
 # this function takes one directory path and adds it to the existing path
+
+# Move this into utility?
+
 function addpath() {
   debug "adding $1 to path"
   PATH="${PATH}:$1"
 }
 
 ##############################################################################
-# If this tty can support 256 colors, set it.
-
-if [[ -z $TERM ]] && test -t; then
-  if nc=$(tput colors); then
-    [[ $nc -eq 256 ]] && TERM='xterm-256color'
-  else
-    debug 'unknown terminal type'
-  fi
-fi
-
-##############################################################################
 # Source global definitions
 
-declare -a global=()
+#declare -a global=()
+#
+#global+=('/etc/bashrc')
+#global+=('/etc/bash_completion')
+#global+=('/etc/profile.d/bash-completion')
+#
+#for f in "${global[@]}"; do
+#  [[ -r $f ]] && {
+#    debug "Sourcing $f ..."
+#    source "$f" || debug "... unable to source $f"
+#  }
+#done
+#
+#unset global
 
-global+=('/etc/bashrc')
-global+=('/etc/bash_completion')
-global+=('/etc/profile.d/bash-completion')
+load_completions
 
-for f in "${global[@]}"; do
-  [[ -r $f ]] && {
-    debug "Sourcing $f ..."
-    source "$f" || debug "... unable to source $f"
-  }
-done
+###############################################################################
+## If this tty can support 256 colors, set it.
+#
+#if [[ -z $TERM ]] && test -t; then
+#  if nc=$(tput colors); then
+#    [[ $nc -eq 256 ]] && TERM='xterm-256color'
+#  else
+#    debug 'unknown terminal type'
+#  fi
+#fi
+#
+###############################################################################
+#declare -a rcdirs
+#
+#rcdirs+=("$DOTFILES/.bashrc.d")
+#rcdirs+=("$HOME/.bashrc.d")
+#
+#for rcdir in "${rcdirs[@]}"; do
+#  [[ -d $rcdir ]] || continue
+#
+#  readarray -t rcfiles < <(/usr/bin/find "$rcdir" -iname '*_rc' | /usr/bin/sort)
+#
+#  for rcfile in "${rcfiles[@]}"; do
+#    [[ -r $rcfile ]] && {
+#      debug "Sourcing $rcfile ..."
+#      source "$rcfile" || debug "... unable to source $rcfile"
+#    }
+#  done
+#done
+#
+#unset rcdirs rcdir rcfiles rcfile
 
-unset global
-
-##############################################################################
-declare -a rcdirs
-
-rcdirs+=("$DOTFILES/.bashrc.d")
-rcdirs+=("$HOME/.bashrc.d")
-
-for rcdir in "${rcdirs[@]}"; do
-  [[ -d $rcdir ]] || continue
-
-  readarray -t rcfiles < <(/usr/bin/find "$rcdir" -iname '*_rc' | /usr/bin/sort)
-
-  for rcfile in "${rcfiles[@]}"; do
-    [[ -r $rcfile ]] && {
-      debug "Sourcing $rcfile ..."
-      source "$rcfile" || debug "... unable to source $rcfile"
-    }
-  done
-done
-
-unset rcdirs rcdir rcfiles rcfile
+load_rcs
 
 ##############################################################################
 # Final cleanup of PATH and LD_LIBRARY_PATH environment variables. There are
@@ -145,7 +137,7 @@ build_path() {
       continue
 
     elif [[ ${SHOULD_BE_STRIPPED[$d]+isset} ]]; then
-      PATH_CHECK[$dir]=1
+      PATH_CHECK[$d]=1
       debug "STRIP: $d"
       continue
     fi
