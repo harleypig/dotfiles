@@ -9,13 +9,13 @@
 ################################################################################
 # Base Global variables
 
+# shellcheck disable=SC2164
 if [[ -L ${BASH_SOURCE[0]} ]]; then
   DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
   GLOBAL_DIR="$(dirname "$DOTFILES")"
 
   OLDPWD="$PWD"
 
-  # shellcheck disable=SC2164
   cd "$DOTFILES"
   GLOBAL_DIR="$(git rev-parse --show-toplevel 2> /dev/null)" \
     || echo "Unable to determine top level of repository, weird things are going to happen."
@@ -41,23 +41,6 @@ export GLOBAL_BIN="$GLOBAL_DIR/bin"
 export DOTFILES GLOBAL_DIR
 
 ##############################################################################
-# Don't delete this, it's for figuring things out sometimes.
-# XXX: Maybe move this into debug?
-
-#((DEBUG)) && {
-#  if [[ $- == *i* ]]; then
-#    debug "We are interactive ..."
-#  else
-#    debug "We are *not* interactive ..."
-#  fi
-#
-#  if shopt -q login_shell; then
-#    debug "We are in a login shell ..."
-#  else
-#    debug "We are *not* in a login shell ..."
-#  fi
-#}
-
 debug() { true; }
 source "$GLOBAL_LIB/Debug"
 
@@ -65,8 +48,8 @@ source "$GLOBAL_LIB/Debug"
 # This script, and any scripts in the .bash_profile.d directories, should
 # focus on setting environment variables.
 
-# Including a function at this level should be considered, and very rarely
-# done.
+# Including a function at this level should be considered carefully, and very
+# rarely done.
 
 # It is recommended that the only time a function is included at this level is
 # to provide a script that absolutely every script ever called, either
