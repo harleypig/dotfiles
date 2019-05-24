@@ -35,10 +35,12 @@ a symbolic link. This is not being done here and results will be unreliable.
 EOT
 fi
 
-export GLOBAL_LIB="$GLOBAL_DIR/lib"
-export GLOBAL_BIN="$GLOBAL_DIR/bin"
-
 export DOTFILES GLOBAL_DIR
+
+export GLOBAL_LIB="$GLOBAL_DIR/lib"
+[[ -d $GLOBAL_LIB ]] || GLOBAL_LIB="$GLOBAL_DIR/scripts/lib"
+
+export GLOBAL_BIN="$GLOBAL_DIR/bin"
 
 ##############################################################################
 debug() { true; }
