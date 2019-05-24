@@ -27,7 +27,7 @@ set +x
 # https://github.com/niieani/bash-oo-framework
 
 #----------------------------------------------------------------------------
-source $GLOBAL_LIB/debug
+source "$GLOBAL_LIB/Debug"
 
 #----------------------------------------------------------------------------
 # Documentation
@@ -85,7 +85,7 @@ Equivalent to C<echo 'Message' E<gt>&2>
 =cut
 POD
 
-function warn() { printf '%s\n' "$*" >&2; }
+warn() { printf '%s\n' "$*" >&2; }
 
 #----------------------------------------------------------------------------
 : << POD
@@ -103,7 +103,7 @@ the second parameter.
 =cut
 POD
 
-function die() {
+die() {
   # Grab most recent return code
   local rc=$?
 
@@ -153,7 +153,7 @@ message, it will be display at the beginning of the help screen.
 =cut
 POD
 
-function show_usage() {
+show_usage() {
   debug "Entered ${FUNCNAME[0]} ..."
   debug "Parms ($#): $*"
 
@@ -202,125 +202,6 @@ function show_usage() {
 
 #----------------------------------------------------------------------------
 : << POD
-=head2 is_integer
-
-Usage: if [[ is_integer 32 ]]; then echo "Is a number!"; fi
-
-C<is_integer> does a simple check if the value is a number and returns 0 if it
-is, 1 otherwise.
-
-=cut
-POD
-
-function is_integer() {
-  [[ $1 != *[!0-9]* ]] && return 0
-  return 1
-}
-
-#----------------------------------------------------------------------------
-: << POD
-=head2 is_alpha
-
-Usage: if [[ is_alpha 32 ]]; then echo "Is alphanumeric!"; fi
-
-C<is_alpha> does a simple check if the value is an alphanumeric and returns
-0 if it is, 1 otherwise.
-
-=cut
-POD
-
-function is_alpha() {
-  [[ $1 != *[!0-9a-zA-Z]* ]] && return 0
-  return 1
-}
-
-#----------------------------------------------------------------------------
-: << POD
-=head2 is_char
-
-Usage: if [[ is_char 'a' ]]; then echo "Is a char!"; fi
-
-C<is_char> does a simple check if the value is a single character and returns
-0 if it is, 1 otherwise.
-
-=cut
-POD
-
-function is_char() {
-  [[ ${#1} -eq 1 ]] && return 0
-  return 1
-}
-
-#----------------------------------------------------------------------------
-: << POD
-=head2 is_date
-
-Usage:
-  if [[ is_date 20180702 ]]; then echo "valid date"; fi
-  new_date=E<36>(is_date '20180702' '%A') || die "Invalid date"
-
-C<is_date> determines if a date is valid and optionally returns the date in
-the specified format.
-
-The second parameter is expected to be a valid C<date> format, minus the plus
-(+) sign. If the second parameter is not a valid format this function will
-return 1, as invalid.
-
-NOTE: This function makes a good faith effort, but there are too many ways in
-which a date can be formatted.
-
-=cut
-POD
-
-function is_date() {
-  [[ -z $1 ]] && return 1
-
-  if [[ -n $2 ]]; then
-    date -d "$1" "+$2" && return 0
-  else
-    date -d "$1" &> /dev/null && return 0
-  fi
-
-  return 1
-}
-
-#----------------------------------------------------------------------------
-: << POD
-=head2 is_dirempty
-
-Usage: if [[ is_dirempty "E<36>dir" ]]; then echo "E<36>dir is empty"; fi
-
-C<is_dirempty> detects if a directory and, if it is, returns 0, otherwise 1.
-
-=cut
-POD
-
-function is_dirempty() {
-  [[ -n "$(find "$1" -maxdepth 0 -empty -print)" ]] && return 0
-  return 1
-}
-
-#----------------------------------------------------------------------------
-: << POD
-=head2 is_varname
-
-Usage: is_varname "E<36>variable"
-
-Determines whether the string in C<E<36>variable> is a valid variable name.
-Returns 0 if it is, 1 if it isn't.
-
-=cut
-POD
-
-function is_varname() {
-  # If varname is a single character then it can't be an underscore '_'.
-  [[ $1 == [A-Za-z] ]] && return 0
-  [[ $1 == [A-Za-z_][A-Za-z0-9_]* ]] && return 0
-  return 1
-}
-
-#----------------------------------------------------------------------------
-: << POD
 =head2 verify_filename
 
 Usage: filename=E<36>(verify_filename "E<36>filename") || die "bad filename"
@@ -338,7 +219,7 @@ error if it does not.
 =cut
 POD
 
-function verify_filename() {
+verify_filename() {
   local filename="$1"
 
   fqdn="$(readlink -f "$(dirname "$filename")")" || {
@@ -397,7 +278,7 @@ nothing is passed in, the default prompt is 'Press any key to continue ...'
 =cut
 POD
 
-function anykey() { read -n 1 -r -s -p "${1:-Press any key to continue ...}"; }
+anykey() { read -n 1 -r -s -p "${1:-Press any key to continue ...}"; }
 
 #-----------------------------------------------------------------------------
 : << POD
@@ -416,7 +297,7 @@ is passed in, the default prompt is 'Yes or no?'.
 POD
 
 # shellcheck disable=SC2120
-function yesno() {
+yesno() {
   local -u yn
 
   while true; do
@@ -482,7 +363,7 @@ POD
 # XXX: Figure out a way to allow a delimiter to be escaped. E.g., \% should
 # not be counted as the start or end of a variable name.
 
-function fill_template() {
+fill_template() {
   debug "Entered ${FUNCNAME[0]} ..."
 
   [[ -z $1 ]] && Usage "${FUNCNAME[0]} requires a string to process."
@@ -543,7 +424,7 @@ to source or just use a library.
 =cut
 POD
 
-function _load_library() {
+_load_library() {
   [[ -z $1 ]] && die "_load_library is expecting a library name"
 
   local libname=$1
@@ -565,7 +446,7 @@ Read the GetAuth manpage--C<man GetAuth>--for details.
 =cut
 POD
 
-function GetAuth() { _load_library "${FUNCNAME[0]}" "$@"; }
+GetAuth() { _load_library "${FUNCNAME[0]}" "$@"; }
 
 : << POD
 =head2 parse_params
@@ -592,7 +473,7 @@ POD
 #      function GetAuth() { _load_library '' "${FUNCNAME[0]}" "$@"; }
 #      function GetAuth() { _load_library "${FUNCNAME[0]}" '' "$@"; }
 
-function parse_params() {
+parse_params() {
   debug "Sourcing ParseParams library ..."
   source ParseParams || die "ParseParams failed"
   debug "Calling real function with original parameters ..."
