@@ -3,9 +3,9 @@
 [[ $- == *i* ]] || return 0
 
 # Start session in background if it doesn't already exist.
-tmux has-session -t "$USER" &> /dev/null || tmuxnew-session -d -s "$USER"
+tmux has-session -t "$USER" &> /dev/null || tmux new-session -d -s "$USER"
 
-alias ta="tmux a -t "$USER"
+alias ta="tmux a -t $USER"
 
 # swap this window to the left
 alias swapl='tmux swap-window -t -1'
