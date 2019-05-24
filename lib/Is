@@ -1,0 +1,213 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------------
+source utility
+
+#----------------------------------------------------------------------------
+# Documentation
+
+: << POD
+=head1 NAME
+
+Is - A collection of 'is' utilities
+
+=head1 SYNOPSIS
+
+  source Is
+
+=head1 OPTIONS
+
+There are no options for this file
+
+=head1 DESCRIPTION
+
+This file contains a collection of 'is' convenience checks to be used in
+scripts.
+
+=head1 FUNCTIONS
+
+=cut
+POD
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is.alpha
+
+Performs a simple check if the value is an alpha and returns 0 if it is,
+1 otherwise.
+
+C<alpha> is defined as only letters.
+
+=cut
+POD
+
+is.alpha() {
+  (($# != 1)) && {
+    warn 'expecting one value to check'
+    return 1
+  }
+
+  [[ $1 != *[!a-zA-Z]* ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is.alphanumeric
+
+Performs a simple check if the value is an alphanumeric and returns 0 if it
+is, 1 otherwise.
+
+C<alphanumeric> is defined as only letters and numbers.
+
+=cut
+POD
+
+is.alphanumeric() {
+  (($# != 1)) && {
+    warn 'expecting one value to check'
+    return 1
+  }
+
+  [[ $1 != *[!0-9a-zA-Z]* ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is.array
+
+Checks if the name passed is a valid varname and an array and returns 0 if it
+is, otherwise returns 1.
+
+This function works for both C<declare -a> and C<declare -A>.
+
+=cut
+POD
+
+is.array() {
+  (($# != 1)) && {
+    warn 'expecting one value to check'
+    return 1
+  }
+
+  is.varname "$1" || return 1
+
+  declare_rx="^declare -(a|A) $1($|=)"
+  [[ $(declare -p "$1" 2>&1) =~ $declare_rx ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is.char
+
+Performs a simple check if the value is a single character and returns 0 if it
+is, 1 otherwise.
+
+=cut
+POD
+
+is.char() {
+  (($# != 1)) && {
+    warn 'expecting one value to check'
+    return 1
+  }
+
+  [[ ${#1} -eq 1 ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is.date
+
+Determines if a date is valid and optionally returns the date in the specified
+format, using the date program.
+
+The second parameter is expected to be a valid C<date> format, minus the plus
+(+) sign. If the second parameter is not a valid format this function will
+return 1, as invalid.
+
+NOTE: This function makes a good faith effort, but there are too many ways in
+which a date can be formatted.
+
+=cut
+POD
+
+is.date() {
+  (($# != 1)) && {
+    warn 'expecting one value to check'
+    return 1
+  }
+
+  if [[ -n $2 ]]; then
+    date -d "$1" "+$2" 2> /dev/null && return 0
+  else
+    date -d "$1" &> /dev/null && return 0
+  fi
+
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is.dirempty
+
+Detects if a directory has no files and if it is does not, returns 0,
+otherwise 1.
+
+=cut
+POD
+
+is.dirempty() {
+  (($# != 1)) && {
+    warn 'expecting one value to check'
+    return 1
+  }
+
+  [[ -n "$(find "$1" -maxdepth 0 -empty -print)" ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is.integer
+
+Performs a simple check if the value is a positive integer and returns 0 if it
+is, 1 otherwise.
+
+=cut
+POD
+
+is.integer() {
+  (($# != 1)) && {
+    warn 'expecting one value to check'
+    return 1
+  }
+
+  [[ $1 != *[!0-9]* ]] && return 0
+  return 1
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 is.varname
+
+Determines whether the string in C<E<36>variable> is a valid variable name.
+Returns 0 if it is, 1 if it isn't.
+
+=cut
+POD
+
+is.varname() {
+  (($# != 1)) && {
+    warn 'expecting one value to check'
+    return 1
+  }
+
+  # If varname is a single character then it can't be an underscore '_'.
+  [[ $1 == [A-Za-z] ]] && return 0
+  [[ $1 == [A-Za-z_][A-Za-z0-9_]* ]] && return 0
+  return 1
+}

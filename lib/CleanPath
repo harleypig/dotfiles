@@ -1,0 +1,83 @@
+#!/bin/bash
+
+##############################################################################
+source "$GLOBAL_LIB/Is"
+
+#-----------------------------------------------------------------------------
+get_real_dir() {
+  local d=$1
+
+  # What is the real path for $d?
+  dir=$(/usr/bin/readlink -ne "$d") || return 1
+
+  # does $dir exist?
+  [[ -z $dir ]] && return 1
+
+  # is $dir a directory?
+  [[ -d $dir ]] || return 1
+
+  echo "$dir"
+  return 0
+}
+
+#-----------------------------------------------------------------------------
+declare -A SHOULD_BE_FIRST SHOULD_BE_LAST SHOULD_BE_IGNORED SHOULD_BE_STRIPPED
+
+build_path() {
+  local path="${1?expecting colon separated path}"
+
+  local -a paths first middle last
+  local -A path_check
+
+  IFS=':' read -ra paths <<< "${!path}"
+
+  for d in "${paths[@]}"; do
+    debug "Checking $d ..."
+
+    # Ignore blank entries
+    [[ -z $d ]] && continue
+
+    # Ignore dot
+    [[ $d == '.' ]] && continue
+
+    # Have we already handled this directory?
+    [[ ${path_check[$d]+isset} ]] && continue
+
+    [[ ${SHOULD_BE_IGNORED[$d]+isset} ]] && {
+      middle+=("$d")
+      path_check[$d]=1
+      continue
+    }
+
+    [[ ${SHOULD_BE_STRIPPED[$d]+isset} ]] && {
+      path_check[$realdir]=1
+      continue
+    }
+
+    # Get the real path, if it really exists.
+    realdir=$(get_real_dir "$d") || continue
+    path_check[$realdir]=1
+
+    # Have we already handled this directory?
+    [[ ${path_check[$realdir]+isset} ]] && continue
+
+    [[ ${SHOULD_BE_STRIPPED[$realdir]+isset} ]] && continue
+
+    [[ ${SHOULD_BE_FIRST[$realdir]+isset} ]] && {
+      first+=("$realdir")
+      continue
+    }
+
+    [[ ${SHOULD_BE_LAST[$realdir]+isset} ]] && {
+      last+=("$realdir")
+      continue
+    }
+
+    middle+=("$realdir")
+  done
+
+  local IFS=':'
+  echo "${first[*]}" "${middle[*]}" "${last[*]}"
+
+  return 0
+}

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+load_completions() {
+  local local_completions="$DOTFILES/.bash_completion.d"
+
+  local -a bcfiles=()
+
+  bcfiles+=('/etc/bashrc')
+  bcfiles+=('/etc/bash_completion')
+  bcfiles+=('/etc/profile.d/bash-completion')
+
+  [[ -d $local_completions ]] \
+    && readarray -t -O "${#bcfiles[@]}" bcfiles < <(find "$local_completions" -type f)
+
+  local bcfile
+
+  for bcfile in "${bcfiles[@]}"; do
+    [[ -r $bcfile ]] && {
+      debug "Sourcing $bcfile ..."
+      source "$bcfile" || debug "... unable to source $bcfile"
+    }
+  done
+}
+
+export -f load_completions

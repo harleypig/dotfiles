@@ -1,0 +1,41 @@
+#!/bin/bash
+
+##############################################################################
+# If this tty can support 256 colors, set it.
+
+if [[ -z $TERM ]] && test -t; then
+  if nc=$(tput colors); then
+    [[ $nc -eq 256 ]] && TERM='xterm-256color'
+  else
+    debug 'unknown terminal type'
+  fi
+fi
+
+##############################################################################
+load_rcs() {
+  local -a rcdirs
+
+  rcdirs+=("$DOTFILES/.bashrc.d")
+  rcdirs+=("$HOME/.bashrc.d")
+
+  # Read these in a loop instead of having find search for all files at once
+  # because we want to load global dotfiles first.
+
+  local -a rcfiles
+  local rcdir rcfile
+
+  for rcdir in "${rcdirs[@]}"; do
+    [[ -d $rcdir ]] || continue
+
+    readarray -t rcfiles < <(/usr/bin/find "$rcdir" -iname '*_rc' | /usr/bin/sort)
+
+    for rcfile in "${rcfiles[@]}"; do
+      [[ -r $rcfile ]] && {
+        debug "Sourcing $rcfile ..."
+        source "$rcfile" || debug "... unable to source $rcfile"
+      }
+    done
+  done
+}
+
+export -f load_rcs
