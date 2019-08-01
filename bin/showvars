@@ -1,0 +1,49 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+
+warn() { echo "$*" >&2; }
+
+die() {
+  (($#)) && warn "$*"
+  exit 1
+}
+
+command_exists() { command -v "$1" &> /dev/null; }
+
+#------------------------------------------------------------------------------
+_showvars() {
+  local filename=$1
+  [[ -r $filename ]] || die "$filename is not readable."
+
+  jq_query='[ ..  | select(.Assigns?) | ..  | select(.Name?) | .Name.Value ] | map("  "+.) | unique[]'
+
+  shfmt -tojson < "$filename" | jq -r "$jq_query"
+}
+
+#------------------------------------------------------------------------------
+(($#)) || {
+  cat << EOH
+
+showvars is a simple script that shows
+what variables are assigned in a bash
+script
+
+usage: showvars filename [filename ...]
+
+EOH
+
+  exit 1
+}
+
+for r in shfmt jq; do
+  command_exists "$r" || die "This script depends on $r and it is not found."
+done
+
+for f in "$@"; do
+  printf '\n%s:\n' "$f"
+  _showvars "$f"
+  shift
+done
+
+echo
