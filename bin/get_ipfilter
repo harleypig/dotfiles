@@ -2,14 +2,25 @@
 
 #DEBUG=echo
 
-PROGNAME=$(basename $0)
-LOGFILE="/home/harleypig/videos/logs/${PROGNAME}_$(date +%Y%m%d-%H%M%S).log"
-CURL=$(which curl)
-UNZIP=$(which unzip)
+warn() { printf '%s\n' "$*"; }
+
+die() {
+  (($#)) && warn "$*"
+  exit 1
+}
+
+command -v curl &> /dev/null || die 'curl is required'
+command -v unzip &> /dev/null || die 'unzip is required'
+
+PROGNAME=$(basename "$0")
+BASEDIR='/home/media/.data'
+LOGFILE="$BASEDIR/${PROGNAME}_$(date +%Y%m%d-%H%M%S).log"
 FILENAME='ipfilter.zip'
 URL="http://upd.emule-security.org/ipfilter.zip"
-WORK_DIR="/home/harleypig/videos/data"
+WORK_DIR="$BASEDIR"
 
-cd $WORK_DIR
-$DEBUG $CURL -LSsO $URL >> $LOGFILE 2>&1
-$DEBUG $UNZIP -f -o $FILENAME >> $LOGFILE 2>&1
+mkdir -p "$WORK_DIR"
+
+cd $WORK_DIR || die "cannot change to $WORK_DIR"
+$DEBUG curl -LSsO $URL >> "$LOGFILE" 2>&1
+$DEBUG unzip -f -o $FILENAME >> "$LOGFILE" 2>&1

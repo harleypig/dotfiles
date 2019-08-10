@@ -1,7 +1,12 @@
 #!/bin/bash
 
+# XXX: Document me!
+# XXX: Test me!
+
 ##############################################################################
 # If this tty can support 256 colors, set it.
+
+# XXX: This does not belong here.
 
 if [[ -z $TERM ]] && test -t; then
   if nc=$(tput colors); then

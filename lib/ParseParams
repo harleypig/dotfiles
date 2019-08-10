@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# XXX: Test me!
+
 source utility
 
 sourced || die "$(basename "$0") must only be sourced."

@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# This should only be run from bash startup files.
+# XXX: check for being sourced
+# XXX: Document me!
+# XXX: Test me!
+
+# See https://unix.stackexchange.com/questions/4219/how-do-i-get-bash-completion-for-command-aliases
+# for a way to add aliases to completion.
+
 load_completions() {
   local local_completions="$DOTFILES/.bash_completion.d"
 

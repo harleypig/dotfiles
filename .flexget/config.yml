@@ -115,7 +115,7 @@ templates:
         #        - /home/media2/tv/
         #        - /home/media2/tv_permanent/
         #        - /home/media/tv_watching/
-        - /home/media/tv/
+        - /home/media/.tv/
       allow_different_qualities: better
     configure_series:
       settings:
@@ -219,7 +219,7 @@ tasks:
         #        - /home/media2/tv
         #        - /home/media2/tv_permanent
         #        - /home/media/tv_watching
-        - /home/media/tv
+        - /home/media/.tv
       regexp: '.*\.(mp4|mkv|mpeg|mpg|wmv)$'
       recursive: yes
     disable: builtins
@@ -234,4 +234,4 @@ tasks:
           #          - /home/media2/tv
           #          - /home/media2/tv_permanent
           #          - /home/media/tv_watching
-          - /home/media/tv
+          - /home/media/.tv
