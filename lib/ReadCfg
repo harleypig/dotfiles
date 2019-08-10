@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# XXX: Test me!
+
 #############################################################################
 source utility
 
@@ -64,7 +66,8 @@ f|configfile,filename,,,required
 r|regex,string,,$DEFAULT_REGEX
 "
 
-  parse_params "$PARMS_DEF" "$@" || show_usage
+  # XXX: Remove dependency on other library and just return 1 on failure.
+  parse_params "$PARMS_DEF" "$@" || show_usage ''
 
   # shellcheck disable=SC2154
   [[ -r $configfile ]] || die "Unable to read $configfile"

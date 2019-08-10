@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# String functions
+
+# XXX: Document me!
+# XXX: Test me!
+# XXX: Only allow sourcing me!
+
+#-----------------------------------------------------------------------------
+# Trim whitespace on the left of a string
+
+ltrim() {
+  : "${1#"${1%%[![:space:]]*}"}"
+  printf '%s' "$_"
+}
+
+#-----------------------------------------------------------------------------
+# Trim whitespace on the right of a string
+
+rtrim() {
+  : "${1%"${1##*[![:space:]]}"}"
+  printf '%s' "$_"
+}
+
+#-----------------------------------------------------------------------------
+# Trim whitespace on both sides of a string
+
+trim() {
+  : "$(ltrim "$1")"
+  : "$(rtrim "$_")"
+  printf '%s' "$_"
+}
+
+#-----------------------------------------------------------------------------
+# Condense all contiguous whitespace to a single space
+
+# XXX: Explain me!
+
+squeeze() {
+  set -f
+  # shellcheck disable=SC2086,SC2048
+  set -- $*
+  printf '%s' "$*"
+  set +f
+}
