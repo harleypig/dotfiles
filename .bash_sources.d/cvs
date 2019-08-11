@@ -1,7 +1,0 @@
-#!/bin/bash
-
-# CVS settings
-
-export CVS_RSH='ssh'
-export CVSROOT='harleypig@cvs.vwh.net:/cvsroot'
-
