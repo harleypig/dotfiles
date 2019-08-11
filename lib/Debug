@@ -14,17 +14,12 @@ Returns true (0) or false (1) depending on if we have been sourced.
 =cut
 POD
 
-# see scripts/lib/debug
-#function sourced() { [[ ${FUNCNAME[1]} == 'source' ]]; }
-
 sourced() { [[ ${FUNCNAME[1]} == 'source' ]]; }
 
 sourced || {
   echo "debug must only be sourced" >&2
   exit 1
 }
-
-export -f sourced
 
 #----------------------------------------------------------------------------
 : << POD
@@ -76,5 +71,3 @@ debug() {
 
   printf '%s %s\n' "$trace" "$msg" >&2;
 }
-
-export -f debug
