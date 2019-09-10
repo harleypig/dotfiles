@@ -8,6 +8,9 @@
 # uname -r:
 # 4.18.12-arch1-1-ARCH
 
+# Don't run on harleypig.com
+[[ $HOSTNAME == 'harleypig.com' ]] && exit 0
+
 # Not supporting CentOS
 grep -iqs 'centos' /etc/*release* && exit 0
 
