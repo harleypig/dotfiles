@@ -8,6 +8,7 @@
 
 # XXX: Incorporate this somehow?
 #      https://www.commandlinefu.com/commands/view/7916/put-a-console-clock-in-top-right-corner
+#      https://gist.github.com/johanbove/328506117db2edff7f5c99d05afde0ec
 
 #----------------------------------------------------------------------------
 function _parent() {
