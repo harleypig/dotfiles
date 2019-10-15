@@ -1,6 +1,0 @@
-#!/bin/bash
-
-SOURCE="${HOME}/.minecraft"
-TARGET="${HOME}/Dropbox/minecraft"
-
-rsync -aiHS --exclude .git --delete-after "${SOURCE}/" "${TARGET}/"
