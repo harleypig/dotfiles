@@ -71,6 +71,7 @@ declare -a BIN_DIRS
 BIN_DIRS+=("$GLOBAL_LIB")
 BIN_DIRS+=("$GLOBAL_BIN")
 BIN_DIRS+=("$HOME/bin")
+BIN_DIRS+=("$HOME/.local/bin")
 BIN_DIRS+=('/usr/lib/ccache/bin')
 BIN_DIRS+=("/usr/lib/dart/bin")
 BIN_DIRS+=("$HOME/bin")
