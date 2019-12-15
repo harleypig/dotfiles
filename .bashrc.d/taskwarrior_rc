@@ -1,7 +1,5 @@
 #!/bin/bash
 
-return 0
-
 [[ $- == *i* ]] || return 0
 
 # Functions and aliases specific to the taskwarrior program.
