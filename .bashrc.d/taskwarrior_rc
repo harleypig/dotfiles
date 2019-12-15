@@ -7,14 +7,12 @@
 
 taskpath=$(command -v task)
 
-if [[ -n "$taskpath" ]]; then
-
+if [[ -n $taskpath ]]; then
   task_completion="$HOME/.task/completion/task-completion.sh"
   # shellcheck disable=SC1090
   [[ -f $task_completion ]] && source "$task_completion"
 
   __task() {
-
     perl -MTaskwarrior::Kusarigama -e '' &> /dev/null && PERL5LIB="$PERL5LIB:$HOME/.task/lib"
 
     $taskpath "$@"
@@ -28,19 +26,15 @@ if [[ -n "$taskpath" ]]; then
 
   }
 
-  task=__task
-
-  taskdatadir=$($task _get rc.data.location)
+  taskdatadir=$(__task _get rc.data.location)
   taskdatadir=${taskdatadir//\~/"$HOME"}
 
   _task_command() {
-
     command=$1
     tid=$2
     shift
     shift
-    "$task" "$tid" "$command" "$@"
-
+    __task "$tid" "$command" "$@"
   }
 
   declare -A TASK_COMMANDS
@@ -59,21 +53,19 @@ if [[ -n "$taskpath" ]]; then
   done
 
   _task_report_or_add() {
-
     project=$1
     shift
 
     if [ "$#" -eq 0 ]; then
       report=${project##*.}
-      "$task" "$report"
+      __task "$report"
     else
       [ "$project" == 'incubate' ] && project="${project} wait:someday"
-      $task add "project:$project" "$@"
+      __task add "project:$project" "$@"
     fi
   }
 
   _task_completed_but_not_done() {
-
     tag=$1
     tid=$2
     shift
@@ -83,8 +75,8 @@ if [[ -n "$taskpath" ]]; then
       echo "You must explain why this task wasn't done."
       return
     else
-      "$task" "$tid" annotate "$@"
-      "$task" "$tid" 'done' "$tag"
+      __task "$tid" annotate "$@"
+      __task "$tid" 'done' "$tag"
     fi
   }
 
@@ -92,35 +84,31 @@ if [[ -n "$taskpath" ]]; then
   tfail() { _task_completed_but_not_done +fail "$@"; }
 
   task_last_id() {
-
     local last_id
-    last_id=$($task newest rc.verbose=nothing limit:1)
+    last_id=$(__task newest rc.verbose=nothing limit:1)
     last_id=${last_id# *}
     last_id=${last_id%% *}
     echo "$last_id"
-
   }
 
   task_last_uuid() {
-
     local last_id
     local last_uuid
 
     last_id=$(task_last_id)
-    last_uuid=$($task "$last_id" _uuids)
+    last_uuid=$(__task "$last_id" _uuids)
 
     echo "$last_uuid"
-
   }
 
   # shellcheck disable=SC2139
   {
-    alias context="$task context"
-    alias tall="$task all -COMPLETED -DELETED"
-    alias ta="$task add"
-    alias trecurring="$task all status:recurring"
-    alias ts="$task sync"
-    alias t="$task"
+    alias tcon="__task context"
+    alias tall="__task all -COMPLETED -DELETED"
+    alias tadd="__task add"
+    alias trecurring="__task all status:recurring"
+    alias ts="__task sync"
+    alias t="__task"
   }
 
   shortcutsfile="${taskdatadir}/make_shortcuts"
