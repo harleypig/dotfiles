@@ -1,0 +1,3 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/harleypig/dotfiles/badge)](https://www.codefactor.io/repository/github/harleypig/dotfiles)
+
+# My dotfiles that aren't in their own repository ...
