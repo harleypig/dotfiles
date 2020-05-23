@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# XXX: Move to a file that .bash_profile, .profile and whoever else will need
+#      to read it can do so.
+
 # Debug tty login (ssh user@server):
 # ssh -t localhost "PS4='[\$BASH_SOURCE[0]:\$LINENO]: ' bash -xl" |& tee login.log
 
@@ -38,13 +41,13 @@ fi
 export DOTFILES GLOBAL_DIR
 
 export GLOBAL_LIB="$GLOBAL_DIR/lib"
-[[ -d $GLOBAL_LIB ]] || GLOBAL_LIB="$GLOBAL_DIR/scripts/lib"
+[[ -d $GLOBAL_LIB ]] || echo "$GLOBAL_LIB does not exist, GLOBAL_LIB is not set"
 
 export GLOBAL_BIN="$GLOBAL_DIR/bin"
 
 ##############################################################################
 debug() { true; }
-source "$GLOBAL_LIB/Debug"
+[[ -r "$GLOBAL_LIB/debug" ]] && source "$GLOBAL_LIB/debug"
 
 ##############################################################################
 # This script, and any scripts in the .bash_profile.d directories, should
@@ -66,6 +69,7 @@ function addpath() {
 
 declare -a BIN_DIRS
 
+# XXX: Move to a file to be read from
 # !!! Do not alphabetize, order is important here.
 
 BIN_DIRS+=("$GLOBAL_LIB")
@@ -93,11 +97,15 @@ unset BIN_DIRS
 ################################################################################
 # Check if various dotfiles are linked properly
 
+# XXX: Move to a separate file
+
 # XXX: Add cleanup routine (e.g., .screenrc is no longer needed, links to it
 #      should be removed.
 
 # XXX: Add a way to check for links to arbitrary locations (e.g. .vim and
 #      .vimrc might be in their own repository).
+
+# XXX: Read files to link from a file
 
 nochecklinks="$HOME/.nochecklinks"
 
