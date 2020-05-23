@@ -47,10 +47,10 @@ alias dateh="echo;date --help | grep --color=never -E '^[[:space:]]+%'"
 #-----------------------------------------------------------------------------
 alias diffdir='diff -qr'
 
-if command -v colordiff > /dev/null; then
+[[ -x "$(command -v colordiff 2> /dev/null)" ]] && {
   alias diff='colordiff'
   alias diffdir='colordiff -qr'
-fi
+}
 
 #-----------------------------------------------------------------------------
 # https://wiki.archlinux.org/index.php/Core_Utilities#grep

@@ -2,19 +2,7 @@
 
 [[ $- == *i* ]] || return 0
 
-# Start session in background if it doesn't already exist.
-
-# XXX: Need to check if we are already in a tmux session and fail if so.
-# XXX: Maybe alias ta needs to be a function instead
-
-tmux_has_session() {
-  tmux has-session -t "$USER" &> /dev/null \
-    || tmux new-session -d -s "$USER"
-}
-
-# We want $USER to expand when defined, not when used.
-# shellcheck disable=SC2139
-alias ta="tmux_has_session ; tmux a -t $USER"
+[[ -x "$(command -v tmux 2> /dev/null)" ]] || return 0
 
 # swap this window to the left
 alias swapl='tmux swap-window -t -1'
@@ -26,7 +14,7 @@ alias swapr='tmux swap-window -t +1'
 alias swapw='tmux swap-window -t'
 
 # shellcheck disable=SC1003
-function set_title() { printf '\ek%s\e\\' "$1"; }
+set_title() { printf '\ek%s\e\\' "$1"; }
 export -f set_title
 
 # shellcheck disable=SC1083
@@ -42,3 +30,18 @@ tmux_winidx_circled() {
     echo "${circled_digits:winidx:1}"
   fi
 }
+
+# Start session in background if it doesn't already exist.
+# We want user to be expanded when defined.
+# command doesn't report on aliases
+# shellcheck disable=SC2139,SC2230
+if which ta &> /dev/null; then
+  echo 'alias ta already exists'
+else
+  ta() {
+    tmux has-session -t "$USER" &> /dev/null || tmux new-session -d -s "$USER"
+    tmux a -t "$USER"
+  }
+
+  export -f ta
+fi
