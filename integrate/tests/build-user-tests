@@ -1,0 +1,188 @@
+#!/bin/bash
+
+# Too many variables.
+# shellcheck disable=SC2034
+
+source utility
+sourced || die "this script must only be sourced"
+
+# Test user environment
+
+# We only want to test users that are under the control of common code, and
+# only the ones we've explicitly written tests for.
+
+# Set the delimiter to be used in fill_template
+DELIM='\^'
+
+declare TEMPLATES_DIR="$BATS_TEST/templates"
+declare user_tests_template_filename="$TEMPLATES_DIR/user.bats.template"
+
+declare password_eof_tests_template_filename="$TEMPLATES_DIR/password_eof.bats.template"
+declare password_none_tests_template_filename="$TEMPLATES_DIR/password_none.bats.template"
+declare password_required_tests_template_filename="$TEMPLATES_DIR/password_required.bats.template"
+declare password_timeout_tests_template_filename="$TEMPLATES_DIR/password_timeout.bats.template"
+
+declare controlm_tests_template_filename="$TEMPLATES_DIR/controlm.bats.template"
+
+declare user_tests_filename_prefix="$BATS_TEST/checks/user"
+
+# * <ENV>_EXPECTED_GROUPS
+
+# A space separated list of group names.
+
+# The groups the user is expected to be a member of.  Run the groups command,
+# as the user, to see find this information.
+
+# Get groups (assuming you have the correct aliases setup): echo $(printf
+# '%s\n' $(captest groups) | sort -u) >> this file
+
+# * <ENV>_PASSWORD_(EOF|NONE|REQUIRED|TIMEOUT)
+
+# Test ssh connections. Should be a space separated list of 'user@host'
+
+# EOF - if the connect is supposed to return 'end of file', then add your
+# 'user@host' to this one.
+
+# NONE - if the user is supposed to have password less access, then add your
+# 'user@host' here.
+
+# REQUIRED - if the user is supposed to enter a password, then add your
+# 'user@host' here.
+
+# TIMEOUT - if the user is supposed to get a timeout from this server, use
+# this.
+
+export TESTUSER
+
+export DEV_EXPECTED_GROUPS
+export DEV_PASSWORD_EOF
+export DEV_PASSWORD_NONE
+export DEV_PASSWORD_REQUIRED
+export DEV_PASSWORD_TIMEOUT
+
+export TEST_EXPECTED_GROUPS
+export TEST_PASSWORD_EOF
+export TEST_PASSWORD_NONE
+export TEST_PASSWORD_REQUIRED
+export TEST_PASSWORD_TIMEOUT
+
+export STG_EXPECTED_GROUPS
+export STG_PASSWORD_EOF
+export STG_PASSWORD_NONE
+export STG_PASSWORD_REQUIRED
+export STG_PASSWORD_TIMEOUT
+
+export PROD_EXPECTED_GROUPS
+export PROD_PASSWORD_EOF
+export PROD_PASSWORD_NONE
+export PROD_PASSWORD_REQUIRED
+export PROD_PASSWORD_TIMEOUT
+
+export CONTROLM
+
+export PASSWORD_NONE
+export PASSWORD_EOF
+export PASSWORD_TIMEOUT
+export PASSWORD_REQUIRED
+
+reset_variables() {
+  # Copy these variables to your function
+
+  TESTUSER=
+
+  DEV_EXPECTED_GROUPS=
+  DEV_PASSWORD_EOF=
+  DEV_PASSWORD_NONE=
+  DEV_PASSWORD_REQUIRED=
+  DEV_PASSWORD_TIMEOUT=
+
+  TEST_EXPECTED_GROUPS=
+  TEST_PASSWORD_EOF=
+  TEST_PASSWORD_NONE=
+  TEST_PASSWORD_REQUIRED=
+  TEST_PASSWORD_TIMEOUT=
+
+  STG_EXPECTED_GROUPS=
+  STG_PASSWORD_EOF=
+  STG_PASSWORD_NONE=
+  STG_PASSWORD_REQUIRED=
+  STG_PASSWORD_TIMEOUT=
+
+  PROD_EXPECTED_GROUPS=
+  PROD_PASSWORD_EOF=
+  PROD_PASSWORD_NONE=
+  PROD_PASSWORD_REQUIRED=
+  PROD_PASSWORD_TIMEOUT=
+
+  CONTROLM=
+
+  # Don't mess with these
+  PASSWORD_EOF=
+  PASSWORD_NONE=
+  PASSWORD_REQUIRED=
+  PASSWORD_TIMEOUT=
+}
+
+##############################################################################
+declare user_tests_template
+user_tests_template=$(< "$user_tests_template_filename")
+
+declare password_eof_tests_template
+password_eof_tests_template=$(< "$password_eof_tests_template_filename")
+
+declare password_none_tests_template
+password_none_tests_template=$(< "$password_none_tests_template_filename")
+
+declare password_required_tests_template
+password_required_tests_template=$(< "$password_required_tests_template_filename")
+
+declare password_timeout_tests_template
+password_timeout_tests_template=$(< "$password_timeout_tests_template_filename")
+
+declare controlm_tests_template
+controlm_tests_template=$(< "$controlm_tests_template_filename")
+
+##############################################################################
+build_tests() {
+  local user=$1
+
+  [[ -n $CONTROLM ]] \
+    && CONTROLM=$(fill_template "$controlm_tests_template" 2> /dev/null)
+
+  local -x P_ENV P_TYPE P_USER P_HOST
+  local sorted checkvar
+
+  for P_ENV in 'DEV' 'TEST' 'STG' 'PROD'; do
+    EXPECTED_GROUPS=
+    PASSWORD_NONE=
+    PASSWORD_REQUIRED=
+    PASSWORD_EOF=
+    PASSWORD_TIMEOUT=
+
+    checkvar="${P_ENV}_EXPECTED_GROUPS"
+
+    # shellcheck disable=SC2046,SC2005,SC2086
+    printf -v EXPECTED_GROUPS '%s' "$(echo $(printf '%s\n' ${!checkvar} | sort -u))"
+
+    for P_TYPE in 'NONE' 'EOF' 'REQUIRED' 'TIMEOUT'; do
+      checkvar="${P_ENV}_PASSWORD_$P_TYPE"
+      [[ -z ${!checkvar} ]] && continue
+      [[ ${!checkvar} == '' ]] && continue
+
+      # shellcheck disable=SC2046,SC2005,SC2086
+      sorted=$(echo $(printf '%s\n' ${!checkvar} | sort -u))
+
+      for uh in $sorted; do
+        IFS='@' read -r P_USER P_HOST <<< "$uh"
+        local varname="PASSWORD_$P_TYPE"
+        local tmplname="password_${P_TYPE,,}_tests_template"
+
+        printf -v $varname '%s\n\n%s' "${!varname}" "$(fill_template "${!tmplname}" 2> /dev/null)"
+      done
+    done
+
+    local testfile="$user_tests_filename_prefix/${TESTUSER}${P_ENV,,}.t"
+    debug "Saving $testfile ..."
+    fill_template "$user_tests_template" > "$testfile"
+  done
+}

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# This script does not change anything. It reports on checks for files that
+# don't exist in the expected location anymore.
+
+# You can then delete or move and modify the related checks as needed.
+
+readarray -t checks < <(find "$BATS_TEST/checks" -type d -iname '*.t')
+
+for c in "${checks[@]}"; do
+  filename="${c#$BATS_TEST\/checks\/}"
+  filename="${filename%.t}"
+  [[ -r "$GLOBAL_DIR/$filename" ]] && continue
+  echo "$filename"
+done

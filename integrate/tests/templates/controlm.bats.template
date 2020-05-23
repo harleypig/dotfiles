@@ -1,0 +1,21 @@
+#-----------------------------------------------------------------------------
+@test 'which ctmcontb' {
+  run which ctmcontb
+  assert_success
+  assert_output '/opt/ControlM/agent/ctm/exe_9.0.19.100/ctmcontb'
+}
+
+#-----------------------------------------------------------------------------
+@test 'run ctmcontb' {
+  # NOTE: There is an actual <tab> character (0x09) between 'Result:' and
+  # 'Success.'
+
+  expected_output="Output:
+
+Result:	Success."
+
+  run ctmcontb
+
+  assert_success
+  assert_output "$expected_output"
+}

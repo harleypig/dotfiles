@@ -1,0 +1,46 @@
+#!/bin/bash
+
+[[ $- == *i* ]] || return 0
+
+[[ -x "$(command -v tmux 2> /dev/null)" ]] || return 0
+
+# swap this window to the left
+alias swapl='tmux swap-window -t -1'
+
+# swap this window to the right
+alias swapr='tmux swap-window -t +1'
+
+# swap this window with the one passed in
+alias swapw='tmux swap-window -t'
+
+# shellcheck disable=SC1003
+set_title() { printf '\ek%s\e\\' "$1"; }
+export -f set_title
+
+# shellcheck disable=SC1083
+circled_digits=$(printf %s \${$'\xEA',\`,{a..s}} | iconv -f UTF-16BE)
+
+tmux_winidx_circled() {
+  local winidx
+  winidx=$(tmux display-message -p '#I')
+
+  if ((winidx > 20)); then
+    echo "($winidx)"
+  else
+    echo "${circled_digits:winidx:1}"
+  fi
+}
+
+# We want user to be expanded when defined.
+# command doesn't report on aliases
+# shellcheck disable=SC2139,SC2230
+if which ta &> /dev/null; then
+  echo 'alias ta already exists'
+else
+  ta() {
+    tmux has-session -t "$USER" &> /dev/null || tmux new-session -d -s "$USER"
+    tmux a -t "$USER"
+  }
+
+  export -f ta
+fi

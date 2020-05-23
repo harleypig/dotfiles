@@ -1,0 +1,299 @@
+#!/bin/bash
+
+# XXX: Document me!
+
+# For using git in bash scripts
+
+source utility
+
+##############################################################################
+# Checks current directory for the following conditions:
+#   Are we in a git repository?
+#   Are we not in a bare repo?
+#   Are we not in the .git tree?
+
+#-----------------------------------------------------------------------------
+in_git_repo() {
+  local in_repo
+
+  in_repo=$(git rev-parse --is-inside-work-tree 2> /dev/null) || {
+    verbose "The current directory ($PWD) is not a git repository."
+    return 1
+  }
+
+  [[ $in_repo == 'false' ]] && {
+    verbose "The current directory ($PWD) is not inside the repository work tree."
+    return 2
+  }
+
+  [[ $in_repo == 'true' ]] && {
+    verbose "The current directory ($PWD) is a git repository work tree."
+    return 0
+  }
+
+  return 3
+}
+
+#-----------------------------------------------------------------------------
+toplevel() {
+  in_git_repo || return $?
+  git rev-parse --show-toplevel
+}
+
+#-----------------------------------------------------------------------------
+go_toplevel() {
+  in_git_repo || return $?
+
+  local top
+  top=$(toplevel) || {
+    verbose 'Unexpected error.'
+    return 1
+  }
+
+  cd "$top" || die "Unable to change to $top"
+  return 0
+}
+
+#-----------------------------------------------------------------------------
+# Get PAT if it's not already in memory
+
+# XXX:
+#[[ -z $TOKEN ]] && {
+#  [[ -r "$HOME/.netrc" ]] || die 'Cannot read .netrc, cannot get token.'
+#  TOKEN=$(grep password "$HOME/.netrc" | cut -d ' ' -f 2)
+#  [[ -z $TOKEN ]] && die 'Cannot find token.'
+#}
+
+# This code is specific for ***REMOVED*** in Azure. I imagine at some point this
+# will need to be fixed. Sorry future dev.
+
+check_netrc() {
+  [[ ! -r "$HOME/.netrc" ]] && [[ ! -r $NETRC ]] && return 1
+
+  local password=
+  local machine_rx='^machine[[:space:]]+dev.azure.com'
+  local login_rx='login[[:space:]]+***REMOVED***'
+
+  local -a gopts=('-s' '-P' '-A')
+
+  debug "grep ${gopts[*]} 2 $machine_rx $HOME/.netrc $NETRC
+    | grep ${gopts[*]} 1 $login_rx
+    | tail -n 1 | cut -d ' ' -f 2"
+
+  password=$(grep "${gopts[@]}" 2 "$machine_rx" "$HOME/.netrc" "$NETRC" \
+    | grep "${gopts[@]}" 1 "$login_rx" \
+    | tail -n 1 | cut -d ' ' -f 2)
+
+  #debug "password: $password"
+
+  [[ -z $password ]] && return 1
+  printf '%s' "$password"
+}
+
+get_pat() {
+  declare -gx AZURE_PAT
+
+  [[ -z $AZURE_PAT ]] && AZURE_PAT=$(check_netrc)
+  #debug "pat: $AZURE_PAT"
+
+  [[ -z $AZURE_PAT ]] && {
+    notify_file="${TEMP_DIR:-/tmp}/seen.azure_pat.notice.$(ps -o ppid= $PPID)"
+
+    [[ -f $notify_file ]] || {
+      cat << EOT
+
+  To avoid being prompted for your Azure
+  DevOps personal access token every
+  time you run this program, run the
+  following command:
+
+  . set-azure-pat <YOUR PAT>
+
+EOT
+
+      truncate -s 0 "$notify_file"
+    }
+
+    [[ -z $TMOUT ]] && TMOUT=300
+
+    prompt='Enter your Azure DevOps personal access token: '
+
+    read -rs -p "$prompt" AZURE_PAT || {
+      echo
+      verbose 'ado pat prompt timed out'
+      return 1
+    }
+
+    echo
+  }
+
+  return 0
+}
+
+##############################################################################
+# Local/Remote status (push/pull needed?)
+
+#-----------------------------------------------------------------------------
+push_pull() {
+  in_git_repo || return $?
+
+  local UPSTREAM="${1:-'@{u}'}" LOCAL REMOTE BASE
+
+  LOCAL=$(git rev-parse @)
+  REMOTE=$(git rev-parse "$UPSTREAM")
+  BASE=$(git merge-base @ "$UPSTREAM")
+
+  if [[ $LOCAL == "$REMOTE" ]]; then
+    return 0 # up to date
+  elif [[ $LOCAL == "$BASE" ]]; then
+    return 1 # pull
+  elif [[ $REMOTE == "$BASE" ]]; then
+    return 2 # push
+  else
+    return 3 # diverged
+  fi
+}
+
+#-----------------------------------------------------------------------------
+local_remote() {
+  # XXX: Remove this after 20210101
+  die "local_remote is deprecated, please use push_pull instead"
+}
+
+##############################################################################
+# Branch
+
+#-----------------------------------------------------------------------------
+cur_branch() {
+  in_git_repo || return $?
+  git rev-parse --abbrev-ref HEAD
+}
+
+#-----------------------------------------------------------------------------
+is_detached() {
+  in_git_repo || return $?
+  local branch
+  branch=$(cur_branch) || return $?
+  [[ $branch == 'HEAD' ]] && return 0
+  return 1
+}
+
+#-----------------------------------------------------------------------------
+local_branch_exists() {
+  in_git_repo || return $?
+  local branch=${1?-must pass branch to local_branch_exists}
+  git show-ref --verify --quiet "refs/heads/$branch"
+}
+
+#-----------------------------------------------------------------------------
+remote_branch_exists() {
+  in_git_repo || return $?
+
+  local branch="$1"
+
+  local remote
+  remote=$(git remote)
+
+  git ls-remote --heads --exit-code "$remote" "$branch" &> /dev/null && return 0
+  return 1
+}
+
+#-----------------------------------------------------------------------------
+# Syncs a branch without having to check it out.
+
+sync_branch() {
+  in_git_repo || return $?
+
+  local remote=${1?-must pass remote to sync branch}
+  local branch=${2?-must pass branch to be synced}
+
+  verbose "Fetching $remote/$branch ..."
+  git fetch "$remote" "$branch:$branch" --tags
+
+  verbose "Merging local $branch ..."
+  git fetch . "$branch:$branch" --tags
+
+  verbose "Pushing $branch to $remote ..."
+  git push "$remote" "$branch" --tags
+}
+
+##############################################################################
+# Tag
+
+#-----------------------------------------------------------------------------
+tag_exists() {
+  in_git_repo || return $?
+  [[ -z $1 ]] && die "Must pass tag to ${FUNCNAME[0]}."
+  git describe --tags --exact-match "$1" &> /dev/null || return 1
+  return 0
+}
+
+#-----------------------------------------------------------------------------
+remove_tag() {
+  in_git_repo || return $?
+  [[ -z $1 ]] && die "Must pass tag to ${FUNCNAME[0]}."
+
+  tag_exists "$1" || {
+    verbose "$1 is not a tag."
+    return 2
+  }
+
+  git tag -d "$1" || {
+    warn "Unable to remove tag $1."
+    return 1
+  }
+
+  return 0
+}
+
+##############################################################################
+# File
+
+#-----------------------------------------------------------------------------
+# check single file
+
+# If file is ignored, returns 0
+# otherwise returns 1
+
+is_ignored() {
+  in_git_repo || return $?
+  local filename=${1?-must pass file to be checked}
+  git check-ignore -v "$filename" &> /dev/null
+}
+
+#-----------------------------------------------------------------------------
+# Filename must be full path relative to repo toplevel
+
+file_exists_in_branch() {
+  in_git_repo || return $?
+
+  local branch=${1?- must pass branch name to be checked}
+  local filename=${2?-must pass filename to be checked}
+
+  [[ $branch == '' ]] && {
+    printf 'cannot check empty branch name'
+    return 1
+  }
+
+  [[ $filename == '' ]] && {
+    printf 'cannot check empty filename'
+    return 1
+  }
+
+  # If filename exists in $branch, then found is the path of the file
+  # (relative to the top level repository directory).
+
+  declare -a gopts
+
+  gopts+=('-r')
+  gopts+=('--name-only')
+  gopts+=('--full-name')
+  gopts+=("$branch")
+  gopts+=("$filename")
+
+  found="$(git ls-tree "${gopts[@]}" 2>&1)" \
+    || die "Unhandled error in ${FUNCNAME[0]}"
+
+  [[ -z $found ]] && return 0
+  printf '%s' "$found"
+}

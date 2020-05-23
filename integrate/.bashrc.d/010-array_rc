@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# XXX: move to tools/bin or maybe utility
+
+##############################################################################
+# Array functions
+
+# SOMEARRAY=('one' 'two' 'three')
+# SOMEVAR=$(join_array : 'SOMEARRAY')     => one:two:three
+# SOMEVAR=$(join_array ' : ' 'SOMEARRAY') => one : two : three
+
+# XXX: Change to die in 20200601
+
+function join_array() {
+  echo 'join_array is deprecated, use utility and join.array' >&2
+
+  local delim=$1
+  shift
+
+  local -a array
+  eval "array=(\"\${$1[@]}\")"
+
+  first="${array[0]}"
+  rest=("${array[@]:1}")
+
+  printf '%s' "$first"
+  printf '%s' "${rest[@]/#/$delim}"
+}
+
+export -f join_array

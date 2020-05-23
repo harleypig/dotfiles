@@ -1,0 +1,130 @@
+#!/bin/bash
+
+# Build meta tests for common code files
+
+# XXX: Add tests for compiling under sh
+# XXX: Add tests for symbolic links pointing to a script (e.g., tools/bin/psql)
+
+source utility
+sourced && die 'build-meta-test must not be sourced'
+
+declare -A IGNORE
+
+IGNORE["$GLOBAL_DIR/tools/bin/bash_colors"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/bats"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/git-dry-merge"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/git-logcsv"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/git-logrsync"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/git_status"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/gli"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/mkctags"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/mkman"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/prod2git"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/update_bats"]=1
+IGNORE["$GLOBAL_DIR/tools/bin/update_project"]=1
+
+IGNORE["$GLOBAL_DIR/scripts/shells/copy_files_fdr_bnkcrd.sh"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/copy_files_receive.sh"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/ctm_reorder"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/exec_ds"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/reset_cap_job_conditions"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/reset_dw_job_conditions"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/run_dsjob"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_create"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_debug"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_export"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_gen"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_import"]=1
+IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_maint"]=1
+
+template_filename="$BATS_TEST/templates/file.meta.bats.template"
+template=$(< "$template_filename")
+
+#  find "$GLOBAL_SCRIPTS"/{shells,lib} "$GLOBAL_TOOLS" -type f -iregex '.*\(git-sync\|git-save\)' -printf '%p\n'
+
+declare -a fopts
+
+# Paths to check for files
+fopts+=("$GLOBAL_SCRIPTS"/{shells,lib})
+fopts+=("$GLOBAL_TOOLS")
+fopts+=("$DOTFILES/bin")
+fopts+=('-type' 'f')
+
+(($#)) && {
+  # shellcheck disable=SC2034
+  declare -a myarray=("$@")
+  fopts+=('-iregex' ".*/\($(join.array '\|' 'myarray')\)")
+}
+
+debug "find ${fopts[*]} -printf '%p\n'"
+readarray -t files < <(find "${fopts[@]}" -printf '%p\n')
+debug "found ${#files[@]} files"
+
+for f in "${files[@]}"; do
+  [[ -n ${IGNORE[$f]} ]] && {
+    debug "Ignoring $f"
+    continue
+  }
+
+  shebang="$(head -n 1 "$f")"
+
+  # XXX: This check needs to look for '^#!.*bash.*'
+  if [[ $shebang != *'bash'* ]]; then
+    debug "$f does not have a bash shebang, not creating test"
+    continue
+  fi
+
+  warn "Creating meta tests for $(basename "$f")"
+
+  test_dir="${f/$GLOBAL_DIR/$BATS_TEST/checks}.t"
+  test_name="$test_dir/$(basename "$f").meta.bats"
+
+  debug "test_dir: $test_dir"
+  debug "test_name: $test_name"
+
+  mkdir -p "$test_dir"
+
+  # template is looking for the following variables:
+
+  # ^FILENAME^
+  # ^FILEMAN^  - path to man page
+  # ^FQFN^     - full path to file
+  # ^PERMS^    - permissions for file
+
+  # Also, use '^' as a delimiter instead of '%'.
+
+  {
+    DELIM='\^'
+    FILENAME="$(basename "$f")"
+    FILEMAN="\$GLOBAL_DIR/man/man1/${FILENAME}.1"
+    PERMS="$(stat --printf '%A' "$f")"
+
+    SKIP_IF_NOT_EXEC="skip '$FILENAME is not executable, it will not be in the path'"
+    [[ $PERMS =~ x ]] && SKIP_IF_NOT_EXEC=''
+
+    FQFN="$f"
+    FQFN="${FQFN/$GLOBAL_LIB/\$GLOBAL_LIB}"
+    FQFN="${FQFN/$GLOBAL_SHELLS/\$GLOBAL_SHELLS}"
+    FQFN="${FQFN/$GLOBAL_TOOLS/\$GLOBAL_TOOLS}"
+  }
+
+  debug "DELIM=$DELIM"
+  debug "FILENAME=$FILENAME"
+  debug "FILEMAN=$FILEMAN"
+  debug "PERMS=$PERMS"
+  debug "SKIP_IF_NOT_EXEC=$SKIP_IF_NOT_EXEC"
+  debug "FQFN=$FQFN"
+
+  # DEBUG causes issues for fill_template, turn it off
+
+  DEBUG_RESTORE=0
+
+  ((DEBUG)) && {
+    DEBUG_RESTORE=1
+    DEBUG=
+  }
+
+  fill_template "$template" > "$test_name"
+
+  ((DEBUG_RESTORE)) && DEBUG=1
+done

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#[[ $- == *i* ]] || return 0
+
+# I got this from a co-worker many moons ago. Unfortunately, I don't remember
+# who. Basically, if a tree program is not installed, fake it with this.
+
+command -v tree &> /dev/null || return 0
+
+alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
