@@ -8,7 +8,7 @@
 
 [[ $- == *i* ]] || return 0
 
-command -v task &> /dev/null || return 0
+[[ -x "$(command -v task 2> /dev/null)" ]] || return 0
 
 task_completion="$HOME/.task/completion/task-completion.sh"
 # shellcheck disable=SC1090

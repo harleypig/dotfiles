@@ -7,7 +7,7 @@
 
 # Aliases and functions for perl
 
-command -v perl &> /dev/null || return 0
+[[ -x "$(command -v perl 2> /dev/null)" ]] || return 0
 
 ### bash completion related setup
 if [[ -f /home/harleypig/.config/shcompgen.bashrc ]]; then
@@ -82,6 +82,7 @@ fi
 
 # https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
 #alias pmver="perl -le '\$m = shift; eval qq(require \$m) or die qq(module \"\$m\" is not installed\\n); print \$m->VERSION || \"No Version Available\"'"
+# shellcheck disable=SC2154
 alias pmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
 
 ### perldoc
