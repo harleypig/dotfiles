@@ -22,3 +22,6 @@ alias dumppath='echo -e ${PATH//:/\\n}'
 alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
 
 alias dotfiles='cd $DOTFILES'
+
+# show date format help
+alias dateh="echo;date --help | grep --color=never -E '^[[:space:]]+%'"
