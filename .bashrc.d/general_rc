@@ -66,3 +66,10 @@ eval $(dircolors -b)
 alias l='ls -Al --color=auto'
 alias sl=ls
 
+#-----------------------------------------------------------------------------
+# I got this from a co-worker many moons ago. Unfortunately, I don't remember
+# who. Basically, if a tree program is not installed, fake it with this.
+
+[[ -x "$(command -v tree 2> /dev/null)" ]] || {
+  alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
+}
