@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# XXX: Add check for if we are being sourced and die if not
+# XXX: Add version check?
+
 [[ $- == *i* ]] || return 0
 
 # Aliases and functions for perl
