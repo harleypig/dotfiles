@@ -18,18 +18,19 @@ function vimwhich() { vim "$(command -v "$1")"; }
 #-----------------------------------------------------------------------------
 alias dumppath='echo -e ${PATH//:/\\n}'
 alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
-
 alias dotfiles='cd $DOTFILES'
-
-#-----------------------------------------------------------------------------
-# show date format help
 alias dateh="echo;date --help | grep --color=never -E '^[[:space:]]+%'"
 
 #-----------------------------------------------------------------------------
-# diff stuff
 alias diffdir='diff -qr'
 
 if command -v colordiff > /dev/null; then
   alias diff='colordiff'
   alias diffdir='colordiff -qr'
 fi
+
+#-----------------------------------------------------------------------------
+# https://wiki.archlinux.org/index.php/Core_Utilities#grep
+export GREP_COLOR="1;33"
+alias grep='grep --color=auto'
+alias g='grep --color=auto'
