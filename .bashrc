@@ -5,9 +5,9 @@
 
 debug() { true; }
 
-source "$GLOBAL_LIB/Debug"
-source "$GLOBAL_LIB/BashCompletions"
-source "$GLOBAL_LIB/LoadRCs"
+[[ -r $GLOBAL_LIB/debug ]] && source "$GLOBAL_LIB/debug"
+[[ -r $GLOBAL_LIB/BashCompletions ]] && source "$GLOBAL_LIB/BashCompletions"
+[[ -r $GLOBAL_LIB/LoadRCs ]] && source "$GLOBAL_LIB/LoadRCs"
 
 ##############################################################################
 # this function takes one directory path and adds it to the existing path
