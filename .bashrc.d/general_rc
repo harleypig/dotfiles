@@ -1,7 +1,29 @@
 #!/bin/bash
 
+# XXX: Add check for if we are being sourced and die if not
+
 [[ $- == *i* ]] || return 0
 
+#-----------------------------------------------------------------------------
+bind "set completion-ignore-case on"
+bind "set completion-map-case on"
+bind "set mark-symlinked-directories on"
+bind "set show-all-if-ambiguous on"
+bind Space:magic-space
+
+shopt -s autocd 2> /dev/null
+shopt -s cdspell 2> /dev/null
+shopt -s dirspell 2> /dev/null
+shopt -s globstar 2> /dev/null
+
+shopt -s cdable_vars
+shopt -s checkhash
+shopt -s checkwinsize
+shopt -s dotglob
+shopt -s extglob
+shopt -s nocaseglob
+
+umask 022
 # System
 alias c='clear'
 alias ..='cd ..'
@@ -12,6 +34,7 @@ alias h='history'
 alias md='mkdir -p'
 alias rd=rmdir
 
+#-----------------------------------------------------------------------------
 # XXX: Move to function or bin so we can accept multiple filenames
 function vimwhich() { vim "$(command -v "$1")"; }
 
@@ -34,3 +57,12 @@ fi
 export GREP_COLOR="1;33"
 alias grep='grep --color=auto'
 alias g='grep --color=auto'
+
+#-----------------------------------------------------------------------------
+# https://wiki.archlinux.org/index.php/Core_Utilities#ls
+# shellcheck disable=SC2046
+eval $(dircolors -b)
+
+alias l='ls -Al --color=auto'
+alias sl=ls
+
