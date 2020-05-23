@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Look into cdots instead of the below setup.
-# http://www.fvue.nl/wiki/Bash_cd_alias:_cdots
-
 [[ $- == *i* ]] || return 0
 
 # System
@@ -15,13 +12,24 @@ alias h='history'
 alias md='mkdir -p'
 alias rd=rmdir
 
-# XXX: Move to tools/bin so we can accept multiple filenames
+# XXX: Move to function or bin so we can accept multiple filenames
 function vimwhich() { vim "$(command -v "$1")"; }
 
+#-----------------------------------------------------------------------------
 alias dumppath='echo -e ${PATH//:/\\n}'
 alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
 
 alias dotfiles='cd $DOTFILES'
 
+#-----------------------------------------------------------------------------
 # show date format help
 alias dateh="echo;date --help | grep --color=never -E '^[[:space:]]+%'"
+
+#-----------------------------------------------------------------------------
+# diff stuff
+alias diffdir='diff -qr'
+
+if command -v colordiff > /dev/null; then
+  alias diff='colordiff'
+  alias diffdir='colordiff -qr'
+fi
