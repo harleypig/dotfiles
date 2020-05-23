@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#[[ $- == *i* ]] || return 0
+
+alias diffdir='diff -qr'
+
+if command -v colordiff > /dev/null; then
+  alias diff='colordiff'
+  alias diffdir='colordiff -qr'
+fi

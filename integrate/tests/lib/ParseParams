@@ -1,0 +1,689 @@
+#!/bin/bash
+
+source utility
+sourced || die "$(basename "$0") must only be sourced."
+
+#----------------------------------------------------------------------------
+# This library is not meant to be compatible with other versions of getopt or
+# to conform to POSIX standards.
+
+[[ -n $GETOPT_COMPATIBLE ]] \
+  && die 'getop compatibility not supported, unset GETOPT_COMPATIBILE'
+
+[[ -n $POSIXLY_CORRECT ]] \
+  && die 'unset POSIXLY_CORRECT to use this library'
+
+#----------------------------------------------------------------------------
+# Check version of getopt.
+
+# In some cases, even though this shouldn't cause an exit, it is. So, capture
+# the return code and check it.
+
+declare -i rc
+rc=$(
+  getopt -T &> /dev/null
+  echo $?
+)
+[[ $rc -ne 4 ]] && die "Unsupported version of getopt!"
+unset rc
+
+#############################################################################
+# Documentation
+
+: << POD
+=head1 NAME
+
+ParseParams - Parse command line or function parameters.
+
+=head1 SYNOPSIS
+
+  source ParseParams
+
+  PARM_DEF='
+  a|app,string,AppName,,required
+  b|bank,number,BankNumber
+  c,boolean
+  '
+  parse_params "$PARM_DEF" "$@" || show_usage
+
+=head1 OPTIONS
+
+There are no options for sourcing the library itself. For the C<parse_params>
+function, the following describes the required input.
+
+The first parameter is the parameter definition string, described below.
+
+The remaining parameters are the input parameters to be validated.
+
+NOTE: Not explicitly including "$@" is allowed but this scenario has not been
+tested.
+
+=head1 DESCRIPTION
+
+The ParseParams library takes a definition string and validates input
+parameters against that definition, setting variables to those values if they
+pass the various checks. Otherwise an error message is returned and the
+calling script is exited.
+
+NEEDS MORE DOCS:
+
+PPGORC is 0 if no problems in parsing options, 1 if invalid options
+passed.
+
+REMAINS is array of remaining unparsed parameters.
+
+=head1 TYPES
+
+Valid types are detailed below.
+
+=cut
+POD
+
+#############################################################################
+# Type documentation
+
+# To add a new type, first add the name to be used to the TYPES array, then
+# add the documentation and function definition in this section.
+
+# The function name should be 'is_NEWTYPE' where 'NEWTYPE' is the name of
+# the type you are creating. E.g. type 'string' is 'is_string'.
+
+# A valid type function should return a 0 for a successful check and a 1 for
+# a failed check.
+
+declare -a TYPES=(
+  'boolean'
+  'char'
+  'date'
+  'filename'
+  'integer'
+  'string'
+  'varname'
+)
+
+debug "TYPES: ${TYPES[*]}"
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 string
+
+Simply checks for a non-empty value.
+
+=cut
+POD
+
+function is_string() {
+  [[ -z $1 ]] && return 1
+  return 0
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 filename
+
+Checks if the value is a valid filename and if it exists is it readable, or if
+it does not exist can we create it. If it is readable or creatable, returns 0.
+Otherwise returns 1.
+
+This type expects the path to the filename to exist. If it does not, it will
+fail (return 1).
+
+If you want to allow the caller to provide just the base filename and you will
+build the path, don't use this type. Just use the C<string> type and call
+C<verify_filename> (from the utility library) after you have built the
+string.
+
+=cut
+POD
+
+function is_filename() {
+  # verify_filename prints a fully qualified path, we want to ignore that
+  # here (but not any error messages).
+  verify_filename "$1" > /dev/null || return 1
+  return 0
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 char
+
+Checks for a single character value.
+
+=cut
+POD
+
+# is_char is in the utility script
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 integer
+
+Checks that a value is a positive integer (a number without a decimal).
+
+=cut
+POD
+
+# is_integer is in the utility script
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 boolean
+
+This type does not check for a value. The boolean type forces the variable to
+be either a 0 (true) or 1 (false).
+
+See the C<parse_params> section for more information.
+
+=cut
+POD
+
+# boolean is managed in the _build_parms and _build_eval_string functions.
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 date
+
+Checks that a value appears to be a valid date and returns either a 0 (true)
+if the C<date> program can parse the value correctly or 1 (false) if not.
+
+=cut
+POD
+
+# is_date is managed in the _build_parms and _build_eval_string functions.
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 varname
+
+Checks that a value appears to be a valid shell variable name and returns
+either a 0 (true) if it does, or 1 (false) if not.
+
+=cut
+POD
+
+# is_varname is managed in the _build_parms and _build_eval_string functions.
+
+#############################################################################
+# Main function
+
+: << POD
+=head1 FUNCTIONS
+
+=head2 parse_params
+
+Expects the first parameter to be a format string that defines options and
+types so that parameters can be validated, to a minimal degree. The developer
+can validate parameters for their specific needs.
+
+The variable name defined by the definition line will be set to the matching
+input value.
+
+The remaining parameters are the input values that need to be validated.
+
+A definition line is made up of five (5) fields, separated by commas and/or
+spaces:
+
+B<OPTION, TYPE, VARNAME, DEFAULT, REQUIRED>
+
+B<OPTION> and B<TYPE> are required. A minimal definition line would look like:
+
+  a,appname
+
+The variable named C<a> would be set to C<appname>.
+
+The remaining three fields are optional. If you want to provide a default
+value, but not make the parameter required or have a different varname, your
+definition line would look like:
+
+  a|app,string,,appname
+
+If no parameter was used on the command line, C<app> would be set to
+C<appname>.
+
+Another possible definition is to set the first field to '#'. This will cause
+C<parse_params> to look for positional parameters. Since these are checked for
+last, any definitions with the same variable name will be overwritten with the
+positional value.
+
+=head3 OPTION
+
+B<OPTION> is a required field and can be any string.
+
+B<OPTION> can define a short option--a dash (-) followed by a single character,
+a long option--a double dash (--) followed by a string, or a short option and
+a long option separated by a pipe (|).
+
+If B<VARNAME> is not provided then B<VARNAME> will be set to the long option
+if it exists, or the short option if it does not.
+
+=head3 TYPE
+
+B<TYPE> is a required field and can be any of the types defined in the
+C<TYPES> section. See that section for what each type does.
+
+If B<TYPE> is C<boolean>, the B<REQUIRED> field is forced to be C<optional> and
+B<VARNAME> is forced to be either C<0> (true) or C<1> (false).
+
+If B<TYPE> is C<boolean> it does not make sense to have a default setting. If
+the switch is not used on the command line B<VARNAME> will be 1. If
+B<VARNAME> is used on the command line it will be 0.
+
+If a default is set in the parameter definition, it will be ignored.
+
+=head3 VARNAME
+
+B<VARNAME> is optional and will default to the long option, or if none
+provided, the short option.
+
+B<VARNAME> will be set to the matching input parameter.
+
+=head3 DEFAULT
+
+B<DEFAULT> is optional.
+
+IF B<DEFAULT> is set and the parameter is not used on the command line,
+B<VARNAME> will be set to the matching input parameter. Otherwise B<VARNAME>
+will be set to C<NULL>, except for type C<boolean> as described above.
+
+=head3 REQUIRED
+
+B<REQUIRED> is optional and will default to C<optional>.
+
+B<REQUIRED> can be either C<required> or C<optional> and is case insensitive.
+I.e., C<required>, C<REQUIRED> and C<Required> are identical.
+
+If B<REQUIRED> is C<required> the parameter must be included on the command
+line.
+
+=cut
+POD
+
+# Expects a definition string to be passed as a single parameter.
+
+function parse_params() {
+  debug "args: $*"
+  [[ $# -eq 0 ]] && die 'No definitions were passed to parse_params.'
+
+  local SHORTOPTS LONGOPTS DEF_LINES
+  local -a POS_LINES
+  ERR=0
+
+  # work around bash stripping trailing newlines in process sustitution
+  printf -v CRLF '\n'
+
+  _build_parms_info "$1"
+  shift
+
+  eval "$(_build_eval_string)"
+
+  _parse_params "$@" || {
+    warn "Problems parsing parameters."
+    return 1
+  }
+
+  ((ERR)) && {
+    warn 'Some weird problem happened.'
+    return 1
+  }
+
+  return 0
+}
+
+#############################################################################
+: << POD
+=head1 INTERNAL FUNCTIONS
+
+These functions should not be used unless you know exactly what you are doing.
+
+=cut
+POD
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 _check_type
+
+Checks to see if the value of a variable is a valid type.
+
+If the value of the variable evaluates to C<null>, then C<_check_type> will
+return 0.
+
+=cut
+POD
+
+function _check_type() {
+  [[ $# -gt 0 ]] || die "must pass variable name and type name to _check_type"
+  [[ -z ${!1} ]] && return 0
+  [[ " ${TYPES[*]} " == *" $2 "* ]] || die "Invalid type ($2) passed to _check_type"
+
+  debug "$(printf '%s' "is_$2 ${!1}")"
+  # We *want* the output of the $(call) to be executed!
+  # shellcheck disable=SC2091
+  $("is_$2" "${!1}")
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 _build_parms_info
+
+Normalizes the various ways a definition string can be defined into
+a stricter, normalized string for use in C<_build_eval_string> below.
+
+=cut
+POD
+
+# Expects a definition string to be passed as a single parameter.
+# Sets DEF_LINES to normalized definition lines.
+# Sets SHORTOPTS and LONGOPTS to required values.
+
+function _build_parms_info() {
+  [[ -z $1 ]] && die 'No definitions were passed to _build_parms_info.'
+
+  local OPT VAR DEFAULT
+  local -l TYPE REQ
+
+  IFS=$'\n' readarray -t def_lines <<< "$1"
+
+  for BPI_IX in "${!def_lines[@]}"; do
+    [[ -z ${def_lines[BPI_IX]} ]] && continue
+
+    line="${def_lines[BPI_IX]}"
+
+    debug "line $BPI_IX: $line"
+
+    # If you change this, be sure to  change the
+    # documentation above. Currently, line 200.
+
+    IFS=', ' read -r OPT TYPE VAR DEFAULT REQ <<< "$line"
+
+    #debug "OPT: $OPT ::: TYPE: $TYPE ::: REQ: $REQ ::: VAR: $VAR ::: DEFAULT: $DEFAULT <"
+
+    [[ " ${TYPES[*]} " == *" $TYPE "* ]] || {
+      warn "Unknown type ($TYPE) on line $BPI_IX ($line)."
+      # shellcheck disable=SC2068
+      warn "Valid types are: ${TYPES[*]}"
+      ((ERR++))
+    }
+
+    # Is this a positional definition?
+    POS_DEF='#' # If you change this make sure you update the documentation!
+
+    if [[ $OPT == "$POS_DEF" ]]; then
+      is_varname "$VAR" || {
+        warn "Invalid variable name (${VAR:-required for positional parameter}) on line $BPI_IX ($line)."
+        ((ERR++))
+      }
+
+      POS_LINES+=("$TYPE,$VAR")
+
+    else
+      [[ -z $REQ ]] && REQ='optional'
+
+      REQ="${REQ,,}"
+
+      [[ $REQ =~ ^required|optional$ ]] || {
+        warn "Unknown field value ($REQ) on line $BPI_IX."
+        ((ERR++))
+      }
+
+      [[ $TYPE == 'boolean' ]] && REQ='optional'
+
+      TEMPVAR="$OPT"
+
+      if is_char "$OPT"; then
+        [[ $SHORTOPTS == *"$OPT"* ]] && {
+          warn "Repeated short option ($OPT) on line $BPI_IX."
+          ((ERR++))
+        }
+
+        SHORTOPTS+="$OPT"
+        [[ $TYPE != 'boolean' ]] && SHORTOPTS+=':'
+
+      elif [[ $OPT != *"|"* ]]; then
+        [[ $LONGOPTS == *"$OPT"* ]] && {
+          warn "Repeated long option ($OPT) on line $BPI_IX."
+          ((ERR++))
+        }
+
+        LONGOPTS+="$OPT"
+        [[ $TYPE != 'boolean' ]] && LONGOPTS+=':'
+        LONGOPTS+=','
+      else
+        TMP_SHORTOPT="${OPT%|*}"
+
+        [[ $SHORTOPTS == *"$TMP_SHORTOPT"* ]] && {
+          warn "Repeated short option ($OPT) on line $BPI_IX."
+          ((ERR++))
+        }
+
+        SHORTOPTS+="$TMP_SHORTOPT"
+
+        TMP_LONGOPT="${OPT##*|}"
+
+        [[ $LONGOPTS == *"$TMP_LONGOPT"* ]] && {
+          warn "Repeated long option ($OPT) on line $BPI_IX."
+          ((ERR++))
+        }
+
+        LONGOPTS+="$TMP_LONGOPT"
+
+        TEMPVAR="${OPT##*|}"
+
+        if [[ $TYPE != 'boolean' ]]; then
+          SHORTOPTS+=':'
+          LONGOPTS+=':'
+        fi
+
+        LONGOPTS+=','
+      fi
+
+      [[ -z $VAR ]] && VAR=$TEMPVAR
+
+      is_varname "$VAR" || {
+        warn "Invalid variable name ($VAR) on line $BPI_IX ($line)."
+        ((ERR++))
+      }
+
+      DEF_LINES+=$(printf '%s,' "$OPT" "$TYPE" "$VAR" "$DEFAULT" "$REQ")
+      DEF_LINES="${DEF_LINES%%,}"
+      DEF_LINES+="$CRLF"
+
+    fi
+  done
+
+  # Get rid of trailing ','
+  LONGOPTS="${LONGOPTS%%,}"
+
+  debug "DEF_LINES: $DEF_LINES <"
+  debug "POS_LINES: ${POS_LINES[*]} <"
+  debug "$(printf '%-15s - %-15s <' 'SHORTOPTS' 'LONGOPTS')"
+  debug "$(printf '%-15s - %-15s <' "$SHORTOPTS" "$LONGOPTS")"
+  debug "ERR: $ERR"
+
+  ((ERR)) && {
+    #    DEBUG=1
+    #    debug 'Matches?'
+    #    # shellcheck disable=SC2034
+    #    DEBUG=0
+
+    #    for IX in "${!BASH_SOURCE[@]}"; do
+    #      bs+="$(printf '|%20s' "$(basename "${BASH_SOURCE[IX]}")")"
+    #      fn+="$(printf '|%20s' "${FUNCNAME[IX]}")"
+    #      ln+="$(printf '|%20s' "${BASH_LINENO[IX-1]?$LINENO}")"
+    #    done
+
+    #    warn "bs: $bs"
+    #    warn "fn: $fn"
+    #    warn "ln: $ln"
+
+    bs="$(basename "${BASH_SOURCE[2]}:")"
+    fn="${FUNCNAME[2]}:"
+    [[ $fn =~ main:|source: ]] && fn=
+    ln="${BASH_LINENO[1]}"
+
+    die "Problems with options definition at $bs$fn$ln, exiting."
+  }
+
+  return 0
+}
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 _build_eval_string
+
+Builds a string that will be eval'd and defines the C<_parse_params> function
+based on the definition lines passed to C<parse_params>.
+
+=head2 _parse_params
+
+This is a dynamic function, built on the fly as a string and eval'd and then
+called in C<parse_params>.
+
+=cut
+POD
+
+function _build_eval_string() {
+  if [[ -z $DEF_LINES ]] && [[ ${#POS_LINES[@]} -eq 0 ]]; then
+    die "Either DEF_LINES or POS_LINES needs to be set."
+  fi
+
+  local DEFAULTS_STRING REQUIRED_STRING
+
+  IFS=$'\n' readarray -t def_lines <<< "$DEF_LINES"
+
+  for BES_IX in "${!def_lines[@]}"; do
+    [[ -z ${def_lines[BES_IX]} ]] && continue
+
+    debug "line $BES_IX: $(printf '%s' "${def_lines[BES_IX]}")"
+
+    IFS=',' read -r OPT TYPE VAR DEFAULT REQ <<< "${def_lines[BES_IX]}"
+
+    #debug "OPT: $OPT ::: TYPE: $TYPE ::: REQ: $REQ ::: VAR: $VAR ::: DEFAULT: $DEFAULT <"
+
+    CASE_STRING+="$CRLF"
+
+    if is_char "$OPT"; then
+      CASE_STRING+="-$OPT)$CRLF"
+    elif [[ $OPT != *"|"* ]]; then
+      CASE_STRING+="--$OPT)$CRLF"
+    else
+      CASE_STRING+="-${OPT/|/ | \-\-})$CRLF"
+    fi
+
+    CASE_STRING+="debug \"case: $OPT \$(printf '%s' \$2)\"$CRLF"
+
+    if [[ $TYPE == 'boolean' ]]; then
+      CASE_STRING+="$VAR=0$CRLF"
+      CASE_STRING+="shift$CRLF"
+
+      DEFAULT=1
+    elif [[ $TYPE == 'filename' ]]; then
+      CASE_STRING+="$VAR=\"\$(verify_filename \"\$2\")\" || die \"Invalid filename (\$2)\"$CRLF"
+      CASE_STRING+="shift 2$CRLF"
+
+      [[ -n $DEFAULT ]] && DEFAULT="$(verify_filename "$DEFAULT")"
+    else
+      CASE_STRING+="$VAR=\"\$2\"$CRLF"
+      CASE_STRING+="shift 2$CRLF"
+
+      VALIDATE_STRING+="_check_type '$VAR' '$TYPE' || { warn \"$OPT (\$$VAR) is not a $TYPE.\"; ((ERR++)); }$CRLF"
+    fi
+
+    CASE_STRING+=";;$CRLF"
+
+    if [[ -n $DEFAULT ]]; then
+      DEFAULTS_STRING+="$VAR='$DEFAULT'$CRLF"
+    fi
+
+    if [[ $REQ == 'required' ]]; then
+      REQUIRED_STRING+="[[ -n \$$VAR ]] || { warn '$VAR ($OPT) is required.'; ((ERR++)); }$CRLF"
+    fi
+
+    DEBUG_STRING+="debug \"(after case) $VAR: \$$VAR\"$CRLF"
+
+  done
+
+  if [[ -n $CASE_STRING ]]; then
+    # From man page for getopt:
+    # getopt returns error code 0 for successful parsing, 1 if getopt(3) returns
+    # errors, 2 if it does not understand its own parameters, 3 if an internal
+    # error occurs like out-of-memory, and 4 if it is called with -T.
+
+    CASE_STRING="
+  local gopts=\"--alternative\"
+  gopts=\"\$gopts --options \${SHORTOPTS:-''}\"
+  [[ -n \$LONGOPTS ]] && gopts=\"\$gopts --longoptions \$LONGOPTS\"
+
+  debug \"gopts: \$gopts\"
+
+  PPGORC=0
+
+  ARGS=\"\$(getopt \$gopts -- \"\$@\" 2> /dev/null)\" || {
+
+    rc=\$?
+
+    ((rc==4)) && die \"Don't call getopt with '-T'.\"
+    ((rc==3)) && die \"getopt internal error.\"
+    ((rc==2)) && die \"Unrecognized parameters used with getopt.\"
+    PPGORC=\$rc
+  }
+
+  debug \"ARGS: \$(printf '%s' \"\$ARGS\")\"
+
+  eval set -- \"\$ARGS\"
+
+  while true; do
+    #debug \"1: \$1 ::: 2: \$2\"
+
+    case \"\$1\" in
+$CASE_STRING
+      --)
+        debug 'case: --'
+        shift
+        break
+        ;;
+
+      *)
+        debug 'case: *'
+        break ;;
+    esac
+  done
+"
+  fi
+
+  # This eval will execute arbitrary code from the command line. Don't use it!
+  #[[ -n \$1 ]] && eval \"\$VAR=\$1\"
+
+  if [[ ${#POS_LINES[@]} -gt 0 ]]; then
+    POS_STRING="
+  for PL_IX in \"\${!POS_LINES[@]}\"; do
+    IFS=',' read -r TYPE VAR <<< \"\${POS_LINES[PL_IX]}\"
+    [[ -n \$1 ]] && IFS= read -r \"\$VAR\" <<< \"\$1\"
+    debug \"(in pos loop) \$VAR: \${!VAR}\"
+    _check_type \"\$VAR\" \"\$TYPE\" || { warn \"'\${!VAR}' (position \$PL_IX) is not a \$TYPE\"; ((ERR++)); }
+    shift
+  done
+"
+  fi
+
+  local EVAL_STRING="
+_parse_params() {
+$DEFAULTS_STRING
+$CASE_STRING
+$POS_STRING
+$DEBUG_STRING
+$REQUIRED_STRING
+$VALIDATE_STRING
+
+  REMAINS=(\$@)
+  debug \"REMAINS: \${REMAINS[@]}\"
+  debug \"ERR: \$ERR\"
+  ((ERR)) && return 1
+  return 0
+}
+"
+
+  #debug "$(echo "$EVAL_STRING" | shfmt -s -i 2 -bn -ci -sr | cat -n)"
+  debug "$(echo "$EVAL_STRING" | shfmt -s -i 2 -bn -ci -sr)"
+
+  printf '%s' "$EVAL_STRING"
+}

@@ -1,0 +1,290 @@
+#!/bin/bash
+
+#  This script facilitates "lock" files in Unix.  They work the same way
+#  semiphores in that only one process can own the "lock" at one time.
+
+#  Modification History:
+#  02/17/2005  REP  Added FLELCK_MAX_SLEEP_DURATION to cause sleeps to start short
+#                   and grow as the process waits longer.
+#  02/22/2005  REP  Added logging when old Locks are removed due to dead processes.
+#  11/02/2005  REP  Added additional Error Handleing and renamed variables to make
+#                   sure there are no conflict with the calling program.
+#  12/14/2005  DB   Completely rewrote the lock mechanism.  No longer uses the ProcessId
+#                   argument, but keeps it for backwards compatability.  Gets process id
+#                   from the shell environment.  Function FLELCK_getlock was taken from
+#                   the internet.
+#  12/15/2005  DB   Added ability to check for current ownership of the lock
+#  09/29/2011  REP  Change the default group from "etl" to "edw"
+#  01/12/2012  REP  Changed created lock file to have permissions 666.
+#  01/12/2012  REP  Changed how script looks to see if the lock owning process
+#                   still exists so that it will work correctly across users.
+#  01/23/2012  RVA  Changed FLELCK_TIMEOUT return code from 1 to 2.
+#  05/21/2016  PPG  Modified code to run as a bash process.
+#  08/14/2016  PPG  Renamed script to _func
+#  12/28/2017  ASY  Converted to bash, made it pass shellcheck (for the most part)
+
+source utility || {
+  echo 'FileLock: Unable to source utility script. Is it in the path?'
+  exit 1
+}
+
+# Use this after the changes have been tested and people notified.
+#[[ ${BASH_SOURCE[0]} == "$0" ]] && die "$(basename "$0") must only be sourced."
+
+# XXX: FileLock should not be sourced as we are not exporting any values.
+# XXX: FileLock should only be allowed to be sourced once.
+
+#############################################################################
+# Setup
+
+FL_LOCK_DIR="$PRJHOME/systemlock"
+FL_LOG_DIR="$LOGS_DIR/filelock"
+
+mkdir -p "$FL_LOCK_DIR" || die "Unable to create $FL_LOCK_DIR"
+mkdir -p "$FL_LOG_DIR" || die "Unable to create $FL_LOG_DIR"
+
+LogFile="$(verify_filename "$FL_LOG_DIR/FileLock_$(date +%Y%m%d).log")"
+debug "LogFile: $LogFile"
+
+#LogFile="$FL_LOG_DIR/FileLock_$(date +%Y%m%d).log"
+
+#if [ ! -f "$LogFile" ]; then
+#  touch "$LogFile"
+#  chgrp "$FL_DEFAULT_GROUP" "$LogFile"
+#  chmod 664 "$LogFile"
+#fi
+
+#  Define how long the process should sleep between Lock Checks.
+#     Note:  The sleep time starts at 1 Second, then increases by 1 Second
+#            until it hits this FL_MAX_SLEEP_DURATION
+
+# Upto Seconds (starts at 1 and then goes to 2,3,4,5, etc.)
+MAX_WAITINTERVAL=$((2 * 24 * 60 * 60))
+
+#  Define how many seconds the process will sleep before it will quit trying.
+DEFAULT_WAITINTERVAL=3600
+
+#############################################################################
+# Utility Functions
+
+#----------------------------------------------------------------------------
+function FileLockUsage() {
+  msg="$*"
+
+  cat << EOH
+$msg
+
+Usage: FileLock  Action GlobalLockName ProcessId [WaitTime] [Verbose]
+
+  Action          - Either "GET" a lock or "RELEASE" a lock.
+  GlobalLockName  - The name of the lock.  This name is global to the
+                    to this server and all environments.
+  ProcessId       - Only valid for Action GET.  Used to track who owns
+                    the lock (no longer used).
+  WaitTime        - Only valid for action GET.  Used to determine how
+                    many seconds to wait before giving up.  Default: $DEFAULT_WAITINTERVAL
+  Verbose         - Be chatty (default is no output unless an error occurrs)
+
+$msg
+EOH
+
+  exit 1
+
+}
+
+#----------------------------------------------------------------------------
+
+#function _msg() { ((VERBOSE)) && printf '[%s]: %s\n' "$(date '+%D %T')" "$*" | tee -a "$LogFile"; }
+#function _warn() { VERBOSE=0 _msg "Warning: $*"; }
+#function _err() { VERBOSE=0 _msg "Error: $*"; }
+
+function _msg() { printf '[%s]: %s\n' "$(date '+%D %T')" "$*" >> "$LogFile"; }
+function _warn() { _msg "Warning: $*"; }
+function _err() { _msg "Error: $*"; }
+
+function _lock_filename() {
+  debug "$*"
+  verify_filename "${FL_LOCK_DIR}/${1?Must pass lockname to get lockfile}.lockfile"
+}
+
+#############################################################################
+# Functions
+
+#----------------------------------------------------------------------------
+# _get_lock
+
+# usage: _get_lock <lock name>
+#   the actual name of the lock file is expected
+
+function _get_lock() {
+  debug "@: $*"
+
+  local lockname="$1"
+
+  debug "lockname: $lockname"
+
+  local LockFileName
+  LockFileName=$(_lock_filename "$lockname") || return 1
+
+  debug "LockFileName: $LockFileName"
+
+  [[ -f $LockFileName ]] || {
+    echo $$ > "$LockFileName" || {
+      _err "unable to create new lockfile"
+      return 1
+    }
+
+    # Change permissions of lock file so that any user can see/remove the file as
+    # necessary.  This allows different users to share the same lock file.
+    chmod 666 "$LockFileName" || return 1
+
+    _msg "Lock $lockname obtained. PID: $$"
+
+    return 0
+  }
+
+  local -i PID
+  #PID=$(< "$LockFileName" 2> /dev/null)
+  PID=$(< "$LockFileName")
+
+  debug "PID: $PID"
+
+  [[ $PID -eq 0 ]] && {
+    _err "lockfile ($LockFileName) has invalid data ($(cat "$LockFileName"))"
+    return 1
+  }
+
+  [[ $PID -eq $$ ]] && {
+    _msg "current process already owns lock $lockname, PID: $PID"
+    return 0
+  }
+
+  # Are we waiting on another process to finish before grabbing this lock?
+  [[ -d "/proc/$PID" ]] && return 1
+
+  #  ##--------------------------------------------------------------------------
+  #  ## If we're here, we have a possible stale lock file, try to get a secondary
+  #  ## lock and check again in case the process just exited
+
+  _warn "removing stale lock $lockname, PID: $PID"
+
+  rm -f "$LockFileName" || _err "Unable to remove stale lock $lockname, PID: $PID"
+
+  return 1
+}
+
+#----------------------------------------------------------------------------
+# _release_lock
+
+# usage: _release_lock <lock name>
+#   the actual name of the lock file is expected
+
+function _release_lock() {
+  local lockname="$1"
+
+  local LockFileName
+  LockFileName=$(_lock_filename "$lockname") || return 1
+
+  [[ -f $LockFileName ]] || {
+    _err "cannot release lock $lockname because it does not exist"
+    return 1
+  }
+
+  local -i PID
+  PID=$(< "$LockFileName")
+
+  [[ $PID -eq 0 ]] && PID='Unknown (possibly invalid data)'
+
+  rm "$LockFileName" || {
+    _err "releasing lock $lockname ($LockFileName) PID: $PID."
+    return 1
+  }
+
+  [[ $PID -eq $$ ]] || {
+    _err "cannot release lock for wrong process PID: $PID current PID: $$"
+    return 1
+  }
+
+  _msg "Lock $lockname released. PID: $PID"
+
+  return 0
+}
+
+#----------------------------------------------------------------------------
+# usage: FileLock "$action" "$lockname" "$WaitInterval"
+
+# XXX: Use ParseParams
+
+function FileLock() {
+  debug "@: $*"
+
+  declare -u action="$1"
+  shift
+
+  declare lockname="$1"
+  shift
+
+  [[ $action == 'RELEASE' ]] && {
+    _release_lock "$lockname"
+    return $?
+  }
+
+  [[ $action != 'GET' ]] && {
+    _err "Invalid action $action"
+    return 1
+  }
+
+  declare -i WaitInterval=$DEFAULT_WAITINTERVAL
+
+  if [[ $# -eq 2 ]]; then
+    # XXX: After November this should start returning 1 (an error)
+    _err "the third parameter (ProcessId) is being deprecated, please use only two or three parameters"
+    shift
+  fi
+
+  if [[ $# -ge 1 ]]; then
+    WaitInterval=$1
+    shift
+  fi
+
+  #  VERBOSE=0
+  #  if [[ $# -ge 1 ]]; then
+  #    VERBOSE=1
+  #    shift
+  #  fi
+
+  [[ $# -ge 1 ]] && FileLockUsage "Too Many Parameters"
+
+  [[ $WaitInterval -gt $MAX_WAITINTERVAL ]] && WaitInterval=$MAX_WAITINTERVAL
+
+  debug "action: $action"
+  debug "lockname: $lockname"
+  debug "waitinterval: $WaitInterval"
+
+  local -i SleepTime=0
+  local -i WaitCount=0
+  local -i TotalWait=0
+
+  until _get_lock "$lockname"; do
+    [[ $WaitCount -eq 0 ]] && _msg "Lock for $lockname was NOT obtained - waiting. PID: $$"
+
+    ((SleepTime++))
+    sleep $SleepTime
+
+    WaitCount=1
+    ((TotalWait += SleepTime))
+
+    [[ TotalWait -ge WaitInterval ]] && {
+      _err "unable to lock $lockname within time limit ($WaitInterval seconds). PID: $$"
+      return 2
+    }
+  done
+
+  return 0
+}
+
+#############################################################################
+[[ $# -gt 0 ]] && FileLock "$@"
+
+# Force the last return code to be success.
+true

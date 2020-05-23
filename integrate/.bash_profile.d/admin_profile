@@ -1,0 +1,27 @@
+#!/bin/bash
+
+[[ ! $USER =~ ^.*adm$ ]] && {
+  debug "Unrecognized environment for admin profile, returning."
+  return
+}
+
+if [[ -z $PRJ_NAME ]]; then
+  eval "$(perl -e '@a=$ENV{USER}=~/^(.*?)(adm)$/;printf"PRJ_NAME=%s;PRJ_ENVIRONMENT=%s",@a')"
+  export PRJ_NAME PRJ_ENVIRONMENT
+fi
+
+# XXX: What is PRJ_SUB used for?
+
+case "$HOSTNAME" in
+  utlxa35[0-9]) PRJ_SUB='test' ;;
+  utlxa36[0-9]) PRJ_SUB='stg' ;;
+  utlxa37[0-9]) PRJ_SUB='prod' ;;
+esac
+
+export PRJ_SUB
+
+# This setup was in the original dsadm .bash_profile, copying here.
+
+[[ $USER == 'dsadm' ]] && addpath "$ADMIN_HOME/scripts/batchcontrol"
+
+true

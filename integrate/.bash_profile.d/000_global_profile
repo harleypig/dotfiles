@@ -1,0 +1,40 @@
+#!/bin/bash
+
+GLOBAL_DIR="$(dirname "$DOTFILES")"
+export GLOBAL_DIR
+
+export GLOBAL_LIB="$GLOBAL_DIR/lib"
+[[ -d $GLOBAL_LIB ]] || GLOBAL_LIB="$GLOBAL_DIR/scripts/lib"
+
+export GLOBAL_BIN="$GLOBAL_DIR/bin"
+
+# shellcheck disable=SC2153
+export GLOBAL_CFG="$GLOBAL_DIR/cfg"
+export GLOBAL_SCRIPTS="$GLOBAL_DIR/scripts"
+export GLOBAL_TOOLS="$GLOBAL_DIR/tools/bin"
+export GLOBAL_LOGS="$GLOBAL_DIR/logs"
+
+export GLOBAL_LIB="$GLOBAL_SCRIPTS/lib"
+export GLOBAL_SHELLS="$GLOBAL_SCRIPTS/shells"
+export GLOBAL_PROFILE="$GLOBAL_SCRIPTS/profile"
+
+export ARC_PASSWD_DIR="$GLOBAL_DIR/auth"
+
+# For bats testing framework
+export BATS_TEST="$GLOBAL_DIR/tests"
+export BATS_ROOT="$GLOBAL_DIR/tools"
+
+# For Azure DevOps from CLI
+export https_proxy='http://webproxy.cs.zionsbank.com:8080'
+
+addpath "$GLOBAL_LIB"
+addpath "$GLOBAL_SHELLS"
+addpath "$GLOBAL_TOOLS"
+# XXX: do these still exist? If not, remove them.
+addpath '/usr/ccs/bin'
+addpath '/usr/dt/bin'
+addpath '/usr/java6_64/bin'
+addpath '/usr/ucb'
+addpath '/opt/fileport/bin'
+
+true

@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Aliases and functions for git
+
+# Check the following for more ideas:
+
+# https://gist.github.com/chrismccoy/8775224
+# https://gitlab.com/mikegerwitz/git-shortmaps
+# https://github.com/scmbreeze/scm_breeze
+
+#[[ $- == *i* ]] || return 0
+
+command -v git &> /dev/null || return 0
+
+function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
+
+function gtoplevel() {
+  git rev-parse --show-toplevel 2> /dev/null || {
+    echo "Not in a git repository."
+    return 1
+  }
+
+  return 0
+}
+
+# Go to current git repo toplevel directory.
+function gtl() {
+  local dir
+  dir="$(gtoplevel)" || return 1
+
+  cd "$dir" || {
+    echo "Unable to change to $dir"
+    return 1
+  }
+}
+
+## Go to current git toplevel directory, perform the git command and return
+## to the original directory.
+#function git_cmd_return() {
+#  gtl || return 1
+#  git "$@"
+#  # shellcheck disable=SC2164
+#  cd - > /dev/null
+#}
+
+function ga() { git add "$@"; }
+function gca() { git commit -a -v -m "$@"; }
+function gc() { git commit -v -m "$@"; }
+function gco() { git checkout "$@"; }
+function gf() { git fetch --all --tags; }
+function gmv() { git mv "$@"; }
+function grm() { git rm "$@"; }
+
+alias gall='git add .'
+alias gba='git branch -ra -v'
+alias gb='git branch'
+alias gcp='git cherry-pick'
+alias gdc='git diff --cached'
+alias gd='git diff'
+alias gds='git diffstat'
+alias glg='git lg'
+alias gl='git pull'
+alias gpa='git remote | xargs -L1 git push --all'
+alias gpall='git push --all'
+alias gp='git push'
+alias gs='git status -s'
