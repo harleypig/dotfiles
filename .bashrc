@@ -1,11 +1,8 @@
 #!/bin/bash
 
-# XXX: Do I need to check for interactive or login here? or leave it to the
-# loaded scripts to handle?
-
 debug() { true; }
 
-[[ -r $GLOBAL_LIB/debug ]] && source "$GLOBAL_LIB/debug"
+[[ -r $DOTFILES/lib/debug ]] && source "$DOTFILES/lib/debug"
 [[ -r $GLOBAL_LIB/BashCompletions ]] && source "$GLOBAL_LIB/BashCompletions"
 [[ -r $GLOBAL_LIB/LoadRCs ]] && source "$GLOBAL_LIB/LoadRCs"
 
@@ -128,16 +125,16 @@ build_path() {
     [[ $d == '.' ]] && continue
 
     # Have we already handled this directory?
-    [[ ${PATH_CHECK[$d]+isset} ]] && continue
+    [[ ${PATH_CHECK[$d]+isset} -ne 0 ]] && continue
 
-    if [[ ${SHOULD_BE_IGNORED[$d]+isset} ]]; then
+    if [[ ${SHOULD_BE_IGNORED[$d]+isset} -ne 0 ]]; then
       PATH_NEW+=("$d")
       PATH_CHECK[$d]=1
       debug "IGNORE: $d"
       continue
 
-    elif [[ ${SHOULD_BE_STRIPPED[$d]+isset} ]]; then
-      PATH_CHECK[$d]=1
+    elif [[ ${SHOULD_BE_STRIPPED[$d]+isset} -ne 0 ]]; then
+      PATH_CHECK[$dir]=1
       debug "STRIP: $d"
       continue
     fi
@@ -146,16 +143,16 @@ build_path() {
     dir=$(get_real_dir "$d") || continue
 
     # Have we already handled this directory?
-    [[ ${PATH_CHECK[$dir]+isset} ]] && continue
+    [[ ${PATH_CHECK[$dir]+isset} -ne 0 ]] && continue
 
-    if [[ ${SHOULD_BE_STRIPPED[$dir]+isset} ]]; then
+    if [[ ${SHOULD_BE_STRIPPED[$dir]+isset} -ne 0 ]]; then
       debug "STRIP: $dir"
 
-    elif [[ ${SHOULD_BE_FIRST[$dir]+isset} ]]; then
+    elif [[ ${SHOULD_BE_FIRST[$dir]+isset} -ne 0 ]]; then
       PATH_FIRST+=("$dir")
       debug "FIRST: $dir"
 
-    elif [[ ${SHOULD_BE_LAST[$dir]+isset} ]]; then
+    elif [[ ${SHOULD_BE_LAST[$dir]+isset} -ne 0 ]]; then
       PATH_LAST+=("$dir")
       debug "LAST: $dir"
 
@@ -214,7 +211,7 @@ SHOULD_BE_FIRST['/usr/lib64']=1
 NEWLDPATH=$(build_path 'LD_LIBRARY_PATH')
 export LD_LIBRARY_PATH="$NEWLDPATH"
 
-unset -f get_real_dir jwc build_path debug
+unset -f get_real_dir jwc build_path debug addpath
 unset NEWPATH NEWLDPATH SHOULD_BE_FIRST SHOULD_BE_LAST
 unset SHOULD_BE_IGNORED SHOULD_BE_STRIPPED f
 
