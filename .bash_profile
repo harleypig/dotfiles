@@ -14,12 +14,13 @@
 
 DOTFILES="$HOME"
 
-# shellcheck disable=SC2164
-if [[ -L ${BASH_SOURCE[0]} ]]; then
-  DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
-fi
+[[ -L ${BASH_SOURCE[0]} ]] \
+  && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
 
 export DOTFILES
+
+##############################################################################
+export PATH="$PATH:$DOTFILES/lib:$DOTFILES/bin"
 
 ##############################################################################
 debug() { true; }
