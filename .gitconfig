@@ -1,17 +1,14 @@
 # Some ideas came from these places ...
-#
+
 # http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples
+# https://gggritso.com/human-git-aliases
 # https://gist.github.com/felipesabino/6391408
+# https://github.com/GitAlias/gitalias/blob/master/gitalias.txt
 # https://git.wiki.kernel.org/index.php/Aliases
 # https://news.ycombinator.com/item?id=14045787
+# https://stackoverflow.com/questions/3321492/git-alias-with-positional-parameters
 # http://vimcasts.org/episodes/synchronizing-plugins-with-git-submodules-and-pathogen/
 # http://www.jukie.net/bart/blog/pimping-out-git-log
-
-# Check these pages out for more ideas ...
-#
-# https://gggritso.com/human-git-aliases
-# https://github.com/GitAlias/gitalias/blob/master/gitalias.txt
-# https://stackoverflow.com/questions/3321492/git-alias-with-positional-parameters
 
 ##################################################################################
 
@@ -28,6 +25,7 @@
   excludesfile = ~/.gitignore_global
   pager        = less -FIJRWX
   safecrlf     = true
+  filemode     = true
 
 [apply]
   ignorewhitespace = change
@@ -50,7 +48,7 @@
   user = harleypig
 
 [transfer]
-  #fsckobjects = true
+  fsckobjects = true
 
 ##################################################################################
 
@@ -63,6 +61,9 @@
   ai   = add --interactive
   au   = add -u
 
+  unadd = reset --
+  unstage = reset --
+
   b    = branch
   ba   = branch -a
   ball = branch -ar
@@ -71,6 +72,8 @@
   cb   = commit --branch
   ci   = commit --interactive
   co   = checkout
+
+  conflicted = "diff --name-only --diff-filter=U"
 
   d    = diff --color --color-words --abbrev
   dc   = diff --color --color-words --abbrev --cached
@@ -83,6 +86,8 @@
   fp   = fetch --prune
 
   find = !git ls-tree -r --name-only HEAD | grep --color $1
+  ignore = !git status &> /dev/null && \
+            echo $1 >> $(git rev-parse --show-toplevel)/.gitignore
 
   ignored = !git ls-tree --others -i --exclude-standard
   
@@ -90,9 +95,13 @@
 
   p    = pull
 
+  prune-all = "!git remote | xargs -n 1 git remote prune"
+
   s    = status
   ss   = status -s
   st   = status -sb
+
+  untrack = rm --cache --
 
   assumed     = "!git ls-files -v | grep ^h | cut -c 3-"
   assume      = update-index --assume-unchanged
@@ -107,7 +116,9 @@
   lc   = log ORIG_HEAD.. --stat --no-merges
 
   # List new files for the incoming merge
-  new  = !sh -c 'git log $1@{1}..$1@{0} "$@"'
+  new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
+  changes = diff --name-status -r
+  diffstat = diff --stat -r
 
   l    = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
 
@@ -199,9 +210,18 @@
 # prompt, header, help or error
 
 [merge]
-  tool = vimdiff
+	tool = fugitive
   guitool = kdiff3
   conflictstyle = diff3
+
+[mergetool]
+  prompt = false
+
+[mergetool "fugitive"]
+	cmd = vim -f -c \"Gvdiff\" \"$MERGED\"
+
+[notes]
+  displayRef = '*'
 
 [pull]
   default = current

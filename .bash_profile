@@ -12,42 +12,18 @@
 ################################################################################
 # Base Global variables
 
+DOTFILES="$HOME"
+
 # shellcheck disable=SC2164
 if [[ -L ${BASH_SOURCE[0]} ]]; then
   DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
-  GLOBAL_DIR="$(dirname "$DOTFILES")"
-
-  OLDPWD="$PWD"
-
-  cd "$DOTFILES"
-  GLOBAL_DIR="$(git rev-parse --show-toplevel 2> /dev/null)" \
-    || echo "Unable to determine top level of repository, weird things are going to happen."
-
-  cd "$OLDPWD"
-  unset OLDPWD
-
-else
-  DOTFILES="$HOME"
-  GLOBAL_DIR="$HOME"
-
-  cat << EOT
-
-This .bash_profile is developed to be linked and executed from a repository as
-a symbolic link. This is not being done here and results will be unreliable.
-
-EOT
 fi
 
-export DOTFILES GLOBAL_DIR
-
-export GLOBAL_LIB="$GLOBAL_DIR/lib"
-[[ -d $GLOBAL_LIB ]] || echo "$GLOBAL_LIB does not exist, GLOBAL_LIB is not set"
-
-export GLOBAL_BIN="$GLOBAL_DIR/bin"
+export DOTFILES
 
 ##############################################################################
 debug() { true; }
-[[ -r "$GLOBAL_LIB/debug" ]] && source "$GLOBAL_LIB/debug"
+command -v debug &> /dev/null && source debug
 
 ##############################################################################
 # This script, and any scripts in the .bash_profile.d directories, should
@@ -97,72 +73,7 @@ unset BIN_DIRS
 ################################################################################
 # Check if various dotfiles are linked properly
 
-# XXX: Move to a separate file
-
-# XXX: Add cleanup routine (e.g., .screenrc is no longer needed, links to it
-#      should be removed.
-
-# XXX: Add a way to check for links to arbitrary locations (e.g. .vim and
-#      .vimrc might be in their own repository).
-
-# XXX: Read files to link from a file
-
-nochecklinks="$HOME/.nochecklinks"
-
-if [[ ! -e $nochecklinks ]]; then
-  debug "Checking dotfiles ..."
-
-  declare -a CHECK_DOTFILES
-
-  CHECK_DOTFILES+=('.bash_logout')
-  CHECK_DOTFILES+=('.bashrc')
-  CHECK_DOTFILES+=('.cvsrc')
-  CHECK_DOTFILES+=('.flexget')
-  CHECK_DOTFILES+=('.gitconfig')
-  CHECK_DOTFILES+=('.gitignore')
-  CHECK_DOTFILES+=('.gitignore_global')
-  CHECK_DOTFILES+=('.htoprc')
-  CHECK_DOTFILES+=('.inputrc')
-  CHECK_DOTFILES+=('.mplayer')
-  CHECK_DOTFILES+=('.perlcriticrc')
-  CHECK_DOTFILES+=('.perldb')
-  CHECK_DOTFILES+=('.perltidyrc')
-  CHECK_DOTFILES+=('.tmux.conf')
-
-  badlinks=0
-
-  for checkfile in "${CHECK_DOTFILES[@]}"; do
-    if [[ ! -e $HOME/$checkfile ]]; then
-      debug "Linking $DOTFILES/$checkfile ..."
-      ln -s "$DOTFILES/$checkfile" "$HOME/$checkfile"
-
-    else
-      debug "$DOTFILES/$checkfile exists, checking if it's ours ..."
-      linkdir=$(dirname "$(readlink -nf "$checkfile")")
-
-      if [[ $linkdir != "$DOTFILES" ]]; then
-        echo "$checkfile is not linked to $DOTFILES"
-        badlinks=1
-      fi
-    fi
-  done
-
-  if ((badlinks)); then
-    cat << EOT
-
-Move those files out of the way and then run '. .bash_profile' if you want to
-fix those.
-
-If you like those files the way they are, then run '> $nochecklinks' and they
-will be ignored.
-
-EOT
-  fi
-
-  unset CHECK_DOTFILES badlinks checkfile
-fi
-
-unset nochecklinks
+[[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
 
 ##############################################################################
 declare -a profiledirs
@@ -184,11 +95,6 @@ for profiledir in "${profiledirs[@]}"; do
 done
 
 unset profiledirs profiledir profilefiles profilefile
-
-################################################################################
-# XXX: Move these. To general_profile?
-export LANG=en_US.utf-8
-export LC_ALL=en_US.utf-8
 
 ################################################################################
 # Get the aliases and functions

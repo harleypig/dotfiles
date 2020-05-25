@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# XXX: source utility
+# XXX: die if sourced
+# XXX: Add cleanup routine (e.g., .screenrc is no longer needed, links to it
+#      should be removed.
+
+# XXX: Add a way to check for links to arbitrary locations (e.g. .vim and
+#      .vimrc might be in their own repository).
+
+# XXX: Read files to link from a file
+#      rename .nochecklinks to .checklinks
+#      .bashrc=$DOTFILES/.bashrc
+#      .vim=$HOME/projects/dotvim/.vim
+#      .vimrc=$HOME/projects/dotvim/.vimrc
+
+nochecklinks="$HOME/.nochecklinks"
+
+if [[ ! -e $nochecklinks ]]; then
+  debug "Checking dotfiles ..."
+
+  declare -a CHECK_DOTFILES
+
+  CHECK_DOTFILES+=('.bash_logout')
+  CHECK_DOTFILES+=('.bashrc')
+  CHECK_DOTFILES+=('.cvsrc')
+  CHECK_DOTFILES+=('.flexget')
+  CHECK_DOTFILES+=('.gitconfig')
+  CHECK_DOTFILES+=('.gitignore')
+  CHECK_DOTFILES+=('.gitignore_global')
+  CHECK_DOTFILES+=('.htoprc')
+  CHECK_DOTFILES+=('.inputrc')
+  CHECK_DOTFILES+=('.mplayer')
+  CHECK_DOTFILES+=('.perlcriticrc')
+  CHECK_DOTFILES+=('.perldb')
+  CHECK_DOTFILES+=('.perltidyrc')
+  CHECK_DOTFILES+=('.tmux.conf')
+
+  badlinks=0
+
+  for checkfile in "${CHECK_DOTFILES[@]}"; do
+    if [[ ! -e $HOME/$checkfile ]]; then
+      debug "Linking $DOTFILES/$checkfile ..."
+      ln -s "$DOTFILES/$checkfile" "$HOME/$checkfile"
+
+    else
+      debug "$DOTFILES/$checkfile exists, checking if it's ours ..."
+      linkdir=$(dirname "$(readlink -nf "$checkfile")")
+
+      if [[ $linkdir != "$DOTFILES" ]]; then
+        echo "$checkfile is not linked to $DOTFILES"
+        badlinks=1
+      fi
+    fi
+  done
+
+  if ((badlinks)); then
+    cat << EOT
+
+Move those files out of the way and then run '. .bash_profile' if you want to
+fix those.
+
+If you like those files the way they are, then run '> $nochecklinks' and they
+will be ignored.
+
+EOT
+  fi
+
+  unset CHECK_DOTFILES badlinks checkfile
+fi
+
+unset nochecklinks
+
