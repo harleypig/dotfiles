@@ -5,6 +5,7 @@
 
 # XXX: Add check for if we are being sourced and die if not
 # XXX: Add version check
+# XXX: Look at /usr/share/doc/task/scripts/ for ideas
 
 [[ $- == *i* ]] || return 0
 
