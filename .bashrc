@@ -1,8 +1,12 @@
 #!/bin/bash
 
-debug() { true; }
+##############################################################################
+export PATH="$PATH:$DOTFILES/lib:$DOTFILES/bin"
 
-[[ -r $DOTFILES/lib/debug ]] && source "$DOTFILES/lib/debug"
+##############################################################################
+debug() { true; }
+command -v debug &> /dev/null && source debug
+
 [[ -r $GLOBAL_LIB/BashCompletions ]] && source "$GLOBAL_LIB/BashCompletions"
 [[ -r $GLOBAL_LIB/LoadRCs ]] && source "$GLOBAL_LIB/LoadRCs"
 
