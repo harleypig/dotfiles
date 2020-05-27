@@ -9,9 +9,22 @@
 # XXX: Incorporate this somehow?
 #      https://www.commandlinefu.com/commands/view/7916/put-a-console-clock-in-top-right-corner
 #      https://gist.github.com/johanbove/328506117db2edff7f5c99d05afde0ec
+#----------------------------------------------------------------------------
+# Only setup the prompt if we are in an interactive session
+
+[[ $- == *i* ]] || {
+  debug "Not in interactive mode."
+  return 0
+}
+
+#----------------------------------------------------------------------------
+export color_off
+color_off="$(ansi -n off)"
 
 #----------------------------------------------------------------------------
 function _parent() {
+
+  command -v pstree &> /dev/null || return 0
 
   local parents
 
@@ -19,26 +32,26 @@ function _parent() {
 
   parents=${parents/%-+*/}
   parents=${parents//---bash/}
-  parents=${parents//---pstree/}
   parents=${parents//gnome-terminal-/}
-  parents=${parents//tmux/}
-  parents=${parents//sshd/}
   parents=${parents//login/}
+  parents=${parents//---pstree/}
   parents=${parents//: server/}
+  parents=${parents//sshd/}
+  parents=${parents//su/}
+  parents=${parents//tmux/}
 
   [[ -n $parents ]] \
     && printf '\[%s\](%s)\[%s\] ' "$(ansi -n fg bright_yellow bg red)" "$parents" "$(ansi -n off)"
-
 }
 
 #----------------------------------------------------------------------------
 function _exit_status() {
-  local good_exit_text=':)'
-  local bad_exit_text=':('
-
   local -a status
 
-  local s
+  local color_bad color_good
+
+  color_bad="$(ansi -n bg red fg white)"
+  color_good="$(ansi -n bg blue fg yellow)"
 
   for s in "$@"; do
 
@@ -52,15 +65,14 @@ function _exit_status() {
     # doesn't throw an appropriate exit status.
 
     case "$s" in
-      0 | 141) status+=("$(ansi -n bg blue fg yellow)$good_exit_text$(ansi -n off)") ;;
-      *) status+=("$(ansi -n bg red fg white)$bad_exit_text$(ansi -n off)") ;;
+      0 | 141) status+="$color_good $s $color_off" ;;
+      *) status+="$color_bad $s $color_off" ;;
     esac
   done
 
-  local statuscodes
   statuscodes=$(join_array ' | ' 'status')
 
-  printf '\[%s\]' "$statuscodes"
+  printf '%s' "$statuscodes"
 }
 
 #----------------------------------------------------------------------------
@@ -70,10 +82,9 @@ _update_prompt() {
   exit_status=$(_exit_status "${PIPESTATUS[@]}")
 
   # Build the prompt.
-  local prompt_color color_off user hostname system_reboot pacman_status
+  local prompt_color user hostname system_reboot pacman_status
 
-  prompt_color="\[$(ansi -n fg cyan)\]"
-  color_off="\[$(ansi -n off)\]"
+  prompt_color="$(ansi -n fg cyan)"
 
   user="$(ansi -n fg bright_cyan)\u${prompt_color}"
   [[ $USER == 'root' ]] && user="$(ansi -n fg bright_red)\u"
