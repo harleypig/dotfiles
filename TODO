@@ -1,3 +1,5 @@
+XXX: Convert as many functions to scripts as possible so they aren't taking up memory.
+
 Possibly convert things setup and run from .bashrc into a separate file for each application or function it's used for.
 
 Something like
@@ -18,3 +20,42 @@ instead of copying all dotfiles blindly.
 
 try using rsync instead:
   https://github.com/mathiasbynens/dotfiles/blob/master/bootstrap.sh
+
+#!/bin/bash
+
+#-----------------------------------------------------------------------------
+# PREAMBLE FOR EVERY SCRIPT
+# Can these be incorporated in a utility script?
+
+# https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/
+unset CDPATH
+
+#-----------------------------------------------------------------------------
+# XXX: How does this compare with what I've already done?
+
+# https://stackoverflow.com/a/246128/491894
+
+SOURCE="${BASH_SOURCE[0]}"
+
+# resolve $SOURCE until the file is no longer a symlink
+while [ -h "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" > /dev/null 2>&1 && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+
+  # if $SOURCE was a relative symlink, we need to resolve it relative to the
+  # path where the symlink file was located
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+
+DIR="$(cd -P "$(dirname "$SOURCE")" > /dev/null 2>&1 && pwd)"
+
+#-----------------------------------------------------------------------------
+# Does command exist and is it executable?
+
+# https://stackoverflow.com/a/26759734/491894
+[[ -x "$(command -v app)" ]] || die 'app required'
+
+#-----------------------------------------------------------------------------
+# XXX: Can I use any of this in ParseParams?
+
+# https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "$0"
+
 # XXX: Move to a file that .bash_profile, .profile and whoever else will need
 #      to read it can do so.
 
@@ -77,30 +79,28 @@ unset BIN_DIRS
 [[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
 
 ##############################################################################
-declare -a profiledirs
+declare -a includedirs
 
-profiledirs+=("$DOTFILES/.bash_profile.d")
-profiledirs+=("$HOME/.bash_profile.d")
+includedirs+=("$DOTFILES/.bash_profile.d")
+includedirs+=("$HOME/.bash_profile.d")
+includedirs+=("$DOTFILES/.bashrc.d")
+includedirs+=("$HOME/.bashrc.d")
 
-for profiledir in "${profiledirs[@]}"; do
-  [[ -d $profiledir ]] || continue
+# Run each directory instead of doing a find on all directories at once
+# because we want these files loaded in this particular order.
 
-  readarray -t profilefiles < <(/usr/bin/find "$profiledir" -iname '*_profile' | /usr/bin/sort)
+for includedir in "${includedirs[@]}"; do
+  [[ -d $includedir ]] || continue
 
-  for profilefile in "${profilefiles[@]}"; do
-    [[ -r $profilefile ]] && {
-      debug "Sourcing $profilefile ..."
-      source "$profilefile" || debug "... unable to source $profilefile"
+  readarray -t includefiles < <(/usr/bin/find "$includedir" -iregex '.*_\(profile\|rc\)' | /usr/bin/sort)
+
+  for includefile in "${includefiles[@]}"; do
+    [[ -r $includefile ]] && {
+      debug "Sourcing $includefile ..."
+      source "$includefile" || debug "... unable to source $includefile"
     }
   done
 done
 
-unset profiledirs profiledir profilefiles profilefile
-
-################################################################################
-# Get the aliases and functions
-
-debug "Sourcing $DOTFILES/.bashrc"
-[[ -f $DOTFILES/.bashrc ]] && source "$DOTFILES/.bashrc"
-
-unset addpath
+##############################################################################
+unset includedirs includedir includefiles includefile addpath
