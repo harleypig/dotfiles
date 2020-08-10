@@ -1,4 +1,49 @@
 #!/bin/bash
 
-printf '=%.0s' {1..40}
-echo
+declare -i len=0 default_len=40
+declare msg char='#'
+
+shopt -s extglob
+
+warn() { printf '%s\n' "$*" >&2; }
+die() {
+  (($#)) && warn "$*"
+  exit 1
+}
+
+while (($#)); do
+  opt=$1
+  shift
+
+  case "$opt" in
+    -l)
+      len=$1
+      shift
+      ((len>0)) || die 'length must be greater than 0'
+      ;;
+
+    -c)
+      char=$1
+      shift
+      [[ ${#char} -gt 1 ]] && die 'only a single character can be used for line'
+      ;;
+
+    *) msg+="$opt " ;;
+  esac
+done
+
+if ((len==0)); then
+  len=$default_len
+  [[ -t 1 ]] && len=$(tput cols)
+fi
+
+[[ $msg =~ ^*([[:space:]])$ ]] && msg=
+
+if [[ -n $msg ]]; then
+  printf -v msg '%c%c %s' "$char" "$char" "$msg"
+  l="${#msg}"
+  len=$((len-l))
+  ((len<0)) && len=0
+fi
+
+printf '%s%s\n' "$msg"  "$(head -c $len < /dev/zero | tr '\0' "$char")"
