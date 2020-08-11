@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "$0"
-
 # XXX: Move to a file that .bash_profile, .profile and whoever else will need
 #      to read it can do so.
 
