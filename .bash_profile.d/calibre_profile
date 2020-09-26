@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Turn on dark mode.
+# https://calibre-ebook.com/new-in/fourteen
+
+export CALIBRE_USE_DARK_PALETTE=1
