@@ -1,0 +1,7 @@
+#!/bin/bash
+
+/usr/bin/xscreensaver &
+/usr/bin/spotify &
+/usr/bin/calibre &
+/usr/bin/gnome-terminal &
+/usr/bin/steam &
