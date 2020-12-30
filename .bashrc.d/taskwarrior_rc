@@ -1,5 +1,7 @@
 #!/bin/bash
 
+return 0
+
 # Functions and aliases specific to the taskwarrior program.
 # http://taskwarrior.com
 
