@@ -72,14 +72,12 @@ function gsubadd() {
 
   if (($# < 2)); then
     cat << EOH
-  Usage: gsubadd <repo> <submodule> <branch>
+  Usage: gsubadd <repo> [submodule] [branch]
 
   This function will add the repository in $vim_bundles
   and set the various settings in .gitmodule for that submodule.
 
-  Currently, those are:
-
-  ignore = dirty
+  If submodule is not provided the basename, minus any .git extension.
 
   If branch is not provided the default of 'master' will be used.
 
@@ -89,7 +87,7 @@ EOH
   fi
 
   repo=$1
-  name=$2
+  name="${2:-$(basename "$name" .git)}"
   name_dir="$vim_bundles/$name"
   branch=${3:-master}
 
