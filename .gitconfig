@@ -158,6 +158,7 @@
   guitool   = gvimdiff
   renames   = copies
   tool      = vimdiff
+	ignoreSubmodules = dirty
 
 [difftool]
   prompt = false
@@ -177,6 +178,7 @@
 
 [fetch]
   prune = true
+  #fsckobjects = false
 
 #[color "grep"]
   # non-matching text in context lines (when using -A, -B, or -C)

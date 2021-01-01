@@ -12,19 +12,25 @@
 ################################################################################
 # Base Global variables
 
-DOTFILES="$HOME"
+declare -x DOTFILES="$HOME"
 
 [[ -L ${BASH_SOURCE[0]} ]] \
   && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
 
-export DOTFILES
-
-##############################################################################
-export PATH="$PATH:$DOTFILES/lib:$DOTFILES/bin"
+export PATH="$DOTFILES/lib:$DOTFILES/bin:$PATH"
 
 ##############################################################################
 debug() { true; }
 command -v debug &> /dev/null && source debug
+
+##############################################################################
+# PRESETUP HOOK
+
+[[ -r "$DOTFILES/.bash_profile.d/pre-setup" ]] \
+  && source "$DOTFILES/.bash_profile.d/pre-setup"
+
+[[ -r "$HOME/.bash_profile.d/pre-setup" ]] \
+  && source "$HOME/.bash_profile.d/pre-setup"
 
 ##############################################################################
 # This script, and any scripts in the .bash_profile.d directories, should

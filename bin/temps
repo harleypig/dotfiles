@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+#die "fixme";
+exit 0;
+
 use strictures 2;
 
 use JSON;
