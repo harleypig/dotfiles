@@ -27,7 +27,7 @@ set +x
 # https://github.com/niieani/bash-oo-framework
 
 #----------------------------------------------------------------------------
-source "$GLOBAL_LIB/Debug"
+[[ -r "$GLOBAL_LIB/Debug" ]] && source "$GLOBAL_LIB/Debug"
 
 #----------------------------------------------------------------------------
 # Documentation

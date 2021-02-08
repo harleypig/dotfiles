@@ -1,5 +1,0 @@
-#echo "Started .personal_bashrc ..." >> ~/bash_startup.log
-
-shopt -s dirspell
-
-#echo "  ... ended .personal_bashrc." >> ~/bash_startup.log

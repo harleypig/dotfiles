@@ -1,0 +1,15 @@
+# !!! Do not alphabetize, order is important here.
+
+$HOME/bin
+$HOME/.local/bin
+/usr/lib/ccache/bin
+/usr/lib/dart/bin
+$HOME/bin
+$HOME/.vim/bin
+$HOME/.cabal/bin
+$HOME/.minecraft/bin
+$HOME/Dropbox/bin
+$HOME/videos/bin
+$HOME/projects/depot_tools
+$HOME/projects/android-sdk/tools
+$HOME/projects/android-sdk/platform-tools

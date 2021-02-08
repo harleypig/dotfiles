@@ -68,9 +68,7 @@ alias gs='git status -s'
 vim_bundles='.vim/bundle'
 
 function gsubadd() {
-  gtl || return 1
-
-  if (($# < 2)); then
+  if (($# < 1)) || (($# > 3)); then
     cat << EOH
   Usage: gsubadd <repo> [submodule] [branch]
 
@@ -86,12 +84,25 @@ EOH
     return 1
   fi
 
-  repo=$1
-  name="${2:-$(basename "$name" .git)}"
-  name_dir="$vim_bundles/$name"
-  branch=${3:-master}
+  gtl || return 1
 
-  [[ -d $name_dir ]] || mkdir -p "$name"
+  local repo name name_dir branch
+
+  repo=$1
+  debug "repo: $repo"
+
+  name="${2:-$(basename "$repo" .git)}"
+  debug "name: $name"
+
+  name_dir="$vim_bundles/$name"
+  debug "name_dir: $name_dir"
+
+  branch="${3:-master}"
+  debug "branch: $branch"
+
+  if [[ -d $name_dir ]]; then
+    mkdir -p "$name" || die "unable to create $name_dir"
+  fi
 
   debug "git submodule add -b \"$branch\" \"$repo\" \"$name_dir\""
   git submodule add -b "$branch" "$repo" "$name_dir"

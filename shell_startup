@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Debug tty login (ssh user@server):
+# ssh -t localhost "PS4='[\$BASH_SOURCE[0]:\$LINENO]: ' bash -xl" |& tee login.log
+
+# Debug no tty login (ssh user@server somecommand)
+# ssh localhost "PS4='[\$BASH_SOURCE[0]:\$LINENO]: ' bash -xl" |& tee login.log
+
+##############################################################################
+# Base Global variable and path
+
+declare -x DOTFILES="$HOME"
+
+[[ -L ${BASH_SOURCE[0]} ]] \
+  && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
+
+export PATH="$DOTFILES/lib:$DOTFILES/bin:$PATH"
+
+##############################################################################
+# Functions
+
+#-----------------------------------------------------------------------------
+debug() { true; }
+command -v debug &> /dev/null && source debug
+
+#-----------------------------------------------------------------------------
+addpath() {
+  for p in "$@"; do
+    [[ -z $p ]] && continue
+    debug "adding $1 to path"
+    PATH="${PATH}:$1"
+  done
+}
+
+#-----------------------------------------------------------------------------
+set_bin_dirs() {
+  bin_dirs_file="$DOTFILES/default-bin-dirs"
+  [[ -r "$HOME/.bin-dirs" ]] && bin_dirs_file="$HOME/.bin-dirs"
+  readarray -t bin_dirs < <(grep -v '^[[:space:]]*#' "$bin_dirs_file" | envsubst)
+  addpath "${bin_dirs[@]}"
+}
+
+#-----------------------------------------------------------------------------
+load_files() {
+  declare -a load_dirs
+  load_dirs+=("$DOTFILES/shell_startup.d")
+  load_dirs+=("$HOME/.shell_startup.d")
+
+  # Run each directory instead of doing a find on all directories at once
+  # because we want these files loaded in this particular order.
+
+  for load_dir in "${load_dirs[@]}"; do
+    [[ -d $load_dir ]] || continue
+
+    readarray -t load_files < <(/usr/bin/find "$load_dir" -not -iname '*_inactive' | /usr/bin/sort)
+
+    for f in "${load_files[@]}"; do
+      [[ -r $f ]] && source "$f"
+    done
+  done
+}
+
+##############################################################################
+# Setup environment
+
+[[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \
+  && source "$DOTFILES/shell_startup.d/pre-setup"
+
+#-----------------------------------------------------------------------------
+# Check if various dotfiles are linked properly
+[[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
+
+set_bin_dirs
+load_files
