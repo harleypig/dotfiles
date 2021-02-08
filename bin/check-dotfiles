@@ -13,12 +13,13 @@ readarray -t link_files < <(grep -v '^[[:space:]]*#' "$links_file" | envsubst)
 
 for link_file in "${link_files[@]}"; do
   [[ -z $link_file ]] && continue
+  dotfile="$HOME/$(basename "$link_file")"
 
-  if [[ ! -e $link_file ]]; then
+  if [[ ! -e $dotfile ]]; then
     ln -s "$link_file" .
 
   else
-    linked_file="$(readlink -nf "$link_file")"
-    [[ $linked_file != "$link_file" ]] && echo "$link_file is not linked to $DOTFILES"
+    linked_file="$(readlink -nf "$dotfile")"
+    [[ $linked_file != "$link_file" ]] && echo "${dotfile/$HOME\//} is not linked to $DOTFILES"
   fi
 done
