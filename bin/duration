@@ -1,0 +1,15 @@
+#!/bin/bash
+
+seconds=$(date --date="$1" +%s)
+now=$(date +%s)
+duration=$((now - seconds))
+
+days=$((duration / (60 * 60 * 24)))
+hours=$((duration % (60 * 60 * 24) / (60 * 60)))
+minutes=$((duration % (60 * 60) / 60))
+
+[[ $days -ne 0 ]] && string="$string${days}d "
+[[ $hours -ne 0 ]] && string="$string${hours}h "
+[[ $minutes -ne 0 ]] && string="$string${minutes}m"
+
+[[ -n $string ]] && echo "$string"

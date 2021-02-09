@@ -12,4 +12,8 @@ export LC_ALL=en_US.UTF-8
 
 command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
 
+# http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
+tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
+
+
 true

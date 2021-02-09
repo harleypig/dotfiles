@@ -1,7 +1,5 @@
 #!/bin/bash
 
-[[ $- == *i* ]] || return 0
-
 [[ -x "$(command -v tmux 2> /dev/null)" ]] || return 0
 
 # swap this window to the left
@@ -35,6 +33,7 @@ tmux_winidx_circled() {
 # We want user to be expanded when defined.
 # command doesn't report on aliases
 # shellcheck disable=SC2139,SC2230
+# XXX: Detect multiple sessions and give opportunity to choose
 if which ta &> /dev/null; then
   echo 'alias ta already exists'
 else
