@@ -8,8 +8,6 @@
 # https://gitlab.com/mikegerwitz/git-shortmaps
 # https://github.com/scmbreeze/scm_breeze
 
-[[ $- == *i* ]] || return 0
-
 [[ -x "$(command -v git 2> /dev/null)" ]] || return 0
 
 function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }

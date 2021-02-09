@@ -1,7 +1,5 @@
 #!/bin/bash
 
-[[ $- == *i* ]] || return 0
-
 # less setup
 
 export LESS='--hilite-search --IGNORE-CASE --status-column --RAW-CONTROL-CHARS --hilite-unread --tabs=2 -X'

@@ -12,8 +12,49 @@ export LC_ALL=en_US.UTF-8
 
 command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
 
+#-----------------------------------------------------------------------------
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
 tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
 
+#-----------------------------------------------------------------------------
+# XXX: Move to function or bin so we can accept multiple filenames
+function vimwhich() { vim "$(command -v "$1")"; }
+
+#-----------------------------------------------------------------------------
+bind "set completion-ignore-case on"
+bind "set completion-map-case on"
+bind "set mark-symlinked-directories on"
+bind "set show-all-if-ambiguous on"
+bind Space:magic-space
+
+shopt -s autocd 2> /dev/null
+shopt -s cdspell 2> /dev/null
+shopt -s dirspell 2> /dev/null
+shopt -s globstar 2> /dev/null
+
+shopt -s cdable_vars
+shopt -s checkhash
+shopt -s checkwinsize
+shopt -s dotglob
+shopt -s extglob
+shopt -s nocaseglob
+
+umask 022
+
+# System
+alias c='clear'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias df='df -h'
+alias h='history'
+alias md='mkdir -p'
+alias rd=rmdir
+
+#-----------------------------------------------------------------------------
+alias dumppath='echo -e ${PATH//:/\\n}'
+alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
+alias dotfiles='cd $DOTFILES'
+alias dateh="echo;date --help | grep --color=never -E '^[[:space:]]+%'"
 
 true
