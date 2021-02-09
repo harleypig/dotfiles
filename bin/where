@@ -1,7 +1,6 @@
 #!/bin/bash
 
 function where() {
-
   local cmd cmd_type cmd_path
   local -i lineno
   local -a location skip_location
@@ -15,17 +14,16 @@ function where() {
   skip_location=("$HOME/.bash_history")
   skip_location+=("$HOME/.bash_logout")
 
-  shopt -q extglob && {
-    TOGGLE_extglob=1
-    shopt -s extglob
-  }
+  shopt -q extglob
 
   while (($# > 0)); do
     cmd="$1"
     shift
 
-    cmd_type=$(type -t "$cmd" 2>/dev/null) || {
-      echo "$cmd is not found" >&2
+    cmd_type=$(type -t "$cmd" 2>&1)
+
+    [[ $cmd_type == *not\ found* ]] && {
+      printf '%s is not found' "$cmd"
       continue
     }
 
@@ -59,7 +57,7 @@ function where() {
 
       alias)
         # shellcheck disable=SC2068
-        readarray -t dirs < <(find ${location[@]} -maxdepth 0 2>/dev/null)
+        readarray -t dirs < <(find ${location[@]} -maxdepth 0 2> /dev/null)
 
         def=$(alias "$cmd" | sed 's/^alias\s\+\([^=]*=\).*$/\1/')
 
@@ -69,7 +67,7 @@ function where() {
           rx='^(?:\s*[^#]*)?alias(?:\s+--)?\s+\Q'
 
           # shellcheck disable=SC2086
-          found=$(grep -PHsrn -- "$rx$def" $d 2>/dev/null) && {
+          found=$(grep -PHsrn -- "$rx$def" $d 2> /dev/null) && {
             cmd_path="$(readlink -mns "${found%%:*}")"
             found="${found#*:}"
             lineno="${found%%:*}"
