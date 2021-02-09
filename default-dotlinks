@@ -1,6 +1,4 @@
 $DOTFILES/.bash_logout
-$DOTFILES/.bash_profile
-$DOTFILES/.bashrc
 $DOTFILES/.htoprc
 $DOTFILES/.inputrc
 

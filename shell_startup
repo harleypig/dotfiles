@@ -10,7 +10,6 @@
 # Base Global variable and path
 
 declare -x DOTFILES="$HOME"
-
 [[ -L ${BASH_SOURCE[0]} ]] \
   && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
 
@@ -52,7 +51,7 @@ load_files() {
   for load_dir in "${load_dirs[@]}"; do
     [[ -d $load_dir ]] || continue
 
-    readarray -t load_files < <(/usr/bin/find "$load_dir" -not -iname '*_inactive' | /usr/bin/sort)
+    readarray -t load_files < <(/usr/bin/find "$load_dir" -type f -not -iname '*_inactive' | /usr/bin/sort)
 
     for f in "${load_files[@]}"; do
       [[ -r $f ]] && source "$f"

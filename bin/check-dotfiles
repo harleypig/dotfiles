@@ -9,17 +9,31 @@ links_file="$DOTFILES/default-dotlinks"
 
 cd || exit 0
 
+#-----------------------------------------------------------------------------
+for dotfile in .bash_profile .bashrc .profile; do
+  if [[ -e $dotfile ]]; then
+    linked_file="$(readlink -nf "$dotfile")"
+
+    [[ $linked_file == "$DOTFILES/shell_startup" ]] \
+      || echo "$dotfile is not linked to shell_startup"
+
+  else
+    ln -fs "$DOTFILES/shell_startup" "$dotfile"
+  fi
+done
+
+#-----------------------------------------------------------------------------
 readarray -t link_files < <(grep -v '^[[:space:]]*#' "$links_file" | envsubst)
 
 for link_file in "${link_files[@]}"; do
   [[ -z $link_file ]] && continue
   dotfile="$HOME/$(basename "$link_file")"
 
-  if [[ ! -e $dotfile ]]; then
-    ln -s "$link_file" .
-
-  else
+  if [[ -e $dotfile ]]; then
     linked_file="$(readlink -nf "$dotfile")"
     [[ $linked_file != "$link_file" ]] && echo "${dotfile/$HOME\//} is not linked to $DOTFILES"
+
+  else
+    ln -s "$link_file" .
   fi
 done
