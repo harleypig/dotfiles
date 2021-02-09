@@ -72,3 +72,5 @@ load_files() {
 
 set_bin_dirs
 load_files
+
+# XXX: clean the path
