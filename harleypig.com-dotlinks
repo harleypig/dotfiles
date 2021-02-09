@@ -1,0 +1,15 @@
+$DOTFILES/.bash_logout
+$DOTFILES/.htoprc
+$DOTFILES/.inputrc
+
+$DOTFILES/dot-git/.gitconfig
+$DOTFILES/dot-git/.gitignore_global
+$DOTFILES/dot-perl/.perlcriticrc
+$DOTFILES/dot-perl/.perldb
+$DOTFILES/dot-perl/.perltidyrc
+$DOTFILES/dot-perl/.perltidyrc.defaults
+$DOTFILES/dot-tmux/.tmux
+$DOTFILES/dot-tmux/.tmux.conf
+
+$HOME/projects/dotvim/.vim
+$HOME/projects/dotvim/.vimrc

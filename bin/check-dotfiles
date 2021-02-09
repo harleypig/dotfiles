@@ -1,39 +1,77 @@
 #!/bin/bash
 
-[[ -f "$HOME/.nochecklinks" ]] && exit 0
+# touch $HOME/.nochecklinks to not check links against dotfiles
+# touch $HOME/.nocheckprivatelinks to not check links against private_dotfiles
+#
+# Create $HOME/.dotlinks with one entry per line to check against dotfiles
+# Create $HOME/.privatedotlinks with one entry per line to check against private_dotfiles
+
 [[ -z $DOTFILES ]] && exit 0
+cd "$HOME" || return 0
 
-links_file="$DOTFILES/default-dotlinks"
-[[ -r "$HOME/.dotlinks" ]] && links_file="$HOME/.dotlinks"
-[[ -r $links_file ]] || exit 0
-
-cd || exit 0
+source debug
 
 #-----------------------------------------------------------------------------
-for dotfile in .bash_profile .bashrc .profile; do
-  if [[ -e $dotfile ]]; then
-    linked_file="$(readlink -nf "$dotfile")"
+check_link() {
+  local source="${1-?must pass source file}"
+  local link="${2-?must pass link name}"
 
-    [[ $linked_file == "$DOTFILES/shell_startup" ]] \
-      || echo "$dotfile is not linked to shell_startup"
+  link_file="$(readlink -nf "$source")"
+  [[ -e $link_file ]] || return 0
+  debug "link file: $link_file"
+
+  if [[ -e $link ]]; then
+    linked_file="$(readlink -nf "$link")"
+    debug "$link -> $linked_file"
+
+    [[ $linked_file != "$link_file" ]] \
+      && echo "${link/$HOME\//} is not linked to $link_file"
 
   else
-    ln -fs "$DOTFILES/shell_startup" "$dotfile"
+    debug "linking $link_file to $link"
+    ln -fs "$link_file" "$link"
   fi
-done
+}
 
 #-----------------------------------------------------------------------------
-readarray -t link_files < <(grep -v '^[[:space:]]*#' "$links_file" | envsubst)
+check_links() {
+  links_file="${1-?must pass a links filename}"
+  [[ -r $links_file ]] || return 0
 
-for link_file in "${link_files[@]}"; do
-  [[ -z $link_file ]] && continue
-  dotfile="$HOME/$(basename "$link_file")"
+  debug "loading links from $links_file"
+  readarray -t link_files < <(grep -v '^[[:space:]]*#' "$links_file" | envsubst)
 
-  if [[ -e $dotfile ]]; then
-    linked_file="$(readlink -nf "$dotfile")"
-    [[ $linked_file != "$link_file" ]] && echo "${dotfile/$HOME\//} is not linked to $DOTFILES"
+  for link_file in "${link_files[@]}"; do
+    [[ -z $link_file ]] && continue
+    debug "checking $link_file"
+    check_link "$link_file" "${link_file##*/}"
+  done
+}
 
-  else
-    ln -s "$link_file" .
-  fi
-done
+#-----------------------------------------------------------------------------
+check_dotfiles() {
+  [[ -f "$HOME/.nochecklinks" ]] && return 0
+
+  #---------------------------------------------------------------------------
+  for dotfile in .bash_profile .bashrc .profile; do
+    check_link "$DOTFILES/shell_startup" "$dotfile"
+  done
+
+  #---------------------------------------------------------------------------
+  links_file="$DOTFILES/default-dotlinks"
+  [[ -r "$HOME/.dotlinks" ]] && links_file="$HOME/.dotlinks"
+  check_links "$links_file"
+}
+
+#-----------------------------------------------------------------------------
+check_private_dotfiles() {
+  [[ -f "$HOME/.nocheckprivatelinks" ]] && return 0
+
+  links_file="$DOTFILES/../private_dotfiles/default-private-dotlinks"
+  [[ -r "$HOME/.privatedotlinks" ]] && links_file="$HOME/.privatedotlinks"
+  check_links "$links_file"
+}
+
+#-----------------------------------------------------------------------------
+check_dotfiles
+check_private_dotfiles
