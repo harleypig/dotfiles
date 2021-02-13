@@ -1,6 +1,0 @@
-#!/bin/bash
-
-if command -v cowsay &> /dev/null; then
-  cowfile=$(cowsay -l | perl -ne 'next if /Cow files in .*:/; push @cf, split /\s+/}{ printf "%s", @cf[ rand @cf]')
-  cowsay -f $cowfile $(fortune -s)
-fi
