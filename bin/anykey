@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------------
+: << POD
+=head2 anykey
+
+Usage: anykey ['prompt']
+
+C<anykey> will prompt and wait for a single keypress.
+
+C<anykey> accepts an optional value that will be used as the prompt. If
+nothing is passed in, the default prompt is 'Press any key to continue ...'
+
+=cut
+POD
+
+read -n 1 -r -s -p "${1:-Press any key to continue ...}"
