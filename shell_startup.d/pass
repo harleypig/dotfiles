@@ -1,0 +1,2 @@
+export PASSWORD_STORE_DIR="$HOME/projects/rclones/certs/pass"
+#export PASSWORD_STORE_ENABLE_EXTENSIONS='true'

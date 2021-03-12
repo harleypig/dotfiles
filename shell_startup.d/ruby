@@ -1,0 +1,6 @@
+#!/bin/bash
+
+command -v ruby &> /dev/null || return 0
+
+export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
+export PATH="$PATH:$GEM_HOME/bin"

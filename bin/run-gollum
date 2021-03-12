@@ -1,0 +1,13 @@
+#!/bin/bash
+
+gollum='/home/harleypig/.local/share/gem/ruby/2.7.0/bin/gollum'
+[[ -x $gollum ]] || exit 1
+
+declare -a gopts
+
+gopts+=('--port' "${GOLLUM_PORT:-6000}")
+gopts+=('--page-file-dir' "${GOLLUM_PAGES:-pages}")
+
+repo="$HOME/projects/sites/wiki.harleypig.com"
+
+$gollum "${gopts[@]}" "$repo"
