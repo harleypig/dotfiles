@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# emit a NUL-delimited set of key=value definitions for environment variables
+# defined by a set of files
+
+newVarsForFile_nullsep() {
+  (($#)) || return 0 # no files specified, nothing to do
+
+  local -a extraParams=()
+  local file
+
+  for file in "$@"; do
+    extraParams+=(--property=EnvironmentFile="$file")
+  done
+
+  comm -z -23 \
+    <(sort -z < <(systemd-run --user --pipe "${extraParams[@]}" grep -zvE '^INVOCATION_ID=' /proc/self/environ < /dev/null)) \
+    <(sort -z < <(systemd-run --user --pipe grep -zvE '^INVOCATION_ID=' /proc/self/environ < /dev/null))
+}
+
+# emit code that can be eval'd in an instance of bash to precisely define the
+# exact variables
+
+newVarsForFile_shellscript() {
+  while IFS= read -r -d '' vardef; do
+    printf '%s=%q\n' "${vardef%%=*}" "${vardef#*=}"
+  done < <(newVarsForFile_nullsep "$@")
+}

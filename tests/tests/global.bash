@@ -5,34 +5,126 @@
 
 #----------------------------------------------------------------------------
 # Print something to output in such a way it doesn't break TAP.
-note() { printf '# %s\n' "$*" >&3; }
 
-# Use test_setup for your own test file specific needs.
-test_setup() { return 0; }
+note() {
+  local prefix="${BATS_TEST_DESCRIPTION:-}"
 
-setup() {
-  ((BATS_TEST_NUMBER == 1)) \
-    && note "--- $(basename "$BATS_TEST_FILENAME")"
+  for line in "$@"; do
+    printf '# %s%s\n' "$prefix" "$line" >&3
+  done
+}
 
-  declare -gx BATS_WORK="$WORK_DIR"
-  [[ -z $WORK_DIR ]] && BATS_WORK="$BATS_TEST/tmp"
+export -f note
 
-  mkdir -p "$BATS_WORK" || {
-    echo "Cannot create $BATS_WORK"
-    exit 1
+#----------------------------------------------------------------------------
+# Generate a random string
+
+# Generate 32 character random letters and numbers.
+# value="$(random_string)"
+
+# Generate 15 character random letters.
+# value="$(random_string alpha 10)"
+
+# Generate 5 character random number.
+# value="$(random_string numeric 5)"
+
+# Generate random date with default format.
+# value="$(random_string date)"
+
+# Generate random date with specified format.
+# value="$(random_string date '%Y%m%d')"
+
+random_string() {
+  local -l opt="$1"
+
+  case "$opt" in
+    'alpha' | 'numeric' | 'date') shift ;;
+  esac
+
+  local -i count=32
+  local format
+
+  [[ -n $1 ]] && {
+    if [[ $opt == 'date' ]]; then
+      format="+$1"
+    else
+      count=$1
+    fi
   }
 
-  test_setup
+  case "$opt" in
+    alpha) tr -dc 'a-zA-Z' < /dev/urandom | fold -w "$count" | head -n 1 ;;
+    numeric) tr -dc '0-9' < /dev/urandom | fold -w "$count" | head -n 1 ;;
+    date) date -d "@$((RANDOM * RANDOM * RANDOM / 1000))" "$format" ;;
+    *) tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w "$count" | head -n 1 ;;
+  esac
 }
 
 #----------------------------------------------------------------------------
-BASEDIR="$(dirname "${BASH_SOURCE[0]}")/helpers"
+# Use test_setup and test_setup_file for your own test file specific needs.
 
-readarray -t HELPERS < <(find "$BASEDIR" -iname '*.bash')
+test_setup_file() { return 0; }
 
-for h in "${HELPERS[@]}"; do
-  source "$h"
-done
+setup_file() {
+  note "--- Test file: $(basename "$BATS_TEST_FILENAME")"
+  test_setup_file
+}
+
+#----------------------------------------------------------------------------
+# Search for helpers and load them if they exist, bail all tests if they don't
+# exist. First found is sourced. Order of search is:
+
+# * A directory called 'helpers' in the same directory as this file.
+# * $HOME/.bats/helpers
+# * $BATS_LIBEXEC/helpers
+
+# Alternatively, if BATS_LIB_PATH is set, each path in that variable is
+# searched. See https://github.com/bats-core/bats-core/pull/27 for discussion
+# and possible changes in future versions of bats.
+
+# NOTE: Each path is presumed to be a directory, and anything passed to
+# load_helper is presumed to be a directory. Any file with a '.bash' extension
+# in that directory is sourced.
+
+load_helper() {
+  local helper="${1:?must pass helper name}"
+
+if [[ -n $BATS_LIB_PATH ]]; then
+  IFS=: read -ra helper_paths <<< "$BATS_LIB_PATH"
+
+else
+  declare -a helper_paths
+  helper_paths+=("$(dirname "${BASH_SOURCE[0]}")/helpers")
+  helper_paths+=("$HOME/.bats/helpers")
+  helper_paths+=("$BATS_LIBEXEC/helpers")
+fi
+
+
+  note "Looking for $helper ..."
+
+  for hp in "${helper_paths[@]}"; do
+    #note "... in $hp ..."
+    if [[ -d $hp/$helper ]]; then
+      #note "... found $hp/$helper ..."
+      for f in "$hp/$helper"/*.bash; do
+        #note "... source $f ..."
+        source "$f" || {
+          printf 'Error loading %s\n' "$hp/$f"
+          exit 1
+        }
+
+        return 0
+      done
+    fi
+  done
+
+  printf 'Could not find %s\n' "$helper"
+  exit 1
+}
+
+load_helper bats-support
+load_helper bats-assert
+load_helper bats-file
 
 #----------------------------------------------------------------------------
 export TEST_WORKDIR="$BATS_TEST/work"

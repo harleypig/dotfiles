@@ -249,3 +249,5 @@
   autostash = true
   autosquash = true
 
+[init]
+	defaultBranch = master
