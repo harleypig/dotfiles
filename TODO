@@ -59,3 +59,6 @@ DIR="$(cd -P "$(dirname "$SOURCE")" > /dev/null 2>&1 && pwd)"
 # XXX: Can I use any of this in ParseParams?
 
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+
+#-----------------------------------------------------------------------------
+# Mine and compare originals/*.msys2 and see what I can incorporate

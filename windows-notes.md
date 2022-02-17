@@ -92,3 +92,7 @@
       ```
       pacman -Sy man tmux zsh
       ```
+
+## TODO
+
+Rip off what I can use from [here](https://github.com/LucHermitte/Bash-scripts/blob/master/cyg-wrapper.sh)
