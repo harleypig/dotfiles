@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # String functions
+# with a lot of help from
+# https://github.com/dylanaraps/pure-bash-bible
 
 # XXX: Document me!
 # XXX: Test me!
@@ -33,8 +35,6 @@ trim() {
 
 #-----------------------------------------------------------------------------
 # Condense all contiguous whitespace to a single space
-
-# XXX: Explain me!
 
 squeeze() {
   set -f
