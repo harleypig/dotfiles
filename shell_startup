@@ -9,12 +9,14 @@
 ##############################################################################
 # Base Global variable and path
 
+#-----------------------------------------------------------------------------
 # XXX: FIXME
 # o If MSYS is not set, then link is just a copy of stuff.
 # o If MSYS is winsymlinks, it creates a Windows shortcut.
 # o If MSYS is winsymlinks:nativestrict, it creates a more real type of symlink
 export MSYS="winsymlinks:nativestrict"
 
+#-----------------------------------------------------------------------------
 declare -x DOTFILES="$HOME"
 [[ -L ${BASH_SOURCE[0]} ]] \
   && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
@@ -42,6 +44,7 @@ set_bin_dirs() {
   bin_dirs_file="$DOTFILES/default-bin-dirs"
   [[ -r "$HOME/.bin-dirs" ]] && bin_dirs_file="$HOME/.bin-dirs"
   readarray -t bin_dirs < <(grep -v '^[[:space:]]*#' "$bin_dirs_file" | envsubst)
+  #printf '%s\n' "${bin_dirs[@]}"
   addpath "${bin_dirs[@]}"
 }
 

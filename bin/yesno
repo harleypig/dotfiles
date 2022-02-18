@@ -18,6 +18,7 @@ is passed in, the default prompt is 'Yes or no?'.
 =cut
 POD
 
+#-----------------------------------------------------------------------------
 declare -u yn
 
 while true; do
@@ -29,6 +30,7 @@ while true; do
       exit 0
       ;;
     *)
+      # XXX: Add option to suppress this
       warn 'Please enter a Y or a N'
       ;;
   esac

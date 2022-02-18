@@ -2,6 +2,7 @@
 
 $HOME/bin
 $HOME/.local/bin
+/c/ProgramData/chocolatey/bin
 /usr/lib/ccache/bin
 /usr/lib/dart/bin
 $HOME/bin

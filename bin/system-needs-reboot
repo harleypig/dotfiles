@@ -22,7 +22,7 @@ read -ra latest <<< "$l"
 current=$(uname -r)
 
 if [[ ${latest[7]} != 'version' ]]; then
-  echo "file $vmlinuz has unexpected format, quitting"
+  #echo "file $vmlinuz has unexpected format, quitting"
   exit
 
 elif [[ ${latest[8]} != "$current" ]]; then

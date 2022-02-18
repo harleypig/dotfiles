@@ -62,3 +62,7 @@ DIR="$(cd -P "$(dirname "$SOURCE")" > /dev/null 2>&1 && pwd)"
 
 #-----------------------------------------------------------------------------
 # Mine and compare originals/*.msys2 and see what I can incorporate
+
+# These?
+# https://github.com/bashup/realpaths
+# https://github.com/bashup/mdsh
