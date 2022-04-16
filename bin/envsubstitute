@@ -1,0 +1,120 @@
+#!/bin/bash
+
+# XXX: Consider emulating envsubst and renaming this to something like
+#      envsubstitute. Would need to allow for '${SUBST_DELIM}WORD'.
+#.
+#      E.g., $WORD or %WORD
+#.
+# XXX: Allow a list of variables to replace.
+
+[[ ${BASH_SOURCE[0]} == "$0" ]] || {
+  echo "this script must not be sourced." >&2
+  return 1
+}
+
+##############################################################################
+#-----------------------------------------------------------------------------
+
+# XXX: source utility
+
+declare selfname
+selfname="$(basename "$0")"
+
+declare tmpdelim
+tmpdelim="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 6 | head -n 1)"
+
+#-----------------------------------------------------------------------------
+warn() {
+  [[ -n $NO_WARN ]] && return 0
+  printf '%s\n' "$*" >&2
+}
+
+#-----------------------------------------------------------------------------
+die() {
+  (($#)) && warn "$*"
+  exit 1
+}
+
+#-----------------------------------------------------------------------------
+debug() {
+  ((DEBUG)) || return 0
+  warn "DEBUG:$selfname: $*"
+}
+
+#-----------------------------------------------------------------------------
+usage() {
+  die "
+
+Usage: $selfname '/path/to/%PRJNAME%/'
+
+$selfname takes a string as a parameter and looks
+for occurrences of '%WORD%', replacing that
+substring with the value of WORD, if it exists in
+the environment and prints the results to STDOUT.
+
+Example:
+
+  PRJNAME=test123 $selfname '/path/to/%PRJNAME%
+
+will echo to STDOUT '/path/to/test123'
+
+!!! WARNING: The following is subject to change without warning or notice.
+
+* Set SUBST_DELIM to change the delimiter. This must be a single character.
+* Set NO_WARN to turn off warnings.
+
+$*
+"
+}
+
+##############################################################################
+#-----------------------------------------------------------------------------
+
+_envsubst() {
+  [[ -z $1 ]] && usage "!!! $selfname requires a string to process"
+
+  #---------------------------------------------------------------------------
+  local s="$*"
+  local SUBST_DELIM="${SUBST_DELIM:-%}"
+  local regex="${SUBST_DELIM}([^\\$SUBST_DELIM]*)$SUBST_DELIM"
+
+  #---------------------------------------------------------------------------
+
+  [[ $s =~ $regex ]] || {
+    local -i rc=$?
+
+    ((rc > 2)) && die 'Unknown error from =~ in fill_template.'
+    ((rc == 2)) && die "Syntax error in fill_template's regex."
+
+    ((rc == 1)) && {
+      warn "No %WORD%'s found in string '%s'."
+      printf '%s' "$s"
+      return $rc
+    }
+  }
+
+  #---------------------------------------------------------------------------
+  while [[ $s =~ $regex ]]; do
+    local value
+
+    if [[ -v ${BASH_REMATCH[1]} ]]; then
+      value="${!BASH_REMATCH[1]}"
+
+    else
+      value="$tmpdelim${BASH_REMATCH[1]}$tmpdelim"
+
+      [[ -z $NO_WARN ]] && {
+        warn "Variable '${BASH_REMATCH[1]}' does not exist in the environment"
+        value="!!${BASH_REMATCH[1]}!!"
+      }
+    fi
+
+    s=${s//${BASH_REMATCH[0]}/$value}
+  done
+
+  s=${s//$tmpdelim/$SUBST_DELIM}
+
+  printf '%s' "$s"
+}
+
+_envsubst "$@"
