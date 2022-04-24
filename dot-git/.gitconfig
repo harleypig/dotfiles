@@ -179,6 +179,7 @@
 
 [fetch]
   prune = true
+	fsckobjects = false
   #fsckobjects = false
 
 #[color "grep"]

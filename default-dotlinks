@@ -1,6 +1,8 @@
 $DOTFILES/.bash_logout
 $DOTFILES/.htoprc
 $DOTFILES/.inputrc
+$DOTFILES/.markdownlintrc
+$DOTFILES/.proselintrc
 
 $DOTFILES/dot-git/.gitconfig
 $DOTFILES/dot-git/.gitignore_global

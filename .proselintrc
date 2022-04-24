@@ -1,0 +1,6 @@
+{
+  "checks": {
+    "dates_times.am_pm": false
+    "leonard.exclamation.30ppm": false
+  }
+}

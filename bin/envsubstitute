@@ -6,11 +6,13 @@
 #      E.g., $WORD or %WORD
 #.
 # XXX: Allow a list of variables to replace.
+#.
+# XXX: Convert to use utility
 
-[[ ${BASH_SOURCE[0]} == "$0" ]] || {
-  echo "this script must not be sourced." >&2
-  return 1
-}
+:
+
+NOT_SOURCED=0
+[[ ${BASH_SOURCE[0]} == "$0" ]] && NOT_SOURCED=1
 
 ##############################################################################
 #-----------------------------------------------------------------------------
@@ -18,7 +20,12 @@
 # XXX: source utility
 
 declare selfname
-selfname="$(basename "$0")"
+
+if ((NOT_SOURCED)); then
+  selfname="${0##*/}"
+else
+  selfname="envsubstitute"
+fi
 
 declare tmpdelim
 tmpdelim="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 6 | head -n 1)"
@@ -57,6 +64,8 @@ Example:
   PRJNAME=test123 $selfname '/path/to/%PRJNAME%
 
 will echo to STDOUT '/path/to/test123'
+
+FIXME: If being sourced, then call _envsubst <string>
 
 !!! WARNING: The following is subject to change without warning or notice.
 
@@ -117,4 +126,4 @@ _envsubst() {
   printf '%s' "$s"
 }
 
-_envsubst "$@"
+((NOT_SOURCED)) && _envsubst "$@"
