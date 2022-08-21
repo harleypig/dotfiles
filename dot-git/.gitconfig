@@ -159,7 +159,7 @@
   guitool   = gvimdiff
   renames   = copies
   tool      = vimdiff
-	ignoreSubmodules = dirty
+  ignoreSubmodules = dirty
 
 [difftool]
   prompt = false
@@ -179,7 +179,7 @@
 
 [fetch]
   prune = true
-	fsckobjects = false
+  fsckobjects = false
   #fsckobjects = false
 
 #[color "grep"]
@@ -214,7 +214,7 @@
 # prompt, header, help or error
 
 [merge]
-	tool = fugitive
+  tool = fugitive
   guitool = kdiff3
   conflictstyle = diff3
 
@@ -222,7 +222,7 @@
   prompt = false
 
 [mergetool "fugitive"]
-	cmd = vim -f -c \"Gvdiff\" \"$MERGED\"
+  cmd = vim -f -c \"Gvdiff\" \"$MERGED\"
 
 [notes]
   displayRef = '*'
@@ -232,7 +232,7 @@
 
 [push]
   default = simple
-  followtags = true
+  followTags = true
 
 [stash]
   showpatch = true
@@ -251,4 +251,4 @@
   autosquash = true
 
 [init]
-	defaultBranch = master
+  defaultBranch = master
