@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PRJDIR='/c/Users/***REMOVED***/projects'
+PRJDIR='/c/Users/xxxxxxx/projects'
 
 COMMON="$PRJDIR/commoncode"
 CAPTURE="$PRJDIR/capture"

@@ -64,7 +64,7 @@ go_toplevel() {
 #  [[ -z $TOKEN ]] && die 'Cannot find token.'
 #}
 
-# This code is specific for ***REMOVED*** in Azure. I imagine at some point this
+# This code is specific for XXXXXXXX in Azure. I imagine at some point this
 # will need to be fixed. Sorry future dev.
 
 check_netrc() {
@@ -72,7 +72,7 @@ check_netrc() {
 
   local password=
   local machine_rx='^machine[[:space:]]+dev.azure.com'
-  local login_rx='login[[:space:]]+***REMOVED***'
+  local login_rx='login[[:space:]]+XXXXXXXX'
 
   local -a gopts=('-s' '-P' '-A')
 
