@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# %!shfmt --simplify -i 2 -bn -ci -sr
+
+##############################################################################
+# FAQs
+
+# https://github.com/imapsync/imapsync/blob/master/FAQ.d/FAQ.Big_Mailbox.txt
+# https://github.com/imapsync/imapsync/blob/master/FAQ.d/FAQ.Emptying.txt
+#   - Delete all emails and all folders
+# https://github.com/imapsync/imapsync/blob/master/FAQ.d/FAQ.Folders_Mapping.txt
+# https://github.com/imapsync/imapsync/blob/master/FAQ.d/FAQ.Gmail.txt
+# https://github.com/imapsync/imapsync/blob/master/FAQ.d/FAQ.Migration_Plan.txt
+# https://github.com/imapsync/imapsync/blob/master/FAQ.d/FAQ.Use_cache.txt
+
+##############################################################################
+# Utilities
+#-----------------------------------------------------------------------------
+warn() { printf '%s\n' "$@" >&2; }
+
+#-----------------------------------------------------------------------------
+die() {
+  (($#)) && warn "$@"
+  exit 1
+}
+
+##############################################################################
+# Sanity and Settings
+#-----------------------------------------------------------------------------
+
+[[ -x "$(command -v imapsync)" ]] || die "imapsync not found"
+
+MXROUTE='your_mxroute_imap_server'
+
+declare -a iopts
+
+[[ -z $IMAPSYNC_NODRY ]] && iopts+=('--dry')
+[[ -z $IMAPSYNC_FOLDERS ]] && iopts+=('--justfolders')
+
+iopts+=('--tmpdir' '/var/tmp')
+iopts+=('--pidfilelocking')
+iopts+=('--logdir' "$HOME/logs")
+iopts+=('--usecache')
+
+# Gmail settings
+iopts+=('--gmail1')
+# >>> Need to set --user1 and --passfile1 <<<
+# set by use of --gmail1 per FAQ
+# --automap
+# --folderlast          "[Gmail]/All Mail"
+# --host1               imap.gmail.com
+# --maxbytesafter       3_000_000_000
+# --maxbytespersecond   40_000
+# --maxsleep            2
+# --regextrans2         "s,\[Gmail\].,,"
+# --skipcrossduplicates
+# --ssl1
+# --useheader           "Message-Id"
+# --useheader           "X-Gmail-Received"
+
+iopts+=('--maxbytespersecond' '28_935')
+iopts+=('--maxbytesafter' '2_500_000_000')
+
+# Mxroute settings
+iopts+=('--host2' "$MXROUTE")
+# >>> Need to set --user2 and --passfile2 <<<
+
+##############################################################################
+# Run
+#-----------------------------------------------------------------------------
+
+imapsync "${iopts[@]}"

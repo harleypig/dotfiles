@@ -17,8 +17,11 @@ command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
 tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
 
 #-----------------------------------------------------------------------------
-# XXX: Move to function or bin so we can accept multiple filenames
-function vimwhich() { vim "$(command -v "$1")"; }
+# XXX: Move to bin so we can accept multiple filenames
+vimwhich() { vim "$(command -v "$1")"; }
+
+# shellcheck disable=SC2164
+md() { mkdir -p "$@" && cd "$@"; }
 
 #-----------------------------------------------------------------------------
 bind "set completion-ignore-case on"
@@ -50,6 +53,8 @@ alias df='df -h'
 alias h='history'
 alias md='mkdir -p'
 alias rd=rmdir
+alias v='vim'
+alias f='find'
 
 #-----------------------------------------------------------------------------
 alias dumppath='echo -e ${PATH//:/\\n}'

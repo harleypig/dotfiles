@@ -11,5 +11,5 @@ $DOTFILES/dot-perl/.perltidyrc.defaults
 $DOTFILES/dot-tmux/.tmux
 $DOTFILES/dot-tmux/.tmux.conf
 
-$HOME/projects/dotvim/.vim
-$HOME/projects/dotvim/.vimrc
+$HOME/projects/dotvim_new/.vim
+$HOME/projects/dotvim_new/.vimrc

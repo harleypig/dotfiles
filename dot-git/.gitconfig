@@ -50,6 +50,9 @@
 [transfer]
   fsckobjects = true
 
+[remote "origin"]
+  tagopt = --tags --prune
+
 ##################################################################################
 
 [alias]
@@ -232,7 +235,8 @@
 
 [push]
   default = simple
-  followTags = true
+  followtags = true
+  autoSetupRemote = true
 
 [stash]
   showpatch = true
