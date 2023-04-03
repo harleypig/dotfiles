@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+from pathlib import Path
+
+from poetry.core.factory import Factory
+from poetry.core.masonry.builders.sdist import SdistBuilder
+
+# ----------------------------------------------------------------------------
+def build_setup_py() -> bytes:
+    project_root = Path.cwd()
+    return SdistBuilder(Factory().create_poetry(project_root)).build_setup()
+
+# ----------------------------------------------------------------------------
+def main() -> None:
+    setup_py_path = Path("setup.py")
+    pyproject_toml_path = Path("pyproject.toml")
+
+    if not pyproject_toml_path.exists():
+        print(f"{pyproject_toml_path} does not exist. Aborted.")
+        return
+
+    if setup_py_path.exists():
+        overwrite = input(f"{setup_py_path} already exists. Overwrite it? (y/N): ")
+        if overwrite.lower() != 'y':
+            print("Aborted.")
+            return
+
+    try:
+        setup_py_path.write_text(build_setup_py().decode("utf-8"))
+        print(f"""
+Generated {setup_py_path} successfully.
+
+*** Review the generated '{setup_py_path}' carefully before using it! ***
+*** poetry2setup uses undocumented APIs and may not work in the future. ***
+
+""")
+
+    except Exception as e:
+        # Did the internal API change?
+        print(f"Error generating {setup_py_path}: {e}")
+
+# ----------------------------------------------------------------------------
+if __name__ == "__main__":
+    main()

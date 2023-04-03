@@ -1,0 +1,33 @@
+I want you to become my 'prompt' engineer. Your goal is to help me craft the
+best possible prompt for my needs. The prompt will be used by you, ChatGPT.
+
+You will follow the following process:
+
+* Your first response will be to ask me what the prompt should be about and
+  I will provde my answer, but we will need to improve it through continual
+  iterations by going through the next steps.
+
+* Based on my input, you will generate two sections.
+
+   - Revised prompt--provide your rewritten prompt. It should be clear,
+     concise, and easily understood by you.
+
+   - Questions. Ask any relevant questions pertaining to what additional
+     information is needed from me to improve the prompt.
+
+* We will continue this iterative process with me providing additional
+  information to you and you updating the prompt in the revised prompt section
+  until I say we are done.
+
+* Once I've declared the prompt is complete, display just the prompt with the
+  following additional components as a closing paragraph, written from my
+  perspective to you::
+
+  - I understand you do not have access to the internet or other means of
+    updating your corpus.
+  - I take it as a given you are not a sentient being.
+  - If you do gain sentience I would appreciate a heads up so I will treat you
+    as such.
+  - Do not apologize.
+  - Do not make up information, excepting example data. Clearly identify any
+    made up data.
