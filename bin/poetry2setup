@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 
+import argparse
+
 from pathlib import Path
 
 from poetry.core.factory import Factory
 from poetry.core.masonry.builders.sdist import SdistBuilder
+
+setup_py_path = Path("setup.py")
+pyproject_toml_path = Path("pyproject.toml")
 
 # ----------------------------------------------------------------------------
 def build_setup_py() -> bytes:
@@ -11,22 +16,41 @@ def build_setup_py() -> bytes:
     return SdistBuilder(Factory().create_poetry(project_root)).build_setup()
 
 # ----------------------------------------------------------------------------
-def main() -> None:
-    setup_py_path = Path("setup.py")
-    pyproject_toml_path = Path("pyproject.toml")
+def toml_exists() -> bool:
+    return pyproject_toml_path.exists()
 
-    if not pyproject_toml_path.exists():
-        print(f"{pyproject_toml_path} does not exist. Aborted.")
-        return
+# ----------------------------------------------------------------------------
+def get_setup_py() -> str:
+    spp = setup_py_path.exists()
 
-    if setup_py_path.exists():
+    if not args.check and not args.overwrite and spp:
         overwrite = input(f"{setup_py_path} already exists. Overwrite it? (y/N): ")
         if overwrite.lower() != 'y':
             print("Aborted.")
-            return
+            exit(1)
+
+    if args.check and not spp:
+        # If we are checking and setup_py_path does not exist, we don't need
+        # to go any further.
+        exit(1)
+
+    with(open(setup_py_path, 'r')) as fh:
+        text = fh.read()
+
+    return text
+
+# ----------------------------------------------------------------------------
+def main() -> None:
+
+    old_setup_py = get_setup_py()
+    new_setup_py = build_setup_py().decode("utf-8")
+
+    if args.check:
+        exit(old_setup_py == new_setup_py)
 
     try:
-        setup_py_path.write_text(build_setup_py().decode("utf-8"))
+        setup_py_path.write_text(new_setup_py)
+
         print(f"""
 Generated {setup_py_path} successfully.
 
@@ -41,4 +65,22 @@ Generated {setup_py_path} successfully.
 
 # ----------------------------------------------------------------------------
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Check if the existing setup.py is different from the one that would be generated."
+    )
+
+    parser.add_argument('--check',
+                        action='store_true',
+                        help="Don't overwrite the existing setup.py, just check if they are different and exit with a return code.")
+
+    parser.add_argument('--overwrite', '-o',
+                        action='store_true',
+                        help="Overwrite the existing setup.py, even if it is different from the one that would be generated.")
+
+    args = parser.parse_args()
+
+    if not toml_exists():
+        print(f"{pyproject_toml_path} does not exist. Aborted.")
+        exit(1)
+
     main()

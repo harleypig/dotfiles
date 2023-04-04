@@ -6,45 +6,97 @@
 # Debug no tty login (ssh user@server somecommand)
 # ssh localhost "PS4='[\$BASH_SOURCE[0]:\$LINENO]: ' bash -xl" |& tee login.log
 
+#-----------------------------------------------------------------------------
+# Use these functions to clean up the environment at end of startup.
+#
+# Add any various variables or functions that you want to unset to the
+# appropriate array.
+# 
+# Usage:
+#   unsetvars 'varname'
+#   unsetfuncs 'funcname'
+
+declare -a _unset_vars _unset_funcs
+
+unsetvars() { _unset_vars+=("$@"); }
+unsetfuncs() { _unset_funcs+=("$@"); }
+
+#-----------------------------------------------------------------------------
+# XXX: FIXME
+# Setup for git bash on windows.
+# o If MSYS is not set, then link is just a copy of stuff.
+# o If MSYS is winsymlinks, it creates a Windows shortcut.
+# o If MSYS is winsymlinks:nativestrict, it creates a more real type of symlink
+#export MSYS="winsymlinks:nativestrict"
+
 ##############################################################################
 # Base Global variable and path
 
 #-----------------------------------------------------------------------------
-# XXX: FIXME
-# o If MSYS is not set, then link is just a copy of stuff.
-# o If MSYS is winsymlinks, it creates a Windows shortcut.
-# o If MSYS is winsymlinks:nativestrict, it creates a more real type of symlink
-export MSYS="winsymlinks:nativestrict"
+# Assume that this file is in the dotfiles directory, then check if we are
+# linnked to the dotfiles directory.  If we are, then use the real directory
+# as the dotfiles directory.
 
-#-----------------------------------------------------------------------------
 declare -x DOTFILES="$HOME"
 [[ -L ${BASH_SOURCE[0]} ]] \
   && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
 
+# Export initial path settings
 export PATH="$DOTFILES/lib:$DOTFILES/bin:$PATH"
 
 ##############################################################################
 # Functions
 
 #-----------------------------------------------------------------------------
+# Set a default debug, then check if debug is available and source it.
+
 debug() { true; }
-command -v debug &> /dev/null && source debug
+[[ -f "$DOTFILES/bin/debug" ]] && source "$DOTFILES/bin/debug"
 
 #-----------------------------------------------------------------------------
+# Add a path to the PATH variable.  This is a function so that we can
+# easily add paths to the PATH variable.
+#
+# Usage:
+#   addpath PATH /path/to/add
+#   addpath LD_LIBRARY_PATH /path/to/add
+#   andpath /path/to/add
+#
+#   The last one defaults to PATH
+
+# XXX: Convert this to an external library.
+
 addpath() {
+  local target="PATH"
+
+  if [[ $1 == "PATH" ]] || {{ $1 == "LD_LIBRARY_PATH" ]]; then
+    target="$1"
+    shift
+  fi
+
   for p in "$@"; do
     [[ -z $p ]] && continue
-    debug "adding $1 to path"
-    PATH="${PATH}:$1"
+    debug "adding $p to $target"
+    printf -v "$target" "%s:%s" "${!target}" "$p"
   done
 }
 
+unsetfuncs 'addpath'
+
 #-----------------------------------------------------------------------------
+# Add custom binary directories to the system's PATH variable, allowing users
+# to execute their own scripts and commands from the command line. It reads the
+# directory paths from a configuration file and appends them to the PATH
+# variable in the specified order.
+#
+# This is not cumulative, either the defaults or the custom bin dirs are used.
+
+# XXX: Add documentation for deault bin dirs.
+
 set_bin_dirs() {
   bin_dirs_file="$DOTFILES/default-bin-dirs"
   [[ -r "$HOME/.bin-dirs" ]] && bin_dirs_file="$HOME/.bin-dirs"
   readarray -t bin_dirs < <(grep -v '^[[:space:]]*#' "$bin_dirs_file" | envsubst)
-  #printf '%s\n' "${bin_dirs[@]}"
   addpath "${bin_dirs[@]}"
 }
 
