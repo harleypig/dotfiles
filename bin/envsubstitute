@@ -5,9 +5,10 @@
 # variable values. It takes a string as input and searches for occurrences of
 # placeholders in the format $WORD, ${WORD}, or %WORD%. The script then
 # replaces these placeholders with the respective environment variable values
-# if they exist. If a variable is not found in the environment, the script
-# replaces the placeholder with a warning message, indicating that the
-# variable does not exist.
+# if they exist. If a variable is not found in the environment and NO_WARN is
+# not set, the script replaces the placeholder with a warning message,
+# indicating that the variable does not exist. If NO_WARN is set, the script
+# leaves the unknown variable placeholders untouched.
 #
 # The key difference between this custom implementation and the standard
 # envsubst utility is the support for an additional placeholder format,
@@ -19,8 +20,8 @@
 #
 # There is no support for envsubst's SHELL-FORMATS option. If you want unknown
 # variables to be replaced with an empty string, you can set the NO_WARN
-# variable to a non-empty value before calling this script. Setting NO_WARN
-# will also leave unkknown variable placeholders in the string, instead of
+# variable to a non-empty value before calling this script. When NO_WARN is
+# set, it leaves unknown variable placeholders in the string, instead of
 # replacing them with a warning message.
 
 NOT_SOURCED=0
@@ -57,25 +58,24 @@ die() {
 usage() {
   warn "
 
-Usage: $selfname '/path/to/%PRJNAME%/'
+Usage: $selfname 'input_string'
 
-$selfname takes a string as a parameter and looks
-for occurrences of '%WORD%', replacing that
-substring with the value of WORD, if it exists in
-the environment and prints the results to STDOUT.
+$selfname processes the given input string, replacing variable placeholders
+with their corresponding environment variable values, and prints the result to
+STDOUT.
+
+Placeholders can be in one of the following formats:
+  - \$WORD or \${WORD} (default)
+  - %WORD% (if SUBST_DELIM is set)
+
+Options:
+  - SUBST_DELIM: Set a single character to change the delimiter, e.g., '%'.
+  - NO_WARN: Set this variable to disable warnings and leave unknown variables untouched.
 
 Example:
+  PRJNAME=test123 $selfname '/path/to/\$PRJNAME/'
 
-  PRJNAME=test123 $selfname '/path/to/%PRJNAME%
-
-will echo to STDOUT '/path/to/test123'
-
-FIXME: If being sourced, then call _envsubst <string>
-
-!!! WARNING: The following is subject to change without warning or notice.
-
-* Set SUBST_DELIM to change the delimiter. This must be a single character.
-* Set NO_WARN to turn off warnings.
+  Output: '/path/to/test123'
 
 $*
 "
