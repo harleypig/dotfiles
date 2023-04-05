@@ -45,9 +45,16 @@ POD
 debug() {
   ((DEBUG)) || return 0
 
-  msg="$*"
-  (($#)) || { read -rst 1 msg; }
+  local -a msg
 
+  # Read either debug "message" or "command | debug"
+  if (($#)); then
+    msg=("$@")
+  else
+    mapfile -t msg
+  fi
+
+  # Declare metadata variables
   local lineno func file trace
   local -a el
   local -i lvl=0
@@ -58,11 +65,14 @@ debug() {
   local loginshell='L'
   shopt -q login_shell || loginshell='l'
 
+  # Ignore bats functions
   local ignore_bats_rx='bats-exec-test|bats\.[0-9]+\.src'
 
+  # Walk the call stack and build the trace
   while true; do
     caller=$(caller $lvl) || break
-    # In some instances, ((lvl++)) is causing errors, so do it old school.
+
+    # In some instances, '((lvl++))' is causing errors, so do it old school.
     #((lvl++))
     lvl+=1
 
@@ -74,17 +84,22 @@ debug() {
     file="$(basename "$file"):"
     func+=':'
 
+    # Don't show main or source
     [[ $func =~ main:|source: ]] && func=
 
     prefix=$(printf '[%s%s%03d]' "$file" "$func" "$lineno")
     el+=("$prefix")
   done
 
-  for ((ix = ${#el[@]} - 1; ix >= 0; ix--)); do
+  local trace_start=$((${#el[@]}-${DBG_TRACE_LEN:-3}))
+
+  #for ((ix = ${#el[@]} - 1; ix >= 0; ix--)); do
+  for ((ix = $trace_start; ix < "${#el[@]}"; ix++)); do
     trace+="${el[ix]}"
   done
 
-  printf '[%s%s]%s %s\n' "$interactive" "$loginshell" "$trace" "$msg" >&2
+  printf -v pfx '[%s%s]%s ' "$interactive" "$loginshell" "$trace"
+  printf "$pfx%s\n" "${msg[@]}" >&2
 }
 
 export -f debug

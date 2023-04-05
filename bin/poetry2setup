@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""
+A script to generate a setup.py file from a pyproject.toml file using Poetry's
+undocumented APIs. The script allows for checking if an existing setup.py file
+differs from the one that would be generated, and optionally overwriting it.
+"""
+
 import argparse
 
 from pathlib import Path
@@ -21,6 +27,9 @@ def toml_exists() -> bool:
 
 # ----------------------------------------------------------------------------
 def get_setup_py() -> str:
+    """Returns the content of the existing setup.py file or prompts the user
+    for overwriting."""
+
     spp = setup_py_path.exists()
 
     if not args.check and not args.overwrite and spp:

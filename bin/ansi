@@ -1,5 +1,14 @@
 #!/bin/bash
 
+##############################################################################
+# This script provides a versatile _ansi() function for generating ANSI escape
+# sequences to format and color text in the terminal. The function is designed
+# to work both in the PS1 prompt and for general display purposes. Two
+# options, -sb and -n, allow users to choose the appropriate delimiters for
+# the escape sequences, ensuring accurate character counting and proper
+# formatting.
+
+##############################################################################
 # Peruse /usr/share/doc/xterm/*
 
 # https://github.com/fidian/ansi has some good ideas, and some interesting
@@ -12,19 +21,71 @@
 # Convert rgb (0-255 0-255 0-255) to 8-bit 0-255
 # XXX: Figure out how to do hex
 
-# CF=6/256
-# 8bit=$(( 16 + (($1 * $CF) * 36) + (($2 * $CF) * 6) + ($3 * $CF) ))
-#
-# hex_to_rgb() {
-#    : "${1/\#}"
-#    ((r=16#${_:0:2},g=16#${_:2:2},b=16#${_:4:2}))
-#    printf '%s' "$r $g $b"
-#}
-
+##############################################################################
 DEBUG=
 
 function debug() { ((DEBUG)) && echo "$*" >&2; }
 
+#-----------------------------------------------------------------------------
+function usage() {
+  cat << EOF
+Usage: ${0##*/} [-sb | -n] [cmd1] [cmd2] ...
+
+Options:
+  -sb    Use \\[ and \\] delimiters for PS1 prompts.
+  -n     Use \\001 and \\002 delimiters for PROMPT_COMMAND or other cases
+         requiring precise cursor control.
+  (none) No delimiters are used for general display purposes.
+
+Commands:
+  fg [color]       Set foreground color.
+  bg [color]       Set background color.
+  off              Reset all attributes.
+  bell             Emit a terminal bell.
+  reverse          Swap foreground and background colors.
+  italics_on       Enable italics.
+  italics_off      Disable italics.
+  stdout_on        Enable standout mode.
+  stdout_off       Disable standout mode.
+  underline_on     Enable underline.
+  underline_off    Disable underline.
+
+Pre-defined colors:
+  black, red, green, yellow, blue, purple, cyan, white,
+  bright_black, bright_red, bright_green, bright_yellow,
+  bright_blue, bright_purple, bright_cyan, bright_white
+
+Example usage:
+  ${0##*/} -sb fg red bg black       # Red foreground and black background for PS1 prompts
+  ${0##*/} -n fg blue off            # Blue text and reset attributes for PROMPT_COMMAND
+  ${0##*/} fg green bg yellow off    # Green text on yellow background for general display
+
+You can also use any other tput command as an argument.
+To find more tput commands, refer to the tput documentation with 'man tput'.
+
+EOF
+
+exit 0
+}
+
+#-----------------------------------------------------------------------------
+# Convert hex color to rgb
+
+hex_to_256() {
+  hex_color="${1#\#}"
+  ((r=16#${hex_color:0:2}, g=16#${hex_color:2:2}, b=16#${hex_color:4:2}))
+
+#  if [[ $TERM == *256color* ]] || [[ $(tput colors) -eq 256 ]]; then
+#    printf '%s' "$r;$g;$b"
+
+#  else
+    CF="6/256"
+    eight_bit="$(bc <<< "scale=0; 16 + ($r * $CF) * 36 + ($g * $CF) * 6 + ($b * $CF)")"
+    printf '%s' "$eight_bit"
+#  fi
+}
+
+#-----------------------------------------------------------------------------
 function _ansi() {
   # convert convenience values to what tput understands
 
@@ -65,6 +126,7 @@ function _ansi() {
 
     case $cmd in
       -sb)
+        # Use '\\' as the delimiter for the escape sequence
         FIRST='\\['
         LAST='\\]'
         ;;
@@ -85,13 +147,18 @@ function _ansi() {
       off) seq=$(tput sgr0) ;;
 
       fg | bg)
+        # Set foreground or background color
         c=$1
-        [[ ${color[$c]+isset} -eq 0 ]] && c=${color[$c]}
+
+        [[ $c =~ ^\# ]] && c="$(hex_to_256 "$c")"
+        [[ -v color[$c] ]] && c=${color[$c]}
+
         seq=$(tput "${!cmd}" $c)
         shift
         ;;
 
-      *) seq=$(tput "$cmd") ;;
+      *) # Handle any other tput commands
+        seq=$(tput "$cmd") ;;
 
     esac
 
@@ -101,5 +168,9 @@ function _ansi() {
   printf '%s' "$str"
   return
 }
+
+##############################################################################
+[[ "$*" =~ (^|[[:space:]])--?h(elp)?($|[[:space:]]) ]] && usage
+(($#)) || usage
 
 _ansi "$@"
