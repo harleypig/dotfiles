@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# This script is a custom implementation of the envsubst utility, designed to
+# replace placeholders in a given string with the corresponding environment
+# variable values. It takes a string as input and searches for occurrences of
+# placeholders in the format $WORD, ${WORD}, or %WORD%. The script then
+# replaces these placeholders with the respective environment variable values
+# if they exist. If a variable is not found in the environment, the script
+# replaces the placeholder with a warning message, indicating that the
+# variable does not exist.
+#
+# The key difference between this custom implementation and the standard
+# envsubst utility is the support for an additional placeholder format,
+# %WORD%. By default, this script uses the $WORD or ${WORD} format for
+# placeholders, but if the SUBST_DELIM variable is set, the script switches to
+# using the %WORD% format. This flexibility allows the user to choose their
+# preferred placeholder format, making it more adaptable to different use
+# cases.
+#
+# There is no support for envsubst's SHELL-FORMATS option. If you want unknown
+# variables to be replaced with an empty string, you can set the NO_WARN
+# variable to a non-empty value before calling this script. Setting NO_WARN
+# will also leave unkknown variable placeholders in the string, instead of
+# replacing them with a warning message.
+
 NOT_SOURCED=0
 [[ ${BASH_SOURCE[0]} == "$0" ]] && NOT_SOURCED=1
 
@@ -16,10 +39,7 @@ else
   RETURN='return'
 fi
 
-declare tmpdelim
-tmpdelim="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 6 | head -n 1)"
-
-source debug
+#source debug
 
 #-----------------------------------------------------------------------------
 warn() {
@@ -32,12 +52,6 @@ die() {
   (($#)) && warn "$*"
   exit 1
 }
-
-#-----------------------------------------------------------------------------
-## XXX: Delete after tests are written
-#debug() {
-#  ((DEBUG)) || return 0
-#  warn "DEBUG:$selfname: $*"
 
 #-----------------------------------------------------------------------------
 usage() {
@@ -109,18 +123,23 @@ _envsubst() {
       value="${!BASH_REMATCH[1]}"
 
     else
-      value="$tmpdelim${BASH_REMATCH[1]}$tmpdelim"
-
-      [[ -z $NO_WARN ]] && {
+      if [[ -z $NO_WARN ]]; then
         warn "Variable '${BASH_REMATCH[1]}' does not exist in the environment"
-        value="!!${BASH_REMATCH[1]}!!"
-      }
+
+        if [[ -n $SUBST_DELIM ]]; then
+          value="${SUBST_DELIM}${BASH_REMATCH[2]}: NOT FOUND${SUBST_DELIM}"
+
+        else
+          value="\${${BASH_REMATCH[2]}: NOT FOUND}"
+        fi
+
+      else
+        value="${BASH_REMATCH[0]}"
+      fi
     fi
 
     s=${s//${BASH_REMATCH[0]}/$value}
   done
-
-  s=${s//$tmpdelim/$SUBST_DELIM}
 
   printf '%s' "$s"
 }
