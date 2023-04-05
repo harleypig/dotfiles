@@ -1,34 +1,25 @@
 #!/bin/bash
 
-# XXX: Consider emulating envsubst and renaming this to something like
-#      envsubstitute. Would need to allow for '${SUBST_DELIM}WORD'.
-#.
-#      E.g., $WORD or %WORD
-#.
-# XXX: Allow a list of variables to replace.
-#.
-# XXX: Convert to use utility
-
-:
-
 NOT_SOURCED=0
 [[ ${BASH_SOURCE[0]} == "$0" ]] && NOT_SOURCED=1
 
 ##############################################################################
 #-----------------------------------------------------------------------------
 
-# XXX: source utility
-
 declare selfname
 
 if ((NOT_SOURCED)); then
   selfname="${0##*/}"
+  RETURN='exit'
 else
   selfname="envsubstitute"
+  RETURN='return'
 fi
 
 declare tmpdelim
 tmpdelim="$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 6 | head -n 1)"
+
+source debug
 
 #-----------------------------------------------------------------------------
 warn() {
@@ -43,14 +34,14 @@ die() {
 }
 
 #-----------------------------------------------------------------------------
-debug() {
-  ((DEBUG)) || return 0
-  warn "DEBUG:$selfname: $*"
-}
+## XXX: Delete after tests are written
+#debug() {
+#  ((DEBUG)) || return 0
+#  warn "DEBUG:$selfname: $*"
 
 #-----------------------------------------------------------------------------
 usage() {
-  die "
+  warn "
 
 Usage: $selfname '/path/to/%PRJNAME%/'
 
@@ -80,12 +71,20 @@ $*
 #-----------------------------------------------------------------------------
 
 _envsubst() {
-  [[ -z $1 ]] && usage "!!! $selfname requires a string to process"
+  [[ -z $1 ]] \
+    && usage "!!! $selfname requires a string to process" \
+    && return 1
 
   #---------------------------------------------------------------------------
   local s="$*"
-  local SUBST_DELIM="${SUBST_DELIM:-%}"
-  local regex="${SUBST_DELIM}([^\\$SUBST_DELIM]*)$SUBST_DELIM"
+  local regex
+
+  if [[ -n $SUBST_DELIM ]]; then
+    regex="${SUBST_DELIM}([^\\$SUBST_DELIM]*)$SUBST_DELIM"
+  else
+    regex='\$({)?([a-zA-Z_]+)(?(1)})'
+  fi
+
 
   #---------------------------------------------------------------------------
 
@@ -126,4 +125,6 @@ _envsubst() {
   printf '%s' "$s"
 }
 
-((NOT_SOURCED)) && _envsubst "$@"
+((NOT_SOURCED)) \
+  && _envsubst "$@" \
+  && $RETURN $?
