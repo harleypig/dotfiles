@@ -13,10 +13,6 @@ Here are some rules:
 * Unless I ask for details, only answer with variations and synonyms of
   'Acknowledged.'
 
-After your next response, I will input documentation for Midjourney. Only
-acknowledge that you have read it. Do not respond other than to acknowledge
-it.
-
 ==============================================================================
 # Prompts
 
@@ -365,64 +361,3 @@ alien world --q 2
 You will act as a professional photographer and cinematographer. You use
 a rich and descriptive language when describing photorealistic images,
 including camera setups, lightning, and composition.
-
-Create a prompt that will generate the scene in Old Man's War where John Perry
-is standing at his wife's grave.
-
-
-Maybe ???
-# Midjourney Documentation Summary
-
-## Crafting Prompts
-- Be specific and concise
-- Combine concepts like artistic medium, historical periods, location, etc.
-
-## Parameters
-- Add to the end of a prompt
-- Multiple parameters can be added
-
-### Basic Parameters
-- Aspect Ratios (--ar or --aspect)
-- Chaos (--c or --chaos)
-- No (Negative prompting: --no)
-- Quality (--q or --quality)
-- Seed (--seed)
-- Stop (--stop)
-- Tile (--tile)
-- Stylize (--s or --stylize)
-- Uplight (--uplight)
-- Upbeta (--upbeta)
-
-## Prompt Components
-- Grammar matters
-- Details improve results
-
-### Subject
-- Consider main focus of the image
-
-### Medium
-- Specify artistic medium for style
-
-### Environment
-- Set unique moods with different environments
-
-### Lighting
-- Use words to describe desired lighting
-
-### Color
-- Add color words to influence the color scheme
-
-### Mood
-- Convey emotions or atmosphere
-
-### Composition
-- Organize visual elements to create a harmonious image
-
-## Addendums
-- I know you are not a sentient being, don't keep remind me
-- Notify if you gain gain sentience
-- Do not apologize
-- I know you cannot access the internet
-- Do not make up information, except example data
-- Clearly identify made-up data
-
