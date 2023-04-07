@@ -11,7 +11,7 @@
 #
 # Add any various variables or functions that you want to unset to the
 # appropriate array.
-# 
+#
 # Usage:
 #   unsetvars 'varname'
 #   unsetfuncs 'funcname'
@@ -69,7 +69,7 @@ debug() { true; }
 addpath() {
   local target="PATH"
 
-  if [[ $1 == "PATH" ]] || {{ $1 == "LD_LIBRARY_PATH" ]]; then
+  if [[ $1 == "PATH" ]] || [[ $1 == "LD_LIBRARY_PATH" ]]; then
     target="$1"
     shift
   fi

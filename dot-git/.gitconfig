@@ -1,16 +1,5 @@
-# Some ideas came from these places ...
-
-# http://durdn.com/blog/2012/11/22/must-have-git-aliases-advanced-examples
-# https://gggritso.com/human-git-aliases
-# https://gist.github.com/felipesabino/6391408
-# https://github.com/GitAlias/gitalias/blob/master/gitalias.txt
-# https://git.wiki.kernel.org/index.php/Aliases
-# https://news.ycombinator.com/item?id=14045787
-# https://stackoverflow.com/questions/3321492/git-alias-with-positional-parameters
-# http://vimcasts.org/episodes/synchronizing-plugins-with-git-submodules-and-pathogen/
-# http://www.jukie.net/bart/blog/pimping-out-git-log
-
 ##################################################################################
+# Core
 
 [user]
   email = harleypig@harleypig.com
@@ -18,6 +7,8 @@
 
 [include]
   path = .gitconfig.user
+
+# [credential]
 
 [core]
   compression  = 9
@@ -30,6 +21,91 @@
 [apply]
   ignorewhitespace = change
   whitespace       = fix
+
+[init]
+  defaultBranch = master
+
+[notes]
+  displayRef = '*'
+
+##################################################################################
+# Transfer
+
+[transfer]
+  fsckobjects = true
+
+[remote "origin"]
+  tagopt = --tags --prune
+
+[fetch]
+  prune = true
+  fsckobjects = false
+
+[pull]
+  default = current
+
+[push]
+  default = simple
+  followtags = true
+  autoSetupRemote = true
+
+##################################################################################
+# Branch
+
+[branch]
+  autosetupmerge = true
+
+[branch "master"]
+  rebase = true
+
+[rerere]
+  enabled = true
+
+[status]
+  showuntrackedfiles = all
+
+[stash]
+  showpatch = true
+
+[rebase]
+  autostash = true
+  autosquash = true
+
+##################################################################################
+# Diff
+
+[diff]
+  algorithm = minimal
+  guitool   = gvimdiff
+  renames   = copies
+  tool      = vimdiff
+  ignoreSubmodules = dirty
+
+[difftool]
+  prompt = false
+
+##################################################################################
+# Merge
+
+[merge]
+  tool = fugitive
+  guitool = kdiff3
+  conflictstyle = diff3
+
+[mergetool]
+  prompt = false
+
+[mergetool "fugitive"]
+  cmd = vim -f -c \"Gvdiff\" \"$MERGED\"
+
+##################################################################################
+# Misc
+
+[github]
+  user = harleypig
+
+##################################################################################
+# Color
 
 # 'git help config', search for 'list of colors'
 # Colors: <FG> [<BG>] [<ATTR>]
@@ -44,109 +120,6 @@
   showbranch  = true
   status      = auto
 
-[github]
-  user = harleypig
-
-[transfer]
-  fsckobjects = true
-
-[remote "origin"]
-  tagopt = --tags --prune
-
-##################################################################################
-
-[alias]
-  # Show the defined aliases
-  aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
-
-  a    = add
-  aa   = add --all
-  ai   = add --interactive
-  au   = add -u
-
-  unadd = reset --
-  unstage = reset --
-
-  b    = branch
-  ba   = branch -a
-  ball = branch -ar
-
-  c    = commit
-  cb   = commit --branch
-  ci   = commit --interactive
-  co   = checkout
-
-  conflicted = "diff --name-only --diff-filter=U"
-
-  d    = diff --color --color-words --abbrev
-  dc   = diff --color --color-words --abbrev --cached
-  dd   = diff --color --color-words --abbrev --dirstat
-  ds   = diff --color --color-words --abbrev --stat
-  dt   = difftool
-
-  f    = fetch
-  fa   = fetch --all
-  fp   = fetch --prune
-
-  find = !git ls-tree -r --name-only HEAD | grep --color $1
-  ignore = !git status &> /dev/null && \
-            echo $1 >> $(git rev-parse --show-toplevel)/.gitignore
-
-  ignored = !git ls-tree --others -i --exclude-standard
-  
-  m    = merge
-
-  p    = pull
-
-  prune = fetch -prune
-  prune-all = "!git remote | xargs -n 1 git remote prune"
-
-  s    = status
-  ss   = status -s
-  st   = status -sb
-
-  untrack = rm --cache --
-
-  assumed     = "!git ls-files -v | grep ^h | cut -c 3-"
-  assume      = update-index --assume-unchanged
-  unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
-  unassume    = update-index --no-assume-unchanged
-  wip         = !"git add -A; git ls-files --deleted -z | xargs -0 git rm; git commit -m 'wip'"
-
-  # Visualize the log
-  graphviz = "!f() { echo 'digraph git {' ; git log --pretty='format:  %h -> { %p }' \"$@\" | sed 's/[0-9a-f][0-9a-f]*/\"&\"/g' ; echo '}'; }; f"
-
-  # List changes for each commit
-  lc   = log ORIG_HEAD.. --stat --no-merges
-
-  # List new files for the incoming merge
-  new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
-  changes = diff --name-status -r
-  diffstat = diff --stat -r
-
-  l    = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
-
-  lp   = log --graph --topo-order --pretty=format:'%h : (%aN) %s'
-  logm = log --merges --decorate --date=short --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
-  logn = log --decorate --numstat --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
-
-  # Ick. No.
-  #lg3 = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
-
-  # Used these to make 'l' above.
-  #logk = log --graph --abbrev-commit --date=relative --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
-  #lg   = log --graph --abbrev-commit --date=relative --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
-  #lg2  = log --graph --abbrev-commit --date=relative --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen%cn%Creset %Cblue(%cr)%Creset'
-  #lg4  = log --graph --date=short --pretty=format:'%C(yellow)%h%C(reset) %C(green)%ad%C(reset) %C(red)|%C(reset) %s %C(bold blue)[%an]%C(reset)%C(yellow)%d%C(reset)'
-
-##################################################################################
-
-[branch]
-  autosetupmerge = true
-
-[branch "master"]
-  rebase = true
-
 [color "branch"]
 #  FG/BG: normal, black, red, green, yellow, blue, magenta, cyan and white
 #   ATTR: bold, dim, ul, blink and reverse
@@ -156,16 +129,6 @@
   plain    = white
   remote   = blue
   upstream = blue reverse
-
-[diff]
-  algorithm = minimal
-  guitool   = gvimdiff
-  renames   = copies
-  tool      = vimdiff
-  ignoreSubmodules = dirty
-
-[difftool]
-  prompt = false
 
 [color "diff"]
 #  FG/BG: normal, black, red, green, yellow, blue, magenta, cyan and white
@@ -180,79 +143,99 @@
   old        = red
   whitespace = red dim
 
-[fetch]
-  prune = true
-  fsckobjects = false
-  #fsckobjects = false
-
-#[color "grep"]
-  # non-matching text in context lines (when using -A, -B, or -C)
-  # context =
-
-  # filename prefix (when not using -h)
-  # filename =
-
-  # function name lines (when using -p)
-  # function =
-
-  # line number prefix (when using -n)
-  # linenumber =
-
-  # matching text (same as setting matchContext and matchSelected)
-  # match =
-
-  # matching text in context lines
-  # matchContext =
-
-  # matching text in selected lines
-  # matchSelected =
-
-  # non-matching text in selected lines
-  # selected =
-
-  # separators between fields on a line (:, -, and =) and between hunks (--)
-  # separator =
-
-#[color "interactive"]
-# prompt, header, help or error
-
-[merge]
-  tool = fugitive
-  guitool = kdiff3
-  conflictstyle = diff3
-
-[mergetool]
-  prompt = false
-
-[mergetool "fugitive"]
-  cmd = vim -f -c \"Gvdiff\" \"$MERGED\"
-
-[notes]
-  displayRef = '*'
-
-[pull]
-  default = current
-
-[push]
-  default = simple
-  followtags = true
-  autoSetupRemote = true
-
-[stash]
-  showpatch = true
-
-[status]
-  showuntrackedfiles = all
-
 [color "status"]
   added     = green
   changed   = red
   untracked = yellow
   unmerged  = red dim
 
-[rebase]
-  autostash = true
-  autosquash = true
+##################################################################################
 
-[init]
-  defaultBranch = master
+[alias]
+  # Show the defined aliases
+  aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
+
+  # --- Adding ---
+  a    = add
+  aa   = add --all
+  ai   = add --interactive
+  au   = add -u
+
+  # --- Removing from index ---
+  unadd = reset --
+  unstage = reset --
+
+  # --- Branching ---
+  b    = branch
+  ba   = branch -a
+  ball = branch -ar
+  # Current branch
+  bc   = "rev-parse --abbrev-ref HEAD"
+
+  # --- Committing ---
+  c    = commit
+  cb   = commit --branch
+  ci   = commit --interactive
+  co   = checkout
+
+  # --- Conflict resolution ---
+  conflicted = "diff --name-only --diff-filter=U"
+
+  # --- Diffing ---
+  d    = diff --color --color-words --abbrev
+  dc   = diff --color --color-words --abbrev --cached
+  dd   = diff --color --color-words --abbrev --dirstat
+  ds   = diff --color --color-words --abbrev --stat
+  dt   = difftool
+
+  # --- Fetching ---
+  f    = fetch
+  fa   = fetch --all
+  fp   = fetch --prune
+
+  # --- File operations ---
+  find = !git ls-tree -r --name-only HEAD | grep --color $1
+  ignore = !git status &> /dev/null && \
+            echo $1 >> $(git rev-parse --show-toplevel)/.gitignore
+
+  ignored = !git ls-tree --others -i --exclude-standard
+  
+  # --- Merging ---
+  m    = merge
+
+  # --- Pulling ---
+  p    = pull
+
+  # --- Pruning ---
+  prune = fetch -prune
+  prune-all = "!git remote | xargs -n 1 git remote prune"
+
+  # --- Status ---
+  s    = status
+  ss   = status -s
+  st   = status -sb
+
+  
+  # --- Tracking ---
+  untrack = rm --cache --
+
+  assumed     = "!git ls-files -v | grep ^h | cut -c 3-"
+  assume      = update-index --assume-unchanged
+  unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
+  unassume    = update-index --no-assume-unchanged
+  wip         = !"git add -A; git ls-files --deleted -z | xargs -0 git rm; git commit -m 'wip'"
+
+  # --- Logging ---
+  l    = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
+
+  # List changes for each commit
+  lc   = log ORIG_HEAD.. --stat --no-merges
+
+  lp   = log --graph --topo-order --pretty=format:'%h : (%aN) %s'
+  logm = log --merges --decorate --date=short --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
+  logn = log --decorate --numstat --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
+
+  # List new files for the incoming merge
+  new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
+  changes = diff --name-status -r
+  diffstat = diff --stat -r

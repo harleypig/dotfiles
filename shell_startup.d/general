@@ -21,7 +21,7 @@ tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
 vimwhich() { vim "$(command -v "$1")"; }
 
 # shellcheck disable=SC2164
-md() { mkdir -p "$@" && cd "$@"; }
+md() { mkdir -p "$@" && cd "$@" || return; }
 
 #-----------------------------------------------------------------------------
 bind "set completion-ignore-case on"
@@ -30,17 +30,8 @@ bind "set mark-symlinked-directories on"
 bind "set show-all-if-ambiguous on"
 bind Space:magic-space
 
-shopt -s autocd 2> /dev/null
-shopt -s cdspell 2> /dev/null
-shopt -s dirspell 2> /dev/null
-shopt -s globstar 2> /dev/null
-
-shopt -s cdable_vars
-shopt -s checkhash
-shopt -s checkwinsize
-shopt -s dotglob
-shopt -s extglob
-shopt -s nocaseglob
+shopt -s autocd cdspell dirspell globstar cdable_vars checkhash checkwinsize \
+         dotglob extglob nocaseglob 2> /dev/null
 
 umask 022
 

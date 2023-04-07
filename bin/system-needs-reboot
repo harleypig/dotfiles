@@ -12,7 +12,8 @@
 [[ $HOSTNAME == 'harleypig.com' ]] && exit 0
 
 # Not supporting CentOS
-grep -iqs 'centos' /etc/*release* && exit 0
+source /etc/os-release
+[[ $ID == 'centos' ]] && exit 0
 
 vmlinuz='/boot/vmlinuz-linux'
 

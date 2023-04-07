@@ -6,9 +6,6 @@
 #   https://gist.github.com/621452
 #   https://gist.github.com/623142
 
-# XXX: Incorporate this somehow?
-#      https://www.commandlinefu.com/commands/view/7916/put-a-console-clock-in-top-right-corner
-#      https://gist.github.com/johanbove/328506117db2edff7f5c99d05afde0ec
 #----------------------------------------------------------------------------
 # Only setup the prompt if we are in an interactive session
 
@@ -18,17 +15,44 @@
 }
 
 #----------------------------------------------------------------------------
-export color_off
+# 
+export prompt_color color_off
+
+prompt_color="$(ansi -n fg cyan)"
 color_off="$(ansi -n off)"
 
 #----------------------------------------------------------------------------
+function join_array() {
+  (($# != 2)) && die "must pass delimiter and array name"
+
+  local delim="$1"
+  local -n _array_="$2"
+
+  #eval "_array_=(\"\${$2[@]}\")"
+
+  first="${_array_[0]}"
+  rest=("${_array_[@]:1}")
+
+  printf '%s' "$first"
+  printf '%s' "${rest[@]/#/$delim}"
+}
+
+#----------------------------------------------------------------------------
+# The _parent function is called once during the .bash_prompt startup to
+# determine the parent processes for the current shell session. The result is
+# stored in the 'parent_output' variable and used in every prompt update. This
+# implementation is based on the understanding that the pstree value doesn't
+# change during a single shell session.
+#
+# XXX: This assumption is currently being tested for correctness.
+
 function _parent() {
 
   command -v pstree &> /dev/null || return 0
 
   local parents
 
-  parents=$(pstree -A $PPID 2> /dev/null) || { return 1; }
+  parents=$(pstree -A $PPID 2> /dev/null) || return 1 
 
   parents=${parents/%-+*/}
   parents=${parents//---bash/}
@@ -41,8 +65,11 @@ function _parent() {
   parents=${parents//tmux/}
 
   [[ -n $parents ]] \
-    && printf '\[%s\](%s)\[%s\] ' "$(ansi -n fg bright_yellow bg red)" "$parents" "$(ansi -n off)"
+    && printf '\[%s\](%s)\[%s\] ' \
+      "$(ansi -n fg bright_yellow bg red)" "$parents" "$(ansi -n off)"
 }
+
+parent=$(_parent)
 
 #----------------------------------------------------------------------------
 function _exit_status() {
@@ -76,35 +103,47 @@ function _exit_status() {
 }
 
 #----------------------------------------------------------------------------
-_update_prompt() {
+# Append the last command, clear the history cache and reread the history file
+_history() {
+  history -a
+  history -c
+  history -r
+}
 
+#----------------------------------------------------------------------------
+_update_prompt() {
   # don't use 'local exit_status' here because it wipes out PIPESTATUS.
   exit_status=$(_exit_status "${PIPESTATUS[@]}")
 
+  local user_color hostname_color finalchr
+
+  if [[ $UID -eq 0 ]]; then
+    user_color="$(ansi -n fg bright_red)"
+    finalchr='!!'
+
+  else
+    user_color="$(ansi -n fg bright_cyan)"
+    finalchr='\$'
+  fi
+
+  hostname_color="$(ansi -n fg yellow)"
   # Build the prompt.
-  local prompt_color user hostname system_reboot pacman_status
+  local prompt_color system_reboot pacman_status finalchr
 
-  prompt_color="$(ansi -n fg cyan)"
+  [[ -x "$(command -v system-needs-reboot)" ]] \
+    && system_reboot="$(system-needs-reboot)"
 
-  user="$(ansi -n fg bright_cyan)\u${prompt_color}"
-  [[ $USER == 'root' ]] && user="$(ansi -n fg bright_red)\u"
+  [[ -x "$(command -v pacman-status)" ]] \
+    && pacman_status="$(pacman-status)"
 
-  hostname="$(ansi -n fg yellow)\h${prompt_color}"
+  PS1="${color_off}$(_history)\n${prompt_color}"
 
-  system_reboot="$(system-needs-reboot)"
-  pacman_status="$(pacman-status)"
-
-  # Append the last command, clear the history cache and reread the history file
-  PS1="${color_off}$(
-    history -a
-    history -c
-    history -r
-  )\n${prompt_color}"
-
+  # We're assumign dir-readable and git-status are on the system; we want to
+  # be notified in a glaring way if they're not.
   [[ -n $system_reboot ]] && PS1+="${system_reboot}\n"
   [[ -n $pacman_status ]] && PS1+="${pacman_status}\n"
-  PS1+="$(_parent)${user}@${hostname}: $(dir-readable)${color_off}$(git-status)\n"
-  PS1+="${exit_status} $ "
+  PS1+="${parent}${user_color}\u@${hostname_color}\H: $(dir-readable)${color_off}$(git-status)\n"
+  PS1+="${exit_status} ${finalchr} "
 
   unset exit_status
 }

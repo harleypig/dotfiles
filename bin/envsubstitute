@@ -24,14 +24,16 @@
 # set, it leaves unknown variable placeholders in the string, instead of
 # replacing them with a warning message.
 
-NOT_SOURCED=0
-[[ ${BASH_SOURCE[0]} == "$0" ]] && NOT_SOURCED=1
-
 ##############################################################################
 #-----------------------------------------------------------------------------
 
+# Determine whether we are being sourced or executed.
+NOT_SOURCED=0
+[[ ${BASH_SOURCE[0]} == "$0" ]] && NOT_SOURCED=1
+
 declare selfname
 
+# Set the appropriate return command.
 if ((NOT_SOURCED)); then
   selfname="${0##*/}"
   RETURN='exit'
@@ -59,6 +61,7 @@ usage() {
   warn "
 
 Usage: $selfname 'input_string'
+       echo 'input_string' | $selfname
 
 $selfname processes the given input string, replacing variable placeholders
 with their corresponding environment variable values, and prints the result to
@@ -74,9 +77,9 @@ Options:
 
 Example:
   PRJNAME=test123 $selfname '/path/to/\$PRJNAME/'
+  PRJNAME=test123 echo '/path/to/\$PRJNAME/' | $selfname
 
-  Output: '/path/to/test123'
-
+  In both cases the output would be '/path/to/test123'.
 $*
 "
 }
@@ -85,12 +88,16 @@ $*
 #-----------------------------------------------------------------------------
 
 _envsubst() {
-  [[ -z $1 ]] \
-    && usage "!!! $selfname requires a string to process" \
-    && return 1
+  local s
+
+  if [[ -z $1 ]]; then
+    # Read from STDIN.
+    s=$(cat -)
+  else
+    s="$*"
+  fi
 
   #---------------------------------------------------------------------------
-  local s="$*"
   local regex
 
   if [[ -n $SUBST_DELIM ]]; then
