@@ -1,0 +1,8 @@
+Confluence Cloud REST API v2 reference:
+
+Cursor-based
+Use 'limit' and 'cursor' parameters
+Observe Link header for next URL
+Example: GET /wiki/api/v2/pages?limit=5
+Link header: </wiki/api/v2/pages?limit=5&cursor=<cursor token>>; rel="next"
+
