@@ -48,10 +48,14 @@ export PATH="$DOTFILES/lib:$DOTFILES/bin:$PATH"
 # Functions
 
 #-----------------------------------------------------------------------------
-# Set a default debug, then check if debug is available and source it.
+# Set a default debug and, if set, check if debug is available and source it.
 
 debug() { true; }
-[[ -f "$DOTFILES/bin/debug" ]] && source "$DOTFILES/bin/debug"
+[[ -n $DEBUG ]] \
+  && [[ -f "$DOTFILES/bin/debug" ]] \
+  && source "$DOTFILES/bin/debug"
+
+unsetfuncs 'debug'
 
 #-----------------------------------------------------------------------------
 # Add a path to the PATH variable.  This is a function so that we can
@@ -82,6 +86,17 @@ addpath() {
 }
 
 unsetfuncs 'addpath'
+
+#-----------------------------------------------------------------------------
+run_hook() {
+  local hook="$dfdir/$1"
+  debug "running hook: $hook"
+  [[ -r $hook ]] || { debug "hook not readable: $hook"; return 1; }
+  source "$hook" || { debug "hook failed: $hook"; return 1; }
+  return 0
+}
+
+unsetfuncs 'run_hook'
 
 #-----------------------------------------------------------------------------
 # Add custom binary directories to the system's PATH variable, allowing users
@@ -133,4 +148,10 @@ load_files() {
 set_bin_dirs
 load_files
 
-# XXX: clean the path
+##############################################################################
+# Cleanup
+
+unset -f "${_unset_funcs[@]}"
+unset "${_unset_vars[@]}"
+unset -f unsetvars unsetfuncs
+unset _unset_vars _unset_funcs
