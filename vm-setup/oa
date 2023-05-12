@@ -1,0 +1,72 @@
+#!/bin/bash
+
+export OPENAI_API_KEY="$(<$HOME/projects/private_dotfiles/openai-auto-gpt)"
+export OPENAI_MAX_TOKENS="2048"
+
+# OpenAI Client v2.1
+#
+# SYNOPSIS
+#   ABSTRACT
+#     openai [-n] [-a api_name] [-v api_version] [-o dump_file] [INPUT...]
+#   openai -i dumped_file
+#
+#   DEFAULT_API (v1/chat/completions)
+#     openai [-c] [+property=value...] [@TOPIC] [-f file | prompt ...]
+#   prompt
+#       Prompt string for the request to OpenAI API. This can consist of multiple
+#       arguments, which are considered to be separated by spaces.
+#   -f file
+#       A file to be read as prompt. If file is - or neither this parameter nor a prompt
+#       is specified, read from standard input.
+#   -c
+#       Continues the topic, the default topic is 'General'.
+#   property=value
+#       Overwrites default properties in payload. Prepend a plus sign '+' before property=value.
+#       eg: +model=gpt-3.5-turbo-0301, +stream=false
+#
+#   TOPICS
+#       Topic starts with an at sign '@'.
+#       To create new topic, use `openai @new_topic initial prompt'
+#
+#   OTHER APIS
+#     openai -a models
+#
+# GLOBAL OPTIONS
+#   Global options apply to all APIs.
+#   -v version
+#     API version, default is '1'.
+#   -a name
+#     API name, default is 'chat/completions'.
+#   -n
+#     Dry-run mode, don't call API.
+#   -o filename
+#     Dumps API response to a file and exits.
+#   -i filename
+#     Uses specified dumped file instead of requesting API.
+#     Any request-related arguments and user input are ignored.
+#
+#   --
+#       Ignores rest of arguments, useful when unquoted prompt consists of '-'.
+#
+#   -h
+#       Shows this help
+
+#openai -f "$1" |& tee -a response.txt
+#openai -f "$1" -o response.txt
+
+prompt() { openai $DEBUG "$1" |& tee response.txt; }
+
+init_ansible() {
+  prompt "I want to have an ansible configuration that installs and configures
+a new system--a new virtual machine or host.
+
+I want to support multiple operating systems.
+
+* First configuration: all systems will have these applications and configuration.
+* Second configuration: dev-environment will have these applications and configuration.
+* Third configuration: prod-environment will have these applications and configurations.
+
+What would this look like?"
+}
+
+init_ansible

@@ -1,0 +1,19 @@
+- name: Hashicorp Repository
+  hosts: localhost
+
+  vars:
+    key_url: https://apt.releases.hashicorp.com/gpg
+    repo_url: deb https://apt.releases.hashicorp.com focal main
+    filename: hashicorp
+
+  tasks:
+    - name: Install Google Cloud Repository Public Key
+      apt_key:
+        url: {{ key_url }}
+        state: present
+
+    - name: Add Google Cloud Repository
+      apt_repository:
+        repo: {{ repo_url }}
+        filename: {{ filename }}
+        state: present

@@ -1,0 +1,20 @@
+- name: Google Repository
+  hosts: localhost
+
+  vars:
+    key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    repo_url: deb https://packages.cloud.google.com/apt cloud-sdk main
+    filename: google-cloud
+
+
+  tasks:
+    - name: Install Google Cloud Repository Public Key
+      apt_key:
+        url: {{ key_url }}
+        state: present
+
+    - name: Add Google Cloud Repository
+      apt_repository:
+        repo: {{ repo_url }}
+        filename: {{ filename }}
+        state: present
