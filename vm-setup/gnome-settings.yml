@@ -1,0 +1,34 @@
+---
+- name: Set GNOME desktop settings
+  hosts: localhost
+  #become: true
+
+  tasks:
+    - name: Install gnome-shell-extensions
+      become: yes
+      apt:
+        state: present
+        name:
+          - gnome-shell-extensions
+          - gnome-shell-extension-desktop-icons-ng
+
+    - name: Set desktop background
+      command: gsettings set org.gnome.desktop.background picture-uri ''
+
+    - name: Set primary color (dark blue)
+      command: gsettings set org.gnome.desktop.background primary-color '#27285C'
+
+    - name: Hide trash icon
+      command: gsettings set org.gnome.shell.extensions.ding show-trash false
+
+    - name: Hide home icon
+      command: gsettings set org.gnome.shell.extensions.ding show-home false
+
+    - name: Customize Interface
+      shell: "gsettings set org.gnome.desktop.interface {{ item }}"
+      with_items:
+        - clock-format '24h'
+        - clock-show-date true
+        - clock-show-seconds false
+        - clock-show-weekday true
+        - color-scheme 'prefer-dark'
