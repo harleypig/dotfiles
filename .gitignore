@@ -4,6 +4,7 @@
 
 oa
 .openai/**
+response.txt
 
 # coverage?
 coverage

@@ -1,4 +1,6 @@
 ---
+- import_playbook: font.yml
+
 - name: Set GNOME desktop settings
   hosts: localhost
   #become: true
@@ -11,6 +13,10 @@
         name:
           - gnome-shell-extensions
           - gnome-shell-extension-desktop-icons-ng
+          - gnome-tweaks
+
+    - name: Change system font
+      command: >
 
     - name: Set desktop background
       command: gsettings set org.gnome.desktop.background picture-uri ''
@@ -32,3 +38,4 @@
         - clock-show-seconds false
         - clock-show-weekday true
         - color-scheme 'prefer-dark'
+        - monospace-font-name 'Inconsolata Nerd Font Mono 11'

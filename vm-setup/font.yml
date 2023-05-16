@@ -1,0 +1,35 @@
+---
+- hosts: localhost
+  become: yes
+
+  vars:
+    font_ver: v3.0.1
+
+  tasks:
+    - name: Install curl and unzip
+      apt: 
+        state: latest
+        update_cache: yes
+        name:
+          - curl
+          - unzip
+
+    - name: Create directory for Nerd Fonts
+      file: 
+        path: "/usr/local/share/fonts/NerdFonts" 
+        state: directory
+
+    - name: Download Inconsolata Nerd Font
+      get_url:
+        url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ font_ver }}/Inconsolata.zip"
+        dest: "/usr/local/share/fonts/NerdFonts"
+        mode: '0755'
+
+    - name: Unzip Inconsolata Nerd Font
+      unarchive: 
+        src: "/usr/local/share/fonts/NerdFonts/Inconsolata.zip"
+        dest: "/usr/local/share/fonts/NerdFonts"
+        remote_src: yes
+
+    - name: Update font cache
+      command: fc-cache -fv
