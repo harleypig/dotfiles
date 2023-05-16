@@ -1,0 +1,15 @@
+- name: Dev Packages
+  hosts: localhost
+  become: yes
+
+  #debugger: on_failed
+
+  tasks:
+    - name: Install BATS from Github
+      include: tasks/bats.yml
+
+#    - name: Install Dev Packages
+#      apt:
+#        state: present
+#        name:
+#          - bats

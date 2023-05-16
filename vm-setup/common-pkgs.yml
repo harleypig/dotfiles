@@ -10,7 +10,7 @@
         state: present
         name:
           - ansible
-          - ansible-doc
+          - ansible-lint
           - aptitude
           - docker
           - docker-compose
@@ -23,11 +23,3 @@
           - mlocate
           - pandoc
           - tmux
-
-    - name: Install GUI Packages
-      apt:
-        state: present
-        name:
-          - fonts-inconsolata
-          - gnome-tweaks
-          - tilix

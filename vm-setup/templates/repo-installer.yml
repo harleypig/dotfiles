@@ -1,0 +1,19 @@
+- name: Abstract Repository Installer
+  hosts: localhost
+
+  vars:
+    key_url: 
+    repo_url: 
+    filename: 
+
+  tasks:
+    - name: Install Repository Public Key
+      apt_key:
+        url: {{ key_url }}
+        state: present
+
+    - name: Add Repository
+      apt_repository:
+        repo: {{ repo_url }}
+        filename: {{ filename }}
+        state: present

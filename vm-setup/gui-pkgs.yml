@@ -1,0 +1,14 @@
+- name: GUI Packages
+  hosts: localhost
+  become: yes
+
+  #debugger: on_failed
+
+  tasks:
+    - name: Install GUI Packages
+      apt:
+        state: present
+        name:
+          - fonts-inconsolata
+          - gnome-tweaks
+          - tilix

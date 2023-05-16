@@ -1,0 +1,16 @@
+#!/bin/bash
+
+readarray -t schemas < <(gsettings list-schemas)
+
+for schema in "${schemas[@]}"; do
+  readarray -t keys < <(gsettings list-keys $schema)
+
+  for key in "${keys[@]}"; do
+    printf 'gsettings get %s %s\n' "$schema" "$key"
+    continue
+    current="$(gsettings get $schema $key)"
+    default="$(gsettings get $schema $key --default)"
+    [[ $current != "$default" ]] \
+      && printf '%s %s %s (%s)\n' "$schema" "$key" "$current" "$default"
+  done
+done
