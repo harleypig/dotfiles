@@ -3,32 +3,46 @@
   become: yes
 
   vars:
+    # XXX: Try using the xz version (smaller size)
+    font_name: Inconsolata
     font_ver: v3.0.1
+    font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ font_ver }}/{{ font_name }}.zip"
+    local_dir: "/usr/local/share/fonts/NerdFonts"
+    local_filename: "{{ local_dir }}/{{ font_name }}-{{ font_ver }}.zip"
 
   tasks:
+    - name: Check if NerdFont already installed
+      stat:
+        path: "{{ local_filename }}"
+      register: file_check
+
+    - name: Don't install again if the file is already there
+      meta: end_play
+      when: file_check.stat.exists
+
     - name: Install curl and unzip
-      apt: 
+      apt:
         state: latest
         update_cache: yes
         name:
           - curl
           - unzip
 
-    - name: Create directory for Nerd Fonts
-      file: 
-        path: "/usr/local/share/fonts/NerdFonts" 
+    - name: Create directory for NerdFonts
+      file:
+        path: "{{ local_dir }}"
         state: directory
 
-    - name: Download Inconsolata Nerd Font
+    - name: Download NerdFont
       get_url:
-        url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ font_ver }}/Inconsolata.zip"
-        dest: "/usr/local/share/fonts/NerdFonts"
-        mode: '0755'
+        url: "{{ font_url }}"
+        dest: "{{ local_filename }}"
+        mode: '0644'
 
-    - name: Unzip Inconsolata Nerd Font
-      unarchive: 
-        src: "/usr/local/share/fonts/NerdFonts/Inconsolata.zip"
-        dest: "/usr/local/share/fonts/NerdFonts"
+    - name: Unzip NerdFont
+      unarchive:
+        src: "{{ local_filename }}"
+        dest: "{{ local_dir }}"
         remote_src: yes
 
     - name: Update font cache

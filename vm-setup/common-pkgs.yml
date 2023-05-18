@@ -7,19 +7,22 @@
   tasks:
     - name: Install Common Packages
       apt:
-        state: present
+        state: latest
+        update_cache: yes
         name:
           - ansible
           - ansible-lint
           - aptitude
-          - docker
-          - docker-compose
+          - ca-certificates
+          - curl
+          - dconf-editor
           - dos2unix
-          - expect
           - elinks
+          - expect
           - git
           - jq
           - markdown
           - mlocate
           - pandoc
+          - parallel
           - tmux
