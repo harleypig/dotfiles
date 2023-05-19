@@ -20,6 +20,7 @@ git rev-parse &> /dev/null || exit 0
 declare -a locs
 locs+=('/usr/share/git-core/contrib/completion/git-prompt.sh')
 locs+=('/usr/share/git/completion/git-prompt.sh')
+locs+=('/usr/lib/git-core/git-sh-prompt')
 
 locfound=0
 

@@ -3,13 +3,13 @@
 [[ -x "$(command -v tmux 2> /dev/null)" ]] || return 0
 
 # swap this window to the left
-#alias swapl='tmux swap-window -t -1'
+alias swapl='tmux swap-window -t -1'
 
 # swap this window to the right
-#alias swapr='tmux swap-window -t +1'
+alias swapr='tmux swap-window -t +1'
 
 # swap this window with the one passed in
-#alias swapw='tmux swap-window -t'
+alias swapw='tmux swap-window -t'
 
 # shellcheck disable=SC1003
 set_title() { printf '\ek%s\e\\' "$1"; }
@@ -17,18 +17,18 @@ unset_title() { printf '\ek\e\\'; }
 export -f set_title unset_title
 
 # shellcheck disable=SC1083
-#circled_digits=$(printf %s \${$'\xEA',\`,{a..s}} | iconv -f UTF-16BE)
+circled_digits=$(printf %s \${$'\xEA',\`,{a..s}} | iconv -f UTF-16BE)
 
-#tmux_winidx_circled() {
-#  local winidx
-#  winidx=$(tmux display-message -p '#I')
-#
-#  if ((winidx > 20)); then
-#    echo "($winidx)"
-#  else
-#    echo "${circled_digits:winidx:1}"
-#  fi
-#}
+tmux_winidx_circled() {
+  local winidx
+  winidx=$(tmux display-message -p '#I')
+
+  if ((winidx > 20)); then
+    echo "($winidx)"
+  else
+    echo "${circled_digits:winidx:1}"
+  fi
+}
 
 # Start session in background if it doesn't already exist.
 # We want user to be expanded when defined.
@@ -37,10 +37,11 @@ export -f set_title unset_title
 # XXX: Detect multiple sessions and give opportunity to choose
 if which ta &> /dev/null; then
   echo 'alias ta already exists'
+
 else
   ta() {
     tmux has-session -t "$USER" &> /dev/null || tmux new-session -d -s "$USER"
-    tmux a -t "$USER"
+    tmux -2 a -t "$USER"
   }
 
   export -f ta

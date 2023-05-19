@@ -63,6 +63,7 @@ function _parent() {
   parents=${parents//sshd/}
   parents=${parents//su/}
   parents=${parents//tmux/}
+  parents=${parents//tilix/}
 
   [[ -n $parents ]] \
     && printf '\[%s\](%s)\[%s\] ' \
