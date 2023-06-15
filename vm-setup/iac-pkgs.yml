@@ -1,0 +1,13 @@
+- name: IaC Packages
+  hosts: localhost
+  become: yes
+
+  #debugger: on_failed
+
+  tasks:
+    - name: Install IaC Packages
+      apt:
+        state: present
+        name:
+          - terraform
+          - packer

@@ -1,5 +1,6 @@
 - name: Hashicorp Repository
   hosts: localhost
+  become: yes
 
   vars:
     key_url: https://apt.releases.hashicorp.com/gpg
@@ -7,13 +8,13 @@
     filename: hashicorp
 
   tasks:
-    - name: Install Google Cloud Repository Public Key
+    - name: Install Hashicorp Repository Public Key
       apt_key:
-        url: {{ key_url }}
+        url: "{{ key_url }}"
         state: present
 
-    - name: Add Google Cloud Repository
+    - name: Add Hashicorp Repository
       apt_repository:
-        repo: {{ repo_url }}
-        filename: {{ filename }}
+        repo: "{{ repo_url }}"
+        filename: "{{ filename }}"
         state: present

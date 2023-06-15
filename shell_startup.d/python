@@ -1,0 +1,3 @@
+alias mkvenv="type -t deactivate &> /dev/null; rm -fr venv; python3 -m venv --upgrade-deps venv"
+alias wondertwins="source venv/bin/activate"
+
