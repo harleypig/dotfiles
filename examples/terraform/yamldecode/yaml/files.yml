@@ -1,0 +1,9 @@
+file1:
+  filename: files-1-example.txt
+  content: sample content
+  file_permission: 0644
+
+file2:
+  filename: files-2-example.txt
+  content: more sample content
+  file_permission: 0600

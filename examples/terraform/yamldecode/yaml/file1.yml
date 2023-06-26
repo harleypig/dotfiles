@@ -1,0 +1,4 @@
+file1:
+  filename: file1-example.txt
+  content: sample content
+  file_permission: 0644
