@@ -9,6 +9,11 @@ response.txt
 # coverage?
 coverage
 
+.aider.chat.history.md
+.aider.ident.cache.v1/**
+.aider.input.history
+.aider.tags.cache.v1/**
+
 # re-evaluate
 .local/share/akonadi/*
 .local/share/akonadi_migration_agent/*
