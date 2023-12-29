@@ -1,5 +1,46 @@
 #!/bin/bash
 
+# The output of 'go env' command is as follows:
+# GO111MODULE="" - This variable controls the module support in Go. If it's off, then modules are not used.
+# GOARCH="amd64" - This variable sets the architecture target for the Go compiler.
+# GOBIN="" - This variable sets the directory where 'go install' will install a command.
+# GOCACHE="/home/harleypig/.cache/go-build" - This variable sets the directory where Go should store its build cache.
+# GOENV="/home/harleypig/.config/go/env" - This variable sets the file where Go should store environment variables.
+# GOEXE="" - This variable sets the executable file extension. If the target operating system is Windows, it becomes '.exe'.
+# GOEXPERIMENT="" - This variable controls experimental features in Go.
+# GOFLAGS="" - This variable sets default flags for the 'go' command.
+# GOHOSTARCH="amd64" - This variable sets the architecture of the machine where Go is being run.
+# GOHOSTOS="linux" - This variable sets the operating system of the machine where Go is being run.
+# GOINSECURE="" - This variable controls whether Go should allow downloading from insecure origins.
+# GOMODCACHE="/home/harleypig/go/pkg/mod" - This variable sets the directory where the module cache is kept.
+# GONOPROXY="" - This variable controls which modules the Go command should download directly, bypassing the proxy.
+# GONOSUMDB="" - This variable controls which modules the Go command should download without requiring a checksum.
+# GOOS="linux" - This variable sets the target operating system for the Go compiler.
+# GOPATH="/home/harleypig/go" - This variable sets the root of the Go workspace.
+# GOPRIVATE="" - This variable controls which modules the Go command should consider as private and not share with any module proxy.
+# GOPROXY="https://proxy.golang.org,direct" - This variable sets the module proxy for Go commands.
+# GOROOT="/usr/lib/go-1.18" - This variable sets the root of the Go tree.
+# GOSUMDB="sum.golang.org" - This variable sets the name of the checksum database.
+# GOTMPDIR="" - This variable sets the directory for temporary files.
+# GOTOOLDIR="/usr/lib/go-1.18/pkg/tool/linux_amd64" - This variable sets the directory of the Go toolchain.
+# GOVCS="" - This variable controls version control system usage in Go.
+# GOVERSION="go1.18.1" - This variable sets the Go version.
+# GCCGO="gccgo" - This variable sets the gccgo command.
+# GOAMD64="v1" - This variable sets the Go AMD64 version.
+# AR="ar" - This variable sets the 'ar' command.
+# CC="gcc" - This variable sets the C compiler command.
+# CXX="g++" - This variable sets the C++ compiler command.
+# CGO_ENABLED="1" - This variable controls whether cgo is enabled.
+# GOMOD="/dev/null" - This variable sets the go.mod file location.
+# GOWORK="" - This variable sets the Go workspaces.
+# CGO_CFLAGS="-g -O2" - This variable sets the cgo CFLAGS.
+# CGO_CPPFLAGS="" - This variable sets the cgo CPPFLAGS.
+# CGO_CXXFLAGS="-g -O2" - This variable sets the cgo CXXFLAGS.
+# CGO_FFLAGS="-g -O2" - This variable sets the cgo FFLAGS.
+# CGO_LDFLAGS="-g -O2" - This variable sets the cgo LDFLAGS.
+# PKG_CONFIG="pkg-config" - This variable sets the pkg-config command.
+# GOGCCFLAGS="-fPIC -m64 -pthread -fmessage-length=0 -fdebug-prefix-map=/tmp/go-build1046240133=/tmp/go-build -gno-record-gcc-switches" - This variable sets the Go gcc flags.
+
 return 0
 
 command -v go &> /dev/null || return 0
