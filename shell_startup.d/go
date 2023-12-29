@@ -1,5 +1,7 @@
 #!/bin/bash
 
+return 0
+
 command -v go &> /dev/null || return 0
 
 export GOROOT=$(go env GOROOT)
