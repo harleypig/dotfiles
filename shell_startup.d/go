@@ -49,6 +49,11 @@ export GOROOT=$(go env GOROOT)
 export GOPATH=$(go env GOPATH)
 export GOBIN="$HOME/.go/bin"
 
+# Check if the directories exist and create them if they don't
+mkdir -p "$GOBIN"
+mkdir -p "$GOROOT/bin"
+mkdir -p "${GOPATH//://bin:}/bin"
+
 addpath "$GOBIN"
 addpath "$GOROOT/bin"
 addpath "${GOPATH//://bin:}/bin"
