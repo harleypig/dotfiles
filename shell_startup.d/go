@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # The output of 'go env' command is as follows:
 # GO111MODULE="" - This variable controls the module support in Go. If it's off, then modules are not used.
@@ -43,7 +43,7 @@
 
 return 0
 
-command -v go &> /dev/null || return 0
+type -P go &> /dev/null || return 0
 
 # Check if GOPATH and GOBIN are already set in the environment
 if [ -z "$GOPATH" ]; then
