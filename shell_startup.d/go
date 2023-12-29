@@ -45,8 +45,22 @@ return 0
 
 command -v go &> /dev/null || return 0
 
-export GOPATH=$(go env GOPATH)
-export GOBIN="$HOME/.go/bin"
+# Check if GOPATH and GOBIN are already set in the environment
+if [ -z "$GOPATH" ]; then
+    if [ -n "$(go env GOPATH)" ]; then
+        export GOPATH=$(go env GOPATH)
+    else
+        export GOPATH="$HOME/go"
+    fi
+fi
+
+if [ -z "$GOBIN" ]; then
+    if [ -n "$(go env GOBIN)" ]; then
+        export GOBIN=$(go env GOBIN)
+    else
+        export GOBIN="$GOPATH/bin"
+    fi
+fi
 
 # Check if the directories exist and create them if they don't
 mkdir -p "$GOBIN"
