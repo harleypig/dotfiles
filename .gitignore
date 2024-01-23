@@ -2,17 +2,13 @@
 .flexget/cached_resources/
 .local/share/Surviving Mars/*
 
-oa
-.openai/**
-response.txt
-
 # coverage?
 coverage
 
 .aider.chat.history.md
-.aider.ident.cache.v1/**
+.aider.ident.cache.*/**
 .aider.input.history
-.aider.tags.cache.v1/**
+.aider.tags.cache.*/**
 
 # re-evaluate
 .local/share/akonadi/*
@@ -199,4 +195,3 @@ coverage
 .local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Cache/*
 .local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Caches/*
 .local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/CacheStorage/*
-.aider*

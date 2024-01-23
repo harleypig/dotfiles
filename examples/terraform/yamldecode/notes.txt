@@ -1,4 +1,0 @@
-flatten
-for
-merge
-for_each?
