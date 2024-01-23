@@ -1,0 +1,20 @@
+# This file contains the tasks to install a single repository
+- name: "Validate required variables for {{ repo_name }}"
+  assert:
+    that:
+      - key_url is defined
+      - repo_url is defined
+      - filename is defined
+      - repo_name is defined
+    fail_msg: "Required variable is not defined for {{ repo_name }}."
+
+- name: "Install Repository Public Key for {{ repo_name }}"
+  apt_key:
+    url: "{{ key_url }}"
+    state: present
+
+- name: "Add APT repository for {{ repo_name }}"
+  apt_repository:
+    repo: "{{ repo_url }}"
+    filename: "{{ filename }}"
+    state: present
