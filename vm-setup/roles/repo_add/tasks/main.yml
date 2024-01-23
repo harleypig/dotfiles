@@ -4,7 +4,10 @@
   vars:
     all_repos: "{{ repos.keys() }}"
     requested_repos: "{{ repo_list | default(all_repos) }}"
-
+  fail:
+    msg: >
+      These repositories are not defined: {{ requested_repos | difference(all_repos) | join(', ') }}.
+      Available repositories: {{ all_repos | join(', ') }}
   fail:
     msg: "These repositories are not defined: {{ requested_repos | difference(all_repos) | join(', ') }}. Available repositories: {{ all_repos | join(', ') }}"
   when: requested_repos | difference(all_repos) | length > 0
