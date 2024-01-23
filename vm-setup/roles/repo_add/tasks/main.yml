@@ -1,8 +1,16 @@
 ---
-- name: Install specified repositories or default to all
+- name: Check if all requested repositories are defined in defaults
 
   vars:
-    repo_subset: "{{ repo_list | default(repos.keys()) }}"
+    all_repos: "{{ repos.keys() }}"
+    requested_repos: "{{ repo_list | default(all_repos) }}"
+  fail:
+    msg: "The following requested repositories are not defined in defaults: {{ requested_repos | difference(all_repos) | join(', ') }}. Available repositories are: {{ all_repos | join(', ') }}"
+  when: requested_repos | difference(all_repos) | length > 0
+
+- name: Install requested repositories or default to all
+  vars:
+    repo_subset: "{{ requested_repos }}"
 
   loop: "{{ repo_subset }}"
   loop_control:
