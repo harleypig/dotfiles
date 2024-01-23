@@ -1,2 +1,6 @@
 ---
-- name: Install repositories for sweetums
+- hosts: all
+  roles:
+    - role: repo_add
+      vars:
+        repo_list: ['hashicorp']
