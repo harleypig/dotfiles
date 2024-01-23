@@ -1,5 +1,9 @@
 ---
 # This file contains error handling tests for the add_repo role
+- hosts: localhost
+  gather_facts: no
+  connection: local
+# This file contains error handling tests for the add_repo role
 
 # Test handling of an undefined repository
 - name: Attempt to add an undefined repository
