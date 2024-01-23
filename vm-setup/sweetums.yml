@@ -1,11 +1,11 @@
 ---
 - hosts: all
- gather_facts: no
- connection: local
+  gather_facts: no
+  connection: local
 
   roles:
     - role: add_repo
       vars:
         repo_list:
           - hashicorp
-#          - badrepo
+          - badrepo

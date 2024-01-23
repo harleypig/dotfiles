@@ -1,3 +1,5 @@
+## Bin Dir
+
 XXX: Convert as many functions to scripts as possible so they aren't taking up memory.
 
 Possibly convert things setup and run from .bashrc into a separate file for each application or function it's used for.
@@ -130,13 +132,34 @@ dotfiles/
 └── .github/
     └── workflows/
         └── main.yml
-Add tests for the add_repo role:
-1. Variable Definition Test: Verify that all required variables are defined for each repository.
-2. Repository Key Installation Test: Check if the repository public key is correctly installed on the system.
-3. Repository Addition Test: Ensure that the repository is correctly added to the system's package manager.
-4. Idempotence Test: Confirm that running the role/task again does not make any changes if the repository is already added.
-5. Error Handling Test: Test the role's ability to handle errors, such as attempting to add an undefined repository.
-6. Validation Test: Verify that the validation step correctly identifies undefined repositories and provides a meaningful error message.
-7. Platform Compatibility Test: Ensure that the role works across different distributions or versions if applicable.
-8. Security Test: Check that the key installation process is secure and that keys are obtained from a trusted source.
-9. Cleanup Test: If the role includes the ability to remove repositories, test that the removal process works correctly and cleans up any associated files.
+
+## vm-setup
+
+### Add tests for the add_repo role:
+
+* Variable Definition Test: Verify that all required variables are defined for
+  each repository.
+
+* Repository Key Installation Test: Check if the repository public key is
+  correctly installed on the system.
+
+* Repository Addition Test: Ensure that the repository is correctly added to
+  the system's package manager.
+
+* Idempotence Test: Confirm that running the role/task again does not make any
+  changes if the repository is already added.
+
+* Error Handling Test: Test the role's ability to handle errors, such as
+  attempting to add an undefined repository.
+
+* Validation Test: Verify that the validation step correctly identifies
+  undefined repositories and provides a meaningful error message.
+
+* Platform Compatibility Test: Ensure that the role works across different
+  distributions or versions if applicable.
+
+* Security Test: Check that the key installation process is secure and that
+  keys are obtained from a trusted source.
+
+* Cleanup Test: If the role includes the ability to remove repositories, test
+  that the removal process works correctly and cleans up any associated files.
