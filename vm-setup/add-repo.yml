@@ -3,12 +3,12 @@
   hosts: localhost
   become: yes
   tasks:
-    - name: Install Repository Public Key
+    - name: "Install Repository Public Key for {{ repo_name }}"
       apt_key:
         url: "{{ key_url }}"
         state: present
 
-    - name: Add Repository
+    - name: "Add APT repository for {{ repo_name }}"
       apt_repository:
         repo: "{{ repo_url }}"
         filename: "{{ filename }}"
