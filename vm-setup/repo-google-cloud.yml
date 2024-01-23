@@ -9,4 +9,4 @@
     repo_name: Google Cloud
 
   tasks:
-    - include_tasks: add-repo.yml
+    - include_tasks: repo-add.yml
