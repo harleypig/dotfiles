@@ -1,0 +1,15 @@
+---
+- name: Add APT Repository
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Install Repository Public Key
+      apt_key:
+        url: "{{ key_url }}"
+        state: present
+
+    - name: Add Repository
+      apt_repository:
+        repo: "{{ repo_url }}"
+        filename: "{{ filename }}"
+        state: present

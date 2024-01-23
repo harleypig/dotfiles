@@ -6,13 +6,4 @@
     filename: microsoft
 
   tasks:
-    - name: Install Microsoft Repository Public Key
-      apt_key:
-        url: {{ key_url }}
-        state: present
-
-    - name: Add Microsoft Repository
-      apt_repository:
-        repo: {{ repo_url }}
-        filename: {{ filename }}
-        state: present
+    - include_tasks: add-repo.yml

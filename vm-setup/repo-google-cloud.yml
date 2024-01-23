@@ -8,13 +8,4 @@
     filename: google-cloud
 
   tasks:
-    - name: Install Google Cloud Repository Public Key
-      apt_key:
-        url: {{ key_url }}
-        state: present
-
-    - name: Add Google Cloud Repository
-      apt_repository:
-        repo: {{ repo_url }}
-        filename: {{ filename }}
-        state: present
+    - include_tasks: add-repo.yml
