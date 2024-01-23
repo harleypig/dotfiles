@@ -14,6 +14,11 @@
           Available repositories: {{ all_repos | join(', ') }}
       when: requested_repos | difference(all_repos) | length > 0
 
+  rescue:
+    - name: Capture validation failure
+      debug:
+        msg: "Validation failed for the requested repositories. Please check the repository names and try again."
+
     - name: Install requested repositories
 
       loop: "{{ requested_repos }}"
