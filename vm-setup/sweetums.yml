@@ -1,7 +1,5 @@
 ---
 - hosts: all
-  gather_facts: no
-  connection: local
 
   roles:
     - role: add_repo
