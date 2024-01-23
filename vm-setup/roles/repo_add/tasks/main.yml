@@ -4,11 +4,12 @@
   vars:
     all_repos: "{{ repos.keys() }}"
     requested_repos: "{{ repo_list | default(all_repos) }}"
+
   fail:
-    msg: "The following requested repositories are not defined in defaults: {{ requested_repos | difference(all_repos) | join(', ') }}. Available repositories are: {{ all_repos | join(', ') }}"
+    msg: "These repositories are not defined: {{ requested_repos | difference(all_repos) | join(', ') }}. Available repositories: {{ all_repos | join(', ') }}"
   when: requested_repos | difference(all_repos) | length > 0
 
-- name: Install requested repositories or default to all
+- name: Install requested repositories
   vars:
     repo_subset: "{{ requested_repos }}"
 
