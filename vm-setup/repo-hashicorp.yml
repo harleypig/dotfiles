@@ -1,6 +1,5 @@
 - name: Hashicorp Repository
   hosts: localhost
-  become: yes
 
   vars:
     key_url: https://apt.releases.hashicorp.com/gpg
