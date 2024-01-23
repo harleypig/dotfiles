@@ -1,0 +1,58 @@
+---
+# This file contains error handling tests for the add_repo role
+
+# Test handling of an undefined repository
+- name: Attempt to add an undefined repository
+  block:
+    - name: Run add_repo with an undefined repository
+      include_role:
+        name: add_repo
+      vars:
+        repo_list: ['undefined_repo']
+  rescue:
+    - name: Assert failure when adding an undefined repository
+      assert:
+        that: result is failed
+        fail_msg: "Adding an undefined repository did not fail as expected"
+
+# Test handling when required variables are not defined
+- name: Attempt to add a repository without required variables
+  block:
+    - name: Run add_repo with missing required variables
+      include_role:
+        name: add_repo
+      vars:
+        repo_list: ['incomplete_repo']
+  rescue:
+    - name: Assert failure when required variables are missing
+      assert:
+        that: result is failed
+        fail_msg: "Adding a repository without required variables did not fail as expected"
+
+# Test handling of key installation failure
+- name: Simulate key installation failure
+  block:
+    - name: Run add_repo with a bad key URL
+      include_role:
+        name: add_repo
+      vars:
+        repo_list: ['bad_key_repo']
+  rescue:
+    - name: Assert failure when key installation fails
+      assert:
+        that: result is failed
+        fail_msg: "Key installation failure was not handled as expected"
+
+# Test handling of repository addition failure
+- name: Simulate repository addition failure
+  block:
+    - name: Run add_repo with a bad repo URL
+      include_role:
+        name: add_repo
+      vars:
+        repo_list: ['bad_repo_url']
+  rescue:
+    - name: Assert failure when repository addition fails
+      assert:
+        that: result is failed
+        fail_msg: "Repository addition failure was not handled as expected"
