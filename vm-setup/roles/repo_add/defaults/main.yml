@@ -1,6 +1,1 @@
 ---
-# Default values for the repo_add role
-key_url: ""
-repo_url: ""
-filename: ""
-repo_name: ""
