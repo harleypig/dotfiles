@@ -1,5 +1,6 @@
 ---
 - name: Install defined repositories
+  become: yes
 
   vars:
     all_repos: "{{ repos.keys() }}"
