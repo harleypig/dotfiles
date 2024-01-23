@@ -14,21 +14,22 @@
           Available repositories: {{ all_repos | join(', ') }}
       when: requested_repos | difference(all_repos) | length > 0
 
-  rescue:
-    - name: Capture validation failure
-      debug:
-        msg: "Validation failed for the requested repositories. Please check the repository names and try again."
-
     - name: Install requested repositories
 
       loop: "{{ requested_repos }}"
       loop_control:
         loop_var: name
 
-      include_tasks: install_repo.yml
-
       vars:
         key_url: "{{ repos[name].key_url }}"
         repo_url: "{{ repos[name].repo_url }}"
         filename: "{{ repos[name].filename }}"
         repo_name: "{{ repos[name].repo_name }}"
+
+      include_tasks: install_repo.yml
+
+  rescue:
+    - name: Capture validation failure
+      debug:
+        msg: "Validation failed for the requested repositories. Please check the repository names and try again."
+

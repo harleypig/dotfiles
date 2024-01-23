@@ -1,2 +1,2 @@
-lib/Is
+lib/*
 shell_startup.d/diff

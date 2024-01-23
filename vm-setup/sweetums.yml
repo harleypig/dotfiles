@@ -4,6 +4,6 @@
   roles:
     - role: repo_add
       vars:
-        repo_list: 
+        repo_list:
           - hashicorp
-          - badrepo
+#          - badrepo
