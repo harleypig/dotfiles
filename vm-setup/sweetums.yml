@@ -2,7 +2,7 @@
 - hosts: localhost
 
   roles:
-    - role: repo_add
+    - role: add_repo
       vars:
         repo_list:
           - hashicorp
