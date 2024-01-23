@@ -7,5 +7,5 @@
     filename: hashicorp
     repo_name: Hashicorp
 
-  tasks:
-    - include_tasks: repo-add.yml
+  roles:
+    - role: repo_add

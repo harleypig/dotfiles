@@ -7,5 +7,5 @@
     filename: google-cloud
     repo_name: Google Cloud
 
-  roles:
-    - role: repo_add
+  tasks:
+    - include_tasks: repo-add.yml
