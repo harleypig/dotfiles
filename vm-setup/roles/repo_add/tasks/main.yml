@@ -1,11 +1,15 @@
 ---
 - name: Install specified repositories or default to all
+
   vars:
     repo_subset: "{{ repo_list | default(repos.keys()) }}"
+
   loop: "{{ repo_subset }}"
   loop_control:
     loop_var: repo_name
+
   include_tasks: install_repo.yml
+
   vars:
     key_url: "{{ repos[repo_name].key_url }}"
     repo_url: "{{ repos[repo_name].repo_url }}"
