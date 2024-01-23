@@ -1,26 +1,28 @@
 ---
-- name: Check if all requested repositories are defined in defaults
+- name: Install defined repositories
 
   vars:
     all_repos: "{{ repos.keys() }}"
     requested_repos: "{{ repo_list | default(all_repos) }}"
 
-  fail:
-    msg: >
-      These repositories are not defined: {{ requested_repos | difference(all_repos) | join(', ') }}.
-      Available repositories: {{ all_repos | join(', ') }}
-  when: requested_repos | difference(all_repos) | length > 0
+  block:
+    - name: Validate requested repositories
+      fail:
+        msg: >
+          These repositories are not defined: {{ requested_repos | difference(all_repos) | join(', ') }}.
+          Available repositories: {{ all_repos | join(', ') }}
+      when: requested_repos | difference(all_repos) | length > 0
 
-- name: Install requested repositories
+    - name: Install requested repositories
 
-  loop: "{{ requested_repos }}"
-  loop_control:
-    loop_var: repo_name
+      loop: "{{ requested_repos }}"
+      loop_control:
+        loop_var: name
 
-  include_tasks: install_repo.yml
+      include_tasks: install_repo.yml
 
-  vars:
-    key_url: "{{ repos[repo_name].key_url }}"
-    repo_url: "{{ repos[repo_name].repo_url }}"
-    filename: "{{ repos[repo_name].filename }}"
-    repo_name: "{{ repos[repo_name].repo_name }}"
+      vars:
+        key_url: "{{ repos[name].key_url }}"
+        repo_url: "{{ repos[name].repo_url }}"
+        filename: "{{ repos[name].filename }}"
+        repo_name: "{{ repos[name].repo_name }}"

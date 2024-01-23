@@ -1,6 +1,9 @@
 ---
-- hosts: all
+- hosts: localhost
+
   roles:
     - role: repo_add
       vars:
-        repo_list: ['hashicorp']
+        repo_list: 
+          - hashicorp
+          - badrepo
