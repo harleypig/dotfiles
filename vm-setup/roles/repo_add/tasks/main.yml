@@ -12,16 +12,13 @@
   when: requested_repos | difference(all_repos) | length > 0
 
 - name: Install requested repositories
+
   loop: "{{ requested_repos }}"
-  loop: "{{ repo_subset }}"
   loop_control:
     loop_var: repo_name
 
   include_tasks: install_repo.yml
 
-  vars:
-
-  include_tasks: install_repo.yml
   vars:
     key_url: "{{ repos[repo_name].key_url }}"
     repo_url: "{{ repos[repo_name].repo_url }}"
