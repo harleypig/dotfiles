@@ -10,4 +10,4 @@
 #        tasks_from: main.yml
 
 - name: Include add_repo test playbook (converge)
-  ansible.builtin.import_playbook: harleypig.env_setup.test_add_repo
+  ansible.builtin.import_playbook: ../../playbooks/test_add_repo.yml
