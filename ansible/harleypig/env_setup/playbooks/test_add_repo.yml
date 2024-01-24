@@ -1,0 +1,11 @@
+---
+- name: Test add_repo role
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Testing add_repo role
+      ansible.builtin.inclue_role:
+        name: harleypig.env_setup.add_repo
+        tasks_from: main.yml
