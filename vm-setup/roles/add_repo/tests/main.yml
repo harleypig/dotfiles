@@ -1,9 +1,8 @@
 ---
 # This file contains error handling tests for the add_repo role
 - hosts: localhost
-  # Test handling of an undefined repository
-# This file contains error handling tests for the add_repo role
 
+#-----------------------------------------------------------------------------
 # Test handling of an undefined repository
 - name: Attempt to add an undefined repository
   block:
@@ -18,6 +17,7 @@
         that: result is failed
         fail_msg: "Adding an undefined repository did not fail as expected"
 
+#-----------------------------------------------------------------------------
 # Test handling when required variables are not defined
 - name: Attempt to add a repository without required variables
   block:
@@ -32,6 +32,7 @@
         that: result is failed
         fail_msg: "Adding a repository without required variables did not fail as expected"
 
+#-----------------------------------------------------------------------------
 # Test handling of key installation failure
 - name: Simulate key installation failure
   block:
@@ -46,6 +47,7 @@
         that: result is failed
         fail_msg: "Key installation failure was not handled as expected"
 
+#-----------------------------------------------------------------------------
 # Test handling of repository addition failure
 - name: Simulate repository addition failure
   block:
