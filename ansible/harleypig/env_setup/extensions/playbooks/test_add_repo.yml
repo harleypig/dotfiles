@@ -6,6 +6,6 @@
 
   tasks:
     - name: Testing add_repo role
-      ansible.builtin.inclue_role:
+      ansible.builtin.include_role:
         name: harleypig.env_setup.add_repo
         tasks_from: main.yml
