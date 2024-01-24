@@ -3,19 +3,18 @@
 - hosts: localhost
 
 #-----------------------------------------------------------------------------
-# Test handling of an undefined repository
-- name: Attempt to add an undefined repository
-  block:
-    - name: Run add_repo with an undefined repository
-      include_role:
-        name: add_repo
-      vars:
-        repo_list: ['undefined_repo']
-  rescue:
-    - name: Assert failure when adding an undefined repository
-      assert:
-        that: result is failed
-        fail_msg: "Adding an undefined repository did not fail as expected"
+  - name: Test handling of an undefined repository
+    block:
+      - name: Run add_repo with an undefined repository
+        include_role:
+          name: add_repo
+        vars:
+          repo_list: ['undefined_repo']
+    rescue:
+      - name: Assert failure when adding an undefined repository
+        assert:
+          that: result is failed
+          fail_msg: "Adding an undefined repository did not fail as expected"
 
 #-----------------------------------------------------------------------------
 # Test handling when required variables are not defined
