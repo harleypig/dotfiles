@@ -16,6 +16,8 @@
     label: "{{ item }}"
 
 - name: "Install Repository Public Key for {{ repo_name }}"
+  debug:
+    msg: "Installing public key with url: {{ key_url }}, for repository: {{ repo_name }}"
   apt_key:
     url: "{{ key_url }}"
     state: present
