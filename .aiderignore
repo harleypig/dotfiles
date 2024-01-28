@@ -1,5 +1,6 @@
-lib/*
+archive/*
 bin/*
-tests/*
+lib/*
 shell_startup.d/*
-env_setup/*
+tests/*
+vm-setup/*
