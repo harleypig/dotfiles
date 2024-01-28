@@ -1,2 +1,5 @@
 lib/*
-shell_startup.d/diff
+bin/*
+tests/*
+shell_startup.d/*
+env_setup/*
