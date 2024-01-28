@@ -1,6 +1,6 @@
 ---
 platforms:
-  - name: ubuntu:20.04
+  - name: instance
     image: ubuntu:20.04
     #pre_build_image: true
     # you might want to add your own variables here based on what provisioning
