@@ -1,19 +1,23 @@
 #!/bin/bash
 
 ##############################################################################
-# Final cleanup of PATH and LD_LIBRARY_PATH environment variables. There are
-# some duplicate paths, some paths that don't exist and some paths should come
-# at the beginning of the path, while others should appear at the end of the
-# path.
+# Cleanup of a path variable (a string with values separated by colons).
 #
-# Entries in PATH_SHOULD_BE_{FIRST,LAST} should be the 'real' path; i.e., the
-# path returned from the above 'get_real_dir' function.
+# This script will remove duplicate paths and paths that don't exist. Cleanup
+# will also reorder the values based on values in environment variables named
+# SHOULD_BE_FIRST and SHOULD_BE_LAST, where the value is a colon separated
+# list of paths in the order you want them to appear in the final output.
 #
-# These paths should appear at the beginning of the PATH list.
-#PATH_SHOULD_BE_FIRST['/first']=1
+# There are also the SHOULD_BE_IGNORED and SHOULD_BE_STRIPPED environment
+# variables. These are also colon separated string of paths. The order for
+# these don't matter.
 #
-# These paths should appear at the end of the PATH list.
-#SHOULD_BE_LAST['/last']=1
+# SHOULD_BE_STRIPPED will remove the path from the final output. These values
+# should be the same *as they appear in the original* because other entries
+# may resolve to the same directory.
+#
+# SHOULD_BE_IGNORED will leave the path in it's original position in the final
+# output. These values should be the same *as they appear in the original*.
 
 #-----------------------------------------------------------------------------
 warn() { printf '%s\n' "$@" >&2; }
