@@ -2,13 +2,12 @@
 
 $HOME/bin
 $HOME/.local/bin
-/c/ProgramData/chocolatey/bin
-/usr/lib/ccache/bin
-/usr/lib/dart/bin
-$HOME/bin
 $HOME/.vim/bin
 $HOME/.cabal/bin
+$HOME/.cargo/bin
 $HOME/.minecraft/bin
+$HOME/go/bin
+$HOME/.dotnet/tools
 $HOME/Dropbox/bin
 $HOME/videos/bin
 $HOME/projects/depot_tools
