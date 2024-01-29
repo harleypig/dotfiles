@@ -7,6 +7,19 @@
 # path.
 
 #-----------------------------------------------------------------------------
+warn() { printf '%s\n' "$@" >&2; }
+
+die() {
+  (($#)) && warn "$@"
+  exit 1
+}
+
+debug() {
+  ((DEBUG)) || return 0
+  warn "$@"
+}
+
+#-----------------------------------------------------------------------------
 get_real_dir() {
   local d=$1
 
@@ -19,7 +32,7 @@ get_real_dir() {
   # is $dir a directory?
   [[ -d $dir ]] || return 1
 
-  echo "$dir"
+  printf '%s' "$dir"
   return 0
 }
 
@@ -31,12 +44,6 @@ jwc() {
   local IFS=':'
   echo "$*"
   return 0
-}
-
-#-----------------------------------------------------------------------------
-debug() {
-  ((DEBUG)) || return 0
-  printf '%s\n' "$@" >&2
 }
 
 #-----------------------------------------------------------------------------
@@ -105,6 +112,10 @@ build_path() {
 }
 
 #-----------------------------------------------------------------------------
+[[ -z $1 ]] && die "No environment variable name passed as parameter."
+[[ -z ${!1} ]] && die "Environment variable '$1' does not exist."
+
+#-----------------------------------------------------------------------------
 # Entries in PATH_SHOULD_BE_{FIRST,LAST} should be the 'real' path; i.e., the
 # path returned from the above 'get_real_dir' function.
 
@@ -122,9 +133,6 @@ debug "Cleaning path ..."
 #SHOULD_BE_LAST=()
 #SHOULD_BE_IGNORED=()
 #SHOULD_BE_STRIPPED=()
-
-# If using ccache, it needs to be first on the path
-SHOULD_BE_FIRST['/usr/lib/ccache/bin']=1
 
 NEWPATH=$(build_path 'PATH')
 export PATH="$NEWPATH:."
@@ -146,16 +154,9 @@ SHOULD_BE_FIRST['/usr/lib64']=1
 NEWLDPATH=$(build_path 'LD_LIBRARY_PATH')
 export LD_LIBRARY_PATH="$NEWLDPATH"
 
+#-----------------------------------------------------------------------------
+# Don't clutter the environment in case we are being sourced.
+
 unset -f get_real_dir jwc build_path debug addpath
 unset NEWPATH NEWLDPATH SHOULD_BE_FIRST SHOULD_BE_LAST
 unset SHOULD_BE_IGNORED SHOULD_BE_STRIPPED f
-
-if [ -z ${1+x} ]; then
-  echo "No environment variable name passed as parameter."
-  exit 1
-fi
-
-if [ -z ${!1+x} ]; then
-  echo "Environment variable '$1' does not exist."
-  exit 1
-fi
