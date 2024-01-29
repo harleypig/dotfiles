@@ -127,29 +127,33 @@ build_path() {
 
 #-----------------------------------------------------------------------------
 # Cleanup PATH variable
-debug "Cleaning path ..."
+debug "Cleaning $1 ..."
 
-#SHOULD_BE_FIRST=()
-#SHOULD_BE_LAST=()
-#SHOULD_BE_IGNORED=()
-#SHOULD_BE_STRIPPED=()
+# Reset arrays for new processing
+SHOULD_BE_FIRST=()
+SHOULD_BE_LAST=()
+SHOULD_BE_IGNORED=()
+SHOULD_BE_STRIPPED=()
 
-NEWPATH=$(build_path 'PATH')
-export PATH="$NEWPATH:."
+NEWVAR=$(build_path "$1")
+export $1="$NEWVAR"
 
 #-----------------------------------------------------------------------------
 # Cleanup LD_LIBRARY_PATH variable
-debug "Cleaning ld library path ..."
+debug "Cleaning $1 ..."
 
-LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib:/usr/lib64"
+if [[ $1 == 'LD_LIBRARY_PATH' ]]; then
+  SHOULD_BE_FIRST['/usr/lib']=1
+  SHOULD_BE_FIRST['/usr/lib64']=1
+fi
 
 SHOULD_BE_FIRST=()
-#SHOULD_BE_LAST=()
-#SHOULD_BE_IGNORED=()
-#SHOULD_BE_STRIPPED=()
+SHOULD_BE_LAST=()
+SHOULD_BE_IGNORED=()
+SHOULD_BE_STRIPPED=()
 
-SHOULD_BE_FIRST['/usr/lib']=1
-SHOULD_BE_FIRST['/usr/lib64']=1
+NEWVAR=$(build_path "$1")
+export $1="$NEWVAR"
 
 NEWLDPATH=$(build_path 'LD_LIBRARY_PATH')
 export LD_LIBRARY_PATH="$NEWLDPATH"
