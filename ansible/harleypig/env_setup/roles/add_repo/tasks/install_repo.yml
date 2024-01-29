@@ -7,6 +7,7 @@
       - filename is defined
       - repo_name is defined
     fail_msg: "{{ item }} is not defined for {{ repo_name }}"
+    quiet: yes
   with_items:
     - key_url
     - repo_url
@@ -15,13 +16,11 @@
   loop_control:
     label: "{{ item }}"
 
-- name: "Install Repository Public Key for {{ repo_name }}"
+- name: "Debug for {{ repo_name }}"
   debug:
-    msg: "Installing public key with url: {{ key_url }}, for repository: {{ repo_name }}"
-  debug:
-    msg: "Installing public key with url: {{ key_url }}, for repository: {{ repo_name }}"
+    msg: "public key url: {{ key_url }}. repository: {{ repo_name }}"
 
- - name: "Install Repository Public Key for {{ repo_name }}"
+- name: "Install Repository Public Key for {{ repo_name }}"
   apt_key:
     url: "{{ key_url }}"
     state: present
