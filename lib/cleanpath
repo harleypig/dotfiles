@@ -149,3 +149,13 @@ export LD_LIBRARY_PATH="$NEWLDPATH"
 unset -f get_real_dir jwc build_path debug addpath
 unset NEWPATH NEWLDPATH SHOULD_BE_FIRST SHOULD_BE_LAST
 unset SHOULD_BE_IGNORED SHOULD_BE_STRIPPED f
+
+if [ -z ${1+x} ]; then
+  echo "No environment variable name passed as parameter."
+  exit 1
+fi
+
+if [ -z ${!1+x} ]; then
+  echo "Environment variable '$1' does not exist."
+  exit 1
+fi
