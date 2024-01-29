@@ -5,6 +5,15 @@
 # some duplicate paths, some paths that don't exist and some paths should come
 # at the beginning of the path, while others should appear at the end of the
 # path.
+#
+# Entries in PATH_SHOULD_BE_{FIRST,LAST} should be the 'real' path; i.e., the
+# path returned from the above 'get_real_dir' function.
+#
+# These paths should appear at the beginning of the PATH list.
+#PATH_SHOULD_BE_FIRST['/first']=1
+#
+# These paths should appear at the end of the PATH list.
+#SHOULD_BE_LAST['/last']=1
 
 #-----------------------------------------------------------------------------
 warn() { printf '%s\n' "$@" >&2; }
@@ -116,47 +125,11 @@ build_path() {
 [[ -z ${!1} ]] && die "Environment variable '$1' does not exist."
 
 #-----------------------------------------------------------------------------
-# Entries in PATH_SHOULD_BE_{FIRST,LAST} should be the 'real' path; i.e., the
-# path returned from the above 'get_real_dir' function.
-
-# These paths should appear at the beginning of the PATH list.
-#PATH_SHOULD_BE_FIRST['/first']=1
-
-# These paths should appear at the end of the PATH list.
-#SHOULD_BE_LAST['/last']=1
-
-#-----------------------------------------------------------------------------
-# Cleanup PATH variable
+# Cleanup passed variable
 debug "Cleaning $1 ..."
 
-# Reset arrays for new processing
-SHOULD_BE_FIRST=()
-SHOULD_BE_LAST=()
-SHOULD_BE_IGNORED=()
-SHOULD_BE_STRIPPED=()
-
 NEWVAR=$(build_path "$1")
-export $1="$NEWVAR"
-
-#-----------------------------------------------------------------------------
-# Cleanup LD_LIBRARY_PATH variable
-debug "Cleaning $1 ..."
-
-if [[ $1 == 'LD_LIBRARY_PATH' ]]; then
-  SHOULD_BE_FIRST['/usr/lib']=1
-  SHOULD_BE_FIRST['/usr/lib64']=1
-fi
-
-SHOULD_BE_FIRST=()
-SHOULD_BE_LAST=()
-SHOULD_BE_IGNORED=()
-SHOULD_BE_STRIPPED=()
-
-NEWVAR=$(build_path "$1")
-export $1="$NEWVAR"
-
-NEWLDPATH=$(build_path 'LD_LIBRARY_PATH')
-export LD_LIBRARY_PATH="$NEWLDPATH"
+printf '%s' "$NEWVAR"
 
 #-----------------------------------------------------------------------------
 # Don't clutter the environment in case we are being sourced.
