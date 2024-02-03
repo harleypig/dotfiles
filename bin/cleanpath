@@ -60,15 +60,13 @@ jwc() {
 }
 
 #-----------------------------------------------------------------------------
-declare -A SHOULD_BE_FIRST SHOULD_BE_LAST SHOULD_BE_IGNORED SHOULD_BE_STRIPPED
-
 build_path() {
   local path="${1?Must pass path}"
 
-  declare -a PATHS PATH_FIRST PATH_NEW PATH_LAST
+  declare -a PATHS PATH_NEW PATH_LAST
   declare -A PATH_CHECK
 
-  IFS=':' read -ra PATHS <<< "${!path}"
+  IFS=':' read -ra PATHS <<< "${SHOULD_BE_FIRST}:${!path}:${SHOULD_BE_LAST}"
 
   for d in "${PATHS[@]}"; do
     debug "Checking $d ..."
