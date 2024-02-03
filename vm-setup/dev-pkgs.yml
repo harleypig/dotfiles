@@ -13,3 +13,5 @@
 #        state: present
 #        name:
 #          - bats
+#
+# install vim stuff like language servers
