@@ -1,0 +1,42 @@
+---
+- name: Install VirtualBox Guest Additions
+  hosts: all
+  become: yes
+
+  vars:
+    iso_path: /usr/share/virtualbox/VBoxGuestAdditions.iso
+    mount_path: /mnt/vbox_guest_additions
+
+  tasks:
+    - name: Create mount directory for VirtualBox Guest Additions
+      file:
+        path: "{{ mount_path }}"
+        state: directory
+
+    - name: Mount VirtualBox Guest Additions ISO
+      ansible.builtin.mount:
+        src: "{{ iso_path }}"
+        path: "{{ mount_path }}"
+        fstype: iso9660
+        opts: loop
+        state: mounted
+
+    - name: Install VirtualBox Guest Additions
+      command: "{{ mount_path }}/VBoxLinuxAdditions.run"
+      register: vbox_guest_additions_result
+      ignore_errors: yes
+
+    - name: Unmount VirtualBox Guest Additions ISO
+      ansible.builtin.mount:
+        path: "{{ mount_path }}"
+        state: unmounted
+
+    - name: Remove mount directory for VirtualBox Guest Additions
+      file:
+        path: "{{ mount_path }}"
+        state: absent
+      when: vbox_guest_additions_result is defined and vbox_guest_additions_result.rc != 0
+
+    - name: Reboot the system if installation succeeded
+      ansible.builtin.reboot:
+      when: vbox_guest_additions_result is defined and vbox_guest_additions_result.rc == 0
