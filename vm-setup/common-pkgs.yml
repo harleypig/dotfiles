@@ -23,7 +23,7 @@
           - expect
           - git
           - jq
-          - linux-headers-$(name -r)
+          - "linux-headers-{{ ansible_kernel }}"
           - markdown
           - mlocate
           - pandoc
