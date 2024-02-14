@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Ensure script is run with a directory argument
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <TERRAFORM_DIRECTORY>"
+    exit 1
+fi
+
+# Navigate to the Terraform directory
+cd "$1"
+
+# Check if the directory exists and is a Terraform directory
+if [ ! -d .terraform ]; then
+    echo "This is not a Terraform directory."
+    exit 1
+fi
+
+# Run terraform-docs using the official Docker image
+docker run --rm -v "$(pwd):/terraform-docs" quay.io/terraform-docs/terraform-docs:latest markdown /terraform-docs
