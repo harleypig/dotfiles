@@ -1,6 +1,6 @@
 ---
 - name: Install VirtualBox Guest Additions
-  hosts: all
+  hosts: localhost
   become: yes
 
   vars:
