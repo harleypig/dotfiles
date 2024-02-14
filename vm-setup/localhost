@@ -1,3 +1,2 @@
 [localhost]
 ansible_connection=local
-ansible_gather_facts=no
