@@ -20,3 +20,4 @@ gnome_settings_titlebar_uses_system_font: true
 gnome_settings_disabled_services:
   - apt-daily.service
   - apt-daily-upgrade.service
+gnome_settings_tilix_package: tilix
