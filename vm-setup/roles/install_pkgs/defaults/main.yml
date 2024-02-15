@@ -1,0 +1,12 @@
+# Define package groups
+package_groups:
+  common:
+    - curl
+    - git
+    - htop
+    - jq
+    - tree
+    - unzip
+    - vim
+    - wget
+    - zip
