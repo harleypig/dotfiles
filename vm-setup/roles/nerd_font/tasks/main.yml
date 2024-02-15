@@ -22,7 +22,7 @@
   changed_when: false
 
 
-- - name: Get installed Nerd Font version
+- name: Get installed Nerd Font version
    shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk '{print $NF}' | tr -d '()' "
    register: installed_nerd_font_version
    failed_when: false
@@ -41,9 +41,9 @@
  - name: Skip download if the installed version matches the latest version
    meta: end_play
    when: not nerd_font_version_mismatch
-  file:
-    path: "{{ nerd_font_local_dir }}"
-    state: directory
+   file:
+     path: "{{ nerd_font_local_dir }}"
+     state: directory
 
 -  when: not file_check.stat.exists or nerd_font_latest_release is changed
   get_url:
