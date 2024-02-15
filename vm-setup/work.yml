@@ -3,4 +3,5 @@
 
   roles:
     - role: common_pkgs
+    - role: nerd_font
     - role: add_iac
