@@ -31,9 +31,6 @@
           Accept: "application/vnd.github.v3+json"
       register: git_bug_release
 
-    - name: Set git-bug download URL
-      # Removed the incorrect set_fact for git_bug_download_url
-
     - name: Set git-bug download URL and version
       set_fact:
         git_bug_download_url: "{{ git_bug_release.json.assets | selectattr('name', 'match', git_bug_binary_pattern) | map(attribute='browser_download_url') | first }}"
