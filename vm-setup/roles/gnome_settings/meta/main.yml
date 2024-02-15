@@ -1,4 +1,4 @@
 dependencies:
 - role: install_pkgs
   vars:
-    package_groups: {'gnome_settings': []}
+    package_groups: "gnome_settings"
