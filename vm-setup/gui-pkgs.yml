@@ -1,11 +1,12 @@
 - name: GUI Packages
   hosts: localhost
-  become: yes
+  #become: yes
 
   #debugger: on_failed
 
   tasks:
     - name: Install GUI Packages
+      become: yes
       apt:
         state: present
         name:
@@ -23,6 +24,6 @@
     #    msg: "Tilix profile file exists: {{ tilix_profile_file.stat.exists }}"
 
     - name: Load Tilix profile if file exists
-      shell: dconf load /com/gexperts/Tilix/ < "{{ playbook_dir }}/tilix-profile.dconf"
+      shell: "dconf load /com/gexperts/Tilix/ < {{ playbook_dir }}/tilix-profile.dconf"
       when: tilix_profile_file.stat.exists
       notify: Restart Tilix
