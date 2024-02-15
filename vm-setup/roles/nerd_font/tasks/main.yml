@@ -43,8 +43,9 @@
 - name: Skip download if the installed version matches the latest version
   meta: end_play
   when: not nerd_font_version_mismatch
-  - name: Ensure Nerd Fonts directory exists
-    file:
+
+- name: Ensure Nerd Fonts directory exists
+  file:
     path: "{{ nerd_font_local_dir }}"
     state: directory
   when: nerd_font_version_mismatch
@@ -54,15 +55,15 @@
     url: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_local_filename }}"
     mode: '0644'
-    when: nerd_font_version_mismatch
+  when: nerd_font_version_mismatch
 
 - name: Unarchive Nerd Font if version mismatch
   unarchive:
     src: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_local_dir }}"
     remote_src: yes
-    when: nerd_font_version_mismatch
+  when: nerd_font_version_mismatch
 
 - name: Update font cache
   command: fc-cache -fv
-   when: nerd_font_version_mismatch
+  when: nerd_font_version_mismatch
