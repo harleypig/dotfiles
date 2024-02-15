@@ -1,10 +1,11 @@
 ---
-- name: Install all package groups
-  become: yes
+-  become: yes
 
   vars:
     all_groups: "{{ package_groups.keys() }}"
-    requested_groups: "{{ install_group | default(all_groups) }}"
+    exclude_groups: "{{ exclude_group | default([]) }}"
+    is_exclusion_list: "{{ is_exclude_list | default(false) }}"
+    requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
 
   block:
     - name: Validate requested package groups
