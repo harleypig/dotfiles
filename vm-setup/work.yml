@@ -6,3 +6,4 @@
     - role: common_pkgs
     - role: nerd_font
     - role: add_iac
+    - role: git_bug
