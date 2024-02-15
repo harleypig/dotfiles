@@ -4,13 +4,13 @@
 
   roles:
     - role: install_pkgs
+      is_exclude_list: true
       exclude_group:
         - hledger
-      is_exclude_list: true
     - role: pip_pkgs
+      is_exclude_list: true
       exclude_group:
         - linode
-      is_exclude_list: true
     - role: nerd_font
     - role: add_iac
     - role: git_bug

@@ -1,8 +1,0 @@
----
-- hosts: localhost
-  become: yes
-
-  roles:
-    - role: pip_pkgs
-      vars:
-        requested_group: common
