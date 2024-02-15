@@ -1,7 +1,28 @@
 ---
-- name: Install Packages by Group
+- name: Install all package groups
   become: yes
-  apt:
-    state: latest
-    update_cache: yes
-    name: "{{ package_groups[install_group | default('common')] }}"
+  vars:
+    all_groups: "{{ package_groups.keys() }}"
+    requested_groups: "{{ install_group | default(all_groups) }}"
+
+  block:
+    - name: Validate requested package groups
+      fail:
+        msg: >
+          These package groups are not defined: {{ requested_groups | difference(all_groups) | join(', ') }}.
+          Available package groups: {{ all_groups | join(', ') }}
+      when: requested_groups | difference(all_groups) | length > 0
+
+    - name: Install requested package groups
+      apt:
+        state: latest
+        update_cache: yes
+        name: "{{ package_groups[item] }}"
+      loop: "{{ requested_groups }}"
+      loop_control:
+        loop_var: item
+
+  rescue:
+    - name: Capture validation failure
+      debug:
+        msg: "Validation failed for the requested package groups. Please check the package group names and try again."
