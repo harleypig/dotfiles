@@ -25,7 +25,7 @@
 
 
 - name: Get installed Nerd Font version
-   shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk '{print $NF}' | tr -d '()' "
+   shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk -F': ' '{print $2}' | tr -d '()' "
    register: installed_nerd_font_version
    failed_when: false
    changed_when: false
