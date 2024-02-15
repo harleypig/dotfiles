@@ -23,6 +23,7 @@ package_groups:
     - mlocate
     #- pandoc
     - parallel
+    - python3-pip
     - tmux
     - tree
     - unzip
