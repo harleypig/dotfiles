@@ -26,3 +26,8 @@
       shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
       when: tilix_profile_file.stat.exists
       notify: Restart Tilix
+
+  handlers:
+    - name: Restart Tilix
+      become: yes
+      shell: "pkill tilix || true"
