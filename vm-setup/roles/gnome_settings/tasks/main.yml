@@ -23,7 +23,7 @@
   with_items: "{{ gnome_settings_desktop_interface }}"
 
 - name: Set titlebar font
-  command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font }}
+  command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font | lower }}
 
 - name: Disable services
   become: yes
