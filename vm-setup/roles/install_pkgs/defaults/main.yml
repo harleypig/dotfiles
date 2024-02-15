@@ -33,3 +33,6 @@ package_groups:
     - fonts-inconsolata
     - gnome-tweaks
     - tilix
+  hledger:
+    - hledger
+    - hledger-ui
