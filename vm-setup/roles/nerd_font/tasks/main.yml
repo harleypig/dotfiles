@@ -10,6 +10,11 @@
   register: nerd_font_latest_release
   changed_when: false
 
+- name: Fail if GitHub API rate limit is exceeded
+  fail:
+    msg: "GitHub API rate limit exceeded. Please try again later."
+  when: nerd_font_latest_release.status == 403
+
 - name: Set Nerd Font download URL and version
   set_fact:
     nerd_font_version: "{{ nerd_font_latest_release.json.tag_name }}"
