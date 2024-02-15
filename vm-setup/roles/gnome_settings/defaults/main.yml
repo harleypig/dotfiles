@@ -1,7 +1,6 @@
 ---
 gnome_settings_show_trash: false
 gnome_settings_show_home: false
-tilix_profile_filename: "{{ playbook_dir }}/tilix-profile.dconf"
 gnome_settings_desktop_background:
   - picture-uri ''
   - picture-uri-dark ''
