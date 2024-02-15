@@ -29,7 +29,7 @@
         - picture-uri ''
         - picture-uri-dark ''
         - picture-options 'none'
-        - primary-color '#27285C'
+        - primary-color '#00008B'
         - show-desktop-icons false
 
     - name: Set desktop interface options
