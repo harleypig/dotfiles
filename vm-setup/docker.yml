@@ -4,12 +4,3 @@
 
   #debugger: on_failed
 
-  tasks:
-    - name: Install Common Packages
-      apt:
-        state: latest
-        update_cache: yes
-        name:
-          - docker-ce
-          - docker-compose
-          - docker-scan-plugin
