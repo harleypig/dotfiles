@@ -1,13 +1,11 @@
-- name: IaC Packages
-  hosts: localhost
+-  hosts: localhost
   become: yes
 
   #debugger: on_failed
 
   tasks:
-    - name: Install IaC Packages
-      apt:
-        state: present
-        name:
-          - terraform
-          - packer
+  roles:
+    - role: add_repo
+      vars:
+        repo_list:
+          - hashicorp
