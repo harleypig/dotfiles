@@ -18,7 +18,3 @@
          name:
            - terraform
            - packer
-     - role: add_repo
-       vars:
-         repo_list:
-           - hashicorp
