@@ -2,4 +2,5 @@
 - hosts: all
 
   roles:
+    - role: common_pkgs
     - role: add_iac

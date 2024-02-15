@@ -1,0 +1,25 @@
+---
+- name: Install Common Packages
+  apt:
+    state: latest
+    update_cache: yes
+    name:
+      - ansible
+      - ansible-lint
+      - aptitude
+      - build-essential
+      - ca-certificates
+      - curl
+      - dconf-editor
+      - dkms
+      - dos2unix
+      - elinks
+      - expect
+      - git
+      - jq
+      - "linux-headers-{{ ansible_kernel }}"
+      - markdown
+      - mlocate
+      - pandoc
+      - parallel
+      - tmux
