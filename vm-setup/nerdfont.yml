@@ -2,4 +2,4 @@
 - hosts: localhost
   become: yes
   roles:
-    - role: your_role_name
+    - role: nerd_font

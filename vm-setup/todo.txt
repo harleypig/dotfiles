@@ -1,0 +1,4 @@
+Add task to set sudoers for a user:
+  Defaults:your_username timestamp_timeout=60
+
+get git-bug setup for this repo
