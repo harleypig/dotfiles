@@ -1,60 +1,7 @@
 ---
-# fc-list | grep -i inconsolata
+---
+- hosts: localhost
+  become: yes
 
-- import_playbook: font.yml
-
-- name: Set GNOME desktop settings
-  hosts: localhost
-  #become: true
-
-  tasks:
-    - name: Install gnome-shell-extensions
-      become: yes
-      apt:
-        state: present
-        name:
-          - gnome-shell-extensions
-          - gnome-shell-extension-desktop-icons-ng
-          - gnome-tweaks
-
-    - name: Hide trash icon
-      command: gsettings set org.gnome.shell.extensions.ding show-trash false
-
-    - name: Hide home icon
-      command: gsettings set org.gnome.shell.extensions.ding show-home false
-
-    - name: Set desktop background options
-      shell: "gsettings set org.gnome.desktop.background {{ item }}"
-      with_items:
-        - picture-uri ''
-        - picture-uri-dark ''
-        - picture-options 'none'
-        - primary-color '#00008B'
-        - show-desktop-icons false
-
-    - name: Set desktop interface options
-      shell: "gsettings set org.gnome.desktop.interface {{ item }}"
-      with_items:
-        - clock-format '24h'
-        - clock-show-date true
-        - clock-show-seconds false
-        - clock-show-weekday true
-        - color-scheme 'prefer-dark'
-        - monospace-font-name 'Inconsolata Nerd Font Mono 12'
-        - font-name 'Inconsolata Nerd Font 12'
-        - document-font-name 'Inconsolata Nerd Font 12'
-
-    - name: Set titlebar font
-      #command: gsettings set org.gnome.desktop.wm.preferences titlebar-font 'Inconsolata Nerd Font 12'
-      command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font true
-
-    - name: Disable update, upgrade notifier
-      become: yes
-      systemd:
-        name: "{{ item }}"
-        enabled: no
-        masked: yes
-        state: stopped
-      loop:
-        - apt-daily.service
-        - apt-daily-upgrade.service
+  roles:
+    - role: gnome_settings
