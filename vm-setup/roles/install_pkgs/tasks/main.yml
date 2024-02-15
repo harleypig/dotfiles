@@ -1,30 +1,7 @@
 ---
-- name: Install Common Packages
+- name: Install Packages by Group
+  become: yes
   apt:
     state: latest
     update_cache: yes
-    name:
-      - curl
-      - unzip
-      - ansible
-      - ansible-lint
-      - aptitude
-      - build-essential
-      - ca-certificates
-      - curl
-      - dconf-editor
-      - dkms
-      - dos2unix
-      - elinks
-      - expect
-      - git
-      - jq
-      - "linux-headers-{{ ansible_kernel }}"
-      - markdown
-      - mlocate
-      - pandoc
-      - parallel
-      - tmux
-      - docker-ce
-      - docker-compose
-      - docker-scan-plugin
+    name: "{{ package_groups[install_group | default('common')] }}"
