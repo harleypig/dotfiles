@@ -8,14 +8,6 @@
   meta: end_play
   when: file_check.stat.exists
 
-- name: Install curl and unzip
-  apt:
-    state: latest
-    update_cache: yes
-    name:
-      - curl
-      - unzip
-
 - name: Create directory for Nerd Fonts
   file:
     path: "{{ nerd_font_local_dir }}"

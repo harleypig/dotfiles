@@ -4,6 +4,8 @@
     state: latest
     update_cache: yes
     name:
+      - curl
+      - unzip
       - ansible
       - ansible-lint
       - aptitude
