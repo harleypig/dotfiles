@@ -22,8 +22,3 @@
       loop: "{{ requested_groups }}"
       loop_control:
         loop_var: item
-
-  rescue:
-    - name: Capture validation failure
-      debug:
-        msg: "Validation failed for the requested package groups. Please check the package group names and try again."
