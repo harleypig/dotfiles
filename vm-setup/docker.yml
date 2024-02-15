@@ -1,6 +1,0 @@
-- name: Docker Stuff
-  hosts: localhost
-  become: yes
-
-  #debugger: on_failed
-
