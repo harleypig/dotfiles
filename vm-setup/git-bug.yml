@@ -37,8 +37,10 @@
 
     - name: Set git-bug download URL and version
       set_fact:
-        git_bug_download_url: "{{ git_bug_release.json.assets[0].browser_download_url }}"
+        git_bug_download_url: "{{ git_bug_release.json.assets | selectattr('name', 'match', git_bug_binary_pattern) | map(attribute='browser_download_url') | first }}"
         git_bug_latest_version: "{{ git_bug_release.json.tag_name }}"
+      vars:
+        git_bug_binary_pattern: "git-bug_{{ ansible_system | lower }}_{{ ansible_userspace_architecture }}"
 
     - name: Debug downloaded git-bug binary information
       debug:
