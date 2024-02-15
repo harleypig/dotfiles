@@ -10,42 +10,42 @@
   register: nerd_font_latest_release
   changed_when: false
 
-- name: Debug latest Nerd Font release information
-  debug:
-    var: nerd_font_latest_release
-
-- name: Exit play after debug
-  meta: end_play
-
 - name: Fail if GitHub API rate limit is exceeded
   fail:
     msg: "GitHub API rate limit exceeded. Please try again later."
   when: nerd_font_latest_release.status == 403
 
-- name: Set Nerd Font download URL and version
+- name: Set Nerd Font version
   set_fact:
     nerd_font_version: "{{ nerd_font_latest_release.json.tag_name }}"
-    nerd_font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerd_font_version }}/{{ nerd_font_name }}.zip"
+
+- name: Set Nerd Font filename
+  set_fact:
+    nerd_font_filename: "{{ nerd_font_name }}-{{ nerd_font_version }}.{{ nerd_font_archive }}"
+
+- name: Set Nerd Font download URL
+  set_fact:
+    nerd_font_url: "{{ nerd_font_file_url }}/{{ nerd_font_version }}/{{ nerd_font_filename }}"
+    nerd_font_path: "{{ nerd_font_dir }}/{{ nerd_font_filename }}"
 
 - name: Check if Nerd Font already installed
   stat:
-    path: "{{ nerd_font_local_filename }}"
+    path: "{{ nerd_font_path }}"
   register: file_check
   changed_when: false
 
+# XXX: Figure out a way to get the installed font version
+#- name: Get installed Nerd Font version
+#  shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk -F': ' '{print $2}' | tr -d '()' "
+#  register: installed_nerd_font_version
+#  failed_when: false
+#  changed_when: false
+#  check_mode: no
 
-
-- name: Get installed Nerd Font version
-  shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk -F': ' '{print $2}' | tr -d '()' "
-  register: installed_nerd_font_version
-  failed_when: false
-  changed_when: false
-  check_mode: no
-
-- name: Set fact for installed Nerd Font version
-  set_fact:
-    installed_nerd_font_version: "{{ installed_nerd_font_version.stdout | default('0.0.0') }}"
-  when: installed_nerd_font_version.rc == 0
+#- name: Set fact for installed Nerd Font version
+#  set_fact:
+#    installed_nerd_font_version: "{{ installed_nerd_font_version.stdout | default('0.0.0') }}"
+#  when: installed_nerd_font_version.rc == 0
 
 - name: Compare installed and latest Nerd Font versions
   set_fact:
@@ -57,21 +57,21 @@
 
 - name: Ensure Nerd Fonts directory exists
   file:
-    path: "{{ nerd_font_local_dir }}"
+    path: "{{ nerd_font_dir }}"
     state: directory
   when: nerd_font_version_mismatch
 
 - name: Download Nerd Font if version mismatch
   get_url:
     url: "{{ nerd_font_url }}"
-    dest: "{{ nerd_font_local_filename }}"
+    dest: "{{ nerd_font_dir }}/{{ nerd_font_filename }}"
     mode: '0644'
   when: nerd_font_version_mismatch
 
 - name: Unarchive Nerd Font if version mismatch
   unarchive:
     src: "{{ nerd_font_url }}"
-    dest: "{{ nerd_font_local_dir }}"
+    dest: "{{ nerd_font_dir }}"
     remote_src: yes
   when: nerd_font_version_mismatch
 

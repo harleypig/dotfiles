@@ -2,3 +2,5 @@ Add task to set sudoers for a user:
   Defaults:your_username timestamp_timeout=60
 
 get git-bug setup for this repo
+
+figure out how to use ansible-vault so I don't have to keep typing my password
