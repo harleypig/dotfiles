@@ -1,0 +1,9 @@
+---
+pip_package_groups:
+  common:
+    - aider-chat
+    - pre-commit
+    - pudb
+    - yamllint
+  linode:
+    - linode-cli

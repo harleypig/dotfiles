@@ -1,0 +1,13 @@
+---
+- name: Install pip
+  become: yes
+  apt:
+    name: python3-pip
+    state: latest
+
+- name: Install requested pip package groups
+  pip:
+    state: latest
+    name: "{{ item }}"
+  loop: "{{ pip_package_groups[requested_group] }}"
+  when: requested_group in pip_package_groups
