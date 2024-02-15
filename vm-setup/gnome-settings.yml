@@ -1,7 +1,0 @@
----
----
-- hosts: localhost
-  become: yes
-
-  roles:
-    - role: gnome_settings
