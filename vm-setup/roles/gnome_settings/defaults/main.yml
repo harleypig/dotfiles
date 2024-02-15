@@ -1,12 +1,15 @@
 ---
 gnome_settings_show_trash: false
 gnome_settings_show_home: false
+gnome_settings_titlebar_uses_system_font: true
+
 gnome_settings_desktop_background:
   - picture-uri ''
   - picture-uri-dark ''
   - picture-options 'none'
   - primary-color '#00008B'
   - show-desktop-icons false
+
 gnome_settings_desktop_interface:
   - clock-format '24h'
   - clock-show-date true
@@ -16,8 +19,7 @@ gnome_settings_desktop_interface:
   - monospace-font-name 'Inconsolata Nerd Font Mono 12'
   - font-name 'Inconsolata Nerd Font 12'
   - document-font-name 'Inconsolata Nerd Font 12'
-gnome_settings_titlebar_uses_system_font: true
+
 gnome_settings_disabled_services:
   - apt-daily.service
   - apt-daily-upgrade.service
-gnome_settings_tilix_package: tilix

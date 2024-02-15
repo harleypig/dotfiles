@@ -6,6 +6,4 @@
 
 - name: Load Tilix profile if file exists
   shell: "dconf load /com/gexperts/Tilix/ < {{ gnome_settings_tilix_profile_filename }}"
-  shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
   when: tilix_profile_file.stat.exists
-  notify: Restart Tilix
