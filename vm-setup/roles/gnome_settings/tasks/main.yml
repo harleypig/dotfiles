@@ -9,10 +9,10 @@
       - gnome-tweaks
 
 - name: Hide trash icon
-  command: gsettings set org.gnome.shell.extensions.ding show-trash {{ gnome_settings_show_trash }}
+  command: gsettings set org.gnome.shell.extensions.ding show-trash {{ gnome_settings_show_trash | lower }}
 
 - name: Hide home icon
-  command: gsettings set org.gnome.shell.extensions.ding show-home {{ gnome_settings_show_home }}
+  command: gsettings set org.gnome.shell.extensions.ding show-home {{ gnome_settings_show_home | lower }}
 
 - name: Set desktop background options
   shell: "gsettings set org.gnome.desktop.background {{ item }}"
