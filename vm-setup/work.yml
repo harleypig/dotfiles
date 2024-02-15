@@ -15,3 +15,4 @@
     - role: add_iac
     - role: git_bug
     - role: gnome_settings
+    - role: gnome_settings
