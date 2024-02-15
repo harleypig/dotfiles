@@ -4,9 +4,6 @@
 
   roles:
     - role: install_pkgs
-      install_group:
-        - gui
-        - badgroup
     - role: nerd_font
     - role: add_iac
     - role: git_bug
