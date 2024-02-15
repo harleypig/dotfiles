@@ -1,0 +1,23 @@
+---
+- name: Install global pip packages
+  hosts: localhost
+  become: true
+
+  tasks:
+    - name: Install pip
+      package:
+        name: python3-pip
+        state: latest
+
+    - name: Install pip packages
+      pip:
+        name:
+          - aider-chat
+          - ansible
+          - pre-commit
+          - pudb
+          - yamllint
+        state: latest
+
+# XXX: This needs to be installed on a subset of systems.
+#          - linode-cli
