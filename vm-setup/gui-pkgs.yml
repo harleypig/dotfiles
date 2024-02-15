@@ -23,6 +23,6 @@
     #    msg: "Tilix profile file exists: {{ tilix_profile_file.stat.exists }}"
 
     - name: Load Tilix profile if file exists
-      command: dconf load /com/gexperts/Tilix/ < "{{ playbook_dir }}/tilix-profile.dconf"
+      shell: dconf load /com/gexperts/Tilix/ < "{{ playbook_dir }}/tilix-profile.dconf"
       when: tilix_profile_file.stat.exists
       notify: Restart Tilix
