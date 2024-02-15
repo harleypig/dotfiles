@@ -1,8 +1,26 @@
 ---
+- name: Get the latest release version of Nerd Font
+  uri:
+    url: "{{ nerd_font_version_url }}"
+    method: GET
+    return_content: yes
+    status_code: 200
+    headers:
+      Accept: "application/vnd.github.v3+json"
+  register: nerd_font_latest_release
+  changed_when: false
+
+- name: Set Nerd Font download URL and version
+  set_fact:
+    nerd_font_version: "{{ nerd_font_latest_release.json.tag_name }}"
+    nerd_font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerd_font_version }}/{{ nerd_font_name }}.zip"
+  when: nerd_font_latest_release is changed
+
 - name: Check if Nerd Font already installed
   stat:
     path: "{{ nerd_font_local_filename }}"
   register: file_check
+  changed_when: false
 
 
 - name: Create directory for Nerd Fonts
@@ -11,7 +29,7 @@
     state: directory
 
 - name: Download Nerd Font
-  when: not file_check.stat.exists
+  when: not file_check.stat.exists or nerd_font_latest_release is changed
   get_url:
     url: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_local_filename }}"
@@ -19,7 +37,7 @@
 
 - name: Unzip Nerd Font
   unarchive:
-    src: "{{ nerd_font_local_filename }}"
+    src: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_local_dir }}"
     remote_src: yes
 
