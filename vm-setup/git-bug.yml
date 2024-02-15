@@ -32,8 +32,7 @@
       register: git_bug_release
 
     - name: Set git-bug download URL
-      set_fact:
-        git_bug_download_url: "{{ git_bug_release.json.assets[0].browser_download_url }}"
+      # Removed the incorrect set_fact for git_bug_download_url
 
     - name: Set git-bug download URL and version
       set_fact:
@@ -41,6 +40,12 @@
         git_bug_latest_version: "{{ git_bug_release.json.tag_name }}"
       vars:
         git_bug_binary_pattern: "git-bug_{{ ansible_system | lower }}_{{ ansible_userspace_architecture }}"
+      when: git_bug_release.json.assets | selectattr('name', 'match', git_bug_binary_pattern) | list | count > 0
+
+    - name: Fail if no matching git-bug binary is found
+      fail:
+        msg: "No matching git-bug binary found for pattern {{ git_bug_binary_pattern }}"
+      when: git_bug_release.json.assets | selectattr('name', 'match', git_bug_binary_pattern) | list | count == 0
 
     - name: Debug downloaded git-bug binary information
       debug:
