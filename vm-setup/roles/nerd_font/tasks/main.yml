@@ -16,30 +16,49 @@
     nerd_font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerd_font_version }}/{{ nerd_font_name }}.zip"
   when: nerd_font_latest_release is changed
 
-- name: Check if Nerd Font already installed
-  stat:
+-  stat:
     path: "{{ nerd_font_local_filename }}"
   register: file_check
   changed_when: false
 
 
-- name: Create directory for Nerd Fonts
+- - name: Get installed Nerd Font version
+   shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk '{print $NF}' | tr -d '()' "
+   register: installed_nerd_font_version
+   failed_when: false
+   changed_when: false
+   check_mode: no
+
+ - name: Set fact for installed Nerd Font version
+   set_fact:
+     installed_nerd_font_version: "{{ installed_nerd_font_version.stdout | default('0.0.0') }}"
+   when: installed_nerd_font_version.rc == 0
+
+ - name: Compare installed and latest Nerd Font versions
+   set_fact:
+     nerd_font_version_mismatch: "{{ installed_nerd_font_version != nerd_font_version }}"
+
+ - name: Skip download if the installed version matches the latest version
+   meta: end_play
+   when: not nerd_font_version_mismatch
   file:
     path: "{{ nerd_font_local_dir }}"
     state: directory
 
-- name: Download Nerd Font
-  when: not file_check.stat.exists or nerd_font_latest_release is changed
+-  when: not file_check.stat.exists or nerd_font_latest_release is changed
   get_url:
     url: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_local_filename }}"
     mode: '0644'
+    when: nerd_font_version_mismatch
 
-- name: Unzip Nerd Font
+-
   unarchive:
     src: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_local_dir }}"
     remote_src: yes
+    when: nerd_font_version_mismatch
 
-- name: Update font cache
+-
   command: fc-cache -fv
+   when: nerd_font_version_mismatch
