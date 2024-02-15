@@ -47,6 +47,7 @@
     file:
     path: "{{ nerd_font_local_dir }}"
     state: directory
+  when: nerd_font_version_mismatch
 
 - name: Download Nerd Font if version mismatch
   get_url:
