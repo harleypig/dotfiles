@@ -45,7 +45,6 @@
     - name: Debug downloaded git-bug binary information
       debug:
         msg: "Downloaded git-bug binary from {{ git_bug_download_url }} with version {{ git_bug_latest_version }}"
-      #when: git_bug_download_result is changed
 
     - name: Compare installed and latest git-bug versions
       set_fact:
