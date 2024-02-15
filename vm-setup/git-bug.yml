@@ -1,0 +1,34 @@
+---
+- name: Download and install git-bug
+  hosts: localhost
+  become: yes
+  vars:
+    git_bug_repo: "MichaelMure/git-bug"
+    git_bug_binary_path: "/usr/local/bin/git-bug"
+
+  tasks:
+    - name: Get the latest release of git-bug from GitHub
+      uri:
+        url: "https://api.github.com/repos/{{ git_bug_repo }}/releases/latest"
+        method: GET
+        return_content: yes
+        status_code: 200
+        headers:
+          Accept: "application/vnd.github.v3+json"
+      register: git_bug_release
+
+    - name: Set git-bug download URL
+      set_fact:
+        git_bug_download_url: "{{ git_bug_release.json.assets[0].browser_download_url }}"
+
+    - name: Download the latest git-bug binary
+      get_url:
+        url: "{{ git_bug_download_url }}"
+        dest: "{{ git_bug_binary_path }}"
+        mode: '0755'
+
+    - name: Ensure git-bug is executable
+      file:
+        path: "{{ git_bug_binary_path }}"
+        mode: '0755'
+        state: file
