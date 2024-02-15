@@ -9,6 +9,5 @@
     - role: add_iac
     - role: git_bug
     - role: gnome_settings
-      vars:
-        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/tilix-profile.dconf"
+      tilix_profile_filename: "{{ playbook_dir }}/tilix-profile.dconf"
     - role: gnome_settings
