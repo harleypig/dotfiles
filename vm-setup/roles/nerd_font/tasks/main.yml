@@ -10,6 +10,13 @@
   register: nerd_font_latest_release
   changed_when: false
 
+- name: Debug latest Nerd Font release information
+  debug:
+    var: nerd_font_latest_release
+
+- name: Exit play after debug
+  meta: end_play
+
 - name: Fail if GitHub API rate limit is exceeded
   fail:
     msg: "GitHub API rate limit exceeded. Please try again later."
