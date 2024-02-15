@@ -4,3 +4,4 @@ lib/*
 shell_startup.d/*
 tests/*
 #vm-setup/*
+ansible/*
