@@ -40,6 +40,11 @@
         git_bug_download_url: "{{ git_bug_release.json.assets[0].browser_download_url }}"
         git_bug_latest_version: "{{ git_bug_release.json.tag_name }}"
 
+    - name: Debug downloaded git-bug binary information
+      debug:
+        msg: "Downloaded git-bug binary from {{ git_bug_download_url }} with version {{ git_bug_latest_version }}"
+      #when: git_bug_download_result is changed
+
     - name: Compare installed and latest git-bug versions
       set_fact:
         git_bug_version_mismatch: "{{ git_bug_installed_version != git_bug_latest_version }}"
@@ -55,11 +60,6 @@
         mode: '0755'
       when: git_bug_version_mismatch
       register: git_bug_download_result
-
-    - name: Debug downloaded git-bug binary information
-      debug:
-        msg: "Downloaded git-bug binary from {{ git_bug_download_url }} with version {{ git_bug_latest_version }}"
-      when: git_bug_download_result is changed
 
     - name: Ensure git-bug is executable
       file:
