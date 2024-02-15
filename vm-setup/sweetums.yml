@@ -3,7 +3,3 @@
 
   roles:
     - role: add_repo
-      vars:
-        repo_list:
-          - hashicorp
-          - badrepo
