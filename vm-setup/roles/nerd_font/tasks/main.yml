@@ -4,9 +4,6 @@
     path: "{{ nerd_font_local_filename }}"
   register: file_check
 
-- name: Don't install again if the file is already there
-  meta: end_play
-  when: file_check.stat.exists
 
 - name: Create directory for Nerd Fonts
   file:
