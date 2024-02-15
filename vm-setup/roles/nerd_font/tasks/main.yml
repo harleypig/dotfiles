@@ -34,12 +34,6 @@
   register: file_check
   changed_when: false
 
-# Set a default value for installed Nerd Font version if not defined
-- name: Set default installed Nerd Font version
-  set_fact:
-    installed_nerd_font_version: "0.0.0"
-  when: installed_nerd_font_version is not defined
-
 # XXX: Figure out a way to get the installed font version
 #- name: Get installed Nerd Font version
 #  shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk -F': ' '{print $2}' | tr -d '()' "
@@ -48,47 +42,26 @@
 #  changed_when: false
 #  check_mode: no
 
-- name: Compare installed and latest Nerd Font versions
-  set_fact:
-    nerd_font_version_mismatch: "{{ installed_nerd_font_version != nerd_font_version }}"
-
-- name: Skip download if the installed version matches the latest version
-  meta: end_play
-  when: not nerd_font_version_mismatch
-
-- name: Download Nerd Font if version mismatch
- name: Skip remaining tasks if Nerd Font file exists
+- name: Skip remaining tasks if nerd_font_path exists
   meta: end_play
   when: file_check.stat.exists
 
- name: Download Nerd Font
-  get_url:
-    url: "{{ nerd_font_url }}"
-    dest: "{{ nerd_font_dir }}/{{ nerd_font_filename }}"
-    mode: '0644'
-  register: nerd_font_download_result
-
 - name: Ensure Nerd Fonts directory exists
- name: Ensure Nerd Fonts directory exists
   file:
     path: "{{ nerd_font_dir }}"
     state: directory
 
-- name: Download Nerd Font if version mismatch
- name: Skip remaining tasks if Nerd Font file exists
-  meta: end_play
-  when: file_check.stat.exists
+- name: Download Nerd Font
+  get_url:
+    url: "{{ nerd_font_url }}"
+    dest: "{{ nerd_font_path }}"
+    mode: '0644'
 
- name: Download Nerd Font
- name: Unarchive Nerd Font
-- name: Unarchive Nerd Font if version mismatch
+- name: Unarchive Nerd Font
   unarchive:
     src: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_dir }}"
     remote_src: yes
-  when: nerd_font_download_result is changed
 
- name: Update font cache
 - name: Update font cache
   command: fc-cache -fv
-  when: nerd_font_download_result is changed
