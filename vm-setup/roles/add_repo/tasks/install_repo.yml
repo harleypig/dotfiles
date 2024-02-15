@@ -1,14 +1,5 @@
 # This file contains the tasks to install a single repository
 - name: "Validate required variables for {{ repo_name }}"
-- name: "Remove old APT repository for {{ repo_name }}"
-  apt_repository:
-    repo: "{{ old_repo_url | default('') }}"
-    filename: "{{ filename }}"
-    state: absent
-  when: old_repo_url is defined
-  ignore_errors: yes
-
-- name: "Validate required variables for {{ repo_name }}"
   assert:
     that:
       - key_url is defined
@@ -16,6 +7,14 @@
       - filename is defined
       - repo_name is defined
     fail_msg: "Required variable is not defined for {{ repo_name }}."
+
+- name: "Remove old APT repository for {{ repo_name }}"
+  apt_repository:
+    repo: "{{ old_repo_url | default('') }}"
+    filename: "{{ filename }}"
+    state: absent
+  when: old_repo_url is defined
+  ignore_errors: yes
 
 - name: "Install Repository Public Key for {{ repo_name }}"
   apt_key:
