@@ -1,0 +1,4 @@
+dependencies:
+- role: install_pkgs
+  vars:
+    package_groups: "{{ package_groups | default({}) | combine({'gnome_settings': []}) }}"

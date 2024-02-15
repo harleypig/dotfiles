@@ -34,6 +34,11 @@ package_groups:
     - fonts-inconsolata
     - gnome-tweaks
     - tilix
+  gnome_settings:
+    - gnome-shell-extensions
+    - gnome-shell-extension-desktop-icons-ng
+    - gnome-tweaks
+    - tilix
   hledger:
     - hledger
     - hledger-ui

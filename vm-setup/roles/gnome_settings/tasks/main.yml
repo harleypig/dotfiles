@@ -1,14 +1,4 @@
 ---
-- name: Install gnome-shell-extensions
-  become: yes
-  apt:
-    state: present
-    name:
-      - gnome-shell-extensions
-      - gnome-shell-extension-desktop-icons-ng
-      - gnome-tweaks
-      - "{{ gnome_settings_tilix_package }}"
-
 - include_tasks: tilix_profile.yml
 
 - name: Hide trash icon
