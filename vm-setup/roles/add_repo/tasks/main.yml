@@ -32,4 +32,3 @@
     - name: Capture validation failure
       debug:
         msg: "Validation failed for the requested repositories. Please check the repository names and try again."
-

@@ -5,13 +5,15 @@ repos:
     key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     repo_name: Google Cloud
     repo_url: deb https://packages.cloud.google.com/apt cloud-sdk main
+
   hashicorp:
     filename: hashicorp
     key_url: https://apt.releases.hashicorp.com/gpg
     repo_name: Hashicorp
     repo_url: deb https://apt.releases.hashicorp.com focal main
+
   microsoft:
     filename: microsoft
     key_url: https://packages.microsoft.com/keys/microsoft.asc
     repo_name: Microsoft
-    repo_url: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
+    repo_url: "deb https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
