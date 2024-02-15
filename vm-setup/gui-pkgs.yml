@@ -18,9 +18,9 @@
         path: "{{ playbook_dir }}/tilix-profile.dconf"
       register: tilix_profile_file
 
-    - name: Debug Tilix profile file existence
-      debug:
-        msg: "Tilix profile file exists: {{ tilix_profile_file.stat.exists }}"
+    #- name: Debug Tilix profile file existence
+    #  debug:
+    #    msg: "Tilix profile file exists: {{ tilix_profile_file.stat.exists }}"
 
     - name: Load Tilix profile if file exists
       command: dconf load /com/gexperts/Tilix/ < "{{ playbook_dir }}/tilix-profile.dconf"
