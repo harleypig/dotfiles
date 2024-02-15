@@ -4,7 +4,20 @@
   #debugger: on_failed
 
   tasks:
-  roles:
+    - name: Add HashiCorp repository
+      include_role:
+        name: add_repo
+      vars:
+        repo_list:
+          - hashicorp
+
+    - name: Install HashiCorp Packages
+      apt:
+        state: present
+        update_cache: yes
+        name:
+          - terraform
+          - packer
     - role: add_repo
       vars:
         repo_list:
