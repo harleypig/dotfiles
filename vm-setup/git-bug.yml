@@ -54,6 +54,12 @@
         dest: "{{ git_bug_binary_path }}"
         mode: '0755'
       when: git_bug_version_mismatch
+      register: git_bug_download_result
+
+    - name: Debug downloaded git-bug binary information
+      debug:
+        msg: "Downloaded git-bug binary from {{ git_bug_download_url }} with version {{ git_bug_latest_version }}"
+      when: git_bug_download_result is changed
 
     - name: Ensure git-bug is executable
       file:
