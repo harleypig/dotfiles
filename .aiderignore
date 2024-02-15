@@ -5,3 +5,4 @@ shell_startup.d/*
 tests/*
 #vm-setup/*
 ansible/*
+vm-setup/credentials.yml
