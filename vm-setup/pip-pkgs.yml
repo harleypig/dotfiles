@@ -11,13 +11,12 @@
 
     - name: Install pip packages
       pip:
+        state: latest
         name:
           - aider-chat
-          - ansible
           - pre-commit
           - pudb
           - yamllint
-        state: latest
 
 # XXX: This needs to be installed on a subset of systems.
 #          - linode-cli
