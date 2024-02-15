@@ -7,6 +7,9 @@
       exclude_group:
         - hledger
       is_exclude_list: true
+    - role: pip_pkgs
+      vars:
+        requested_group: common
     - role: nerd_font
     - role: add_iac
     - role: git_bug

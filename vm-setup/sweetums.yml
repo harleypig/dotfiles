@@ -4,6 +4,7 @@
 
   roles:
     - role: install_pkgs
+    - role: pip_pkgs
     - role: nerd_font
     - role: add_iac
     - role: git_bug
