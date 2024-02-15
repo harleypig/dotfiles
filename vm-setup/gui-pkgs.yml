@@ -8,14 +8,6 @@
     tilix_profile_filename: "{{ playbook_dir }}/tilix-profile.dconf"
 
   tasks:
-    - name: Install GUI Packages
-      become: yes
-      apt:
-        state: present
-        name:
-          - fonts-inconsolata
-          - gnome-tweaks
-          - tilix
 
     - name: Check if Tilix profile file exists
       stat:

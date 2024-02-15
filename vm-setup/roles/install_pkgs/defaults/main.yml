@@ -29,3 +29,7 @@ package_groups:
     - vim
     - wget
     - zip
+  gui:
+    - fonts-inconsolata
+    - gnome-tweaks
+    - tilix
