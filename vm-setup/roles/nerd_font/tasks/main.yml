@@ -11,6 +11,7 @@
     state: directory
 
 - name: Download Nerd Font
+  when: not file_check.stat.exists
   get_url:
     url: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_local_filename }}"
