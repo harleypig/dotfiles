@@ -1,5 +1,12 @@
 # This file contains the tasks to install a single repository
 - name: "Validate required variables for {{ repo_name }}"
+- name: "Remove any existing .list files for {{ repo_name }}"
+  file:
+    path: "/etc/apt/sources.list.d/{{ filename }}*.list"
+    state: absent
+  become: yes
+
+- name: "Validate required variables for {{ repo_name }}"
   assert:
     that:
       - key_url is defined
@@ -7,6 +14,7 @@
       - filename is defined
       - repo_name is defined
     fail_msg: "{{ item }} is not defined for {{ repo_name }}"
+    quiet: yes
     quiet: yes
   with_items:
     - key_url
