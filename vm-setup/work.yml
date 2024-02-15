@@ -4,7 +4,8 @@
 
   roles:
     - role: install_pkgs
-      exclude_group: ['hledger']
+      exclude_group:
+        - hledger
       is_exclude_list: true
     - role: nerd_font
     - role: add_iac
