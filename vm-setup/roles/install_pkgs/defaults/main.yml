@@ -1,6 +1,25 @@
 # Define package groups
 package_groups:
   common:
+    - ansible
+    - ansible-lint
+    - aptitude
+    - build-essential
+    - ca-certificates
+    - dconf-editor
+    - dkms
+    - dos2unix
+    - elinks
+    - expect
+    - "linux-headers-{{ ansible_kernel }}"
+    - markdown
+    - mlocate
+    - pandoc
+    - parallel
+    - tmux
+    - docker-ce
+    - docker-compose
+    - docker-scan-plugin
     - curl
     - git
     - htop
