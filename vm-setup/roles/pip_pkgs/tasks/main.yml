@@ -7,6 +7,12 @@
 
 -  become: yes
 
+
+- name: Install python3-pip
+  apt:
+    name: python3-pip
+    state: present
+
    vars:
      all_groups: "{{ pip_package_groups.keys() }}"
      exclude_groups: "{{ exclude_group | default([]) }}"
