@@ -1,6 +1,7 @@
 ---
 - name: Install all package groups
   become: yes
+
   vars:
     all_groups: "{{ package_groups.keys() }}"
     requested_groups: "{{ install_group | default(all_groups) }}"
