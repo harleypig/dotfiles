@@ -7,3 +7,4 @@
     - role: nerd_font
     - role: add_iac
     - role: git_bug
+    - role: gnome_settings
