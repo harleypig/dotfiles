@@ -48,11 +48,6 @@
 #  changed_when: false
 #  check_mode: no
 
-#- name: Set fact for installed Nerd Font version
-#  set_fact:
-#    installed_nerd_font_version: "{{ installed_nerd_font_version.stdout | default('0.0.0') }}"
-#  when: installed_nerd_font_version.rc == 0
-
 - name: Compare installed and latest Nerd Font versions
   set_fact:
     nerd_font_version_mismatch: "{{ installed_nerd_font_version != nerd_font_version }}"
