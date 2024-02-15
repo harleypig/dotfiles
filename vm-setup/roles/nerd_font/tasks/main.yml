@@ -16,10 +16,12 @@
     nerd_font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerd_font_version }}/{{ nerd_font_name }}.zip"
   when: nerd_font_latest_release is changed
 
--  stat:
+- name: Check if Nerd Font already installed
+  stat:
     path: "{{ nerd_font_local_filename }}"
   register: file_check
   changed_when: false
+
 
 
 - name: Get installed Nerd Font version
