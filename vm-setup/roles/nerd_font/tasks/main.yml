@@ -34,6 +34,12 @@
   register: file_check
   changed_when: false
 
+# Set a default value for installed Nerd Font version if not defined
+- name: Set default installed Nerd Font version
+  set_fact:
+    installed_nerd_font_version: "0.0.0"
+  when: installed_nerd_font_version is not defined
+
 # XXX: Figure out a way to get the installed font version
 #- name: Get installed Nerd Font version
 #  shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk -F': ' '{print $2}' | tr -d '()' "
