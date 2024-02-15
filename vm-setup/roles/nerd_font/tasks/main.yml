@@ -72,3 +72,40 @@
 
 - name: Update font cache
   command: fc-cache -fv
+---
+- name: Check if NerdFont already installed
+  stat:
+    path: "{{ nerd_font_local_filename }}"
+  register: file_check
+
+- name: Don't install again if the file is already there
+  meta: end_play
+  when: file_check.stat.exists
+
+- name: Install curl and unzip
+  apt:
+    state: latest
+    update_cache: yes
+    name:
+      - curl
+      - unzip
+
+- name: Create directory for NerdFonts
+  file:
+    path: "{{ nerd_font_local_dir }}"
+    state: directory
+
+- name: Download NerdFont
+  get_url:
+    url: "{{ nerd_font_url }}"
+    dest: "{{ nerd_font_local_filename }}"
+    mode: '0644'
+
+- name: Unzip NerdFont
+  unarchive:
+    src: "{{ nerd_font_local_filename }}"
+    dest: "{{ nerd_font_local_dir }}"
+    remote_src: yes
+
+- name: Update font cache
+  command: fc-cache -fv

@@ -10,3 +10,9 @@ nerd_font_version: v3.0.1
 nerd_font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerd_font_version }}/{{ nerd_font_name }}.zip"
 nerd_font_local_dir: "/usr/local/share/fonts/NerdFonts"
 nerd_font_local_filename: "{{ nerd_font_local_dir }}/{{ nerd_font_name }}-{{ nerd_font_version }}.zip"
+---
+nerd_font_name: Inconsolata
+nerd_font_version: v3.0.1
+nerd_font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ nerd_font_version }}/{{ nerd_font_name }}.zip"
+nerd_font_local_dir: "/usr/local/share/fonts/NerdFonts"
+nerd_font_local_filename: "{{ nerd_font_local_dir }}/{{ nerd_font_name }}-{{ nerd_font_version }}.zip"
