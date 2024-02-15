@@ -1,0 +1,35 @@
+---
+- name: Install gnome-shell-extensions
+  become: yes
+  apt:
+    state: present
+    name:
+      - gnome-shell-extensions
+      - gnome-shell-extension-desktop-icons-ng
+      - gnome-tweaks
+
+- name: Hide trash icon
+  command: gsettings set org.gnome.shell.extensions.ding show-trash {{ gnome_settings_show_trash }}
+
+- name: Hide home icon
+  command: gsettings set org.gnome.shell.extensions.ding show-home {{ gnome_settings_show_home }}
+
+- name: Set desktop background options
+  shell: "gsettings set org.gnome.desktop.background {{ item }}"
+  with_items: "{{ gnome_settings_desktop_background }}"
+
+- name: Set desktop interface options
+  shell: "gsettings set org.gnome.desktop.interface {{ item }}"
+  with_items: "{{ gnome_settings_desktop_interface }}"
+
+- name: Set titlebar font
+  command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font }}
+
+- name: Disable services
+  become: yes
+  systemd:
+    name: "{{ item }}"
+    enabled: no
+    masked: yes
+    state: stopped
+  loop: "{{ gnome_settings_disabled_services }}"
