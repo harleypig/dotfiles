@@ -5,18 +5,41 @@
 DUMP_FILE="dconf-changes.dump"
 
 # Dump all non-default dconf settings to a file
-dconf dump / | awk -F= '/^\[/{ gsub(/\[/, "", $1); gsub(/\]/, "", $1); schema=$1; next } /^[^#]/ { print schema "=" $1 }' | \
-sort -t= -k2,2 | \
-while IFS= read -r entry; do
-    schema=$(echo "$entry" | cut -d= -f1)
-    key=$(echo "$entry" | cut -d= -f2)
-    value=$(echo "$entry" | cut -d= -f3-)
-    default_value=$(dconf read "/$schema/$key")
-    if [[ "$default_value" != "$value" ]]; then
-        echo "[$schema]" >> "$DUMP_FILE"
-        echo "$key=$value" >> "$DUMP_FILE"
-    fi
-done
+dconf dump / | awk -F= '/^\[/{ if (schema) print schema; schema=$0; next } /^[^#]/ { print $0 } END { if (schema) print schema }' | \
+awk -v dump_file="$DUMP_FILE" '
+{
+    if ($0 ~ /^\[/) {
+        if (schema) {
+            # Output the schema block if it has non-default settings
+            if (length(settings) > 0) {
+                print schema >> dump_file
+                for (setting in settings) {
+                    print setting >> dump_file
+                }
+                print "" >> dump_file # Add an empty line after the block
+            }
+            delete settings
+        }
+        schema=$0
+    } else {
+        split($0, kv, "=")
+        key=kv[1]
+        value=kv[2]
+        default_value=system("dconf read " schema "/" key)
+        if (default_value != value) {
+            settings[key"="value]
+        }
+    }
+}
+END {
+    if (length(settings) > 0) {
+        print schema >> dump_file
+        for (setting in settings) {
+            print setting >> dump_file
+        }
+    }
+}'
+
 
 
 echo "Non-default dconf settings have been dumped to $DUMP_FILE"
