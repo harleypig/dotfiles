@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# This script dumps all dconf settings that are not the same as their default values.
+
+DUMP_FILE="dconf-changes.dump"
+
+# Dump all non-default dconf settings to a file
+dconf dump / | while IFS= read -r line; do
+    if [[ $line == [* ]]; then
+        # This is a schema path
+        SCHEMA_PATH=${line:1:-1}
+    elif [[ $line != "" ]]; then
+        # This is a key-value pair
+        KEY=$(echo $line | cut -d'=' -f1)
+        DEFAULT_VALUE=$(dconf read "/org/gnome/desktop/interface/$KEY")
+        CURRENT_VALUE=$(echo $line | cut -d'=' -f2-)
+        if [[ "$DEFAULT_VALUE" != "$CURRENT_VALUE" ]]; then
+            echo "[$SCHEMA_PATH]" >> "$DUMP_FILE"
+            echo "$line" >> "$DUMP_FILE"
+        fi
+    fi
+done
+
+echo "Non-default dconf settings have been dumped to $DUMP_FILE"
