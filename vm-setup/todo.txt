@@ -18,3 +18,5 @@ modify docker role to setup existing users and setup skel to allow new users
 create a role to install repositories in projects directory
 
 create a (separate?) role to setup dotfiles and dotvim and private_dotfiles
+
+add molecule tests
