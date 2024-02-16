@@ -1,25 +1,24 @@
 ---
 -  become: yes
+  vars:
+    all_groups: "{{ package_groups.keys() }}"
+    exclude_groups: "{{ exclude_group | default([]) }}"
+    is_exclusion_list: "{{ is_exclude_list | default(false) }}"
+    requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
 
-   vars:
-     all_groups: "{{ package_groups.keys() }}"
-     exclude_groups: "{{ exclude_group | default([]) }}"
-     is_exclusion_list: "{{ is_exclude_list | default(false) }}"
-     requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
+  block:
+    - name: Validate requested package groups
+      fail:
+        msg: >
+          These package groups are not defined: {{ requested_groups | difference(all_groups) | join(', ') }}.
+          Available package groups: {{ all_groups | join(', ') }}
+      when: requested_groups | difference(all_groups) | length > 0
 
-   block:
-     - name: Validate requested package groups
-       fail:
-         msg: >
-           These package groups are not defined: {{ requested_groups | difference(all_groups) | join(', ') }}.
-           Available package groups: {{ all_groups | join(', ') }}
-       when: requested_groups | difference(all_groups) | length > 0
-
-     - name: Install requested package groups
-       apt:
-         state: latest
-         update_cache: yes
-         name: "{{ package_groups[item] }}"
-       loop: "{{ requested_groups }}"
-       loop_control:
-         loop_var: item
+    - name: Install requested package groups
+      apt:
+        state: latest
+        update_cache: yes
+        name: "{{ item }}"
+      loop: "{{ package_groups[requested_groups] | flatten }}"
+      loop_control:
+        loop_var: item
