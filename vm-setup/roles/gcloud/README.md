@@ -1,6 +1,7 @@
 # Role Name
 
-The `gcloud` role is responsible for setting up the Google Cloud SDK on the target system by adding the Google Cloud repository.
+The `gcloud` role is responsible for setting up the Google Cloud SDK on the
+target system by adding the Google Cloud repository.
 
 ## Requirements
 
@@ -8,7 +9,8 @@ This role requires Ansible and access to the target system's package manager.
 
 ## Role Variables
 
-This role does not have any user-modifiable variables. It uses the `add_repo` role to install the Google Cloud repository.
+This role does not have any user-modifiable variables. It uses the `add_repo`
+role to install the Google Cloud repository.
 
 ## Dependencies
 
