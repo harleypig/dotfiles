@@ -1,5 +1,5 @@
 ---
--  become: yes
+- become: yes
   vars:
     all_groups: "{{ package_groups.keys() }}"
     exclude_groups: "{{ exclude_group | default([]) }}"
