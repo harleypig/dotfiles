@@ -9,6 +9,7 @@ repository and installing HashiCorp products such as Terraform and Packer.
 No specific requirements.
 
 ## Role Variables
+
 This role does not have any user-modifiable variables.
 
 ## Dependencies
@@ -24,7 +25,7 @@ passed in as parameters) is always nice for users too:
 ```yaml
 - hosts: servers
   roles:
-     - { role: add_iac }
+     - role: add_iac
 ```
 
 ## License
