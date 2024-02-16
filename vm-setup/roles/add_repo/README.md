@@ -16,6 +16,10 @@ repositories defined in `repos` will be added.
 Currently, the predefined repositories are Hashicorp, Microsoft, and Google
 Cloud.
 
+### Handling Undefined Repositories
+
+If a repository identifier provided in `repo_list` does not match any key in the `repos` dictionary, the role will fail with an error message. This validation ensures that only defined repositories can be added, preventing any misconfiguration or typos from causing issues during the execution of the role.
+
 ```yaml
 - hosts: servers
   roles:
