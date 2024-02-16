@@ -3,15 +3,20 @@
   become: yes
 
   roles:
+    - role: gnome_settings
+      tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+
     - role: install_pkgs
       is_exclude_list: true
       exclude_group:
         - hledger
+
     - role: pip_pkgs
       is_exclude_list: true
       exclude_group:
         - linode
+
     - role: nerd_font
     - role: add_iac
-    - role: gnome_settings
-      tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+
+    - role: vscode

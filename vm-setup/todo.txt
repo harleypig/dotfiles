@@ -8,3 +8,7 @@ figure out how to use ansible-vault so I don't have to keep typing my password
 figure out how to use `dconf dump /`, `gsettings` and python to load dconf
 settings, then load the schemas and find the default value and only dump the
 settings that have been changed.
+
+add playbook for setting user groups (on ubuntu modify /etc/adduser.conf) Use
+`groups` command to see what you've got setup already. Is there a way to
+modify this piecemeal, so if docker is not installed then it's not set?
