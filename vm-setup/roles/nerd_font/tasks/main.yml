@@ -22,10 +22,10 @@
 - name: Set Nerd Font filename
   set_fact:
     nerd_font_filename: "{{ nerd_font_name }}-{{ nerd_font_version }}.{{ nerd_font_archive }}"
+    nerd_font_url: "{{ nerd_font_file_url }}/{{ nerd_font_version }}/{{ nerd_font_name }}.{{ nerd_font_archive }}"
 
 - name: Set Nerd Font download URL
   set_fact:
-    nerd_font_url: "{{ nerd_font_file_url }}/{{ nerd_font_version }}/{{ nerd_font_filename }}"
     nerd_font_path: "{{ nerd_font_dir }}/{{ nerd_font_filename }}"
 
 - name: Check if Nerd Font already installed
@@ -59,9 +59,10 @@
 
 - name: Unarchive Nerd Font
   unarchive:
-    src: "{{ nerd_font_url }}"
+    src: "{{ nerd_font_path }}"
     dest: "{{ nerd_font_dir }}"
-    remote_src: yes
+    # man unzip: -o overwrite ::: -f freshen
+    extra_opts: -of
 
 - name: Update font cache
   command: fc-cache -fv
