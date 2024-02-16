@@ -14,3 +14,7 @@ add playbook for setting user groups (on ubuntu modify /etc/adduser.conf) Use
 modify this piecemeal, so if docker is not installed then it's not set?
 
 modify docker role to setup existing users and setup skel to allow new users
+
+create a role to install repositories in projects directory
+
+create a (separate?) role to setup dotfiles and dotvim and private_dotfiles
