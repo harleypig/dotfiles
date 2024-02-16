@@ -1,6 +1,7 @@
 ## Role Name
 
-The `add_repo` role is responsible for adding third-party repositories to the target system's package manager. It allows for the installation of packages from these repositories.
+The `add_repo` role is responsible for adding pre-defined third-party
+repositories to the target system's package manager.
 
 ## Requirements
 
@@ -8,19 +9,25 @@ This role requires Ansible and access to the target system's package manager.
 
 ## Role Variables
 
-The role uses the following variables defined in `defaults/main.yml` to configure the repositories to be added:
+The role uses the following variables defined in `defaults/main.yml` to
+configure the repositories to be added:
 
-`repos`: A dictionary of repositories to be added, where each key is a repository identifier and each value is a dictionary containing the repository details such as `filename`, `key_url`, `repo_name`, and `repo_url`.
+`repos`: A dictionary of repositories to be added, where each key is
+a repository identifier and each value is a dictionary containing the
+repository details such as `filename`, `key_url`, `repo_name`, and `repo_url`.
 
-`repo_list`: An optional list of repository identifiers to add. If not provided, all repositories defined in `repos` will be added.
+`repo_list`: An optional list of repository identifiers to add. If not
+provided, all repositories defined in `repos` will be added.
 
 ## Dependencies
 
-There are no strict dependencies for this role, but it may require network access to download repository keys and package information.
+There are no strict dependencies for this role, but it may require network
+access to download repository keys and package information.
 
 ## Example Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Including an example of how to use your role (for instance, with variables
+passed in as parameters) is always nice for users too:
 
 ```yaml
 - hosts: servers
