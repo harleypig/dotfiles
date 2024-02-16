@@ -37,7 +37,7 @@ Including an example of how to use your role (for instance, with variables passe
 DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
 Version 2, December 2004
 
-Copyright (C) 2023 [Your Name]
+Copyright (C) 2023 Alan Young
 
 Everyone is permitted to copy and distribute verbatim or modified
 copies of this license document, and changing it is allowed as long
@@ -50,4 +50,4 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 ## Author Information
 
-This role was created in 2023 by [Your Name].
+This role was created in 2023 by Alan Young.
