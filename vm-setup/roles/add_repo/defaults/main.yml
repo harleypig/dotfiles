@@ -4,13 +4,15 @@ repos:
     filename: google-cloud
     key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     repo_name: Google Cloud
-    repo_url: deb https://packages.cloud.google.com/apt cloud-sdk main
+    repo_urls:
+      - deb https://packages.cloud.google.com/apt cloud-sdk main
 
   hashicorp:
     filename: hashicorp
     key_url: https://apt.releases.hashicorp.com/gpg
     repo_name: Hashicorp
-    repo_url: deb https://apt.releases.hashicorp.com focal main
+    repo_urls:
+      - deb https://apt.releases.hashicorp.com focal main
 
   microsoft:
     filename: microsoft
@@ -18,4 +20,4 @@ repos:
     repo_name: Microsoft
     repo_urls:
       - "deb https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
-      - "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+      - "deb https://packages.microsoft.com/repos/vscode stable main"

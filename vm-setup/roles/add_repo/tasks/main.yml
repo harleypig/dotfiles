@@ -22,7 +22,7 @@
 
       vars:
         key_url: "{{ repos[name].key_url }}"
-        repo_url: "{{ repos[name].repo_url }}"
+        repo_urls: "{{ repos[name].repo_urls }}"
         filename: "{{ repos[name].filename }}"
         repo_name: "{{ repos[name].repo_name }}"
 

@@ -1,4 +1,3 @@
-# This file contains the tasks to install a single repository
 - name: "Validate required variables for {{ repo_name }}"
   assert:
     that:
@@ -8,6 +7,7 @@
       - repo_name is defined
     fail_msg: "Required variable is not defined for {{ repo_name }}."
 
+# XXX: Figure out how to do this
 #- name: "Remove old APT repository for {{ repo_name }}"
 #  apt_repository:
 #    repo: "{{ repo_url }}"
