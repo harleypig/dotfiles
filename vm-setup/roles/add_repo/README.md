@@ -9,15 +9,34 @@ This role requires Ansible and access to the target system's package manager.
 
 ## Role Variables
 
-The role uses the following variables defined in `defaults/main.yml` to
-configure the repositories to be added:
+The `add_repo` role can be customized by the following variables that the caller can define:
 
-`repos`: A dictionary of repositories to be added, where each key is
-a repository identifier and each value is a dictionary containing the
-repository details such as `filename`, `key_url`, `repo_name`, and `repo_url`.
+`repos`: A dictionary where each key represents a unique identifier for a repository, and the associated value is another dictionary with the repository's details. The inner dictionary should contain the following keys:
+- `filename`: The name of the file where the repository source will be saved.
+- `key_url`: The URL to the repository's GPG key for secure installation.
+- `repo_name`: A human-readable name for the repository.
+- `repo_url`: The URL to the repository source list.
 
-`repo_list`: An optional list of repository identifiers to add. If not
-provided, all repositories defined in `repos` will be added.
+`repo_list`: An optional list of repository identifiers that you want to add from the `repos` dictionary. If this variable is not provided, all repositories defined in `repos` will be added.
+
+These variables are typically defined in the `defaults/main.yml` file of the role, but they can be overridden by passing them directly into the role. For example:
+
+```yaml
+- hosts: servers
+  roles:
+     - role: add_repo
+       vars:
+         repos:
+           my_custom_repo:
+             filename: 'my_custom_repo'
+             key_url: 'http://example.com/my_repo_key.gpg'
+             repo_name: 'My Custom Repository'
+             repo_url: 'deb http://example.com/ubuntu some-component main'
+         repo_list:
+           - my_custom_repo
+```
+
+In this example, only the `my_custom_repo` repository would be added, using the provided details.
 
 ## Dependencies
 
