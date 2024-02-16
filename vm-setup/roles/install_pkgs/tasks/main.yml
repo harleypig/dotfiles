@@ -1,7 +1,8 @@
 ---
 - become: yes
+
   vars:
-    all_groups: "{{ package_groups.keys() }}"
+    all_groups: "{{ package_groups.keys }}"
     exclude_groups: "{{ exclude_group | default([]) }}"
     is_exclusion_list: "{{ is_exclude_list | default(false) }}"
     requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
