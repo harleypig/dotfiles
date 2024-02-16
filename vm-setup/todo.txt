@@ -12,3 +12,5 @@ settings that have been changed.
 add playbook for setting user groups (on ubuntu modify /etc/adduser.conf) Use
 `groups` command to see what you've got setup already. Is there a way to
 modify this piecemeal, so if docker is not installed then it's not set?
+
+modify docker role to setup existing users and setup skel to allow new users
