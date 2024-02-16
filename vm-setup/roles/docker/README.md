@@ -1,6 +1,8 @@
 # Role Name
 
-The `docker` role is responsible for setting up Docker on the target system. It removes older Docker packages, adds the Docker repository, and installs the necessary Docker packages.
+The `docker` role is responsible for setting up Docker on the target system.
+It removes older Docker packages, adds the Docker repository, and installs the
+necessary Docker packages.
 
 ## Requirements
 
