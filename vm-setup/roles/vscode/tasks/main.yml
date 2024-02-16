@@ -1,0 +1,8 @@
+---
+# This playbook uses the add_repo role to install the Microsoft repository
+- name: Include add_repo to install Microsoft repository
+  include_role:
+    name: add_repo
+  vars:
+    repo_list:
+      - microsoft
