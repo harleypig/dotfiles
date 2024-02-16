@@ -5,20 +5,18 @@
 DUMP_FILE="dconf-changes.dump"
 
 # Dump all non-default dconf settings to a file
-dconf dump / | while IFS= read -r line; do
-    if [[ $line == [* ]]; then
-        # This is a schema path
-        SCHEMA_PATH=${line:1:-1}
-    elif [[ $line != "" ]]; then
-        # This is a key-value pair
-        KEY=$(echo $line | cut -d'=' -f1)
-        DEFAULT_VALUE=$(dconf read "/org/gnome/desktop/interface/$KEY")
-        CURRENT_VALUE=$(echo $line | cut -d'=' -f2-)
-        if [[ "$DEFAULT_VALUE" != "$CURRENT_VALUE" ]]; then
-            echo "[$SCHEMA_PATH]" >> "$DUMP_FILE"
-            echo "$line" >> "$DUMP_FILE"
-        fi
+dconf dump / | awk -F= '/^\[/{ gsub(/\[/, "", $1); gsub(/\]/, "", $1); schema=$1; next } /^[^#]/ { print schema "=" $1 }' | \
+sort -t= -k2,2 | \
+while IFS= read -r entry; do
+    schema=$(echo "$entry" | cut -d= -f1)
+    key=$(echo "$entry" | cut -d= -f2)
+    value=$(echo "$entry" | cut -d= -f3-)
+    default_value=$(dconf read "/$schema/$key")
+    if [[ "$default_value" != "$value" ]]; then
+        echo "[$schema]" >> "$DUMP_FILE"
+        echo "$key=$value" >> "$DUMP_FILE"
     fi
 done
+
 
 echo "Non-default dconf settings have been dumped to $DUMP_FILE"
