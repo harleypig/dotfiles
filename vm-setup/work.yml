@@ -13,7 +13,5 @@
         - linode
     - role: nerd_font
     - role: add_iac
-    - role: git_bug
     - role: gnome_settings
       tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
-    - role: gnome_settings
