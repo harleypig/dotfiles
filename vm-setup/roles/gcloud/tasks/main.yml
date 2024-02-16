@@ -6,3 +6,9 @@
   vars:
     repo_list:
       - google-cloud
+
+- name: Install Google Cloud SDK packages
+  include_role:
+    name: install_pkgs
+  vars:
+    package_groups: "gcloud"
