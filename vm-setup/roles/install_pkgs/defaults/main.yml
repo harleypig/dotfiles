@@ -47,4 +47,4 @@ package_groups:
     - containerd.io
     - docker-compose-plugin
   gcloud:
-    - google-cloud-sdk
+    - google-cloud-cli
