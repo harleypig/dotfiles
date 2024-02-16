@@ -42,3 +42,5 @@ package_groups:
   hledger:
     - hledger
     - hledger-ui
+  vscode:
+    - code # This is the package name for Visual Studio Code
