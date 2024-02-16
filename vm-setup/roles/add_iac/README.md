@@ -9,12 +9,7 @@ repository and installing HashiCorp products such as Terraform and Packer.
 No specific requirements.
 
 ## Role Variables
-
-The role uses the following variables which are set in the `defaults/main.yml`
-of the `add_repo` role:
-
-`repo_list`: A list of repositories to add. By default, it includes the
-HashiCorp repository.
+This role does not have any user-modifiable variables.
 
 ## Dependencies
 
