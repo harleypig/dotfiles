@@ -1,0 +1,27 @@
+---
+# This playbook uses the add_repo role to install the Docker repository
+- name: Include add_repo to install Docker repository
+  include_role:
+    name: add_repo
+  vars:
+    repo_list:
+      - docker
+
+# Remove older Docker packages if they exist
+- name: Remove older Docker packages
+  apt:
+    name:
+      - docker
+      - docker-engine
+      - docker.io
+      - containerd
+      - runc
+    state: absent
+    purge: yes
+
+# Install Docker packages from the Docker repository
+- name: Install Docker packages
+  include_role:
+    name: install_pkgs
+  vars:
+    package_groups: "docker"
