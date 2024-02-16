@@ -21,3 +21,9 @@ repos:
     repo_urls:
       - "deb https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
       - "deb https://packages.microsoft.com/repos/vscode stable main"
+  docker:
+    filename: docker
+    key_url: https://download.docker.com/linux/ubuntu/gpg
+    repo_name: Docker
+    repo_urls:
+      - "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
