@@ -2,23 +2,12 @@
 - name: Install package groups
   become: yes
 
-  vars:
-    all_groups: "{{ package_groups.keys() }}"
-    exclude_groups: "{{ exclude_group | default([]) }}"
-    is_exclusion_list: "{{ is_exclude_list | default(false) }}"
-    requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
-
   block:
-  - name: Print all package groups
-    debug:
-      msg: >
-        Vars:
-          package_groups {{ package_groups }}
-          all_groups {{ all_groups }}
-          exclude_groups {{ exclude_groups }}
-          is_exclusion_list {{ is_exclusion_list }}
-          requested_groups {{ requested_groups }}
-          packages to be installed {{ requested_groups | map('extract', package_groups) | map('values') | flatten }}
+  - name: Install requested packages
+    apt:
+      state: latest
+      update_cache: yes
+      name: "{{ package_names }}"
 #
 #  - name: Validate requested package groups
 #    fail:
