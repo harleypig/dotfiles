@@ -18,6 +18,15 @@
 - name: Set titlebar font
   command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font | lower }}
 
+- name: Autostart Tilix on login
+  include_tasks: create_autostart.yml
+  vars:
+    autostart_app_name: "Tilix"
+    autostart_app_exec: "tilix"
+    autostart_app_comment: "Tilix terminal emulator"
+    autostart_app_terminal: false
+    autostart_app_hidden: false
+
 - name: Disable services
   become: yes
   systemd:
