@@ -2,3 +2,5 @@ dependencies:
 - role: install_pkgs
   vars:
     packages: "{{ packages }}"
+  vars:
+    packages: "{{ packages }}"
