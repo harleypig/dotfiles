@@ -1,9 +1,10 @@
 ---
-gnome_settings_dock_autohide: true
-gnome_settings_dock_extend_height: false
-gnome_settings_dock_icon_size: 40
-gnome_settings_dock_position: 'LEFT'
-gnome_settings_dock_show_mounts: false
+gnome_settings_dock:
+  - { key: 'autohide', value: true }
+  - { key: 'extend-height', value: false }
+  - { key: 'dash-max-icon-size', value: 40 }
+  - { key: 'dock-position', value: 'LEFT' }
+  - { key: 'show-mounts', value: false }
 gnome_settings_show_home: false
 gnome_settings_show_trash: false
 gnome_settings_titlebar_uses_system_font: true
