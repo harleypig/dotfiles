@@ -18,7 +18,7 @@
           exclude_groups {{ exclude_groups }}
           is_exclusion_list {{ is_exclusion_list }}
           requested_groups {{ requested_groups }}
-          packages to be installed {{ package_groups[requested_groups] | flatten }}
+          packages to be installed {{ requested_groups | map('extract', package_groups) | map('values') | flatten }}
 #
 #  - name: Validate requested package groups
 #    fail:
