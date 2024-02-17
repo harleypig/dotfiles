@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  become: yes
+
+  roles:
+    #- role: gnome_settings
+    - role: install_pkgs
