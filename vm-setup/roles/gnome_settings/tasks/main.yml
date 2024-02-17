@@ -1,7 +1,5 @@
 ---
-- include_tasks: tilix_profile.yml
-- name: Include tilix tasks
-  include_tasks: tilix.yml
+- include_tasks: tilix.yml
 
 - name: Hide trash icon
   command: gsettings set org.gnome.shell.extensions.ding show-trash {{ gnome_settings_show_trash | lower }}
@@ -19,30 +17,6 @@
 
 - name: Set titlebar font
   command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font | lower }}
-
-- name: Autostart Tilix on login
-  include_tasks: create_autostart.yml
-  vars:
-    autostart_app_name: "Tilix"
-    autostart_app_exec: "tilix"
-    autostart_app_comment: "Tilix terminal emulator"
-    autostart_app_terminal: false
-    autostart_app_hidden: false
-
-- name: Enable auto-hide for the dock
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock autohide true
-
-- name: Enable panel mode for the dock
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false
-
-- name: Set dock icon size
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 40
-
-- name: Set dock position to left
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'LEFT'
-
-- name: Disable show volumes and devices on the dock
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false
 
 - name: Enable auto-hide for the dock
   command: gsettings set org.gnome.shell.extensions.dash-to-dock autohide {{ gnome_settings_dock_autohide }}
