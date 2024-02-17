@@ -1,4 +1,4 @@
 dependencies:
 - role: install_pkgs
   vars:
-    packages: "{{ packages }}"
+    packages: "{{ gnome_packages }}"
