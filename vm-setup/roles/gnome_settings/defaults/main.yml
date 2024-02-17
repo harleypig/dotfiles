@@ -1,16 +1,16 @@
 ---
-gnome_settings_show_home: false
-gnome_settings_show_trash: false
-gnome_settings_titlebar_uses_system_font: true
+show_home: false
+show_trash: false
+titlebar_uses_system_font: true
 
-gnome_settings_desktop_background:
+desktop_background:
   - picture-options 'none'
   - picture-uri ''
   - picture-uri-dark ''
   - primary-color '#00008B'
   - show-desktop-icons false
 
-gnome_settings_desktop_interface:
+desktop_interface:
   - clock-format '24h'
   - clock-show-date true
   - clock-show-seconds false
@@ -20,13 +20,13 @@ gnome_settings_desktop_interface:
   - font-name 'Inconsolata Nerd Font 12'
   - monospace-font-name 'Inconsolata Nerd Font Mono 12'
 
-gnome_settings_dock:
+dock:
   - autohide true
   - dash-max-icon-size 40
   - dock-position 'LEFT'
   - extend-height false
   - show-mounts false
 
-gnome_settings_disabled_services:
+disabled_services:
   - apt-daily.service
   - apt-daily-upgrade.service

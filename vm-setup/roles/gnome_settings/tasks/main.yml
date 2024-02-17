@@ -2,25 +2,25 @@
 - include_tasks: tilix.yml
 
 - name: Hide trash icon
-  command: gsettings set org.gnome.shell.extensions.ding show-trash {{ gnome_settings_show_trash | lower }}
+  command: gsettings set org.gnome.shell.extensions.ding show-trash {{ show_trash | lower }}
 
 - name: Hide home icon
-  command: gsettings set org.gnome.shell.extensions.ding show-home {{ gnome_settings_show_home | lower }}
+  command: gsettings set org.gnome.shell.extensions.ding show-home {{ show_home | lower }}
 
 - name: Set titlebar font
-  command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font | lower }}
+  command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ titlebar_uses_system_font | lower }}
 
 - name: Set desktop background options
   shell: "gsettings set org.gnome.desktop.background {{ item }}"
-  with_items: "{{ gnome_settings_desktop_background }}"
+  with_items: "{{ desktop_background }}"
 
 - name: Set desktop interface options
   shell: "gsettings set org.gnome.desktop.interface {{ item }}"
-  with_items: "{{ gnome_settings_desktop_interface }}"
+  with_items: "{{ desktop_interface }}"
 
 - name: Set dash-to-dock settings
   shell: "gsettings set org.gnome.shell.extensions.dash-to-dock {{ item.key }} {{ item.value }}"
-  with_items: "{{ gnome-settings_dock }}"
+  with_items: "{{ dock }}"
 
 - name: Disable services
   become: yes
@@ -29,4 +29,4 @@
     enabled: no
     masked: yes
     state: stopped
-  loop: "{{ gnome_settings_disabled_services }}"
+  loop: "{{ disabled_services }}"
