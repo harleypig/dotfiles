@@ -42,6 +42,21 @@
 - name: Disable show volumes and devices on the dock
   command: gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false
 
+- name: Enable auto-hide for the dock
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock autohide {{ gnome_settings_dock_autohide }}
+
+- name: Enable panel mode for the dock
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock extend-height {{ gnome_settings_dock_extend_height }}
+
+- name: Set dock icon size
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size {{ gnome_settings_dock_icon_size }}
+
+- name: Set dock position to left
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock dock-position {{ gnome_settings_dock_position }}
+
+- name: Disable show volumes and devices on the dock
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts {{ gnome_settings_dock_show_mounts }}
+
 - name: Disable services
   become: yes
   systemd:
