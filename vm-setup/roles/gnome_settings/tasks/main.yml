@@ -1,5 +1,7 @@
 ---
 - include_tasks: tilix_profile.yml
+- name: Include tilix tasks
+  include_tasks: tilix.yml
 
 - name: Hide trash icon
   command: gsettings set org.gnome.shell.extensions.ding show-trash {{ gnome_settings_show_trash | lower }}
