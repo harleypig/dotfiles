@@ -30,6 +30,3 @@ dock:
 disabled_services:
   - apt-daily.service
   - apt-daily-upgrade.service
-
-# Include package list from pkgs.yml
-packages: "{{ lookup('file', role_path + '/defaults/pkgs.yml') | from_yaml }}"
