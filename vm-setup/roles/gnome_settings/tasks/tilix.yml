@@ -1,0 +1,11 @@
+---
+- include_tasks: tilix_profile.yml
+
+- name: Autostart Tilix on login
+  include_tasks: create_autostart.yml
+  vars:
+    autostart_app_name: "Tilix"
+    autostart_app_exec: "tilix"
+    autostart_app_comment: "Tilix terminal emulator"
+    autostart_app_terminal: false
+    autostart_app_hidden: false
