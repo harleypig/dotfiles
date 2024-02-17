@@ -1,0 +1,18 @@
+---
+- name: Create GNOME autostart directory if it doesn't exist
+  file:
+    path: "{{ ansible_env.HOME }}/.config/autostart"
+    state: directory
+    mode: '0755'
+
+- name: Create autostart entry for the application
+  template:
+    src: autostart_app.desktop.j2
+    dest: "{{ ansible_env.HOME }}/.config/autostart/{{ autostart_app_name }}.desktop"
+    mode: '0644'
+  vars:
+    autostart_app_name: "{{ app_name | default('myapp') }}"
+    autostart_app_exec: "{{ app_exec | default('/usr/bin/myapp') }}"
+    autostart_app_comment: "{{ app_comment | default('Autostart entry for myapp') }}"
+    autostart_app_terminal: "{{ app_terminal | default(false) }}"
+    autostart_app_hidden: "{{ app_hidden | default(false) }}"
