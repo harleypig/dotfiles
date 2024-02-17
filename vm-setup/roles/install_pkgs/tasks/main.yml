@@ -9,8 +9,8 @@
   - name: End play
     meta: end_play
 
-  vars:
-    all_groups: "{{ package_groups.keys }}"
+#  vars:
+#    all_groups: "{{ package_groups.keys }}"
 #    exclude_groups: "{{ exclude_group | default([]) }}"
 #    is_exclusion_list: "{{ is_exclude_list | default(false) }}"
 #    requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
@@ -31,11 +31,11 @@
 #      loop: "{{ package_groups[requested_groups] | flatten }}"
 #      loop_control:
 #        loop_var: item
-
-  tasks:
-    - name: Print all package groups
-      debug:
-        msg: "{{ all_groups }}"
-
-    - name: End play
-      meta: end_play
+#
+#  tasks:
+#    - name: Print all package groups
+#      debug:
+#        msg: "{{ all_groups }}"
+#
+#    - name: End play
+#      meta: end_play
