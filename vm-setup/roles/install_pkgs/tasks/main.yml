@@ -9,6 +9,10 @@
     requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
 
   block:
+  - name: Debug package_groups variable
+    debug:
+      var: package_groups
+
   - name: Print all package groups
     debug:
       msg: >
