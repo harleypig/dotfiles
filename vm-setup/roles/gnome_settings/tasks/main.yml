@@ -27,6 +27,21 @@
     autostart_app_terminal: false
     autostart_app_hidden: false
 
+- name: Enable auto-hide for the dock
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock autohide true
+
+- name: Enable panel mode for the dock
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false
+
+- name: Set dock icon size
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 40
+
+- name: Set dock position to left
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'LEFT'
+
+- name: Disable show volumes and devices on the dock
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false
+
 - name: Disable services
   become: yes
   systemd:
