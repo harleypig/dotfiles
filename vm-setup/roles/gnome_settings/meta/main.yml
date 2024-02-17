@@ -1,4 +1,4 @@
 dependencies:
 - role: install_pkgs
-  vars:
-    package_groups: "gnome_settings"
+  include_vars:
+    file: defaults/pkgs.yml
