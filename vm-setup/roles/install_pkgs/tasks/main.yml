@@ -1,5 +1,13 @@
 ---
-- become: yes
+- name: Install package groups
+  become: yes
+  block:
+  - name: Print all package groups
+    debug:
+      msg: "{{ all_groups }}"
+
+  - name: End play
+    meta: end_play
 
   vars:
     all_groups: "{{ package_groups.keys }}"
