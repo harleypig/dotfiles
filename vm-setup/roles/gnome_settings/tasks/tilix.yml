@@ -9,29 +9,3 @@
     autostart_app_comment: "Tilix terminal emulator"
     autostart_app_terminal: false
     autostart_app_hidden: false
----
-- name: Load Tilix profile if file exists
-  command: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
-  when: tilix_profile_file.stat.exists
-
-- name: Autostart Tilix on login
-  include_tasks: create_autostart.yml
-  vars:
-    autostart_app_name: "Tilix"
-    autostart_app_exec: "tilix"
-    autostart_app_comment: "Tilix terminal emulator"
-    autostart_app_terminal: false
-    autostart_app_hidden: false
----
-- name: Load Tilix profile if file exists
-  command: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
-  when: tilix_profile_file.stat.exists
-
-- name: Autostart Tilix on login
-  include_tasks: create_autostart.yml
-  vars:
-    autostart_app_name: "Tilix"
-    autostart_app_exec: "tilix"
-    autostart_app_comment: "Tilix terminal emulator"
-    autostart_app_terminal: false
-    autostart_app_hidden: false

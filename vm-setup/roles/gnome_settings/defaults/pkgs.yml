@@ -1,5 +1,5 @@
 gnome_package_group:
-  - gnome-shell-extensions
   - gnome-shell-extension-desktop-icons-ng
+  - gnome-shell-extensions
   - gnome-tweaks
   - tilix

@@ -7,6 +7,9 @@
 - name: Hide home icon
   command: gsettings set org.gnome.shell.extensions.ding show-home {{ gnome_settings_show_home | lower }}
 
+- name: Set titlebar font
+  command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font | lower }}
+
 - name: Set desktop background options
   shell: "gsettings set org.gnome.desktop.background {{ item }}"
   with_items: "{{ gnome_settings_desktop_background }}"
@@ -15,18 +18,9 @@
   shell: "gsettings set org.gnome.desktop.interface {{ item }}"
   with_items: "{{ gnome_settings_desktop_interface }}"
 
-- name: Set titlebar font
-  command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font | lower }}
-
-
- - name: Set dash-to-dock settings
-   shell: "gsettings set org.gnome.shell.extensions.dash-to-dock {{ item.key }} {{ item.value }}"
-   with_items:
-     - { key: 'autohide', value: gnome_settings_dock_autohide }
-     - { key: 'extend-height', value: gnome_settings_dock_extend_height }
-     - { key: 'dash-max-icon-size', value: gnome_settings_dock_icon_size }
-     - { key: 'dock-position', value: gnome_settings_dock_position }
-     - { key: 'show-mounts', value: gnome_settings_dock_show_mounts }
+- name: Set dash-to-dock settings
+  shell: "gsettings set org.gnome.shell.extensions.dash-to-dock {{ item.key }} {{ item.value }}"
+  with_items: "{{ gnome-settings_dock }}"
 
 - name: Disable services
   become: yes

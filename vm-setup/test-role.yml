@@ -5,6 +5,8 @@
   roles:
     #- role: gnome_settings
     - role: install_pkgs
+      vars_files:
+        - roles/install_pkgs/defaults/main.yml
       is_exclude_list: true
       exclude_group:
         - hledger

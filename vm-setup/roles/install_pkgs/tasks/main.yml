@@ -1,26 +1,9 @@
 ---
-- name: Install package groups
+- name: Install packages
   become: yes
 
-  block:
-  - name: Install requested packages
-    apt:
-      state: latest
-      update_cache: yes
-      name: "{{ package_names }}"
-#
-#  - name: Validate requested package groups
-#    fail:
-#      msg: >
-#        These package groups are not defined: {{ requested_groups | difference(all_groups) | join(', ') }}.
-#        Available package groups: {{ all_groups | join(', ') }}
-#    when: requested_groups | difference(all_groups) | length > 0
-#
-#  - name: Install requested package groups
-#    apt:
-#      state: latest
-#      update_cache: yes
-#      name: "{{ item }}"
-#    loop: "{{ package_groups[requested_groups] | flatten }}"
-#    loop_control:
-#      loop_var: item
+- name: Install requested packages
+  apt:
+    state: latest
+    update_cache: yes
+    name: "{{ packages }}"
