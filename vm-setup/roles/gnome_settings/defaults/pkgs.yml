@@ -1,4 +1,4 @@
-packages:
+gnome_packages:
   - gnome-shell-extension-desktop-icons-ng
   - gnome-shell-extensions
   - gnome-tweaks
