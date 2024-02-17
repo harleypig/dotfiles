@@ -18,20 +18,15 @@
 - name: Set titlebar font
   command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ gnome_settings_titlebar_uses_system_font | lower }}
 
-- name: Enable auto-hide for the dock
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock autohide {{ gnome_settings_dock_autohide }}
 
-- name: Enable panel mode for the dock
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock extend-height {{ gnome_settings_dock_extend_height }}
-
-- name: Set dock icon size
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size {{ gnome_settings_dock_icon_size }}
-
-- name: Set dock position to left
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock dock-position {{ gnome_settings_dock_position }}
-
-- name: Disable show volumes and devices on the dock
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts {{ gnome_settings_dock_show_mounts }}
+ - name: Set dash-to-dock settings
+   shell: "gsettings set org.gnome.shell.extensions.dash-to-dock {{ item.key }} {{ item.value }}"
+   with_items:
+     - { key: 'autohide', value: gnome_settings_dock_autohide }
+     - { key: 'extend-height', value: gnome_settings_dock_extend_height }
+     - { key: 'dash-max-icon-size', value: gnome_settings_dock_icon_size }
+     - { key: 'dock-position', value: gnome_settings_dock_position }
+     - { key: 'show-mounts', value: gnome_settings_dock_show_mounts }
 
 - name: Disable services
   become: yes
