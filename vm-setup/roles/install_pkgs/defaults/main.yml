@@ -40,5 +40,3 @@ package_groups:
     - docker-ce-cli
     - containerd.io
     - docker-compose-plugin
-  gcloud:
-    - google-cloud-cli
