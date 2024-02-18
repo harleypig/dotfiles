@@ -1,14 +1,4 @@
 ---
-- name: Remove older Docker packages
-  apt:
-    name:
-      - docker
-      - docker-engine
-      - docker.io
-      - containerd
-      - runc
-    state: absent
-    purge: yes
 
 # Install Docker packages from the Docker repository
 - name: Install Docker packages
