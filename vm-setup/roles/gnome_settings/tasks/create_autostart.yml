@@ -11,6 +11,18 @@
     dest: "{{ ansible_env.HOME }}/.config/autostart/{{ autostart_app_name }}.desktop"
     mode: '0644'
   vars:
+    autostart_app_name: "{{ app_name | default('move_tilix_to_bottom_right') }}"
+    autostart_app_exec: "{{ ansible_env.HOME }}/bin/move_tilix_to_bottom_right.sh"
+    autostart_app_comment: "{{ app_comment | default('Move Tilix window to the bottom right corner on login') }}"
+    autostart_app_terminal: "{{ app_terminal | default(false) }}"
+    autostart_app_hidden: "{{ app_hidden | default(false) }}"
+
+# Ensure the script is executable
+- name: Make the Tilix move script executable
+  file:
+    path: "{{ ansible_env.HOME }}/bin/move_tilix_to_bottom_right.sh"
+    mode: '0755'
+  vars:
     autostart_app_name: "{{ app_name | default('myapp') }}"
     autostart_app_exec: "{{ app_exec | default('/usr/bin/myapp') }}"
     autostart_app_comment: "{{ app_comment | default('Autostart entry for myapp') }}"
