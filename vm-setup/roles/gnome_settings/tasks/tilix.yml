@@ -9,8 +9,11 @@
   vars:
     autostart_app_type: "Application"
     autostart_app_name: "Tilix"
-    autostart_app_exec: "tilix; /home/{{ ansible_env.USER }}/.local/bin/move_tilix"
-    autostart_app_comment: "Tilix terminal emulator"
+    autostart_app_exec: "tilix; move_tilix"
+    autostart_app_settings:
+      # These keys are case sensitive. Make sure you're using the correct
+      # capitalization for these key.
+      - Comment: "Tilix terminal emulator"
 
 - name: Check if Tilix profile file exists
   stat:
