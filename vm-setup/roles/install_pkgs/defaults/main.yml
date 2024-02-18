@@ -35,8 +35,3 @@ package_groups:
     - hledger-ui
   vscode:
     - code # This is the package name for Visual Studio Code
-  docker:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
-    - docker-compose-plugin
