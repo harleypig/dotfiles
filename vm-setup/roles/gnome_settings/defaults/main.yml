@@ -1,19 +1,19 @@
 ---
-show_home: false
-show_trash: false
-titlebar_uses_system_font: true
-screensaver_idle_activation_enabled: false
-lock_screen_enabled: false
-lock_screen_disable_lock_screen: true
+gnome_settings_show_home: false
+gnome_settings_show_trash: false
+gnome_settings_titlebar_uses_system_font: true
+gnome_settings_screensaver_idle_activation_enabled: false
+gnome_settings_lock_screen_enabled: false
+gnome_settings_lock_screen_disable_lock_screen: true
 
-desktop_background:
+gnome_settings_desktop_background:
   - picture-options 'none'
   - picture-uri ''
   - picture-uri-dark ''
   - primary-color '#00007D'
   - show-desktop-icons false
 
-desktop_interface:
+gnome_settings_desktop_interface:
   - clock-format '24h'
   - clock-show-date true
   - clock-show-seconds false
@@ -23,13 +23,13 @@ desktop_interface:
   - font-name 'Inconsolata Nerd Font 12'
   - monospace-font-name 'Inconsolata Nerd Font Mono 12'
 
-dock:
+gnome_settings_dock:
   - autohide true
   - dash-max-icon-size 40
   - dock-position 'LEFT'
   - extend-height false
   - show-mounts false
 
-disabled_services:
+gnome_settings_disabled_services:
   - apt-daily.service
   - apt-daily-upgrade.service
