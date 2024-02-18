@@ -12,15 +12,14 @@
     msg: "The autostart_app_type variable must be one of 'Application', 'Link', or 'Directory'."
   when: autostart_app_type not in ['Application', 'Link', 'Directory']
 
-- name: Verify autostart_app_exec is defined for Application type
-  fail:
+-  fail:
     msg: "The autostart_app_exec variable must be defined and not empty for Application type."
-  when: autostart_app_type == 'Application' and (autostart_app_exec is not defined or autostart_app_exec | trim == "")
+  when: autostart_app_type == 'Application' and (autostart_app_exec is not defined or autostart_app_exec == "")
 
-- name: Verify autostart_app_url is defined for Link type
+-
   fail:
     msg: "The autostart_app_url variable must be defined and not empty for Link type."
-  when: autostart_app_type == 'Link' and (autostart_app_url is not defined or autostart_app_url | trim == "")
+  when: autostart_app_type == 'Link' and (autostart_app_url is not defined or autostart_app_url == "")
 
 - name: Create GNOME autostart directory if it doesn't exist
   file:
