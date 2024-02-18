@@ -4,9 +4,6 @@
     path: "{{ tilix_profile_filename }}"
   register: tilix_profile_file
 
-  - name: Load Tilix profile from file
-    command: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
 - name: Load Tilix profile if file exists
-  command: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
   shell: "dconf load /com/gexperts/Tilix/ < {{ gnome_settings_tilix_profile_filename }}"
   when: tilix_profile_file.stat.exists
