@@ -23,7 +23,6 @@
   with_items: "{{ dock }}"
 
 - name: Disable services
-  become: yes
   systemd:
     name: "{{ item }}"
     enabled: no
