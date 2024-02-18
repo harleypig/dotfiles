@@ -4,7 +4,7 @@
     path: "{{ tilix_profile_filename }}"
   register: tilix_profile_file
 
--  shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
+- name: Load profile if the file exists
+  shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
   when: tilix_profile_file.stat.exists
- become: yes
- become_user: harleypig
+  become_user: harleypig
