@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Application
 Exec={{ autostart_app_exec }}
+Path={{ autostart_app_path | default('') }}
 Hidden={{ autostart_app_hidden }}
 X-GNOME-Autostart-enabled=true
 Name={{ autostart_app_name }}
