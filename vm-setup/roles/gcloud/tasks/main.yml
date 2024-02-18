@@ -7,11 +7,6 @@
     repo_list:
       - google-cloud
 
-- name: Define Google Cloud SDK packages
-  set_fact:
-    gcloud_packages:
-      - google-cloud-cli
-
 - name: Install Google Cloud SDK packages using install_pkgs role
   include_role:
     name: install_pkgs
