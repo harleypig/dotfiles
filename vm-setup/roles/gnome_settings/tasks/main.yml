@@ -55,17 +55,10 @@
 
    ########
 
-   - command: gnome-shell-extension-installer {{ gnome_shell_extension_list_uuid }} --yes
-     register: extension_install
-     changed_when: "'Extension installed' in extension_install.stdout"
-     failed_when: extension_install.rc != 0 and 'already installed' not in extension_install.stderr
-     vars:
-       gnome_shell_extension_list_uuid: "extension-list@gnome-shell-extensions.gcampax.github.com"
 
-   - name: Enable GNOME Shell extension list
-     command: gnome-extensions enable {{ gnome_shell_extension_list_uuid }}
-     when: extension_install is changed
+
+
 
    ########
 
-- include_tasks: tilix.yml
+-
