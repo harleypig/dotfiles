@@ -129,6 +129,12 @@ position.
 
 ## Dependencies
 
+## TODO
+
+- Fix the Tilix autostart issue where it starts minimized. Ensure it starts
+  maximized or in the specified state. I think it might be one the extensions
+  I've installed
+
 This role depends on the `install_pkgs` role to ensure that the necessary
 packages are installed.
 The `install_pkgs` role is now included as a dependency in `meta/main.yml` to ensure that the necessary packages for the GNOME settings role are installed.
