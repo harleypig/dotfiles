@@ -12,11 +12,12 @@
     msg: "The autostart_app_type variable must be one of 'Application', 'Link', or 'Directory'."
   when: autostart_app_type not in ['Application', 'Link', 'Directory']
 
--  fail:
+- name: Verify Exec variable for Application type
+  fail:
     msg: "The autostart_app_exec variable must be defined and not empty for Application type."
   when: autostart_app_type == 'Application' and (autostart_app_exec is not defined or autostart_app_exec == "")
 
--
+- name: Verify URL variable for Link type
   fail:
     msg: "The autostart_app_url variable must be defined and not empty for Link type."
   when: autostart_app_type == 'Link' and (autostart_app_url is not defined or autostart_app_url == "")
