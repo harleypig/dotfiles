@@ -98,3 +98,13 @@ key is the setting name and the value is the setting value.
 
 This role depends on the `install_pkgs` role to ensure that the necessary
 packages are installed.
+
+## Tilix Task
+
+The `tilix.yml` task file is responsible for setting up the Tilix terminal emulator. It includes the following steps:
+
+- Copying the `move_tilix` script to the local bin directory to allow moving the Tilix window to a specific screen position.
+- Creating an autostart entry for Tilix to ensure it starts automatically upon login.
+- Loading the Tilix profile if a custom profile file is provided.
+
+To customize the Tilix setup, you can modify the `gnome_settings_tilix_profile_filename` variable to specify the path to your custom Tilix profile. Additionally, you can adjust the `move_tilix` script to set the desired window position for Tilix.
