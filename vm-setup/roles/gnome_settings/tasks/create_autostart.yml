@@ -1,4 +1,13 @@
 ---
+# Ensure required variables are defined
+- name: Verify required autostart variables are defined
+  fail:
+    msg: "Required variable '{{ item }}' is not defined for autostart configuration."
+  when: item is not defined
+  with_items:
+    - autostart_app_name
+    - autostart_app_exec
+
 - name: Create GNOME autostart directory if it doesn't exist
   file:
     path: "{{ ansible_env.HOME }}/.config/autostart"
