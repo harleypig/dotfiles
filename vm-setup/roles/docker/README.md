@@ -25,6 +25,10 @@ This role depends on the `add_repo` and `install_pkgs` roles.
      - role: docker
 ```
 
+## TODO
+
+* modify docker role to setup existing users and setup skel to allow new users
+
 ## License
 
 DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE

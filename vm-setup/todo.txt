@@ -20,7 +20,6 @@ add playbook for setting user groups (on ubuntu modify /etc/adduser.conf) Use
 modify this piecemeal, so if docker is not installed then it's not set?
 
 ------------------------------------------------------------------------------
-modify docker role to setup existing users and setup skel to allow new users
 
 ------------------------------------------------------------------------------
 create a role to install repositories in projects directory
@@ -32,9 +31,7 @@ create a (separate?) role to setup dotfiles and dotvim and private_dotfiles
 add molecule tests
 
 ------------------------------------------------------------------------------
-Fix the Tilix autostart issue where it starts minimized. Ensure it starts
-maximized or in the specified state. I think it might be one the extensions
-I've installed
+add todos as git-bugs once that's setup for this repo
 
 ------------------------------------------------------------------------------
 create and add a script to copy and cleanup my firefox profile so that it can
