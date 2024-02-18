@@ -1,0 +1,16 @@
+---
+- name: Install GNOME Shell extensions
+  command: gnome-shell-extension-installer {{ uuid }} --yes
+  register: extension_install
+  changed_when: "'Extension installed' in extension_install.stdout"
+  failed_when: extension_install.rc != 0 and 'already installed' not in extension_install.stderr
+  loop: "{{ gnome_shell_extension_uuids }}"
+  loop_control:
+    loop_var: uuid
+
+- name: Enable GNOME Shell extensions
+  command: gnome-extensions enable {{ uuid }}
+  when: "'Extension installed' in extension_install.stdout"
+  loop: "{{ gnome_shell_extension_uuids }}"
+  loop_control:
+    loop_var: uuid
