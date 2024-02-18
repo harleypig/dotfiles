@@ -20,3 +20,4 @@ create a role to install repositories in projects directory
 create a (separate?) role to setup dotfiles and dotvim and private_dotfiles
 
 add molecule tests
+Fix the Tilix autostart issue where it starts minimized. Ensure it starts maximized or in the specified state.
