@@ -15,7 +15,6 @@
       # These keys are case sensitive. Make sure you're using the correct
       # capitalization for these key.
       Comment: "Tilix terminal emulator"
-      Hidden: false
       X-GNOME-Autostart-enabled: true
       X-GNOME-Autostart-Delay: 0
 
