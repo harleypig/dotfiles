@@ -4,9 +4,14 @@
   fail:
     msg: "Required variable '{{ item }}' is not defined for autostart configuration."
   when: item is not defined
-  with_items:
-    - autostart_app_name
-    - autostart_app_exec
+  with_items: "{{ required_autostart_vars }}"
+
+- name: Define required autostart variables
+  set_fact:
+    required_autostart_vars:
+      - autostart_app_name
+      - autostart_app_exec
+      - autostart_app_type
 
 - name: Create GNOME autostart directory if it doesn't exist
   file:
