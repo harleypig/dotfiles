@@ -3,3 +3,4 @@ gnome_packages:
   - gnome-shell-extensions
   - gnome-tweaks
   - tilix
+  - wmctrl
