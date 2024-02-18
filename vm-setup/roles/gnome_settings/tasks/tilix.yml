@@ -8,6 +8,7 @@
 - name: Autostart Tilix on login
   include_tasks: create_autostart.yml
   vars:
+    autostart_app_type: "Application"
     autostart_app_name: "Tilix"
     autostart_app_exec: "tilix"
     autostart_app_comment: "Tilix terminal emulator"
