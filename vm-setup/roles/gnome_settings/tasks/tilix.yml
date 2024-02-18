@@ -5,6 +5,13 @@
     dest: "{{ ansible_env.HOME }}/.local/bin/move_tilix"
     mode: '0755'
 
+
+- name: Copy move_tilix script to the local bin directory
+  copy:
+    src: move_tilix
+    dest: "{{ ansible_env.HOME }}/.local/bin/move_tilix"
+    mode: '0755'
+
 - name: Autostart Tilix on login
   include_tasks: create_autostart.yml
   vars:
