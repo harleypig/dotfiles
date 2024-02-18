@@ -13,6 +13,8 @@
     autostart_app_settings:
       # These keys are case sensitive. Make sure you're using the correct
       # capitalization for these key.
+      # Exec: "tilix --focus-window"
+      # Exec: "tilix --action=move_tilix"
       Exec: "tilix --maximize"
       Comment: "Tilix terminal emulator"
       X-GNOME-Autostart-enabled: true
