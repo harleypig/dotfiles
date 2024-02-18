@@ -1,6 +1,9 @@
 ---
 dependencies:
   - role: add_repo
+    repo_list:
+      - docker
+
   - role: install_pkgs
     vars:
       package_groups: "docker"

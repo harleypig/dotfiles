@@ -1,13 +1,4 @@
 ---
-# This playbook uses the add_repo role to install the Docker repository
-- name: Include add_repo to install Docker repository
-  include_role:
-    name: add_repo
-  vars:
-    repo_list:
-      - docker
-
-# Remove older Docker packages if they exist
 - name: Remove older Docker packages
   apt:
     name:
