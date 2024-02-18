@@ -1,13 +1,7 @@
 gnome_settings_packages:
   - gnome-shell-extension-desktop-icons-ng
-  - gnome-shell-extension-installer
   - gnome-shell-extensions
   - gnome-startup-applications
   - gnome-tweaks
   - tilix
   - wmctrl
-
-gnome_settings_shell_extension_uuids:
-  # Extension List - Provides a list of installed GNOME Shell extensions in
-  # the top bar.
-  - "extension-list@gnome-shell-extensions.gcampax.github.com"
