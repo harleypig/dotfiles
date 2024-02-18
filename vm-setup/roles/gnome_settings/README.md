@@ -49,17 +49,11 @@ The following variables can be set to customize the GNOME desktop environment.
 These variables are defined in `defaults/main.yml`:
 
 - `gnome_settings_show_home`: (boolean) Show or hide the home icon on the desktop. Default: `false`
-  - Valid entries: `true` or `false`
 - `gnome_settings_show_trash`: (boolean) Show or hide the trash icon on the desktop. Default: `false`
-  - Valid entries: `true` or `false`
 - `gnome_settings_titlebar_uses_system_font`: (boolean) Use the system font for window title bars. Default: `true`
-  - Valid entries: `true` or `false`
 - `gnome_settings_screensaver_idle_activation_enabled`: (boolean) Enable or disable the screensaver's idle activation. Default: `false`
-  - Valid entries: `true` or `false`
 - `gnome_settings_lock_screen_enabled`: (boolean) Enable or disable the lock screen. Default: `false`
-  - Valid entries: `true` or `false`
 - `gnome_settings_lock_screen_disable_lock_screen`: (boolean) Enable or disable the lock screen lockdown. Default: `true`
-  - Valid entries: `true` or `false`
 
 - `gnome_settings_desktop_background`: (list) A list of settings for the desktop background. Defaults:
   - `picture-options`: 'none'
