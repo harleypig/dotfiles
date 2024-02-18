@@ -1,17 +1,5 @@
 [Desktop Entry]
 Name={{ autostart_app_name }}
-Type=Application
-{% if autostart_app_exec is defined and autostart_app_exec | trim != "" %}
-Exec={{ autostart_app_exec }}
-{% endif %}
-{% if autostart_app_path is defined and autostart_app_path | trim != "" %}
-Path={{ autostart_app_path }}
-{% endif %}
-Hidden={{ autostart_app_hidden }}
-{% if autostart_app_comment is defined and autostart_app_comment | trim != "" %}
-Comment={{ autostart_app_comment }}
-{% endif %}
-{% if autostart_app_terminal is defined %}
-Terminal={{ autostart_app_terminal | lower }}
-{% endif %}
-X-GNOME-Autostart-enabled=true
+{% for key, value in autostart_app_settings.items() %}
+{{ key }}={{ value }}
+{% endfor %}
