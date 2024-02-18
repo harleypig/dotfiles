@@ -5,7 +5,8 @@
     dest: "{{ ansible_env.HOME }}/.local/bin/move_tilix"
     mode: '0755'
 
-- include_tasks: create_autostart.yml
+- - name: Include autostart creation tasks
+   include_tasks: create_autostart.yml
   vars:
     autostart_app_type: "Application"
     autostart_app_name: "Tilix"
