@@ -1,5 +1,6 @@
 ---
 - name: Create GNOME autostart directory if it doesn't exist
+  become_user
   file:
     path: "{{ ansible_env.HOME }}/.config/autostart"
     state: directory
