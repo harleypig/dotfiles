@@ -1,6 +1,4 @@
 ---
-- include_tasks: tilix_profile.yml
-
 - name: Copy move_tilix script to the local bin directory
   copy:
     src: move_tilix
@@ -15,3 +13,12 @@
     autostart_app_comment: "Tilix terminal emulator"
     autostart_app_terminal: false
     autostart_app_hidden: false
+
+- name: Check if Tilix profile file exists
+  stat:
+    path: "{{ tilix_profile_filename }}"
+  register: tilix_profile_file
+
+- name: Load profile if the file exists
+  shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
+  when: tilix_profile_file.stat.exists

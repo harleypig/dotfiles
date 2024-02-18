@@ -1,9 +1,0 @@
----
-- name: Check if Tilix profile file exists
-  stat:
-    path: "{{ tilix_profile_filename }}"
-  register: tilix_profile_file
-
-- name: Load profile if the file exists
-  shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
-  when: tilix_profile_file.stat.exists
