@@ -11,5 +11,7 @@ Hidden={{ autostart_app_hidden }}
 {% if autostart_app_comment is defined and autostart_app_comment | trim != "" %}
 Comment={{ autostart_app_comment }}
 {% endif %}
-Terminal={{ autostart_app_terminal }}
+{% if autostart_app_terminal is defined %}
+Terminal={{ autostart_app_terminal | lower }}
+{% endif %}
 X-GNOME-Autostart-enabled=true
