@@ -1,6 +1,4 @@
 ---
-- include_tasks: tilix.yml
-
 - name: Hide trash icon
   command: gsettings set org.gnome.shell.extensions.ding show-trash {{ show_trash | lower }}
 
@@ -39,6 +37,8 @@
     state: stopped
   loop: "{{ disabled_services }}"
 
+########
+
 - name: Install GNOME Shell extension list
   command: gnome-extensions install {{ gnome_shell_extension_list_uuid }}
   register: extension_install
@@ -50,3 +50,8 @@
 - name: Enable GNOME Shell extension list
   command: gnome-extensions enable {{ gnome_shell_extension_list_uuid }}
   when: extension_install is changed
+
+########
+
+- include_tasks: tilix.yml
+

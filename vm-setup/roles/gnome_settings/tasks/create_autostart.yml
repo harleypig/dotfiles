@@ -5,7 +5,6 @@
     msg: "Required variable '{{ item }}' is not defined for autostart configuration."
   when: item is not defined
   with_items:
-    - autostart_app_exec
     - autostart_app_name
     - autostart_app_type
 
