@@ -1,8 +1,6 @@
 [Desktop Entry]
 Name={{ autostart_app_name }}
 Type={{ autostart_app_type }}
-Exec={{ autostart_app_exec | default('') }}
-URL={{ autostart_app_url | default('') }}
 {% for key, value in autostart_app_settings.items() %}
 {{ key }}={{ value }}
 {% endfor %}
