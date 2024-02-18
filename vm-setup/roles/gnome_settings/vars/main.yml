@@ -6,3 +6,6 @@ gnome_packages:
   - tilix
   - wmctrl
   - gnome-shell-extension-installer
+gnome_shell_extension_uuids:
+  # Extension List - Provides a list of installed GNOME Shell extensions
+  - "extension-list@gnome-shell-extensions.gcampax.github.com"
