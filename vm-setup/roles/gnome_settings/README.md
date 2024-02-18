@@ -100,6 +100,9 @@ To use this task, you need to define the following variables:
 - `autostart_app_exec`: The command or script to execute (required for 'Application' type).
 - `autostart_app_url`: The URL to open (required for 'Link' type).
 
+The `autostart_app_settings` dictionary allows you to specify additional settings for the autostart entry. Each key-value pair in this dictionary represents a setting in the `.desktop` file. It is important to note that these keys are case-sensitive. As there is no automatic case validation, you must ensure that you use the correct capitalization for these keys as defined in the Desktop Entry Specification.
+
+
 Additional optional settings can be provided through the `autostart_app_settings` dictionary. This task will create a `.desktop` file in the `~/.config/autostart` directory to manage the autostart behavior.
 
 See the code for the tilix task for an example of how it would look.
