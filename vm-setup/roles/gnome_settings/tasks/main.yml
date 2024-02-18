@@ -24,12 +24,12 @@
   changed_when: true
 
 - name: Set desktop background options
-  shell: "gsettings set org.gnome.desktop.background {{ item }}"
+  command: "gsettings set org.gnome.desktop.background {{ item }}"
   changed_when: true
   with_items: "{{ desktop_background }}"
 
 - name: Set desktop interface options
-  shell: "gsettings set org.gnome.desktop.interface {{ item }}"
+  command: "gsettings set org.gnome.desktop.interface {{ item }}"
   changed_when: true
   with_items: "{{ desktop_interface }}"
 
