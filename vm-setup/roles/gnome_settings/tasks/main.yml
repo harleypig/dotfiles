@@ -65,4 +65,5 @@
 
 ########
 
--
+- name: Include Tilix task
+  include_task: tilix.yml
