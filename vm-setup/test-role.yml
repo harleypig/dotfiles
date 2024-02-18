@@ -2,6 +2,4 @@
 - hosts: localhost
 
   roles:
-    - role: gnome_settings
-      vars:
-        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+    - role: gcloud

@@ -4,9 +4,10 @@
 
   roles:
     - role: gnome_settings
-      tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+      vars:
+        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
 
-    - role: install_pkgs
+    #- role: install_pkgs
     - role: pip_pkgs
     - role: nerd_font
     - role: add_iac
