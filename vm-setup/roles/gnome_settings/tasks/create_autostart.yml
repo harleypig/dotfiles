@@ -6,12 +6,22 @@
   with_items:
     - autostart_app_name
     - autostart_app_type
+    - autostart_app_settings
 
 - name: Verify autostart_app_type has a valid value
   fail:
     msg: "The autostart_app_type variable must be one of 'Application', 'Link', or 'Directory'."
   when: autostart_app_type not in ['Application', 'Link', 'Directory']
 
+ - name: Verify Exec key for Application type in autostart_app_settings
+   fail:
+     msg: "The 'Exec' key must be defined and not empty in autostart_app_settings for Application type."
+   when: autostart_app_type == 'Application' and ('Exec' not in autostart_app_settings or autostart_app_settings['Exec'] | trim == "")
+
+ - name: Verify URL key for Link type in autostart_app_settings
+   fail:
+     msg: "The 'URL' key must be defined and not empty in autostart_app_settings for Link type."
+   when: autostart_app_type == 'Link' and ('URL' not in autostart_app_settings or autostart_app_settings['URL'] | trim == "")
 - name: Verify Exec variable for Application type
   fail:
     msg: "The autostart_app_exec variable must be defined and not empty for Application type."
