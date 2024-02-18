@@ -1,0 +1,24 @@
+[/]
+animate-appicon-hover=true
+animate-appicon-hover-animation-extent={'RIPPLE': 4, 'PLANK': 4, 'SIMPLE': 1}
+animate-appicon-hover-animation-type='RIPPLE'
+appicon-margin=2
+appicon-padding=2
+available-monitors=[0]
+dot-position='BOTTOM'
+hotkeys-overlay-combo='TEMPORARILY'
+intellihide=true
+leftbox-padding=-1
+panel-anchors='{"0":"MIDDLE"}'
+panel-lengths='{"0":100}'
+panel-sizes='{"0":34}'
+primary-monitor=0
+show-appmenu=false
+show-favorites-all-monitors=false
+status-icon-padding=-1
+trans-bg-color='#00007d'
+trans-use-custom-bg=true
+trans-use-custom-opacity=true
+trans-use-dynamic-opacity=true
+tray-padding=-1
+window-preview-title-position='TOP'

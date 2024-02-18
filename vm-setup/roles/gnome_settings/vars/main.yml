@@ -1,5 +1,6 @@
 gnome_settings_packages:
   - gnome-shell-extension-desktop-icons-ng
+  - gnome-shell-extension-manager
   - gnome-shell-extensions
   - gnome-startup-applications
   - gnome-tweaks
