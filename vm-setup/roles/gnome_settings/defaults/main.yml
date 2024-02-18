@@ -3,6 +3,9 @@ show_home: false
 show_trash: false
 titlebar_uses_system_font: true
 
+screensaver_idle_activation_enabled: false
+lock_screen_enabled: false
+lock_screen_disable_lock_screen: true
 desktop_background:
   - picture-options 'none'
   - picture-uri ''

@@ -18,12 +18,12 @@
   shell: "gsettings set org.gnome.desktop.interface {{ item }}"
   with_items: "{{ desktop_interface }}"
 
-- name: Disable screensaver
-  command: gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
-
-- name: Disable lock screen
-  command: gsettings set org.gnome.desktop.screensaver lock-enabled false
-  command: gsettings set org.gnome.desktop.lockdown disable-lock-screen true
+- name: Set screensaver and lock screen settings
+  command: gsettings set {{ item.key }} {{ item.value }}
+  with_items:
+    - { key: "org.gnome.desktop.screensaver idle-activation-enabled", value: "{{ screensaver_idle_activation_enabled | lower }}" }
+    - { key: "org.gnome.desktop.screensaver lock-enabled", value: "{{ lock_screen_enabled | lower }}" }
+    - { key: "org.gnome.desktop.lockdown disable-lock-screen", value: "{{ lock_screen_disable_lock_screen | lower }}" }
 
 - name: Set dash-to-dock settings
   shell: "gsettings set org.gnome.shell.extensions.dash-to-dock {{ item }}"
