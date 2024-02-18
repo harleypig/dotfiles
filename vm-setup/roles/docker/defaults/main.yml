@@ -1,4 +1,0 @@
----
-# Default variables for the Docker role
-docker_repo_name: docker
-docker_package_group: docker
