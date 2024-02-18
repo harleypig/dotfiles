@@ -10,13 +10,13 @@
   vars:
     autostart_app_type: "Application"
     autostart_app_name: "Tilix"
-    autostart_app_exec: "tilix"
     autostart_app_settings:
       # These keys are case sensitive. Make sure you're using the correct
       # capitalization for these key.
+      Exec: "tilix"
       Comment: "Tilix terminal emulator"
       X-GNOME-Autostart-enabled: true
-      X-GNOME-Autostart-Delay: 0
+      X-GNOME-Autostart-Delay: 1
 
 - name: Check if Tilix profile file exists
   stat:

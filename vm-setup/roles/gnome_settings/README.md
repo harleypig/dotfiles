@@ -91,16 +91,23 @@ key is the setting name and the value is the setting value.
 
 ## Create Autostart Task
 
-The `create_autostart.yml` task file is used to create autostart entries for applications. This allows you to have applications, scripts, or commands automatically start when you log into your GNOME desktop environment.
+The `create_autostart.yml` task file is used to create autostart entries for
+applications. This allows you to have applications, scripts, or commands
+automatically start when you log into your GNOME desktop environment.
 
 To use this task, you need to define the following variables:
 
 * `autostart_app_name`: The name of the application or script.
 * `autostart_app_type`: The type of the autostart entry, which can be 'Application', 'Link', or 'Directory'.
-* `autostart_app_exec`: The command or script to execute (required for 'Application' type).
-* `autostart_app_url`: The URL to open (required for 'Link' type).
 
-The `autostart_app_settings` dictionary allows you to specify additional settings for the autostart entry. Each key-value pair in this dictionary represents a setting in the `.desktop` file. It is important to note that these keys are case-sensitive. Make sure you're using the correct capitalization for these keys as defined in the Desktop Entry Specification. The role now includes checks to ensure that the `Exec` key for 'Application' type and the `URL` key for 'Link' type are defined and not empty.
+The `autostart_app_settings` dictionary allows you to specify additional
+settings for the autostart entry. Each key-value pair in this dictionary
+represents a setting in the `.desktop` file. It is important to note that
+these keys are case-sensitive. Make sure you're using the correct
+capitalization for these keys as defined in the Desktop Entry Specification.
+
+The includes checks to ensure that the `Exec` key for 'Application' type and
+the `URL` key for 'Link' type are defined and not empty.
 
 See the code for the tilix task for an example of how it would look.
 
@@ -113,7 +120,12 @@ emulator. It includes the following steps:
 * Creating an autostart entry for Tilix to ensure it starts automatically upon login.
 * Loading the Tilix profile if a custom profile file is provided.
 
-To customize the Tilix setup, you can modify the `gnome_settings_tilix_profile_filename` variable to specify the path to your custom Tilix profile. Additionally, the `move_tilix` script is now included to automatically move the Tilix window to the bottom right corner of the screen after it starts. You can adjust the script if you need to change the target position.
+To customize the Tilix setup, you can modify the
+`gnome_settings_tilix_profile_filename` variable to specify the path to your
+custom Tilix profile. Additionally, the `move_tilix` script is now included to
+automatically move the Tilix window to the bottom right corner of the screen
+after it starts. You can adjust the script if you need to change the target
+position.
 
 ## Dependencies
 

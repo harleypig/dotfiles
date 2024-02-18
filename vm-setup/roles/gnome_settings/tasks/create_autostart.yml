@@ -13,24 +13,15 @@
     msg: "The autostart_app_type variable must be one of 'Application', 'Link', or 'Directory'."
   when: autostart_app_type not in ['Application', 'Link', 'Directory']
 
- - name: Verify Exec key for Application type in autostart_app_settings
-   fail:
-     msg: "The 'Exec' key must be defined and not empty in autostart_app_settings for Application type."
-   when: autostart_app_type == 'Application' and ('Exec' not in autostart_app_settings or not autostart_app_settings['Exec'])
-
- - name: Verify URL key for Link type in autostart_app_settings
-   fail:
-     msg: "The 'URL' key must be defined and not empty in autostart_app_settings for Link type."
-   when: autostart_app_type == 'Link' and ('URL' not in autostart_app_settings or not autostart_app_settings['URL'])
-- name: Verify Exec variable for Application type
+- name: Verify Exec key for Application type in autostart_app_settings
   fail:
-    msg: "The autostart_app_exec variable must be defined and not empty for Application type."
-  when: autostart_app_type == 'Application' and (autostart_app_exec is not defined or autostart_app_exec == "")
+    msg: "The 'Exec' key must be defined and not empty in autostart_app_settings for Application type."
+  when: autostart_app_type == 'Application' and ('Exec' not in autostart_app_settings or not autostart_app_settings['Exec'])
 
-- name: Verify URL variable for Link type
+- name: Verify URL key for Link type in autostart_app_settings
   fail:
-    msg: "The autostart_app_url variable must be defined and not empty for Link type."
-  when: autostart_app_type == 'Link' and (autostart_app_url is not defined or autostart_app_url == "")
+    msg: "The 'URL' key must be defined and not empty in autostart_app_settings for Link type."
+  when: autostart_app_type == 'Link' and ('URL' not in autostart_app_settings or not autostart_app_settings['URL'])
 
 - name: Create GNOME autostart directory if it doesn't exist
   file:
