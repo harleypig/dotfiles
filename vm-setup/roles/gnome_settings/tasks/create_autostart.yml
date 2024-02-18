@@ -6,7 +6,11 @@
   when: item is not defined
   with_items:
     - autostart_app_name
-    - autostart_app_type
+
+- name: Verify autostart_app_type has a valid value
+  fail:
+    msg: "The autostart_app_type variable must be one of 'Application', 'Link', or 'Directory'."
+  when: autostart_app_type not in ['Application', 'Link', 'Directory']
 
 - name: Define required autostart variables
 
