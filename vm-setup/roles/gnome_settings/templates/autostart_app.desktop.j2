@@ -2,8 +2,13 @@
 Type=Application
 Exec={{ autostart_app_exec }}
 Path={{ autostart_app_path | default('') }}
+{% if autostart_app_path is defined and autostart_app_path %}
+Path={{ autostart_app_path }}
+{% endif %}
 Hidden={{ autostart_app_hidden }}
 X-GNOME-Autostart-enabled=true
 Name={{ autostart_app_name }}
+{% if autostart_app_comment is defined and autostart_app_comment %}
 Comment={{ autostart_app_comment }}
+{% endif %}
 Terminal={{ autostart_app_terminal }}
