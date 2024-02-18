@@ -5,3 +5,4 @@ gnome_packages:
   - gnome-tweaks
   - tilix
   - wmctrl
+  - gnome-shell-extension-installer
