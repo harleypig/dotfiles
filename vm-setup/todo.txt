@@ -9,6 +9,8 @@ figure out how to use `dconf dump /`, `gsettings` and python to load dconf
 settings, then load the schemas and find the default value and only dump the
 settings that have been changed.
 
+Investigate and integrate YAML and Ansible formatting tools to ensure consistent code style.
+
 add playbook for setting user groups (on ubuntu modify /etc/adduser.conf) Use
 `groups` command to see what you've got setup already. Is there a way to
 modify this piecemeal, so if docker is not installed then it's not set?
