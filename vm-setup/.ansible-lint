@@ -1,4 +1,5 @@
 skip_list:
   - truthy
+  - 'truthy:roles/gnome_settings/tasks/install_packages.yml'
   - comments
   - fqcn
