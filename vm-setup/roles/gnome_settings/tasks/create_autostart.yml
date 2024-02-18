@@ -12,24 +12,17 @@
     msg: "The autostart_app_type variable must be one of 'Application', 'Link', or 'Directory'."
   when: autostart_app_type not in ['Application', 'Link', 'Directory']
 
-- name: Define required autostart variables
-
 - name: Create GNOME autostart directory if it doesn't exist
   file:
     path: "{{ ansible_env.HOME }}/.config/autostart"
     state: directory
     mode: '0755'
 
--  template:
+- template:
     src: autostart_app.desktop.j2
     dest: "{{ ansible_env.HOME }}/.config/autostart/{{ autostart_app_name }}.desktop"
     mode: '0644'
 
-# Ensure the script is executable
-- name: Make the Tilix move script executable
-  file:
-    path: "{{ ansible_env.HOME }}/.local/bin/move_tilix"
-    mode: '0755'
   vars:
     autostart_app_name: "{{ app_name | default('myapp') }}"
     autostart_app_exec: "{{ app_exec | default('/usr/bin/myapp') }}"
