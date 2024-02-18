@@ -28,8 +28,8 @@
     state: directory
     mode: '0755'
 
-- - name: Create autostart desktop entry
-   template:
+- name: Create autostart desktop entry
+  template:
     src: autostart_app.desktop.j2
     dest: "{{ ansible_env.HOME }}/.config/autostart/{{ autostart_app_name }}.desktop"
     mode: '0644'
