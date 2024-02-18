@@ -40,30 +40,50 @@ You can customize the GNOME settings by modifying the variables in `defaults/mai
 
 The following variables can be set to customize the GNOME desktop environment. These variables are defined in `defaults/main.yml`:
 
-- `gnome_settings_show_home`: (boolean) Show or hide the home icon on the desktop.
+- `gnome_settings_show_home`: (boolean) Show or hide the home icon on the desktop. Default: `false`
   - Valid entries: `true` or `false`
-- `gnome_settings_show_trash`: (boolean) Show or hide the trash icon on the desktop.
+- `gnome_settings_show_trash`: (boolean) Show or hide the trash icon on the desktop. Default: `false`
   - Valid entries: `true` or `false`
-- `gnome_settings_titlebar_uses_system_font`: (boolean) Use the system font for window title bars.
+- `gnome_settings_titlebar_uses_system_font`: (boolean) Use the system font for window title bars. Default: `true`
   - Valid entries: `true` or `false`
-- `gnome_settings_screensaver_idle_activation_enabled`: (boolean) Enable or disable the screensaver's idle activation.
+- `gnome_settings_screensaver_idle_activation_enabled`: (boolean) Enable or disable the screensaver's idle activation. Default: `false`
   - Valid entries: `true` or `false`
-- `gnome_settings_lock_screen_enabled`: (boolean) Enable or disable the lock screen.
+- `gnome_settings_lock_screen_enabled`: (boolean) Enable or disable the lock screen. Default: `false`
   - Valid entries: `true` or `false`
-- `gnome_settings_lock_screen_disable_lock_screen`: (boolean) Enable or disable the lock screen lockdown.
+- `gnome_settings_lock_screen_disable_lock_screen`: (boolean) Enable or disable the lock screen lockdown. Default: `true`
   - Valid entries: `true` or `false`
 
-- `gnome_settings_desktop_background`: (list) A list of settings for the desktop background.
+- `gnome_settings_desktop_background`: (list) A list of settings for the desktop background. Defaults:
   - Valid keys: `picture-options`, `picture-uri`, `picture-uri-dark`, `primary-color`, `show-desktop-icons`
+  - `picture-options`: 'none'
+  - `picture-uri`: ''
+  - `picture-uri-dark`: ''
+  - `primary-color`: '#00007D'
+  - `show-desktop-icons`: false
 
-- `gnome_settings_desktop_interface`: (list) A list of settings for the desktop interface.
+- `gnome_settings_desktop_interface`: (list) A list of settings for the desktop interface. Defaults:
   - Valid keys: `clock-format`, `clock-show-date`, `clock-show-seconds`, `clock-show-weekday`, `color-scheme`, `document-font-name`, `font-name`, `monospace-font-name`
+  - `clock-format`: '24h'
+  - `clock-show-date`: true
+  - `clock-show-seconds`: false
+  - `clock-show-weekday`: true
+  - `color-scheme`: 'prefer-dark'
+  - `document-font-name`: 'Inconsolata Nerd Font 12'
+  - `font-name`: 'Inconsolata Nerd Font 12'
+  - `monospace-font-name`: 'Inconsolata Nerd Font Mono 12'
 
-- `gnome_settings_dock`: (list) A list of settings for the GNOME dock.
+- `gnome_settings_dock`: (list) A list of settings for the GNOME dock. Defaults:
   - Valid keys: `autohide`, `dash-max-icon-size`, `dock-position`, `extend-height`, `show-mounts`
+  - `autohide`: true
+  - `dash-max-icon-size`: 40
+  - `dock-position`: 'LEFT'
+  - `extend-height`: false
+  - `show-mounts`: false
 
-- `gnome_settings_disabled_services`: (list) A list of system services to be disabled.
+- `gnome_settings_disabled_services`: (list) A list of system services to be disabled. Defaults:
   - Valid entries: Names of systemd services
+  - `apt-daily.service`
+  - `apt-daily-upgrade.service`
 
 Each setting can be customized by changing the value next to its corresponding variable. For boolean variables, use `true` to enable and `false` to disable the feature. For list variables, provide a list of key-value pairs where the key is the setting name and the value is the setting value.
 
