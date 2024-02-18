@@ -1,8 +1,19 @@
 ---
+# This must happen before the install packages task, so those are added here
+# instead in the meta fold.
 
-# Install Docker packages from the Docker repository
-- name: Install Docker packages
-  include_role:
+- name: Remove older Docker packages
+  apt:
+    name:
+      - docker
+      - docker-engine
+      - docker.io
+      - containerd
+      - runc
+    state: absent
+    purge: yes
+
+- include_role:
     name: install_pkgs
-  vars:
-    package_groups: "docker"
+    vars:
+      packages: "{{ docker_packages }}"
