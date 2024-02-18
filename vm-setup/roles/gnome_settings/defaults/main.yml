@@ -7,7 +7,7 @@ desktop_background:
   - picture-options 'none'
   - picture-uri ''
   - picture-uri-dark ''
-  - primary-color '#00008B'
+  - primary-color '#00007D'
   - show-desktop-icons false
 
 desktop_interface:
