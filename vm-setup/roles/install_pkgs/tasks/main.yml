@@ -1,5 +1,6 @@
 ---
 - name: Install requested packages
+  become: yes
   apt:
     state: latest
     update_cache: yes
