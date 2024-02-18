@@ -1,5 +1,0 @@
----
-dependencies:
-  - role: add_repo
-    repo_list:
-      - docker
