@@ -3,3 +3,7 @@ dependencies:
   - role: add_repo
     repo_list:
       - google-cloud
+
+  - role: install_pkgs
+    vars:
+      packages: "{{ gcloud_packages }}"
