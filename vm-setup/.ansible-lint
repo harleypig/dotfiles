@@ -1,5 +1,4 @@
 skip_list:
   - truthy
-  - truthy
   - comments
   - fqcn
