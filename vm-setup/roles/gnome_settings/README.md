@@ -43,20 +43,6 @@ You can customize the GNOME settings by modifying the variables in
 `defaults/main.yml` or by providing your own values when including the role in
 a playbook.
 
-## Create Autostart Task
-
-The `create_autostart.yml` task file is used to create autostart entries for applications. This allows you to have applications, scripts, or commands automatically start when you log into your GNOME desktop environment.
-
-To use this task, you need to define the following variables:
-
-- `autostart_app_name`: The name of the application or script.
-- `autostart_app_type`: The type of the autostart entry, which can be 'Application', 'Link', or 'Directory'.
-- `autostart_app_exec`: The command or script to execute (required for 'Application' type).
-- `autostart_app_url`: The URL to open (required for 'Link' type).
-
-Additional optional settings can be provided through the `autostart_app_settings` dictionary. This task will create a `.desktop` file in the `~/.config/autostart` directory to manage the autostart behavior.
-
-
 ### Available Variables
 
 The following variables can be set to customize the GNOME desktop environment.
@@ -108,6 +94,21 @@ Each setting can be customized by changing the value next to its corresponding
 variable. For boolean variables, use `true` to enable and `false` to disable
 the feature. For list variables, provide a list of key-value pairs where the
 key is the setting name and the value is the setting value.
+
+## Create Autostart Task
+
+The `create_autostart.yml` task file is used to create autostart entries for applications. This allows you to have applications, scripts, or commands automatically start when you log into your GNOME desktop environment.
+
+To use this task, you need to define the following variables:
+
+- `autostart_app_name`: The name of the application or script.
+- `autostart_app_type`: The type of the autostart entry, which can be 'Application', 'Link', or 'Directory'.
+- `autostart_app_exec`: The command or script to execute (required for 'Application' type).
+- `autostart_app_url`: The URL to open (required for 'Link' type).
+
+Additional optional settings can be provided through the `autostart_app_settings` dictionary. This task will create a `.desktop` file in the `~/.config/autostart` directory to manage the autostart behavior.
+
+See the code for the tilix task for an example of how it would look.
 
 ## Tilix Task
 
