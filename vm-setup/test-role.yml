@@ -4,3 +4,5 @@
 
   roles:
     - role: gnome_settings
+      vars:
+        tilix_profile_filename: "harleypig-tilix-profile.dconf"
