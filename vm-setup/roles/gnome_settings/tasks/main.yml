@@ -10,14 +10,14 @@
 - name: Set titlebar font
   command: gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font {{ titlebar_uses_system_font | lower }}
 
-- name: Disable screensaver idle activation
-  command: gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
+- name: Set screensaver idle activation
+  command: gsettings set org.gnome.desktop.screensaver idle-activation-enabled {{ screensaver_idle_activation_enabled | lower }}
 
-- name: Disable lock screen
-  command: gsettings set org.gnome.desktop.screensaver lock-enabled false
+- name: Set lock screen
+  command: gsettings set org.gnome.desktop.screensaver lock-enabled {{ lock_screen_enabled | lower }}
 
-- name: Disable lock screen (lockdown)
-  command: gsettings set org.gnome.desktop.lockdown disable-lock-screen true
+- name: Set lock screen (lockdown)
+  command: gsettings set org.gnome.desktop.lockdown disable-lock-screen {{ lock_screen_disable_lock_screen | lower }}
 
 - name: Set desktop background options
   shell: "gsettings set org.gnome.desktop.background {{ item }}"
