@@ -30,6 +30,7 @@ Example playbook usage:
   roles:
     - role: gnome_settings
       vars:
+        gnome_settings_tilix_profile_filename: path/to/profile_for_tilix
         gnome_settings_show_home: true
         gnome_settings_dock:
           - autohide: false
@@ -94,17 +95,21 @@ variable. For boolean variables, use `true` to enable and `false` to disable
 the feature. For list variables, provide a list of key-value pairs where the
 key is the setting name and the value is the setting value.
 
-## Dependencies
-
-This role depends on the `install_pkgs` role to ensure that the necessary
-packages are installed.
-
 ## Tilix Task
 
-The `tilix.yml` task file is responsible for setting up the Tilix terminal emulator. It includes the following steps:
+The `tilix.yml` task file is responsible for setting up the Tilix terminal
+emulator. It includes the following steps:
 
 - Copying the `move_tilix` script to the local bin directory to allow moving the Tilix window to a specific screen position.
 - Creating an autostart entry for Tilix to ensure it starts automatically upon login.
 - Loading the Tilix profile if a custom profile file is provided.
 
-To customize the Tilix setup, you can modify the `gnome_settings_tilix_profile_filename` variable to specify the path to your custom Tilix profile. Additionally, you can adjust the `move_tilix` script to set the desired window position for Tilix.
+To customize the Tilix setup, you can modify the
+`gnome_settings_tilix_profile_filename` variable to specify the path to your
+custom Tilix profile. Additionally, you can adjust the `move_tilix` script to
+set the desired window position for Tilix.
+
+## Dependencies
+
+This role depends on the `install_pkgs` role to ensure that the necessary
+packages are installed.
