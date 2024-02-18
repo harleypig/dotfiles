@@ -5,12 +5,11 @@
     dest: "{{ ansible_env.HOME }}/.local/bin/move_tilix"
     mode: '0755'
 
-- name: Autostart Tilix on login
-  include_tasks: create_autostart.yml
+-  include_tasks: create_autostart.yml
   vars:
     autostart_app_type: "Application"
     autostart_app_name: "Tilix"
-    autostart_app_exec: "tilix"
+    autostart_app_exec: "tilix; /home/{{ ansible_env.USER }}/.local/bin/move_tilix"
     autostart_app_comment: "Tilix terminal emulator"
 
 - name: Check if Tilix profile file exists
