@@ -36,6 +36,37 @@ Example playbook usage:
 
 You can customize the GNOME settings by modifying the variables in `defaults/main.yml` or by providing your own values when including the role in a playbook.
 
+### Available Variables
+
+The following variables can be set to customize the GNOME desktop environment. These variables are defined in `defaults/main.yml`:
+
+- `gnome_settings_show_home`: (boolean) Show or hide the home icon on the desktop.
+  - Valid entries: `true` or `false`
+- `gnome_settings_show_trash`: (boolean) Show or hide the trash icon on the desktop.
+  - Valid entries: `true` or `false`
+- `gnome_settings_titlebar_uses_system_font`: (boolean) Use the system font for window title bars.
+  - Valid entries: `true` or `false`
+- `gnome_settings_screensaver_idle_activation_enabled`: (boolean) Enable or disable the screensaver's idle activation.
+  - Valid entries: `true` or `false`
+- `gnome_settings_lock_screen_enabled`: (boolean) Enable or disable the lock screen.
+  - Valid entries: `true` or `false`
+- `gnome_settings_lock_screen_disable_lock_screen`: (boolean) Enable or disable the lock screen lockdown.
+  - Valid entries: `true` or `false`
+
+- `gnome_settings_desktop_background`: (list) A list of settings for the desktop background.
+  - Valid keys: `picture-options`, `picture-uri`, `picture-uri-dark`, `primary-color`, `show-desktop-icons`
+
+- `gnome_settings_desktop_interface`: (list) A list of settings for the desktop interface.
+  - Valid keys: `clock-format`, `clock-show-date`, `clock-show-seconds`, `clock-show-weekday`, `color-scheme`, `document-font-name`, `font-name`, `monospace-font-name`
+
+- `gnome_settings_dock`: (list) A list of settings for the GNOME dock.
+  - Valid keys: `autohide`, `dash-max-icon-size`, `dock-position`, `extend-height`, `show-mounts`
+
+- `gnome_settings_disabled_services`: (list) A list of system services to be disabled.
+  - Valid entries: Names of systemd services
+
+Each setting can be customized by changing the value next to its corresponding variable. For boolean variables, use `true` to enable and `false` to disable the feature. For list variables, provide a list of key-value pairs where the key is the setting name and the value is the setting value.
+
 ## Dependencies
 
 This role depends on the `install_pkgs` role to ensure that the necessary packages are installed.
