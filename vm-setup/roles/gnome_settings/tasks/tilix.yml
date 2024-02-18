@@ -1,25 +1,25 @@
 ---
-- name: Copy move_tilix script to the local bin directory
-  copy:
-    src: move_tilix
-    dest: "{{ ansible_env.HOME }}/.local/bin/move_tilix"
-    mode: '0755'
+ - name: Copy move_tilix script to the local bin directory
+   copy:
+     src: move_tilix
+     dest: "{{ ansible_env.HOME }}/.local/bin/move_tilix"
+     mode: '0755'
 
--  include_tasks: create_autostart.yml
-  vars:
-    autostart_app_type: "Application"
-    autostart_app_name: "Tilix"
-    autostart_app_exec: "tilix; move_tilix"
-    autostart_app_settings:
-      # These keys are case sensitive. Make sure you're using the correct
-      # capitalization for these key.
-      - Comment: "Tilix terminal emulator"
+ - include_tasks: create_autostart.yml
+   vars:
+     autostart_app_type: "Application"
+     autostart_app_name: "Tilix"
+     autostart_app_exec: "tilix; move_tilix"
+     autostart_app_settings:
+       # These keys are case sensitive. Make sure you're using the correct
+       # capitalization for these key.
+       Comment: "Tilix terminal emulator"
 
-- name: Check if Tilix profile file exists
-  stat:
-    path: "{{ tilix_profile_filename }}"
-  register: tilix_profile_file
+ - name: Check if Tilix profile file exists
+   stat:
+     path: "{{ tilix_profile_filename }}"
+   register: tilix_profile_file
 
-- name: Load profile if the file exists
-  shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
-  when: tilix_profile_file.stat.exists
+ - name: Load profile if the file exists
+   shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
+   when: tilix_profile_file.stat.exists
