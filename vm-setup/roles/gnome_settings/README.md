@@ -14,7 +14,7 @@ The role consists of the following main parts:
 * `tasks/tilix.yml`: Tasks for setting up the Tilix terminal emulator, including autostart configuration.
 * `defaults/main.yml`: Default values for the role's variables.
 * `vars/main.yml`: Variables related to the packages required by the role.
-* `files/move_tilix`: A script to move the Tilix window to a specific position on the screen.
+* `files/move_tilix`: A script to move the Tilix window to a specific position on the screen after it starts.
 * `templates/autostart_app.desktop.j2`: A Jinja2 template for creating .desktop entries for autostart applications.
 * `meta/main.yml`: Metadata for the role, including dependencies.
 
@@ -100,12 +100,7 @@ To use this task, you need to define the following variables:
 * `autostart_app_exec`: The command or script to execute (required for 'Application' type).
 * `autostart_app_url`: The URL to open (required for 'Link' type).
 
-The `autostart_app_settings` dictionary allows you to specify additional
-settings for the autostart entry. Each key-value pair in this dictionary
-represents a setting in the `.desktop` file. It is important to note that
-these keys are case-sensitive. As there is no automatic case validation, you
-must ensure that you use the correct capitalization for these keys as defined
-in the Desktop Entry Specification.
+The `autostart_app_settings` dictionary allows you to specify additional settings for the autostart entry. Each key-value pair in this dictionary represents a setting in the `.desktop` file. It is important to note that these keys are case-sensitive. Make sure you're using the correct capitalization for these keys as defined in the Desktop Entry Specification. The role now includes checks to ensure that the `Exec` key for 'Application' type and the `URL` key for 'Link' type are defined and not empty.
 
 See the code for the tilix task for an example of how it would look.
 
@@ -118,12 +113,10 @@ emulator. It includes the following steps:
 * Creating an autostart entry for Tilix to ensure it starts automatically upon login.
 * Loading the Tilix profile if a custom profile file is provided.
 
-To customize the Tilix setup, you can modify the
-`gnome_settings_tilix_profile_filename` variable to specify the path to your
-custom Tilix profile. Additionally, you can adjust the `move_tilix` script to
-set the desired window position for Tilix.
+To customize the Tilix setup, you can modify the `gnome_settings_tilix_profile_filename` variable to specify the path to your custom Tilix profile. Additionally, the `move_tilix` script is now included to automatically move the Tilix window to the bottom right corner of the screen after it starts. You can adjust the script if you need to change the target position.
 
 ## Dependencies
 
 This role depends on the `install_pkgs` role to ensure that the necessary
 packages are installed.
+The `install_pkgs` role is now included as a dependency in `meta/main.yml` to ensure that the necessary packages for the GNOME settings role are installed.
