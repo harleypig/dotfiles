@@ -26,6 +26,7 @@ package_groups:
     - vim
     - wget
     - zip
+    - wmctrl
   gui:
     - fonts-inconsolata
     - gnome-tweaks
