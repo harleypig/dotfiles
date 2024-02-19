@@ -1,7 +1,1 @@
-- name: Install HashiCorp Packages
-  apt:
-    state: present
-    update_cache: yes
-    name:
-      - terraform
-      - packer
+
