@@ -23,3 +23,7 @@ This role depends on the `add_repo` role.
   roles:
      - role: gcloud
 ```
+
+## TODO
+
+add script to switch environment variable for gcloud service accounts

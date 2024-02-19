@@ -18,5 +18,6 @@
 
     - role: nerd_font
     - role: add_iac
+    - role: docker
 
     - role: vscode
