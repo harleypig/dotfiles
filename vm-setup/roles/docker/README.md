@@ -8,11 +8,6 @@ necessary Docker packages.
 
 This role requires Ansible and access to the target system's package manager.
 
-## Role Variables
-
-`docker_repo_name`: The identifier for the Docker repository to be added.
-`docker_package_group`: The group of Docker packages to be installed.
-
 ## Dependencies
 
 This role depends on the `add_repo` and `install_pkgs` roles.
@@ -24,3 +19,8 @@ This role depends on the `add_repo` and `install_pkgs` roles.
   roles:
      - role: docker
 ```
+
+## TODO
+
+Add existing users to docker groups and setup system so new users have the
+correct groups.

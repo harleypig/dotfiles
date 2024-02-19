@@ -1,8 +1,6 @@
 ---
-# This must happen before the install packages task, so those are added here
-# instead in the meta fold.
-
 - name: Remove older Docker packages
+  become: true
   apt:
     name:
       - docker

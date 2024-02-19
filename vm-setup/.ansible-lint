@@ -1,4 +1,4 @@
 skip_list:
-  - 'truthy:roles/install_pkgs/tasks/install_packages.yml'
+  - truthy
   - comments
   - fqcn
