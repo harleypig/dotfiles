@@ -1,4 +1,5 @@
 gnome_settings_packages:
+  - dbus-x11
   - gnome-shell-extension-desktop-icons-ng
   - gnome-shell-extension-manager
   - gnome-shell-extensions
