@@ -6,7 +6,6 @@ package_groups:
     - build-essential
     - ca-certificates
     - curl
-    - dconf-editor
     - dkms
     - dos2unix
     - elinks
