@@ -3,15 +3,16 @@
   become: yes
 
   roles:
+    - role: nerd_font
     - role: gnome_settings
-      gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+      vars:
+        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
 
     - role: pip_pkgs
       is_exclude_list: true
       exclude_group:
         - linode
 
-    - role: nerd_font
     - role: add_iac
     - role: docker
     - role: gcloud
