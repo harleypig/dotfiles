@@ -1,5 +1,7 @@
 ## Bin Dir
 
+Use .local/bin? What uses .local? Can I put it in dotfiles?
+
 XXX: Convert as many functions to scripts as possible so they aren't taking up memory.
 
 Possibly convert things setup and run from .bashrc into a separate file for each application or function it's used for.
