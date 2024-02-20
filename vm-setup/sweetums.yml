@@ -5,10 +5,6 @@
   roles:
     - role: install_pkgs
     - role: nerd_font
-    - role: add_repo
-      vars:
-        repo_list:
-          - nodesource
     - role: gnome_settings
       vars:
         gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"

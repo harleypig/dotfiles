@@ -1,7 +1,11 @@
 ---
 dependencies:
+  - role: add_repo
+    vars:
+      repo_list:
+        - nodesource
+
   - role: install_pkgs
     vars:
       packages:
-        - curl
-        - build-essential
+        - nodejs
