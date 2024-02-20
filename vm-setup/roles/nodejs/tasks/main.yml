@@ -1,12 +1,5 @@
 ---
 
-- name: Include install_pkgs to install prerequisites for nvm
-  include_role:
-    name: install_pkgs
-  vars:
-    packages:
-      - curl
-      - build-essential
 
 - name: Download and install nvm
   become: yes
