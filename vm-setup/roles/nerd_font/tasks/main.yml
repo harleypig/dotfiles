@@ -43,7 +43,7 @@
 #  check_mode: no
 
 - name: Skip remaining tasks if nerd_font_path exists
-  meta: end_play
+  meta: end_host
   when: file_check.stat.exists
 
 - name: Ensure Nerd Fonts directory exists
