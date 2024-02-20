@@ -42,8 +42,8 @@
 #  changed_when: false
 #  check_mode: no
 
-- name: Skip remaining tasks if nerd_font_path exists
-  meta: end_host
+- name: Skip remaining tasks in this role if nerd_font_path exists
+  meta: end_play
   when: file_check.stat.exists
 
 - name: Ensure Nerd Fonts directory exists
