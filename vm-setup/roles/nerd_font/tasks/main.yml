@@ -42,9 +42,11 @@
 #  changed_when: false
 #  check_mode: no
 
-- name: Skip remaining tasks in this role if nerd_font_path exists
-  meta: end_play
-  when: file_check.stat.exists
+# XXX: Figure out a way to skip remaining tasks in this role, but still allow
+# following roles in the play to be attempted.
+#- name: Skip remaining tasks in this role if nerd_font_path exists
+#  meta: end_play
+#  when: file_check.stat.exists
 
 - name: Ensure Nerd Fonts directory exists
   file:
