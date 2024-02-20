@@ -2,6 +2,7 @@ dependencies:
   - role: add_repo
     repo_list:
       - hashicorp
+
   - role: install_pkgs
     vars:
       packages:

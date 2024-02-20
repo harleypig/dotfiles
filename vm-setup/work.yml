@@ -4,12 +4,7 @@
 
   roles:
     - role: gnome_settings
-      tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
-
-    - role: install_pkgs
-      is_exclude_list: true
-      exclude_group:
-        - hledger
+      gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
 
     - role: pip_pkgs
       is_exclude_list: true
@@ -19,5 +14,5 @@
     - role: nerd_font
     - role: add_iac
     - role: docker
-
+    - role: gcloud
     - role: vscode
