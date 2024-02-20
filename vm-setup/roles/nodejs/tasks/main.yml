@@ -1,0 +1,23 @@
+---
+- name: Install prerequisites for nvm
+  become: yes
+  apt:
+    name:
+      - curl
+      - build-essential
+    state: present
+    update_cache: yes
+
+- name: Download and install nvm
+  become: yes
+  shell: >
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+  args:
+    creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+
+- name: Install the latest version of Node.js using nvm
+  become: yes
+  shell: >
+    source "{{ ansible_env.HOME }}/.nvm/nvm.sh" && nvm install node
+  args:
+    executable: /bin/bash
