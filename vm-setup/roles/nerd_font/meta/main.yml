@@ -1,0 +1,6 @@
+dependencies:
+  - role: install_pkgs
+    vars:
+      packages:
+        - fontconfig
+        - fonts-inconsolata
