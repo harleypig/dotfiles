@@ -197,3 +197,4 @@ venv
 .local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Cache/*
 .local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Caches/*
 .local/share/Zeal/Zeal/docsets/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/CacheStorage/*
+node_modules/

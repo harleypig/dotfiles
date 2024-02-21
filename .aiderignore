@@ -6,3 +6,4 @@ tests/*
 #vm-setup/*
 ansible/*
 vm-setup/credentials.yml
+node_modules/
