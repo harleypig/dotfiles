@@ -1,0 +1,7 @@
+
+- name: Install eslint via npm
+  become: yes
+  npm:
+    name: eslint
+    global: yes
+    state: present
