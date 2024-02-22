@@ -1,1 +1,7 @@
 
+Modify pip role to be like install_pkgs role
+
+Change pip packages to have a default set of packages, but allow that to be
+overridden by the calling task. This enhancement will provide greater flexibility
+and consistency across roles, aligning the pip role's behavior with that of the
+install_pkgs role.
