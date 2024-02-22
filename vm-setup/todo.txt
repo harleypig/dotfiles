@@ -1,4 +1,11 @@
 ------------------------------------------------------------------------------
+Move vim specific configuration to it's own role
+
+------------------------------------------------------------------------------
+Change pip packages to have a default set of packages, but allow that to be
+overridden by the calling task.
+
+------------------------------------------------------------------------------
 Add task to set sudoers for a user:
   Defaults:your_username timestamp_timeout=60
 

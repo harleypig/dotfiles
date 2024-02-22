@@ -8,3 +8,4 @@ dependencies:
       packages:
         - terraform
         - packer
+        - terraform-ls
