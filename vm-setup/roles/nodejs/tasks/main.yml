@@ -2,8 +2,9 @@
 - name: Install eslint via npm
   become: yes
   npm:
-    name:
-      - eslint
-      - vim-language-server
+    name: "{{ item }}"
     global: yes
     state: present
+  loop:
+    - eslint
+    - vim-language-server
