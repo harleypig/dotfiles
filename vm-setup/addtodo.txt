@@ -1,0 +1,8 @@
+Move vim related tasks to its own role
+
+Move vim related tasks and packages to a dedicated vim role. This should include vim package installation and vim-related Node.js packages.
+
+Tasks and packages to consider moving:
+
+- Installation of vim package from vm-setup/roles/install_pkgs/defaults/main.yml
+- Installation of vim-language-server from vm-setup/roles/nodejs/defaults/main.yml
