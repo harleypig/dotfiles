@@ -21,3 +21,26 @@ Description:
 # Environment:
 - OS: <Operating System>
 - git-bug version: <Version of git-bug>
+Title: <Enter the title of the bug>
+
+# Labels: <Add labels separated by commas, e.g., bug, ui, crash>
+
+# Status: <Set the status, e.g., open, closed>
+
+Description:
+<Enter a detailed description of the bug.>
+
+# Steps to reproduce:
+1. <Step one>
+2. <Step two>
+3. <Step three>
+
+# Expected behavior:
+<Describe what you expected to happen.>
+
+# Actual behavior:
+<Describe what actually happened.>
+
+# Environment:
+- OS: <Operating System>
+- git-bug version: <Version of git-bug>
