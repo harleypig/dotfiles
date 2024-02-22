@@ -5,6 +5,4 @@
     name: "{{ item }}"
     global: yes
     state: present
-  loop:
-    - eslint
-    - vim-language-server
+  loop: "{{ nodejs_packages }}"
