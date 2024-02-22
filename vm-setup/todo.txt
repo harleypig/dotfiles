@@ -1,7 +1,4 @@
 ------------------------------------------------------------------------------
-Move vim specific configuration to it's own role
-
-------------------------------------------------------------------------------
 Change pip packages to have a default set of packages, but allow that to be
 overridden by the calling task.
 
