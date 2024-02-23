@@ -1,5 +1,4 @@
-
-Mine the urls for useful information
+Mine these urls for useful information
 
 - https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/
 - https://stackoverflow.com/a/246128/491894
