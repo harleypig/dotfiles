@@ -1,4 +1,1 @@
 
-User Group Configuration Playbook
-
-Develop a playbook to configure user groups on Ubuntu. This should involve modifying /etc/adduser.conf and using the `groups` command to check existing setups. The playbook should be able to handle modifications incrementally, allowing for conditional group settings based on installed packages, such as Docker.
