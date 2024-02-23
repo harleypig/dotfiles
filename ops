@@ -1,1 +1,1 @@
-{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":1,"timestamp":1708649485,"nonce":"/+1XW5mW/XD+voAF26xEV4+YAEI=","title":"add a task to add a user to sudoers","message":"Add a task to add a user to the sudoers file. Should default to \"username timestamp_timeout=60\"","files":null}]}
+{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":5,"timestamp":1708649608,"nonce":"ziBqpeIU4wtECML9Y9C0forn1as=","added":["ansible"],"removed":null}]}
