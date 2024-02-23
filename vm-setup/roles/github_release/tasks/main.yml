@@ -11,6 +11,7 @@
       Accept: "application/vnd.github.v3+json"
   register: github_release
 
+-
 - name: Fail if nothing found
   fail:
     msg: "No matching asset found for pattern {{ github_asset_pattern }}"
@@ -21,6 +22,12 @@
     github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | map(attribute='browser_download_url') | first }}"
     github_latest_version: "{{ github_release.json.tag_name }}"
 
+- name: Include version tracking tasks
+  include_tasks: version_tracking.yml
+  vars:
+    github_asset_name: "{{ github_asset_name_pattern }}"
+    github_version_tracking_file: "/path/to/version_tracking_file"
+
 - name: Download file
   get_url:
     url: "{{ github_download_url }}"
@@ -28,12 +35,6 @@
     mode: '{{ github_file_mode | default("0644") }}'
   when: github_version_mismatch | default(true)
   register: github_download_result
-
-- name: Include version tracking tasks
-  include_tasks: version_tracking.yml
-  vars:
-    github_asset_name: "{{ github_asset_name_pattern }}"
-    github_version_tracking_file: "/path/to/version_tracking_file"
 
 - name: Ensure the downloaded file has the proper permissions
   file:

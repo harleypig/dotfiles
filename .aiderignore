@@ -1,5 +1,5 @@
 archive/*
-#bin/*
+bin/*
 lib/*
 shell_startup.d/*
 tests/*
