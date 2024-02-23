@@ -1,6 +1,4 @@
 ------------------------------------------------------------------------------
-figure out how to use ansible-vault so I don't have to keep typing my password
-
 ------------------------------------------------------------------------------
 figure out how to use `dconf dump /`, `gsettings` and python to load dconf
 settings, then load the schemas and find the default value and only dump the

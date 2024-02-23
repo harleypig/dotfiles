@@ -7,3 +7,7 @@ Investigate ansible-vault to avoid repeatedly typing passwords. This should stre
 Ansible-Vault Password Management
 
 Explore ansible-vault to manage passwords securely, avoiding the need to input them manually during playbook execution.
+
+Ansible-Vault Integration
+
+Explore the integration of ansible-vault to manage secrets and avoid manual password input during playbook execution.
