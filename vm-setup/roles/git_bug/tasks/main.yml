@@ -1,23 +1,4 @@
 ---
-#-  command: "{{ git_bug_version_command }}"
-#  register: git_bug_installed_version
-#  failed_when: false
-#  changed_when: false
-#  check_mode: no
-#
-#-  set_fact:
-#    git_bug_installed_version: "{{ git_bug_installed_version.stdout | regex_search('^git-bug version (.+)$', '\\1') | default('0.0.0') }}"
-#  when: git_bug_installed_version.rc == 0
-#
-#- name: Include github_release role to download git-bug
-#  include_role:
-#    name: github_release
-#  vars:
-#    github_repo: "{{ git_bug_repo }}"
-#    github_asset_name_pattern: 'git-bug_linux_amd64'
-#    github_dest_path: "{{ git_bug_binary_path }}"
-#    github_version_mismatch: "{{ git_bug_installed_version != git_bug_latest_version }}"
-
 - name: Include github_release role to download git-bug
   include_role:
     name: github_release
@@ -26,30 +7,3 @@
     github_asset_name_pattern: 'git-bug_linux_amd64'
     github_dest_path: "{{ git_bug_binary_path }}"
     github_version_mismatch: "{{ git_bug_installed_version != git_bug_latest_version }}"
-#
-#- name: Debug downloaded git-bug binary information
-#  debug:
-#    msg: "Downloaded git-bug binary from {{ git_bug_download_url }} with version {{ git_bug_latest_version }}"
-#
-#- name: Compare installed and latest git-bug versions
-#  set_fact:
-#    git_bug_version_mismatch: "{{ git_bug_installed_version != git_bug_latest_version }}"
-#
-#- name: Skip download if the installed version matches the latest version
-#  meta: end_play
-#  when: not git_bug_version_mismatch
-#
-#- name: Download the latest git-bug binary
-#  get_url:
-#    url: "{{ git_bug_download_url }}"
-#    dest: "{{ git_bug_binary_path }}"
-#    mode: '0755'
-#  when: git_bug_version_mismatch
-#  register: git_bug_download_result
-#
-#- name: Ensure git-bug is executable
-#  file:
-#    path: "{{ git_bug_binary_path }}"
-#    mode: '0755'
-#    state: file
-#  when: git_bug_version_mismatch
