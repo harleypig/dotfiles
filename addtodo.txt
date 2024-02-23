@@ -1,7 +1,1 @@
-Can I store .local in my dotfiles repo?
 
-Questions to consider:
-- Can I store the .local directory in my dotfiles repository?
-- What specific subdirectories and files would I need to ignore to avoid clutter and potential security issues?
-- Are there any pitfalls or common mistakes to be aware of when versioning the .local directory?
-- If it is feasible, what steps should I take to start moving files from my bin directory to .local/bin?
