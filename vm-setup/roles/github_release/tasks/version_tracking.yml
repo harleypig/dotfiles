@@ -2,11 +2,11 @@
 
 - name: Check if version tracking file exists
   stat:
-    path: "{{ github_version_tracking_file }}"
+    path: "{{ playbook_dir }}/.github_release_installed_versions"
   register: version_tracking_file
 
 - name: Read current version of the asset from the version tracking file
-  command: "grep '{{ github_asset_name }}' {{ github_version_tracking_file }} | cut -d '=' -f 2"
+  command: "grep '{{ github_asset_name }}' {{ playbook_dir }}/.github_release_installed_versions | cut -d '=' -f 2"
   register: current_asset_version
   changed_when: false
   failed_when: false
@@ -14,7 +14,7 @@
 
 - name: Update version tracking file with the new version
   lineinfile:
-    path: "{{ github_version_tracking_file }}"
+    path: "{{ playbook_dir }}/.github_release_installed_versions"
     regexp: '^{{ github_asset_name }}='
     line: "{{ github_asset_name }}={{ github_latest_version }}"
     create: yes
