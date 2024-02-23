@@ -58,7 +58,7 @@ check_dotfiles() {
   done
 
   #---------------------------------------------------------------------------
-  links_file="$DOTFILES/default-dotlinks"
+  links_file="$DOTFILES/dotlinks-default"
   [[ -r "$HOME/.dotlinks" ]] && links_file="$HOME/.dotlinks"
   check_links "$links_file"
 }
@@ -67,7 +67,7 @@ check_dotfiles() {
 check_private_dotfiles() {
   [[ -f "$HOME/.nocheckprivatelinks" ]] && return 0
 
-  links_file="$DOTFILES/../private_dotfiles/default-private-dotlinks"
+  links_file="$DOTFILES/../private_dotfiles/private-dotlinks-default"
   [[ -r "$HOME/.privatedotlinks" ]] && links_file="$HOME/.privatedotlinks"
   check_links "$links_file"
 }

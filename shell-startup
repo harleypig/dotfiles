@@ -109,7 +109,7 @@ unsetfuncs 'run_hook'
 # XXX: Add documentation for deault bin dirs.
 
 set_bin_dirs() {
-  bin_dirs_file="$DOTFILES/default-bin-dirs"
+  bin_dirs_file="$DOTFILES/bin-dirs-defaults"
   [[ -r "$HOME/.bin-dirs" ]] && bin_dirs_file="$HOME/.bin-dirs"
   readarray -t bin_dirs < <(grep -v '^[[:space:]]*#' "$bin_dirs_file" | envsubst)
   addpath "${bin_dirs[@]}"
