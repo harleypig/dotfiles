@@ -11,10 +11,10 @@
       Accept: "application/vnd.github.v3+json"
   register: github_release
 
-- name: Set download URL and version for {{ github_repo }}
+- name: Determine download URL and version for {{ github_repo }}
   set_fact:
-    github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_name_pattern) | map(attribute='browser_download_url') | first }}"
-    github_latest_version: "{{ github_release.json.tag_name }}"
+    _github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_name_pattern) | map(attribute='browser_download_url') | first }}"
+    _github_latest_version: "{{ github_release.json.tag_name }}"
 
 - name: Fail if no matching asset is found for {{ github_repo }}
   fail:
@@ -23,7 +23,7 @@
 
 - name: Download the latest release for {{ github_repo }}
   get_url:
-    url: "{{ github_download_url }}"
+    url: "{{ _github_download_url }}"
     dest: "{{ github_dest_path }}"
     mode: '{{ github_file_mode | default("0755") }}'
   when: github_version_mismatch | default(true)
