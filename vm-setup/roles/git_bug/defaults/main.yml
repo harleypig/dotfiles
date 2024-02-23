@@ -1,4 +1,1 @@
----
-git_bug_repo: "MichaelMure/git-bug"
-git_bug_binary_path: "/usr/local/bin/git-bug"
-git_bug_version_command: "{{ git_bug_binary_path }} version"
+
