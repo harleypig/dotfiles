@@ -1,1 +1,1 @@
-{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":2,"timestamp":1708647548,"nonce":"xJMrhL9u5E08A/izuSJCNRI81+4=","title":"Modify pip role to be like install_pkgs role","was":"vm-setup: Modify pip role to be like install_pkgs role"}]}
+{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":5,"timestamp":1708647891,"nonce":"7b78aX3B0wokW36eDlIEKHDjxkE=","added":["ansible"],"removed":null}]}
