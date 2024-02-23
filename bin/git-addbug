@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Function to display an error message and exit
+die() {
+    echo >&2 "$1"
+    exit 1
+}
+
+# Check for the presence of either -l or --label and their respective values
+label_arg=""
+for arg in "$@"; do
+    if [[ "$arg" == "-l" || "$arg" == "--label" ]]; then
+        label_arg="$arg"
+    elif [[ -n "$label_arg" && "$arg" != -* ]]; then
+        # If a label argument was found and the next argument is not a switch, consider it the value
+        label_value="$arg"
+        break
+    fi
+done
+
+# If no label was provided or it has no value, die with an error message
+if [[ -z "$label_arg" || -z "$label_value" ]]; then
+    die "Error: The '-l' or '--label' switch is required and must have a value."
+fi
+
+# Remove the label argument and its value from the arguments list
+args=()
+skip_next=false
+for arg in "$@"; do
+    if [[ "$arg" == "$label_arg" || "$arg" == "$label_value" ]]; then
+        if [[ "$skip_next" == true ]]; then
+            skip_next=false
+            continue
+        fi
+        skip_next=true
+    else
+        args+=("$arg")
+    fi
+done
+
+# Pass the remaining arguments to 'git bug add'
+git bug add "${args[@]}"
