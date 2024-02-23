@@ -12,13 +12,13 @@
   register: github_release
 
 -  vars:
-    _github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_name_pattern) | map(attribute='browser_download_url') | first }}"
+    _github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | map(attribute='browser_download_url') | first }}"
     _github_latest_version: "{{ github_release.json.tag_name }}"
 
 -
   fail:
     msg: "No matching asset found for pattern {{ github_asset_name_pattern }}"
-  when: github_release.json.assets | selectattr('name', 'match', github_asset_name_pattern) | list | count == 0
+  when: github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | list | count == 0
 
 -
   get_url:

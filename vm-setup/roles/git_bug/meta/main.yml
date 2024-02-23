@@ -3,6 +3,6 @@ dependencies:
   - role: github_release
     vars:
       github_repo: "{{ git_bug_repo }}"
-      github_asset_name_pattern: 'git-bug_linux_amd64'
+      github_asset_pattern: 'git-bug_linux_amd64'
       github_dest_path: "{{ git_bug_binary_path }}"
       github_version_mismatch: "{{ git_bug_installed_version != git_bug_latest_version }}"
