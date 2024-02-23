@@ -35,3 +35,40 @@
     mode: '{{ github_file_mode | default("0755") }}'
     state: file
   when: github_version_mismatch | default(true) and github_download_result is changed
+---
+# This role downloads a GitHub release
+
+- name: Get the latest release of {{ github_repo }} from GitHub
+  uri:
+    url: "https://api.github.com/repos/{{ github_repo }}/releases/latest"
+    method: GET
+    return_content: yes
+    status_code: 200
+    headers:
+      Accept: "application/vnd.github.v3+json"
+  register: github_release
+
+- name: Set download URL and version for {{ github_repo }}
+  set_fact:
+    github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_name_pattern) | map(attribute='browser_download_url') | first }}"
+    github_latest_version: "{{ github_release.json.tag_name }}"
+
+- name: Fail if no matching asset is found for {{ github_repo }}
+  fail:
+    msg: "No matching asset found for pattern {{ github_asset_name_pattern }}"
+  when: github_release.json.assets | selectattr('name', 'match', github_asset_name_pattern) | list | count == 0
+
+- name: Download the latest release for {{ github_repo }}
+  get_url:
+    url: "{{ github_download_url }}"
+    dest: "{{ github_dest_path }}"
+    mode: '{{ github_file_mode | default("0755") }}'
+  when: github_version_mismatch | default(true)
+  register: github_download_result
+
+- name: Ensure the downloaded file is executable
+  file:
+    path: "{{ github_dest_path }}"
+    mode: '{{ github_file_mode | default("0755") }}'
+    state: file
+  when: github_version_mismatch | default(true) and github_download_result is changed
