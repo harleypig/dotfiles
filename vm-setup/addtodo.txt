@@ -1,14 +1,1 @@
 
-Investigate and integrate YAML and Ansible formatting tools to ensure consistent code style.
-
-Ideas for implementation:
-- CLI Tool:
-  - Research and evaluate existing YAML and Ansible linting/formatters such as yamllint and ansible-lint.
-  - Integrate these tools into a pre-commit hook to ensure code style consistency before commits are made.
-  - Create a custom script that wraps around these tools to provide a unified interface for linting and formatting.
-
-- Vim Configuration:
-  - Utilize Vim plugins that support YAML and Ansible syntax highlighting and formatting, such as vim-ansible-yaml.
-  - Configure Vim to automatically run yamllint and ansible-lint on save.
-  - Set up Vim autocmd hooks to format YAML and Ansible files on buffer write or leave.
-  - Explore the possibility of integrating ALE (Asynchronous Lint Engine) in Vim for real-time linting feedback.
