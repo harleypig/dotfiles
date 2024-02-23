@@ -1,10 +1,1 @@
-Mine these urls for useful information
 
-- https://bosker.wordpress.com/2012/02/12/bash-scripters-beware-of-the-cdpath/
-- https://stackoverflow.com/a/246128/491894
-- https://stackoverflow.com/a/26759734/491894
-- https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
-- https://github.com/bashup/realpaths
-- https://github.com/bashup/mdsh
-- https://github.com/jcayzac/dotfiles
-- https://github.com/mathiasbynens/dotfiles/blob/master/bootstrap.sh
