@@ -1,6 +1,4 @@
 
-#-----------------------------------------------------------------------------
-create a (separate?) role to setup dotfiles and dotvim and private_dotfiles
 
 #-----------------------------------------------------------------------------
 add molecule tests
