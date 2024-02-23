@@ -43,7 +43,7 @@ done
 
 #-----------------------------------------------------------------------------
 # Execute git bug add and capture the output and return code
-output="$(git bug add "${new_args[@]}" 2>&1)"
+output="$(git bug add "${args[@]}" 2>&1)"
 ret_code=$?
 
 # Check the return code and handle errors
