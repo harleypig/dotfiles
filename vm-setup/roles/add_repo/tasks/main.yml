@@ -12,7 +12,7 @@
         msg: >
           These repositories are not defined: {{ requested_repos | difference(all_repos) | join(', ') }}.
           Available repositories: {{ all_repos | join(', ') }}
-      when: requested_repos | difference(all_repos) | length > 0
+      when: requested_repos | difference(all_repos) | length > 0 == true
 
     - name: Install requested repositories
 

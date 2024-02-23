@@ -1,5 +1,4 @@
-# Define a hash of available repositories
-repos:
+add_repo_repos:
   google-cloud:
     filename: google-cloud
     key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
