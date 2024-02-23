@@ -23,6 +23,18 @@ if [[ -z "$label_arg" || -z "$label_value" ]]; then
     die "Error: The '-l' or '--label' switch is required and must have a value."
 fi
 
+# Execute git bug add and capture the output and return code
+output=$(git bug add "${new_args[@]}" 2>&1)
+ret_code=$?
+
+# Check the return code and handle errors
+if [ $ret_code -ne 0 ]; then
+    die "Error: 'git bug add' failed with the following message: $output"
+fi
+
+# Extract the first value as 'id'
+id=$(echo "$output" | awk '{print $1; exit}')
+
 # Remove the label argument and its value from the arguments list
 args=()
 skip_next=false
