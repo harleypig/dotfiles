@@ -1,3 +1,1 @@
-Use ansible-vault for password management
 
-Investigate ansible-vault to avoid repeatedly typing passwords. This should streamline the process of running playbooks and managing secrets.
