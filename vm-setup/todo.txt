@@ -1,7 +1,3 @@
-#-----------------------------------------------------------------------------
-add playbook for setting user groups (on ubuntu modify /etc/adduser.conf) Use
-`groups` command to see what you've got setup already. Is there a way to
-modify this piecemeal, so if docker is not installed then it's not set?
 
 #-----------------------------------------------------------------------------
 create a role to install repositories in projects directory
