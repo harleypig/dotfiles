@@ -1,1 +1,1 @@
-{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":1,"timestamp":1708653324,"nonce":"8RPSaukM2eTORL+HItpXGky1DCw=","title":"create a (separate?) role to setup dotfiles and dotvim and private_dotfiles","message":"","files":null}]}
+{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":5,"timestamp":1708653325,"nonce":"SWBpgnk2ng2BJwxac3dgraJQ1zk=","added":["ansible"],"removed":null}]}
