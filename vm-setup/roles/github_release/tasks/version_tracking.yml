@@ -1,0 +1,21 @@
+# This file contains tasks for tracking the version of downloaded assets
+
+- name: Check if version tracking file exists
+  stat:
+    path: "{{ github_version_tracking_file }}"
+  register: version_tracking_file
+
+- name: Read current version of the asset from the version tracking file
+  command: "grep '{{ github_asset_name }}' {{ github_version_tracking_file }} | cut -d '=' -f 2"
+  register: current_asset_version
+  changed_when: false
+  failed_when: false
+  when: version_tracking_file.stat.exists
+
+- name: Update version tracking file with the new version
+  lineinfile:
+    path: "{{ github_version_tracking_file }}"
+    regexp: '^{{ github_asset_name }}='
+    line: "{{ github_asset_name }}={{ github_latest_version }}"
+    create: yes
+  when: github_version_mismatch | default(true) and github_download_result is changed

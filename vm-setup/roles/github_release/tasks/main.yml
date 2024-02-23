@@ -29,6 +29,12 @@
   when: github_version_mismatch | default(true)
   register: github_download_result
 
+- name: Include version tracking tasks
+  include_tasks: version_tracking.yml
+  vars:
+    github_asset_name: "{{ github_asset_name_pattern }}"
+    github_version_tracking_file: "/path/to/version_tracking_file"
+
 - name: Ensure the downloaded file has the proper permissions
   file:
     path: "{{ github_dest_path }}"
