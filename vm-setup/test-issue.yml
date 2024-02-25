@@ -22,6 +22,11 @@
       X-GNOME-Autostart-enabled: true
       X-GNOME-Autostart-Delay: 1
 
+- name: Check if the Tilix profile file exists
+  stat:
+    path: "{{ tilix_profile_filename }}"
+  register: tilix_profile_file
+
 - name: Load profile if the file exists
   shell: "dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}"
   register: dconf_load_result
