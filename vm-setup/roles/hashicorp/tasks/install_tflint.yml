@@ -7,6 +7,7 @@
     include: tflint
     remote_src: yes
     mode: '0755'
+  register: unarchive_result
 
 - name: Update tflint version in version tracking
   lineinfile:
@@ -15,3 +16,4 @@
     line: "tflint: \"{{ github_release_latest_version }}\""
     create: yes
     backup: yes
+  when: unarchive_result is succeeded
