@@ -3,7 +3,7 @@
   hosts: localhost
 
   vars:
-    github_release_version_file: .github-release-tracking-file.yml
+    version_tracking_file: .github-release-tracking-file.yml
 
   roles:
     - role: install_pkgs
