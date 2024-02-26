@@ -1,17 +1,12 @@
 ---
 # This role manages the download and version tracking of a GitHub release
 
-- name: Check if version tracking file exists
+- name: Check if version tracking file exists, create it if it doesn't
   stat:
     path: "{{ github_version_tracking_file }}"
-  register: version_tracking_file
-
-- name: Create an empty version tracking file if it doesn't exist
-  file:
-    path: "{{ github_version_tracking_file }}"
     state: touch
-    mode: '0644'
-  when: not version_tracking_file.stat.exists
+    mode: "{{ github_version_tracking_file_mode }}"
+  register: version_tracking_file
 
 - name: Read current version of the asset from the version tracking file
   command: "grep '{{ github_asset_name }}' {{ github_version_tracking_file }} | cut -d '=' -f 2"
