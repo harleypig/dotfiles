@@ -1,0 +1,219 @@
+--------------------------------
+extension-list@tu.berry
+  Name: Extension List
+  Description: Simple GNOME Shell extension manager in the top panel
+
+For support, please report any issues via the homepage link below.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/extension-list@tu.berry
+  URL: https://github.com/tuberry/extension-list
+  Version: 30
+  State: ENABLED
+
+--------------------------------
+dash-to-dock@micxgx.gmail.com
+  Name: Dash to Dock
+  Description: A dock for the Gnome Shell. This extension moves the dash out of the overview transforming it in a dock for an easier launching of applications and a faster switching between windows and desktops. Side and bottom placement options are available.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com
+  URL: https://micheleg.github.io/dash-to-dock/
+  Original author: micxgx@gmail.com
+  Version: 84
+  State: INITIALIZED
+
+--------------------------------
+LeftClock@adityashrivastava.tk
+  Name: Left Clock
+  Description: Replaces the activity button with clock and moves it to left side of top bar.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/LeftClock@adityashrivastava.tk
+  URL: https://github.com/aditya-shri/Left-Clock
+  Version: 12
+  State: INITIALIZED
+
+--------------------------------
+dash-to-panel@jderose9.github.com
+  Name: Dash to Panel
+  Description: An icon taskbar for the Gnome Shell. This extension moves the dash into the gnome main panel so that the application launchers and system tray are combined into a single panel, similar to that found in KDE Plasma and Windows 7+. A separate dock is no longer needed for easy access to running and favorited applications.
+
+For a more traditional experience, you may also want to use Tweak Tool to enable Windows > Titlebar Buttons > Minimize & Maximize.
+
+For the best support, please report any issues on Github. Dash-to-panel is developed and maintained by @jderose9 and @charlesg99.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com
+  URL: https://github.com/home-sweet-gnome/dash-to-panel
+  Version: 56
+  State: ENABLED
+
+--------------------------------
+apps-menu@gnome-shell-extensions.gcampax.github.com
+  Name: Applications Menu
+  Description: Add a category-based menu for applications.
+This extension is part of Classic Mode and is officially supported by GNOME. Please do not report bugs using the form below, use GNOME's GitLab instance instead.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/apps-menu@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  Version: 51
+  State: INITIALIZED
+
+--------------------------------
+date-menu-formatter@marcinjakubowski.github.com
+  Name: Date Menu Formatter
+  Description: Allows customization of the date display in the panel.
+
+Might be especially useful if you're using a horizontal panel which does not at all work well with the default date display.
+
+CHANGELOG
+Version 5: added support for multiple Dash To Panel panels
+Version 6: fixed issues on earlier Gnome Shell versions
+Version 10: fixed clock hover style (by bomdia)
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/date-menu-formatter@marcinjakubowski.github.com
+  URL: https://github.com/marcinjakubowski/date-menu-formatter
+  Version: 10
+  State: INITIALIZED
+
+--------------------------------
+sound-output-device-chooser@kgshank.net
+  Name: Sound Input & Output Device Chooser
+  Description: Shows a list of sound output and input devices (similar to gnome sound settings) in the status menu below the volume slider. Various active ports like HDMI , Speakers etc. of the same device are also displayed for selection. V20+ needs python as dependency. If you want to continue with the old method without Python, use options to switch off New Port identification. But it works with only English
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/sound-output-device-chooser@kgshank.net
+  URL: https://github.com/kgshank/gse-sound-output-device-chooser
+  Original author: GopI
+  Version: 43
+  State: ENABLED
+
+--------------------------------
+Vitals@CoreCoding.com
+  Name: Vitals
+  Description: A glimpse into your computer's temperature, voltage, fan speed, memory usage, processor load, system resources, network speed and storage stats. This is a one stop shop to monitor all of your vital sensors. Uses asynchronous polling to provide a smooth user experience. Feature requests or bugs? Please use GitHub.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/Vitals@CoreCoding.com
+  URL: https://github.com/corecoding/Vitals
+  Version: 61
+  State: INITIALIZED
+
+--------------------------------
+burn-my-windows@schneegans.github.com
+  Name: Burn My Windows
+  Description: Disintegrate your windows with style.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/burn-my-windows@schneegans.github.com
+  URL: https://github.com/Schneegans/Burn-My-Windows
+  Version: 40
+  State: ENABLED
+
+--------------------------------
+tweaks-system-menu@extensions.gnome-shell.fifi.org
+  Name: Tweaks & Extensions in System Menu
+  Description: Put Gnome Tweaks and Extensions (on Shell 40 and later) in the System menu.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/tweaks-system-menu@extensions.gnome-shell.fifi.org
+  URL: https://github.com/F-i-f/tweaks-system-menu
+  Version: 18
+  State: ENABLED
+
+--------------------------------
+auto-move-windows@gnome-shell-extensions.gcampax.github.com
+  Name: Auto Move Windows
+  Description: Move applications to specific workspaces when they create windows.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/auto-move-windows@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  Version: 49
+  State: ENABLED
+
+--------------------------------
+launch-new-instance@gnome-shell-extensions.gcampax.github.com
+  Name: Launch new instance
+  Description: Always launch a new instance when clicking in the dash or the application view.
+This extension is part of Classic Mode and is officially supported by GNOME. Please do not report bugs using the form below, use GNOME's GitLab instance instead.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/launch-new-instance@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  Version: 34
+  State: INITIALIZED
+
+--------------------------------
+user-theme@gnome-shell-extensions.gcampax.github.com
+  Name: User Themes
+  Description: Load shell themes from user directory.
+  Path: /home/harleypig/.local/share/gnome-shell/extensions/user-theme@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  Version: 49
+  State: INITIALIZED
+
+--------------------------------
+ding@rastersoft.com
+  Name: Desktop Icons NG (DING)
+  Description: Adds icons to the desktop. Fork of the original Desktop Icons extension, with several enhancements .
+  Path: /usr/share/gnome-shell/extensions/ding@rastersoft.com
+  URL: https://gitlab.com/rastersoft/desktop-icons-ng
+  State: ENABLED
+
+--------------------------------
+ubuntu-appindicators@ubuntu.com
+  Name: Ubuntu AppIndicators
+  Description: Support app indicators and legacy tray icons in top panel, as the default Ubuntu experience. System update of AppIndicator and KStatusNotifierItem Support extension.
+  Path: /usr/share/gnome-shell/extensions/ubuntu-appindicators@ubuntu.com
+  URL: https://github.com/ubuntu/gnome-shell-extension-appindicator
+  State: ENABLED
+
+--------------------------------
+ubuntu-dock@ubuntu.com
+  Name: Ubuntu Dock
+  Description: A dock for the Gnome Shell, default Ubuntu experience. This extension is a modified version of Dash To Dock with different defaults. Dash To Dock can be installed to replace it and give more (but unsupported) configuration options.
+  Path: /usr/share/gnome-shell/extensions/ubuntu-dock@ubuntu.com
+  URL: https://micheleg.github.io/dash-to-dock/
+  Original author: micxgx@gmail.com
+  Version: 71
+  State: DISABLED
+
+--------------------------------
+drive-menu@gnome-shell-extensions.gcampax.github.com
+  Name: Removable Drive Menu
+  Description: A status menu for accessing and unmounting removable devices.
+  Path: /usr/share/gnome-shell/extensions/drive-menu@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  State: INITIALIZED
+
+--------------------------------
+native-window-placement@gnome-shell-extensions.gcampax.github.com
+  Name: Native Window Placement
+  Description: Arrange windows in overview in a more compact way.
+  Path: /usr/share/gnome-shell/extensions/native-window-placement@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  State: INITIALIZED
+
+--------------------------------
+places-menu@gnome-shell-extensions.gcampax.github.com
+  Name: Places Status Indicator
+  Description: Add a menu for quickly navigating places in the system.
+This extension is part of Classic Mode and is officially supported by GNOME. Please do not report bugs using the form below, use GNOME's GitLab instance instead.
+  Path: /usr/share/gnome-shell/extensions/places-menu@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  State: INITIALIZED
+
+--------------------------------
+screenshot-window-sizer@gnome-shell-extensions.gcampax.github.com
+  Name: Screenshot Window Sizer
+  Description: Resize windows for GNOME Software screenshots
+  Path: /usr/share/gnome-shell/extensions/screenshot-window-sizer@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  State: INITIALIZED
+
+--------------------------------
+window-list@gnome-shell-extensions.gcampax.github.com
+  Name: Window List
+  Description: Display a window list at the bottom of the screen.
+This extension is part of Classic Mode and is officially supported by GNOME. Please do not report bugs using the form below, use GNOME's GitLab instance instead.
+  Path: /usr/share/gnome-shell/extensions/window-list@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  State: INITIALIZED
+
+--------------------------------
+windowsNavigator@gnome-shell-extensions.gcampax.github.com
+  Name: windowNavigator
+  Description: Allow keyboard selection of windows and workspaces in overlay mode. <Ctrl>number selects a workspace, and <Alt>number selects a window.
+  Path: /usr/share/gnome-shell/extensions/windowsNavigator@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  Original author: zaspire@rambler.ru
+  State: INITIALIZED
+
+--------------------------------
+workspace-indicator@gnome-shell-extensions.gcampax.github.com
+  Name: Workspace Indicator
+  Description: Put an indicator on the panel signaling in which workspace you are, and give you the possibility of switching to another one.
+  Path: /usr/share/gnome-shell/extensions/workspace-indicator@gnome-shell-extensions.gcampax.github.com
+  URL: https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+  State: INITIALIZED
+
