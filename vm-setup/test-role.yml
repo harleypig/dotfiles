@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Test specific roles
+  hosts: localhost
 
   roles:
     #- role: docker
