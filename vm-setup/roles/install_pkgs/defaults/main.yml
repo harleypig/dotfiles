@@ -1,5 +1,5 @@
 ---
-packages:
+install_pkgs_packages:
   - ansible
   - ansible-lint
   - aptitude

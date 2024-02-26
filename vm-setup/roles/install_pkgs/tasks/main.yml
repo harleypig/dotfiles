@@ -4,4 +4,4 @@
   apt:
     state: latest
     update_cache: true
-    name: "{{ packages }}"
+    name: "{{ install_pkgs_packages }}"
