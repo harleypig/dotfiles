@@ -1,0 +1,1 @@
+github_version_tracking_file: "{{ playbook_dir }}/.github_release_installed_versions"
