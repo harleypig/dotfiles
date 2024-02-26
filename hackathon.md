@@ -29,7 +29,7 @@ the idea that a bot would listen on a single, or if needed, multiple defined
 channels. This bot would not be listening to all of our company teams
 channels.
 
-### Creating a RAG-based Vertex AI Model
+## Creating a RAG-based Vertex AI Model
 
 * Select an open-source project that aligns with our technology stack to use as a foundation.
 * Curate and sanitize datasets for training the model.
@@ -39,3 +39,5 @@ channels.
 * Train the model iteratively and evaluate to fine-tune performance.
 * Document the process after successful sandbox testing.
 * Prepare for migration to the production environment to incorporate company-specific data and code.
+
+### For Hackathon
