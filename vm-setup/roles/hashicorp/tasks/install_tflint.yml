@@ -1,0 +1,7 @@
+---
+- name: Unzip the testfile
+  unarchive:
+    src: "{{ hashicorp_tempfile.path }}"
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: '0755'
