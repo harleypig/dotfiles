@@ -6,10 +6,9 @@
     mode: "{{ github_version_tracking_file_mode }}"
   register: github_version_tracking_file
 
-- name: Set facts for version tracking
- set_fact:
-   github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
-   github_current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
+  vars:
+    github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
+    github_current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
 
 - name: Get the latest release of {{ github_repo }} from GitHub
   uri:
@@ -23,6 +22,8 @@
 
 - name: Get latest version
   vars:
+    github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
+    github_current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
     github_latest_version: "{{ github_release.json.tag_name }}"
 
   # Other tasks here...
