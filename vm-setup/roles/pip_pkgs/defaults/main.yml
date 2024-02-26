@@ -1,5 +1,5 @@
 ---
-pip_package_groups:
+pip_pkgs_groups:
   common:
     - aider-chat
     - pre-commit

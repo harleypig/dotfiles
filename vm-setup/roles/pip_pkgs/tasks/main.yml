@@ -2,7 +2,7 @@
 - become: true
 
   vars:
-    all_groups: "{{ pip_package_groups.keys() }}"
+    all_groups: "{{ pip_pkgs_groups.keys() }}"
     exclude_groups: "{{ exclude_group | default([]) }}"
     is_exclusion_list: "{{ is_exclude_list | default(false) }}"
     requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
@@ -18,7 +18,7 @@
     - name: Install requested pip package groups
       pip:
         state: latest
-        name: "{{ pip_package_groups[item] }}"
+        name: "{{ pip_pkgs_groups[item] }}"
       loop: "{{ requested_groups }}"
       loop_control:
         loop_var: item
