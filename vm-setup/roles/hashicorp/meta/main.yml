@@ -1,8 +1,11 @@
 ---
 dependencies:
   - role: add_repo
-    repo_list:
-      - hashicorp
+    vars:
+      filename: "{{ add_repo_repos.hashicorp.filename }}"
+      key_url: "{{ add_repo_repos.hashicorp.key_url }}"
+      repo_name: "{{ add_repo_repos.hashicorp.repo_name }}"
+      repo_urls: "{{ add_repo_repos.hashicorp.repo_urls }}"
 
 dependencies:
   - role: add_repo
