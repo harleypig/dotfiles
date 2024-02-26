@@ -4,6 +4,11 @@ dependencies:
     repo_list:
       - hashicorp
 
+dependencies:
+  - role: add_repo
+    vars:
+      repo_list:
+        - hashicorp
   - role: install_pkgs
     vars:
       packages:
