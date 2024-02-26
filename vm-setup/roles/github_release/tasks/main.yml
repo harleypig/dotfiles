@@ -6,17 +6,8 @@
     mode: "{{ github_version_tracking_file_mode }}"
   register: github_version_tracking_file
 
-- name: Slurp the github version tracking file
-  slurp:
-    src: "{{ github_version_tracking_file }}"
-  register: github_version_tracking_file_content
-
-- name: Set fact for github version tracking content as YAML
-  set_fact:
-    github_version_tracking_yaml: "{{ github_version_tracking_file_content['content'] | b64decode | from_yaml }}"
-
-- name: Set current asset version from github version tracking file
-  set_fact:
+  vars:
+    github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
     current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
 
 - name: Get the latest release of {{ github_repo }} from GitHub
