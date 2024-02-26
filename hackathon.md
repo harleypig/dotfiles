@@ -41,3 +41,12 @@ channels.
 * Prepare for migration to the production environment to incorporate company-specific data and code.
 
 ### For Hackathon
+
+* Identify a simple use case for the RAG model within the scope of the hackathon.
+* Set up a basic Vertex AI environment for model development.
+* Select a small, relevant dataset for the proof-of-concept.
+* Develop a basic RAG model structure with placeholder components.
+* Implement a simple retriever and generator for initial testing.
+* Train the proof-of-concept model with the selected dataset.
+* Evaluate the model's performance and refine as necessary.
+* Create a basic interface for model interaction to demonstrate its capabilities.
