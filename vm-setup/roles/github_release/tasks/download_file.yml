@@ -6,18 +6,3 @@
     mode: '{{ github_dest_path_mode | default("0644") }}'
   when: github_version_mismatch | default(true)
   register: github_download_result
-
-- name: Ensure the downloaded file has the proper permissions
-  file:
-    path: "{{ github_dest_path }}"
-    mode: '{{ github_dest_path_mode | default("0644") }}'
-    state: file
-  when: github_version_mismatch | default(true) and github_download_result is changed
-
-- name: Update github version tracking file with the new version
-  lineinfile:
-    path: "{{ github_version_tracking_file }}"
-    regexp: '^{{ github_asset_name }}='
-    line: "{{ github_asset_name }}={{ github_latest_version }}"
-    create: yes
-  when: github_version_mismatch | default(true)

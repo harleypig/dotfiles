@@ -48,6 +48,6 @@
     github_version_mismatch: "{{ github_asset_current_version != github_latest_version }}"
   register: github_version_mismatch
 
- - name: Include download tasks if there is a version mismatch
-   include_tasks: download_file.yml
-   when: github_version_mismatch
+- name: Include download tasks if there is a version mismatch
+  include_tasks: download_file.yml
+  when: github_version_mismatch

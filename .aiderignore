@@ -3,6 +3,5 @@ bin/*
 lib/*
 shell_startup.d/*
 tests/*
-vm-setup/**
-vm-setup/credentials.yml
+#vm-setup/**
 vm-setup/credentials.yml
