@@ -5,3 +5,11 @@
     dest: /usr/local/bin/
     remote_src: yes
     mode: '0755'
+
+- name: Update tflint version in version tracking
+  lineinfile:
+    path: "{{ version_tracking_file }}"
+    regexp: '^tflint:.*$'
+    line: "tflint: \"{{ github_release_latest_version }}\""
+    create: yes
+    backup: yes
