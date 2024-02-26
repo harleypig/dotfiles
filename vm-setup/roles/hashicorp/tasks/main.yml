@@ -1,42 +1,25 @@
-
- name: Make sure the github version file exists
+---
+- name: Make sure the github version file exists
   file:
-    path: "{{ github_release_version_tracking_file }}"
+    path: "{{ version_tracking_file }}"
     state: touch
-    mode: "{{ github_release_version_tracking_file_mode }}"
+    mode: '0600'
 
- name: Slurp the github version tracking file
+- name: Slurp the github version tracking file
   slurp:
-    src: "{{ github_release_version_tracking_file }}"
+    src: "{{ hashicorp_version_tracking_file }}"
   register: github_version_tracking_file_content
 
- name: Convert github version tracking file content to YAML and register it
+- name: Convert github version tracking file content to YAML and register it
   set_fact:
-    github_release_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
+    hashicorp_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
 
- name: Set current version
+- name: Set current version
   set_fact:
-    github_release_asset_current_version: "{{ github_release_version_tracking_yaml[github_release_asset_name] | default('0') }}"
+    hashicorp_asset_current_version: "{{ hashicorp_version_tracking_yaml[hashicorp_asset_name] | default('0') }}"
 
- name: Get the latest release from GitHub for the specified repository
-  uri:
-    url: https://api.github.com/repos/{{ github_release_repo }}/releases/latest
-    method: GET
-    return_content: true
-    status_code: 200
-    headers:
-      Accept: application/vnd.github.v3+json
-  register: github_release
+#- name: Dump version information using the github_asset_name variable
+#  debug:
+#    msg: "Current version of {{ github_asset_name }}: {{ github_asset_current_version }}"
 
- name: Set latest version
-  set_fact:
-    github_release_version_latest: "{{ github_release.json.tag_name }}"
-    github_release_version_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_release_asset_pattern) | map(attribute='browser_download_url') | first }}"
 
- name: Compare current version against latest version
-  set_fact:
-    github_release_version_mismatch: "{{ github_release_asset_current_version != github_release_version_latest }}"
-
- name: Include download tasks if there is a version mismatch
-  include_tasks: download_file.yml
-  when: github_release_version_mismatch
