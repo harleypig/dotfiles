@@ -1,6 +1,6 @@
 ## Role Name
 
-The `add_iac` role is responsible for setting up Infrastructure as Code (IaC)
+The `hashicorp` role is responsible for setting up Infrastructure as Code (IaC)
 tools on the target system. Currently, it focuses on adding the HashiCorp
 repository and installing HashiCorp products such as Terraform and Packer.
 
@@ -25,5 +25,5 @@ passed in as parameters) is always nice for users too:
 ```yaml
 - hosts: servers
   roles:
-     - role: add_iac
+     - role: hashicorp
 ```
