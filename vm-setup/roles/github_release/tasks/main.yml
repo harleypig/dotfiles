@@ -10,29 +10,34 @@
     github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
     github_current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
 
-- name: Get the latest release of {{ github_repo }} from GitHub
-  uri:
-    url: "https://api.github.com/repos/{{ github_repo }}/releases/latest"
-    method: GET
-    return_content: yes
-    status_code: 200
-    headers:
-      Accept: "application/vnd.github.v3+json"
-  register: github_release
-
-- name: Get latest version
-  vars:
-    github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
-    github_current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
-    github_latest_version: "{{ github_release.json.tag_name }}"
-
-  # Other tasks here...
-
-- name: Dump version information
+- name: Dump
   debug:
-      msg: |
-        Current asset version: {{ github_current_asset_version }}
-        Latest version: {{ github_latest_version }}
+    msg: |
+      yaml: {{ github_version_tracking_yaml }}
+
+#- name: Get the latest release of {{ github_repo }} from GitHub
+#  uri:
+#    url: "https://api.github.com/repos/{{ github_repo }}/releases/latest"
+#    method: GET
+#    return_content: yes
+#    status_code: 200
+#    headers:
+#      Accept: "application/vnd.github.v3+json"
+#  register: github_release
+#
+#- name: Get latest version
+#  vars:
+#    github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
+#    github_current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
+#    github_latest_version: "{{ github_release.json.tag_name }}"
+#
+#  # Other tasks here...
+#
+#- name: Dump version information
+#  debug:
+#      msg: |
+#        Current asset version: {{ github_current_asset_version }}
+#        Latest version: {{ github_latest_version }}
 
 #    github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | map(attribute='browser_download_url') | first }}"
 #    github_asset_pattern: "{{ github_asset_pattern | regex_replace('.*?(\\w+\\.[\\w.]+)$', '\\1') }}"
