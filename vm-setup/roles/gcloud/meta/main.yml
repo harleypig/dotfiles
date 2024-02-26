@@ -1,8 +1,11 @@
 ---
 dependencies:
   - role: add_repo
-    repo_list:
-      - google-cloud
+    vars:
+      filename: "{{ add_repo_repos.google-cloud.filename }}"
+      key_url: "{{ add_repo_repos.google-cloud.key_url }}"
+      repo_name: "{{ add_repo_repos.google-cloud.repo_name }}"
+      repo_urls: "{{ add_repo_repos.google-cloud.repo_urls }}"
 
   - role: install_pkgs
     vars:
