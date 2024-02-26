@@ -37,12 +37,13 @@
     github_latest_version: "{{ github_release.json.tag_name }}"
     github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | map(attribute='browser_download_url') | first }}"
 
- - name: Compare current version against latest version
-   set_fact:
-     github_version_mismatch: "{{ github_asset_current_version != github_latest_version }}"
-   register: github_version_mismatch_result
 #- name: Dump latest release information
 #  debug:
 #    msg: |
 #      Latest version: {{ github_latest_version }}
 #      URL: {{ github_download_url }}
+
+- name: Compare current version against latest version
+  set_fact:
+    github_version_mismatch: "{{ github_asset_current_version != github_latest_version }}"
+  register: github_version_mismatch
