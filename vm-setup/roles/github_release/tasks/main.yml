@@ -31,6 +31,26 @@
       github_version_tracking_file: "/path/to/version_tracking_file"
       github_version_mismatch: "{{ github_version_mismatch }}"
 
+  - name: Check if version tracking file exists
+    stat:
+      path: "{{ playbook_dir }}/.github_release_installed_versions"
+    register: version_tracking_file
+
+  - name: Read current version of the asset from the version tracking file
+    command: "grep '{{ github_asset_name }}' {{ playbook_dir }}/.github_release_installed_versions | cut -d '=' -f 2"
+    register: current_asset_version
+    changed_when: false
+    failed_when: false
+    when: version_tracking_file.stat.exists
+
+  - name: Update version tracking file with the new version
+    lineinfile:
+      path: "{{ playbook_dir }}/.github_release_installed_versions"
+      regexp: '^{{ github_asset_name }}='
+      line: "{{ github_asset_name }}={{ github_latest_version }}"
+      create: yes
+    when: github_version_mismatch | default(true)
+
   - name: Download file
     get_url:
       url: "{{ github_download_url }}"
