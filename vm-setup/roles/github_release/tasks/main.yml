@@ -7,12 +7,12 @@
 
 - name: Slurp the github version tracking file
   slurp:
-    src: "{{ github_version_tracking_file }}"
+    src: "{{ github_release_version_tracking_file }}"
   register: github_version_tracking_file_content
 
 - name: Convert github version tracking file content to YAML and register it
   set_fact:
-    github_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
+    github_release_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
 
 - name: Set current version
   set_fact:

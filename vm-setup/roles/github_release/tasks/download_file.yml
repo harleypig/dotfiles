@@ -9,6 +9,6 @@
 
 - name: Update the version tracking file with the latest version
   copy:
-    content: "{{ github_version_tracking_yaml | to_nice_yaml }}"
-    dest: "{{ github_version_tracking_file }}"
+    content: "{{ github_release_version_tracking_yaml | to_nice_yaml }}"
+    dest: "{{ github_release_version_tracking_file }}"
   when: github_download_result is changed
