@@ -1,40 +1,23 @@
 ---
-# This role manages the download and version tracking of a GitHub release
-
-- name: Check if version tracking file exists, create it if it doesn't
+- name: Make sure the version file exists
   stat:
     path: "{{ github_version_tracking_file }}"
     state: touch
     mode: "{{ github_version_tracking_file_mode }}"
   register: version_tracking_file
 
-- name: Read current version of the asset from the version tracking file
-  command: "grep '{{ github_asset_name }}' {{ github_version_tracking_file }} | cut -d '=' -f 2"
-  register: current_asset_version
-  changed_when: false
-  failed_when: false
-  when: version_tracking_file.stat.exists
-
 - name: Slurp the version tracking file
   slurp:
     src: "{{ github_version_tracking_file }}"
   register: version_tracking_file_content
-  when: version_tracking_file.stat.exists
 
 - name: Set fact for version tracking content as YAML
   set_fact:
     version_tracking_yaml: "{{ version_tracking_file_content['content'] | b64decode | from_yaml }}"
-  when: version_tracking_file.stat.exists
 
 - name: Set current asset version from version tracking file
   set_fact:
     current_asset_version: "{{ version_tracking_yaml[github_asset_name] | default('0') }}"
-  when: version_tracking_file.stat.exists
-
-- name: Set current asset version to '0' if version tracking file does not exist
-  set_fact:
-    current_asset_version: '0'
-  when: not version_tracking_file.stat.exists
 
 - name: Get the latest release of {{ github_repo }} from GitHub
   uri:
@@ -46,34 +29,26 @@
       Accept: "application/vnd.github.v3+json"
   register: github_release
 
--
+- name: Get latest version
+  vars:
+    github_latest_version: "{{ github_release.json.tag_name }}"
+
+
+    github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | map(attribute='browser_download_url') | first }}"
+    github_asset_pattern: "{{ github_asset_pattern | regex_replace('.*?(\\w+\\.[\\w.]+)$', '\\1') }}"
+    github_version_mismatch: "{{ github_latest_version != current_asset_version.stdout | default('0.0.0') }}"
+
 - name: Fail if nothing found
   fail:
     msg: "No matching asset found for pattern {{ github_asset_pattern }}"
   when: github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | list | count == 0
 
--  vars:
-    github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | map(attribute='browser_download_url') | first }}"
-    github_latest_version: "{{ github_release.json.tag_name }}"
-    github_asset_pattern: "{{ github_asset_pattern | regex_replace('.*?(\\w+\\.[\\w.]+)$', '\\1') }}"
-    set_fact:
-      github_version_mismatch: "{{ github_latest_version != current_asset_version.stdout | default('0.0.0') }}"
-
-  -
-    include_tasks: version_tracking.yml
-    vars:
-      github_asset_name: "{{ github_asset_name_pattern }}"
-      github_version_tracking_file: "/path/to/version_tracking_file"
-      github_version_mismatch: "{{ github_version_mismatch }}"
-
-
-
-  - include_tasks: download_file.yml
-    vars:
-      github_asset_name: "{{ github_asset_name_pattern }}"
-      github_version_tracking_file: "{{ playbook_dir }}/.github_release_installed_versions"
-      github_version_mismatch: "{{ github_version_mismatch }}"
-      github_download_url: "{{ github_download_url }}"
-      github_dest_path: "{{ github_dest_path }}"
-      github_file_mode: "{{ github_file_mode | default('0644') }}"
-      github_latest_version: "{{ github_latest_version }}"
+- include_tasks: download_file.yml
+  vars:
+    github_asset_name: "{{ github_asset_name_pattern }}"
+    github_version_tracking_file: "{{ playbook_dir }}/.github_release_installed_versions"
+    github_version_mismatch: "{{ github_version_mismatch }}"
+    github_download_url: "{{ github_download_url }}"
+    github_dest_path: "{{ github_dest_path }}"
+    github_file_mode: "{{ github_file_mode | default('0644') }}"
+    github_latest_version: "{{ github_latest_version }}"
