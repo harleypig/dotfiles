@@ -12,8 +12,8 @@
         gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
 
     - role: pip_pkgs
-      is_exclude_list: true
-      exclude_group:
+      pip_pkgs_is_exclude_list: true
+      pip_pkgs_exclude_group:
         - linode
 
     - role: add_iac
