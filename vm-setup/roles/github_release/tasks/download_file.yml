@@ -1,6 +1,5 @@
 ---
 - name: Download file
-  become: yes
   get_url:
     url: "{{ github_download_url }}"
     dest: "{{ github_dest_path }}"
