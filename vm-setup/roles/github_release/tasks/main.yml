@@ -10,6 +10,17 @@
     mode: "{{ github_version_tracking_file_mode }}"
   register: github_version_tracking_file
 
+- name: Slurp the github version tracking file
+  slurp:
+    src: "{{ github_version_tracking_file }}"
+  register: github_version_tracking_file_content
+  when: github_version_tracking_file.stat.exists
+
+- name: Convert github version tracking file content to YAML
+  set_fact:
+    github_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
+  when: github_version_tracking_file.stat.exists
+
 - name: Read the github version tracking file as YAML
   vars:
     github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
