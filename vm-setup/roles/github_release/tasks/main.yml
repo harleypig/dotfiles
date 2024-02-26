@@ -22,11 +22,11 @@
 
 - name: Compare current version against latest version
   set_fact:
-    github_release_version_mismatch: "{{ github_release_asset_current_version != github_release_latest_version }}"
+    github_release_version_mismatch: "{{ github_release_current_version != github_release_latest_version }}"
 
-#- name: Dump mismatch information
-#  debug:
-#    msg: Mismatch? {{ github_version_mismatch }}
+- name: Dump mismatch information
+  debug:
+    msg: Mismatch? {{ github_version_mismatch }}
 
 - name: Download file
   get_url:

@@ -7,11 +7,6 @@ dependencies:
       repo_name: "{{ add_repo_repos.hashicorp.repo_name }}"
       repo_urls: "{{ add_repo_repos.hashicorp.repo_urls }}"
 
-dependencies:
-  - role: add_repo
-    vars:
-      repo_list:
-        - hashicorp
   - role: install_pkgs
     vars:
       packages:
