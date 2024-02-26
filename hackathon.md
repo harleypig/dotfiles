@@ -31,15 +31,11 @@ channels.
 
 ### Creating a RAG-based Vertex AI Model
 
-To develop a RAG (Retriever-Augmented Generation) based Vertex AI model, we
-will begin by selecting an open-source project that aligns with our current
-technology stack. This project will serve as a foundation for our model,
-ensuring that no proprietary data or code is utilized in the sandbox
-environment. The initial phase involves data preparation, where we will curate
-and sanitize datasets to train the model effectively. Following this, we will
-construct the model architecture, focusing on integrating a retriever to fetch
-relevant information and a generator to produce the desired output. The model
-will be trained iteratively, with evaluations to fine-tune its performance.
-Upon successful sandbox testing, we will document the process and prepare for
-migration to the production environment, where we can incorporate
-company-specific data and code.
+* Select an open-source project that aligns with our technology stack to use as a foundation.
+* Curate and sanitize datasets for training the model.
+* Construct the model architecture with:
+  * A retriever component to fetch relevant information.
+  * A generator component to produce the output.
+* Train the model iteratively and evaluate to fine-tune performance.
+* Document the process after successful sandbox testing.
+* Prepare for migration to the production environment to incorporate company-specific data and code.
