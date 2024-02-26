@@ -1,6 +1,4 @@
 ---
-# This file contains tasks for downloading the release file and updating the version tracking
-
 - name: Download file
   get_url:
     url: "{{ github_download_url }}"
