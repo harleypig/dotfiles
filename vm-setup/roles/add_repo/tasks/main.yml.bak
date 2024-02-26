@@ -1,0 +1,34 @@
+---
+- name: Install defined repositories
+  become: true
+
+  vars:
+    all_repos: "{{ repos.keys() }}"
+    requested_repos: "{{ repo_list | default(all_repos) }}"
+
+  block:
+    - name: Validate requested repositories
+      fail:
+        msg: >
+          These repositories are not defined: {{ requested_repos | difference(all_repos) | join(', ') }}.
+          Available repositories: {{ all_repos | join(', ') }}
+      when: requested_repos | difference(all_repos) | length > 0
+
+    - name: Install requested repositories
+
+      loop: "{{ requested_repos }}"
+      loop_control:
+        loop_var: name
+
+      vars:
+        key_url: "{{ repos[name].key_url }}"
+        repo_urls: "{{ repos[name].repo_urls }}"
+        filename: "{{ repos[name].filename }}"
+        repo_name: "{{ repos[name].repo_name }}"
+
+      include_tasks: install_repo.yml
+
+  rescue:
+    - name: Capture validation failure
+      debug:
+        msg: Validation failed for the requested repositories. Please check the repository names and try again.

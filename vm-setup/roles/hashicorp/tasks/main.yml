@@ -7,7 +7,7 @@
 
 - name: Slurp the github version tracking file
   slurp:
-    src: "{{ hashicorp_version_tracking_file }}"
+    src: "{{ version_tracking_file }}"
   register: github_version_tracking_file_content
 
 - name: Convert github version tracking file content to YAML and register it

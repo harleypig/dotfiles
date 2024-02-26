@@ -1,34 +1,28 @@
 ---
-- name: Install defined repositories
-  become: true
+- name: Validate required variables for {{ repo_name }}
+  assert:
+    that:
+      - key_url is defined
+      - repo_urls is defined
+      - filename is defined
+      - repo_name is defined
+    fail_msg: Required variable is not defined for {{ repo_name }}.
 
-  vars:
-    all_repos: "{{ repos.keys() }}"
-    requested_repos: "{{ repo_list | default(all_repos) }}"
+# XXX: Figure out how to do this
+#- name: "Remove old APT repository for {{ repo_name }}"
+#  apt_repository:
+#    repo: "{{ repo_url }}"
+#    filename: "{{ filename }}"
+#    state: absent
 
-  block:
-    - name: Validate requested repositories
-      fail:
-        msg: >
-          These repositories are not defined: {{ requested_repos | difference(all_repos) | join(', ') }}.
-          Available repositories: {{ all_repos | join(', ') }}
-      when: requested_repos | difference(all_repos) | length > 0
+- name: Install Repository Public Key for {{ repo_name }}
+  apt_key:
+    url: "{{ key_url }}"
+    state: present
 
-    - name: Install requested repositories
-
-      loop: "{{ requested_repos }}"
-      loop_control:
-        loop_var: name
-
-      vars:
-        key_url: "{{ repos[name].key_url }}"
-        repo_urls: "{{ repos[name].repo_urls }}"
-        filename: "{{ repos[name].filename }}"
-        repo_name: "{{ repos[name].repo_name }}"
-
-      include_tasks: install_repo.yml
-
-  rescue:
-    - name: Capture validation failure
-      debug:
-        msg: Validation failed for the requested repositories. Please check the repository names and try again.
+- name: Add APT repository for {{ repo_name }}
+  apt_repository:
+    repo: "{{ item }}"
+    filename: "{{ filename }}"
+    state: present
+  loop: "{{ repo_urls }}"
