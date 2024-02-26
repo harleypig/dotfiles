@@ -2,6 +2,15 @@
 - name: Make sure the github version file exists
   stat:
     path: "{{ github_version_tracking_file }}"
+  when: not github_version_tracking_file_stat.stat.exists
+
+  vars:
+    github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
+    github_current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
+
+- name: Touch the github version file and set permissions
+  file:
+    path: "{{ github_version_tracking_file }}"
     state: touch
     mode: "{{ github_version_tracking_file_mode }}"
   register: github_version_tracking_file
