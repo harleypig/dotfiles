@@ -12,10 +12,10 @@
   failed_when: false
   when: version_tracking_file.stat.exists
 
-- name: Update version tracking file with the new version
-  lineinfile:
+-  lineinfile:
     path: "{{ playbook_dir }}/.github_release_installed_versions"
     regexp: '^{{ github_asset_name }}='
     line: "{{ github_asset_name }}={{ github_latest_version }}"
     create: yes
-  when: github_version_mismatch | default(true) and github_download_result is changed
+  when: github_version_mismatch | default(true)
+when: github_version_mismatch | default(true) and github_download_result is changed

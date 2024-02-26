@@ -17,28 +17,31 @@
     msg: "No matching asset found for pattern {{ github_asset_pattern }}"
   when: github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | list | count == 0
 
-- name: Set variables
-  vars:
+-  vars:
     github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | map(attribute='browser_download_url') | first }}"
     github_latest_version: "{{ github_release.json.tag_name }}"
+    github_asset_name_pattern: "{{ github_asset_pattern | regex_replace('.*?(\\w+\\.[\\w.]+)$', '\\1') }}"
+    set_fact:
+      github_version_mismatch: "{{ github_latest_version != current_asset_version.stdout | default('0.0.0') }}"
 
-- name: Include version tracking tasks
-  include_tasks: version_tracking.yml
-  vars:
-    github_asset_name: "{{ github_asset_name_pattern }}"
-    github_version_tracking_file: "/path/to/version_tracking_file"
+  -
+    include_tasks: version_tracking.yml
+    vars:
+      github_asset_name: "{{ github_asset_name_pattern }}"
+      github_version_tracking_file: "/path/to/version_tracking_file"
+      github_version_mismatch: "{{ github_version_mismatch }}"
 
-- name: Download file
-  get_url:
-    url: "{{ github_download_url }}"
-    dest: "{{ github_dest_path }}"
-    mode: '{{ github_file_mode | default("0644") }}'
-  when: github_version_mismatch | default(true)
-  register: github_download_result
+  - name: Download file
+    get_url:
+      url: "{{ github_download_url }}"
+      dest: "{{ github_dest_path }}"
+      mode: '{{ github_file_mode | default("0644") }}'
+    when: github_version_mismatch | default(true)
+    register: github_download_result
 
-- name: Ensure the downloaded file has the proper permissions
-  file:
-    path: "{{ github_dest_path }}"
-    mode: '{{ github_file_mode | default("0644") }}'
-    state: file
-  when: github_version_mismatch | default(true) and github_download_result is changed
+  - name: Ensure the downloaded file has the proper permissions
+    file:
+      path: "{{ github_dest_path }}"
+      mode: '{{ github_file_mode | default("0644") }}'
+      state: file
+    when: github_version_mismatch | default(true) and github_download_result is changed
