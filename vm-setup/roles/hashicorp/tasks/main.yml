@@ -14,6 +14,12 @@
   set_fact:
     hashicorp_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
 
+- name: Create a temporary file
+  tempfile:
+    state: file
+    suffix: .tmp
+  register: hashicorp_tempfile
+
 - name: Set current version
   set_fact:
     hashicorp_asset_current_version: "{{ hashicorp_version_tracking_yaml[hashicorp_asset_name] | default('0') }}"
