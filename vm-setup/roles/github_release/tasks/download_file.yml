@@ -1,10 +1,10 @@
 ---
 - name: Download file
   get_url:
-    url: "{{ github_download_url }}"
-    dest: "{{ github_dest_path }}"
-    mode: '{{ github_dest_path_mode | default("0644") }}'
-  when: github_version_mismatch | default(true)
+    url: "{{ github_release_download_url }}"
+    dest: "{{ github_release_dest_path }}"
+    mode: '{{ github_release_dest_path_mode | default("0644") }}'
+  when: github_release_version_mismatch | default(true)
   register: github_download_result
 
 - name: Update the version tracking file with the latest version
