@@ -6,6 +6,13 @@
     path: "{{ github_version_tracking_file }}"
   register: version_tracking_file
 
+- name: Create an empty version tracking file if it doesn't exist
+  file:
+    path: "{{ github_version_tracking_file }}"
+    state: touch
+    mode: '0644'
+  when: not version_tracking_file.stat.exists
+
 - name: Read current version of the asset from the version tracking file
   command: "grep '{{ github_asset_name }}' {{ github_version_tracking_file }} | cut -d '=' -f 2"
   register: current_asset_version
