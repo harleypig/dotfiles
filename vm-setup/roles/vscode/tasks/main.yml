@@ -4,12 +4,12 @@
   include_role:
     name: add_repo
   vars:
-    repo_list:
+    add_repo_repo_list:
       - microsoft
 
 # Install Visual Studio Code package
-- name: Install Visual Studio Code
+-
   include_role:
     name: install_pkgs
   vars:
-    package_groups: vscode
+    install_pkgs_package_groups: vscode
