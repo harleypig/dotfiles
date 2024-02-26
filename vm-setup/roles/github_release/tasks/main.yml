@@ -1,23 +1,23 @@
 ---
-- name: Make sure the version file exists
+- name: Make sure the github version file exists
   stat:
     path: "{{ github_version_tracking_file }}"
     state: touch
     mode: "{{ github_version_tracking_file_mode }}"
-  register: version_tracking_file
+  register: github_version_tracking_file
 
-- name: Slurp the version tracking file
+- name: Slurp the github version tracking file
   slurp:
     src: "{{ github_version_tracking_file }}"
-  register: version_tracking_file_content
+  register: github_version_tracking_file_content
 
-- name: Set fact for version tracking content as YAML
+- name: Set fact for github version tracking content as YAML
   set_fact:
-    version_tracking_yaml: "{{ version_tracking_file_content['content'] | b64decode | from_yaml }}"
+    github_version_tracking_yaml: "{{ github_version_tracking_file_content['content'] | b64decode | from_yaml }}"
 
-- name: Set current asset version from version tracking file
+- name: Set current asset version from github version tracking file
   set_fact:
-    current_asset_version: "{{ version_tracking_yaml[github_asset_name] | default('0') }}"
+    current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
 
 - name: Get the latest release of {{ github_repo }} from GitHub
   uri:

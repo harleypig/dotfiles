@@ -16,9 +16,9 @@
     state: file
   when: github_version_mismatch | default(true) and github_download_result is changed
 
-- name: Update version tracking file with the new version
+- name: Update github version tracking file with the new version
   lineinfile:
-    path: "{{ playbook_dir }}/.github_release_installed_versions"
+    path: "{{ github_version_tracking_file }}"
     regexp: '^{{ github_asset_name }}='
     line: "{{ github_asset_name }}={{ github_latest_version }}"
     create: yes
