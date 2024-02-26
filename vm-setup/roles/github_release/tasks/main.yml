@@ -22,7 +22,7 @@
 #  debug:
 #    msg: "Current version of {{ github_asset_name }}: {{ github_asset_current_version }}"
 
-- name: Get the latest release of {{ github_repo }} from GitHub
+- name: Get the latest release from GitHub for the specified repository
   uri:
     url: https://api.github.com/repos/{{ github_release_repo }}/releases/latest
     method: GET
