@@ -24,17 +24,17 @@
   changed_when: true
 
 - name: Set desktop background options
-  command: "gsettings set org.gnome.desktop.background {{ item }}"
+  command: gsettings set org.gnome.desktop.background {{ item }}
   changed_when: true
   with_items: "{{ gnome_settings_desktop_background }}"
 
 - name: Set desktop interface options
-  command: "gsettings set org.gnome.desktop.interface {{ item }}"
+  command: gsettings set org.gnome.desktop.interface {{ item }}
   changed_when: true
   with_items: "{{ gnome_settings_desktop_interface }}"
 
 - name: Set dash-to-dock settings
-  command: "gsettings set org.gnome.shell.extensions.dash-to-dock {{ item }}"
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock {{ item }}
   changed_when: true
   with_items: "{{ gnome_settings_dock }}"
 
@@ -47,7 +47,7 @@
   loop: "{{ gnome_settings_disabled_services }}"
 
 - name: Apply dock settings
-  command: "gsettings set org.gnome.shell.extensions.dash-to-dock {{ item.key }} {{ item.value }}"
+  command: gsettings set org.gnome.shell.extensions.dash-to-dock {{ item.key }} {{ item.value }}
   loop: "{{ lookup('dict', gnome_settings_dock_settings) }}"
   loop_control:
     label: "{{ item.key }}"

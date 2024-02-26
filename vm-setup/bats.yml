@@ -1,3 +1,4 @@
+---
 # Description: Installs BATS (a shell testing framework)
 # Regarding helper modules; each test environment will be expected to install
 # its own helpers.
@@ -10,15 +11,15 @@
   #debugger: on_failed
 
   vars:
-    package_name: "bats"
-    project_version: "v1.9.0"
-    project_repo: "https://github.com/bats-core/bats-core.git"
+    package_name: bats
+    project_version: v1.9.0
+    project_repo: https://github.com/bats-core/bats-core.git
     #project_dir: "$HOME/projects/bats"
     project_dir: "{{ ansible_env.HOME }}/projects/bats"
 
   tasks:
     - name: Ensure package is not installed
-      become: yes
+      become: true
       apt:
         name: "{{ package_name }}"
         state: absent
@@ -27,19 +28,19 @@
       git:
         repo: "{{ project_repo }}"
         dest: "{{ project_dir }}"
-        track_submodules: yes
+        track_submodules: true
         version: "{{ project_version }}"
       register: git_result
 
-    - name: Confirm cloned repo  # noqa: git-latest
+    - name: Confirm cloned repo # noqa: git-latest
       git:
         repo: "{{ project_repo }}"
         dest: "{{ project_dir }}"
-        update: no
-        clone: no
+        update: false
+        clone: false
 
     - name: Install project
-      become: yes
+      become: true
       args:
         chdir: "{{ project_dir }}"
-      shell: ./install.sh /usr/local
+      ansible.builtin.command: ./install.sh /usr/local

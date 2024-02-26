@@ -1,6 +1,6 @@
 ---
 - name: Install defined repositories
-  become: yes
+  become: true
 
   vars:
     all_repos: "{{ repos.keys() }}"
@@ -31,4 +31,4 @@
   rescue:
     - name: Capture validation failure
       debug:
-        msg: "Validation failed for the requested repositories. Please check the repository names and try again."
+        msg: Validation failed for the requested repositories. Please check the repository names and try again.

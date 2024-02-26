@@ -1,11 +1,12 @@
-- name: "Validate required variables for {{ repo_name }}"
+---
+- name: Validate required variables for {{ repo_name }}
   assert:
     that:
       - key_url is defined
       - repo_urls is defined
       - filename is defined
       - repo_name is defined
-    fail_msg: "Required variable is not defined for {{ repo_name }}."
+    fail_msg: Required variable is not defined for {{ repo_name }}.
 
 # XXX: Figure out how to do this
 #- name: "Remove old APT repository for {{ repo_name }}"
@@ -14,12 +15,12 @@
 #    filename: "{{ filename }}"
 #    state: absent
 
-- name: "Install Repository Public Key for {{ repo_name }}"
+- name: Install Repository Public Key for {{ repo_name }}
   apt_key:
     url: "{{ key_url }}"
     state: present
 
-- name: "Add APT repository for {{ repo_name }}"
+- name: Add APT repository for {{ repo_name }}
   apt_repository:
     repo: "{{ item }}"
     filename: "{{ filename }}"

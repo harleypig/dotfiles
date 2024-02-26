@@ -1,7 +1,7 @@
 ---
 - name: Install requested packages
-  become: yes
+  become: true
   apt:
     state: latest
-    update_cache: yes
+    update_cache: true
     name: "{{ packages }}"

@@ -1,2 +1,3 @@
+---
 github_version_tracking_file: "{{ playbook_dir }}/.github_release_installed_versions"
-github_version_tracking_file_mode: '0644'
+github_version_tracking_file_mode: "0644"

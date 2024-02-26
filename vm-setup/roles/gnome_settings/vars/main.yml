@@ -1,3 +1,4 @@
+---
 gnome_settings_packages:
   - dbus-x11
   - dconf-editor

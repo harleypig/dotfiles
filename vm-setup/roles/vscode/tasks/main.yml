@@ -12,4 +12,4 @@
   include_role:
     name: install_pkgs
   vars:
-    package_groups: "vscode"
+    package_groups: vscode

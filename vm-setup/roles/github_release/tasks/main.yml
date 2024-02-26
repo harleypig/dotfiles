@@ -24,12 +24,12 @@
 
 - name: Get the latest release of {{ github_repo }} from GitHub
   uri:
-    url: "https://api.github.com/repos/{{ github_repo }}/releases/latest"
+    url: https://api.github.com/repos/{{ github_repo }}/releases/latest
     method: GET
-    return_content: yes
+    return_content: true
     status_code: 200
     headers:
-      Accept: "application/vnd.github.v3+json"
+      Accept: application/vnd.github.v3+json
   register: github_release
 
 - name: Set latest version

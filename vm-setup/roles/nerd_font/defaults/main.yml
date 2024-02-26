@@ -1,6 +1,6 @@
 ---
 nerd_font_name: Inconsolata
 nerd_font_archive: zip
-nerd_font_version_url: "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest"
-nerd_font_file_url: "https://github.com/ryanoasis/nerd-fonts/releases/download"
-nerd_font_dir: "/usr/local/share/fonts/NerdFonts"
+nerd_font_version_url: https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest
+nerd_font_file_url: https://github.com/ryanoasis/nerd-fonts/releases/download
+nerd_font_dir: /usr/local/share/fonts/NerdFonts

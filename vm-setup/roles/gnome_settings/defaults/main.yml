@@ -37,12 +37,12 @@ gnome_settings_disabled_services:
 gnome_settings_dock_settings:
   animate_appicon_hover: true
   animate_appicon_hover_animation_extent: "{'RIPPLE': 4, 'PLANK': 4, 'SIMPLE': 1}"
-  animate_appicon_hover_animation_type: 'RIPPLE'
+  animate_appicon_hover_animation_type: RIPPLE
   appicon_margin: 2
   appicon_padding: 2
   available_monitors: [0]
-  dot_position: 'BOTTOM'
-  hotkeys_overlay_combo: 'TEMPORARILY'
+  dot_position: BOTTOM
+  hotkeys_overlay_combo: TEMPORARILY
   intellihide: true
   leftbox_padding: -1
   panel_anchors: '{"0":"MIDDLE"}'
@@ -52,9 +52,9 @@ gnome_settings_dock_settings:
   show_appmenu: false
   show_favorites_all_monitors: false
   status_icon_padding: -1
-  trans_bg_color: '#00007d'
+  trans_bg_color: "#00007d"
   trans_use_custom_bg: true
   trans_use_custom_opacity: true
   trans_use_dynamic_opacity: true
   tray_padding: -1
-  window_preview_title_position: 'TOP'
+  window_preview_title_position: TOP

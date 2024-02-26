@@ -1,8 +1,8 @@
 ---
 - name: Install eslint via npm
-  become: yes
+  become: true
   npm:
     name: "{{ item }}"
-    global: yes
+    global: true
     state: present
   loop: "{{ nodejs_packages }}"

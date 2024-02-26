@@ -3,16 +3,16 @@
   uri:
     url: "{{ nerd_font_version_url }}"
     method: GET
-    return_content: yes
+    return_content: true
     status_code: 200
     headers:
-      Accept: "application/vnd.github.v3+json"
+      Accept: application/vnd.github.v3+json
   register: nerd_font_latest_release
   changed_when: false
 
 - name: Fail if GitHub API rate limit is exceeded
   fail:
-    msg: "GitHub API rate limit exceeded. Please try again later."
+    msg: GitHub API rate limit exceeded. Please try again later.
   when: nerd_font_latest_release.status == 403
 
 - name: Set Nerd Font version
@@ -57,7 +57,7 @@
   get_url:
     url: "{{ nerd_font_url }}"
     dest: "{{ nerd_font_path }}"
-    mode: '0644'
+    mode: "0644"
 
 - name: Unarchive Nerd Font
   unarchive:

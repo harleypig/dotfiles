@@ -1,24 +1,24 @@
 ---
--  become: yes
+- become: true
 
-   vars:
-     all_groups: "{{ pip_package_groups.keys() }}"
-     exclude_groups: "{{ exclude_group | default([]) }}"
-     is_exclusion_list: "{{ is_exclude_list | default(false) }}"
-     requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
+  vars:
+    all_groups: "{{ pip_package_groups.keys() }}"
+    exclude_groups: "{{ exclude_group | default([]) }}"
+    is_exclusion_list: "{{ is_exclude_list | default(false) }}"
+    requested_groups: "{{ all_groups if not is_exclusion_list else all_groups | difference(exclude_groups) }}"
 
-   block:
-     - name: Validate requested pip package groups
-       fail:
-         msg: >
-           These pip package groups are not defined: {{ requested_groups | difference(all_groups) | join(', ') }}.
-           Available pip package groups: {{ all_groups | join(', ') }}
-       when: requested_groups | difference(all_groups) | length > 0
+  block:
+    - name: Validate requested pip package groups
+      fail:
+        msg: >
+          These pip package groups are not defined: {{ requested_groups | difference(all_groups) | join(', ') }}.
+          Available pip package groups: {{ all_groups | join(', ') }}
+      when: requested_groups | difference(all_groups) | length > 0
 
-     - name: Install requested pip package groups
-       pip:
-         state: latest
-         name: "{{ pip_package_groups[item] }}"
-       loop: "{{ requested_groups }}"
-       loop_control:
-         loop_var: item
+    - name: Install requested pip package groups
+      pip:
+        state: latest
+        name: "{{ pip_package_groups[item] }}"
+      loop: "{{ requested_groups }}"
+      loop_control:
+        loop_var: item

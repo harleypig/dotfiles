@@ -1,3 +1,4 @@
+---
 add_repo_repos:
   google-cloud:
     filename: google-cloud
@@ -18,15 +19,15 @@ add_repo_repos:
     key_url: https://packages.microsoft.com/keys/microsoft.asc
     repo_name: Microsoft
     repo_urls:
-      - "deb https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
-      - "deb https://packages.microsoft.com/repos/vscode stable main"
+      - deb https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main
+      - deb https://packages.microsoft.com/repos/vscode stable main
 
   nodesource:
     filename: nodesource
     key_url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
     repo_name: NodeSource
     repo_urls:
-      - "deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
+      - deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main
       #- "deb-src https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
 
   docker:
@@ -34,4 +35,4 @@ add_repo_repos:
     key_url: https://download.docker.com/linux/ubuntu/gpg
     repo_name: Docker
     repo_urls:
-      - "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+      - deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
