@@ -35,11 +35,3 @@
     github_release_current_version: "{{ hashicorp_asset_current_version }}"
     github_release_repo: terraform-linters/tflint
     github_release_tempfile: "{{ hashicorp_tempfile }}"
-
-- name: Unzip the testfile
-  unarchive:
-    src: "{{ hashicorp_tempfile.path }}"
-    dest: /usr/local/bin/
-    remote_src: yes
-    mode: '0755'
-  when: github_release_download_result
