@@ -7,8 +7,8 @@
     #- role: git_bug
     - role: github_release
       vars:
-        github_repo: terraform-linters/tflint
-        github_asset_name: tflint
-        github_asset_pattern: tflint_linux_amd64.zip
-        github_dest_path: /usr/local/bin/tflint
-        github_dest_path_mode: "0755"
+        github_release_repo: terraform-linters/tflint
+        github_release_asset_name: tflint
+        github_release_asset_pattern: tflint_linux_amd64.zip
+        github_release_dest_path: /usr/local/bin/tflint
+        github_release_dest_path_mode: "0755"
