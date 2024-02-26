@@ -1,8 +1,10 @@
 ---
 - name: Unzip the testfile
+  become: yes
   unarchive:
     src: "{{ hashicorp_tempfile.path }}"
     dest: /usr/local/bin/
+    include: tflint
     remote_src: yes
     mode: '0755'
 

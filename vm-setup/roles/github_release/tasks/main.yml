@@ -24,15 +24,14 @@
   set_fact:
     github_release_version_mismatch: "{{ github_release_current_version != github_release_latest_version }}"
 
-- name: Dump mismatch information
-  debug:
-    msg: |
-      Mismatch: {{ github_release_version_mismatch }}
+#- name: Dump mismatch information
+#  debug:
+#    msg: "Mismatch: {{ github_release_version_mismatch }}"
 
 - name: Download file
   get_url:
     url: "{{ github_release_download_url }}"
-    dest: "{{ github_release_tempfile.path }}"
+    dest: "{{ github_release_tempfile }}"
     mode: '0644'
     force: true
   register: github_release_download_result
