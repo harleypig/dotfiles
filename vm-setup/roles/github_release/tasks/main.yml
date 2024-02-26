@@ -8,7 +8,7 @@
 
   vars:
     github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
-    current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
+    github_current_asset_version: "{{ github_version_tracking_yaml[github_asset_name] | default('0') }}"
 
 - name: Get the latest release of {{ github_repo }} from GitHub
   uri:
