@@ -20,7 +20,7 @@
 -  vars:
     github_download_url: "{{ github_release.json.assets | selectattr('name', 'match', github_asset_pattern) | map(attribute='browser_download_url') | first }}"
     github_latest_version: "{{ github_release.json.tag_name }}"
-    github_asset_name_pattern: "{{ github_asset_pattern | regex_replace('.*?(\\w+\\.[\\w.]+)$', '\\1') }}"
+    github_asset_pattern: "{{ github_asset_pattern | regex_replace('.*?(\\w+\\.[\\w.]+)$', '\\1') }}"
     set_fact:
       github_version_mismatch: "{{ github_latest_version != current_asset_version.stdout | default('0.0.0') }}"
 
