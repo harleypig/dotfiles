@@ -14,12 +14,6 @@
   set_fact:
     hashicorp_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
 
-- name: Create a temporary file
-  tempfile:
-    state: file
-    suffix: .tmp
-  register: hashicorp_tempfile
-
 - name: Set current version
   set_fact:
     hashicorp_asset_current_version: "{{ hashicorp_version_tracking_yaml[hashicorp_asset_name] | default('0') }}"
@@ -28,4 +22,16 @@
 #  debug:
 #    msg: "Current version of {{ github_asset_name }}: {{ github_asset_current_version }}"
 
+- name: Create a temporary file
+  tempfile:
+    state: file
+    suffix: .zip
+  register: hashicorp_tempfile
 
+- role: github_release
+  vars:
+    github_release_asset_name: tflint
+    github_release_asset_pattern: tflint_linux_amd64.zip
+    github_release_current_version: "{{ hashicorp_asset_current_version }}"
+    github_release_repo: terraform-linters/tflint
+    github_release_tempfile: "{{ hashicorp_tempfile }}"
