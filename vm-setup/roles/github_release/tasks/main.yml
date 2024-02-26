@@ -14,9 +14,9 @@
   set_fact:
     github_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
 
-- name: Dump version information
+- name: Dump version information using the github_asset_name variable
   debug:
-    msg: "Current version of tflint: {{ github_version_tracking_yaml['tflint'] }}"
+    msg: "Current version of {{ github_asset_name }}: {{ github_version_tracking_yaml[github_asset_name] }}"
 
 #- name: Dump
 #  debug:
