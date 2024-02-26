@@ -26,7 +26,8 @@
 
 - name: Dump mismatch information
   debug:
-    msg: Mismatch? {{ github_version_mismatch }}
+    msg: |
+      Mismatch: {{ github_release_version_mismatch }}
 
 - name: Download file
   get_url:
