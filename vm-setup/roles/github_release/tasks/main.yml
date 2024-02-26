@@ -10,6 +10,28 @@
     mode: "{{ github_version_tracking_file_mode }}"
   register: github_version_tracking_file
 
+- name: Read the github version tracking file as YAML
+  vars:
+    github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
+  block:
+    - name: Placeholder for tasks that use github_version_tracking_yaml
+      debug:
+        msg: "This is a placeholder task that uses the variable github_version_tracking_yaml."
+  when: github_version_tracking_file.stat.exists
+
+- name: Dump
+  debug:
+    msg: |
+      yaml: {{ github_version_tracking_yaml }}
+- name: Read the github version tracking file as YAML
+  set_fact:
+    github_version_tracking_yaml: "{{ lookup('file', github_version_tracking_file) | from_yaml | default({}) }}"
+  when: github_version_tracking_file.stat.exists
+
+- name: Dump
+  debug:
+    msg: |
+      yaml: {{ github_version_tracking_yaml }}
 #- name: Dump
 #  debug:
 #    msg: |
