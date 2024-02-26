@@ -33,6 +33,7 @@ gnome_settings_dock:
 gnome_settings_disabled_services:
   - apt-daily.service
   - apt-daily-upgrade.service
+
 gnome_settings_dock_settings:
   animate_appicon_hover: true
   animate_appicon_hover_animation_extent: "{'RIPPLE': 4, 'PLANK': 4, 'SIMPLE': 1}"
