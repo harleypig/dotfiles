@@ -12,6 +12,6 @@
 
     - role: nodejs
     - role: pip_pkgs
-    - role: add_iac
+    - role: hashicorp
     - role: git_bug
     - role: docker

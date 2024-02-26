@@ -17,7 +17,7 @@
       pip_pkgs_exclude_group:
         - linode
 
-    - role: add_iac
+    - role: hashicorp
     - role: docker
     - role: gcloud
     - role: vscode
