@@ -1,0 +1,25 @@
+---
+# This file contains tasks for downloading the release file and updating the version tracking
+
+- name: Download file
+  get_url:
+    url: "{{ github_download_url }}"
+    dest: "{{ github_dest_path }}"
+    mode: '{{ github_file_mode | default("0644") }}'
+  when: github_version_mismatch | default(true)
+  register: github_download_result
+
+- name: Ensure the downloaded file has the proper permissions
+  file:
+    path: "{{ github_dest_path }}"
+    mode: '{{ github_file_mode | default("0644") }}'
+    state: file
+  when: github_version_mismatch | default(true) and github_download_result is changed
+
+- name: Update version tracking file with the new version
+  lineinfile:
+    path: "{{ playbook_dir }}/.github_release_installed_versions"
+    regexp: '^{{ github_asset_name }}='
+    line: "{{ github_asset_name }}={{ github_latest_version }}"
+    create: yes
+  when: github_version_mismatch | default(true)

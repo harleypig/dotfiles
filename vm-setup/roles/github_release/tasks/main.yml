@@ -43,25 +43,13 @@
     failed_when: false
     when: version_tracking_file.stat.exists
 
-  - name: Update version tracking file with the new version
-    lineinfile:
-      path: "{{ playbook_dir }}/.github_release_installed_versions"
-      regexp: '^{{ github_asset_name }}='
-      line: "{{ github_asset_name }}={{ github_latest_version }}"
-      create: yes
-    when: github_version_mismatch | default(true)
 
-  - name: Download file
-    get_url:
-      url: "{{ github_download_url }}"
-      dest: "{{ github_dest_path }}"
-      mode: '{{ github_file_mode | default("0644") }}'
-    when: github_version_mismatch | default(true)
-    register: github_download_result
-
-  - name: Ensure the downloaded file has the proper permissions
-    file:
-      path: "{{ github_dest_path }}"
-      mode: '{{ github_file_mode | default("0644") }}'
-      state: file
-    when: github_version_mismatch | default(true) and github_download_result is changed
+  - include_tasks: download_file.yml
+    vars:
+      github_asset_name: "{{ github_asset_name_pattern }}"
+      github_version_tracking_file: "{{ playbook_dir }}/.github_release_installed_versions"
+      github_version_mismatch: "{{ github_version_mismatch }}"
+      github_download_url: "{{ github_download_url }}"
+      github_dest_path: "{{ github_dest_path }}"
+      github_file_mode: "{{ github_file_mode | default('0644') }}"
+      github_latest_version: "{{ github_latest_version }}"
