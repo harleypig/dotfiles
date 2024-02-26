@@ -1,7 +1,7 @@
 ---
 - name: Setup Sweetums environment
   hosts: localhost
-  become: true
+
   vars:
     github_release_version_file: .github-release-tracking-file.yml
 

@@ -2,6 +2,9 @@
 - name: Test specific roles
   hosts: localhost
 
+  vars:
+    github_release_version_file: .github-release-tracking-file.yml
+
   roles:
     - role: github_release
       vars:
