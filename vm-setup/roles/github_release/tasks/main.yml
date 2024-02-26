@@ -34,5 +34,6 @@
     url: "{{ github_release_download_url }}"
     dest: "{{ github_release_tempfile.path }}"
     mode: '0644'
+    force: true
   register: github_release_download_result
   when: github_release_version_mismatch
