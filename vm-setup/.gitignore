@@ -1,5 +1,2 @@
-.openai/**
-response.txt
-error
-oa
 credentials.yml
+.github_release_installed_versions
