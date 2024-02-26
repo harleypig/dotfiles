@@ -5,6 +5,7 @@
   roles:
     - role: github_release
       vars:
+        github_release_version_file: .github-release-tracking-file.yml
         github_release_repo: terraform-linters/tflint
         github_release_asset_name: tflint
         github_release_asset_pattern: tflint_linux_amd64.zip
