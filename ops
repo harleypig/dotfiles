@@ -1,1 +1,1 @@
-{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":1,"timestamp":1708979202,"nonce":"Wqofrjof/y+4MVXUAyH3mxreQow=","title":"move microsoft to its own role","message":"","files":null}]}
+{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":5,"timestamp":1708979202,"nonce":"rz+q0ww68u7T9CfjtFySBkrncpw=","added":["ansible"],"removed":null}]}
