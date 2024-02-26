@@ -11,9 +11,9 @@
   register: github_version_tracking_file_content
 
 - name: Convert github version tracking file content to YAML and register it
-  set_fact:
+  vars:
     github_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
-  register: github_version_tracking_yaml
+  register: github_version_tracking_yaml_var
 
 - name: Dump version information using the github_asset_name variable
   debug:
