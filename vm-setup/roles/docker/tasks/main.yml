@@ -12,13 +12,6 @@
     purge: true
 
 - name: Install Docker packages
-  ansible.builtin.package:
+  package:
     name: "{{ docker_packages }}"
     state: present
-
-- name: Install new packages
-  include_role:
-    name: install_pkgs
-    apply:
-      vars:
-        packages: "{{ docker_packages }}"
