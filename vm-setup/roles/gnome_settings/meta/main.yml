@@ -1,5 +1,8 @@
 ---
 dependencies:
-  - { role: ansible.builtin.package, vars: { name: "{{ gnome_settings_packages }}", state: "present" } }
+  - role: ansible.builtin.package
+    vars:
+      name: "{{ gnome_settings_packages }}"
+      state: "present"
     vars:
       packages: "{{ gnome_settings_packages }}"

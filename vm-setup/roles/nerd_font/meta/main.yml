@@ -1,6 +1,9 @@
 ---
 dependencies:
-  - { role: ansible.builtin.package, vars: { name: "{{ nerd_font_packages }}", state: "present" } }
+  - role: ansible.builtin.package
+    vars:
+      name: "{{ nerd_font_packages }}"
+      state: "present"
     vars:
       packages:
         - fontconfig
