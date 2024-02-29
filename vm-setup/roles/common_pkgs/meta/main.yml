@@ -12,4 +12,4 @@ galaxy_info:
         - 8
   galaxy_tags: []
 dependencies:
-  - role: install_pkgs
+  - { role: ansible.builtin.package, vars: { name: "{{ common_packages }}", state: "present" } }
