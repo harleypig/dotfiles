@@ -6,7 +6,7 @@
     version_tracking_file: .version-tracking-file.yml
 
   roles:
-    - role: install_pkgs
+    - role: common_pkgs
     - role: nerd_font
     - role: nodejs
 
