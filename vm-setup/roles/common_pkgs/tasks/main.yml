@@ -1,0 +1,6 @@
+---
+# This playbook includes the install_pkgs role to install default packages.
+
+- name: Install common packages using install_pkgs defaults
+  include_role:
+    name: install_pkgs
