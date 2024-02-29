@@ -7,7 +7,7 @@ dependencies:
       repo_name: "{{ add_repo_repos.hashicorp.repo_name }}"
       repo_urls: "{{ add_repo_repos.hashicorp.repo_urls }}"
 
-  - role: install_pkgs
+  - { role: ansible.builtin.package, vars: { name: "{{ hashicorp_packages }}", state: "present" } }
     vars:
       packages:
         - terraform

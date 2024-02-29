@@ -8,7 +8,7 @@ dependencies:
       repo_urls:
        - deb https://packages.cloud.google.com/apt cloud-sdk main
 
-  - role: install_pkgs
+  - { role: ansible.builtin.package, vars: { name: "{{ gcloud_packages }}", state: "present" } }
     vars:
       packages:
         - google-cloud-cli

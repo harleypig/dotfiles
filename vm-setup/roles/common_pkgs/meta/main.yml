@@ -1,15 +1,3 @@
 ---
-galaxy_info:
-  author: Your Name
-  description: Common packages installation role
-  company: Your Company
-  license: license (MIT, GPL-2.0, etc)
-  min_ansible_version: 2.4
-  platforms:
-    - name: EL
-      versions:
-        - 7
-        - 8
-  galaxy_tags: []
 dependencies:
   - { role: ansible.builtin.package, vars: { name: "{{ common_packages }}", state: "present" } }

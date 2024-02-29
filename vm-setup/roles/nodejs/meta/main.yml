@@ -5,7 +5,7 @@ dependencies:
       repo_list:
         - nodesource
 
-  - role: install_pkgs
+  - { role: ansible.builtin.package, vars: { name: "{{ nodejs_packages }}", state: "present" } }
     vars:
       packages:
         - nodejs
