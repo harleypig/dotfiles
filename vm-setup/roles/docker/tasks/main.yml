@@ -11,13 +11,10 @@
     state: absent
     purge: true
 
-- name: Install docker repo
-  include_role:
-    name: add_repo
-    apply:
-      vars:
-        repo_list:
-          - docker
+- name: Install Docker packages
+  ansible.builtin.package:
+    name: "{{ docker_packages }}"
+    state: present
 
 - name: Install new packages
   include_role:
