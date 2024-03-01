@@ -4,3 +4,12 @@ dependencies:
     vars:
       name: "{{ common_packages }}"
       state: "present"
+  - role: add_repo
+    vars:
+      repos:
+        glow:
+          filename: 'glow'
+          key_url: 'https://github.com/charmbracelet/glow/releases/download/v1.4.1/glow_1.4.1_linux_amd64.deb'
+          repo_name: 'Glow'
+          repo_urls:
+            - 'deb [trusted=yes] https://github.com/charmbracelet/glow/releases/download/v1.4.1/ glow/'
