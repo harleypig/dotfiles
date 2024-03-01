@@ -13,7 +13,7 @@ common_packages:
   - git
   - htop
   - jq
-  - linux-headers-{{ ansible_kernel }}
+  - "linux-headers-{{ ansible_kernel }}"
   - markdown
   - mlocate
   - parallel

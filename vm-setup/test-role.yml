@@ -1,8 +1,5 @@
 ---
-- hosts: localhost
-  become: yes
-  roles:
-    - { role: docker }
+- name: Test roles
   hosts: localhost
 
   vars:
@@ -10,4 +7,4 @@
 
   roles:
     #- role: hashicorp
-    role: docker
+    - role: docker

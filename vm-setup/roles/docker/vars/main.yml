@@ -1,4 +1,11 @@
 ---
+docker_remove_packages:
+  - docker
+  - docker-engine
+  - docker.io
+  - containerd
+  - runc
+
 docker_packages:
   - docker-ce
   - docker-ce-cli

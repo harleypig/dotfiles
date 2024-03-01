@@ -1,0 +1,9 @@
+---
+dependencies:
+  - role: add_repo
+    vars:
+      filename: docker
+      key_url: https://download.docker.com/linux/ubuntu/gpg
+      repo_name: Docker
+      repo_urls:
+        - "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"

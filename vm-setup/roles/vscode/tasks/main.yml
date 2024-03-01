@@ -9,7 +9,8 @@
 
 # Install Visual Studio Code package
 -
-  include_role:
-    name: install_pkgs
-  vars:
-    install_pkgs_package_groups: vscode
+# Install Visual Studio Code package
+- name: Install Visual Studio Code
+  ansible.builtin.package:
+    name: code
+    state: present
