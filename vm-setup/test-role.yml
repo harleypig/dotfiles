@@ -1,5 +1,8 @@
 ---
-- name: Test specific roles
+- hosts: localhost
+  become: yes
+  roles:
+    - { role: docker }
   hosts: localhost
 
   vars:
