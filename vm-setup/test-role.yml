@@ -6,4 +6,5 @@
     version_tracking_file: .version-tracking-file.yml
 
   roles:
-    - role: hashicorp
+    #- role: hashicorp
+    role: docker
