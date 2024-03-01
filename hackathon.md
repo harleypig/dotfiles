@@ -69,3 +69,25 @@ to Rick and Jami. I'll see what we have on the Symantec or Msft side to see if
 we can wrap a bit more around it.
 
 ## Writeup
+
+Programmatic Access to Microsoft Teams:
+
+To set up programmatic access to Microsoft Teams, we can utilize the Microsoft Graph API, which provides a unified programmability model that you can use to access the tremendous amount of data in Microsoft 365, Windows 10, and Enterprise Mobility + Security. The access can be secured by implementing OAuth 2.0 authorization and by restricting the permissions to the minimum required for the chatbot's functionality.
+
+Securing the Access within Our Network:
+
+The access to Microsoft Teams can be secured by:
+1. Using secure tokens for authentication.
+2. Implementing IP whitelisting to allow access only from our network.
+3. Applying the principle of least privilege by granting the chatbot only the permissions it needs to function.
+4. Regularly reviewing and auditing the access logs.
+
+Chatbot Interaction with AI:
+
+The chatbot can be integrated with an AI model hosted on Vertex AI to provide support within a Teams channel. The AI model can be trained on specific datasets relevant to our internal library to ensure that the responses are accurate and contextually relevant. The chatbot can be programmed to respond to specific prompts or commands, reducing the risk of it spamming the channel.
+
+For the hackathon, the focus will be on demonstrating the use of Vertex AI to tailor the AI model to our specific needs, such as providing support for the internal library. The development and testing will be done in a sandbox environment, with no access to production data. The goal is to showcase a proof of concept that can be further developed and potentially integrated into a production environment with the appropriate safeguards in place.
+
+The chatbot will be designed to operate within a specific Teams channel, which will make it easier to monitor and manage. By limiting the chatbot's scope, we can mitigate concerns regarding security and data privacy.
+
+This document will serve as a preliminary write-up to present to leadership for review and consideration. Further technical details and a comprehensive security strategy will be developed following initial approval.
