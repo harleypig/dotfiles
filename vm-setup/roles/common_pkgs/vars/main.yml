@@ -11,6 +11,7 @@ common_packages:
   - elinks
   - expect
   - git
+  - glow
   - htop
   - jq
   - "linux-headers-{{ ansible_kernel }}"
