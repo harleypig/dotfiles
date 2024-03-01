@@ -2,6 +2,10 @@
 
 # less setup
 
+export LESSHISTFILE="${XDG_CACHE_HOME}/less/history"
+# See man less for other LESSKEY options
+#export LESSKEY="${XDG_CONFIG_HOME}/less/lesskey"
+
 export LESS='--hilite-search --IGNORE-CASE --status-column --RAW-CONTROL-CHARS --hilite-unread --tabs=2 -X'
 
 # This will color man output, but also any less outupt with the proper codes embedded.
@@ -56,7 +60,7 @@ export LESS_TERMCAP_mr
 # konsole and gnome-terminal require this
 export GROFF_NO_SGR=1
 
-# http://www-zeuthen.desy.de/~friebel/unix/lesspipe.html
+# XXX: http://www-zeuthen.desy.de/~friebel/unix/lesspipe.html
 # XXX: figure out how to make syntax hilighting work for source
 
 # Try to use a more current lesspipe

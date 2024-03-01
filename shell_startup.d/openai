@@ -1,1 +1,0 @@
-export OPENAI_API_KEY="$(<$HOME/projects/private_dotfiles/openai-auto-gpt)"

@@ -1,18 +1,8 @@
 #!bash
 
+export GOPATH="${XDG_DATA_HOME}/go"
+
 type -P go &> /dev/null || return 0
-
-#----------------------------------------------------------------------
-if [ -z "$GOPATH" ]; then
-    if [ -n "$(go env GOPATH)" ]; then
-        export GOPATH="$(go env GOPATH)"
-    else
-        export GOPATH="$HOME/go"
-    fi
-
-    mkdir -p "$GOPATH"
-    addpath "$GOPATH"
-fi
 
 #----------------------------------------------------------------------
 if [ -z "$GOBIN" ]; then
@@ -25,5 +15,3 @@ if [ -z "$GOBIN" ]; then
     mkdir -p "$GOBIN"
     addpath "$GOBIN"
 fi
-
-true

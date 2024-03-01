@@ -33,6 +33,13 @@ unsetfuncs() { _unset_funcs+=("$@"); }
 # Base Global variable and path
 
 #-----------------------------------------------------------------------------
+# XDG Variables
+
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+#-----------------------------------------------------------------------------
 # Assume that this file is in the dotfiles directory, then check if we are
 # linnked to the dotfiles directory.  If we are, then use the real directory
 # as the dotfiles directory.

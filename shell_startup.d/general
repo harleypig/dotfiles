@@ -1,7 +1,4 @@
-#!/bin/bash
-
-# If bash-completion is installed, CDPATH is searched for completions.
-CDPATH=".:$HOME/projects:$HOME/projects/zions"
+# shellcheck shell=bash
 
 PROMPT_DIRTRIM=2
 
@@ -11,6 +8,19 @@ export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
 command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
+
+#-----------------------------------------------------------------------------
+export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
+export ELINKS_CONFDIR="${XDG_CONFIG_HOME}/elinks"
+export GNUPGHOME="${XDG_DATA_HOME}/gnupg"
+export INPUTRC="${XDG_CONFIG_HOME}/readline/inputrc"
+export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
+export NODE_REPL_HISTORY="${XDG_CACHE_HOME}/node_repl_history"
+export npm_config_cache="${XDG_CACHE_HOME}/npm"
+export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
+
+#-----------------------------------------------------------------------------
+alias wget="wget --hsts-file="${XDG_CACHE_HOME}/wget-hsts""
 
 #-----------------------------------------------------------------------------
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
@@ -52,4 +62,75 @@ alias dumppath='echo -e ${PATH//:/\\n}'
 alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
 alias dotfiles='cd $DOTFILES'
 
-true
+#-----------------------------------------------------------------------------
+# CVS settings
+export CVS_RSH='ssh'
+
+#-----------------------------------------------------------------------------
+export OPENAI_API_KEY="$(<$HOME/projects/private_dotfiles/openai-auto-gpt)"
+
+#-----------------------------------------------------------------------------
+# https://wiki.archlinux.org/index.php/Core_Utilities#ls
+eval $(dircolors -b)
+
+alias l='ls -Al --color=auto'
+alias sl=ls
+
+#-----------------------------------------------------------------------------
+alias diffdir='diff -qr'
+
+if command -v colordiff &> /dev/null; then
+  alias diff='colordiff'
+  alias diffdir='colordiff -qr'
+fi
+
+#-----------------------------------------------------------------------------
+# https://wiki.archlinux.org/index.php/Core_Utilities#grep
+export GREP_COLOR="1;33"
+alias grep='grep --color=auto'
+alias g='grep --color=auto'
+
+#-----------------------------------------------------------------------------
+# I got this from a co-worker many moons ago. Unfortunately, I don't remember
+# who. Basically, if a tree program is not installed, fake it with this.
+
+if ! command -v tree &> /dev/null; then
+  alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
+fi
+
+#-----------------------------------------------------------------------------
+# https://unix.stackexchange.com/a/584733/9032
+
+# Revalidate for another 15 minutes
+# Echo expanded command
+# Run expanded command
+
+function sudo() {
+  command sudo -v
+
+  if [[ $(type -t "$1") == "alias" ]]; then
+    set -- bash -ic "$(alias "$1"); $(printf "%q " "$@")"
+  fi
+
+  # what am I about to execute
+  printf "%q " sudo "$@"
+  echo
+
+  # and do it
+  command sudo "$@"
+}
+
+#-----------------------------------------------------------------------------
+HISTCONTROL="erasedups:ignoreboth"
+HISTFILE="${XDG_CACHE_HOME}/bash/history"
+HISTFILESIZE=100000
+HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
+HISTSIZE=500000
+HISTTIMEFORMAT='%F %T '
+
+shopt -s cmdhist
+shopt -s histappend
+shopt -s histreedit
+shopt -s histverify
+
+alias h='history'

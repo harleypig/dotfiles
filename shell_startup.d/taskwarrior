@@ -13,6 +13,9 @@ return 0
 
 [[ -x "$(command -v task 2> /dev/null)" ]] || return 0
 
+export TASKDATA="${XDG_DATA_HOME}/task"
+export TASKRC="${XDG_CONFIG_HOME}/task/taskrc"
+
 task_completion="$HOME/.task/completion/task-completion.sh"
 # shellcheck disable=SC1090
 [[ -f $task_completion ]] && source "$task_completion"

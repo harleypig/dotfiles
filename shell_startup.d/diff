@@ -1,8 +1,0 @@
-#!/bin/bash
-
-alias diffdir='diff -qr'
-
-command -v colordiff &> /dev/null || return 0
-
-alias diff='colordiff'
-alias diffdir='colordiff -qr'
