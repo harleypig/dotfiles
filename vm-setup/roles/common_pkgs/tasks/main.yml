@@ -1,0 +1,7 @@
+---
+- name: Install Common Packages
+  become: true
+  apt:
+    name: "{{ common_packages }}"
+    state: present
+    update_cache: true
