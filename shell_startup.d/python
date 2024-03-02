@@ -1,7 +1,13 @@
-alias mkvenv="type -t deactivate &> /dev/null; \
-  rm -fr venv; \
-  python3 -m venv --upgrade-deps venv; \
-  [[ -f requirements.txt ]] && pip install -r requirements.txt \
-  "
+mkvenv() {
+  if type -t deactivate &> /dev/null; then
+    deactivate
+  fi
+  rm -fr venv
+  python3 -m venv --upgrade-deps venv
+  source venv/bin/activate
+  if [[ -f requirements.txt ]]; then
+    pip install -r requirements.txt
+  fi
+}
 
 alias wondertwins="source venv/bin/activate"
