@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 mkvenv() {
   if type -t deactivate &> /dev/null; then
     deactivate
