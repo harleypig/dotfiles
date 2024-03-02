@@ -1,7 +1,7 @@
 archive/*
 bin/*
 lib/*
-shell_startup.d/*
+#shell_startup.d/*
 tests/*
 #vm-setup/**
 vm-setup/credentials.yml
