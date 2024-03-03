@@ -4,7 +4,7 @@ PROMPT_DIRTRIM=2
 
 
 #-----------------------------------------------------------------------------
-alias wget="wget --hsts-file="${XDG_CACHE_HOME}/wget-hsts""
+alias wget="wget --hsts-file="$XDG_CACHE_HOME/wget-hsts""
 
 #-----------------------------------------------------------------------------
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
@@ -24,6 +24,7 @@ bind "set mark-symlinked-directories on"
 bind "set show-all-if-ambiguous on"
 bind Space:magic-space
 
+#-----------------------------------------------------------------------------
 shopt -s autocd cdspell dirspell globstar cdable_vars checkhash checkwinsize \
          dotglob extglob nocaseglob 2> /dev/null
 
@@ -105,8 +106,10 @@ function sudo() {
 }
 
 #-----------------------------------------------------------------------------
+mkdir -p "$XDG_CACHE_HOME/bash"
+HISTFILE="$XDG_CACHE_HOME/bash/history"
+
 HISTCONTROL="erasedups:ignoreboth"
-HISTFILE="${XDG_CACHE_HOME}/bash/history"
 HISTFILESIZE=100000
 HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
 HISTSIZE=500000
@@ -118,3 +121,13 @@ shopt -s histreedit
 shopt -s histverify
 
 alias h='history'
+
+#-----------------------------------------------------------------------------
+command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
+export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
+export ELINKS_CONFDIR="${XDG_CONFIG_HOME}/elinks"
+export GNUPGHOME="${XDG_DATA_HOME}/gnupg"
+export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
+export NODE_REPL_HISTORY="${XDG_CACHE_HOME}/node_repl_history"
+export npm_config_cache="${XDG_CACHE_HOME}/npm"
+export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
