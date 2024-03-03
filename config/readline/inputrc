@@ -21,6 +21,9 @@ set show-all-if-unmodified on
 set skip-completed-text on
 set visible-stats on
 
+# Ctrl + I (same as Tab key)
+"C-i": menu-complete
+
 # History behavior
 set history-preserve-point on
 set input-meta on
@@ -30,11 +33,12 @@ set expand-tilde on
 # Key bindings
 # Up arrow key
 "\e[A":history-search-backward
+
 # Down arrow key
 "\e[B":history-search-forward
+
 # Ctrl + L
 "\e\C-l":"\C-e | less\C-m"
-# Ctrl + I (same as Tab key)
-"C-i": menu-complete
+
 # Space then Esc
-" \e ": history-expand-line
+"C-e": history-expand-line
