@@ -26,8 +26,12 @@ set visible-stats on
 
 # History behavior
 set history-preserve-point on
+
+# Meta behavior
 set input-meta on
 set output-meta on
+
+# Tilde expansion
 set expand-tilde on
 
 # Key bindings
