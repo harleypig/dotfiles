@@ -31,3 +31,4 @@ set vi-cmd-mode-string \001\002\001[31m\002[CMD] \001\002\001[m\002
 "\e[A":history-search-backward
 "\e[B":history-search-forward
 "\e\C-l":"\C-e | less\C-m"
+ "\e ": history-expand-line
