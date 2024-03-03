@@ -21,6 +21,7 @@ set completion-prefix-display-length 2
 set mark-symlinked-directories on
 set show-all-if-ambiguous on
 set show-all-if-unmodified on
+set skip-completed-text on
 
 # History behavior
 set history-preserve-point on
