@@ -31,11 +31,8 @@ set output-meta on
 set expand-tilde on
 
 # Key bindings
-# Up arrow key
-"\e[A":history-search-backward
-
-# Down arrow key
-"\e[B":history-search-forward
+# Enable history scrolling
+set history-scroll-mode on
 
 # Ctrl + L
 "\e\C-l":"\C-e | less\C-m"
