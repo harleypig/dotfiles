@@ -18,11 +18,6 @@ vimwhich() { vim "$(command -v "$1")"; }
 md() { mkdir -p "$@" && cd "$@" || return; }
 
 #-----------------------------------------------------------------------------
-bind "set completion-ignore-case on"
-bind "set completion-map-case on"
-bind "set mark-symlinked-directories on"
-bind "set show-all-if-ambiguous on"
-bind Space:magic-space
 
 #-----------------------------------------------------------------------------
 shopt -s autocd cdspell dirspell globstar cdable_vars checkhash checkwinsize \
