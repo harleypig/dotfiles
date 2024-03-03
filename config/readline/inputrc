@@ -32,7 +32,9 @@ set expand-tilde on
 
 # Key bindings
 # Enable history scrolling
-set history-scroll-mode on
+# Rebind up and down arrow keys for history search
+"\e[A":history-search-backward
+"\e[B":history-search-forward
 
 # Ctrl + L
 "\e\C-l":"\C-e | less\C-m"
