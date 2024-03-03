@@ -48,11 +48,10 @@ export PATH="$DOTFILES/lib:$DOTFILES/bin:$PATH"
 # XDG Variables
 
 export XDG_CONFIG_HOME="$DOTFILES/config"
-mkdir -p "$XDG_CONFIG_HOME"
 export XDG_CACHE_HOME="$HOME/.cache"
-mkdir -p "$XDG_CACHE_HOME"
 export XDG_DATA_HOME="$DOTFILES/local_share"
-mkdir -p "$XDG_DATA_HOME"
+
+mkdir -p "$XDG_CACHE_HOME"
 
 ##############################################################################
 # Functions
