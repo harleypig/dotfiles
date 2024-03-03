@@ -44,3 +44,27 @@ set expand-tilde on
 
 # Space then Esc
 "C-e": history-expand-line
+
+# Mode Settings
+
+# Settings related to the editing mode and visual indicators for the mode.
+
+# Completion Settings
+
+# Settings that affect how command line completion is handled.
+
+# History Settings
+
+# Settings that affect the behavior of command history.
+
+# Meta Settings
+
+# Settings related to the handling of meta characters (characters with the eighth bit set).
+
+# Tilde Expansion Settings
+
+# Settings that control the expansion of the tilde character '~' in the command line.
+
+# Key Bindings
+
+# Custom key bindings for various readline actions.
