@@ -4,20 +4,20 @@
 $include /etc/inputrc
 
 # Interface and display options
-set colored-completion-prefix on
 set colored-stats on
-set completion-prefix-display-length 2
-set editing-mode vi
 set visible-stats on
 
-# Adds [INS] or [CMD] to prompt
+# Mode related options
+set editing-mode vi
 set show-mode-in-prompt on
-set vi-ins-mode-string "\001\033[32m\002|INS| \001\033[0m\002"
-set vi-cmd-mode-string "\001\033[41m\033[93m\002<CMD> \001\033[0m\002"
+set vi-ins-mode-string "\001\033[32m\002|INS|\001\033[0m\002 "
+set vi-cmd-mode-string "\001\033[41m\033[93m\002<CMD>\001\033[0m\002 "
 
 # Completion behavior
+set colored-completion-prefix on
 set completion-ignore-case on
 set completion-map-case on
+set completion-prefix-display-length 2
 set mark-directories on
 set mark-symlinked-directories on
 set show-all-if-ambiguous on
