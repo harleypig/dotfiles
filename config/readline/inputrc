@@ -4,7 +4,6 @@
 $include /etc/inputrc
 
 # Ctrl + L
-"\e\C-l":"\C-e | less\C-m"
 
 # Space then Esc
 "C-e": history-expand-line
