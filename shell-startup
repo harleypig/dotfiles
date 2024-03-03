@@ -134,7 +134,7 @@ set_bin_dirs() {
 #-----------------------------------------------------------------------------
 load_files() {
   declare -a load_dirs
-  load_dirs+=("$DOTFILES/shell_startup.d")
+  load_dirs+=("$XDG_CONFIG_HOME/shell-startup")
   load_dirs+=("$HOME/.shell_startup.d")
 
   # Run each directory instead of doing a find on all directories at once
