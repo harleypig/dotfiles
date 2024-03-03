@@ -12,12 +12,8 @@ set visible-stats on
 
 # Adds [INS] or [CMD] to prompt
 set show-mode-in-prompt on
-#set vi-ins-mode-string \001\002\001[33m\002[INS] \001\002\001[m\002
-#set vi-cmd-mode-string \001\002\001[31m\002[CMD] \001\002\001[m\002
-#set vi-ins-mode-string \1\e[33m\002[INS] \001\002\001[m\002
-#set vi-cmd-mode-string \001\002\001[31m\002[CMD] \001\002\001[m\002
-set vi-ins-mode-string "[INS] "
-set vi-cmd-mode-string "[CMD] "
+set vi-ins-mode-string "\001\033[33m\002[INS]\001\033[0m\002"
+set vi-cmd-mode-string "\001\033[31m\002[CMD]\001\033[0m\002"
 
 # Completion behavior
 set completion-ignore-case on
