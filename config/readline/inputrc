@@ -3,13 +3,23 @@
 
 $include /etc/inputrc
 
-# Mode related options
+# Ctrl + L
+"\e\C-l":"\C-e | less\C-m"
+
+# Space then Esc
+"C-e": history-expand-line
+
+# Mode Settings
+# Settings related to the editing mode and visual indicators for the mode.
+#
 set editing-mode vi
 set show-mode-in-prompt on
 set vi-ins-mode-string "\001\033[32m\002|INS|\001\033[0m\002 "
 set vi-cmd-mode-string "\001\033[41m\033[93m\002<CMD>\001\033[0m\002 "
 
-# Completion behavior
+# Completion Settings
+# Settings that affect how command line completion is handled.
+
 set colored-completion-prefix on
 set colored-stats on
 set completion-ignore-case on
@@ -21,50 +31,28 @@ set show-all-if-unmodified on
 set skip-completed-text on
 set visible-stats on
 
-# Ctrl + I (same as Tab key)
+# Ctrl + I Show possible completions
 "C-i": menu-complete
 
-# History behavior
+# History Settings
+# Settings that affect the behavior of command history.
+
 set history-preserve-point on
 
-# Meta behavior
-set input-meta on
-set output-meta on
-
-# Tilde expansion
-set expand-tilde on
-
-# Key bindings
 # Bind up and down arrow keys for history search
 "\e[A":history-search-backward
 "\e[B":history-search-forward
 
-# Ctrl + L
-"\e\C-l":"\C-e | less\C-m"
-
-# Space then Esc
-"C-e": history-expand-line
-
-# Mode Settings
-
-# Settings related to the editing mode and visual indicators for the mode.
-
-# Completion Settings
-
-# Settings that affect how command line completion is handled.
-
-# History Settings
-
-# Settings that affect the behavior of command history.
-
 # Meta Settings
-
 # Settings related to the handling of meta characters (characters with the eighth bit set).
 
-# Tilde Expansion Settings
+set input-meta on
+set output-meta on
 
+# Tilde Expansion Settings
 # Settings that control the expansion of the tilde character '~' in the command line.
 
-# Key Bindings
+set expand-tilde on
 
+# Key Bindings
 # Custom key bindings for various readline actions.
