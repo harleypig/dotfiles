@@ -9,10 +9,8 @@ set colored-stats on
 set completion-prefix-display-length 2
 set visible-stats on
 set show-mode-in-prompt on
-#set vi-ins-mode-string \001\002\001[33m\002[INS] \001\002\001[m\002
-#set vi-cmd-mode-string \001\002\001[31m\002[CMD] \001\002\001[m\002
-set vi-ins-mode-string \001\002\001\002[INS] \001\002\001\002
-set vi-cmd-mode-string \001\002\001\002[CMD] \001\002\001\002
+set vi-ins-mode-string "\001\033[33m\002[INS]\001\033[0m\002"
+set vi-cmd-mode-string "\001\033[31m\002[CMD]\001\033[0m\002"
 
 
 # Completion behavior
