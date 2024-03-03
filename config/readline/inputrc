@@ -32,4 +32,5 @@ set expand-tilde on
 "\e[A":history-search-backward
 "\e[B":history-search-forward
 "\e\C-l":"\C-e | less\C-m"
+"C-i": menu-complete
 " \e ": history-expand-line
