@@ -28,8 +28,13 @@ set output-meta on
 set expand-tilde on
 
 # Key bindings
+# Up arrow key
 "\e[A":history-search-backward
+# Down arrow key
 "\e[B":history-search-forward
+# Ctrl + L
 "\e\C-l":"\C-e | less\C-m"
+# Ctrl + I (same as Tab key)
 "C-i": menu-complete
+# Space then Esc
 " \e ": history-expand-line
