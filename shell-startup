@@ -42,14 +42,14 @@ declare -x DOTFILES="$HOME"
   && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
 
 # Export initial path settings
-export PATH="$DOTFILES/lib:$DOTFILES/bin:$PATH"
+export PATH="$DOTFILES/bin:$PATH"
 
 #-----------------------------------------------------------------------------
 # XDG Variables
 
 export XDG_CONFIG_HOME="$DOTFILES/config"
 export XDG_CACHE_HOME="$HOME/.cache"
-export XDG_DATA_HOME="$DOTFILES/local_share"
+export XDG_DATA_HOME="$HOME/.local/share"
 
 mkdir -p "$XDG_CACHE_HOME"
 

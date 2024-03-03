@@ -3,7 +3,6 @@ pip_pkgs_groups:
   common:
     - aider-chat
     - pre-commit
-    - pudb
     - yamllint
     - vim-vint
   linode:
