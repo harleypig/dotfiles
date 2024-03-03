@@ -53,6 +53,8 @@ export XDG_DATA_HOME="$DOTFILES/local_share"
 
 mkdir -p "$XDG_CACHE_HOME"
 
+export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
+
 ##############################################################################
 # Functions
 
