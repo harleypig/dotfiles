@@ -131,3 +131,14 @@ export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
 export NODE_REPL_HISTORY="${XDG_CACHE_HOME}/node_repl_history"
 export npm_config_cache="${XDG_CACHE_HOME}/npm"
 export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
+
+#-----------------------------------------------------------------------------
+export ANSIBLE_HOME="${XDG_CONFIG_HOME}/ansible"
+export ANSIBLE_GALAXY_CACHE_DIR="${XDG_CACHE_HOME}/ansible/galaxy_cache"
+
+# This overrides local ansible.cfg
+#export ANSIBLE_CONFIG="${XDG_CONFIG_HOME}/ansible.cfg"
+
+#-----------------------------------------------------------------------------
+#export GVIMINIT='let $MYGVIMRC="$XDG_CONFIG_HOME/vim/gvimrc" | source $MYGVIMRC'
+#export VIMINIT='let $MYVIMRC="$XDG_CONFIG_HOME/vim/vimrc" | source $MYVIMRC'
