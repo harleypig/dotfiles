@@ -18,7 +18,6 @@ set colored-completion-prefix on
 set completion-ignore-case on
 set completion-map-case on
 set completion-prefix-display-length 2
-set mark-directories on
 set mark-symlinked-directories on
 set show-all-if-ambiguous on
 set show-all-if-unmodified on
