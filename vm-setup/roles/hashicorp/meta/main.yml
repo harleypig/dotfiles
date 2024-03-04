@@ -6,13 +6,3 @@ dependencies:
       key_url: "{{ add_repo_repos.hashicorp.key_url }}"
       repo_name: "{{ add_repo_repos.hashicorp.repo_name }}"
       repo_urls: "{{ add_repo_repos.hashicorp.repo_urls }}"
-
-  - role: ansible.builtin.package
-    vars:
-      name: "{{ hashicorp_packages }}"
-      state: "present"
-    vars:
-      packages:
-        - terraform
-        - packer
-        - terraform-ls

@@ -1,4 +1,11 @@
 ---
+- name: Install Hashicorp Packages
+  become: true
+  apt:
+    name: "{{ hashicorp_packages }}"
+    state: present
+    update_cache: true
+
 - name: Make sure the github version file exists
   file:
     path: "{{ version_tracking_file }}"
