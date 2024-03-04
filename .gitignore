@@ -1,6 +1,3 @@
-.aptitude/cache
-.flexget/cached_resources/
-
 # coverage?
 coverage
 
@@ -9,4 +6,4 @@ coverage
 
 venv
 
-config/coc
+#config/coc
