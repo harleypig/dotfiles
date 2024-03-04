@@ -47,4 +47,4 @@ set history-preserve-point on
 set input-meta on
 set output-meta on
 set expand-tilde on
-set bell-style visual
+set bell-style visible
