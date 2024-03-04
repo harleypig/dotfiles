@@ -154,6 +154,19 @@ load_files() {
 ##############################################################################
 # Setup environment
 
+path_to_generate_exports_script="/path/to/generate_exports.sh"
+path_to_exports_script="/path/to/exports.sh"
+
+# Generate export commands if needed
+if [[ -x "$path_to_generate_exports_script" ]]; then
+  source "$path_to_generate_exports_script"
+fi
+
+# Source the export commands
+if [[ -r "$path_to_exports_script" ]]; then
+  source "$path_to_exports_script"
+fi
+
 [[ -r "$DOTFILES/app_env_vars" ]] && source "$DOTFILES/app_env_vars"
 
 [[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \
