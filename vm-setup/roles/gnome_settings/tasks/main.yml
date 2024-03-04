@@ -1,4 +1,11 @@
 ---
+- name: Install Gnome Settings Packages
+  become: true
+  apt:
+    name: "{{ gnome_settings_packages }}"
+    state: present
+    update_cache: true
+
 - name: Hide trash icon
   command: gsettings set org.gnome.shell.extensions.ding show-trash {{ gnome_settings_show_trash | lower }}
   changed_when: true
