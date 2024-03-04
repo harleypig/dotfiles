@@ -1,5 +1,3 @@
 $DOTFILES/dot-general/.bash_logout
 $DOTFILES/dot-general/.markdownlintrc
 $DOTFILES/dot-general/.proselintrc
-#$DOTFILES/dot-tmux/.tmux
-$DOTFILES/dot-tmux/.tmux.conf
