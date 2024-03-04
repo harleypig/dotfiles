@@ -6,3 +6,29 @@ if command -v elinks &>/dev/null; then
 fi
 
 # Add other application environment variables here following the same pattern
+# Check if GNUPG is installed and set GNUPGHOME if it is
+if command -v gpg &>/dev/null; then
+  export GNUPGHOME="${XDG_DATA_HOME}/gnupg"
+fi
+
+# Check if LEDGER is installed and set LEDGER_FILE if it is
+if command -v ledger &>/dev/null; then
+  export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
+fi
+
+# Check if NODE is installed and set NODE_REPL_HISTORY if it is
+if command -v node &>/dev/null; then
+  export NODE_REPL_HISTORY="${XDG_CACHE_HOME}/node_repl_history"
+fi
+
+# Check if NPM is installed and set npm related variables if it is
+if command -v npm &>/dev/null; then
+  export npm_config_cache="${XDG_CACHE_HOME}/npm"
+  export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
+fi
+
+# Check if ANSIBLE is installed and set ANSIBLE related variables if it is
+if command -v ansible &>/dev/null; then
+  export ANSIBLE_HOME="${XDG_CONFIG_HOME}/ansible"
+  export ANSIBLE_GALAXY_CACHE_DIR="${XDG_CACHE_HOME}/ansible/galaxy_cache"
+fi
