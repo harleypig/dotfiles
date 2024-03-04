@@ -1,4 +1,11 @@
 ---
+- name: Install Font Packages
+  become: true
+  apt:
+    name: "{{ font_packages }}"
+    state: present
+    update_cache: true
+
 - name: Get the latest release version of Nerd Font
   uri:
     url: "{{ nerd_font_version_url }}"

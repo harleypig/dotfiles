@@ -1,0 +1,10 @@
+coc/**
+evolution/**
+gtk-3.0/**
+ibus/**
+pulse/**
+
+dconf/user
+.gsd-keyboard.settings-ported
+user-dirs.dirs
+user-dirs.locale

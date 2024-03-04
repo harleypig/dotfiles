@@ -2,15 +2,8 @@
 dependencies:
   - role: add_repo
     vars:
-      repos:
-        glow:
-          filename: 'glow'
-          key_url: 'https://repo.charm.sh/apt/gpg.key'
-          repo_name: 'Glow'
-          repo_urls:
-            - 'deb https://repo.charm.sh/apt/ * *'
-
-  - role: ansible.builtin.package
-    vars:
-      name: "{{ common_packages }}"
-      state: "present"
+      filename: 'glow'
+      key_url: 'https://repo.charm.sh/apt/gpg.key'
+      repo_name: 'Glow'
+      repo_urls:
+        - 'deb https://repo.charm.sh/apt/ * *'
