@@ -1,5 +1,5 @@
 ---
-- name: Install eslint via npm
+- name: Install nodejs packages
   become: true
   npm:
     name: "{{ item }}"
