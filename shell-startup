@@ -154,12 +154,17 @@ load_files() {
 ##############################################################################
 # Setup environment
 
+[[ -r "$DOTFILES/app_env_vars" ]] && source "$DOTFILES/app_env_vars"
+
 [[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \
   && source "$DOTFILES/shell_startup.d/pre-setup"
 
 #-----------------------------------------------------------------------------
 # Check if various dotfiles are linked properly
 [[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
+
+set_bin_dirs
+load_files
 
 set_bin_dirs
 load_files

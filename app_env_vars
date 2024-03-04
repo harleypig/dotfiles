@@ -1,0 +1,8 @@
+# Environment variables for applications without aliases or functions
+
+# Check if ELINKS is installed and set ELINKS_CONFDIR if it is
+if command -v elinks &>/dev/null; then
+  export ELINKS_CONFDIR="$HOME/.elinks"
+fi
+
+# Add other application environment variables here following the same pattern
