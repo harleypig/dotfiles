@@ -1,4 +1,14 @@
 ---
+- name: Dump version information using the github_asset_name variable
+  debug:
+    msg: "Current version of tflint: {{ hashicorp_asset_current_version }}"
+  when: version_tracking is defined
+
+- name: Dump version information using the github_asset_name variable
+  debug:
+    msg: "Tempfile: {{ hashicorp_tempfile }}"
+  when: version_tracking is defined
+
 - name: Unzip the testfile
   become: yes
   unarchive:
@@ -17,3 +27,10 @@
     create: yes
     backup: yes
   when: unarchive_result is succeeded
+
+- name: Dump version information using the github_asset_name variable
+  debug:
+    msg: |
+      Mismatch: {{ github_release_version_mismatch }}
+      Download result: {{ github_release_download_result }}
+  when: version_tracking is defined
