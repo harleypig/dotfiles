@@ -1,5 +1,4 @@
 ---
-# Task to save version tracking information to a YAML file
 - name: Save version tracking fact to YAML file
   copy:
     dest: "{{ version_tracking_file }}"

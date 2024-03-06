@@ -1,5 +1,4 @@
 ---
-# Task to load version tracking information from a YAML file
 - name: Slurp version tracking YAML file
   slurp:
     src: "{{ version_tracking_file }}"
