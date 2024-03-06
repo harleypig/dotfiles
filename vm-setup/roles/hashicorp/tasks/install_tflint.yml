@@ -50,7 +50,7 @@
   when: github_release_version_mismatch
   - name: Set version tracking fact for tflint
     set_fact:
-      version_tracking: "{{ version_tracking | combine({ 'tflint': github_release_latest_version }) }}"
+      version_tracking: "{{ version_tracking | default({}) | combine({ 'tflint': github_release_latest_version }) }}"
     when: unarchive_result is succeeded
     vars:
       github_release_latest_version: "{{ github_release.json.tag_name }}"
