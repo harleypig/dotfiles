@@ -1,0 +1,20 @@
+# meta file for misc_configuration
+galaxy_info:
+  author: Your Name
+  description: Role to perform miscellaneous system configurations
+  company: Your Company
+  license: license (GPL-2.0-or-later, MIT, etc.)
+  min_ansible_version: 2.9
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags: []
+dependencies: []

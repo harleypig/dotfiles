@@ -1,0 +1,9 @@
+---
+# tasks file for misc_configuration
+- name: Comment out the sudo hint in /etc/bash.bashrc
+  become: yes
+  lineinfile:
+    path: /etc/bash.bashrc
+    regex: '^(.*)(#.*to run a command as administrator.*)$'
+    line: '#\1\2'
+    backrefs: yes
