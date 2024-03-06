@@ -16,11 +16,13 @@
 #    state: absent
 
 - name: Install Repository Public Key for {{ repo_name }}
+  become: yes
   apt_key:
     url: "{{ key_url }}"
     state: present
 
 - name: Add APT repository for {{ repo_name }}
+  become: yes
   apt_repository:
     repo: "{{ item }}"
     filename: "{{ filename }}"
