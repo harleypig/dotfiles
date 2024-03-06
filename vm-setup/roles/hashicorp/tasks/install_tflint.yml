@@ -22,6 +22,7 @@
 - name: Dump tempfile information
   debug:
     msg: "Tempfile: {{ hashicorp_tempfile }}"
+  when: lookup('env', 'DEBUG_PLAYBOOK') | bool
 
 - name: Get the new release if there is one
   include_role:
