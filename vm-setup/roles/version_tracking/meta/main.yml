@@ -1,0 +1,27 @@
+galaxy_info:
+  author: Your Name
+  description: Role for version tracking
+  company: Your Company
+  license: license (GPL-2.0-or-later, MIT, etc)
+  min_ansible_version: 2.9
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+  galaxy_tags:
+    - development
+    - version_control
+dependencies: []
+allow_duplicates: no
+
+argument_specs:
+  version_tracking_action:
+    type: str
+    choices:
+      - load
+      - update
+      - save
+    required: True
+    description:
+      - "Specify the action for version tracking: 'load', 'update', or 'save'."
