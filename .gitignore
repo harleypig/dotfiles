@@ -5,5 +5,3 @@ coverage
 !.aider.conf.yml
 
 venv
-
-#config/coc

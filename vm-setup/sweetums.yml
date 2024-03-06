@@ -6,14 +6,14 @@
     version_tracking_file: .version-tracking-file.yml
 
   roles:
-    - role: common_pkgs
-    - role: nerd_font
-    - role: gnome_settings
-      vars:
-        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
-
+    #- role: common_pkgs
+    #- role: nerd_font
     - role: nodejs
-    - role: pip_pkgs
-    - role: hashicorp
-    - role: git_bug
-    - role: docker
+    #- role: pip_pkgs
+    #- role: hashicorp
+    #- role: git_bug
+    #- role: docker
+
+    #- role: gnome_settings
+    #  vars:
+    #    gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"

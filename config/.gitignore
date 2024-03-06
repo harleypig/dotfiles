@@ -6,5 +6,4 @@ pulse/**
 
 dconf/user
 .gsd-keyboard.settings-ported
-user-dirs.dirs
 user-dirs.locale

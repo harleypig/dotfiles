@@ -6,6 +6,11 @@
     state: present
     update_cache: true
 
+- name: Include Tilix handling task
+  include_tasks: tilix.yml
+  vars:
+    tilix_profile_filename: "{{ gnome_settings_tilix_profile_filename }}"
+
 - name: Hide trash icon
   command: gsettings set org.gnome.shell.extensions.ding show-trash {{ gnome_settings_show_trash | lower }}
   changed_when: true
@@ -59,8 +64,3 @@
   loop_control:
     label: "{{ item.key }}"
   changed_when: true
-
-- name: Include Tilix handling task
-  include_tasks: tilix.yml
-  vars:
-    tilix_profile_filename: "{{ gnome_settings_tilix_profile_filename }}"

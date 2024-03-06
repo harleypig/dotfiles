@@ -7,11 +7,3 @@ add_repo_repos:
     repo_urls:
       - deb https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main
       - deb https://packages.microsoft.com/repos/vscode stable main
-
-  nodesource:
-    filename: nodesource
-    key_url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-    repo_name: NodeSource
-    repo_urls:
-      - deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main
-      #- "deb-src https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
