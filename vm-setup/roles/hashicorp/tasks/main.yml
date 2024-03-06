@@ -1,4 +1,11 @@
 ---
+# Ensure version tracking fact exists
+- name: Check if version tracking fact is initialized
+  fail:
+    msg: "Version tracking fact has not been initialized."
+  when: version_tracking is not defined or version_tracking == {}
+
+# Install Hashicorp Packages
 - name: Install Hashicorp Packages
   become: true
   apt:
