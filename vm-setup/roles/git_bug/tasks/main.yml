@@ -1,22 +1,16 @@
 ---
-- name: Make sure the github version file exists for git_bug
-  file:
-    path: "{{ version_tracking_file }}"
-    state: touch
-    mode: '0600'
+- name: Check if version tracking fact is initialized
+  fail:
+    msg: "Version tracking fact has not been initialized."
+  when: version_tracking is not defined or version_tracking == {}
 
-- name: Slurp the github version tracking file for git_bug
-  slurp:
-    src: "{{ version_tracking_file }}"
-  register: version_tracking_file_content
-
-- name: Convert github version tracking file content to YAML and register it for git_bug
+- name: Set current version
   set_fact:
-    version_tracking_yaml: "{{ (version_tracking_file_content['content'] | b64decode) | from_yaml }}"
+    git_bug_current_version: "{{ version_tracking['git_bug'] | default('0') }}"
 
-- name: Set current version for git_bug
-  set_fact:
-    git_bug_current_version: "{{ version_tracking_yaml['git_bug'] | default('0') }}"
+#- name: Dump version information using the asset name variable
+#  debug:
+#    msg: "Current version of tflint: {{ git_bug_current_version }}"
 
 - name: Include github_release role to get the latest release
   include_role:

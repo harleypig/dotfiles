@@ -6,46 +6,6 @@
     state: present
     update_cache: true
 
-- name: Check if version tracking fact is initialized
-  fail:
-    msg: "Version tracking fact has not been initialized."
-  when: version_tracking is not defined or version_tracking == {}
-
-- name: Set current version
-  set_fact:
-    hashicorp_asset_current_version: "{{ hashicorp_version_tracking_yaml['tflint'] | default('0') }}"
-
-#- name: Dump version information using the github_asset_name variable
-#  debug:
-#    msg: "Current version of tflint: {{ hashicorp_asset_current_version }}"
-
-- name: Create a temporary file
-  become: true
-  tempfile:
-    state: file
-    suffix: .zip
-  register: hashicorp_tempfile
-
-#- name: Dump version information using the github_asset_name variable
-#  debug:
-#    msg: "Tempfile: {{ hashicorp_tempfile }}"
-
-- name: Get the new release if there is one
-  include_role:
-    name: github_release
-  vars:
-    github_release_asset_name: tflint
-    github_release_asset_pattern: tflint_linux_amd64.zip
-    github_release_current_version: "{{ hashicorp_asset_current_version }}"
-    github_release_repo: terraform-linters/tflint
-    github_release_tempfile: "{{ hashicorp_tempfile.path }}"
-
-#- name: Dump version information using the github_asset_name variable
-#  debug:
-#    msg: |
-#      Mismatch: {{ github_release_version_mismatch }}
-#      Download result: {{ github_release_download_result }}
-
 - name: Include install_tflint task file
   include_tasks: install_tflint.yml
   when: github_release_version_mismatch and github_release_download_result is changed
