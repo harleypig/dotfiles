@@ -1,11 +1,4 @@
 ---
-# Ensure version tracking fact exists
-- name: Check if version tracking fact is initialized
-  fail:
-    msg: "Version tracking fact has not been initialized."
-  when: version_tracking is not defined or version_tracking == {}
-
-# Install Hashicorp Packages
 - name: Install Hashicorp Packages
   become: true
   apt:
@@ -13,20 +6,10 @@
     state: present
     update_cache: true
 
-- name: Make sure the github version file exists
-  file:
-    path: "{{ version_tracking_file }}"
-    state: touch
-    mode: '0600'
-
-- name: Slurp the github version tracking file
-  slurp:
-    src: "{{ version_tracking_file }}"
-  register: github_version_tracking_file_content
-
-- name: Convert github version tracking file content to YAML and register it
-  set_fact:
-    hashicorp_version_tracking_yaml: "{{ (github_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
+- name: Check if version tracking fact is initialized
+  fail:
+    msg: "Version tracking fact has not been initialized."
+  when: version_tracking is not defined or version_tracking == {}
 
 - name: Set current version
   set_fact:
