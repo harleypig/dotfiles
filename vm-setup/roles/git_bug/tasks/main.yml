@@ -1,0 +1,20 @@
+---
+- name: Make sure the github version file exists for git_bug
+  file:
+    path: "{{ git_bug_version_tracking_file }}"
+    state: touch
+    mode: '0600'
+
+- name: Slurp the github version tracking file for git_bug
+  slurp:
+    src: "{{ git_bug_version_tracking_file }}"
+  register: git_bug_version_tracking_file_content
+
+- name: Convert github version tracking file content to YAML and register it for git_bug
+  set_fact:
+    git_bug_version_tracking_yaml: "{{ (git_bug_version_tracking_file_content['content'] | b64decode) | from_yaml }}"
+
+- name: Set current version for git_bug
+  set_fact:
+    git_bug_current_version: "{{ git_bug_version_tracking_yaml['git_bug'] | default('0') }}"
+
