@@ -1,0 +1,10 @@
+---
+# Task to load version tracking information from a YAML file
+- name: Slurp version tracking YAML file
+  slurp:
+    src: "{{ version_tracking_file }}"
+  register: version_tracking_content
+
+- name: Set version tracking fact from YAML content
+  set_fact:
+    version_tracking: "{{ (version_tracking_content['content'] | b64decode | from_yaml) }}"

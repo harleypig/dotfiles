@@ -1,0 +1,9 @@
+---
+# Main tasks for version tracking role
+- name: Load version tracking information
+  include_tasks: load_versions.yml
+  when: version_tracking_action == 'load'
+
+- name: Save version tracking information
+  include_tasks: save_versions.yml
+  when: version_tracking_action == 'save'

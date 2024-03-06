@@ -1,0 +1,4 @@
+---
+# Default variables for version tracking role
+version_tracking_file: "path/to/version_tracking.yml"
+version_tracking_action: "load"  # Default action is to load versions
