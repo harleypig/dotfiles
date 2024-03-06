@@ -8,10 +8,10 @@
   set_fact:
     hashicorp_asset_current_version: "{{ version_tracking['tflint'] | default('0') }}"
 
-#- name: Dump version information using the github_asset_name variable
-#  debug:
-#    msg: "Current version of tflint: {{ hashicorp_asset_current_version }}"
-#  when: lookup('env', 'DEBUG_PLAYBOOK') | bool
+- name: Dump version information using the github_asset_name variable
+  debug:
+    msg: "Current version of tflint: {{ hashicorp_asset_current_version }}"
+  when: lookup('env', 'DEBUG_PLAYBOOK') | bool
 
 - name: Create a temporary file
   tempfile:
@@ -33,11 +33,12 @@
     github_release_repo: terraform-linters/tflint
     github_release_localpath: "{{ hashicorp_tempfile.path }}"
 
-#- name: Dump version information using the github_asset_name variable
-#  debug:
-#    msg: |
-#      Mismatch: {{ github_release_version_mismatch }}
-#      Download result: {{ github_release_download_result }}
+- name: Dump version information using the github_asset_name variable
+  debug:
+    msg: |
+      Mismatch: {{ github_release_version_mismatch }}
+      Download result: {{ github_release_download_result }}
+  when: lookup('env', 'DEBUG_PLAYBOOK') | bool
 
 - name: Unzip the testfile
   become: yes
