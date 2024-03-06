@@ -36,4 +36,3 @@
     create: yes
     backup: yes
   when: github_release_version_mismatch and github_release_download_result is changed
-
