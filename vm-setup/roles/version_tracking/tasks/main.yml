@@ -3,6 +3,13 @@
   include_tasks: load_versions.yml
   when: version_tracking_action == 'load'
 
+- name: Update version tracking information for a specific key
+  set_fact:
+    version_tracking: "{{ version_tracking | default({}) | combine({ version_tracking_key: version_tracking_value }) }}"
+  when:
+    - version_tracking_key is defined
+    - version_tracking_value is defined
+
 - name: Save version tracking information
   include_tasks: save_versions.yml
   when: version_tracking_action == 'save'
