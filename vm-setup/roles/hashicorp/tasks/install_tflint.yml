@@ -18,9 +18,9 @@
     suffix: .zip
   register: hashicorp_tempfile
 
-#- name: Dump tempfile information
-#  debug:
-#    msg: "Tempfile: {{ hashicorp_tempfile }}"
+- name: Dump tempfile information
+  debug:
+    msg: "Tempfile: {{ hashicorp_tempfile }}"
 
 - name: Get the new release if there is one
   include_role:
@@ -30,7 +30,7 @@
     github_release_asset_pattern: tflint_linux_amd64.zip
     github_release_current_version: "{{ hashicorp_asset_current_version }}"
     github_release_repo: terraform-linters/tflint
-    github_release_tempfile: "{{ hashicorp_tempfile.path }}"
+    github_release_localpath: "{{ hashicorp_tempfile.path }}"
 
 #- name: Dump version information using the github_asset_name variable
 #  debug:
@@ -48,9 +48,12 @@
     mode: '0755'
   register: unarchive_result
   when: github_release_version_mismatch
-  - name: Set version tracking fact for tflint
-    set_fact:
-      version_tracking: "{{ version_tracking | default({}) | combine({ 'tflint': github_release_latest_version }) }}"
-    when: unarchive_result is succeeded
-    vars:
-      github_release_latest_version: "{{ github_release.json.tag_name }}"
+
+- name: Set version tracking fact for tflint
+  include_role:
+    name: version_tracking
+  vars:
+    version_tracking_key: 'tflint'
+    version_tracking_value: "{{ github_release_latest_version }}"
+    version_tracking_action: 'update'
+  when: unarchive_result is succeeded
