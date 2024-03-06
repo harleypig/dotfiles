@@ -11,6 +11,7 @@
 #- name: Dump version information using the github_asset_name variable
 #  debug:
 #    msg: "Current version of tflint: {{ hashicorp_asset_current_version }}"
+#  when: lookup('env', 'DEBUG_PLAYBOOK') | bool
 
 - name: Create a temporary file
   tempfile:
