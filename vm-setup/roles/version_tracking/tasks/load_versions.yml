@@ -3,7 +3,19 @@
   slurp:
     src: "{{ version_tracking_file }}"
   register: version_tracking_content
+  ignore_errors: yes
+
+- name: Check if version tracking content is empty or file does not exist
+  fail:
+    msg: "Version tracking file is missing or empty."
+  when: version_tracking_content is failed or version_tracking_content['content'] | b64decode | trim == ''
 
 - name: Set version tracking fact from YAML content
   set_fact:
     version_tracking: "{{ (version_tracking_content['content'] | b64decode | from_yaml) }}"
+  when: version_tracking_content is not failed and version_tracking_content['content'] | b64decode | trim != ''
+
+- name: Initialize empty version tracking fact
+  set_fact:
+    version_tracking: {}
+  when: version_tracking_content is failed or version_tracking_content['content'] | b64decode | trim == ''
