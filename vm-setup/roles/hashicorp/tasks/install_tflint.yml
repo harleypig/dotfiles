@@ -48,6 +48,3 @@
     mode: '0755'
   register: unarchive_result
   when: github_release_version_mismatch
-
-  when: unarchive_result is succeeded
-  when: unarchive_result is succeeded
