@@ -6,13 +6,14 @@
     version_tracking_file: .version-tracking-file.yml
 
   roles:
-    #- role: common_pkgs
-    #- role: nerd_font
+    - role: common_pkgs
+    - role: nerd_font
     - role: nodejs
-    #- role: pip_pkgs
-    #- role: hashicorp
-    #- role: git_bug
-    #- role: docker
+    - role: pip_pkgs
+    - role: hashicorp
+    - role: git_bug
+    - role: docker
+    - role: misc_configuration
 
     #- role: gnome_settings
     #  vars:

@@ -6,9 +6,4 @@ dependencies:
       key_url: 'https://apt.releases.hashicorp.com/gpg'
       repo_name: 'HashiCorp'
       repo_urls:
-        - 'deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main'
-    vars:
-      filename:
-      key_url:
-      repo_name:
-      repo_urls:
+        - 'deb https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main'

@@ -27,9 +27,10 @@
 
 #- name: Dump version information using the github_asset_name variable
 #  debug:
-#    msg: "Current version of {{ github_asset_name }}: {{ github_asset_current_version }}"
+#    msg: "Current version of tflint: {{ hashicorp_asset_current_version }}"
 
 - name: Create a temporary file
+  become: true
   tempfile:
     state: file
     suffix: .zip
