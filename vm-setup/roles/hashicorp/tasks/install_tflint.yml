@@ -49,11 +49,5 @@
   register: unarchive_result
   when: github_release_version_mismatch
 
-- name: Update tflint version in version tracking
-  lineinfile:
-    path: "{{ version_tracking_file }}"
-    regexp: '^tflint:.*$'
-    line: "tflint: \"{{ github_release_latest_version }}\""
-    create: yes
-    backup: yes
+  when: unarchive_result is succeeded
   when: unarchive_result is succeeded
