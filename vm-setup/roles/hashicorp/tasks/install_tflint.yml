@@ -11,7 +11,7 @@
 - name: Dump version information using the github_asset_name variable
   debug:
     msg: "Current version of tflint: {{ hashicorp_asset_current_version }}"
-  when: lookup('env', 'DEBUG_PLAYBOOK') | bool
+  when: DEBUG_PLAYBOOK | default(false) | bool
 
 - name: Create a temporary file
   tempfile:
@@ -22,7 +22,7 @@
 - name: Dump tempfile information
   debug:
     msg: "Tempfile: {{ hashicorp_tempfile }}"
-  when: lookup('env', 'DEBUG_PLAYBOOK') | bool
+  when: DEBUG_PLAYBOOK | default(false) | bool
 
 - name: Get the new release if there is one
   include_role:
@@ -39,7 +39,7 @@
     msg: |
       Mismatch: {{ github_release_version_mismatch }}
       Download result: {{ github_release_download_result }}
-  when: lookup('env', 'DEBUG_PLAYBOOK') | bool
+  when: DEBUG_PLAYBOOK | default(false) | bool
 
 - name: Unzip the testfile
   become: yes
