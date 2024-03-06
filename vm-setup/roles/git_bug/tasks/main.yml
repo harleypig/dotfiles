@@ -28,3 +28,12 @@
     github_release_file_mode: "0755"
     github_release_version_mismatch: "{{ git_bug_current_version != git_bug_latest_version }}"
 
+- name: Update git_bug version in version tracking
+  lineinfile:
+    path: "{{ git_bug_version_tracking_file }}"
+    regexp: '^git_bug:.*$'
+    line: "git_bug: \"{{ github_release_latest_version }}\""
+    create: yes
+    backup: yes
+  when: github_release_version_mismatch and github_release_download_result is changed
+
