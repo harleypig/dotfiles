@@ -1,5 +1,4 @@
 ---
-# tasks file for misc_configuration
 - name: Comment out the sudo hint in /etc/bash.bashrc
   become: yes
   lineinfile:
