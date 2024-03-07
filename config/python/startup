@@ -38,5 +38,4 @@ def save(prev_h_len, histfile):
 
 atexit.register(save, h_len, histfile)
 
-print(f"History file used: {histfile}")
 print("Pretty printing is enabled. Use 'pp' instead of 'print' to pretty-print objects.")
