@@ -36,30 +36,36 @@ except FileNotFoundError:
     h_len = 0
 
 ##############################################################################
+#-----------------------------------------------------------------------------
 def save(prev_h_len, histfile):
-  new_h_len = readline.get_current_history_length()
-  readline.set_history_length(1000)
-  readline.append_history_file(new_h_len - prev_h_len, histfile)
+    new_h_len = readline.get_current_history_length()
+    readline.set_history_length(1000)
+    readline.append_history_file(new_h_len - prev_h_len, histfile)
 
+#-----------------------------------------------------------------------------
 def get_prompt_part(command):
     try:
         return subprocess.check_output(command, shell=True, text=True).strip()
     except subprocess.CalledProcessError:
         return ''
 
+#-----------------------------------------------------------------------------
 def build_python_prompt():
     user_color = "\033[1;32m" if os.getuid() != 0 else "\033[1;31m"
     hostname_color = "\033[1;33m"
+    cwd = os.getcwd()
+
     user = get_prompt_part('whoami')
     hostname = get_prompt_part('hostname')
-    cwd = os.getcwd()
+    git_status = get_prompt_part('git-status')
+
     venv = os.environ.get('VIRTUAL_ENV', '')
     if venv:
         venv = f"({os.path.basename(venv)}) "
-    prompt = f"{user_color}{user}@{hostname_color}{hostname}:{venv}{cwd}> \033[0m"
+
+    prompt = f"{user_color}{user}@{hostname_color}{hostname}:{venv}{cwd}{git_status}> \033[0m"
     return prompt
 
-sys.ps1 = build_python_prompt()
 ##############################################################################
 atexit.register(save, h_len, histfile)
 sys.ps1 = build_python_prompt()
