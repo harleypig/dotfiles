@@ -11,7 +11,15 @@ else:
     histfile = os.path.expanduser('~/.python_history')
 
 # Ensure the history file exists and is readable, otherwise use the default
-if not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
+histdir = os.path.dirname(histfile)
+if not os.path.isdir(histdir):
+    try:
+        os.makedirs(histdir)
+    except OSError:
+        histfile = os.path.expanduser('~/.python_history')
+else:
+    if not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
+        histfile = os.path.expanduser('~/.python_history')
     histfile = os.path.expanduser('~/.python_history')
 
 # Read the existing history if there is one
