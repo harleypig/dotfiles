@@ -6,6 +6,7 @@ import sys
 
 from pprint import pprint as pp
 
+##############################################################################
 # Determine the full path for the history file
 if 'PYTHON_HISTORY' in os.environ:
     histfile = os.environ['PYTHON_HISTORY']
@@ -16,6 +17,7 @@ elif 'XDG_CONFIG_HOME' in os.environ:
 else:
     histfile = os.path.expanduser('~/.python_history')
 
+##############################################################################
 # Ensure the history file exists and is readable, otherwise use the default
 histdir = os.path.dirname(histfile)
 
@@ -33,12 +35,11 @@ except FileNotFoundError:
     open(histfile, 'wb').close()
     h_len = 0
 
+##############################################################################
 def save(prev_h_len, histfile):
   new_h_len = readline.get_current_history_length()
   readline.set_history_length(1000)
   readline.append_history_file(new_h_len - prev_h_len, histfile)
-
-atexit.register(save, h_len, histfile)
 
 def get_prompt_part(command):
     try:
@@ -59,6 +60,8 @@ def build_python_prompt():
     prompt = f"{user_color}{user}@{hostname_color}{hostname}:{venv}{cwd}$ \033[0m"
     return prompt
 
+##############################################################################
+atexit.register(save, h_len, histfile)
 sys.ps1 = build_python_prompt()
 
 print("Pretty printing is enabled. Use 'pp' instead of 'print' to pretty-print objects.")
