@@ -2,6 +2,8 @@ import atexit
 import os
 import readline
 
+from pprint import pprint as pp
+
 # Determine the full path for the history file
 if 'PYTHON_HISTORY' in os.environ:
     histfile = os.environ['PYTHON_HISTORY']
@@ -35,3 +37,6 @@ def save(prev_h_len, histfile):
   readline.append_history_file(new_h_len - prev_h_len, histfile)
 
 atexit.register(save, h_len, histfile)
+
+print(f"History file used: {histfile}")
+print("Pretty printing is enabled. Use 'pp' instead of 'print' to pretty-print objects.")
