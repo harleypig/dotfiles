@@ -1,0 +1,23 @@
+import os
+import readline
+
+# Determine the full path for the history file
+histfile = os.environ.get('PYTHON_HISTORY', os.path.join(os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config')), 'python', 'python_history'))
+
+# Ensure the history file exists and is readable, otherwise use the default
+if not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
+    histfile = os.path.expanduser('~/.python_history')
+
+# Read the existing history if there is one
+if os.path.isfile(histfile):
+    try:
+        readline.read_history_file(histfile)
+    except IOError:
+        pass  # Ignore any errors reading the history file
+
+# Set the history file for future use
+readline.set_history_file(histfile)
+
+# Set up history saving at exit
+import atexit
+atexit.register(readline.write_history_file, histfile)
