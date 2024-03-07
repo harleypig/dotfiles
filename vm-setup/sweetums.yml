@@ -6,6 +6,7 @@
     version_tracking_file: .version-tracking-file.yml
 
   roles:
+    - role: version_tracking
     - role: common_pkgs
     - role: nerd_font
     - role: nodejs
@@ -18,3 +19,7 @@
     #- role: gnome_settings
     #  vars:
     #    gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+
+    - role: version_tracking
+      vars:
+        version_tracking_action: 'save'

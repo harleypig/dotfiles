@@ -8,4 +8,3 @@
 
 - name: Include install_tflint task file
   include_tasks: install_tflint.yml
-  when: github_release_version_mismatch and github_release_download_result is changed

@@ -1,6 +1,0 @@
----
-- name: Save version tracking fact to YAML file
-  copy:
-    dest: "{{ version_tracking_file }}"
-    content: "{{ version_tracking | to_nice_yaml }}"
-  when: version_tracking is defined

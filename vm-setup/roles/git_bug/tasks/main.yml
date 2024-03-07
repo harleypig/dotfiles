@@ -8,9 +8,20 @@
   set_fact:
     git_bug_current_version: "{{ version_tracking['git_bug'] | default('0') }}"
 
-#- name: Dump version information using the asset name variable
-#  debug:
-#    msg: "Current version of tflint: {{ git_bug_current_version }}"
+- name: Dump version information
+  debug:
+    msg: "Current version of git_bug: {{ git_bug_current_version }}"
+  when: DEBUG_PLAYBOOK | default(false) | bool
+
+- name: Create a temporary file
+  tempfile:
+    state: file
+  register: git_bug_tempfile
+
+- name: Dump tempfile information
+  debug:
+    msg: "Tempfile: {{ git_bug_tempfile }}"
+  when: DEBUG_PLAYBOOK | default(false) | bool
 
 - name: Include github_release role to get the latest release
   include_role:
@@ -18,7 +29,18 @@
   vars:
     github_release_repo: "MichaelMure/git-bug"
     github_release_asset_pattern: "git-bug_linux_amd64"
-    github_release_dest_path: "/usr/local/bin/git-bug"
+    #github_release_localpath: "/usr/local/bin/git-bug"
+    github_release_localpath: "{{ git_bug_tempfile.path }}"
     github_release_file_mode: "0755"
-    github_release_version_mismatch: "{{ git_bug_current_version != git_bug_latest_version }}"
+    github_release_current_version: "{{ git_bug_current_version }}"
 
+- name: Set version tracking fact for git_bug
+  include_role:
+    name: version_tracking
+  vars:
+    version_tracking_key: 'git_bug'
+    version_tracking_value: "{{ github_release_latest_version }}"
+    version_tracking_action: 'update'
+  when:
+    - unarchive_result is succeeded
+    - github_release_version_mismatch
