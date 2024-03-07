@@ -21,9 +21,6 @@ if not os.path.isdir(histdir):
     except OSError:
         histfile = os.path.expanduser('~/.python_history')
 
-elif not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
-        histfile = os.path.expanduser('~/.python_history')
-
 try:
     readline.read_history_file(histfile)
     h_len = readline.get_current_history_length()
@@ -38,5 +35,3 @@ def save(prev_h_len, histfile):
   readline.append_history_file(new_h_len - prev_h_len, histfile)
 
 atexit.register(save, h_len, histfile)
-
-print(f"History file used: {histfile}")
