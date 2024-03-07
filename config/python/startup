@@ -19,25 +19,27 @@ class HistoryConsole:
         readline.set_history_length(self.max_lines)
         readline.write_history_file(self.history_file)
 
-# Determine the full path for the history file
-if 'PYTHON_HISTORY' in os.environ:
-    histfile = os.environ['PYTHON_HISTORY']
-elif 'XDG_CONFIG_HOME' in os.environ:
-    histfile = os.path.join(os.environ['XDG_CONFIG_HOME'], 'python', 'history')
-else:
-    histfile = os.path.expanduser('~/.python_history')
+    def get_histfile(self):
+        # Determine the full path for the history file
+        if 'PYTHON_HISTORY' in os.environ:
+            histfile = os.environ['PYTHON_HISTORY']
+        elif 'XDG_CONFIG_HOME' in os.environ:
+            histfile = os.path.join(os.environ['XDG_CONFIG_HOME'], 'python', 'history')
+        else:
+            histfile = os.path.expanduser('~/.python_history')
 
-# Ensure the history file exists and is readable, otherwise use the default
-histdir = os.path.dirname(histfile)
-if not os.path.isdir(histdir):
-    try:
-        os.makedirs(histdir)
-    except OSError:
-        histfile = os.path.expanduser('~/.python_history')
-else:
-    if not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
-        histfile = os.path.expanduser('~/.python_history')
-    histfile = os.path.expanduser('~/.python_history')
+        # Ensure the history file exists and is readable, otherwise use the default
+        histdir = os.path.dirname(histfile)
+
+        if not os.path.isdir(histdir):
+            try:
+                os.makedirs(histdir)
+            except OSError:
+                histfile = os.path.expanduser('~/.python_history')
+        else:
+            if not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
+                histfile = os.path.expanduser('~/.python_history')
+            histfile = os.path.expanduser('~/.python_history')
 
 
 # Create an instance of the HistoryConsole class to manage the history file
