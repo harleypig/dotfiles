@@ -63,9 +63,10 @@ def build_python_prompt():
     if venv:
         venv = f"({os.path.basename(venv)}) "
 
-    prompt = f"{user_color}{user}@{hostname_color}{hostname}:{venv}{cwd}{git_status}> \033[0m"
+    prompt = f"\n{user_color}{user}@{hostname_color}{hostname}:{venv}{cwd}{git_status}\n>>> \033[0m"
     return prompt
 
+sys.ps1 = build_python_prompt()
 ##############################################################################
 atexit.register(save, h_len, histfile)
 sys.ps1 = build_python_prompt()
