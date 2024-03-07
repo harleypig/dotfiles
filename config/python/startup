@@ -39,7 +39,8 @@ class HistoryConsole:
         else:
             if not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
                 histfile = os.path.expanduser('~/.python_history')
-            histfile = os.path.expanduser('~/.python_history')
+
+        return histfile
 
 
 # Create an instance of the HistoryConsole class to manage the history file
