@@ -1,6 +1,8 @@
 import atexit
 import os
 import readline
+import subprocess
+import sys
 
 from pprint import pprint as pp
 
@@ -37,5 +39,26 @@ def save(prev_h_len, histfile):
   readline.append_history_file(new_h_len - prev_h_len, histfile)
 
 atexit.register(save, h_len, histfile)
+
+def get_prompt_part(command):
+    try:
+        return subprocess.check_output(command, shell=True, text=True).strip()
+    except subprocess.CalledProcessError:
+        return ''
+
+def build_python_prompt():
+    user_color = "\033[1;32m" if os.getuid() != 0 else "\033[1;31m"
+    hostname_color = "\033[1;33m"
+    parent = get_prompt_part('pstree -A $PPID 2> /dev/null')
+    user = get_prompt_part('whoami')
+    hostname = get_prompt_part('hostname')
+    cwd = os.getcwd()
+    venv = os.environ.get('VIRTUAL_ENV', '')
+    if venv:
+        venv = f"({os.path.basename(venv)}) "
+    prompt = f"{user_color}{user}@{hostname_color}{hostname}:{venv}{cwd}$ \033[0m"
+    return prompt
+
+sys.ps1 = build_python_prompt()
 
 print("Pretty printing is enabled. Use 'pp' instead of 'print' to pretty-print objects.")
