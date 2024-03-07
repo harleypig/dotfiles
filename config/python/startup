@@ -2,52 +2,39 @@ import atexit
 import os
 import readline
 
-class HistoryConsole:
-    def __init__(self, history_file, max_lines=1000):
-        self.history_file = history_file
-        self.max_lines = max_lines
-        self.read_history()
-        atexit.register(self.write_history)
+# Determine the full path for the history file
+if 'PYTHON_HISTORY' in os.environ:
+    histfile = os.environ['PYTHON_HISTORY']
 
-    def read_history(self):
-        try:
-            readline.read_history_file(self.history_file)
-        except FileNotFoundError:
-            pass  # No history file exists yet, which is fine
+elif 'XDG_CONFIG_HOME' in os.environ:
+    histfile = os.path.join(os.environ['XDG_CONFIG_HOME'], 'python', 'history')
 
-    def write_history(self):
-        readline.set_history_length(self.max_lines)
-        readline.write_history_file(self.history_file)
+else:
+    histfile = os.path.expanduser('~/.python_history')
 
-    def get_histfile(self):
-        # Determine the full path for the history file
-        if 'PYTHON_HISTORY' in os.environ:
-            histfile = os.environ['PYTHON_HISTORY']
-        elif 'XDG_CONFIG_HOME' in os.environ:
-            histfile = os.path.join(os.environ['XDG_CONFIG_HOME'], 'python', 'history')
-        else:
-            histfile = os.path.expanduser('~/.python_history')
+# Ensure the history file exists and is readable, otherwise use the default
+histdir = os.path.dirname(histfile)
 
-        # Ensure the history file exists and is readable, otherwise use the default
-        histdir = os.path.dirname(histfile)
+if not os.path.isdir(histdir):
+    try:
+        os.makedirs(histdir)
+    except OSError:
+        histfile = os.path.expanduser('~/.python_history')
 
-        if not os.path.isdir(histdir):
-            try:
-                os.makedirs(histdir)
-            except OSError:
-                histfile = os.path.expanduser('~/.python_history')
-        else:
-            if not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
-                histfile = os.path.expanduser('~/.python_history')
+elif not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
+        histfile = os.path.expanduser('~/.python_history')
 
-        return histfile
+try:
+    readline.read_history_file(histfile)
+    h_len = readline.get_current_history_length()
 
+except FileNotFoundError:
+    open(histfile, 'wb').close()
+    h_len = 0
 
-# Create an instance of the HistoryConsole class to manage the history file
-max_history_lines = int(os.environ.get('PYTHON_HISTORY_MAX_LINES', '1000'))
-history_console = HistoryConsole(histfile, max_history_lines)
-# Set the history file for future use
-readline.set_history_file(histfile)
+def save(prev_h_len, histfile):
+  new_h_len = readline.get_current_history_length()
+  readline.set_history_length(1000)
+  readline.append_history_file(new_h_len - prev_h_len, histfile)
 
-# Set up history saving at exit
-atexit.register(readline.write_history_file, histfile)
+atexit.register(save, h_len, histfile)
