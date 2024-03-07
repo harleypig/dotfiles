@@ -29,6 +29,14 @@ if os.path.isfile(histfile):
     except IOError:
         pass  # Ignore any errors reading the history file
 
+    # Set the maximum number of lines for the history file
+    max_history_lines = os.environ.get('PYTHON_HISTORY_MAX_LINES', 1000)
+    try:
+        readline.set_history_length(int(max_history_lines))
+    except ValueError:
+        # In case the environment variable is not an integer, default to 1000 lines
+        readline.set_history_length(1000)
+
 # Set the history file for future use
 readline.set_history_file(histfile)
 
