@@ -17,4 +17,5 @@ function mkvenv() {
     && pip install -r dev-requirements.txt
 }
 
+alias python='python3'
 alias wondertwins="source venv/bin/activate"
