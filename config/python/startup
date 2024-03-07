@@ -38,3 +38,5 @@ def save(prev_h_len, histfile):
   readline.append_history_file(new_h_len - prev_h_len, histfile)
 
 atexit.register(save, h_len, histfile)
+
+print(f"History file used: {histfile}")
