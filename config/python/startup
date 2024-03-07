@@ -2,6 +2,23 @@ import atexit
 import os
 import readline
 
+class HistoryConsole:
+    def __init__(self, history_file, max_lines=1000):
+        self.history_file = history_file
+        self.max_lines = max_lines
+        self.read_history()
+        atexit.register(self.write_history)
+
+    def read_history(self):
+        try:
+            readline.read_history_file(self.history_file)
+        except FileNotFoundError:
+            pass  # No history file exists yet, which is fine
+
+    def write_history(self):
+        readline.set_history_length(self.max_lines)
+        readline.write_history_file(self.history_file)
+
 # Determine the full path for the history file
 if 'PYTHON_HISTORY' in os.environ:
     histfile = os.environ['PYTHON_HISTORY']
@@ -22,21 +39,10 @@ else:
         histfile = os.path.expanduser('~/.python_history')
     histfile = os.path.expanduser('~/.python_history')
 
-# Read the existing history if there is one
-if os.path.isfile(histfile):
-    try:
-        readline.read_history_file(histfile)
-    except IOError:
-        pass  # Ignore any errors reading the history file
 
-    # Set the maximum number of lines for the history file
-    max_history_lines = os.environ.get('PYTHON_HISTORY_MAX_LINES', 1000)
-    try:
-        readline.set_history_length(int(max_history_lines))
-    except ValueError:
-        # In case the environment variable is not an integer, default to 1000 lines
-        readline.set_history_length(1000)
-
+# Create an instance of the HistoryConsole class to manage the history file
+max_history_lines = int(os.environ.get('PYTHON_HISTORY_MAX_LINES', '1000'))
+history_console = HistoryConsole(histfile, max_history_lines)
 # Set the history file for future use
 readline.set_history_file(histfile)
 
