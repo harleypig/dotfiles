@@ -1,0 +1,3 @@
+# handlers file for vbox_configuration
+- name: reboot guest
+  reboot:

@@ -1,0 +1,26 @@
+# tasks file for vbox_configuration
+- name: Install VBoxLinuxAdditions without configuring all drivers
+  command: sh ./VBoxLinuxAdditions.run no_setup
+
+- name: Compile the kernel modules
+  command: rcvboxadd setup
+
+- name: Replace lib with lib64 on 64-bit guests if necessary
+  command: # Add command to replace lib with lib64 if necessary
+  when: ansible_architecture == "x86_64"
+
+- name: Add vboxadd service to the default runlevel
+  command: # Add command to enable vboxadd service
+  when: # Add condition to check for older guests without udev service
+
+- name: Set up the time synchronization service
+  command: # Add command to enable vboxadd-service
+
+- name: Set up the X11 and OpenGL part of the Guest Additions
+  command: rcvboxadd-x11 setup
+
+- name: Recompile the guest kernel modules
+  command: rcvboxadd setup
+
+- name: Reboot the guest to load new modules
+  reboot:
