@@ -3,7 +3,12 @@ import os
 import readline
 
 # Determine the full path for the history file
-histfile = os.environ.get('PYTHON_HISTORY', os.path.join(os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config')), 'python', 'history'))
+if 'PYTHON_HISTORY' in os.environ:
+    histfile = os.environ['PYTHON_HISTORY']
+elif 'XDG_CONFIG_HOME' in os.environ:
+    histfile = os.path.join(os.environ['XDG_CONFIG_HOME'], 'python', 'history')
+else:
+    histfile = os.path.expanduser('~/.python_history')
 
 # Ensure the history file exists and is readable, otherwise use the default
 if not os.path.isfile(histfile) or not os.access(histfile, os.R_OK):
