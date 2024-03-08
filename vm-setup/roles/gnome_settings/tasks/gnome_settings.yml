@@ -46,9 +46,9 @@
     state: stopped
   loop: "{{ gnome_settings_disabled_services }}"
 
-- name: Apply dock settings
-  command: gsettings set org.gnome.shell.extensions.dash-to-dock {{ item.key }} {{ item.value }}
-  loop: "{{ lookup('dict', gnome_settings_dock_settings) }}"
-  loop_control:
-    label: "{{ item.key }}"
-  changed_when: true
+#- name: Apply dock settings
+#  command: gsettings set org.gnome.shell.extensions.dash-to-dock {{ item.key }} {{ item.value }}
+#  loop: "{{ lookup('dict', gnome_settings_dock_settings) }}"
+#  loop_control:
+#    label: "{{ item.key }}"
+#  changed_when: true

@@ -14,6 +14,7 @@
 - name: Include Gnome Settings tasks
   include_tasks: gnome_settings.yml
 
+#############################################################################
 - name: Ensure /etc/gnome-initial-setup directory exists
   become: true
   file:

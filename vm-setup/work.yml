@@ -6,21 +6,22 @@
     version_tracking_file: .version-tracking-file.yml
 
   roles:
+    - role: version_tracking
     - role: common_pkgs
     - role: nerd_font
     - role: nodejs
-
-#    - role: gnome_settings
-#      vars:
-#        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
-
-#    - role: pip_pkgs
-#      pip_pkgs_is_exclude_list: true
-#      pip_pkgs_exclude_group:
-#        - linode
-
-    - role: hashicorp
+    - role: pip_pkgs
+    - role: git_bug
     - role: docker
+    - role: hashicorp
     - role: gcloud
     - role: vscode
-    - role: git_bug
+    - role: misc_configuration
+
+    - role: gnome_settings
+      vars:
+        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+
+    - role: version_tracking
+      vars:
+        version_tracking_action: 'save'

@@ -5,5 +5,5 @@ pip_pkgs_groups:
     - pre-commit
     - yamllint
     - vim-vint
-  linode:
-    - linode-cli
+#  linode:
+#    - linode-cli
