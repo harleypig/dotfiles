@@ -53,6 +53,7 @@ export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_STATE_HOME="$HOME/.local/state"
 
 mkdir -p "$XDG_CACHE_HOME"
+mkdir -p "$XDG_STATE_HOME"
 
 export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
 

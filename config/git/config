@@ -1,14 +1,8 @@
 ##################################################################################
 # Core
 
-[user]
-  email = harleypig@harleypig.com
-  name  = Alan Young
-
 [include]
-  path = $XDG_STATE_HOME/git/config.user
-
-# [credential]
+  path = ../../gitconfig.user
 
 [core]
   compression  = 9
@@ -199,7 +193,7 @@
             echo $1 >> $(git rev-parse --show-toplevel)/.gitignore
 
   ignored = !git ls-tree --others -i --exclude-standard
-  
+
   # --- Merging ---
   m    = merge
 
@@ -215,7 +209,7 @@
   ss   = status -s
   st   = status -sb
 
-  
+
   # --- Tracking ---
   untrack = rm --cache --
 
