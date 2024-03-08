@@ -1,0 +1,3 @@
+ansible-base
+ansible-core
+ansible-lint
