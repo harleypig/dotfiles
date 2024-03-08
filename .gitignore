@@ -5,4 +5,4 @@ coverage
 !.aider.conf.yml
 
 venv
-gitconfig.user
+gitconfig.user*

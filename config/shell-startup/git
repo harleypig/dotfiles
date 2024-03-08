@@ -10,7 +10,7 @@
 
 [[ -x "$(command -v git 2> /dev/null)" ]] || return 0
 
-# XXX: Remove this
+# XXX: Remove this function
 #function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
 
 function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
