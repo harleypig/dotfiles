@@ -10,8 +10,6 @@
 
 [[ -x "$(command -v git 2> /dev/null)" ]] || return 0
 
-mkdir -p "$XDG_STATE_HOME/git"
-
 function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
 
 function gtoplevel() {

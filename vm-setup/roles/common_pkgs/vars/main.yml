@@ -24,4 +24,5 @@ common_packages:
   - unzip
   - vim
   - wget
+  - xclip
   - zip
