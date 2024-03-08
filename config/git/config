@@ -6,7 +6,7 @@
   name  = Alan Young
 
 [include]
-  path = .gitconfig.user
+  path = $XDG_STATE_HOME/git/config.user
 
 # [credential]
 
