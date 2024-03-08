@@ -13,3 +13,17 @@
 
 - name: Include Gnome Settings tasks
   include_tasks: gnome_settings.yml
+
+- name: Ensure /etc/gnome-initial-setup directory exists
+  become: true
+  file:
+    path: /etc/gnome-initial-setup
+    state: directory
+    mode: "0755"
+
+- name: Copy vendor.conf to /etc/gnome-initial-setup
+  become: true
+  copy:
+    src: vendor.conf
+    dest: /etc/gnome-initial-setup/vendor.conf
+    mode: "0644"
