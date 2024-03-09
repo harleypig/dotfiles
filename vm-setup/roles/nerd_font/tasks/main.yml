@@ -41,6 +41,7 @@
   register: file_check
   changed_when: false
 
+# XXX: Use version tracking role
 # XXX: Figure out a way to get the installed font version
 # - name: Get installed Nerd Font version
 #   shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk -F': ' '{print $2}' | tr -d '()' "
@@ -56,6 +57,7 @@
 #   when: file_check.stat.exists
 
 - name: Ensure Nerd Fonts directory exists
+  become: yes # noqa: yaml[truthy]
   file:
     path: "{{ nerd_font_dir }}"
     state: directory
@@ -68,6 +70,7 @@
     mode: "0644"
 
 - name: Unarchive Nerd Font
+  become: yes # noqa: yaml[truthy]
   unarchive:
     src: "{{ nerd_font_path }}"
     dest: "{{ nerd_font_dir }}"
@@ -76,5 +79,6 @@
   register: command_result
 
 - name: Update font cache
+  become: yes # noqa: yaml[truthy]
   command: fc-cache -fv
   changed_when: "'Updating font cache' in command_result.stdout or 'Building font cache' in command_result.stdout"
