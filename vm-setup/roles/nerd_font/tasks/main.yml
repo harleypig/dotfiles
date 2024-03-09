@@ -74,5 +74,6 @@
     # man unzip: -o overwrite ::: -f freshen
     extra_opts: -of
 
-- name: Update font cache
-  command: fc-cache -fv
+-  command: fc-cache -fv
+  changed_when: "'Updating font cache' in command_result.stdout or 'Building font cache' in command_result.stdout"
+  register: command_result
