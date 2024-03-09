@@ -2,7 +2,7 @@
 - name: Check if version tracking fact is initialized
   fail:
     msg: "Version tracking fact has not been initialized."
-  when: version_tracking is not defined or version_tracking == {}
+  when: version_tracking is not defined
 
 - name: Set current version
   set_fact:
@@ -42,5 +42,3 @@
     version_tracking_value: "{{ github_release_latest_version }}"
     version_tracking_action: 'update'
   when:
-    - unarchive_result is succeeded
-    - github_release_version_mismatch

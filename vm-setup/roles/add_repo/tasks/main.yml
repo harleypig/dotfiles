@@ -1,6 +1,4 @@
 ---
--  assert:
-
 # XXX: Figure out how to do this
 # - name: "Remove old APT repository for {{ repo_name }}"
 #   apt_repository:
@@ -8,16 +6,16 @@
 #     filename: "{{ filename }}"
 #     state: absent
 
--
+- name: "Add repo key for {{ add_repo_name }}"
   become: yes # noqa: yaml[truthy]
   apt_key:
     url: "{{ add_repo_key_url }}"
     state: present
 
--
+- name: "Add repo urls for {{ add_repo_name }}"
   become: yes # noqa: yaml[truthy]
   apt_repository:
-    repo: "{{ add_repo_item }}"
+    repo: "{{ item }}"
     filename: "{{ add_repo_filename }}"
     state: present
   loop: "{{ add_repo_urls }}"

@@ -2,11 +2,8 @@
 dependencies:
   - role: add_repo
     vars:
-      add_repo_repos:
-        google-cloud:
-          add_repo_filename: google-cloud
-          add_repo_key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-          add_repo_name: Google Cloud
-          add_repo_urls:
-          - deb https://packages.cloud.google.com/apt cloud-sdk main
+      add_repo_filename: google-cloud
+      add_repo_key_url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      add_repo_name: "Google Cloud"
+      add_repo_urls:
         - deb https://packages.cloud.google.com/apt cloud-sdk main

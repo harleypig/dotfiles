@@ -2,7 +2,7 @@
 - name: Install GCloud Packages
   become: yes # noqa: yaml[truthy]
   apt:
-    state: present
+    state: latest
     update_cache: true
     name:
       - google-cloud-cli

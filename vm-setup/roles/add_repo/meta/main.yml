@@ -1,56 +1,13 @@
-galaxy_info:
-  author: Your Name
-  description: This role adds repositories to the system
-  company: Your Company
-  license: license (GPL-2.0-or-later, MIT, etc)
-  min_ansible_version: 2.9
-  platforms:
-    - name: EL
-      versions:
-        - 7
-        - 8
-    - name: Ubuntu
-      versions:
-        - bionic
-        - xenial
-  galaxy_tags: []
-dependencies: []
 argument_specs:
   add_repo_key_url:
     type: str
-    required: True
+    required: true
   add_repo_urls:
     type: list
-    required: True
+    required: true
   add_repo_filename:
     type: str
-    required: True
+    required: true
   add_repo_name:
     type: str
-    required: True
-argument_specs:
-  add_repo_key_url:
-    type: str
-    required: True
-  add_repo_urls:
-    type: list
-    required: True
-  add_repo_filename:
-    type: str
-    required: True
-  add_repo_name:
-    type: str
-    required: True
-argument_specs:
-  add_repo_key_url:
-    type: str
-    required: True
-  add_repo_urls:
-    type: list
-    required: True
-  add_repo_filename:
-    type: str
-    required: True
-  add_repo_name:
-    type: str
-    required: True
+    required: true

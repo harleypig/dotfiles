@@ -11,7 +11,6 @@
     - role: nerd_font
     - role: nodejs
     - role: pip_pkgs
-    - role: git_bug
     - role: docker
     - role: hashicorp
     - role: gcloud

@@ -1,12 +1,8 @@
 ---
-- name: Include add_repo to install Microsoft repository
-  include_role:
-    name: add_repo
-  vars:
-    add_repo_repo_list:
-      - microsoft
-
-- name: Install Visual Studio Code
-  ansible.builtin.package:
-    name: code
-    state: present
+- name: Install VSCode
+  become: yes # noqa: yaml[truthy]
+  apt:
+    state: latest
+    update_cache: true
+    name:
+      - code
