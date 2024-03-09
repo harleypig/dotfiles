@@ -1,8 +1,8 @@
 ---
-- name: Install Font Packages
+- name: Install Nerd Font Packages
   become: true
   apt:
-    name: "{{ font_packages }}"
+    name: "{{ nerd_font_packages }}"
     state: present
     update_cache: true
 

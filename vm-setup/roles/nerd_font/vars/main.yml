@@ -1,4 +1,4 @@
 ---
-font_packages:
+nerd_font_packages:
   - fontconfig
   - fonts-inconsolata
