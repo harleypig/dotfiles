@@ -1,5 +1,5 @@
 archive/*
-bin/*
+#bin/*
 tests/*
 #vm-setup/**
 vm-setup/credentials.yml
