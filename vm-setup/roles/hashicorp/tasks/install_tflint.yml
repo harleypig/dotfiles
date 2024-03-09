@@ -4,13 +4,6 @@
     msg: "Version tracking fact has not been initialized."
   when: version_tracking is not defined
 
-- name: Include version tracking role to load versions
-  include_role:
-    name: version_tracking
-    tasks_from: load_versions.yml
-  vars:
-    version_tracking_file: "{{ version_tracking_file_path }}"
-
 - name: Set current version from version tracking
   set_fact:
     hashicorp_asset_current_version: "{{ version_tracking['tflint'] | default('0') }}"

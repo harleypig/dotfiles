@@ -3,6 +3,7 @@ evolution/**
 gtk-3.0/**
 ibus/**
 pulse/**
+yelp/**
 
 dconf/user
 .gsd-keyboard.settings-ported
