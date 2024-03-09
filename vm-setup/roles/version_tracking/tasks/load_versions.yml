@@ -3,7 +3,7 @@
   slurp:
     src: "{{ version_tracking_file }}"
   register: version_tracking_content
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Set version tracking fact from YAML content
   set_fact:

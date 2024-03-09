@@ -1,5 +1,4 @@
 ---
-# This playbook uses the add_repo role to install the Microsoft repository
 - name: Include add_repo to install Microsoft repository
   include_role:
     name: add_repo
@@ -7,9 +6,6 @@
     add_repo_repo_list:
       - microsoft
 
-# Install Visual Studio Code package
--
-# Install Visual Studio Code package
 - name: Install Visual Studio Code
   ansible.builtin.package:
     name: code

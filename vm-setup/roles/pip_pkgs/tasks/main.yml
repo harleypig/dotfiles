@@ -1,5 +1,6 @@
 ---
-- become: true
+- name: Install pip packages
+  become: yes # noqa: yaml[truthy]
 
   vars:
     all_groups: "{{ pip_pkgs_groups.keys() }}"
@@ -17,7 +18,7 @@
 
     - name: Install requested pip package groups
       pip:
-        state: latest
+        state: latest # noqa: package-latest
         name: "{{ pip_pkgs_groups[item] }}"
       loop: "{{ requested_groups }}"
       loop_control:

@@ -5,7 +5,7 @@
 
 - name: Update version tracking information for a specific key
   set_fact:
-    version_tracking: "{{ version_tracking | combine({ version_tracking_key: version_tracking_value }) }}"
+    version_tracking: "{{ version_tracking | combine({version_tracking_key: version_tracking_value}) }}"
   when:
     - version_tracking_key is defined
     - version_tracking_value is defined
@@ -15,6 +15,7 @@
   copy:
     dest: "{{ version_tracking_file }}"
     content: "{{ version_tracking | to_nice_yaml }}"
+    mode: "0600"
   when:
     - version_tracking is defined
     - version_tracking_action == 'save'

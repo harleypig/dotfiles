@@ -5,6 +5,6 @@ argument_specs:
       - load
       - update
       - save
-    required: True
+    required: true
     description:
       - "Specify the action for version tracking: 'load', 'update', or 'save'."

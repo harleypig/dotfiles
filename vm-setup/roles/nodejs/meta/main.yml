@@ -7,4 +7,4 @@ dependencies:
       repo_name: NodeSource
       repo_urls:
         - deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main
-        #- "deb-src https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
+        # - "deb-src https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main"
