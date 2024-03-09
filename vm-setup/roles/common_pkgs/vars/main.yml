@@ -1,5 +1,5 @@
 ---
-common_packages:
+common_pkgs_packages:
   - ansible
   - ansible-lint
   - aptitude
