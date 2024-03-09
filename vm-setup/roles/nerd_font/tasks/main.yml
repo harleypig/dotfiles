@@ -42,23 +42,24 @@
   changed_when: false
 
 # XXX: Figure out a way to get the installed font version
-#- name: Get installed Nerd Font version
-#  shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk -F': ' '{print $2}' | tr -d '()' "
-#  register: installed_nerd_font_version
-#  failed_when: false
-#  changed_when: false
-#  check_mode: no
+# - name: Get installed Nerd Font version
+#   shell: "fc-list | grep -i '{{ nerd_font_name }}' | head -n 1 | awk -F': ' '{print $2}' | tr -d '()' "
+#   register: installed_nerd_font_version
+#   failed_when: false
+#   changed_when: false
+#   check_mode: no
 
 # XXX: Figure out a way to skip remaining tasks in this role, but still allow
 # following roles in the play to be attempted.
-#- name: Skip remaining tasks in this role if nerd_font_path exists
-#  meta: end_play
-#  when: file_check.stat.exists
+# - name: Skip remaining tasks in this role if nerd_font_path exists
+#   meta: end_play
+#   when: file_check.stat.exists
 
 - name: Ensure Nerd Fonts directory exists
   file:
     path: "{{ nerd_font_dir }}"
     state: directory
+    mode: "0755"
 
 - name: Download Nerd Font
   get_url:
