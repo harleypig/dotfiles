@@ -1,3 +1,4 @@
-ansible-base
-ansible-core
+ansible
+#ansible-base
+#ansible-core
 ansible-lint
