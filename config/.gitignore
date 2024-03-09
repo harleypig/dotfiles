@@ -8,4 +8,5 @@ yelp/**
 
 dconf/user
 .gsd-keyboard.settings-ported
+mimeapps.list
 user-dirs.locale

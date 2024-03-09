@@ -5,7 +5,7 @@
   path = ../../gitconfig.user
 
 [credential]
-  helper = git-credential-helper
+  helper = /bin/bash git-credentials-helper
 
 [core]
   compression  = 9
