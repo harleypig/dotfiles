@@ -81,4 +81,4 @@
 -
   become: yes # noqa: yaml[truthy]
   command: fc-cache -fv
-  changed_when: unarchive_result.changed
+  changed_when: command_result.changed
