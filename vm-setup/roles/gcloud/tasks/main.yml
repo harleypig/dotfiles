@@ -1,7 +1,8 @@
 ---
-- name: Install Common Packages
+- name: Install GCloud Packages
   become: yes # noqa: yaml[truthy]
   apt:
-    name: "{{ common_pkgs_packages }}"
     state: present
     update_cache: true
+    name:
+      - google-cloud-cli

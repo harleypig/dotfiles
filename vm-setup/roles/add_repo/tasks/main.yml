@@ -9,20 +9,20 @@
     fail_msg: Required variable is not defined for {{ repo_name }}.
 
 # XXX: Figure out how to do this
-#- name: "Remove old APT repository for {{ repo_name }}"
-#  apt_repository:
-#    repo: "{{ repo_url }}"
-#    filename: "{{ filename }}"
-#    state: absent
+# - name: "Remove old APT repository for {{ repo_name }}"
+#   apt_repository:
+#     repo: "{{ repo_url }}"
+#     filename: "{{ filename }}"
+#     state: absent
 
 - name: Install Repository Public Key for {{ repo_name }}
-  become: yes
+  become: yes # noqa: yaml[truthy]
   apt_key:
     url: "{{ key_url }}"
     state: present
 
 - name: Add APT repository for {{ repo_name }}
-  become: yes
+  become: yes # noqa: yaml[truthy]
   apt_repository:
     repo: "{{ item }}"
     filename: "{{ filename }}"

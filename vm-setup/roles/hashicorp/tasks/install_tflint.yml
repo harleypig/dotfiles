@@ -42,12 +42,12 @@
   when: DEBUG_PLAYBOOK | default(false) | bool
 
 - name: Unzip the testfile
-  become: yes
+  become: yes # noqa: yaml[truthy]
   unarchive:
     src: "{{ hashicorp_tempfile.path }}"
     dest: /usr/local/bin/
     include: tflint
-    remote_src: yes
+    remote_src: yes # noqa: yaml[truthy]
     mode: '0755'
   register: unarchive_result
   when: github_release_version_mismatch

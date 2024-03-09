@@ -1,6 +1,3 @@
 ---
 skip_list:
-  - yaml[truthy]
-  - yaml[comments]
-  - comments
-  - fqcn
+  - fqcn[action-core]

@@ -1,6 +1,6 @@
 ---
 - name: Install Gnome Settings Packages
-  become: yes
+  become: yes # noqa: yaml[truthy]
   apt:
     name: "{{ gnome_settings_packages }}"
     state: present
@@ -16,14 +16,14 @@
 
 #############################################################################
 - name: Ensure /etc/gnome-initial-setup directory exists
-  become: yes
+  become: yes # noqa: yaml[truthy]
   file:
     path: /etc/gnome-initial-setup
     state: directory
     mode: "0755"
 
 - name: Copy vendor.conf to /etc/gnome-initial-setup
-  become: yes
+  become: yes # noqa: yaml[truthy]
   copy:
     src: vendor.conf
     dest: /etc/gnome-initial-setup/vendor.conf

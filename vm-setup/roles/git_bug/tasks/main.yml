@@ -29,7 +29,7 @@
   vars:
     github_release_repo: "MichaelMure/git-bug"
     github_release_asset_pattern: "git-bug_linux_amd64"
-    #github_release_localpath: "/usr/local/bin/git-bug"
+    # github_release_localpath: "/usr/local/bin/git-bug"
     github_release_localpath: "{{ git_bug_tempfile.path }}"
     github_release_file_mode: "0755"
     github_release_current_version: "{{ git_bug_current_version }}"
