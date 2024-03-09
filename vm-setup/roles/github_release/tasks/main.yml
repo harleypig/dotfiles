@@ -30,10 +30,24 @@
     msg: "Mismatch: {{ github_release_version_mismatch }}"
   when: DEBUG_PLAYBOOK | default(false) | bool
 
-- name: Download file
-  get_url:
+-  get_url:
     url: "{{ github_release_download_url }}"
     dest: "{{ github_release_localpath }}"
+    mode: '0644'
+    force: true
+  register: github_release_download_result
+  when: github_release_version_mismatch
+  name: Create a temporary file for download
+  tempfile:
+    state: file
+    suffix: .download
+  register: github_release_tempfile
+  when: github_release_version_mismatch
+
+  name: Download file to temporary location
+  get_url:
+    url: "{{ github_release_download_url }}"
+    dest: "{{ github_release_tempfile.path }}"
     mode: '0644'
     force: true
   register: github_release_download_result
