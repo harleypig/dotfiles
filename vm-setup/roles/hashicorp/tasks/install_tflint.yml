@@ -11,7 +11,7 @@
   vars:
     version_tracking_file: "{{ version_tracking_file_path }}"
 
- name: Set current version from version tracking
+- name: Set current version from version tracking
   set_fact:
     hashicorp_asset_current_version: "{{ version_tracking['tflint'] | default('0') }}"
 
