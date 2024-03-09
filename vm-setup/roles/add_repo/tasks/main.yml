@@ -1,11 +1,10 @@
 ---
-- name: Validate required variables for {{ repo_name }}
-  assert:
+-  assert:
     that:
-      - key_url is defined
-      - repo_urls is defined
-      - filename is defined
-      - repo_name is defined
+      - add_repo_key_url is defined
+      - add_repo_urls is defined
+      - add_repo_filename is defined
+      - add_repo_name is defined
     fail_msg: Required variable is not defined for {{ repo_name }}.
 
 # XXX: Figure out how to do this
@@ -15,16 +14,16 @@
 #     filename: "{{ filename }}"
 #     state: absent
 
-- name: Install Repository Public Key for {{ repo_name }}
+-
   become: yes # noqa: yaml[truthy]
   apt_key:
-    url: "{{ key_url }}"
+    url: "{{ add_repo_key_url }}"
     state: present
 
-- name: Add APT repository for {{ repo_name }}
+-
   become: yes # noqa: yaml[truthy]
   apt_repository:
-    repo: "{{ item }}"
-    filename: "{{ filename }}"
+    repo: "{{ add_repo_item }}"
+    filename: "{{ add_repo_filename }}"
     state: present
-  loop: "{{ repo_urls }}"
+  loop: "{{ add_repo_urls }}"
