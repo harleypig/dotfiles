@@ -78,7 +78,7 @@
     extra_opts: -of
   register: command_result
 
-- name: Update font cache
+-
   become: yes # noqa: yaml[truthy]
   command: fc-cache -fv
-  changed_when: "'Updating font cache' in command_result.stdout or 'Building font cache' in command_result.stdout"
+  changed_when: unarchive_result.changed
