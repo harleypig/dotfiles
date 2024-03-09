@@ -1,11 +1,5 @@
 ---
 -  assert:
-    that:
-      - add_repo_key_url is defined
-      - add_repo_urls is defined
-      - add_repo_filename is defined
-      - add_repo_name is defined
-    fail_msg: Required variable is not defined for {{ repo_name }}.
 
 # XXX: Figure out how to do this
 # - name: "Remove old APT repository for {{ repo_name }}"
