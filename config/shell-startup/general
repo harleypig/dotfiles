@@ -47,7 +47,7 @@ alias dotfiles='cd $DOTFILES'
 export CVS_RSH='ssh'
 
 #-----------------------------------------------------------------------------
-export OPENAI_API_KEY="$(<$HOME/projects/private_dotfiles/openai-auto-gpt)"
+export OPENAI_API_KEY="$(<$HOME/projects/private_dotfiles/api-key.openai)"
 
 #-----------------------------------------------------------------------------
 # https://wiki.archlinux.org/index.php/Core_Utilities#ls
