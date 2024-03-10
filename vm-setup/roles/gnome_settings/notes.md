@@ -1,0 +1,47 @@
+https://galaxy.ansible.com/ui/repo/published/shipilovds/workstation/
+https://galaxy.ansible.com/ui/collections/?keywords=workstation&page_size=10&view_type=null&sort=pulp_created&page=1ko
+
+Consider the following settings
+
+gnome_power_inactive_ac_type: suspend
+gnome_power_inactive_ac_timeout: 900
+gnome_power_inactive_battery_type: suspend
+gnome_power_inactive_battery_timeout: 900
+gnome_power_idle_dim: true
+gnome_power_idle_brightness: 30
+gnome_shell_enabled_extensions: []
+gnome_shell_favorite_apps: []
+gnome_media_keys_custom_keybindings: []
+gnome_nautilus_icon_view_default_zoom_level: medium
+gnome_nautilus_icon_view_captions: []
+gnome_nautilus_preferences_click_policy: double
+gnome_nautilus_preferences_show_create_link: false
+gnome_nautilus_preferences_show_delete_permanently: false
+gnome_gtk_sort_directories_first: false
+gnome_gtk_show_hidden: false
+gnome_desktop_interface_show_battery_percentage: false
+gnome_desktop_interface_enable_animations: true
+gnome_desktop_interface_text_scaling_factor: 1
+gnome_desktop_interface_scaling_factor: 1
+gnome_desktop_interface_gtk_theme: Adwaita
+gnome_desktop_interface_icon_theme: Adwaita
+gnome_desktop_privacy_remember_recent_files: true
+gnome_desktop_privacy_recent_files_max_age: 1
+gnome_desktop_privacy_remove_old_trash_files: false
+gnome_desktop_privacy_remove_old_temp_files: true
+gnome_desktop_privacy_old_files_age: 30
+gnome_desktop_peripherals_touchpad_natural_scroll: true
+gnome_desktop_peripherals_touchpad_tap_to_click: false
+gnome_desktop_peripherals_touchpad_two_finger_scrolling_enabled: true
+gnome_desktop_sound_event_sounds: true
+gnome_desktop_sound_input_feedback_sounds: false
+gnome_desktop_background_picture: ''
+gnome_desktop_background_picture_dark: ''
+gnome_desktop_background_picture_options: zoom
+gnome_desktop_screensaver_idle_activation_enabled: true
+gnome_desktop_screensaver_lock_enabled: true
+gnome_desktop_screensaver_lock_delay: 0
+gnome_desktop_screensaver_status_message_enabled: true
+gnome_desktop_wm_keybindings: []
+gnome_mutter_workspaces_only_on_primary: false
+gnome_mutter_center_new_windows: false
