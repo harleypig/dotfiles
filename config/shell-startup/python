@@ -8,6 +8,8 @@ export PYTHONPYCACHEPREFIX="$XDG_CACHE_HOME/python"
 export PYTHONUSERBASE="$XDG_DATA_HOME/python"
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/startup"
 
+export PATH="$PATH:$XDG_DATA_HOME/python/bin"
+
 function mkvenv() {
   type -t deactivate &> /dev/null && deactivate
   rm -fr venv
