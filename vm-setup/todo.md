@@ -18,3 +18,7 @@ https://github.com/ansible/ansible-lint/tree/main/docs
 ## less-pipe
 
 https://github.com/wofr06/lesspipe
+
+## customize gdm3
+
+look into customizing gdm3 (login screen, plus ??)
