@@ -5,6 +5,7 @@ evolution/**
 gtk-3.0/**
 ibus/**
 pulse/**
+tree-sitter/**
 yelp/**
 
 dconf/user
