@@ -4,7 +4,7 @@ import vertexai
 
 def codechat(prompt, session_params=None, chat_params=None):
     if session_params is None:
-        session_params = {}
+        session_params = {'model': 'codechat-bison'}
     if chat_params is None:
         chat_params = {}
 
