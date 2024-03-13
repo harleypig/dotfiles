@@ -21,6 +21,14 @@ class ChatBot():
         # Return the response as a string
         return response.text
 
+if __name__ == '__main__':
+    chatbot = ChatBot()
+    while True:
+        message = input("You: ")
+        if message.lower() == 'quit':
+            break
+        response = chatbot._session({'prompt': message})
+        print("Bot:", response)
 # Example usage:
 # response = chat_with_codechat("Hello, how can I help you today?")
 # print(response)
