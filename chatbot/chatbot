@@ -5,25 +5,23 @@ from vertexai.language_models import CodeChatSession
 class ChatBot():
     def __init__(self):
         self._params()
-        self.session = self._session()
+        self._session()
 
     def _params(self, params={}):
         if params is None:
-            session_params = {}
+            params = {}
 
         params.setdefault('model', 'codechat-bison')
 
         self.params = params
 
-    def _session(self, session_params=None):
+    def _session(self):
         # Create a CodeChatSession with the given parameters
-        if session_params is None:
-            session_params = self.params
-        return CodeChatSession(**session_params)
+        self.session = CodeChatSession(**self.params)
 
     def send_message(self, message):
         # Send the prompt to the CodeChatSession and get the response
-        response = self.session.send(message)
+        response = self.session.send_message(message)
 
         # Return the response as a string
         return response.text
