@@ -12,11 +12,16 @@ class ChatBot():
         if chat_params is None:
             chat_params = {}
 
+    def _session(self, session_params=None):
+        if session_params is None:
+            session_params = {}
+        session_params.setdefault('model', 'codechat-bison')
+
         # Create a CodeChatSession with the given parameters
         session = CodeChatSession(**session_params)
 
         # Send the prompt to the CodeChatSession and get the response
-        response = session.send(prompt, **chat_params)
+        response = session.send(session_params.get('prompt', ''), **session_params.get('chat_params', {}))
 
         # Return the response as a string
         return response.text
