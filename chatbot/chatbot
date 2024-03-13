@@ -6,15 +6,10 @@ class ChatBot():
     def __init__():
         self.session = self._session()
 
-    def _session(prompt, session_params=None, chat_params=None):
-        if session_params is None:
-            session_params = {'model': 'codechat-bison'}
-        if chat_params is None:
-            chat_params = {}
-
     def _session(self, session_params=None):
         if session_params is None:
             session_params = {}
+
         session_params.setdefault('model', 'codechat-bison')
 
         # Create a CodeChatSession with the given parameters
