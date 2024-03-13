@@ -1,21 +1,25 @@
 #!/usr/bin/env python
 
-import vertexai
+from vertexai.language_models import CodeChatSession
 
-def codechat(prompt, session_params=None, chat_params=None):
-    if session_params is None:
-        session_params = {'model': 'codechat-bison'}
-    if chat_params is None:
-        chat_params = {}
+class ChatBot():
+    def __init__():
+        self.session = self._session()
 
-    # Create a CodeChatSession with the given parameters
-    session = vertexai.language_models.CodeChatSession(**session_params)
+    def _session(prompt, session_params=None, chat_params=None):
+        if session_params is None:
+            session_params = {'model': 'codechat-bison'}
+        if chat_params is None:
+            chat_params = {}
 
-    # Send the prompt to the CodeChatSession and get the response
-    response = session.send(prompt, **chat_params)
+        # Create a CodeChatSession with the given parameters
+        session = CodeChatSession(**session_params)
 
-    # Return the response as a string
-    return response.text
+        # Send the prompt to the CodeChatSession and get the response
+        response = session.send(prompt, **chat_params)
+
+        # Return the response as a string
+        return response.text
 
 # Example usage:
 # response = chat_with_codechat("Hello, how can I help you today?")
