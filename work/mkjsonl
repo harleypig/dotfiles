@@ -34,7 +34,11 @@ def convert(yaml_file, jsonl_file):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert YAML to JSONL')
     parser.add_argument('input_yaml_file', type=str, help='The YAML file to convert')
-    parser.add_argument('-o', '--output', dest='jsonl_file', type=str, required=True, help='The JSONL file to output')
+    parser.add_argument('-o', '--output', type = str,
+                        dest='jsonl_file',
+                        required=True,
+                        help='The JSONL file to output')
+
     args = parser.parse_args()
 
     yaml_file = args.input_yaml_file
