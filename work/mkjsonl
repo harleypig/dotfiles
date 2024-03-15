@@ -31,18 +31,15 @@ def convert(yaml_file, jsonl_file):
                 objs.append({"input_text":f"{key}", "output_text": f"{value}"})
 
     save_jsonl(jsonl_file, objs)
-    objs = []
-
-    for el in raw:
-        for key, value in el.items():
-            objs.append({"input_text":f"{key}", "output_text": f"{value}"})
-
-    save_jsonl(jsonl_file, objs)
 
 #-----------------------------------------------------------------------------
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert YAML to JSONL')
-    parser.add_argument('input_yaml_files', type=str, nargs='+', help='The YAML file(s) to convert')
+
+    parser.add_argument('yaml_files', type=str,
+                        nargs='+',
+                        help='The YAML file(s) to convert')
+
     parser.add_argument('-o', '--output', type = str,
                         dest='jsonl_file',
                         required=True,
@@ -50,7 +47,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    yaml_files = args.input_yaml_files
-    jsonl_file = args.jsonl_file
-
-    convert(yaml_files, jsonl_file)
+    convert(args.yaml_files, args.jsonl_file)
