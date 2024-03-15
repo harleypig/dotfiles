@@ -104,8 +104,7 @@ The output JSON Lines file will contain:
 """
 
     parser = argparse.ArgumentParser(description=helptext,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     epilog=convert.__doc__)
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument('yaml_files', type=str,
                         nargs='+',
