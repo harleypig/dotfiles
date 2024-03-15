@@ -35,6 +35,17 @@ def load_yaml(filename):
 
 #-----------------------------------------------------------------------------
 def save_jsonl(filename, data=[]):
+    """
+    Save data to a JSON Lines file.
+
+    Args:
+        filename (str): The path to the JSON Lines file to be written.
+        data (list): A list of dictionaries to be written to the file.
+
+    This function attempts to open the specified JSON Lines file and write the
+    data to it. If there is an error during file opening or writing, the error
+    is printed to stderr, and the program exits with status code 1.
+    """
     try:
         with jsonlines.open(filename, mode='w') as jf:
             jf.write_all(data)
