@@ -103,7 +103,7 @@ The output JSON Lines file will contain:
 
 """
 
-    parser = argparse.ArgumentParser(description='Convert YAML to JSONL',
+    parser = argparse.ArgumentParser(description=helptext,
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=convert.__doc__)
 
