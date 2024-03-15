@@ -9,8 +9,12 @@ import yaml
 
 #-----------------------------------------------------------------------------
 def load_yaml(filename):
-    with open(filename, 'r') as yf:
-        data = yaml.load(yf, Loader=yaml.FullLoader)
+    try:
+        with open(filename, 'r') as yf:
+            data = yaml.load(yf, Loader=yaml.FullLoader)
+    except Exception as e:
+        print(f"Error loading {filename}: {e}", file=sys.stderr)
+        return False
 
     return data
 
