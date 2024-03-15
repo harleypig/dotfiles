@@ -28,7 +28,9 @@ def convert(yaml_files, jsonl_file):
     objs = []
 
     for yaml_file in yaml_files:
-        raw = load_yaml(yaml_file)
+        raw = load_yaml(yaml_file) 
+        if not raw:
+            continue
 
         for el in raw:
             for key, value in el.items():
