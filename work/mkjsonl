@@ -106,6 +106,10 @@ The output JSON Lines file will contain:
     parser = argparse.ArgumentParser(description=helptext,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 
+    parser.add_argument('-o', '--output', type=str,
+                        dest='jsonl_file',
+                        required=True,
+                        help='The JSONL file to output (JSONL_FILENAME appended)')
     parser.add_argument('yaml_files', type=str,
                         nargs='+',
                         help='The YAML file(s) to convert')
