@@ -46,6 +46,7 @@ def save_jsonl(filename, data=[]):
     data to it. If there is an error during file opening or writing, the error
     is printed to stderr, and the program exits with status code 1.
     """
+
     try:
         with jsonlines.open(filename, mode='w') as jf:
             jf.write_all(data)
