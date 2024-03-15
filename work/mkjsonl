@@ -24,7 +24,7 @@ def save_jsonl(filename, data=[]):
         jf.write_all(data)
 
 #-----------------------------------------------------------------------------
-def convert(yaml_file, jsonl_file):
+def convert(yaml_files, jsonl_file):
     objs = []
 
     for yaml_file in yaml_files:
