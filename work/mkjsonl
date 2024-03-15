@@ -3,6 +3,7 @@
 import sys
 print(sys.executable)
 
+import argparse
 import jsonlines
 import yaml
 
@@ -31,11 +32,12 @@ def convert(yaml_file, jsonl_file):
 
 #-----------------------------------------------------------------------------
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python mkjsonl <input_yaml_file> <output_jsonl_file>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Convert YAML to JSONL')
+    parser.add_argument('input_yaml_file', type=str, help='The YAML file to convert')
+    parser.add_argument('-o', '--output', dest='jsonl_file', type=str, required=True, help='The JSONL file to output')
+    args = parser.parse_args()
 
-    yaml_file = sys.argv[1]
-    jsonl_file = sys.argv[2]
+    yaml_file = args.input_yaml_file
+    jsonl_file = args.jsonl_file
 
     convert(yaml_file, jsonl_file)
