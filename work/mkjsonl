@@ -8,6 +8,20 @@ import yaml
 
 #-----------------------------------------------------------------------------
 def load_yaml(filename):
+    """
+    Load a YAML file and return the data.
+
+    Args:
+        filename (str): The path to the YAML file to be loaded.
+
+    Returns:
+        list/dict: The data loaded from the YAML file, or False if an error occurred.
+
+    This function attempts to open and read the specified YAML file using the yaml
+    library. If the file is successfully read and parsed, the data is returned.
+    If there is an error (e.g., file not found, parse error), the error is printed
+    to stderr, and the function returns False.
+    """
     try:
         with open(filename, 'r') as yf:
             data = yaml.load(yf, Loader=yaml.FullLoader)
