@@ -83,10 +83,12 @@ def convert(yaml_files, jsonl_file):
     If `load_yaml` returns False for any file, indicating an error, that file will be
     skipped, and the conversion will continue with the next file.
     """
+
     objs = []
 
     for yaml_file in yaml_files:
-        raw = load_yaml(yaml_file) 
+        raw = load_yaml(yaml_file)
+
         if not raw:
             continue
 
