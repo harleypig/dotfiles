@@ -85,6 +85,8 @@ def convert(yaml_files, jsonl_file):
 #-----------------------------------------------------------------------------
 if __name__ == "__main__":
     helptext = """
+Convert YAML to JSONL
+
 Each YAML file should contain a list of dictionaries, where each dictionary
 represents a key-value pair that will be transformed into a JSON object in
 the JSON Lines file. The keys and values in the YAML file should be strings.
@@ -109,15 +111,12 @@ The output JSON Lines file will contain:
     parser.add_argument('-o', '--output', type=str,
                         dest='jsonl_file',
                         required=True,
-                        help='The JSONL file to output (JSONL_FILENAME appended)')
+                        help='The JSONL file to output')
+
     parser.add_argument('yaml_files', type=str,
                         nargs='+',
+                        metavar='YAML_FILE',
                         help='The YAML file(s) to convert')
-
-    parser.add_argument('-o', '--output', type = str,
-                        dest='jsonl_file',
-                        required=True,
-                        help='The JSONL file to output')
 
     args = parser.parse_args()
 
