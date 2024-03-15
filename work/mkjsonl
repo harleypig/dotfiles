@@ -100,7 +100,8 @@ def convert(yaml_files, jsonl_file):
 
 #-----------------------------------------------------------------------------
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Convert YAML to JSONL')
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     epilog=convert.__doc__)
 
     parser.add_argument('yaml_files', type=str,
                         nargs='+',
