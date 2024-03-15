@@ -20,8 +20,12 @@ def load_yaml(filename):
 
 #-----------------------------------------------------------------------------
 def save_jsonl(filename, data=[]):
-    with jsonlines.open(filename, mode='w') as jf:
-        jf.write_all(data)
+    try:
+        with jsonlines.open(filename, mode='w') as jf:
+            jf.write_all(data)
+    except Exception as e:
+        print(f"Error saving to {filename}: {e}", file=sys.stderr)
+        sys.exit(1)
 
 #-----------------------------------------------------------------------------
 def convert(yaml_files, jsonl_file):
