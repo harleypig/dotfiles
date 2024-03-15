@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 import sys
-print(sys.executable)
-
 import argparse
+
 import jsonlines
 import yaml
 
@@ -12,6 +11,7 @@ def load_yaml(filename):
     try:
         with open(filename, 'r') as yf:
             data = yaml.load(yf, Loader=yaml.FullLoader)
+
     except Exception as e:
         print(f"Error loading {filename}: {e}", file=sys.stderr)
         return False
@@ -23,6 +23,7 @@ def save_jsonl(filename, data=[]):
     try:
         with jsonlines.open(filename, mode='w') as jf:
             jf.write_all(data)
+
     except Exception as e:
         print(f"Error saving to {filename}: {e}", file=sys.stderr)
         sys.exit(1)
