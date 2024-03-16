@@ -11,20 +11,6 @@ set vi-ins-mode-string "\001\033[32m\002|INS|\001\033[0m\002 "
 set vi-cmd-mode-string "\001\033[41m\033[93m\002<CMD>\001\033[0m\002 "
 set editing-mode vi
 
-$if mode=vi
-    set keymap vi-command
-    # Bind up and down arrow keys and j/k keys for history search
-    "\e[A": history-search-backward
-    "\e[B": history-search-forward
-    "k": history-search-backward
-    "j": history-search-forward
-
-    set keymap vi-insert
-    # Bind up and down arrow keys for history search
-    "\e[A": history-search-backward
-    "\e[B": history-search-forward
-$endif
-
 # Completion Settings
 
 set colored-completion-prefix on
@@ -38,9 +24,6 @@ set show-all-if-unmodified on
 set skip-completed-text on
 set visible-stats on
 
-# Ctrl + I Show possible completions
-"C-i": menu-complete
-
 # Other Settings
 
 set history-preserve-point on
@@ -48,3 +31,26 @@ set input-meta on
 set output-meta on
 set expand-tilde on
 set bell-style visible
+
+# Ctrl + I Show possible completions
+"\C-i": menu-complete
+
+# Mimic Zsh run-help
+# https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
+# See config/shell-startup/general for run-help function
+
+"\C-h": run-help
+
+$if mode=vi
+    set keymap vi-command
+    # Bind up and down arrow keys and j/k keys for history search
+    "\e[A": history-search-backward
+    "\e[B": history-search-forward
+    "k": history-search-backward
+    "j": history-search-forward
+
+    set keymap vi-insert
+    # Bind up and down arrow keys for history search
+    "\e[A": history-search-backward
+    "\e[B": history-search-forward
+$endif
