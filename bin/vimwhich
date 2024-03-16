@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This script accepts an arbitrary number of parameters, runs 'which' on each of them
+# ignoring the failures, and opens all of them with vim.
+
+files_to_edit=()
+
+for cmd in "$@"; do
+  path=$(which "$cmd" 2>/dev/null)
+  [[ -n "$path" ]] && files_to_edit+=("$path")
+done
+
+[[ ${#files_to_edit[@]} -gt 0 ]] && vim "${files_to_edit[@]}"
