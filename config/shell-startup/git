@@ -10,10 +10,11 @@
 
 [[ -x "$(command -v git 2> /dev/null)" ]] || return 0
 
-# XXX: Remove this function
-#function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
+# Show git short status for current directory by pressing Ctl-g-s.
+bind -x '"\C-gs": "git status -s ."'
 
-function git_remove_missing_files() { git ls-files -d -z | xargs -0 git update-index --remove; }
+# Show all local and remote branches for all remotes by pressing Ctl-g-r.
+bind -x '"\C-gr": "git branch -ra"'
 
 function gtoplevel() {
   git rev-parse --show-toplevel 2> /dev/null || {

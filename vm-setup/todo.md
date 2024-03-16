@@ -22,3 +22,7 @@ https://github.com/wofr06/lesspipe
 ## customize gdm3
 
 look into customizing gdm3 (login screen, plus ??)
+
+## vscode html languageservice
+
+npm install --save vscode-html-languageservice

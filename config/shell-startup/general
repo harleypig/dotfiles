@@ -10,10 +10,6 @@ alias wget="wget --hsts-file="$XDG_CACHE_HOME/wget-hsts""
 # http://www.commandlinefu.com/commands/view/7156/monitor-a-file-with-tail-with-timestamps-added
 tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
 
-#-----------------------------------------------------------------------------
-# XXX: Move to bin so we can accept multiple filenames
-vimwhich() { vim "$(command -v "$1")"; }
-
 # shellcheck disable=SC2164
 md() { mkdir -p "$@" && cd "$@" || return; }
 
@@ -135,9 +131,4 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 # Press alt+h to get help for word on cursor
 # https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
 # See inputrc for macros
-run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
-# Mimic Zsh run-help ability
-# Press alt+h to get help for word on cursor
-# https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
-# See inputrc for macros
-run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
+#run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
