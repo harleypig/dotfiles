@@ -39,6 +39,7 @@ set bell-style visible
 # https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
 # See config/shell-startup/general for run-help function
 
+"\C-x": prefix-meta
 "\C-x\C-h": run-help
 
 $if mode=vi
