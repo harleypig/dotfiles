@@ -35,10 +35,14 @@ set output-meta on
 # Macros
 
 # Ctrl + I Show possible completions
-"\C-i": menu-complete
+# not needed, Ctl-n has this by default
+#"\C-i": menu-complete
 
 # Same as bash 'clear' command
 "\C-l": clear-screen
+
+# Append pipe-less to the command and execute
+"\C-xl": "\C-e |& less\C-m"
 
 # clear-display is listed in bind -p output, but nothing in manual, beyond
 # a listing of functions. This site
@@ -83,19 +87,6 @@ $endif
 #        they can be re-read.
 # -S     Display readline key sequences bound to macros and the strings they output.
 # -q function Query about which keys invoke the named function.
-#
-# -x keyseq:shell-command
-#        Cause  shell-command to be executed whenever keyseq is entered.  When
-#        shell-command is executed, the shell sets the READLINE_LINE variable
-#        to the contents of the readline line  buffer  and  the READLINE_POINT
-#        and  READLINE_MARK  variables to the current location of the
-#        insertion point and the saved insertion point (the mark),
-#        respectively.  If the executed command changes  the  value of any of
-#        READLINE_LINE, READLINE_POINT, or READLINE_MARK, those new values
-#        will be reflected in the editing state.
-#
-# -X     List all key sequences bound to shell commands and the associated
-#        commands in a format that  can be reused as input.
 
 # bind -p: Display readline function names and bindings in such a way that
 #          they can be re-read.
@@ -112,21 +103,8 @@ $endif
 #
 # alias-expand-line (not bound)
 # tilde-expand (not bound)
-
-
-
-# abort (not bound)
-# arrow-key-prefix (not bound)
-# backward-byte (not bound)
-# backward-kill-line (not bound)
-# backward-kill-word (not bound)
-# beginning-of-history (not bound)
-# call-last-kbd-macro (not bound)
-# capitalize-word (not bound)
 # character-search (not bound)
 # character-search-backward (not bound)
-# clear-display (not bound)
-# clear-screen (not bound)
 # complete (not bound)
 # complete-command (not bound)
 # complete-filename (not bound)
@@ -134,26 +112,8 @@ $endif
 # complete-into-braces (not bound)
 # complete-username (not bound)
 # complete-variable (not bound)
-# copy-backward-word (not bound)
-# copy-forward-word (not bound)
-# copy-region-as-kill (not bound)
-# dabbrev-expand (not bound)
-# delete-char-or-list (not bound)
-# delete-horizontal-space (not bound)
-# digit-argument (not bound)
 # display-shell-version (not bound)
 # do-lowercase-version (not bound)
-# downcase-word (not bound)
-# dump-macros (not bound)
-# dump-variables (not bound)
-# dynamic-complete-history (not bound)
-# edit-and-execute-command (not bound)
-# emacs-editing-mode (not bound)
-# end-kbd-macro (not bound)
-# end-of-history (not bound)
-# exchange-point-and-mark (not bound)
-# forward-backward-delete-char (not bound)
-# forward-byte (not bound)
 # glob-complete-word (not bound)
 # glob-expand-word (not bound)
 # glob-list-expansions (not bound)
@@ -163,94 +123,12 @@ $endif
 # history-substring-search-forward (not bound)
 # insert-comment (not bound)
 # insert-completions (not bound)
-# insert-last-argument (not bound)
-# kill-line (not bound)
-# kill-region (not bound)
-# kill-whole-line (not bound)
 # magic-space (not bound)
-# next-screen-line (not bound)
-# non-incremental-forward-search-history (not bound)
-# non-incremental-forward-search-history-again (not bound)
-# non-incremental-reverse-search-history (not bound)
-# non-incremental-reverse-search-history-again (not bound)
-# old-menu-complete (not bound)
-# operate-and-get-next (not bound)
 # possible-command-completions (not bound)
 # possible-completions (not bound)
 # possible-filename-completions (not bound)
 # possible-hostname-completions (not bound)
 # possible-username-completions (not bound)
 # possible-variable-completions (not bound)
-# previous-screen-line (not bound)
-# print-last-kbd-macro (not bound)
-# re-read-init-file (not bound)
-# redraw-current-line (not bound)
-# revert-line (not bound)
-# set-mark (not bound)
-# shell-backward-kill-word (not bound)
-# shell-backward-word (not bound)
-# shell-expand-line (not bound)
-# shell-forward-word (not bound)
-# shell-kill-word (not bound)
-# shell-transpose-words (not bound)
-# skip-csi-sequence (not bound)
-# start-kbd-macro (not bound)
-# tab-insert (not bound)
 # tilde-expand (not bound)
-# transpose-words (not bound)
 # tty-status (not bound)
-# undo (not bound)
-# universal-argument (not bound)
-# unix-filename-rubout (not bound)
-# unix-word-rubout (not bound)
-# upcase-word (not bound)
-# vi-append-eol (not bound)
-# vi-append-mode (not bound)
-# vi-arg-digit (not bound)
-# vi-bWord (not bound)
-# vi-back-to-indent (not bound)
-# vi-backward-bigword (not bound)
-# vi-backward-word (not bound)
-# vi-bword (not bound)
-# vi-change-case (not bound)
-# vi-change-char (not bound)
-# vi-change-to (not bound)
-# vi-char-search (not bound)
-# vi-column (not bound)
-# vi-complete (not bound)
-# vi-delete (not bound)
-# vi-delete-to (not bound)
-# vi-eWord (not bound)
-# vi-editing-mode (not bound)
-# vi-end-bigword (not bound)
-# vi-end-word (not bound)
-# vi-eword (not bound)
-# vi-fWord (not bound)
-# vi-fetch-history (not bound)
-# vi-first-print (not bound)
-# vi-forward-bigword (not bound)
-# vi-forward-word (not bound)
-# vi-fword (not bound)
-# vi-goto-mark (not bound)
-# vi-insert-beg (not bound)
-# vi-insertion-mode (not bound)
-# vi-match (not bound)
-# vi-next-word (not bound)
-# vi-overstrike (not bound)
-# vi-overstrike-delete (not bound)
-# vi-prev-word (not bound)
-# vi-put (not bound)
-# vi-redo (not bound)
-# vi-replace (not bound)
-# vi-rubout (not bound)
-# vi-search (not bound)
-# vi-search-again (not bound)
-# vi-set-mark (not bound)
-# vi-subst (not bound)
-# vi-tilde-expand (not bound)
-# vi-yank-arg (not bound)
-# vi-yank-pop (not bound)
-# vi-yank-to (not bound)
-# yank-last-arg (not bound)
-# yank-nth-arg (not bound)
-# yank-pop (not bound)
