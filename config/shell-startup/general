@@ -136,3 +136,8 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 # https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
 # See inputrc for macros
 run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
+# Mimic Zsh run-help ability
+# Press alt+h to get help for word on cursor
+# https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
+# See inputrc for macros
+run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
