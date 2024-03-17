@@ -17,11 +17,11 @@
 
 - name: Check if Tilix profile file exists
   stat:
-    path: "{{ tilix_profile_filename }}"
-  register: tilix_profile_file
+    path: "{{ gnome_settings_tilix_profile_filename }}"
+  register: gnome_settings_tilix_profile_file
 
 - name: Include Tilix handling task if tilix_profile_filename is set and file exists
   include_tasks: tilix.yml
   when:
-    - tilix_profile_filename is defined
-    - tilix_profile_file.stat.exists
+    - gnome_settings_tilix_profile_filename is defined
+    - gnome_settings_tilix_profile_file.stat.exists
