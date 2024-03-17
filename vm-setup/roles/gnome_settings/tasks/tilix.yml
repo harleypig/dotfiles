@@ -4,18 +4,15 @@
   register: dconf_load_result
   changed_when: "'Loading values from' in dconf_load_result.stdout"
 
-- name: Include autostart creation tasks
+- name: Include autostart creation tasks if profile is loaded successfully
   include_tasks: create_autostart.yml
   vars:
     autostart_app_type: Application
     autostart_app_name: Tilix
     autostart_app_settings:
-      # These keys are case sensitive. Make sure you're using the correct
-      # capitalization for these key.
-      # Exec: "tilix --focus-window"
-      # Exec: "tilix --action=move_tilix"
       Exec: tilix --maximize
       Comment: Tilix terminal emulator
       X-GNOME-Autostart-enabled: true
       X-GNOME-Autostart-Delay: 1
+  when: dconf_load_result is changed
 
