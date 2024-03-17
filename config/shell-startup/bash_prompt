@@ -123,18 +123,25 @@ _loadavg() {
 # This needs work for poetry setups
 
 _venv() {
-  [[ -z $VIRTUAL_ENV ]] && return 0
+  [[ -z $VIRTUAL_ENV ]] && [[ -z $POETRY_ACTIVE ]] && return 0
 
   local color curpwd dir name
 
   curpwd="$(readlink -ne "$PWD")"
 
   color="$(ansi -n fg green)"
-  dir="venv"
 
-  if [[ ! $curpwd =~ ^${VIRTUAL_ENV%/*} ]]; then
-    color="$(ansi -n fg red)"
-    dir="venv: ${VIRTUAL_ENV%/*}"
+  if [[ -n $POETRY_ACTIVE ]]; then
+    dir "poetry venv"
+    # XXX: Figure out a way to detect true hostname_color
+
+  else
+    dir="venv"
+
+    if [[ ! $curpwd =~ ^${VIRTUAL_ENV%/*} ]]; then
+      color="$(ansi -n fg red)"
+      dir="venv: ${VIRTUAL_ENV%/*}"
+    fi
   fi
 
   printf '%s(%s)%s ' "$color" "$dir" "$color_off"

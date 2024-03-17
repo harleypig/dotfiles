@@ -1,5 +1,7 @@
 # shellcheck shell=bash
 
+[[ -x "$(command -v python)" ]] || return 0
+
 export PYLINTRC="$XDG_CONFIG_HOME/pylint/pylintrc"
 export PYTHON_EGG_CACHE="$XDG_CACHE_HOME/python-eggs"
 export PYTHON_HISTORY="$XDG_STATE_HOME/python/history"
@@ -9,6 +11,9 @@ export PYTHONUSERBASE="$XDG_DATA_HOME/python"
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/startup"
 
 export PATH="$PATH:$XDG_DATA_HOME/python/bin"
+
+alias python='python3'
+alias wondertwins="source venv/bin/activate"
 
 function mkvenv() {
   type -t deactivate &> /dev/null && deactivate
@@ -20,6 +25,3 @@ function mkvenv() {
     && [[ -f dev-requirements.txt ]] \
     && pip install -r dev-requirements.txt
 }
-
-alias python='python3'
-alias wondertwins="source venv/bin/activate"
