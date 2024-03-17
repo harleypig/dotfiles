@@ -4,3 +4,9 @@
   command: gsettings set org.gnome.desktop.background primary-color "{{ desktop_background_color.stdout }}"
   become_user: gdm
   when: desktop_background_color.stdout != ""
+
+- name: Set GDM login screen background color
+  become: true
+  command: gsettings set org.gnome.login-screen background-color "{{ gnome_settings_desktop_background }}"
+  become_user: gdm
+  when: gnome_settings_desktop_background is defined
