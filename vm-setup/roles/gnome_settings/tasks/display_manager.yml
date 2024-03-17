@@ -16,12 +16,9 @@
     mode: '0644'
     create: true
 
-- name: Configure LightDM to use Slick-Greeter
-  become: yes # noqa: yaml[truthy]
+-  become: yes # noqa: yaml[truthy]
   copy:
-    content: |
-      [Seat:*]
-      greeter-session=slick-greeter
+    src: 99-slick-greeter.conf
     dest: /etc/lightdm/lightdm.conf.d/99-slick-greeter.conf
     mode: "0644"
 
