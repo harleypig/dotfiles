@@ -1,0 +1,3 @@
+#!/bin/bash
+
+dconf dump /com/gexperts/Tilix/ > harleypig-tilix-profile.dconf

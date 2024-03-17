@@ -1,6 +1,6 @@
 ---
 - name: Load profile if the file exists and tilix_profile_filename is set
-  shell: dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}
+  shell: dconf load /com/gexperts/Tilix/ < {{ gnome_settings_tilix_profile_filename }}
   register: dconf_load_result
   changed_when: "'Loading values from' in dconf_load_result.stdout"
 

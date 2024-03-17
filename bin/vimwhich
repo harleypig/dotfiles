@@ -11,9 +11,9 @@ rc=$?
   exit 1
 }
 
-if [[ -n $rc ]]; then
+if [[ $rc -ne 0 ]]; then
   highlight="echohl ErrorMsg"
-  message="echo 'Not all requested files were found by which'"
+  message="echo 'Not all requested files were found by which ($rc)'"
 
   vim -c "$highlight | $message" "${files[@]}"
 
