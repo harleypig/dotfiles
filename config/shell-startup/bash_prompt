@@ -63,6 +63,7 @@ function _parent() {
   parents=${parents//su/}
   parents=${parents//tmux/}
   parents=${parents//tilix/}
+  parents=${parents//poetry/}
 
   [[ -n $parents ]] \
     && printf '\[%s\](%s)\[%s\] ' \
@@ -129,13 +130,14 @@ _venv() {
 
   curpwd="$(readlink -ne "$PWD")"
 
-  color="$(ansi -n fg green)"
-
   if [[ -n $POETRY_ACTIVE ]]; then
-    dir "poetry venv"
-    # XXX: Figure out a way to detect true hostname_color
+    # XXX: Figure out a way to detect true hostname directory
+    color="$(ansi -n fg bright_purple)"
+    dir="poetry venv"
 
   else
+    # XXX: If manually starting a poetry venv, this will be permanently red
+    color="$(ansi -n fg bright_green)"
     dir="venv"
 
     if [[ ! $curpwd =~ ^${VIRTUAL_ENV%/*} ]]; then
