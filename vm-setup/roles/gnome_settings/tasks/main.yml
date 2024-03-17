@@ -6,24 +6,17 @@
     state: present
     update_cache: true
 
-- name: Include Tilix handling task if tilix_profile_filename is set
-  include_tasks: tilix.yml
-  when: gnome_settings_tilix_profile_filename is defined and gnome_settings_tilix_profile_filename | length > 0
-
 - name: Include Gnome Settings tasks
   include_tasks: gnome_settings.yml
 
-#############################################################################
-- name: Ensure /etc/gnome-initial-setup directory exists
-  become: yes # noqa: yaml[truthy]
-  file:
-    path: /etc/gnome-initial-setup
-    state: directory
-    mode: "0755"
+- name: Include gnome initial setup
+  include_tasks: gnome-initial-setup.yml
 
-- name: Copy vendor.conf to /etc/gnome-initial-setup
-  become: yes # noqa: yaml[truthy]
-  copy:
-    src: vendor.conf
-    dest: /etc/gnome-initial-setup/vendor.conf
-    mode: "0644"
+- name: Check if Tilix profile file exists
+  stat:
+    path: "{{ tilix_profile_filename }}"
+  register: tilix_profile_file
+
+- name: Include Tilix handling task if tilix_profile_filename is set
+  include_tasks: tilix.yml
+  when: gnome_settings_tilix_profile_filename is defined
