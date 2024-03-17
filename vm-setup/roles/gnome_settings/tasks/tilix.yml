@@ -16,10 +16,10 @@
       X-GNOME-Autostart-Delay: 1
   when: dconf_load_result is changed
 
-# - name: Get current list of favorite apps
-#  command: gsettings get org.gnome.shell favorite-apps
-#  register: current_favorites
-#
-# - name: Add Tilix to favorites if not already added
-#  command: gsettings set org.gnome.shell favorite-apps "{{ current_favorites.stdout | from_json | union(['com.gexperts.Tilix.desktop']) | to_json }}"
-#  when: "com.gexperts.Tilix.desktop" not in current_favorites.stdout
+- name: Get current list of favorite apps
+  command: gsettings get org.gnome.shell favorite-apps
+  register: current_favorites
+
+- name: Add Tilix to favorites if not already added
+  command: gsettings set org.gnome.shell favorite-apps "{{ current_favorites.stdout | from_json | union(['com.gexperts.Tilix.desktop']) | to_json }}"
+  when: "'com.gexperts.Tilix.desktop' not in current_favorites.stdout"
