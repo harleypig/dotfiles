@@ -1,15 +1,8 @@
 ---
-- name: Ensure .local/bin directory exists
-  file:
-    path: "{{ ansible_env.HOME }}/.local/bin"
-    state: directory
-    mode: "0755"
-
-- name: Copy move_tilix script
-  copy:
-    src: move_tilix
-    dest: "{{ ansible_env.HOME }}/.local/bin/move_tilix"
-    mode: "0755"
+- name: Load profile if the file exists and tilix_profile_filename is set
+  shell: dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}
+  register: dconf_load_result
+  changed_when: "'Loading values from' in dconf_load_result.stdout"
 
 - name: Include autostart creation tasks
   include_tasks: create_autostart.yml
@@ -26,15 +19,3 @@
       X-GNOME-Autostart-enabled: true
       X-GNOME-Autostart-Delay: 1
 
-- name: Check if Tilix profile file exists
-  stat:
-    path: "{{ tilix_profile_filename }}"
-  register: tilix_profile_file
-
-- name: Load profile if the file exists and tilix_profile_filename is set
-  shell: dconf load /com/gexperts/Tilix/ < {{ tilix_profile_filename }}
-  register: dconf_load_result
-  changed_when: "'Loading values from' in dconf_load_result.stdout"
-  when:
-    - tilix_profile_file.stat.exists
-    - tilix_profile_filename is defined
