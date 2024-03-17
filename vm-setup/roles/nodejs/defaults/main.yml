@@ -2,3 +2,4 @@
 nodejs_packages:
   - eslint
   - vim-language-server
+  - @bitwarden/cli
