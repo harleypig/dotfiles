@@ -6,10 +6,9 @@
     state: present
     update_cache: true
 
-- name: Include Tilix handling task
+- name: Include Tilix handling task if tilix_profile_filename is set
   include_tasks: tilix.yml
-  vars:
-    tilix_profile_filename: "{{ gnome_settings_tilix_profile_filename }}"
+  when: gnome_settings_tilix_profile_filename is defined and gnome_settings_tilix_profile_filename | length > 0
 
 - name: Include Gnome Settings tasks
   include_tasks: gnome_settings.yml
