@@ -15,3 +15,16 @@
       X-GNOME-Autostart-enabled: true
       X-GNOME-Autostart-Delay: 1
   when: dconf_load_result is changed
+
+# Add Tilix to the favorites menu bar if it's not already there
+- name: Add Tilix to the favorites menu bar
+  block:
+    - name: Get current list of favorite apps
+      command: gsettings get org.gnome.shell favorite-apps
+      register: current_favorites
+
+    - name: Add Tilix to the list of favorite apps
+      command: gsettings set org.gnome.shell favorite-apps "{{ current_favorites.stdout | regex_replace(']', ', ') }}'tilix.desktop']"
+      when: "'tilix.desktop' not in current_favorites.stdout"
+  become: yes
+  become_user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER) }}"
