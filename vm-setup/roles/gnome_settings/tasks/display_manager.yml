@@ -1,13 +1,4 @@
 ---
----
-- name: Install LightDM and Slick-Greeter
-  become: yes # noqa: yaml[truthy]
-  apt:
-    name:
-      - lightdm
-      - slick-greeter
-    state: present
-
 - name: Ensure LightDM is the default display manager
   become: yes # noqa: yaml[truthy]
   lineinfile:
