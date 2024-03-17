@@ -10,7 +10,7 @@
     autostart_app_type: Application
     autostart_app_name: Tilix
     autostart_app_settings:
-      Exec: tilix --maximize
+      Exec: tilix
       Comment: Tilix terminal emulator
       X-GNOME-Autostart-enabled: true
       X-GNOME-Autostart-Delay: 1
