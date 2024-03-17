@@ -1,1 +1,34 @@
 ---
+---
+- name: Install LightDM and Slick-Greeter
+  become: yes # noqa: yaml[truthy]
+  apt:
+    name:
+      - lightdm
+      - slick-greeter
+    state: present
+
+- name: Ensure LightDM is the default display manager
+  become: yes # noqa: yaml[truthy]
+  lineinfile:
+    path: /etc/X11/default-display-manager
+    regexp: '^/usr/sbin/'
+    line: '/usr/sbin/lightdm'
+    create: yes
+
+- name: Configure LightDM to use Slick-Greeter
+  become: yes # noqa: yaml[truthy]
+  copy:
+    content: |
+      [Seat:*]
+      greeter-session=slick-greeter
+    dest: /etc/lightdm/lightdm.conf.d/99-slick-greeter.conf
+    mode: "0644"
+
+- name: Restart LightDM to apply changes
+  become: yes # noqa: yaml[truthy]
+  systemd:
+    name: lightdm
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
