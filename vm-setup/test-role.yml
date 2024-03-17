@@ -9,8 +9,8 @@
     # - role: version_tracking
     # - role: git_bug
     - role: gnome_settings
-    #  vars:
-    #    gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+      vars:
+        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
     # - role: hashicorp
     # - role: gcloud
     # - role: nodejs

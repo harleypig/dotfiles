@@ -16,16 +16,28 @@
     mode: '0644'
     create: true
 
--  become: yes # noqa: yaml[truthy]
+- name: Copy slick greeter seats conf
+  become: yes # noqa: yaml[truthy]
   copy:
     src: 99-slick-greeter.conf
     dest: /etc/lightdm/lightdm.conf.d/99-slick-greeter.conf
+    mode: "0644"
+
+- name: Copy slick greeter conf
+  become: yes # noqa: yaml[truthy]
+  copy:
+    src: slick-greeter.conf
+    dest: /etc/lightdm/slick-greeter.conf
     mode: "0644"
 
 - name: Enable LightDM display manager
   become: yes # noqa: yaml[truthy]
   systemd:
     name: lightdm
-    state: restarted
+    state: started
     enabled: true
     daemon_reload: true
+
+- name: Notice
+  debug:
+    msg: "Changes to lightdm won't take effect until next boot."
