@@ -41,4 +41,3 @@
     version_tracking_key: 'git_bug'
     version_tracking_value: "{{ github_release_latest_version }}"
     version_tracking_action: 'update'
-  when:

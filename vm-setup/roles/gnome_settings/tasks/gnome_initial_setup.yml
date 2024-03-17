@@ -12,4 +12,3 @@
     src: vendor.conf
     dest: /etc/gnome-initial-setup/vendor.conf
     mode: "0644"
-

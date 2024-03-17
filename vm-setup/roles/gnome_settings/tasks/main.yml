@@ -6,11 +6,14 @@
     state: present
     update_cache: true
 
+- name: Include Display Manager tasks
+  include_tasks: display_manager.yml
+
 - name: Include Gnome Settings tasks
   include_tasks: gnome_settings.yml
 
 - name: Include gnome initial setup
-  include_tasks: gnome-initial-setup.yml
+  include_tasks: gnome_initial_setup.yml
 
 - name: Check if Tilix profile file exists
   stat:

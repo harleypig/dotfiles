@@ -1,6 +1,0 @@
----
-- name: Set GDM login screen background color
-  become: yes # noqa: yaml[truthy]
-  become: true
-  command: gsettings set org.gnome.login-screen background-color "{{ gnome_settings_desktop_background['primary-color'] }}"
-  when: gnome_settings_desktop_background['primary-color'] is defined

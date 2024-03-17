@@ -8,5 +8,8 @@ gnome_settings_packages:
   - gnome-shell-extensions
   - gnome-startup-applications
   - gnome-tweaks
+  - lightdm
+  - lightdm-settings
+  - slick-greeter
   - tilix
   - wmctrl

@@ -15,4 +15,3 @@
       X-GNOME-Autostart-enabled: true
       X-GNOME-Autostart-Delay: 1
   when: dconf_load_result is changed
-

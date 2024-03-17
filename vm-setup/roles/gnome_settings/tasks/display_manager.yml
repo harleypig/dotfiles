@@ -4,16 +4,16 @@
   systemd:
     name: gdm3
     state: stopped
-    enabled: no
-    masked: yes
+    enabled: false
+    masked: true
 
 - name: Enable LightDM display manager
   become: yes # noqa: yaml[truthy]
   systemd:
     name: lightdm
     state: started
-    enabled: yes
-    daemon_reload: yes
+    enabled: true
+    daemon_reload: true
 
 - name: Ensure LightDM is the default display manager
   become: yes # noqa: yaml[truthy]
@@ -21,7 +21,8 @@
     path: /etc/X11/default-display-manager
     regexp: '^/usr/sbin/'
     line: '/usr/sbin/lightdm'
-    create: yes
+    mode: '0644'
+    create: true
 
 - name: Configure LightDM to use Slick-Greeter
   become: yes # noqa: yaml[truthy]
@@ -37,5 +38,5 @@
   systemd:
     name: lightdm
     state: restarted
-    enabled: yes
-    daemon_reload: yes
+    enabled: true
+    daemon_reload: true
