@@ -7,14 +7,6 @@
     enabled: false
     masked: true
 
-- name: Enable LightDM display manager
-  become: yes # noqa: yaml[truthy]
-  systemd:
-    name: lightdm
-    state: started
-    enabled: true
-    daemon_reload: true
-
 - name: Ensure LightDM is the default display manager
   become: yes # noqa: yaml[truthy]
   lineinfile:
@@ -33,7 +25,7 @@
     dest: /etc/lightdm/lightdm.conf.d/99-slick-greeter.conf
     mode: "0644"
 
-- name: Restart LightDM to apply changes
+- name: Enable LightDM display manager
   become: yes # noqa: yaml[truthy]
   systemd:
     name: lightdm
