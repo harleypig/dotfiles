@@ -1,11 +1,4 @@
-# Get the current desktop background color
-- name: Get desktop background color
-  become: yes
-  command: gsettings get org.gnome.desktop.background primary-color
-  register: desktop_background_color
-  changed_when: false
-
-# Set GDM login screen background color to match desktop background
+---
 - name: Set GDM login screen background color
   become: yes
   command: gsettings set org.gnome.desktop.background primary-color "{{ desktop_background_color.stdout }}"
