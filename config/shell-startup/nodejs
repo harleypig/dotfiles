@@ -1,0 +1,8 @@
+# shellcheck shell=bash
+
+if [[ -x "$(command -v npm)" ]]; then
+  export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
+  mkdir -p "$XDG_DATA_HOME/npm/bin"
+  mkdir -p "$XDG_DATA_HOME/npm/lib/node_modules"
+  addpath "$XDG_DATA_HOME/npm/bin"
+fi

@@ -132,6 +132,7 @@ _venv() {
 
   if [[ -n $POETRY_ACTIVE ]]; then
     # XXX: Figure out a way to detect true hostname directory
+    #      Look into setting virtualenvs.in-project with poetry config
     color="$(ansi -n fg bright_purple)"
     dir="poetry venv"
 
