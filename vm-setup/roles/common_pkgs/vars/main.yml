@@ -5,6 +5,7 @@ common_pkgs_packages:
   - aptitude
   - build-essential
   - ca-certificates
+  - colordiff
   - curl
   - dkms
   - dos2unix

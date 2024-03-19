@@ -2,7 +2,6 @@
 
 PROMPT_DIRTRIM=2
 
-
 #-----------------------------------------------------------------------------
 alias wget="wget --hsts-file="$XDG_CACHE_HOME/wget-hsts""
 
@@ -28,10 +27,9 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias df='df -h'
 alias h='history'
-#alias md='mkdir -p'
-alias rd=rmdir
-alias v='vim'
-alias f='find'
+#alias rd=rmdir
+#alias v='vim'
+#alias f='find'
 
 #-----------------------------------------------------------------------------
 alias dumppath='echo -e ${PATH//:/\\n}'
