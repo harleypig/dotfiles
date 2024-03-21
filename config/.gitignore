@@ -1,6 +1,7 @@
 Bitwarden\ CLI/**
 coc/**
 Code/**
+docker/buildx/**
 evolution/**
 gtk-3.0/**
 ibus/**

@@ -9,7 +9,7 @@
     - role: version_tracking
     - role: common_pkgs
     - role: nerd_font
-    - role: nodejs
+#    - role: nodejs
 #    - role: pip_pkgs
     - role: docker
     - role: hashicorp
