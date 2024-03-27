@@ -27,11 +27,14 @@ _terraform() {
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   local initial_opts="-chdir"
 
-  #echo "cur: $cur ::: prev: $prev"
-  #echo
+  echo "cur: $cur ::: prev: $prev"
+  echo
 
   if [[ $prev == 'terraform' ]]; then
-    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}' | sed 's/=.*//')"
+    local subcommands="$(terraform \
+      | awk '/^  [a-z-]/ {print $1}' \
+      | sed 's/=.*/=/')"
+
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
 
   elif [[ $prev =~ -?version ]]; then
