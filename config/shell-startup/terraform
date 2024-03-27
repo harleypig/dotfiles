@@ -12,7 +12,9 @@ if type _init_completion &>/dev/null; then
   # Generic function to autocomplete Terraform subcommand parameters
   _terraform_subcommand_options() {
     local cur prev words cword
-    _init_completion -n = || return
+    if ! _init_completion -n =; then
+      return 1
+    fi
 
     # The current subcommand is the word before the current word
     local subcommand="${words[$cword-1]}"
