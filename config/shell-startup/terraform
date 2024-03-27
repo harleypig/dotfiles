@@ -16,13 +16,14 @@ _terraform() {
 
     # except -help and -chdir
     subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -Ev '^-help$|^-chdir$' | tr '\n' ' ')
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
 
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
 
   elif [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" != "terraform" ]]; then
     COMPREPLY=()
 
-  elif [[ " ${COMP_WORDS[*]} " =~ " -?version " ]]; then
+  elif [[ " ${COMP_WORDS[*]} " =~ " -version " ]] || [[ " ${COMP_WORDS[*]} " =~ " version " ]]; then
     COMPREPLY=()
 
   elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
