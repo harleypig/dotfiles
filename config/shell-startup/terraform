@@ -1,0 +1,3 @@
+# shellcheck shell=bash
+
+[[ -x "$(command -v terraform)" ]] || return 0
