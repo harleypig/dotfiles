@@ -31,7 +31,7 @@ _terraform() {
   #echo
 
   if [[ $prev == 'terraform' ]]; then
-    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}' | sed 's/=.*//')"
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
 
   elif [[ $prev =~ -?version ]]; then
