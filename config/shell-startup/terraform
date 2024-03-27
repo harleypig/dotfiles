@@ -10,36 +10,42 @@ _terraform() {
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   local initial_opts="-chdir"
 
-  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" == "terraform" ]]; then
-    # -help <subcommand>
-    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+  # Options:
+  # terraform <subcommands>
+  # terraform <version|-version> no more completions
+  # terraform -help <subcommands without -help|-chdir>
+  # terraform -chdir=path <subcommands without version|-version|-help|-chdir>
+  # terraform [-chdir=path] subcommand <subcmd parameters>
 
-    # except -help and -chdir
-    subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -Ev '^-help$|^-chdir$' | tr '\n' ' ')
-    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
-
-    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
-
-  elif [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" != "terraform" ]]; then
-    COMPREPLY=()
-
-  elif [[ " ${COMP_WORDS[*]} " =~ (^|\s)-?version($|\s) ]]; then
-    COMPREPLY=()
-
-  elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
-    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
-    COMPREPLY=()
-
-  elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
-    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
-    # Remove version from subcommands if -version or version is used
-    if [[ "$version_used" == "yes" ]]; then
-      subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -v '^version$' | tr '\n' ' ')
-    fi
-    COMPREPLY=($(compgen -W "${subcommands} ${initial_opts}" -- "$cur"))
-  elif [[ "$prev" == "-chdir" ]]; then
-    COMPREPLY=($(compgen -d -- "$cur"))
-  fi
+#  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" == "terraform" ]]; then
+#    # -help <subcommand>
+#    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+#
+#    # except -help and -chdir
+#    subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -Ev '^-help$|^-chdir$' | tr '\n' ' ')
+#    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+#
+#  elif [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" != "terraform" ]]; then
+#    COMPREPLY=()
+#
+#  elif [[ " ${COMP_WORDS[*]} " =~ (^|\s)-?version($|\s) ]]; then
+#    COMPREPLY=()
+#
+#  elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
+#    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+#    COMPREPLY=()
+#
+#  elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
+#    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+#    # Remove version from subcommands if -version or version is used
+#    if [[ "$version_used" == "yes" ]]; then
+#      subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -v '^version$' | tr '\n' ' ')
+#    fi
+#    COMPREPLY=($(compgen -W "${subcommands} ${initial_opts}" -- "$cur"))
+#
+#  elif [[ "$prev" == "-chdir" ]]; then
+#    COMPREPLY=($(compgen -d -- "$cur"))
+#  fi
 }
 
 complete -F _terraform terraform
