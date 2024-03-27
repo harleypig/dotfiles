@@ -25,14 +25,11 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 _terraform() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
-  local subcommands="apply destroy init plan" # Add all valid terraform subcommands here
-  local initial_opts="-chdir="
-  local subcommands curcmd
+  local subcommands
 
-  curcmd=$(printf "%s " "${COMP_WORDS[@]:0:$COMP_CWORD}")
+  #echo "prev: $prev"
+
   subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}' | sed 's/=.*/=/')"
-
-  echo "curcmd: $curcmd"
 
   if [[ $COMP_CWORD -eq 1 ]] && [[ $prev == 'terraform' ]]; then
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
@@ -46,9 +43,7 @@ _terraform() {
 
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
 
-  elif ([[ $COMP_CWORD -eq 3 ]] || [[ $COMP_CWORD -eq 4 ]]) \
-    && [[ $prev == '=' ]] \
-    && [[ ${COMP_WORDS[COMP_CWORD-2]} == '-chdir' ]]; then
+  elif [[ ${COMP_WORDS[1]} == '-chdir' ]]; then
     subcommands="$(echo "$subcommands" \
       | sed 's/\(-help\|-chdir=\|-?version\)//; s/\s\+/ /g')"
 
@@ -58,21 +53,21 @@ _terraform() {
     COMPREPLY=()
   fi
 
-  if [[ "$command_so_far" =~ ^-chdir=[^[:space:]]+ ]]; then
-    subcmd="${COMP_WORDS[2]}"
-  else
-    subcmd="${COMP_WORDS[1]}"
-  fi
-
-  # Validate the subcommand
-  if [[ " $subcommands " =~ " $subcmd " ]]; then
-    # Generate a completion list for the subcommand
-    # This is where you would add your logic to generate completions for the specific subcommand
-    # For example, if the subcommand is 'apply', you might want to complete file names
-    if [[ "$subcmd" == "apply" ]]; then
-      COMPREPLY=($(compgen -f -- "$cur")) # This is just an example, adjust as needed
-    fi
-  fi
+#  if [[ "$command_so_far" =~ ^-chdir=[^[:space:]]+ ]]; then
+#    subcmd="${COMP_WORDS[2]}"
+#  else
+#    subcmd="${COMP_WORDS[1]}"
+#  fi
+#
+#  # Validate the subcommand
+#  if [[ " $subcommands " =~ " $subcmd " ]]; then
+#    # Generate a completion list for the subcommand
+#    # This is where you would add your logic to generate completions for the specific subcommand
+#    # For example, if the subcommand is 'apply', you might want to complete file names
+#    if [[ "$subcmd" == "apply" ]]; then
+#      COMPREPLY=($(compgen -f -- "$cur")) # This is just an example, adjust as needed
+#    fi
+#  fi
 }
 
 complete -F _terraform terraform
