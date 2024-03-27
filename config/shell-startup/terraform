@@ -18,7 +18,7 @@ if type _init_completion &>/dev/null; then
     local subcommand="${words[$cword-1]}"
 
     # Extract options for the subcommand from the help output
-    local subcommand_options=$(terraform "$subcommand" -h 2>/dev/null | awk '/^-/ {print $1}' | tr '\n' ' ')
+    local subcommand_options=$(terraform "$subcommand" -h 2>/dev/null | awk '/^\s*-/ {print $1}' | tr '\n' ' ')
 
     # Offer the extracted options as completions
     if [[ "$cur" == -* ]]; then
