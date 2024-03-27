@@ -28,15 +28,28 @@ _terraform() {
 
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
-  local initial_opts="-chdir"
+  local initial_opts="-chdir="
 
   echo "cur: $cur ::: prev: $prev"
   echo
+  # ... rest of the function ...
 
   if [[ $prev == 'terraform' ]]; then
     local subcommands="$(terraform \
       | awk '/^  [a-z-]/ {print $1}' \
       | sed 's/=.*/=/')"
+    # Add '=' to -chdir for display purposes but remove it for actual completion
+    subcommands=$(sed 's/-chdir=/-chdir/' <<< "$subcommands")
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+    # If the user selects -chdir, append '=' to the completion
+    if [[ "$cur" == "-chdir" ]]; then
+      compopt -o nospace
+      COMPREPLY=("-chdir=")
+    fi
+  elif [[ $prev =~ -?version ]]; then
+    COMPREPLY=()
+
+  # ... rest of the function ...
 
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
 
