@@ -14,10 +14,6 @@ _terraform() {
 
   # Check if -version or version has been used
   if [[ " ${COMP_WORDS[*]} " =~ " -version " ]] || [[ " ${COMP_WORDS[*]} " =~ " version " ]]; then
-    version_used="yes"
-  fi
-
-  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] || [[ " ${COMP_WORDS[*]} " =~ " -version " ]]; then
     COMPREPLY=()
   elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
     local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
