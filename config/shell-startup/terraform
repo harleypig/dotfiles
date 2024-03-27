@@ -7,11 +7,11 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 
 # Completions:
 #
-# terraform <subcommands>
-# terraform <version|-version> no more completions
-# terraform -help <subcommands without -help|-chdir>
-# terraform -chdir=path <subcommands without version|-version|-help|-chdir>
-# terraform [-chdir=path] subcommand <subcmd parameters>
+# [x] terraform <subcommands>
+# [x] terraform <version|-version> no more completions
+# [x] terraform -help <subcommands without -help|-chdir>
+# [ ] terraform -chdir=path <subcommands without version|-version|-help|-chdir>
+# [ ] terraform [-chdir=path] subcommand <subcmd parameters>
 #
 # Future development considerations for completion handling:
 #
@@ -25,15 +25,24 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 _terraform() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
-  local words_count="${#COMP_WORDS[@]}"
+  local initial_opts="-chdir"
 
-  # If only 'terraform' is typed, list all subcommands
-  if [[ "$words_count" -eq 1 ]]; then
+  #echo "cur: $cur ::: prev: $prev"
+  #echo
+
+  if [[ $prev == 'terraform' ]]; then
     local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
-    return 0
+
+  elif [[ $prev =~ -?version ]]; then
+    COMPREPLY=()
+
+  elif [[ $prev == '-help' ]]; then
+    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+    subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -Ev '^-help|^-chdir' | tr '\n' ' ')
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+
   fi
-  local initial_opts="-chdir"
 
 #  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" == "terraform" ]]; then
 #    # -help <subcommand>
