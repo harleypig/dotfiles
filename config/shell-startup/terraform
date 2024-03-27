@@ -10,11 +10,21 @@ _terraform() {
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   local special_opts="-help -version"
   local initial_opts="-chdir"
+  local version_used=""
+
+  # Check if -version or version has been used
+  if [[ " ${COMP_WORDS[*]} " =~ " -version " ]] || [[ " ${COMP_WORDS[*]} " =~ " version " ]]; then
+    version_used="yes"
+  fi
 
   if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] || [[ " ${COMP_WORDS[*]} " =~ " -version " ]]; then
     COMPREPLY=()
   elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
     local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+    # Remove version from subcommands if -version or version is used
+    if [[ "$version_used" == "yes" ]]; then
+      subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -v '^version$' | tr '\n' ' ')
+    fi
     COMPREPLY=($(compgen -W "${subcommands} ${special_opts} ${initial_opts}" -- "$cur"))
   elif [[ "$prev" == "-chdir" ]]; then
     COMPREPLY=($(compgen -d -- "$cur"))
