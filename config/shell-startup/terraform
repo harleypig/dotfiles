@@ -10,10 +10,22 @@ _terraform() {
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   local special_opts="-help -version"
   local initial_opts="-chdir"
-  local version_used=""
+  local help_subcommand_selected=""
 
-  # Check if -version or version has been used
-  if [[ " ${COMP_WORDS[*]} " =~ " -version " ]] || [[ " ${COMP_WORDS[*]} " =~ " version " ]]; then
+  # Check if -help is followed by a subcommand
+  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" != "terraform" ]]; then
+    help_subcommand_selected="yes"
+  fi
+
+  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" == "terraform" ]]; then
+    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+    # Exclude -help and -chdir from subcommands for -help completion
+    subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -Ev '^-help$|^-chdir$' | tr '\n' ' ')
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+  elif [[ "$help_subcommand_selected" == "yes" ]]; then
+    COMPREPLY=()
+  elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
+    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
     COMPREPLY=()
   elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
     local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
