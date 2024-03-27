@@ -2,6 +2,7 @@
 
 [[ -x "$(command -v terraform)" ]] || return 0
 
+mkdir -p "$XDG_CACHE_HOME/terraform"
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 
 # Set up bash completion for Terraform if possible
