@@ -23,7 +23,7 @@ _terraform() {
   elif [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" != "terraform" ]]; then
     COMPREPLY=()
 
-  elif [[ " ${COMP_WORDS[*]} " =~ " -version " ]] || [[ " ${COMP_WORDS[*]} " =~ " version " ]]; then
+  elif [[ " ${COMP_WORDS[*]} " =~ (^|\s)-?version($|\s) ]]; then
     COMPREPLY=()
 
   elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
