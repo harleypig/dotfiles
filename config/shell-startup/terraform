@@ -10,7 +10,7 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 # [x] terraform <subcommands>
 # [x] terraform <version|-version> no more completions
 # [x] terraform -help <subcommands without -help|-chdir>
-# [ ] terraform -chdir=path <subcommands without version|-version|-help|-chdir>
+# [x] terraform -chdir=path <subcommands without version|-version|-help|-chdir>
 # [ ] terraform [-chdir=path] subcommand <subcmd parameters>
 #
 # Future development considerations for completion handling:
@@ -23,78 +23,40 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 # These would require more advanced parsing and understanding of the Terraform context.
 
 _terraform() {
-  local old_comp_wordbreaks="$COMP_WORDBREAKS"
-  COMP_WORDBREAKS="${COMP_WORDBREAKS//=/}"
-
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   local initial_opts="-chdir="
+  local subcommands curcmd
 
-  echo "cur: $cur ::: prev: $prev"
-  echo
-  # ... rest of the function ...
+  curcmd=$(printf "%s " "${COMP_WORDS[@]:0:$COMP_CWORD}")
+  subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}' | sed 's/=.*/=/')"
 
-  if [[ $prev == 'terraform' ]]; then
-    local subcommands="$(terraform \
-      | awk '/^  [a-z-]/ {print $1}' \
-      | sed 's/=.*/=/')"
-    # Add '=' to -chdir for display purposes but remove it for actual completion
-    subcommands=$(sed 's/-chdir=/-chdir/' <<< "$subcommands")
+  echo "curcmd: $curcmd"
+
+  if [[ $COMP_CWORD -eq 1 ]] && [[ $prev == 'terraform' ]]; then
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
-    # If the user selects -chdir, append '=' to the completion
-    if [[ "$cur" == "-chdir" ]]; then
-      compopt -o nospace
-      COMPREPLY=("-chdir=")
-    fi
-  elif [[ $prev =~ -?version ]]; then
+
+  elif [[ $COMP_CWORD -eq 2 ]] && [[ $prev =~ -?version ]]; then
     COMPREPLY=()
 
-  # ... rest of the function ...
+  elif [[ $COMP_CWORD -eq 2 ]] && [[ $prev == '-help' ]]; then
+    subcommands="$(echo "$subcommands" \
+      | sed 's/\(-help\|-chdir=\)//; s/\s\+/ /g')"
 
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
 
-  elif [[ $prev =~ -?version ]]; then
+  elif ([[ $COMP_CWORD -eq 3 ]] || [[ $COMP_CWORD -eq 4 ]]) \
+    && [[ $prev == '=' ]] \
+    && [[ ${COMP_WORDS[COMP_CWORD-2]} == '-chdir' ]]; then
+    subcommands="$(echo "$subcommands" \
+      | sed 's/\(-help\|-chdir=\|-?version\)//; s/\s\+/ /g')"
+
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+
+  else
     COMPREPLY=()
-
-  elif [[ $prev == '-help' ]]; then
-    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
-    subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -Ev '^-help|^-chdir' | tr '\n' ' ')
-    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
-
   fi
 
-#  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" == "terraform" ]]; then
-#    # -help <subcommand>
-#    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
-#
-#    # except -help and -chdir
-#    subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -Ev '^-help$|^-chdir$' | tr '\n' ' ')
-#    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
-#
-#  elif [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" != "terraform" ]]; then
-#    COMPREPLY=()
-#
-#  elif [[ " ${COMP_WORDS[*]} " =~ (^|\s)-?version($|\s) ]]; then
-#    COMPREPLY=()
-#
-#  elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
-#    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
-#    COMPREPLY=()
-#
-#  elif [[ "$prev" == "terraform" ]] && ! [[ " ${COMP_WORDS[*]:1} " =~ " -chdir " ]]; then
-#    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
-#    # Remove version from subcommands if -version or version is used
-#    if [[ "$version_used" == "yes" ]]; then
-#      subcommands=$(echo "$subcommands" | tr ' ' '\n' | grep -v '^version$' | tr '\n' ' ')
-#    fi
-#    COMPREPLY=($(compgen -W "${subcommands} ${initial_opts}" -- "$cur"))
-#
-#  elif [[ "$prev" == "-chdir" ]]; then
-#    COMPREPLY=($(compgen -d -- "$cur"))
-#  fi
-
-  # Restore original COMP_WORDBREAKS after completion
-  COMP_WORDBREAKS="$old_comp_wordbreaks"
 }
 
 complete -F _terraform terraform
