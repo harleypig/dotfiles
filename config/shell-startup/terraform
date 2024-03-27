@@ -49,6 +49,12 @@ _terraform() {
 
     COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
 
+  elif [[ $cur == *-chdir=* ]]; then
+    # If the current word is -chdir=, append an underscore and reposition the cursor
+    COMPREPLY=("${cur}_")
+    # Move the cursor after the equals sign
+    local point=$(( ${#cur} + 1 ))
+    COMP_POINT=$point
   else
     COMPREPLY=()
   fi
