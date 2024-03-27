@@ -16,6 +16,12 @@ _terraform() {
   # terraform -help <subcommands without -help|-chdir>
   # terraform -chdir=path <subcommands without version|-version|-help|-chdir>
   # terraform [-chdir=path] subcommand <subcmd parameters>
+  # Future development considerations for completion handling:
+  # 1. Handling flags that can be used with subcommands (e.g., `-input=false` for apply).
+  # 2. Completing file paths for subcommands that require a file (e.g., `terraform apply <file>`).
+  # 3. Completing resource names for commands like `terraform import`.
+  # 4. Completing variable names for commands like `terraform console`.
+  # These would require more advanced parsing and understanding of the Terraform context.
 
 #  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" == "terraform" ]]; then
 #    # -help <subcommand>
