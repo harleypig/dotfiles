@@ -25,6 +25,14 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 _terraform() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
+  local words_count="${#COMP_WORDS[@]}"
+
+  # If only 'terraform' is typed, list all subcommands
+  if [[ "$words_count" -eq 1 ]]; then
+    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+    return 0
+  fi
   local initial_opts="-chdir"
 
 #  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" == "terraform" ]]; then
