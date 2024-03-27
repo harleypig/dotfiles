@@ -7,8 +7,15 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 
 _terraform() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
-  local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
-  COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+  local prev="${COMP_WORDS[COMP_CWORD-1]}"
+  local special_opts="-help -version"
+
+  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] || [[ " ${COMP_WORDS[*]} " =~ " -version " ]]; then
+    COMPREPLY=()
+  elif [[ "$prev" == "terraform" ]]; then
+    local subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}')"
+    COMPREPLY=($(compgen -W "${subcommands} ${special_opts}" -- "$cur"))
+  fi
 }
 
 complete -F _terraform terraform
