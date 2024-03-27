@@ -1,3 +1,8 @@
 # shellcheck shell=bash
 
 [[ -x "$(command -v terraform)" ]] || return 0
+
+# Set up bash completion for Terraform if possible
+if type _init_completion &>/dev/null; then
+  complete -C "$(command -v terraform)" terraform
+fi
