@@ -5,23 +5,27 @@
 mkdir -p "$XDG_CACHE_HOME/terraform"
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 
+# Completions:
+#
+# terraform <subcommands>
+# terraform <version|-version> no more completions
+# terraform -help <subcommands without -help|-chdir>
+# terraform -chdir=path <subcommands without version|-version|-help|-chdir>
+# terraform [-chdir=path] subcommand <subcmd parameters>
+#
+# Future development considerations for completion handling:
+#
+# * Handling flags that can be used with subcommands (e.g., `-input=false` for apply).
+# * Completing file paths for subcommands that require a file (e.g., `terraform apply <file>`).
+# * Completing resource names for commands like `terraform import`.
+# * Completing variable names for commands like `terraform console`.
+#
+# These would require more advanced parsing and understanding of the Terraform context.
+
 _terraform() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   local initial_opts="-chdir"
-
-  # Options:
-  # terraform <subcommands>
-  # terraform <version|-version> no more completions
-  # terraform -help <subcommands without -help|-chdir>
-  # terraform -chdir=path <subcommands without version|-version|-help|-chdir>
-  # terraform [-chdir=path] subcommand <subcmd parameters>
-  # Future development considerations for completion handling:
-  # 1. Handling flags that can be used with subcommands (e.g., `-input=false` for apply).
-  # 2. Completing file paths for subcommands that require a file (e.g., `terraform apply <file>`).
-  # 3. Completing resource names for commands like `terraform import`.
-  # 4. Completing variable names for commands like `terraform console`.
-  # These would require more advanced parsing and understanding of the Terraform context.
 
 #  if [[ " ${COMP_WORDS[*]} " =~ " -help " ]] && [[ "$prev" == "terraform" ]]; then
 #    # -help <subcommand>
