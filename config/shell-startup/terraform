@@ -28,6 +28,5 @@ if type _init_completion &>/dev/null; then
     fi
   }
 
-  # Register the generic function for Terraform subcommands that have the same options format
   #complete -F _terraform_subcommand_options terraform
 fi
