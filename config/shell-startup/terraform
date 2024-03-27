@@ -25,6 +25,7 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 _terraform() {
   local old_comp_wordbreaks="$COMP_WORDBREAKS"
   COMP_WORDBREAKS="${COMP_WORDBREAKS//=/}"
+
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   local initial_opts="-chdir"
@@ -78,6 +79,7 @@ _terraform() {
 #  elif [[ "$prev" == "-chdir" ]]; then
 #    COMPREPLY=($(compgen -d -- "$cur"))
 #  fi
+
   # Restore original COMP_WORDBREAKS after completion
   COMP_WORDBREAKS="$old_comp_wordbreaks"
 }
