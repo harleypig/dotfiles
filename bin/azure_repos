@@ -1,5 +1,12 @@
 #!/bin/bash
 
+## If --check-dirty is passed, check for a clean state and exit accordingly
+#if ((CHECK_DIRTY)); then
+#  ec=0
+#  [[ -z $(git status --porcelain 2> /dev/null) ]] && ec=1
+#  exit $ec
+#fi
+
 ##############################################################################
 # Settings
 
@@ -13,10 +20,15 @@ declare -A local_repos clone_repos
 
 #-----------------------------------------------------------------------------
 warn() { printf '%s\n' "$@" >&2; }
-die() { (($#)) && warn "$@"; exit 1 }
+die() {
+  (($#)) && warn "$@"
+  exit 1
+}
 
 #-----------------------------------------------------------------------------
 local_repos() {
+  local repo_path repo_name
+
   while IFS= read -r -d '' gitdir; do
     grep -q "$azure_url_pattern" "$gitdir/config" || continue
 
@@ -24,7 +36,7 @@ local_repos() {
     repo_path="${repo_path%/.git}"
     repo_name="${repo_path##*/}"
 
-    [[ -n "${repos[$repo_name]}" ]] && {
+    [[ -n ${repos[$repo_name]} ]] && {
       warn "duplicate $repo_name (${repos[$repo_name]}), not adding $repo_path"
       continue
     }
@@ -35,19 +47,18 @@ local_repos() {
 
 #-----------------------------------------------------------------------------
 mk_clone_list() {
-  az repos list --output json | jq -r '.[] | .remoteUrl' | while read -r remoteUrl; do
-    name=$(basename "$(dirname "$remoteUrl")")
+  local repos
 
-    if [[ -n "${local_repos[$name]}" ]]; then
-      continue
-    else
-      clone_repos[$name]="$remoteUrl"
-    fi
+  readarray -t repos < <(az repos list --output json \
+    | jq -r '.[] | .remoteUrl')
+
+  [[ ${PIPESTATUS[0]} -ne 0 ]] && die "Could not run 'az repos list'."
+
+  for repo in "${repos[@]}"; do
+    name="${repo##*/}"
+    [[ -n ${local_repos[$name]} ]] && continue
+    clone_repos[$name]="$remoteUrl"
   done
-}
-
-#-----------------------------------------------------------------------------
-mk_clone_list() {
 }
 
 ##############################################################################

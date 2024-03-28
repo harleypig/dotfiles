@@ -1,10 +1,11 @@
-#!/bin/bash
+# shellcheck shell=bash
 
 # XXX: Document me!
 
 # For using git in bash scripts
 
-source utility
+#source utility
+source $DOTFILES/lib/util_lib
 
 ##############################################################################
 # Checks current directory for the following conditions:
@@ -152,12 +153,6 @@ push_pull() {
   else
     return 3 # diverged
   fi
-}
-
-#-----------------------------------------------------------------------------
-local_remote() {
-  # XXX: Remove this after 20210101
-  die "local_remote is deprecated, please use push_pull instead"
 }
 
 ##############################################################################

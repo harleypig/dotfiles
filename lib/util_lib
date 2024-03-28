@@ -1,4 +1,4 @@
-#!/bin/bash
+# shellcheck shell=bash
 
 # XXX: try/catch?
 # XXX: exceptions? some kind of error-handling
