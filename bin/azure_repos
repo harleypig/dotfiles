@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# This script looks for '.git' directories under $HOME/projects
+# and stores the directory name and path to the repo relative to $HOME/projects
+# in an associative array.
+
+declare -A repos
+
+while IFS= read -r -d '' gitdir; do
+  repo_path="${gitdir#$HOME/projects/}"
+  repo_name="${repo_path##*/}"
+  repos[$repo_name]="$repo_path"
+done < <(find "$HOME/projects" -type d -name '.git' -print0)
+
+# You can access the associative array 'repos' as needed from here.
