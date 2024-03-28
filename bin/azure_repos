@@ -35,9 +35,23 @@ local_repos() {
 
 #-----------------------------------------------------------------------------
 mk_clone_list() {
+  az repos list --output json | jq -r '.[] | .remoteUrl' | while read -r remoteUrl; do
+    name=$(basename "$(dirname "$remoteUrl")")
+
+    if [[ -n "${local_repos[$name]}" ]]; then
+      continue
+    else
+      clone_repos[$name]="$remoteUrl"
+    fi
+  done
+}
+
+#-----------------------------------------------------------------------------
+mk_clone_list() {
 }
 
 ##############################################################################
 # Main
 
+mk_clone_list
 local_repos
