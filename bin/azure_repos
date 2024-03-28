@@ -5,10 +5,16 @@
 # in an associative array.
 
 declare -A repos
+azure_url_pattern="dev.azure.com"
 
 while IFS= read -r -d '' gitdir; do
   repo_path="${gitdir#$HOME/projects/}"
   repo_name="${repo_path##*/}"
+  # Check if the remote URL is an Azure repository
+  pushd "$(dirname "$gitdir")" > /dev/null
+  remote_url=$(git config --get remote.origin.url)
+  popd > /dev/null
+  [[ $remote_url =~ $azure_url_pattern ]] && repos[$repo_name]="$repo_path"
   repos[$repo_name]="$repo_path"
 done < <(find "$HOME/projects" -type d -name '.git' -print0)
 
