@@ -55,6 +55,7 @@ _terraform() {
     # Move the cursor after the equals sign
     local point=$(( ${#cur} + 1 ))
     COMP_POINT=$point
+
   else
     COMPREPLY=()
   fi
