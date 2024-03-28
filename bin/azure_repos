@@ -16,6 +16,11 @@ while IFS= read -r -d '' gitdir; do
   repo_path="${repo_path%/.git}"
   repo_name="${repo_path##*/}"
 
+  if [[ -n "${repos[$repo_name]}" ]]; then
+    echo "$repo_name is duplicated (${repos[$repo_name]}) not adding $repo_path" >&2
+    continue
+  fi
+
   repos[$repo_name]="$repo_path"
 done < <(find "$HOME/projects" -type d -name '.git' -print0)
 
