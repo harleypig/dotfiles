@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Check for --check-dirty parameter
+CHECK_DIRTY=0
+if [[ $1 == "--check-dirty" ]]; then
+  CHECK_DIRTY=1
+fi
+
+# Exit codes
+EXIT_CLEAN=0
+EXIT_DIRTY=1
+
 # XXX: Add STASHed info (check logs/refs/stash for count and other info)
 
 # Most of this git functionality came from
@@ -40,6 +50,17 @@ GIT_PS1_SHOWUNTRACKEDFILES=1
 GIT_PS1_SHOWUPSTREAM="auto"
 
 info=$(__git_ps1 '%s')
+
+# If --check-dirty is passed, check for a clean state and exit accordingly
+if ((CHECK_DIRTY)); then
+  if [[ -z $(git status --porcelain) ]]; then
+    exit $EXIT_CLEAN
+  else
+    exit $EXIT_DIRTY
+  fi
+fi
+
+# Continue with the original script if --check-dirty is not passed
 
 # shellcheck disable=SC1117
 if [ -n "$info" ]; then
