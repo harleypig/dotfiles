@@ -1,27 +1,43 @@
 #!/bin/bash
 
-# This script looks for '.git' directories under $HOME/projects
-# and stores the directory name and path to the repo relative to $HOME/projects
-# in an associative array.
+##############################################################################
+# Settings
 
 azure_url_pattern="dev.azure.com"
 projects_path="$HOME/projects"
 
-declare -A repos
+declare -A local_repos clone_repos
 
-while IFS= read -r -d '' gitdir; do
-  grep -q "$azure_url_pattern" "$gitdir/config" || continue
+##############################################################################
+# Functions
 
-  repo_path="${gitdir#$HOME/projects/}"
-  repo_path="${repo_path%/.git}"
-  repo_name="${repo_path##*/}"
+#-----------------------------------------------------------------------------
+warn() { printf '%s\n' "$@" >&2; }
+die() { (($#)) && warn "$@"; exit 1 }
 
-  if [[ -n "${repos[$repo_name]}" ]]; then
-    echo "$repo_name is duplicated (${repos[$repo_name]}) not adding $repo_path" >&2
-    continue
-  fi
+#-----------------------------------------------------------------------------
+local_repos() {
+  while IFS= read -r -d '' gitdir; do
+    grep -q "$azure_url_pattern" "$gitdir/config" || continue
 
-  repos[$repo_name]="$repo_path"
-done < <(find "$HOME/projects" -type d -name '.git' -print0)
+    repo_path="${gitdir#$projects_path/}"
+    repo_path="${repo_path%/.git}"
+    repo_name="${repo_path##*/}"
 
-# You can access the associative array 'repos' as needed from here.
+    [[ -n "${repos[$repo_name]}" ]] && {
+      warn "duplicate $repo_name (${repos[$repo_name]}), not adding $repo_path"
+      continue
+    }
+
+    local_repos[$repo_name]="$repo_path"
+  done < <(find "$HOME/projects" -type d -name '.git' -print0)
+}
+
+#-----------------------------------------------------------------------------
+mk_clone_list() {
+}
+
+##############################################################################
+# Main
+
+local_repos
