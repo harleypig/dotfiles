@@ -4,17 +4,18 @@
 # and stores the directory name and path to the repo relative to $HOME/projects
 # in an associative array.
 
-declare -A repos
 azure_url_pattern="dev.azure.com"
+projects_path="$HOME/projects"
+
+declare -A repos
 
 while IFS= read -r -d '' gitdir; do
+  grep -q "$azure_url_pattern" "$gitdir/config" || continue
+
   repo_path="${gitdir#$HOME/projects/}"
+  repo_path="${repo_path%/.git}"
   repo_name="${repo_path##*/}"
-  # Check if the remote URL is an Azure repository
-  pushd "$(dirname "$gitdir")" > /dev/null
-  remote_url=$(git config --get remote.origin.url)
-  popd > /dev/null
-  [[ $remote_url =~ $azure_url_pattern ]] && repos[$repo_name]="$repo_path"
+
   repos[$repo_name]="$repo_path"
 done < <(find "$HOME/projects" -type d -name '.git' -print0)
 
