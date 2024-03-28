@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Current working directory: $PWD"
 docker run --rm \
   -v "$PWD:/mnt" \
   -u "$(id -u):$(id -g)" \
