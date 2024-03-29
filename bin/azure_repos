@@ -9,10 +9,9 @@ clone_path=
 no_pull=0
 no_clone=0
 project=
-exclude=
-include=
 
 declare -A local_repos clone_repos
+declare -a exclude_repos include_repos
 
 ##############################################################################
 # Functions
@@ -63,19 +62,17 @@ parse_params() {
         ;;
       --exclude)
         shift
-        if [[ -f "$1" ]]; then
-          exclude="$1"
-        else
-          die "The file specified with --exclude does not exist: $1"
-        fi
+        [[ -r "$1" ]] \
+          || die "The file specified with --exclude does not exist: $1"
+
+        exclude_repos="$(<$1)"
         ;;
       --include)
         shift
-        if [[ -f "$1" ]]; then
-          include="$1"
-        else
-          die "The file specified with --include does not exist: $1"
-        fi
+        [[ -r "$1" ]] \
+          || die "The file specified with --include does not exist: $1"
+
+        include_repos="$(<$1)"
         ;;
       --help|-h)
         usage
