@@ -27,6 +27,12 @@ die() {
 usage() {
   local msg="
 
+This script manages local copies of Azure DevOps repositories. It updates existing
+repositories and clones new ones as needed. It can exclude or include specific
+repositories based on provided lists. While using both --exclude and --include
+is allowed, be aware that exclusion takes precedence over inclusion, which might
+lead to unexpected results.
+
 Usage: ${0##*/} [OPTIONS]
 
 Options:
