@@ -133,6 +133,8 @@ local_repos() {
 #-----------------------------------------------------------------------------
 clone_repos() {
   local repos
+clone_repos() {
+  local repos name
 
   readarray -t repos < <(az repos list --output json \
     | jq -r '.[] | .remoteUrl')
@@ -141,7 +143,16 @@ clone_repos() {
 
   for repo in "${repos[@]}"; do
     name="${repo##*/}"
-    [[ -n ${local_repos[$name]} ]] && continue
+    if [[ -n ${local_repos[$name]} ]]; then
+      continue
+    fi
+
+    # Exclude takes precedence over include
+    if [[ " ${exclude_repos[@]} " =~ " ${name} " ]]; then
+      continue
+    elif [[ -n "${include_repos[*]}" && ! " ${include_repos[@]} " =~ " ${name} " ]]; then
+      continue
+    fi
 
     cd "$clone_path" || die "Unable to change to $clone_path"
 
