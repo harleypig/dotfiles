@@ -137,6 +137,8 @@ local_repos() {
       continue
     }
 
+    echo "Updating $repo_name ..."
+
     git fetch --all 2> /dev/null \
       || warn "Could not fetch $repo_name ($repo_path)"
 
