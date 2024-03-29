@@ -63,13 +63,13 @@ parse_params() {
   while [[ "$1" != "" ]]; do
     param="$1"
     case $param in
-      --no-pull|-np)
+      --no-pull | -np)
         no_pull=1
         ;;
-      --no-clone|-nc)
+      --no-clone | -nc)
         no_clone=1
         ;;
-      --project|-p)
+      --project | -p)
         shift
         ;;
       --exclude)
@@ -86,7 +86,7 @@ parse_params() {
 
         mapfile -t include_repos < "$1"
         ;;
-      --help|-h)
+      --help | -h)
         usage
         ;;
       *)
@@ -104,7 +104,7 @@ parse_params() {
     || die "Unable to detect project in current configuration."
   }
 
-  clone_path="$projects_path/$project"
+  clone_path="$projects_path/${project,,}"
 }
 
 #-----------------------------------------------------------------------------
@@ -115,7 +115,7 @@ local_repos() {
     grep -q "$azure_url_pattern" "$gitdir/config" || continue
 
     project_path="${gitdir%/.git}"
-    repo_path="${project_path#$projects_path}"
+    repo_path="${project_path#"$projects_path"}"
     repo_name="${repo_path##*/}"
 
     [[ -n ${repos[$repo_name]} ]] && {
