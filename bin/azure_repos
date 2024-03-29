@@ -63,11 +63,19 @@ parse_params() {
         ;;
       --exclude)
         shift
-        exclude="$1"
+        if [[ -f "$1" ]]; then
+          exclude="$1"
+        else
+          die "The file specified with --exclude does not exist: $1"
+        fi
         ;;
       --include)
         shift
-        include="$1"
+        if [[ -f "$1" ]]; then
+          include="$1"
+        else
+          die "The file specified with --include does not exist: $1"
+        fi
         ;;
       --help|-h)
         usage
