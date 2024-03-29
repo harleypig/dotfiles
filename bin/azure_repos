@@ -143,9 +143,7 @@ clone_repos() {
 
   for repo in "${repos[@]}"; do
     name="${repo##*/}"
-    if [[ -n ${local_repos[$name]} ]]; then
-      continue
-    fi
+    [[ -n ${local_repos[$name]} ]] && continue
 
     # Exclude takes precedence over include
     if [[ " ${exclude_repos[@]} " =~ " ${name} " ]]; then
@@ -155,7 +153,6 @@ clone_repos() {
     fi
 
     cd "$clone_path" || die "Unable to change to $clone_path"
-
     git clone "$repo"
   done
 }
