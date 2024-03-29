@@ -97,11 +97,25 @@ local_repos() {
 
     local_repos[$repo_name]="$repo_path"
 
+    ((no_pull)) && continue
+
+    cd "$project_path" || die "Unable to change to $project_path."
+    [[ -n "$(git status --porcelain)" ]] && {
+      warn "$repo_name ($repo_path) is dirty, not pulling"
+      continue
+    }
+
+    git fetch --all 2> /dev/null \
+      || warn "Could not fetch $repo_name ($repo_path)"
+
+    git fetch --tags 2> /dev/null \
+      || warn "Could not fetch tags for $repo_name ($repo_path)"
+
   done < <(find "$projects_path" -type d -name '.git' -print0)
 }
 
 #-----------------------------------------------------------------------------
-mk_clone_list() {
+clone_repos() {
   local repos
 
   readarray -t repos < <(az repos list --output json \
@@ -119,7 +133,9 @@ mk_clone_list() {
 ##############################################################################
 # Main
 
+parse_params
+
 cd "$projects_path" || die "Unable to change to $projects_path."
 
-mk_clone_list
 local_repos
+clone_repos
