@@ -135,10 +135,10 @@ local_repos() {
 
     echo "Updating $repo_name ..."
 
-    git fetch --all 2> /dev/null \
+    git fetch --quiet --all 2> /dev/null \
       || warn "Could not fetch $repo_name ($repo_path)"
 
-    git fetch --tags 2> /dev/null \
+    git fetch --quiet --tags 2> /dev/null \
       || warn "Could not fetch tags for $repo_name ($repo_path)"
 
   done < <(find "$projects_path" -type d -name '.git' -print0)
