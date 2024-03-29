@@ -148,8 +148,6 @@ local_repos() {
 #-----------------------------------------------------------------------------
 clone_repos() {
   local repos
-clone_repos() {
-  local repos name
 
   readarray -t repos < <(az repos list --output json \
     | jq -r '.[] | .remoteUrl')
@@ -174,6 +172,9 @@ clone_repos() {
 
 ##############################################################################
 # Main
+
+[[ -x "$(command -v az)" ]] \
+  || usage "Azure CLI is required to run this script."
 
 parse_params
 

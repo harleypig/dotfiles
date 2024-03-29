@@ -1,0 +1,62 @@
+---
+- name: Check if version tracking fact is initialized
+  fail:
+    msg: "Version tracking fact has not been initialized."
+  when: version_tracking is not defined
+
+- name: Set current version from version tracking
+  set_fact:
+    shellcheck_asset_current_version: "{{ version_tracking['shellcheck'] | default('0') }}"
+
+- name: Dump version information
+  debug:
+    msg: "Current version of shellcheck: {{ shellcheck_asset_current_version }}"
+  when: DEBUG_PLAYBOOK | default(false) | bool
+
+- name: Create a temporary file
+  tempfile:
+    state: file
+    suffix: .tar.xz
+  register: shellcheck_tempfile
+
+- name: Dump tempfile information
+  debug:
+    msg: "Tempfile: {{ shellcheck_tempfile }}"
+  when: DEBUG_PLAYBOOK | default(false) | bool
+
+- name: Get the new release if there is one
+  include_role:
+    name: github_release
+  vars:
+    github_release_asset_name: shellcheck
+    github_release_asset_pattern: shellcheck_linux_amd64.zip
+    github_release_current_version: "{{ shellcheck_asset_current_version }}"
+    github_release_repo: terraform-linters/shellcheck
+    github_release_localpath: "{{ shellcheck_tempfile.path }}"
+
+- name: Dump version information using the github_asset_name variable
+  debug:
+    msg: |
+      Mismatch: {{ github_release_version_mismatch }}
+      Download result: {{ github_release_download_result }}
+  when: DEBUG_PLAYBOOK | default(false) | bool
+
+- name: Unzip the testfile
+  become: yes # noqa: yaml[truthy]
+  unarchive:
+    src: "{{ shellcheck_tempfile.path }}"
+    dest: /usr/local/bin/
+    include: shellcheck
+    remote_src: yes # noqa: yaml[truthy]
+    mode: '0755'
+  register: unarchive_result
+  when: github_release_version_mismatch
+
+- name: Set version tracking fact for shellcheck
+  include_role:
+    name: version_tracking
+  vars:
+    version_tracking_key: 'shellcheck'
+    version_tracking_value: "{{ github_release_latest_version }}"
+    version_tracking_action: 'update'
+  when: unarchive_result is succeeded
