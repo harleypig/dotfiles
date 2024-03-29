@@ -60,10 +60,6 @@ $(printf '%s\n' "$@")
 parse_params() {
   local param
 
-  # Default project to the current Azure CLI configured project if not provided
-  project=$(az config get defaults.group --only-show-errors 2> /dev/null \
-    | jq -r '.value' 2>/dev/null)
-
   while [[ "$1" != "" ]]; do
     param="$1"
     case $param in
@@ -152,7 +148,7 @@ local_repos() {
 clone_repos() {
   local repos
 
-  readarray -t repos < <(az repos list --output json 2> /dev/null \
+  readarray -t repos < <(az repos list --project "$project" --output json 2> /dev/null \
     | jq -r '.[] | .remoteUrl')
 
   [[ ${PIPESTATUS[0]} -ne 0 ]] && die "Could not run 'az repos list'."
