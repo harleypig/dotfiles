@@ -27,7 +27,7 @@ die() {
 usage() {
   local msg="
 
-Usage: $(basename "$0") [OPTIONS]
+Usage: ${0##*/} [OPTIONS]
 
 Options:
   --no-pull|-np            Do not pull updates for existing repositories
