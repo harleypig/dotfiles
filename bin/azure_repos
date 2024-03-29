@@ -1,17 +1,15 @@
 #!/bin/bash
 
-## If --check-dirty is passed, check for a clean state and exit accordingly
-#if ((CHECK_DIRTY)); then
-#  ec=0
-#  [[ -z $(git status --porcelain 2> /dev/null) ]] && ec=1
-#  exit $ec
-#fi
-
 ##############################################################################
 # Settings
 
 azure_url_pattern="dev.azure.com"
 projects_path="$HOME/projects"
+no_pull=0
+no_clone=0
+project=
+exclude=
+include=
 
 declare -A local_repos clone_repos
 
@@ -44,30 +42,19 @@ $@
 #-----------------------------------------------------------------------------
 # XXX: Change to use ParseParams when it's fixed.
 
-# --no-pull  Don't git pull existing repos. (boolean)
-# --no-clone Don't clone any repositories. (boolean)
-# --project  Clone repos from this project. If not included then whatever the
-#            azure cli is configured to use will be used. (string)
-# --exclude  Exclude any repositories listed in this file when cloning repos.
-#            One repository per line. (filename)
-# --include  Clone only the repositories listed in this file when cloning repos.
-#            One repository per line. (filename)
-# --help     Displays usage.
-
 parse_params() {
   local param
-  local no_pull=0 no_clone=0 project='' exclude='' include=''
 
   while [[ "$1" != "" ]]; do
     param="$1"
     case $param in
-      --no-pull)
+      --no-pull|-np)
         no_pull=1
         ;;
-      --no-clone)
+      --no-clone|-nc)
         no_clone=1
         ;;
-      --project)
+      --project|-p)
         shift
         project="$1"
         ;;
@@ -79,7 +66,7 @@ parse_params() {
         shift
         include="$1"
         ;;
-      --help)
+      --help|-h)
         usage
         ;;
       *)
@@ -88,6 +75,8 @@ parse_params() {
     esac
     shift
   done
+
+  ((no_pull)) && ((no_clone)) && usage "--no-pull and --no-clone are mutually exclusive"
 }
 
 #-----------------------------------------------------------------------------
