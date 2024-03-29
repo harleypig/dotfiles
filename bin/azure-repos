@@ -166,7 +166,7 @@ clone_repos() {
 
     cd "$clone_path" || die "Unable to change to $clone_path"
     echo "Cloning $name ..."
-    git clone "$repo"
+    git clone --quiet "$repo"
   done
 }
 
