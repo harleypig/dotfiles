@@ -18,6 +18,7 @@ set completion-ignore-case on
 set completion-map-case on
 set completion-prefix-display-length 2
 set mark-symlinked-directories on
+set menu-complete-display-prefix off
 set show-all-if-ambiguous on
 set show-all-if-unmodified on
 set skip-completed-text on
@@ -79,7 +80,6 @@ $endif
 # set convert-meta off
 # set disable-completion off
 # set mark-modified-lines off
-# set menu-complete-display-prefix off
 
 #"\C-n": dump-macros
 
