@@ -25,10 +25,17 @@ die() {
 
 #-----------------------------------------------------------------------------
 usage() {
-  msg = "
+  local msg="
 
-usage:
+Usage: $(basename "$0") [OPTIONS]
 
+Options:
+  --no-pull|-np            Do not pull updates for existing repositories
+  --no-clone|-nc           Do not clone new repositories
+  --project|-p <project>   Specify the Azure DevOps project (defaults to the Azure CLI configured project)
+  --exclude <file>         Path to a file containing a list of repository names to exclude
+  --include <file>         Path to a file containing a list of repository names to include
+  --help|-h                Show this help message and exit
 "
 
   (($#)) && msg="${msg}
