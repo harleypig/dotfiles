@@ -45,6 +45,9 @@ $@
 parse_params() {
   local param
 
+  # Default project to the current Azure CLI configured project if not provided
+  project=$(az config get defaults.group --only-show-errors | jq -r '.value' 2>/dev/null)
+
   while [[ "$1" != "" ]]; do
     param="$1"
     case $param in
@@ -56,7 +59,11 @@ parse_params() {
         ;;
       --project|-p)
         shift
-        project="$1"
+        if [[ -n "$1" ]]; then
+          project="$1"
+        elif [[ -z "$project" ]]; then
+          die "Project name is required if not set in Azure CLI defaults."
+        fi
         ;;
       --exclude)
         shift
