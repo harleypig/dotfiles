@@ -5,6 +5,7 @@
 
 azure_url_pattern="dev.azure.com"
 projects_path="$HOME/projects"
+clone_path=
 no_pull=0
 no_clone=0
 project=
@@ -59,11 +60,6 @@ parse_params() {
         ;;
       --project|-p)
         shift
-        if [[ -n "$1" ]]; then
-          project="$1"
-        elif [[ -z "$project" ]]; then
-          die "Project name is required if not set in Azure CLI defaults."
-        fi
         ;;
       --exclude)
         shift
@@ -84,6 +80,14 @@ parse_params() {
   done
 
   ((no_pull)) && ((no_clone)) && usage "--no-pull and --no-clone are mutually exclusive"
+
+  [[ -z $project ]] && {
+    project="$(az devops configure --list \
+      | grep '^project' | awk '{print $3}')" \
+    || die "Unable to detect project in current configuration."
+  }
+
+  clone_path="$projects_path/$project"
 }
 
 #-----------------------------------------------------------------------------
@@ -133,7 +137,10 @@ clone_repos() {
   for repo in "${repos[@]}"; do
     name="${repo##*/}"
     [[ -n ${local_repos[$name]} ]] && continue
-    clone_repos[$name]="$remoteUrl"
+
+    cd "$clone_path" || die "Unable to change to $clone_path"
+
+    git clone "$repo"
   done
 }
 
