@@ -26,23 +26,56 @@ die() {
 }
 
 #-----------------------------------------------------------------------------
+usage() {
+  msg = "
+
+usage:
+
+"
+
+  (($#)) && msg="${msg}
+
+$@
+"
+
+  die "$msg"
+}
+
+#-----------------------------------------------------------------------------
+# XXX: Change to use ParseParams when it's fixed.
+
+# --no-pull  Don't git pull existing repos. (boolean)
+# --no-clone Don't clone any repositories. (boolean)
+# --project  Clone repos from this project. If not included then whatever the
+#            azure cli is configured to use will be used. (string)
+# --exclude  Exclude any repositories listed in this file when cloning repos.
+#            One repository per line. (filename)
+# --include  Clone only the repositories listed in this file when cloning repos.
+#            One repository per line. (filename)
+# --help     Displays usage.
+
+parse_params() {
+}
+
+#-----------------------------------------------------------------------------
 local_repos() {
-  local repo_path repo_name
+  local project_path repo_path repo_name
 
   while IFS= read -r -d '' gitdir; do
     grep -q "$azure_url_pattern" "$gitdir/config" || continue
 
-    repo_path="${gitdir#$projects_path/}"
-    repo_path="${repo_path%/.git}"
+    project_path="${gitdir%/.git}"
+    repo_path="${project_path#$projects_path}"
     repo_name="${repo_path##*/}"
 
     [[ -n ${repos[$repo_name]} ]] && {
-      warn "duplicate $repo_name (${repos[$repo_name]}), not adding $repo_path"
+      warn "duplicate $repo_name (${repos[$repo_name]}), not pulling $repo_path"
       continue
     }
 
     local_repos[$repo_name]="$repo_path"
-  done < <(find "$HOME/projects" -type d -name '.git' -print0)
+
+  done < <(find "$projects_path" -type d -name '.git' -print0)
 }
 
 #-----------------------------------------------------------------------------
@@ -63,6 +96,8 @@ mk_clone_list() {
 
 ##############################################################################
 # Main
+
+cd "$projects_path" || die "Unable to change to $projects_path."
 
 mk_clone_list
 local_repos
