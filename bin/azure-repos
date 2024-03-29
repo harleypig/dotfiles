@@ -48,7 +48,7 @@ Options:
 
   (($#)) && msg="${msg}
 
-$@
+$(printf '%s\n' "$@")
 "
 
   die "$msg"
@@ -81,14 +81,14 @@ parse_params() {
         [[ -r "$1" ]] \
           || die "The file specified with --exclude does not exist: $1"
 
-        exclude_repos="$(<$1)"
+        mapfile -t exclude_repos < "$1"
         ;;
       --include)
         shift
         [[ -r "$1" ]] \
           || die "The file specified with --include does not exist: $1"
 
-        include_repos="$(<$1)"
+        mapfile -t include_repos < "$1"
         ;;
       --help|-h)
         usage
@@ -180,7 +180,7 @@ clone_repos() {
 [[ -x "$(command -v az)" ]] \
   || usage "Azure CLI is required to run this script."
 
-parse_params
+parse_params "$@"
 
 cd "$projects_path" || die "Unable to change to $projects_path."
 
