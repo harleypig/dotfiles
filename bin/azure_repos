@@ -55,6 +55,39 @@ $@
 # --help     Displays usage.
 
 parse_params() {
+  local param
+  local no_pull=0 no_clone=0 project='' exclude='' include=''
+
+  while [[ "$1" != "" ]]; do
+    param="$1"
+    case $param in
+      --no-pull)
+        no_pull=1
+        ;;
+      --no-clone)
+        no_clone=1
+        ;;
+      --project)
+        shift
+        project="$1"
+        ;;
+      --exclude)
+        shift
+        exclude="$1"
+        ;;
+      --include)
+        shift
+        include="$1"
+        ;;
+      --help)
+        usage
+        ;;
+      *)
+        usage "Unknown parameter: $param"
+        ;;
+    esac
+    shift
+  done
 }
 
 #-----------------------------------------------------------------------------
