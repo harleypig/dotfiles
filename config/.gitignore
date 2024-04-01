@@ -1,6 +1,7 @@
 Bitwarden\ CLI/**
 coc/**
 Code/**
+dlv/**
 docker/buildx/**
 evolution/**
 gtk-3.0/**
@@ -9,6 +10,10 @@ pulse/**
 tree-sitter/**
 yelp/**
 
+docker/.token_seed
+docker/.token_seed.lock
+pgcli/history
+pgcli/log
 dconf/user
 .gsd-keyboard.settings-ported
 mimeapps.list

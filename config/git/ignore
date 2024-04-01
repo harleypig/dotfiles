@@ -1,5 +1,7 @@
 # From http://help.github.com/git-ignore
 
+.aider.*
+
 # Compiled source #
 ###################
 *.class

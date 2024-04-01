@@ -4,9 +4,6 @@
 [include]
   path = ../../gitconfig.user
 
-[credential]
-  helper = /bin/bash git-credentials-helper
-
 [core]
   compression  = 9
   editor       = vim
