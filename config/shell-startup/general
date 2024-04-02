@@ -3,10 +3,6 @@
 PROMPT_DIRTRIM=2
 
 #-----------------------------------------------------------------------------
-# Fix the bash completion issue with variables
-shopt -s direxpand
-
-#-----------------------------------------------------------------------------
 alias wget="wget --hsts-file="$XDG_CACHE_HOME/wget-hsts""
 
 #-----------------------------------------------------------------------------
@@ -26,8 +22,8 @@ md() { mkdir -p "$@" && cd "$@" || return; }
 }
 
 #-----------------------------------------------------------------------------
-shopt -s autocd cdspell dirspell globstar cdable_vars checkhash checkwinsize \
-         dotglob extglob nocaseglob 2> /dev/null
+shopt -s autocd cdspell direxpand dirspell globstar cdable_vars checkhash \
+         checkwinsize dotglob extglob nocaseglob 2> /dev/null
 
 umask 022
 
@@ -114,10 +110,7 @@ HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
 HISTSIZE=500000
 HISTTIMEFORMAT='%F %T '
 
-shopt -s cmdhist
-shopt -s histappend
-shopt -s histreedit
-shopt -s histverify
+shopt -s cmdhist histappend histreedit histverify
 
 alias h='history'
 
@@ -129,6 +122,10 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 
 # This overrides local ansible.cfg
 #export ANSIBLE_CONFIG="${XDG_CONFIG_HOME}/ansible.cfg"
+
+#-----------------------------------------------------------------------------
+[[ -x "$(command -v plandex)" ]] \
+  && source "$XDG_CONFIG_HOME/completions/plandex"
 
 #-----------------------------------------------------------------------------
 # Mimic Zsh run-help ability

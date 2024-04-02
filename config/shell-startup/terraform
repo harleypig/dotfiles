@@ -4,7 +4,15 @@
 
 mkdir -p "$XDG_CACHE_HOME/terraform"
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
+alias tf='terraform'
 
+[[ -r "$XDG_CONFIG_HOME/completions/terrraform" ]] \
+  && source "$XDG_CONFIG_HOME/completions/terraform"
+
+# XXX: Compare with this gist, which is what's being sourced above
+#
+# https://gist.githubusercontent.com/zish/85dccece461e050077997ff5d7d9c9d4/raw/c4719a2443e4be0010fd4c3dbc8a94ad14b4e6ee/terraform_bash_completion.sh
+#
 # Completions:
 #
 # [x] terraform <subcommands>

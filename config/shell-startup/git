@@ -8,10 +8,6 @@
 
 [[ -x "$(command -v git 2> /dev/null)" ]] || return 0
 
-export GIT_COMPLETION_SHOW_ALL=1
-export GIT_COMPLETION_SHOW_ALL_COMMANDS=1
-export GIT_COMPLETION_IGNORE_CASE=1
-
 #-----------------------------------------------------------------------------
 # Show git short status for current directory by pressing Ctl-g-s.
 bind -x '"\C-gs": "git status -s ."'
@@ -164,6 +160,10 @@ alias gs='git status -s'
 #-----------------------------------------------------------------------------
 # https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
 if [[ -r "$XDG_CONFIG_HOME/completions/git" ]]; then
+  export GIT_COMPLETION_SHOW_ALL=1
+  export GIT_COMPLETION_SHOW_ALL_COMMANDS=1
+  export GIT_COMPLETION_IGNORE_CASE=1
+
   source "$XDG_CONFIG_HOME/completions/git"
 
   __git_complete ga  _git_add
