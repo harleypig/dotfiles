@@ -21,27 +21,27 @@ git rev-parse &> /dev/null || exit 0
   exit 0
 }
 
-## Do we have access to __git_ps1?
-#declare -a locs
-#
-## https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
-#locs+=("$DOTFILES/lib/git-prompt")
-#locs+=('/usr/share/git-core/contrib/completion/git-prompt.sh')
-#locs+=('/usr/share/git/completion/git-prompt.sh')
-#locs+=('/usr/lib/git-core/git-sh-prompt')
-#
-#locfound=0
-#
-#for loc in "${locs[@]}"; do
-#  [[ -r $loc ]] && {
-#    # shellcheck disable=SC1090
-#    source "$loc"
-#    locfound=1
-#    break
-#  }
-#done
-#
-#((locfound)) || exit 0
+# Do we have access to __git_ps1?
+declare -a locs
+
+# https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+locs+=("$DOTFILES/lib/git-prompt")
+locs+=('/usr/share/git-core/contrib/completion/git-prompt.sh')
+locs+=('/usr/share/git/completion/git-prompt.sh')
+locs+=('/usr/lib/git-core/git-sh-prompt')
+
+locfound=0
+
+for loc in "${locs[@]}"; do
+  [[ -r $loc ]] && {
+    # shellcheck disable=SC1090
+    source "$loc"
+    locfound=1
+    break
+  }
+done
+
+((locfound)) || exit 0
 
 # shellcheck disable=SC2034
 {
