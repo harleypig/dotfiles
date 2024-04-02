@@ -94,8 +94,7 @@ function sudo() {
     set -- bash -ic "$(alias "$1"); $(printf "%q " "$@")"
   fi
 
-  printf "Executing: %q " sudo "$@"
-  echo
+  echo "Executing: sudo $*"
 
   # and do it
   command sudo "$@"
