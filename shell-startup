@@ -143,28 +143,6 @@ set_bin_dirs() {
 }
 
 #-----------------------------------------------------------------------------
-load_completions() {
-  declare -a load_dirs
-  load_dirs+=("$XDG_CONFIG_HOME/completions")
-
-  # Run each directory instead of doing a find on all directories at once
-  # because we want these files loaded in this particular order.
-
-  for load_dir in "${load_dirs[@]}"; do
-    [[ -d $load_dir ]] || continue
-
-    readarray -t load_files < <(/usr/bin/find "$load_dir" -type f -not -iname '*_inactive' | /usr/bin/sort)
-
-    for f in "${load_files[@]}"; do
-      # shellcheck disable=SC1090
-      [[ -r $f ]] && source "$f"
-    done
-  done
-}
-
-unsetfuncs load_completions
-
-#-----------------------------------------------------------------------------
 load_files() {
   declare -a load_dirs
   load_dirs+=("$XDG_CONFIG_HOME/shell-startup")
