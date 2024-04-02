@@ -18,6 +18,7 @@
 
 declare -a _unset_vars _unset_funcs
 
+# shellcheck disable=2317
 unsetvars() { _unset_vars+=("$@"); }
 unsetfuncs() { _unset_funcs+=("$@"); }
 
@@ -82,7 +83,7 @@ unsetfuncs 'debug'
 # Usage:
 #   addpath PATH /path/to/add
 #   addpath LD_LIBRARY_PATH /path/to/add
-#   andpath /path/to/add
+#   addpath /path/to/add
 #
 #   The last one defaults to PATH
 
@@ -106,6 +107,8 @@ addpath() {
 unsetfuncs 'addpath'
 
 #-----------------------------------------------------------------------------
+# XXX: Does this actually work?
+
 run_hook() {
   local hook="$dfdir/$1"
   debug "running hook: $hook"
@@ -140,6 +143,28 @@ set_bin_dirs() {
 }
 
 #-----------------------------------------------------------------------------
+load_completions() {
+  declare -a load_dirs
+  load_dirs+=("$XDG_CONFIG_HOME/completions")
+
+  # Run each directory instead of doing a find on all directories at once
+  # because we want these files loaded in this particular order.
+
+  for load_dir in "${load_dirs[@]}"; do
+    [[ -d $load_dir ]] || continue
+
+    readarray -t load_files < <(/usr/bin/find "$load_dir" -type f -not -iname '*_inactive' | /usr/bin/sort)
+
+    for f in "${load_files[@]}"; do
+      # shellcheck disable=SC1090
+      [[ -r $f ]] && source "$f"
+    done
+  done
+}
+
+unsetfuncs load_completions
+
+#-----------------------------------------------------------------------------
 load_files() {
   declare -a load_dirs
   load_dirs+=("$XDG_CONFIG_HOME/shell-startup")
@@ -154,6 +179,7 @@ load_files() {
     readarray -t load_files < <(/usr/bin/find "$load_dir" -type f -not -iname '*_inactive' | /usr/bin/sort)
 
     for f in "${load_files[@]}"; do
+      # shellcheck disable=SC1090
       [[ -r $f ]] && source "$f"
     done
   done
@@ -162,21 +188,26 @@ load_files() {
 ##############################################################################
 # Setup environment
 
+# XXX: WTF am I trying doing here?
+
 path_to_generate_exports_script="/path/to/generate_exports.sh"
 path_to_exports_script="/path/to/exports.sh"
 
 # Generate export commands if needed
 if [[ -x $path_to_generate_exports_script ]]; then
+  # shellcheck disable=SC1090
   source "$path_to_generate_exports_script"
 fi
 
 # Source the export commands
 if [[ -r $path_to_exports_script ]]; then
+  # shellcheck disable=SC1090
   source "$path_to_exports_script"
 fi
 
 [[ -r "$DOTFILES/app_env_vars" ]] && source "$DOTFILES/app_env_vars"
 
+# shellcheck disable=SC1091
 [[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \
   && source "$DOTFILES/shell_startup.d/pre-setup"
 
