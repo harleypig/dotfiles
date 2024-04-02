@@ -109,8 +109,14 @@ unsetfuncs 'addpath'
 run_hook() {
   local hook="$dfdir/$1"
   debug "running hook: $hook"
-  [[ -r $hook ]] || { debug "hook not readable: $hook"; return 1; }
-  source "$hook" || { debug "hook failed: $hook"; return 1; }
+  [[ -r $hook ]] || {
+    debug "hook not readable: $hook"
+    return 1
+  }
+  source "$hook" || {
+    debug "hook failed: $hook"
+    return 1
+  }
   return 0
 }
 
@@ -160,12 +166,12 @@ path_to_generate_exports_script="/path/to/generate_exports.sh"
 path_to_exports_script="/path/to/exports.sh"
 
 # Generate export commands if needed
-if [[ -x "$path_to_generate_exports_script" ]]; then
+if [[ -x $path_to_generate_exports_script ]]; then
   source "$path_to_generate_exports_script"
 fi
 
 # Source the export commands
-if [[ -r "$path_to_exports_script" ]]; then
+if [[ -r $path_to_exports_script ]]; then
   source "$path_to_exports_script"
 fi
 

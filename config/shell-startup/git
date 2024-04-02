@@ -3,19 +3,23 @@
 # Aliases and functions for git
 
 # Check the following for more ideas:
-
 # https://gist.github.com/chrismccoy/8775224
-# https://gitlab.com/mikegerwitz/git-shortmaps
-# https://github.com/scmbreeze/scm_breeze
+# https://github.com/git/git/blob/master/mergetools/vimdiff
 
 [[ -x "$(command -v git 2> /dev/null)" ]] || return 0
 
+export GIT_COMPLETION_SHOW_ALL=1
+export GIT_COMPLETION_SHOW_ALL_COMMANDS=1
+export GIT_COMPLETION_IGNORE_CASE=1
+
+#-----------------------------------------------------------------------------
 # Show git short status for current directory by pressing Ctl-g-s.
 bind -x '"\C-gs": "git status -s ."'
 
 # Show all local and remote branches for all remotes by pressing Ctl-g-r.
-bind -x '"\C-gr": "git branch -ra"'
+bind -x '"\C-gr": "git branch -ra | column"'
 
+#-----------------------------------------------------------------------------
 function gtoplevel() {
   git rev-parse --show-toplevel 2> /dev/null || {
     echo "Not in a git repository."
@@ -25,6 +29,7 @@ function gtoplevel() {
   return 0
 }
 
+#-----------------------------------------------------------------------------
 # Go to current git repo toplevel directory.
 function gtl() {
   local dir
@@ -36,6 +41,7 @@ function gtl() {
   }
 }
 
+#-----------------------------------------------------------------------------
 ## Go to current git toplevel directory, perform the git command and return
 ## to the original directory.
 #function git_cmd_return() {
@@ -45,30 +51,7 @@ function gtl() {
 #  cd - > /dev/null
 #}
 
-function ga() { git add "$@"; }
-function gca() { git commit -a -v -m "$@"; }
-function gc() { git commit -v -m "$@"; }
-function gco() { git checkout "$@"; }
-function gf() { git fetch --all --tags; }
-function gmv() { git mv "$@"; }
-function grm() { git rm "$@"; }
-
-alias gall='git add .'
-alias gba='git branch -ra -v'
-alias gb='git branch'
-alias gcp='git cherry-pick'
-alias gdc='git diff --cached'
-alias gd='git diff'
-alias gds='git diffstat'
-alias glg='git lg'
-alias gl='git pull'
-alias gpa='git remote | xargs -L1 git push --all'
-alias gpall='git push --all'
-alias gp='git push'
-alias gs='git status -s'
-
-vim_bundles='.vim/bundle'
-
+#-----------------------------------------------------------------------------
 function gsubadd() {
   if (($# < 1)) || (($# > 3)); then
     cat << EOH
@@ -122,6 +105,7 @@ EOH
   cd - > /dev/null
 }
 
+#-----------------------------------------------------------------------------
 function gsubrm() {
   gtl || return 1
 
@@ -153,3 +137,44 @@ function gsubrm() {
   # shellcheck disable=SC2164
   cd - > /dev/null
 }
+#-----------------------------------------------------------------------------
+function ga() { git add "$@"; }
+function gca() { git commit -a -v -m "$@"; }
+function gc() { git commit -v -m "$@"; }
+function gco() { git checkout "$@"; }
+function gf() { git fetch --all --tags; }
+function gmv() { git mv "$@"; }
+function grm() { git rm "$@"; }
+
+#-----------------------------------------------------------------------------
+alias gall='git add .'
+alias gba='git branch -ra -v'
+alias gb='git branch'
+alias gcp='git cherry-pick'
+alias gdc='git diff --cached'
+alias gd='git diff'
+alias gds='git diffstat'
+alias glg='git lg'
+alias gl='git pull'
+alias gpa='git remote | xargs -L1 git push --all'
+alias gpall='git push --all'
+alias gp='git push'
+alias gs='git status -s'
+
+#-----------------------------------------------------------------------------
+# https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
+if [[ -r "$XDG_CONFIG_HOME/completions/git" ]]; then
+  source "$XDG_CONFIG_HOME/completions/git"
+
+  __git_complete ga  _git_add
+  __git_complete gc  _git_commit
+  __git_complete gco _git_checkout
+  __git_complete gcp _git_cherry_pick
+  __git_complete gdc _git_diff
+  __git_complete gd  _git_diff
+  __git_complete gl  _git_pull
+  __git_complete gmv _git_mv
+  __git_complete gp  _git_push
+  __git_complete grm _git_rm
+
+fi
