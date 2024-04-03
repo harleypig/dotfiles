@@ -10,45 +10,17 @@ sourced && die 'build-meta-test must not be sourced'
 
 declare -A IGNORE
 
-IGNORE["$GLOBAL_DIR/tools/bin/bash_colors"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/bats"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/git-dry-merge"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/git-logcsv"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/git-logrsync"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/git_status"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/gli"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/mkctags"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/mkman"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/prod2git"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/update_bats"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/update_project"]=1
-
-IGNORE["$GLOBAL_DIR/scripts/shells/copy_files_fdr_bnkcrd.sh"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/copy_files_receive.sh"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/ctm_reorder"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/exec_ds"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/reset_cap_job_conditions"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/reset_dw_job_conditions"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/run_dsjob"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_create"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_debug"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_export"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_gen"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_import"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_maint"]=1
+#IGNORE["/path/to/file"]=1
 
 template_filename="$BATS_TEST/templates/file.meta.bats.template"
 template=$(< "$template_filename")
 
-#  find "$GLOBAL_SCRIPTS"/{shells,lib} "$GLOBAL_TOOLS" -type f -iregex '.*\(git-sync\|git-save\)' -printf '%p\n'
-
 declare -a fopts
 
 # Paths to check for files
-fopts+=("$GLOBAL_SCRIPTS"/{shells,lib})
-fopts+=("$GLOBAL_TOOLS")
 fopts+=("$DOTFILES/bin")
-fopts+=('-type' 'f')
+fopts+=("$DOTFILES/lib")
+#fopts+=('-type' 'f')
 
 (($#)) && {
   # shellcheck disable=SC2034
@@ -76,7 +48,7 @@ for f in "${files[@]}"; do
 
   warn "Creating meta tests for $(basename "$f")"
 
-  test_dir="${f/$GLOBAL_DIR/$BATS_TEST/checks}.t"
+  test_dir="${f/$DOTFILES/$BATS_TEST/checks}.t"
   test_name="$test_dir/$(basename "$f").meta.bats"
 
   debug "test_dir: $test_dir"
