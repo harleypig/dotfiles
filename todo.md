@@ -6,3 +6,7 @@ look into colorized columns:
 create a check4update script for
   https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
   https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash
+
+add git-status to tmux status line
+  if in tmux disable git-status in bash prompt
+  add git-status to vim status line except when in tmux
