@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+import sys
+from netaddr import IPNetwork, IPAddress
+
+def find_available_subnets(base_range, existing_subnets, required_size):
+    base_net = IPNetwork(base_range)
+    existing_nets = [IPNetwork(subnet) for subnet in existing_subnets]
+    available_ips = []
+
+    for ip in base_net.iter_hosts():
+        if not any(ip in subnet for subnet in existing_nets):
+            available_ips.append(ip)
+            if len(available_ips) == required_size:
+                yield IPNetwork('%s/%s' % (available_ips[0], base_net.prefixlen))
+                available_ips = []
+
+def main():
+    if len(sys.argv) < 4:
+        print("Usage: available-subnets <base_range> <required_size> <existing_subnet1> [<existing_subnet2> ...]")
+        sys.exit(1)
+
+    base_range = sys.argv[1]
+    required_size = int(sys.argv[2])
+    existing_subnets = sys.argv[3:]
+
+    available_subnets = find_available_subnets(base_range, existing_subnets, required_size)
+
+    for subnet in available_subnets:
+        print(subnet)
+
+if __name__ == '__main__':
+    main()
+
+# Make the script executable
+import os
+import stat
+filepath = os.path.join(os.getcwd(), 'bin/available-subnets')
+st = os.stat(filepath)
+os.chmod(filepath, st.st_mode | stat.S_IEXEC)
