@@ -13,15 +13,6 @@ tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
 md() { mkdir -p "$@" && cd "$@" || return; }
 
 #-----------------------------------------------------------------------------
-# XXX: Think of a better way to do this!
-[[ -r $DOTFILES/../private_dotfiles/azcli-user-map ]] && {
-  . $DOTFILES/../private_dotfiles/azcli-user-map
-  export AZURE_DEVOPS_EXT_PAT="$(grep -A1 "$usermap[$USER]" ~/.netrc \
-    | tail -n 1 | awk '{print $2}')"
-  unset usermap
-}
-
-#-----------------------------------------------------------------------------
 shopt -s autocd cdspell direxpand dirspell globstar cdable_vars checkhash \
          checkwinsize dotglob extglob nocaseglob 2> /dev/null
 
@@ -46,10 +37,6 @@ alias dotfiles='cd $DOTFILES'
 #-----------------------------------------------------------------------------
 # CVS settings
 export CVS_RSH='ssh'
-
-#-----------------------------------------------------------------------------
-[[ -f $HOME/projects/private_dotfiles/api-key.openai ]] \
-  && export OPENAI_API_KEY="$(<$HOME/projects/private_dotfiles/api-key.openai)"
 
 #-----------------------------------------------------------------------------
 # https://wiki.archlinux.org/index.php/Core_Utilities#ls

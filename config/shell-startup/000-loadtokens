@@ -1,0 +1,18 @@
+# shellcheck shell=bash
+
+#-----------------------------------------------------------------------------
+# XXX: Think of a better way to do this!
+[[ -r $DOTFILES/../private_dotfiles/azcli-user-map ]] && {
+  . $DOTFILES/../private_dotfiles/azcli-user-map
+  export AZURE_DEVOPS_EXT_PAT="$(grep -A1 "$usermap[$USER]" ~/.netrc \
+    | tail -n 1 | awk '{print $2}')"
+  unset usermap
+}
+
+#-----------------------------------------------------------------------------
+[[ -f $HOME/projects/private_dotfiles/api-key.openai ]] \
+  && export OPENAI_API_KEY="$(<$HOME/projects/private_dotfiles/api-key.openai)"
+
+#-----------------------------------------------------------------------------
+#[[ -f $HOME/projects/private_dotfiles/api-key.linode ]] \
+#  && export LINODE_TOKEN="$(<$HOME/projects/private_dotfiles/api-key.linode)"

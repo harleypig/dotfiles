@@ -10,11 +10,13 @@ pulse/**
 tree-sitter/**
 yelp/**
 
+dconf/user
 docker/.token_seed
 docker/.token_seed.lock
-pgcli/history
-pgcli/log
-dconf/user
 .gsd-keyboard.settings-ported
 mimeapps.list
+packer/checkpoint_cache
+packer/checkpoint_signature
+pgcli/history
+pgcli/log
 user-dirs.locale
