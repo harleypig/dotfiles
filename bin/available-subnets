@@ -4,7 +4,7 @@ from netaddr import IPNetwork, IPAddress
 
 def find_available_subnets(base_range, existing_subnets, required_size):
     base_net = IPNetwork(base_range)
-    existing_nets = [IPNetwork(subnet) for subnet in existing_subnets]
+    existing_nets = [IPNetwork(subnet.strip()) for subnet in existing_subnets]
     available_ips = []
 
     for ip in base_net.iter_hosts():
@@ -14,14 +14,19 @@ def find_available_subnets(base_range, existing_subnets, required_size):
                 yield IPNetwork('%s/%s' % (available_ips[0], base_net.prefixlen))
                 available_ips = []
 
+def read_subnets_from_file(file_path):
+    with open(file_path, 'r') as file:
+        return file.readlines()
+
 def main():
-    if len(sys.argv) < 4:
-        print("Usage: available-subnets <base_range> <required_size> <existing_subnet1> [<existing_subnet2> ...]")
+    if len(sys.argv) != 4:
+        print("Usage: available-subnets <base_range> <required_size> <file_with_used_subnets>")
         sys.exit(1)
 
     base_range = sys.argv[1]
     required_size = int(sys.argv[2])
-    existing_subnets = sys.argv[3:]
+    used_subnets_file = sys.argv[3]
+    existing_subnets = read_subnets_from_file(used_subnets_file)
 
     available_subnets = find_available_subnets(base_range, existing_subnets, required_size)
 
