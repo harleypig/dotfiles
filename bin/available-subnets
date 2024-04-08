@@ -21,7 +21,7 @@ def read_subnets_from_file(file_path):
 
 def main():
     parser = argparse.ArgumentParser(description='Find available subnets within a specified range.')
-    parser.add_argument('base_range', type=str, help='Base CIDR range to find available subnets within.')
+    parser.add_argument('--base-range', type=str, required=True, help='Base CIDR range to find available subnets within.')
     parser.add_argument('required_size', type=int, help='Required size of available subnets.')
     parser.add_argument('used_subnets_file', type=str, help='File containing used subnets, one per line.')
 
