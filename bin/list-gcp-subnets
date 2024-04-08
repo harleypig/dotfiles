@@ -1,0 +1,32 @@
+#!/bin/bash
+
+warn() { printf '%s\n' "$@" >&2; }
+die() { (($#)) && warn "$@"; exit 1; }
+
+readarray -t prjlist < <(gcloud projects list --format="get(projectId)")
+
+[[ ${#prjlist[@]} -eq 0 ]] && die "No projects found." 
+
+for prj in "${prjlist[@]}"; do
+  warn "Check for subnets in $prj ..."
+  gcloud compute networks subnets list-usable \
+    --project "$prj" \
+    --quiet \
+    --format="csv[no-heading](RANGE,SECONDARY_RANGES,PROJECT,NETWORK,SUBNET)"
+
+  warn "Check reserved IP addresses in $prj ..."
+  gcloud compute addresses list \
+    --project "$prj" \
+    --quiet \
+    --format="csv[no-heading]('ADDRESS/RANGE', NAME, NETWORK, TYPE)"
+done
+
+readarray -t region < <(gcloud compute regions list --format="get(NAME)" | grep -E '^us-')
+
+for region in "${region[@]}"; do
+  warn "Check for VPC-Access connectors in $region ..."
+  gcloud compute networks vpc-access connectors list \
+    --region "$region" \
+    --quiet \
+    --format="csv[no-heading](IP_CIDR_RANGE,CONNECTOR_ID,REGION,NETWORK)"
+done
