@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import argparse
 from netaddr import IPNetwork, IPAddress
 
 def find_available_subnets(base_range, existing_subnets, required_size):
@@ -19,13 +20,17 @@ def read_subnets_from_file(file_path):
         return file.readlines()
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: available-subnets <base_range> <required_size> <file_with_used_subnets>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Find available subnets within a specified range.')
+    parser.add_argument('base_range', type=str, help='Base CIDR range to find available subnets within.')
+    parser.add_argument('required_size', type=int, help='Required size of available subnets.')
+    parser.add_argument('used_subnets_file', type=str, help='File containing used subnets, one per line.')
 
-    base_range = sys.argv[1]
-    required_size = int(sys.argv[2])
-    used_subnets_file = sys.argv[3]
+    args = parser.parse_args()
+
+    base_range = args.base_range
+    required_size = args.required_size
+    used_subnets_file = args.used_subnets_file
+
     existing_subnets = read_subnets_from_file(used_subnets_file)
 
     available_subnets = find_available_subnets(base_range, existing_subnets, required_size)
