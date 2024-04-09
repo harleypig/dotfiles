@@ -37,14 +37,17 @@ def parseargs():
       help='Base CIDR range to find available subnets within.'
   )
 
+  parser.add_argument('--used-subnets-file',
+                      type=argparse.FileType('r'),
+                      required=True,
+                      help='File containing used subnets, one per line.')
+
   parser.add_argument(
       'required_size', type=int, help='Required size of available subnets.'
   )
 
   parser.add_argument(
-      'used_subnets_file',
-      type=str,
-      help='File containing used subnets, one per line.'
+      'required_size', type=int, help='Required size of available subnets.'
   )
 
   return parser.parse_args()
@@ -55,9 +58,7 @@ def main():
 
   base_range = args.base_range
   required_size = args.required_size
-  used_subnets_file = args.used_subnets_file
-
-  existing_subnets = read_subnets_from_file(used_subnets_file)
+  existing_subnets = args.used_subnets_file.readlines()
 
   available_subnets = find_available_subnets(
       base_range, existing_subnets, required_size
