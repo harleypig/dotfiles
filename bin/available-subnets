@@ -103,7 +103,7 @@ def open_subnets(base_range, used_subnets, ranges):
 ##############################################################################
 #-----------------------------------------------------------------------------
 def parseargs():
-  parser = argparse.ArgumentParser(
+  parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
       description='''Find available subnets within a specified base range.
 
 This script calculates available subnets within a given base CIDR range, taking into account any subnets that are already in use. It is designed to be flexible and can handle non-standard base ranges, such as starting from a specific IP within the range rather than the beginning of the CIDR block.
