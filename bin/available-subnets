@@ -68,7 +68,7 @@ def open_subnets(base_range, used_subnets, ranges):
   taken_subnets = list(used_subnets)
   ranges.sort(reverse=True)
 
-  track_open = {i + 1: ranges[i] for i in range(len(ranges))}
+  track_open = {i + 1: [ranges[i], ''] for i in range(len(ranges))}
 
   for range in ranges:
     required_ips = 2**(32 - range)
