@@ -52,12 +52,16 @@ def validate_ranges(ranges, base_range):
 def find_range(base_range, taken_subnets, required_ips):
   available_ips = []
 
-  # Calculate the starting point based on the third octet
-  third_octet_value = base_range.ip.words[2]
-  start_ip = base_range.network
-  start_ip += (third_octet_value << 8)
+  # Calculate the starting point based on the third octet and start iterating from there
+  start_ip_index = (base_range.ip.words[2] << 8) + base_range.ip.words[3]
+  end_ip_index = (1 << (32 - base_range.prefixlen)) - 1  # Last IP index in the base range
+  base_ip_index = int(base_range.network)
 
-  for ip in base_range.iter_hosts(start=start_ip):
+  for ip_index in range(start_ip_index, end_ip_index + 1):
+    ip = base_range.network + ip_index
+    if ip >= base_range.broadcast:
+      break  # Stop if we reach the broadcast address
+
     if any(ip in subnet for subnet in taken_subnets):
       available_ips = []
       continue
