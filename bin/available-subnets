@@ -6,19 +6,6 @@ from netaddr import IPNetwork, AddrFormatError
 
 ##############################################################################
 #-----------------------------------------------------------------------------
-def valid_required_ranges(required_ranges, base_range):
-    base_prefixlen = base_range.prefixlen
-    for size in required_ranges:
-        if not (base_prefixlen <= size <= 30):
-            raise argparse.ArgumentTypeError(
-                f"Invalid required range /{size} for base range /{base_prefixlen}. "
-                "Required range must be within /{base_prefixlen} to /30."
-            )
-  args = parser.parse_args()
-  args.required_sizes = valid_required_ranges(args.required_sizes, args.base_range)
-    return required_ranges
-
-#-----------------------------------------------------------------------------
 def load_subnets(file_path):
   try:
     with open(file_path, 'r') as fh:
@@ -26,16 +13,20 @@ def load_subnets(file_path):
       valid_subnets = []
 
       for subnet in subnets:
-          try:
-              valid_subnets.append(IPNetwork(subnet.strip()))
+        try:
+          valid_subnets.append(IPNetwork(subnet.strip()))
 
-          except (AddrFormatError, ValueError) as e:
-              raise argparse.ArgumentTypeError(f"Invalid subnet '{subnet.strip()}': {e}")
+        except (AddrFormatError, ValueError) as e:
+          raise argparse.ArgumentTypeError(
+              f"Invalid subnet '{subnet.strip()}': {e}"
+          )
 
       return valid_subnets
 
   except IOError as e:
-    raise argparse.ArgumentTypeError(f"Error: Could not read from '{file_path}': {e}")
+    raise argparse.ArgumentTypeError(
+        f"Error: Could not read from '{file_path}': {e}"
+    )
 
 #-----------------------------------------------------------------------------
 def valid_cidr_range(cidr):
@@ -45,21 +36,27 @@ def valid_cidr_range(cidr):
   except (AddrFormatError, ValueError) as e:
     raise argparse.ArgumentTypeError(f"Invalid CIDR range: {cidr}. Error: {e}")
 
-#-----------------------------------------------------------------------------
-def valid_required_ranges(required_ranges):
-  for range in required_ranges:
-    print('test')
-
 ##############################################################################
 #-----------------------------------------------------------------------------
-def available_subnets(base_range, used_subnets, required_range):
+def validate_ranges(ranges, base_range):
+  base_prefixlen = base_range.prefixlen
+
+  for size in ranges:
+    if not (base_prefixlen <= size <= 30):
+      raise argparse.ArgumentTypeError(
+          f"Invalid required range /{size} for base range /{base_prefixlen}. "
+          f"Required range must be within /{base_prefixlen} to /30."
+      )
+
+#-----------------------------------------------------------------------------
+def open_subnets(base_range, used_subnets, ranges):
   available_ips = []
 
   for ip in base_range.iter_hosts():
     if not any(ip in subnet for subnet in used_subnets):
       available_ips.append(ip)
 
-      if len(available_ips) == required_range:
+      if len(available_ips) == ranges:
         yield IPNetwork('%s/%s' % (available_ips[0], base_range.prefixlen))
         available_ips = []
 
@@ -69,34 +66,29 @@ def parseargs():
   parser = argparse.ArgumentParser(
       description='Find available subnets within a specified range.'
   )
-  args = parser.parse_args()
-  args.required_sizes = valid_required_ranges(args.required_sizes, args.base_range)
 
   parser.add_argument(
       '--base-range',
       type=valid_cidr_range,
       default='10.7.0.0/17',
-      help='Base CIDR range to find available subnets within. Default is 10.7.0.0/17.'
+      help=
+      'Base CIDR range to find available subnets within. Default is 10.7.0.0/17.'
   )
-  args = parser.parse_args()
-  args.required_sizes = valid_required_ranges(args.required_sizes, args.base_range)
 
   parser.add_argument(
       '--used-subnets',
       type=load_subnets,
       default=[],
       help='File containing used subnets, one per line.'
-  )  
+  )
 
   parser.add_argument(
-      'required_ranges',
-      type=valid_required_ranges
+      'ranges',
+      type=int,
       nargs='+',
       help=
       'Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
   )
-  args = parser.parse_args()
-  args.required_sizes = valid_required_ranges(args.required_sizes, args.base_range)
 
   return parser.parse_args()
 
@@ -104,11 +96,11 @@ def parseargs():
 def main():
   args = parseargs()
 
-  subnets = available_subnets(
-      args.base_range, args.used_subnets, args.required_ranges
+  validate_ranges(args.ranges, args.base_range)
+
+  subnets = open_subnets(
+      args.base_range, args.used_subnets, args.ranges
   )
-  args = parser.parse_args()
-  args.required_sizes = valid_required_ranges(args.required_sizes, args.base_range)
 
   for subnet in subnets:
     print(subnet)
