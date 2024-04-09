@@ -51,6 +51,9 @@ def validate_ranges(ranges, base_range):
 #-----------------------------------------------------------------------------
 def find_range(base_range, taken_subnets, required_ips):
   available_ips = []
+  start_ip = base_range.ip
+  start_ip.words = (start_ip.words[0], start_ip.words[1], start_ip.words[2], 0)
+  base_range = IPNetwork(f"{start_ip}/{base_range.prefixlen}")
 
   for ip in base_range.iter_hosts():
     if any(ip in subnet for subnet in taken_subnets):
