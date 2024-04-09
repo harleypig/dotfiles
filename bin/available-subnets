@@ -69,39 +69,12 @@ def open_subnets(base_range, used_subnets, ranges):
   # Take the order the user gives by default
   #ranges.sort(reverse=True)
 
-  track_open = {i + 1: [ranges[i], ''] for i in range(len(ranges))}
+  track_open = {i + 1: [ranges[i], ''] for i in ranges(len(ranges))}
 
-  for position, (range_size, _) in track_open.items():
-    required_ips = 2**(32 - range_size)
+  for position, (range, _) in track_open.items():
     required_ips = 2**(32 - range)
     new_range = find_range(base_range, taken_subnets, required_ips)
 
-    #if len(new_range) < range:
-
-
-
-#    available_ips = []
-#    required_ips = 2**(32 - range)
-#
-#    for ip in base_range.iter_hosts():
-#      if any(ip in subnet for subnet in taken_subnets):
-#        if len(available_ips) == required_ips:
-#          for smaller_range in ranges:
-#            if smaller_range > len(available_ips):
-#              continue
-#
-#            smaller_required_ips = 2**(32 - smaller_range)
-#            if len(available_ips) >= smaller_required_ips:
-#              range = smaller_range  # Use the smaller range
-#              required_ips = smaller_required_ips
-#              break
-#
-#          available_ips.append(ip)
-#
-#          new_subnet = IPNetwork('%s/%s' % (available_ips[0], range))
-#          taken_subnets.append(new_subnet)
-#          yield new_subnet
-#          break
 
 ##############################################################################
 #-----------------------------------------------------------------------------
