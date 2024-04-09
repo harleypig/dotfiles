@@ -39,7 +39,7 @@ def parseargs():
 
   parser.add_argument(
       '--used-subnets',
-      type=argparse.FileType('r'),
+      type=argparse.FileType('r'), default=[],
       help='File containing used subnets, one per line.'
   )
 
@@ -62,10 +62,8 @@ def main():
   required_size = args.required_size
   required_sizes = args.required_sizes
 
-  if args.used_subnets:
-    existing_subnets = args.used_subnets.readlines()
-  else:
-    existing_subnets = []
+  required_sizes = args.required_sizes
+  existing_subnets = args.used_subnets.readlines() if args.used_subnets else []
 
   for required_size in required_sizes:
     available_subnets = find_available_subnets(
