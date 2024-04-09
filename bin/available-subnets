@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
+#import sys
 import argparse
 from netaddr import IPNetwork, IPAddress
 
@@ -38,17 +38,18 @@ def parseargs():
   )
 
   parser.add_argument(
-      '--used-subnets-file',
+      '--used-subnets',
       type=argparse.FileType('r'),
       help='File containing used subnets, one per line.'
   )
 
   parser.add_argument(
-      '--required-sizes', type=int, nargs='+', required=True, help='Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
-  )
-
-  parser.add_argument(
-      '--required-sizes', type=int, nargs='+', required=True, help='Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
+      '--required-sizes',
+      type=int,
+      nargs='+',
+      required=True,
+      help=
+      'Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
   )
 
   return parser.parse_args()
@@ -60,20 +61,16 @@ def main():
   base_range = args.base_range
   required_size = args.required_size
   required_sizes = args.required_sizes
-  if args.used_subnets_file:
-      existing_subnets = args.used_subnets_file.readlines()
-  else:
-      existing_subnets = []
 
+  if args.used_subnets:
+    existing_subnets = args.used_subnets.readlines()
+  else:
+    existing_subnets = []
 
   for required_size in required_sizes:
-      available_subnets = find_available_subnets(
-          base_range, existing_subnets, required_size
-      )
-
-      for subnet in available_subnets:
-          print(subnet)
-  )
+    available_subnets = find_available_subnets(
+        base_range, existing_subnets, required_size
+    )
 
   for subnet in available_subnets:
     print(subnet)
