@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from netaddr import IPNetwork
+from netaddr import IPNetwork, AddrFormatError
 
 ##############################################################################
 #-----------------------------------------------------------------------------
@@ -60,6 +60,7 @@ def main():
 
   try:
       IPNetwork(args.base_range)
+
   except (AddrFormatError, ValueError) as e:
       print(f"Error: Invalid base range '{args.base_range}': {e}")
       sys.exit(1)
