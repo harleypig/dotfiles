@@ -71,7 +71,8 @@ def open_subnets(base_range, used_subnets, ranges):
 
   track_open = {i + 1: [ranges[i], ''] for i in range(len(ranges))}
 
-  for range in ranges:
+  for position, (range_size, _) in track_open.items():
+    required_ips = 2**(32 - range_size)
     required_ips = 2**(32 - range)
     new_range = find_range(base_range, taken_subnets, required_ips)
 
