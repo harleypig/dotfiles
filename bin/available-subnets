@@ -37,10 +37,12 @@ def parseargs():
       help='Base CIDR range to find available subnets within.'
   )
 
-  parser.add_argument('--used-subnets-file',
-                      type=argparse.FileType('r'),
-                      required=True,
-                      help='File containing used subnets, one per line.')
+  parser.add_argument(
+      '--used-subnets-file',
+      type=argparse.FileType('r'),
+      required=True,
+      help='File containing used subnets, one per line.'
+  )
 
   parser.add_argument(
       'required_size', type=int, help='Required size of available subnets.'
