@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
+#import sys
 import argparse
 from netaddr import IPNetwork, AddrFormatError
 
@@ -32,16 +32,21 @@ def valid_cidr_range(cidr):
   except (AddrFormatError, ValueError) as e:
     raise argparse.ArgumentTypeError(f"Invalid CIDR range: {cidr}. Error: {e}")
 
+#-----------------------------------------------------------------------------
+def valid_required_ranges(required_ranges):
+  for range in required_ranges:
+    print('test')
+
 ##############################################################################
 #-----------------------------------------------------------------------------
-def available_subnets(base_range, used_subnets, required_size):
+def available_subnets(base_range, used_subnets, required_range):
   available_ips = []
 
   for ip in base_range.iter_hosts():
     if not any(ip in subnet for subnet in used_subnets):
       available_ips.append(ip)
 
-      if len(available_ips) == required_size:
+      if len(available_ips) == required_range:
         yield IPNetwork('%s/%s' % (available_ips[0], base_range.prefixlen))
         available_ips = []
 
@@ -67,8 +72,8 @@ def parseargs():
   )
 
   parser.add_argument(
-      'required_sizes',
-      type=int,
+      'required_ranges',
+      type=valid_required_ranges
       nargs='+',
       help=
       'Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
@@ -81,7 +86,7 @@ def main():
   args = parseargs()
 
   subnets = available_subnets(
-      args.base_range, args.used_subnets, args.required_sizes
+      args.base_range, args.used_subnets, args.required_ranges
   )
 
   for subnet in subnets:
