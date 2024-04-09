@@ -53,16 +53,13 @@ def find_range(base_range, taken_subnets, required_ips):
   available_ips = []
 
   for ip in base_range.iter_hosts():
-    if any(ip in subnet for subnet in taken_subnets) and len(available_ips) < required_ips:
-      return []
-      return available_ips
+    if  any(ip in subnet for subnet in taken_subnets):
+      available_ips = []
 
     if len(available_ips) == required_ips:
       return available_ips
 
     available_ips.append(ip)
-
-  return available_ips
 
 #-----------------------------------------------------------------------------
 def open_subnets(base_range, used_subnets, ranges):
@@ -81,6 +78,7 @@ def open_subnets(base_range, used_subnets, ranges):
     track_open[pos][1] = str(new_subnet.cidr)
 
   return [track_open[pos][1] for pos in track_open if track_open[pos][1]]
+
 ##############################################################################
 #-----------------------------------------------------------------------------
 def parseargs():
