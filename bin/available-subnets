@@ -54,13 +54,14 @@ def find_range(base_range, taken_subnets, required_ips):
 
   # Calculate the starting point based on the third octet and start iterating from there
   start_ip_index = (base_range.ip.words[2] << 8) + base_range.ip.words[3]
-  end_ip_index = (1 << (32 - base_range.prefixlen)) - 1  # Last IP index in the base range
-  base_ip_index = int(base_range.network)
+  end_ip_index = (1 << (32 - base_range.prefixlen)) - 1
+  #base_ip_index = int(base_range.network)
 
   for ip_index in range(start_ip_index, end_ip_index + 1):
     ip = base_range.network + ip_index
+
     if ip >= base_range.broadcast:
-      break  # Stop if we reach the broadcast address
+      break
 
     if any(ip in subnet for subnet in taken_subnets):
       available_ips = []
@@ -72,7 +73,7 @@ def find_range(base_range, taken_subnets, required_ips):
     else:
       available_ips.append(ip)
 
-  raise ValueError("Not enough free space in the base range to accommodate the requested range.")
+  raise ValueError("Not enough free space for requested range.")
 
 #-----------------------------------------------------------------------------
 def open_subnets(base_range, used_subnets, ranges):
@@ -86,7 +87,9 @@ def open_subnets(base_range, used_subnets, ranges):
       new_range = find_range(base_range, taken_subnets, required_ips)
 
     except ValueError as e:
-      raise ValueError(f"Could not find an open subnet for /{range} within the base range: {e}")
+      raise ValueError(
+          f"Could not find an open subnet for /{range} within the base range: {e}"
+      )
 
     if len(new_range) != required_ips:
       continue
