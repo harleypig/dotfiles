@@ -43,6 +43,19 @@ def parseargs():
       help='Base CIDR range to find available subnets within.'
   )
 
+def valid_cidr_range(cidr):
+    try:
+        return IPNetwork(cidr)
+    except (AddrFormatError, ValueError) as e:
+        raise argparse.ArgumentTypeError(f"Invalid CIDR range: {cidr}. Error: {e}")
+
+parser.add_argument(
+    '--base-range',
+    type=valid_cidr_range,
+    default='10.7.0.0/17',
+    help='Base CIDR range to find available subnets within.'
+)
+
   parser.add_argument(
       '--used-subnets',
       type=argparse.FileType('r'),
@@ -64,13 +77,7 @@ def parseargs():
 def main():
   args = parseargs()
 
-  try:
-      IPNetwork(args.base_range)
-
-  except (AddrFormatError, ValueError) as e:
-      print(f"Error: Invalid base range '{args.base_range}': {e}")
-      sys.exit(1)
-
+  # The base range is now validated by the valid_cidr_range function
   available_subnets = find_available_subnets(
       args.base_range, args.used_subnets, args.required_size
   )
