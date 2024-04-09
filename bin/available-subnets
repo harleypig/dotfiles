@@ -1,49 +1,72 @@
 #!/usr/bin/env python3
+
 import sys
 import argparse
 from netaddr import IPNetwork, IPAddress
 
+##############################################################################
+#-----------------------------------------------------------------------------
 def find_available_subnets(base_range, existing_subnets, required_size):
-    base_net = IPNetwork(base_range)
-    existing_nets = [IPNetwork(subnet.strip()) for subnet in existing_subnets]
-    available_ips = []
+  base_net = IPNetwork(base_range)
+  existing_nets = [IPNetwork(subnet.strip()) for subnet in existing_subnets]
+  available_ips = []
 
-    for ip in base_net.iter_hosts():
-        if not any(ip in subnet for subnet in existing_nets):
-            available_ips.append(ip)
-            if len(available_ips) == required_size:
-                yield IPNetwork('%s/%s' % (available_ips[0], base_net.prefixlen))
-                available_ips = []
+  for ip in base_net.iter_hosts():
+    if not any(ip in subnet for subnet in existing_nets):
+      available_ips.append(ip)
+      if len(available_ips) == required_size:
+        yield IPNetwork('%s/%s' % (available_ips[0], base_net.prefixlen))
+        available_ips = []
 
+#-----------------------------------------------------------------------------
 def read_subnets_from_file(file_path):
-    with open(file_path, 'r') as file:
-        return file.readlines()
+  with open(file_path, 'r') as file:
+    return file.readlines()
 
+##############################################################################
+#-----------------------------------------------------------------------------
+def parseargs():
+  parser = argparse.ArgumentParser(
+      description='Find available subnets within a specified range.'
+  )
+
+  parser.add_argument(
+      '--base-range',
+      type=str,
+      required=True,
+      help='Base CIDR range to find available subnets within.'
+  )
+
+  parser.add_argument(
+      'required_size', type=int, help='Required size of available subnets.'
+  )
+
+  parser.add_argument(
+      'used_subnets_file',
+      type=str,
+      help='File containing used subnets, one per line.'
+  )
+
+  return parser.parse_args()
+
+#-----------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description='Find available subnets within a specified range.')
-    parser.add_argument('--base-range', type=str, required=True, help='Base CIDR range to find available subnets within.')
-    parser.add_argument('required_size', type=int, help='Required size of available subnets.')
-    parser.add_argument('used_subnets_file', type=str, help='File containing used subnets, one per line.')
+  args = parseargs()
 
-    args = parser.parse_args()
+  base_range = args.base_range
+  required_size = args.required_size
+  used_subnets_file = args.used_subnets_file
 
-    base_range = args.base_range
-    required_size = args.required_size
-    used_subnets_file = args.used_subnets_file
+  existing_subnets = read_subnets_from_file(used_subnets_file)
 
-    existing_subnets = read_subnets_from_file(used_subnets_file)
+  available_subnets = find_available_subnets(
+      base_range, existing_subnets, required_size
+  )
 
-    available_subnets = find_available_subnets(base_range, existing_subnets, required_size)
+  for subnet in available_subnets:
+    print(subnet)
 
-    for subnet in available_subnets:
-        print(subnet)
-
+##############################################################################
+#-----------------------------------------------------------------------------
 if __name__ == '__main__':
-    main()
-
-# Make the script executable
-import os
-import stat
-filepath = os.path.join(os.getcwd(), 'bin/available-subnets')
-st = os.stat(filepath)
-os.chmod(filepath, st.st_mode | stat.S_IEXEC)
+  main()
