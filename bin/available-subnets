@@ -57,12 +57,11 @@ def find_range(base_range, taken_subnets, required_ips):
       available_ips = []
 
     if len(available_ips) == required_ips:
-      if len(available_ips) < required_ips:
-    raise ValueError("Not enough free space in the base range to accommodate the requested range.")
-
-  return available_ips
+      return available_ips
 
     available_ips.append(ip)
+
+  raise ValueError("Not enough free space in the base range to accommodate the requested range.")
 
 #-----------------------------------------------------------------------------
 def open_subnets(base_range, used_subnets, ranges):
@@ -71,7 +70,12 @@ def open_subnets(base_range, used_subnets, ranges):
 
   for pos, range in enumerate(ranges):
     required_ips = 2**(32 - range)
-    new_range = find_range(base_range, taken_subnets, required_ips)
+
+    try:
+      new_range = find_range(base_range, taken_subnets, required_ips)
+
+    except:
+      
 
     if len(new_range) != required_ips:
       continue
