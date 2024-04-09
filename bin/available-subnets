@@ -10,12 +10,17 @@ def load_subnets(file_path):
   try:
     with open(file_path, 'r') as file:
       subnets = file.readlines()
-      return [IPNetwork(subnet.strip()) for subnet in subnets]
+      valid_subnets = []
+      for subnet in subnets:
+          try:
+              valid_subnets.append(IPNetwork(subnet.strip()))
+          except (AddrFormatError, ValueError) as e:
+              raise argparse.ArgumentTypeError(f"Invalid subnet '{subnet.strip()}': {e}")
+      return valid_subnets
 
   except (AddrFormatError, ValueError) as e:
-    raise argparse.ArgumentTypeError(
-        "Error: Invalid subnets or could not read from '{file_path}': {e}"
-    )
+  except IOError as e:
+    raise argparse.ArgumentTypeError(f"Error: Could not read from '{file_path}': {e}")
 
 #-----------------------------------------------------------------------------
 def valid_cidr_range(cidr):
