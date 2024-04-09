@@ -8,17 +8,19 @@ from netaddr import IPNetwork, AddrFormatError
 #-----------------------------------------------------------------------------
 def load_subnets(file_path):
   try:
-    with open(file_path, 'r') as file:
-      subnets = file.readlines()
+    with open(file_path, 'r') as fh:
+      subnets = fh.readlines()
       valid_subnets = []
+
       for subnet in subnets:
           try:
               valid_subnets.append(IPNetwork(subnet.strip()))
+
           except (AddrFormatError, ValueError) as e:
               raise argparse.ArgumentTypeError(f"Invalid subnet '{subnet.strip()}': {e}")
+
       return valid_subnets
 
-  except (AddrFormatError, ValueError) as e:
   except IOError as e:
     raise argparse.ArgumentTypeError(f"Error: Could not read from '{file_path}': {e}")
 
@@ -33,8 +35,6 @@ def valid_cidr_range(cidr):
 ##############################################################################
 #-----------------------------------------------------------------------------
 def available_subnets(base_range, used_subnets, required_size):
-  #base_net = IPNetwork(base_range)
-  #used_nets = [IPNetwork(subnet.strip()) for subnet in used_subnets]
   available_ips = []
 
   for ip in base_range.iter_hosts():
