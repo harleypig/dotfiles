@@ -58,6 +58,12 @@ def parseargs():
 def main():
   args = parseargs()
 
+  try:
+      IPNetwork(args.base_range)
+  except (AddrFormatError, ValueError) as e:
+      print(f"Error: Invalid base range '{args.base_range}': {e}")
+      sys.exit(1)
+
   available_subnets = find_available_subnets(
       args.base_range, args.used_subnets, args.required_size
   )
