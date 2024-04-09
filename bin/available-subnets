@@ -49,35 +49,57 @@ def validate_ranges(ranges, base_range):
       )
 
 #-----------------------------------------------------------------------------
+def find_range(base_range, taken_subnets, required_ips):
+  available_ips = []
+
+  for ip in base_range.iter_hosts():
+    if any(ip in subnet for subnet in taken_subnets):
+      return available_ips
+
+    if len(available_ips) == required_ips:
+      return available_ips
+
+    available_ips.append(ip)
+
+  return available_ips
+
+#-----------------------------------------------------------------------------
 def open_subnets(base_range, used_subnets, ranges):
   taken_subnets = list(used_subnets)
+  ranges.sort(reverse=True)
 
-  ranges.sort(reverse=True)  # Sort ranges in descending order to try larger subnets first
-  for range_size in ranges:
-    available_ips = []
-    required_ips = 2**(32 - range_size)
+  track_open = {i + 1: ranges[i] for i in range(len(ranges))}
 
-    for ip in base_range.iter_hosts():
-      if any(ip in subnet for subnet in taken_subnets):
-        available_ips = []  # Reset available IPs if the current IP is already taken
-        continue
-        available_ips.append(ip)
+  for range in ranges:
+    required_ips = 2**(32 - range)
+    new_range = find_range(base_range, taken_subnets, required_ips)
 
-        if len(available_ips) == required_ips:
-          # Check if a smaller range can fit into the current available IPs
-          for smaller_range in ranges:
-            if smaller_range > range_size:
-              continue  # Skip ranges larger than the current range
-            smaller_required_ips = 2**(32 - smaller_range)
-            if len(available_ips) >= smaller_required_ips:
-              range_size = smaller_range  # Use the smaller range
-              required_ips = smaller_required_ips
-              break
+    #if len(new_range) < range:
 
-          new_subnet = IPNetwork('%s/%s' % (available_ips[0], range_size))
-          taken_subnets.append(new_subnet)
-          yield new_subnet
-          break
+
+
+#    available_ips = []
+#    required_ips = 2**(32 - range)
+#
+#    for ip in base_range.iter_hosts():
+#      if any(ip in subnet for subnet in taken_subnets):
+#        if len(available_ips) == required_ips:
+#          for smaller_range in ranges:
+#            if smaller_range > len(available_ips):
+#              continue
+#
+#            smaller_required_ips = 2**(32 - smaller_range)
+#            if len(available_ips) >= smaller_required_ips:
+#              range = smaller_range  # Use the smaller range
+#              required_ips = smaller_required_ips
+#              break
+#
+#          available_ips.append(ip)
+#
+#          new_subnet = IPNetwork('%s/%s' % (available_ips[0], range))
+#          taken_subnets.append(new_subnet)
+#          yield new_subnet
+#          break
 
 ##############################################################################
 #-----------------------------------------------------------------------------
@@ -116,6 +138,8 @@ def main():
   args = parseargs()
 
   validate_ranges(args.ranges, args.base_range)
+
+  track_open = {i + 1: args.ranges[i] for i in range(len(args.ranges))}
 
   subnets = open_subnets(args.base_range, args.used_subnets, args.ranges)
 
