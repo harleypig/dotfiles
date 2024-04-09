@@ -44,11 +44,11 @@ def parseargs():
   )
 
   parser.add_argument(
-      'required_size', type=int, help='Required size of available subnets.'
+      '--required-sizes', type=int, nargs='+', required=True, help='Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
   )
 
   parser.add_argument(
-      'required_size', type=int, help='Required size of available subnets.'
+      '--required-sizes', type=int, nargs='+', required=True, help='Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
   )
 
   return parser.parse_args()
@@ -59,14 +59,20 @@ def main():
 
   base_range = args.base_range
   required_size = args.required_size
+  required_sizes = args.required_sizes
   if args.used_subnets_file:
       existing_subnets = args.used_subnets_file.readlines()
   else:
       existing_subnets = []
 
 
-  available_subnets = find_available_subnets(
-      base_range, existing_subnets, required_size
+  for required_size in required_sizes:
+      available_subnets = find_available_subnets(
+          base_range, existing_subnets, required_size
+      )
+
+      for subnet in available_subnets:
+          print(subnet)
   )
 
   for subnet in available_subnets:
