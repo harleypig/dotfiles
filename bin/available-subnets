@@ -50,17 +50,20 @@ def validate_ranges(ranges, base_range):
 
 #-----------------------------------------------------------------------------
 def open_subnets(base_range, used_subnets, ranges):
-  for range in ranges:
-    available_ips = []
-    required_ips = 2**(32 - range)  # Calculate the number of IPs needed for the subnet size
+    taken_subnets = list(used_subnets)  # Start with the already used subnets
+    for range_size in ranges:
+        available_ips = []
+        required_ips = 2**(32 - range_size)  # Calculate the number of IPs needed for the subnet size
 
-    for ip in base_range.iter_hosts():
-      if not any(ip in subnet for subnet in used_subnets):
-        available_ips.append(ip)
+        for ip in base_range.iter_hosts():
+            if not any(ip in subnet for subnet in taken_subnets):
+                available_ips.append(ip)
 
-        if len(available_ips) == required_ips:
-          yield IPNetwork('%s/%s' % (available_ips[0], range))
-          break  # Once we've found a subnet of the required size, we move on to the next size
+                if len(available_ips) == required_ips:
+                    new_subnet = IPNetwork('%s/%s' % (available_ips[0], range_size))
+                    taken_subnets.append(new_subnet)  # Add the new subnet to the list of taken subnets
+                    yield new_subnet
+                    break  # Once we've found a subnet of the required size, we move on to the next size
 
 ##############################################################################
 #-----------------------------------------------------------------------------
