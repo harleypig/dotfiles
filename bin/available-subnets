@@ -75,9 +75,11 @@ def open_subnets(base_range, used_subnets, ranges):
     if len(new_range) != required_ips:
       continue
 
-    new_subnet = IPNetwork(new_range[0]).cidr
+    new_subnet = IPNetwork(str(new_range[0]) + '/' + str(range))
+    for ip in new_range:
+        new_subnet.add_host(ip)
     taken_subnets.append(new_subnet)
-    track_open[pos][1] = str(IPNetwork(new_range[0]).cidr)
+    track_open[pos][1] = str(new_subnet.cidr)
 
 ##############################################################################
 #-----------------------------------------------------------------------------
