@@ -33,7 +33,7 @@ def parseargs():
   parser.add_argument(
       '--base-range',
       type=str,
-      required=True,
+      default='10.7.0.0/17',
       help='Base CIDR range to find available subnets within.'
   )
 
