@@ -73,6 +73,8 @@ def open_subnets(base_range, used_subnets, ranges):
 
     try:
       new_range = find_range(base_range, taken_subnets, required_ips)
+    except ValueError as e:
+      raise ValueError(f"Could not find an open subnet for /{range} within the base range: {e}")
 
     except:
       
