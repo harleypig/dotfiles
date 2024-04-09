@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 
-#import sys
 import argparse
-from netaddr import IPNetwork, IPAddress
+from netaddr import IPNetwork
 
 ##############################################################################
 #-----------------------------------------------------------------------------
-def find_available_subnets(base_range, existing_subnets, required_size):
+def find_available_subnets(base_range, used_subnets, required_size):
   base_net = IPNetwork(base_range)
-  existing_nets = [IPNetwork(subnet.strip()) for subnet in existing_subnets]
+  used_nets = [IPNetwork(subnet.strip()) for subnet in used_subnets]
   available_ips = []
 
   for ip in base_net.iter_hosts():
-    if not any(ip in subnet for subnet in existing_nets):
+    if not any(ip in subnet for subnet in used_nets):
       available_ips.append(ip)
+
       if len(available_ips) == required_size:
         yield IPNetwork('%s/%s' % (available_ips[0], base_net.prefixlen))
         available_ips = []
@@ -39,15 +39,15 @@ def parseargs():
 
   parser.add_argument(
       '--used-subnets',
-      type=argparse.FileType('r'), default=[],
+      type=argparse.FileType('r'),
+      default=[],
       help='File containing used subnets, one per line.'
   )
 
   parser.add_argument(
-      '--required-sizes',
+      'required-sizes',
       type=int,
       nargs='+',
-      required=True,
       help=
       'Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
   )
@@ -58,17 +58,9 @@ def parseargs():
 def main():
   args = parseargs()
 
-  base_range = args.base_range
-  required_size = args.required_size
-  required_sizes = args.required_sizes
-
-  required_sizes = args.required_sizes
-  existing_subnets = args.used_subnets.readlines() if args.used_subnets else []
-
-  for required_size in required_sizes:
-    available_subnets = find_available_subnets(
-        base_range, existing_subnets, required_size
-    )
+  available_subnets = find_available_subnets(
+      args.base_range, args.used_subnets, args.required_size
+  )
 
   for subnet in available_subnets:
     print(subnet)
