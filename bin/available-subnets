@@ -53,7 +53,8 @@ def find_range(base_range, taken_subnets, required_ips):
   available_ips = []
 
   for ip in base_range.iter_hosts():
-    if any(ip in subnet for subnet in taken_subnets):
+    if any(ip in subnet for subnet in taken_subnets) and len(available_ips) < required_ips:
+      return []
       return available_ips
 
     if len(available_ips) == required_ips:
