@@ -69,11 +69,13 @@ def open_subnets(base_range, used_subnets, ranges):
   # Take the order the user gives by default
   #ranges.sort(reverse=True)
 
-  track_open = {i + 1: [ranges[i], ''] for i in ranges(len(ranges))}
+  track_open = {i + 1: [ranges[i], ''] for i in range(len(ranges))}
 
   for position, (range, _) in track_open.items():
     required_ips = 2**(32 - range)
     new_range = find_range(base_range, taken_subnets, required_ips)
+    if len(new_range) == required_ips:
+      track_open[position][1] = str(IPNetwork(new_range[0]).cidr)
 
 
 ##############################################################################
