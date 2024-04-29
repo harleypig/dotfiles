@@ -5,7 +5,7 @@ export XDG_DOTVIM="$HOME/projects/dotvim"
 
 #export VIMINIT='source $XDG_DOTVIM/.vimrc'
 
-#[[ -x "$(command -v gvim)" ]] \
+#command -v gvim \
 #  && export GVIMINIT='let $MYGVIMRC="$XDG_DOTVIM/.gvimrc" | source $MYGVIMRC'
 
 #export VIM="$HOME/projects/dotvim"

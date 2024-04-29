@@ -105,22 +105,6 @@ function _exit_status() {
 }
 
 #----------------------------------------------------------------------------
-_loadavg() {
-  local la color show=0
-
-  [[ -x "$(command -v bc)" ]] || return 0
-  [[ -r /proc/loadavg ]] || return 0
-
-  color="$(ansi -n fg yellow)"
-  la="$(awk '{print $3}' /proc/loadavg)"
-
-  [[ $(echo "$la > 2.0" | bc -q) -eq 1 ]] && show=1
-  [[ $(echo "$la > 2.0" | bc -q) -eq 1 ]] && color="$(ansi -n fg yellow bg red)"
-
-  ((show)) && printf '%sLoad Avg: %s%s' "$color" "$la" "$color_off"
-}
-
-#----------------------------------------------------------------------------
 # This needs work for poetry setups
 
 _venv() {
@@ -163,7 +147,7 @@ _update_prompt() {
   # don't use 'local exit_status' here because it wipes out PIPESTATUS.
   exit_status=$(_exit_status "${PIPESTATUS[@]}")
 
-  local user_color hostname_color finalchr
+  local user_color hostname_color finalchr loadavg
 
   if [[ $UID -eq 0 ]]; then
     user_color="$(ansi -n fg bright_red)"
@@ -177,23 +161,27 @@ _update_prompt() {
   hostname_color="$(ansi -n fg yellow)"
 
   # Build the prompt.
-  local prompt_color system_reboot pacman_status finalchr
+  local prompt_color system_reboot pacman_status finalchr loadavg
 
-  [[ -x "$(command -v system-needs-reboot)" ]] \
-    && system_reboot="$(system-needs-reboot)"
+  PS1="\n$color_off$(_history)$prompt_color"
 
-  [[ -x "$(command -v pacman-status)" ]] \
-    && pacman_status="$(pacman-status)"
+  command -v system-needs-reboot &> /dev/null \
+    && PS1+="$(system-needs-reboot)"
 
-  PS1="${color_off}$(_history)${prompt_color}"
+  command -v pacman-status &> /dev/null \
+    && PS1+="$(pacman-status)"
+
+  command -v loadavg &> /dev/null && {
+    loadavg="$(loadavg)"
+    [[ -n $loadavg ]] && PS1+="$loadavg\n"
+  }
+
+  PS1+="$parent$user_color\u@$hostname_color\h: "
 
   # We're assuming dir-readable and git-status are on the system; we want to
   # be notified in a glaring way if they're not.
-  [[ -n $system_reboot ]] && PS1+="${system_reboot}\n"
-  [[ -n $pacman_status ]] && PS1+="${pacman_status}\n"
-  PS1+="${parent}${user_color}\u@${hostname_color}\h: "
   PS1+="$(_venv)$(dir-readable)$(git-status)\n"
-  PS1+="${exit_status} ${finalchr} "
+  PS1+="$exit_status $finalchr "
 
   unset exit_status
 }

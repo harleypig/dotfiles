@@ -11,7 +11,7 @@ return 0
 
 [[ $- == *i* ]] || return 0
 
-[[ -x "$(command -v task 2> /dev/null)" ]] || return 0
+command -v task 2> /dev/null || return 0
 
 export TASKDATA="${XDG_DATA_HOME}/task"
 export TASKRC="${XDG_CONFIG_HOME}/task/taskrc"

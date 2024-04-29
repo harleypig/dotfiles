@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 
-[[ -x "$(command -v terraform)" ]] || return 0
+command -v terraform || return 0
 
 #-----------------------------------------------------------------------------
 alias tf='terraform'
