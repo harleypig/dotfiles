@@ -1,1 +1,1 @@
-{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":1,"timestamp":1714367976,"nonce":"/rbFSp2AN9I0Do+Pc0zgOds8ELA=","title":"consider using a github release tool to install github releases","message":"","files":null}]}
+{"author":{"id":"2ec5873bc59d5c04f2c5f94e5f4d0f41b6e7f9a94dc97d83be4d34da07499a35"},"ops":[{"type":5,"timestamp":1714367976,"nonce":"60S5vf20YcRntMkElijEzIm+OVU=","added":["todo"],"removed":null}]}
