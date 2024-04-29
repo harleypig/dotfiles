@@ -1,0 +1,8 @@
+dependencies:
+  - role: add_repo
+    vars:
+      add_repo_name: "github-cli"
+      add_repo_key_url: "https://cli.github.com/packages/githubcli-archive-keyring.gpg"
+      add_repo_urls:
+        - "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
+      add_repo_filename: "github-cli.list"
