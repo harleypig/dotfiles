@@ -1,0 +1,16 @@
+#!/bin/bash
+
+command -v bc &> /dev/null || exit 0
+[[ -r /proc/loadavg ]] || exit 0
+
+declare la
+
+la="$(awk '{print $3}' /proc/loadavg)"
+[[ $(echo "$la > 2.0" | bc -q) -eq 0 ]] && exit 0
+
+declare color color_off
+
+color="$(ansi -n fg yellow bg red)"
+color_off="$(ansi -n off)"
+
+printf '%sLoad Avg: %s%s' "$color" "$la" "$color_off"

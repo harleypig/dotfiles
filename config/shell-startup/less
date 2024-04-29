@@ -64,20 +64,12 @@ export GROFF_NO_SGR=1
 # XXX: figure out how to make syntax hilighting work for source
 
 # Try to use a more current lesspipe
-lesspipe=$(command -v lesspipe.sh &>/dev/null)
+if command -v lesspipe.sh &> /dev/null; then
 
-if [[ -n $lesspipe ]]; then
+  export LESSOPEN="|lesspipe.sh %s"
 
-  export LESSOPEN="|${lesspipe} %s"
+elif command -v lesspipe &> /dev/null; then
 
-else
+  eval "$(SHELL=/bin/sh lesspipe)"
 
-  # Fall back to system lesspipe, if it exists
-  lesspipe=$(command -v lesspipe &>/dev/null)
-
-  if [[ -n $lesspipe ]]; then
-
-    eval "$(SHELL=/bin/sh ${lesspipe})"
-
-  fi
 fi

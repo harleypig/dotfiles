@@ -63,9 +63,8 @@ alias g='grep --color=auto'
 # I got this from a co-worker many moons ago. Unfortunately, I don't remember
 # who. Basically, if a tree program is not installed, fake it with this.
 
-if ! command -v tree &> /dev/null; then
-  alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
-fi
+! command -v tree &> /dev/null \
+  && alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 
 #-----------------------------------------------------------------------------
 # https://unix.stackexchange.com/a/584733/9032
@@ -111,7 +110,7 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 #export ANSIBLE_CONFIG="${XDG_CONFIG_HOME}/ansible.cfg"
 
 #-----------------------------------------------------------------------------
-command -v plandex \
+command -v plandex &> /dev/null \
   && source "$XDG_CONFIG_HOME/completions/plandex"
 
 #-----------------------------------------------------------------------------

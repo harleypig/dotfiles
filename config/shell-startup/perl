@@ -121,7 +121,7 @@ command -v cpandoc &> /dev/null && alias perldoc='cpandoc'
 #[[ -f $perldoc ]] && $completion
 
 # Alias cpanm -S only if cpanm is installed and it's not installed in the home directory.
-command -v cpanm && {
+command -v cpanm &> /dev/null && {
   [[ $(which cpanm) != $HOME/* ]] && alias cpanm='cpanm -S'
 }
 

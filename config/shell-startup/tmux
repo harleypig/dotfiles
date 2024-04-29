@@ -1,6 +1,6 @@
 #!/bin/bash
 
-command -v tmux 2> /dev/null || return 0
+command -v tmux &> /dev/null || return 0
 
 # swap this window to the left
 alias swapl='tmux swap-window -t -1'

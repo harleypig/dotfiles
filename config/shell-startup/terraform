@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 
-command -v terraform || return 0
+command -v terraform &> /dev/null || return 0
 
 #-----------------------------------------------------------------------------
 alias tf='terraform'

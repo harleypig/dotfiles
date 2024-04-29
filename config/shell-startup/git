@@ -6,7 +6,7 @@
 # https://gist.github.com/chrismccoy/8775224
 # https://github.com/git/git/blob/master/mergetools/vimdiff
 
-command -v git 2> /dev/null || return 0
+command -v git &> /dev/null || return 0
 
 #-----------------------------------------------------------------------------
 # Show git short status for current directory by pressing Ctl-g-s.
