@@ -6,5 +6,5 @@
     state: present
     update_cache: true
 
-- name: Include install_tflint task file
-  include_tasks: install_tflint.yml
+#- name: Include install_tflint task file
+#  include_tasks: install_tflint.yml

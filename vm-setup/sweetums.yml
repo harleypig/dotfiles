@@ -8,11 +8,12 @@
   roles:
     - role: version_tracking
     - role: common_pkgs
-    - role: nerd_font
+    #- role: nerd_font
     - role: nodejs
     - role: pip_pkgs
     - role: hashicorp
-    - role: git_bug
+    #- role: git_bug
+    - role: gh_cli
     - role: docker
     - role: misc_configuration
 
