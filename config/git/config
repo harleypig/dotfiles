@@ -237,3 +237,6 @@
   new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
   changes = diff --name-status -r
   diffstat = diff --stat -r
+
+  # Show latest vX.Y.Z tag
+	latest-tag = tag --list 'v*' --sort=-v:refname | head -n 1

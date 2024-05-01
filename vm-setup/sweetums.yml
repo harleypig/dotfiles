@@ -8,6 +8,7 @@
   roles:
     - role: version_tracking
     - role: cli_pkgs
+    - role: binenv
     # ???: https://github.com/ctorgalson/ansible-role-nerdfonts
     #      https://github.com/hurricanehrndz/ansible-nerdfonts
     #      https://github.com/gikeymarcia/ansible-role-nerdfonts

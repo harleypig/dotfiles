@@ -1,16 +1,20 @@
+---
 - name: Download the latest binenv release from GitHub
+  become: yes
   get_url:
     url: "https://github.com/devops-works/binenv/releases/latest/download/binenv_linux_amd64"
-    dest: "/usr/local/bin/binenv"
-    mode: '0755'
+    dest: "/tmp/binenv"
+    mode: '0700'
 
-- name: Verify binenv is installed
-  command: binenv --version
-  register: result
+- name: Update package list
+  become: yes
+  command: /tmp/binenv -g update
 
-- debug:
-    var: result.stdout
+- name: Use binenv to install binenv
+  become: yes
+  command: /tmp/binenv -g install binenv
 
 - name: Install specified packages using binenv
-  command: binenv install {{ item }}
+  become: yes
+  command: binenv -g install {{ item }}
   loop: "{{ binenv_packages }}"

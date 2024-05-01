@@ -1,0 +1,4603 @@
+---
+sources:
+  age:
+    description: >
+      A simple, modern and secure encryption tool (and Go library) with small explicit keys, no config options, and UNIX-style composability.
+    url: https://github.com/FiloSottile/age
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/FiloSottile/age/releases
+    fetch:
+      url: https://github.com/FiloSottile/age/releases/download/v{{ .Version }}/age-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - age
+
+  age-keygen:
+    description: >
+      A simple, modern and secure encryption tool (and Go library) with small explicit keys, no config options, and UNIX-style composability.
+    url: https://github.com/FiloSottile/age
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/FiloSottile/age/releases
+    fetch:
+      url: https://github.com/FiloSottile/age/releases/download/v{{ .Version }}/age-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - age-keygen
+
+  act:
+    description: Run your GitHub Actions locally
+    url: https://github.com/nektos/act/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/nektos/act/releases
+    fetch:
+      url: https://github.com/nektos/act/releases/download/v{{ .Version }}/act_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - act
+
+  air:
+    description: ☁️ Live reload for Go apps
+    url: https://github.com/cosmtrek/air/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cosmtrek/air/releases
+    fetch:
+      url: https://github.com/cosmtrek/air/releases/download/v{{ .Version }}/air_{{ .Version }}_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  ali:
+    description: Generate HTTP load and plot the results in real-time
+    url: https://github.com/nakabonne/ali/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/nakabonne/ali/releases
+    fetch:
+      url: https://github.com/nakabonne/ali/releases/download/v{{ .Version }}/ali_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - ali
+
+  ansible-operator:
+    description: >
+      SDK for building Kubernetes applications. Provides high level APIs,
+      useful abstractions, and project scaffolding.
+    url: https://github.com/operator-framework/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/operator-framework/operator-sdk/releases
+    fetch:
+      url: https://github.com/operator-framework/operator-sdk/releases/download/v{{ .Version }}/ansible-operator_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  argocd:
+    description: Declarative continuous deployment for Kubernetes.
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/argoproj/argo-cd/releases
+    url: https://github.com/argoproj/argo-cd/
+    fetch:
+      url: https://github.com/argoproj/argo-cd/releases/download/v{{ .Version }}/argocd-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+      binaries:
+        - argocd
+  arkade:
+    description: Declarative continuous deployment for Kubernetes.
+    url: https://github.com/alexellis/arkade/
+    map:
+      linux: ""
+      darwin: "-darwin"
+      arm64: "-arm64"
+      amd64: ""
+      armhf: "-armhf"
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/alexellis/arkade/releases
+    fetch:
+      url: https://github.com/alexellis/arkade/releases/download/{{ .Version }}/arkade{{ .Arch }}{{ .OS }}
+    install:
+      type: direct
+      binaries:
+        - arkade
+
+  asciigraph:
+    description: >
+      Go package to make lightweight ASCII line graph ╭┈╯ in command line apps
+      with no other dependencies.
+    url: https://github.com/guptarohit/asciigraph/
+    map:
+      linux: Linux
+      darwin: Darwin
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/guptarohit/asciigraph/releases
+    fetch:
+      url: https://github.com/guptarohit/asciigraph/releases/download/v{{ .Version }}/asciigraph_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - asciigraph
+
+  asciinema-edit:
+    description: asciinema casts post-production tools
+    url: https://github.com/cirocosta/asciinema-edit/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cirocosta/asciinema-edit/releases
+    fetch:
+      url: https://github.com/cirocosta/asciinema-edit/releases/download/{{ .Version }}/asciinema-edit_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - asciinema-edit
+
+  athens:
+    description: A Go module datastore and proxy
+    url: https://github.com/gomods/athens
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: amd64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/gomods/athens/releases
+    fetch:
+      url: https://github.com/gomods/athens/releases/download/v{{ .Version }}/athens_{{.Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - athens
+
+  audit2rbac:
+    description: Autogenerate RBAC policies based on Kubernetes audit logs
+    url: https://github.com/liggitt/audit2rbac
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/liggitt/audit2rbac/releases
+    fetch:
+      url: https://github.com/liggitt/audit2rbac/releases/download/v{{ .Version }}/audit2rbac-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - audit2rbac
+
+  awless:
+    description: A Mighty CLI for AWS
+    url: https://github.com/wallix/awless/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/wallix/awless/releases
+    fetch:
+      url: https://github.com/wallix/awless/releases/download/v{{ .Version }}/awless-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - awless
+
+  aws-iam-authenticator:
+    description: >
+      A tool to use AWS IAM credentials to authenticate to a Kubernetes cluster
+    url: https://github.com/kubernetes-sigs/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes-sigs/aws-iam-authenticator/releases
+    fetch:
+      url: https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v{{ .Version }}/aws-iam-authenticator_{{ .Version }}_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  aws-vault:
+    description: >
+      A vault for securely storing and accessing AWS credentials in development environments
+    url: https://github.com/99designs/aws-vault/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/99designs/aws-vault/releases
+    fetch:
+      url: https://github.com/99designs/aws-vault/releases/download/v{{ .Version }}/aws-vault-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  awstaghelper:
+    description: AWS bulk tagging tool
+    url: https://github.com/mpostument/awstaghelper/
+    map:
+      amd64: 64bit
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/mpostument/awstaghelper/releases
+    fetch:
+      url: https://github.com/mpostument/awstaghelper/releases/download/{{ .Version }}/awstaghelper_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - awstaghelper
+
+  bat:
+    description: A cat(1) clone with wings.
+    url: https://github.com/sharkdp/bat/
+    map:
+      amd64: x86_64
+      i386: i686
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/sharkdp/bat/releases
+    fetch:
+      url: https://github.com/sharkdp/bat/releases/download/v{{ .Version }}/bat-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - bat
+
+  batect:
+    description: Build And Testing Environments as Code Tool
+    url: https://batect.dev/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/batect/batect/releases
+    fetch:
+      url: https://github.com/batect/batect/releases/download/{{ .Version }}/batect
+    install:
+      type: direct
+
+  binenv:
+    description: One binary to rule them all. Manage all those pesky binaries (kubectl, helm, terraform, ...) easily.
+    url: https://github.com/devops-works/binenv/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/binenv/releases
+    fetch:
+      url: https://github.com/devops-works/binenv/releases/download/v{{ .Version }}/binenv_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: i386
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      - os: openbsd
+        arch: i386
+      - os: openbsd
+        arch: amd64
+      - os: openbsd
+        arch: arm64
+      - os: freebsd
+        arch: i386
+      - os: freebsd
+        arch: amd64
+      - os: freebsd
+        arch: arm64
+
+  bomberman:
+    description: SMTP Performance and Load Test Tool
+    url: https://github.com/c1982/bomberman/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/c1982/bomberman/releases
+    fetch:
+      url: https://github.com/c1982/bomberman/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}/bomberman_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  bottom:
+    description: Yet another cross-platform graphical process/system monitor.
+    url: https://github.com/ClementTsang/bottom/
+    map:
+      amd64: x86_64
+      i386: i686
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ClementTsang/bottom/releases
+    fetch:
+      url: https://github.com/ClementTsang/bottom/releases/download/{{ .Version }}/bottom_{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - btm
+
+  broot:
+    description: A new way to see and navigate directory trees
+    url: https://github.com/Canop/broot/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/Canop/broot/releases
+    fetch:
+      url: https://github.com/Canop/broot/releases/download/v{{ .Version }}/broot_{{ .Version }}.zip
+    install:
+      type: zip
+      binaries:
+        - broot
+
+  btop:
+    description: A monitor of resources
+    url: https://github.com/aristocratos/btop/
+    map:
+      amd64: x86_64
+      linux: linux-musl
+      macos: macos-bigsur
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/aristocratos/btop/releases
+    fetch:
+      url: https://github.com/aristocratos/btop/releases/download/v{{ .Version }}/btop-{{ .Arch }}-{{ .OS }}.tbz
+    install:
+      type: tbz
+      binaries:
+        - btop
+
+  bud:
+    description: The Full-Stack Web Framework for Go
+    url: https://github.com/livebud/bud/
+    supported_platforms:
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm
+      - os: linux
+        arch: amd64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/livebud/bud/releases
+    fetch:
+      url: https://github.com/livebud/bud/releases/download/v{{ .Version }}/bud_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - bud
+
+  buildx:
+    description: Docker CLI plugin for extended build capabilities with BuildKit
+    url: https://github.com/docker/buildx/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/docker/buildx/releases
+    fetch:
+      url: https://github.com/docker/buildx/releases/download/v{{ .Version }}/buildx-v{{ .Version}}.{{ .OS }}-{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  chart-testing:
+    description: CLI tool for linting and testing Helm charts
+    url: https://github.com/helm/chart-testing
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/helm/chart-testing/releases
+    fetch:
+      url: https://github.com/helm/chart-testing/releases/download/v{{ .Version }}/chart-testing_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - ct
+
+  changie:
+    description: >
+      Automated changelog tool for preparing releases with lots of
+      customization options
+    url: https://github.com/miniscruff/changie/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/miniscruff/changie/releases
+    fetch:
+      url: https://github.com/miniscruff/changie/releases/download/v{{ .Version }}/changie_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - changie
+
+  cheat:
+    description: cheat allows you to create and view interactive cheatsheets on the command-line.
+    url: https://github.com/cheat/cheat/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cheat/cheat/releases
+    fetch:
+      url: https://github.com/cheat/cheat/releases/download/{{ .Version }}/cheat-{{ .OS }}-{{ .Arch }}.gz
+    install:
+      type: gzip
+      binaries:
+        - cheat
+
+  check-tls-cert:
+    description: Check-tls-cert is a TLS certificate checker.
+    url: https://github.com/heartbeatsjp/check-tls-cert/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/heartbeatsjp/check-tls-cert/releases
+    fetch:
+      filters: filters
+      url: https://github.com/heartbeatsjp/check-tls-cert/releases/download/v{{ .Version }}/check-tls-cert-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.xz
+    install:
+      type: tarxz
+      binaries:
+        - check-tls-cert
+
+  checkip:
+    description: Check an IP address using various public services
+    url: https://github.com/jreisinger/checkip/
+    list:
+      type: github-releases
+      exclude: "^[0-9]"
+      url: https://api.github.com/repos/jreisinger/checkip/releases
+    fetch:
+      filters: filters
+      url: https://github.com/jreisinger/checkip/releases/download/v{{ .Version }}/checkip_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - checkip
+
+  chezmoi:
+    description: Dotfile management tool
+    url: https://github.com/twpayne/chezmoi/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/twpayne/chezmoi/releases
+    fetch:
+      url: https://github.com/twpayne/chezmoi/releases/download/v{{ .Version }}/chezmoi_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - chezmoi
+
+  chisel:
+    description: A fast TCP/UDP tunnel over HTTP
+    url: https://github.com/jpillora/chisel/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/jpillora/chisel/releases
+    fetch:
+      url: https://github.com/jpillora/chisel/releases/download/v{{ .Version }}/chisel_{{ .Version }}_{{ .OS }}_{{ .Arch }}.gz
+    install:
+      type: gzip
+      binaries:
+        - chisel
+
+  choose:
+    description: A human-friendly and fast alternative to cut and (sometimes) awk
+    url: https://github.com/theryangeary/choose/
+    map:
+      amd64: x86_64
+      linux: unknown-linux-gnu
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/theryangeary/choose/releases
+    fetch:
+      url: https://github.com/theryangeary/choose/releases/download/v{{ .Version }}/choose-{{ .Arch }}-{{.OS }}
+    install:
+      type: direct
+
+  cli53:
+    description: Command line tool for Amazon Route 53
+    url: https://github.com/barnybug/cli53/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/barnybug/cli53/releases
+    fetch:
+      url: https://github.com/barnybug/cli53/releases/download/{{ .Version }}/cli53-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  clog-cli:
+    description: Generate beautiful changelogs from your Git commit history
+    url: https://github.com/clog-tool/
+    map:
+      amd64: x86_64
+      i386: i686
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/clog-tool/clog-cli/releases
+    fetch:
+      url: https://github.com/clog-tool/clog-cli/releases/download/v{{ .Version }}/clog-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - clog
+
+  cloudman:
+    description: Textual user interface to manage ec2 instances.
+    url: https://github.com/dutchcoders/cloudman
+    map:
+      amd64: x86_64
+      i386: i686
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dutchcoders/cloudman/releases
+    fetch:
+      url: https://github.com/dutchcoders/cloudman/releases/download/{{ .Version }}/cloudman-{{ .Version }}-x86_64-unknown-linux-gnu.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - cloudman
+
+  cmctl:
+    description: CLI tool that can help you to manage cert-manager resources inside your cluster.
+    url: https://cert-manager.io/docs/usage/cmctl/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cert-manager/cert-manager/releases
+    fetch:
+      url: https://github.com/cert-manager/cert-manager/releases/download/v{{ .Version }}/cmctl-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - cmctl
+
+  comet:
+    description: Command line tool to help you use conventional commit messages
+    url: https://github.com/liamg/comet/
+    map:
+      i386: 386
+    supported_platforms:
+      - os: linux
+        arch: i386
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/liamg/comet/releases
+    fetch:
+      url: https://github.com/liamg/comet/releases/download/v{{ .Version }}/comet-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  config-registry:
+    description: Switch between kubeconfigs and avoid unintentional operation on your production clusters.
+    url: https://github.com/mumoshu/config-registry/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/mumoshu/config-registry/releases
+    fetch:
+      url: https://github.com/mumoshu/config-registry/releases/download/v{{ .Version }}/config-registry_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - config-registry
+
+  confused:
+    description: Tool to check for dependency confusion vulnerabilities in multiple package management systems
+    url: https://github.com/visma-prodsec/
+    map:
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/visma-prodsec/confused/releases
+    fetch:
+      url: https://github.com/visma-prodsec/confused/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}/confused_{{ .VersionMajor }}.{{ .VersionMinor }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - confused
+
+  consul:
+    description: >
+      Consul is a distributed, highly available, and data center aware solution
+      to connect and configure applications across dynamic, distributed infrastructure.
+    url: https://releases.hashicorp.com/consul/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/hashicorp/consul/releases
+    fetch:
+      url: https://releases.hashicorp.com/consul/{{ .Version }}/consul_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - consul
+
+  crabz:
+    description: Like pigz, but rust
+    url: https://github.com/sstadick/crabz
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/sstadick/crabz/releases
+    fetch:
+      url: https://github.com/sstadick/crabz/releases/download/v{{ .Version }}/crabz-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  ctop:
+    description: Top-like interface for container metrics
+    url: https://github.com/bcicen/ctop/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/bcicen/ctop/releases
+    fetch:
+      url: https://github.com/bcicen/ctop/releases/download/v{{ .Version }}/ctop-{{ .Version }}-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  curlie:
+    description: The power of curl, the ease of use of httpie.
+    url: https://github.com/rs/curlie/
+    map:
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/rs/curlie/releases
+    fetch:
+      url: https://github.com/rs/curlie/releases/download/v{{ .Version }}/curlie_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - curlie
+
+  datree:
+    description: >
+      Prevent Kubernetes misconfigurations from reaching production (again 😤 )!
+      Datree is a CLI tool to ensure K8s manifests and Helm charts follow best practices as well as your organization’s policies.
+    url: https://github.com/datreeio/datree/
+    map:
+      amd64: x86_64
+      i386: x86
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/datreeio/datree/releases
+    fetch:
+      url: https://github.com/datreeio/datree/releases/download/{{ .Version }}/datree-cli_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - datree
+
+  ddosify:
+    description: High-performance load testing tool, written in Golang.
+    url: https://github.com/ddosify/ddosify
+    map:
+      darwin: macos
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ddosify/ddosify/releases
+    fetch:
+      url: https://github.com/ddosify/ddosify/releases/download/v{{ .Version }}/ddosify_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - ddosify
+
+  delta:
+    description: A more intuitive version of du in rust
+    url: https://github.com/dandavison/delta/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dandavison/delta/releases
+    fetch:
+      url: https://github.com/dandavison/delta/releases/download/{{ .Version }}/delta-{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - delta
+
+  derefexo:
+    description: A process manager & log viewer for dev
+    url: https://github.com/deref/exo/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/deref/exo/releases
+    fetch:
+      url: https://github.com/deref/exo/releases/download/{{ .Version }}/exo_managed_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - exo
+    post_install_message: "Warning: the binary will be named 'derefexo' and not 'exo'"
+
+  devdash:
+    description: Highly Configurable Terminal Dashboard for Developers and Creators
+    url: https://github.com/Phantas0s/devdash/
+    map:
+      amd64: x86_64
+      i386: x86
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/Phantas0s/devdash/releases
+    fetch:
+      url: https://github.com/Phantas0s/devdash/releases/download/v{{ .Version }}/devdash_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: direct
+
+  devspace:
+    description: >
+      DevSpace - The Fastest Developer Tool for Kubernetes ￼
+      Automate your deployment workflow with DevSpace and develop software
+      directly inside Kubernetes.
+    url: https://github.com/devspace-cloud/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devspace-cloud/devspace/releases
+    fetch:
+      url: https://github.com/devspace-cloud/devspace/releases/download/v{{ .Version }}/devspace-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  direnv:
+    description: >
+      An extension for your shell. It augments existing shells with a new feature
+      that can load and unload environment variables depending on the current directory.
+    url: https://direnv.net
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/direnv/direnv/releases
+    fetch:
+      url: https://github.com/direnv/direnv/releases/download/v{{ .Version }}/direnv.{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      - os: freebsd
+        arch: 386
+      - os: freebsd
+        arch: amd64
+      - os: freebsd
+        arch: arm
+      - os: linux
+        arch: 386
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: mips
+
+  dive:
+    description: A tool for exploring each layer in a docker image
+    url: https://github.com/wagoodman/dive/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/wagoodman/dive/releases
+    fetch:
+      url: https://github.com/wagoodman/dive/releases/download/v{{ .Version }}/dive_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - dive
+
+  docker-slim:
+    description: |
+      DockerSlim (docker-slim): Don't change anything in your Docker
+      container image and minify it by up to 30x (and for compiled languages even
+      more) making it secure too! (free and open source)
+    url: https://github.com/docker-slim/docker-slim/
+    map:
+      amd64: ""
+      arm: "-arm"
+      arm64: "-arm64"
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: arm
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/docker-slim/docker-slim/releases
+    fetch:
+      url: https://downloads.dockerslim.com/releases/{{ .Version }}/dist_{{ .OS }}{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - "^slim$"
+        # - docker-slim-sensor
+
+  dockle:
+    description: Container Image Linter for Security, Helping build the Best-Practice Docker Image, Easy to start
+    url: https://github.com/goodwithtech/dockle/
+    map:
+      amd64: 64bit
+      i386: 32bit
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/goodwithtech/dockle/releases
+    fetch:
+      url: https://github.com/goodwithtech/dockle/releases/download/v{{ .Version }}/dockle_{{ .Version }}_{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - dockle
+
+  doctl:
+    description: The official digital ocean command line interface
+    url: https://github.com/digitalocean/doctl/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/digitalocean/doctl/releases
+    fetch:
+      url: https://github.com/digitalocean/doctl/releases/download/v{{ .Version }}/doctl-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - doctl
+
+  driftctl:
+    description: Detect, track and alert on infrastructure drift
+    url: https://github.com/cloudskiff/driftctl/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cloudskiff/driftctl/releases
+    fetch:
+      url: https://github.com/cloudskiff/driftctl/releases/download/v{{ .Version }}/driftctl_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  driftwood:
+    description: Private key usage verification
+    url: https://github.com/trufflesecurity/driftwood
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/trufflesecurity/driftwood/releases
+    fetch:
+      url: https://github.com/trufflesecurity/driftwood/releases/download/v{{ .Version }}/driftwood_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - driftwood
+
+  dstask:
+    description: Single binary terminal-based todo manager with git-based sync + markdown notes per task
+    url: https://github.com/naggie/dstask/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/naggie/dstask/releases
+    fetch:
+      url: https://github.com/naggie/dstask/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}/dstask-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+      binaries:
+        - dstask
+
+  dstask-import:
+    description: Single binary terminal-based todo manager with git-based sync + markdown notes per task (import tool)
+    url: https://github.com/naggie/dstask/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/naggie/dstask/releases
+    fetch:
+      url: https://github.com/naggie/dstask/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}/dstask-import-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+      binaries:
+        - dstask-import
+
+  duf:
+    description: Disk Usage/Free Utility
+    url: https://github.com/muesli/duf/
+    map:
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/muesli/duf/releases
+    fetch:
+      url: https://github.com/muesli/duf/releases/download/v{{ .Version }}/duf_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - duf
+
+  dust:
+    description: A more intuitive version of du in rust
+    url: https://github.com/bootandy/dust/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/bootandy/dust/releases
+    fetch:
+      url: https://github.com/bootandy/dust/releases/download/v{{ .Version }}/dust-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - dust
+
+  dw-query-digest:
+    description: MySQL slow log analyzer. Alternative to pt-query-digest.
+    url: https://github.com/devops-works/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/dw-query-digest/releases
+    fetch:
+      url: https://github.com/devops-works/dw-query-digest/releases/download/v{{ .Version }}/dw-query-digest_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - dw-query-digest
+
+  egress-auditor:
+    description: Audit your egress connections and finally populate this OUTPUT chain !
+    url: https://github.com/devops-works/egress-auditor
+    map:
+      i386: "386"
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/egress-auditor/releases
+    fetch:
+      url: https://github.com/devops-works/egress-auditor/releases/download/v{{ .Version }}/egress-auditor_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: i386
+      - os: linux
+        arch: arm
+
+  eksctl:
+    description: eksctl is a simple CLI tool for creating clusters on AWS EKS.
+    url: https://github.com/weaveworks/eksctl/
+    map:
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/weaveworks/eksctl/releases
+    fetch:
+      url: https://github.com/weaveworks/eksctl/releases/download/v{{ .Version }}/eksctl_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - eksctl
+
+  exa:
+    description: A modern replacement for ‘ls’.
+    url: https://github.com/ogham/exa/
+    map:
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ogham/exa/releases
+    fetch:
+      url: https://github.com/ogham/exa/releases/download/v{{ .Version }}/exa-{{ .OS }}-{{ .Arch }}-v{{ .Version }}.zip
+    install:
+      type: zip
+      binaries:
+        - exa
+
+  exo:
+    description: "Command-line tool for everything at Exoscale: compute, storage, dns."
+    url: https://github.com/exoscale/cli/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/exoscale/cli/releases
+    fetch:
+      url: https://github.com/exoscale/cli/releases/download/v{{ .Version }}/exoscale-cli_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - exo
+
+  fd:
+    description: A simple, fast and user-friendly alternative to 'find'
+    url: https://github.com/sharkdp/fd/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/sharkdp/fd/releases
+    fetch:
+      url: https://github.com/sharkdp/fd/releases/download/v{{ .Version }}/fd-v{{ .Version }}-x86_64-unknown-{{ .OS }}-gnu.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - fd
+
+  ffsend:
+    description: Easily and securely share files from the command line. A fully featured Firefox Send client.
+    url: https://github.com/timvisee/ffsend/
+    map:
+      amd64: x64
+      darwin: macos
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/timvisee/ffsend/releases
+    fetch:
+      url:
+        https://github.com/timvisee/ffsend/releases/download/v{{ .Version }}/ffsend-v{{ .Version }}-{{ .OS }}-{{ .Arch }}
+        #  https://github.com/timvisee/ffsend/releases/download/v0.2.74/ffsend-v0.2.74-linux-x64
+    install:
+      type: direct
+      binaries:
+        - ffsend
+
+  flux:
+    description: Declarative continuous deployment for Kubernetes.
+    url: https://fluxcd.io
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/fluxcd/flux2/releases
+    fetch:
+      url: https://github.com/fluxcd/flux2/releases/download/v{{ .Version }}/flux_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - flux
+
+  fselect:
+    description: Find files with SQL-like queries
+    url: https://github.com/jhspetersson/fselect/
+    map:
+      amd64: x86_64
+      linux: linux-musl
+      windows: win
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/jhspetersson/fselect/releases
+    fetch:
+      url: https://github.com/jhspetersson/fselect/releases/download/{{ .Version }}/fselect-{{ .Arch }}-{{ .OS }}.gz
+    install:
+      type: gzip
+      binaries:
+        - fselect
+
+  fx:
+    description: Terminal JSON viewer & processor
+    url: https://github.com/antonmedv/fx/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/antonmedv/fx/releases
+    fetch:
+      url: https://github.com/antonmedv/fx/releases/download/{{ .Version }}/fx_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: amd64
+
+  fzf:
+    description: fzf is a general-purpose command-line fuzzy finder.
+    url: https://github.com/junegunn/fzf/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/junegunn/fzf/releases
+    fetch:
+      url: https://github.com/junegunn/fzf/releases/download/{{ .Version }}/fzf-{{ .Version }}-{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - fzf
+
+  gbt:
+    description: Highly configurable prompt builder for Bash, ZSH and PowerShell written in Go.
+    url: https://github.com/jtyr/gbt/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/jtyr/gbt/releases
+    fetch:
+      url: https://github.com/jtyr/gbt/releases/download/v{{ .Version }}/gbt-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gbt
+
+  gdu:
+    description: Pretty fast disk usage analyzer written in Go.
+    url: https://github.com/dundee/gdu/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dundee/gdu/releases
+    fetch:
+      url: https://github.com/dundee/gdu/releases/download/v{{ .Version }}/gdu_{{ .OS }}_{{ .Arch }}.tgz
+    install:
+      type: tgz
+      binaries:
+        - gdu_{{ .OS }}_{{ .Arch }}
+
+  geesefs:
+    description: Finally, a good FUSE FS implementation over S3
+    url: https://github.com/yandex-cloud/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/yandex-cloud/geesefs/releases
+    fetch:
+      url: https://github.com/yandex-cloud/geesefs/releases/download/v{{ .Version }}/geesefs-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  gh:
+    description: GitHub’s official command line tool
+    url: https://github.com/cli/cli/
+    map:
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cli/cli/releases
+    fetch:
+      url: https://github.com/cli/cli/releases/download/v{{ .Version }}/gh_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gh
+
+  github-release-notes:
+    description: Generate release notes content from GitHub Pull Request history.
+    url: https://github.com/buchanae/github-release-notes/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/buchanae/github-release-notes/releases
+    fetch:
+      url: https://github.com/buchanae/github-release-notes/releases/download/{{ .Version }}/github-release-notes-{{ .OS }}-{{ .Arch }}-{{ .Version }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - github-release-notes
+
+  gitjacker:
+    description: Leak git repositories from misconfigured websites
+    url: https://github.com/liamg/gitjacker/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/liamg/gitjacker/releases
+    fetch:
+      url: https://github.com/liamg/gitjacker/releases/download/v{{ .Version }}/gitjacker-{{ .OS }}-{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  gitlab-terraform-manager:
+    description: The tool for manage gitlab terraform backend
+    url: https://github.com/CRASH-Tech/gitlab-terraform-manager/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/CRASH-Tech/gitlab-terraform-manager/releases
+    fetch:
+      url: https://github.com/CRASH-Tech/gitlab-terraform-manager/releases/download/{{ .Version }}/gitlab-terraform-manager_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  gitleaks:
+    description: Scan git repos (or files) for secrets using regex and entropy
+    url: https://github.com/zricethezav/gitleaks/
+    map:
+      amd64: x64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/zricethezav/gitleaks/releases
+    fetch:
+      url: https://github.com/zricethezav/gitleaks/releases/download/v{{ .Version }}/gitleaks_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gitleaks
+
+  gitui:
+    description: Blazing fast terminal client for git written in Rust
+    url: https://github.com/extrawurst/gitui/
+    map:
+      darwin: mac
+      linux: linux-musl
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/extrawurst/gitui/releases
+    fetch:
+      url: https://github.com/extrawurst/gitui/releases/download/v{{ .Version }}/gitui-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gitui
+
+  glab:
+    description: An open-source GitLab command line tool
+    url: https://github.com/profclems/glab/
+    map:
+      amd64: x86_64
+      darwin: macOS
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/profclems/glab/releases
+    fetch:
+      url: https://github.com/profclems/glab/releases/download/v{{ .Version }}/glab_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - glab
+
+  glow:
+    description: Render markdown on the CLI, with pizzazz! 💅🏻
+    url: https://github.com/charmbracelet/glow/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/charmbracelet/glow/releases
+    fetch:
+      url: https://github.com/charmbracelet/glow/releases/download/v{{ .Version }}/glow_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - glow
+
+  go-mod-outdated:
+    description: >
+      Find outdated dependencies of your Go projects.
+      go-mod-outdated provides a table view of the go list -u -m -json all
+      command which lists all dependencies of a Go project and their available
+      minor and patch updates. It also provides a way to filter indirect
+      dependencies and dependencies without updates.
+    url: https://github.com/psampaz/go-mod-outdated
+    map:
+      amd64: x86_64
+      macos: Darwin
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/psampaz/go-mod-outdated/releases
+    fetch:
+      url: https://github.com/psampaz/go-mod-outdated/releases/download/v{{ .Version }}/go-mod-outdated_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - go-mod-outdated
+
+  gocloc:
+    description: A little fast cloc(Count Lines Of Code)
+    url: https://github.com/hhatto/gocloc/
+    map:
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/hhatto/gocloc/releases
+    fetch:
+      url: https://github.com/hhatto/gocloc/releases/download/v{{ .Version }}/gocloc_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gocloc
+
+  gokart:
+    description: A static analysis tool for securing Go code
+    url: https://github.com/praetorian-inc/gokart/
+    map:
+      amd64: x86_64
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/praetorian-inc/gokart/releases
+    fetch:
+      url: https://github.com/praetorian-inc/gokart/releases/download/v{{ .Version }}/gokart_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gokart
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: amd64
+
+  golangci-lint:
+    description: Fast linters Runner for Go
+    url: https://github.com/golangci/golangci-lint/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/golangci/golangci-lint/releases
+    fetch:
+      url: https://github.com/golangci/golangci-lint/releases/download/v{{ .Version }}/golangci-lint-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - golangci-lint
+
+  goreleaser:
+    description: Deliver Go binaries as fast and easily as possible
+    url: https://github.com/goreleaser/goreleaser/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/goreleaser/goreleaser/releases
+    fetch:
+      url: https://github.com/goreleaser/goreleaser/releases/download/v{{ .Version }}/goreleaser_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - goreleaser
+
+  gorss:
+    description: Go Terminal Feed Reader
+    url: https://github.com/Lallassu/gorss/
+    map:
+      darwin: osx
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: amd64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/Lallassu/gorss/releases
+    fetch:
+      url: https://github.com/Lallassu/gorss/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}/gorss_{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gorss_{{ .OS }}
+
+  gotop:
+    description: Just another terminal based graphical activity monitor
+    url: https://github.com/xxxserxxx/gotop/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/xxxserxxx/gotop/releases
+    fetch:
+      url: https://github.com/xxxserxxx/gotop/releases/download/v{{ .Version }}/gotop_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tgz
+    install:
+      type: tgz
+      binaries:
+        - gotop
+
+  gotty:
+    description: Share your terminal as a web application
+    url: https://github.com/yudai/gotty/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/yudai/gotty/releases
+    fetch:
+      url: https://github.com/yudai/gotty/releases/download/v{{ .Version }}/gotty_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gotty
+
+  gping:
+    description: Ping, but with a graph
+    url: https://github.com/orf/gping/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/orf/gping/releases
+    fetch:
+      url: https://github.com/orf/gping/releases/download/v{{ .Version }}/gping-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gping
+
+  grafana-kiosk:
+    description: Kiosk utility for Grafana
+    url: https://github.com/grafana/grafana-kiosk/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/grafana/grafana-kiosk/releases
+    fetch:
+      url: https://github.com/grafana/grafana-kiosk/releases/download/v{{ .Version }}/grafana-kiosk.{{ .OS }}.{{ .Arch }}
+    install:
+      type: direct
+
+  grex:
+    description: A command-line tool and library for generating regular expressions from user-provided test cases
+    url: https://github.com/pemistahl/grex/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-musl
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/pemistahl/grex/releases
+    fetch:
+      url: https://github.com/pemistahl/grex/releases/download/v{{ .Version }}/grex-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - grex
+
+  gosec:
+    description: Golang security checker
+    url: https://github.com/securego/gosec/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/securego/gosec/releases
+    fetch:
+      url: https://github.com/securego/gosec/releases/download/v{{ .Version }}/gosec_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gosec
+
+  grafana_cli:
+    description: A CLI based utility to operate Grafana dashboards, folders, annotations, etc.
+    url: https://github.com/kckecheng/grafana_cli/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kckecheng/grafana_cli/releases
+    fetch:
+      url: https://github.com/kckecheng/grafana_cli/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}/grafana_cli
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: amd64
+
+  grizzly:
+    description: A utility for managing Jsonnet dashboards against the Grafana API
+    url: https://github.com/grafana/grizzly/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/grafana/grizzly/releases
+    fetch:
+      url: https://github.com/grafana/grizzly/releases/download/v{{ .Version }}/grr-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  gron:
+    description: Make JSON greppable!
+    url: https://github.com/tomnomnom/gron/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/tomnomnom/gron/releases
+    fetch:
+      url: https://github.com/tomnomnom/gron/releases/download/v{{ .Version }}/gron-{{ .OS }}-{{ .Arch }}-{{ .Version }}.tgz
+    install:
+      type: tgz
+      binaries:
+        - gron
+
+  grype:
+    description: A vulnerability scanner for container images and filesystems
+    url: https://github.com/anchore/grype/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/anchore/grype/releases
+    fetch:
+      url: https://github.com/anchore/grype/releases/download/v{{ .Version }}/grype_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - grype
+
+  gws:
+    description: Colorful KISS helper for git workspaces
+    url: https://github.com/StreakyCobra/gws/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/StreakyCobra/gws/releases
+    fetch:
+      url: https://github.com/StreakyCobra/gws/releases/download/{{ .Version }}/gws-{{ .Version }}
+    install:
+      type: direct
+
+  hadolint:
+    description: Dockerfile linter, validate inline bash, written in Haskell
+    url: https://github.com/hadolint/hadolint/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/hadolint/hadolint/releases
+    fetch:
+      url: https://github.com/hadolint/hadolint/releases/download/v{{ .Version }}/hadolint-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  havener:
+    description: Think of it as a swiss army knife for Kubernetes tasks
+    url: https://github.com/homeport/havener/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/homeport/havener/releases
+    fetch:
+      url: https://github.com/homeport/havener/releases/download/v{{ .Version }}/havener_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - havener
+
+  hcloud:
+    description: a tool for controlling hetzner cloud resources
+    url: https://github.com/hetznercloud/cli/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/hetznercloud/cli/releases
+    fetch:
+      url: https://github.com/hetznercloud/cli/releases/download/v{{ .Version }}/hcloud-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - hcloud
+
+  helm:
+    description: The Kubernetes Package Manager
+    url: https://github.com/helm/helm/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/helm/helm/releases
+    fetch:
+      url: https://get.helm.sh/helm-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - "^helm$"
+
+  helm-docs:
+    description: a tool for controlling hetzner cloud resources
+    url: https://github.com/norwoodj/helm-docs/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/norwoodj/helm-docs/releases
+    fetch:
+      url: https://github.com/norwoodj/helm-docs/releases/download/v{{ .Version }}/helm-docs_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - helm-docs
+
+  helm-operator:
+    description: >
+      SDK for building Kubernetes applications. Provides high level APIs,
+      useful abstractions, and project scaffolding.
+    url: https://github.com/operator-framework/operator-sdk/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/operator-framework/operator-sdk/releases
+    fetch:
+      url: https://github.com/operator-framework/operator-sdk/releases/download/v{{ .Version }}/helm-operator_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  helmfile:
+    description: Deploy Kubernetes Helm Charts
+    url: https://github.com/helmfile/helmfile/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/helmfile/helmfile/releases
+    fetch:
+      url: https://github.com/helmfile/helmfile/releases/download/v{{ .Version }}/helmfile_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - helmfile
+
+  helmwave:
+    description: 🌊 Composer for @helm Charts
+    url: https://github.com/helmwave/helmwave/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/helmwave/helmwave/releases
+    fetch:
+      url: https://github.com/helmwave/helmwave/releases/download/v{{ .Version }}/helmwave_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - helmwave
+
+  hetty:
+    description: Hetty is an HTTP toolkit for security research.
+    url: https://hetty.xyz/
+    map:
+      amd64: x86_64
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dstotijn/hetty/releases
+    fetch:
+      url: https://github.com/dstotijn/hetty/releases/download/v{{ .Version }}/hetty_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - hetty
+
+  himalaya:
+    description: 📫 CLI email client
+    url: https://github.com/soywod/himalaya/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/soywod/himalaya/releases
+    fetch:
+      url: https://github.com/soywod/himalaya/releases/download/v{{ .Version }}/himalaya-{{ .OS }}.tgz
+    install:
+      type: tgz
+      binaries:
+        - himalaya
+
+  httpx:
+    description: >
+      httpx is a fast and multi-purpose HTTP toolkit allow to run multiple
+      probers using retryablehttp library, it is designed to maintain the
+      result reliability with increased threads.
+    url: https://github.com/projectdiscovery/httpx/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/projectdiscovery/httpx/releases
+    fetch:
+      url: https://github.com/projectdiscovery/httpx/releases/download/v{{ .Version }}/httpx_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - httpx
+
+  httpx-win:
+    description: >
+      httpx is a fast and multi-purpose HTTP toolkit allow to run multiple
+      probers using retryablehttp library, it is designed to maintain the
+      result reliability with increased threads (windows).
+    url: https://github.com/projectdiscovery/httpx/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/projectdiscovery/httpx/releases
+    fetch:
+      url: https://github.com/projectdiscovery/httpx/releases/download/v{{ .Version }}/httpx_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - httpx
+
+  hugo:
+    description: The world’s fastest framework for building websites.
+    url: https://github.com/gohugoio/hugo/
+    map:
+      amd64: 64bit
+      "386": 32bit
+      darwin: macOS
+      linux: Linux
+      arm: ARM
+      arm64: ARM64
+      windows: Windows
+      freebsd: FreeBSD
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/gohugoio/hugo/releases
+    fetch:
+      url: https://github.com/gohugoio/hugo/releases/download/v{{ .Version }}/hugo_{{ .Version }}_{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - hugo
+
+  hugo-extended:
+    description: The world’s fastest framework for building websites.
+    url: https://github.com/gohugoio/hugo/
+    map:
+      amd64: 64bit
+      "386": 32bit
+      darwin: macOS
+      linux: Linux
+      arm: ARM
+      arm64: ARM64
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/gohugoio/hugo/releases
+    fetch:
+      url: https://github.com/gohugoio/hugo/releases/download/v{{ .Version }}/hugo_extended_{{ .Version }}_{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - hugo
+
+  iamlive:
+    description: >
+      Generate an IAM policy from AWS calls using client-side monitoring (CSM) or embedded proxy
+    url: https://github.com/iann0036/iamlive/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/iann0036/iamlive/releases
+    fetch:
+      url: https://github.com/iann0036/iamlive/releases/download/v{{ .Version }}/iamlive-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - iamlive
+
+  imgpkg:
+    description: >
+      Allows you to store and distribute sets of files
+      (e.g. application configuration) as images in Docker (OCI) registries
+    url: https://github.com/vmware-tanzu/carvel-imgpkg/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/vmware-tanzu/carvel-imgpkg/releases
+    fetch:
+      url: https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v{{ .Version }}/imgpkg-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  influxevent:
+    description: >
+      Influxevent wraps commands and sends command result, timing & performance
+      samples to an influxDB server.
+    url: https://gitlab.com/devopsworks/tools/influxevent/
+    list:
+      type: gitlab-releases
+      url: https://gitlab.com/api/v4/projects/18707017/releases
+    fetch:
+      url: https://gitlab.com/api/v4/projects/18707017/packages/generic/influxevent/{{ .Version }}/influxevent-{{.OS }}-{{ .Arch }}-v{{ .Version }}.gz
+    install:
+      type: gzip
+      binaries:
+        - "influxevent-{{.OS }}-{{ .Arch }}-v{{ .Version }}.gz"
+
+  infracost:
+    description: Cloud cost estimates for Terraform
+    url: https://github.com/infracost/infracost/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/infracost/infracost/releases
+    fetch:
+      url: https://github.com/infracost/infracost/releases/download/v{{ .Version }}/infracost-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - "infracost-{{ .OS }}-{{ .Arch }}"
+
+  jira-cli:
+    description: 🔥 Feature-rich interactive Jira command line.
+    url: https://github.com/ankitpokhrel/jira-cli
+    map:
+      darwin: macOS
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ankitpokhrel/jira-cli/releases
+    fetch:
+      url: https://github.com/ankitpokhrel/jira-cli/releases/download/v{{ .Version }}/jira_{{.Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - jira
+    post_install_message: >
+      The binary for jira-cli is called jira-cli (and not jira like the one on github).
+
+  jless:
+    description: A command-line pager for JSON data.
+    url: https://github.com/PaulJuliusMartinez/jless
+    map:
+      amd64: "x86_64"
+      darwin: apple-darwinv
+      linux: unknown-linux-gnu
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: amd64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/PaulJuliusMartinez/jless/releases
+    fetch:
+      url: https://github.com/PaulJuliusMartinez/jless/releases/download/v{{ .Version }}/jless-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.zip
+    install:
+      type: zip
+      binaries:
+        - jless
+
+  juicefs:
+    description: JuiceFS is a distributed POSIX file system built on top of Redis and S3.
+    url: https://github.com/juicedata/juicefs/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/juicedata/juicefs/releases
+    fetch:
+      url: https://github.com/juicedata/juicefs/releases/download/v{{ .Version }}/juicefs-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - juicefs
+
+  k3d:
+    description: Lightweight kubernetes distribution that creates containerized k3s clusters. This means, that you can spin up a multi-node k3s cluster on a single machine using docker.
+    url: https://github.com/rancher/k3d/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/rancher/k3d/releases
+    fetch:
+      url: https://github.com/rancher/k3d/releases/download/v{{ .Version }}/k3d-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  k6:
+    description: A modern load testing tool, using Go and JavaScript - https://k6.io
+    url: https://github.com/grafana/k6/
+    map:
+      darwin: macos
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/grafana/k6/releases
+    fetch:
+      url: https://github.com/grafana/k6/releases/download/v{{ .Version }}/k6-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - "^k6$"
+
+  k8stail:
+    description: tail -f experience for Kubernetes Pods
+    url: https://github.com/dtan4/k8stail/
+    map:
+      amd64: x86_64
+      linux: Linux
+      darwin: Darwin
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dtan4/k8stail/releases
+    fetch:
+      url: https://github.com/dtan4/k8stail/releases/download/v{{ .Version }}/k8stail_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - k8stail
+
+  k9s:
+    description: Kubernetes CLI To Manage Your Clusters In Style!
+    url: https://github.com/derailed/k9s/
+    map:
+      linux: Linux
+      darwin: Darwin
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/derailed/k9s/releases
+    fetch:
+      # for v0.24.10:
+      # url: https://github.com/derailed/k9s/releases/download/v{{ .Version }}/k9s_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+      url: https://github.com/derailed/k9s/releases/download/v{{ .Version }}/k9s_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - k9s
+
+  kaf:
+    description: Modern CLI for Apache Kafka, written in Go.
+    url: https://github.com/birdayz/kaf
+    map:
+      linux: Linux
+      darwin: Darwin
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/birdayz/kaf/releases
+    fetch:
+      url: https://github.com/birdayz/kaf/releases/download/v{{ .Version }}/kaf_{{.Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kaf
+
+  kafkactl:
+    description: Command Line Tool for managing Apache Kafka
+    url: https://github.com/deviceinsight/kafkactl/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/deviceinsight/kafkactl/releases
+    fetch:
+      url: https://github.com/deviceinsight/kafkactl/releases/download/v{{ .Version }}/kafkactl_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kafkactl
+
+  kail:
+    description: kubernetes log viewer
+    url: https://github.com/boz/kail/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/boz/kail/releases
+    fetch:
+      url: https://github.com/boz/kail/releases/download/v{{ .Version }}/kail_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kail
+
+  kapp:
+    description: A simple deployment tool focused on the concept of "Kubernetes application"
+    url: https://github.com/vmware-tanzu/carvel-kapp/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/vmware-tanzu/carvel-kapp/releases
+    fetch:
+      url: https://github.com/vmware-tanzu/carvel-kapp/releases/download/v{{ .Version }}/kapp-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  kbld:
+    description: >
+      Seamlessly incorporates image building and image pushing into your development and deployment workflows
+    url: https://github.com/vmware-tanzu/carvel-kbld/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/vmware-tanzu/carvel-kbld/releases
+    fetch:
+      url: https://github.com/vmware-tanzu/carvel-kbld/releases/download/v{{ .Version }}/kbld-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  kcli:
+    description: Kcli is a kafka read only command line browser.
+    url: https://github.com/cswank/kcli/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cswank/kcli/releases
+    fetch:
+      url: https://github.com/cswank/kcli/releases/download/{{ .Version }}/kcli_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    map:
+      linux: Linux
+      darwin: Darwin
+      windows: Windows
+      amd64: x86_64
+    install:
+      type: tgz
+      binaries:
+        - kcli
+
+  kconnect:
+    description: A CLI for managing Kubernetes cluster connections
+    url: https://github.com/fidelity/kconnect
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/fidelity/kconnect/releases
+    fetch:
+      url: https://github.com/fidelity/kconnect/releases/download/{{ .Version }}/kconnect_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kconnect
+
+  kdigger:
+    description: kdigger is a context discovery tool for Kubernetes penetration testing.
+    url: https://github.com/quarkslab/kdigger/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/quarkslab/kdigger/releases
+    fetch:
+      url: https://github.com/quarkslab/kdigger/releases/download/v{{ .Version }}/kdigger-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kdigger-{{ .OS }}-{{ .Arch }}
+
+  ketall:
+    description: Like `kubectl get all`, but get really all resources
+    url: https://github.com/corneliusweig/ketall/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/corneliusweig/ketall/releases
+    fetch:
+      url: https://github.com/corneliusweig/ketall/releases/download/v{{ .Version }}/ketall-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - ketall-{{ .Arch }}-{{ .OS }}
+
+  kind:
+    description: Kubernetes IN Docker - local clusters for testing Kubernetes
+    url: https://github.com/kubernetes-sigs/kind/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes-sigs/kind/releases
+    fetch:
+      url: https://github.com/kubernetes-sigs/kind/releases/download/v{{ .Version }}/kind-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  kopia:
+    description: >
+      Cross-platform backup tool for Windows, macOS & Linux with fast, incremental
+      backups, client-side end-to-end encryption, compression and data deduplication.
+      CLI and GUI included.
+    url: https://github.com/kopia/kopia/
+    map:
+      darwin: masOS
+      amd64: x64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kopia/kopia/releases
+    fetch:
+      url: https://github.com/kopia/kopia/releases/download/v{{ .Version }}/kopia-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kopia
+
+  kompose:
+    description: Go from Docker Compose to Kubernetes
+    url: https://github.com/kubernetes/kompose/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes/kompose/releases
+    fetch:
+      url: https://github.com/kubernetes/kompose/releases/download/v{{ .Version }}/kompose-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kompose-linux-amd64
+
+  kops:
+    description: Kubernetes Operations (kops) - Production Grade K8s Installation, Upgrades, and Management
+    url: https://github.com/kubernetes/kops/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes/kops/releases
+    fetch:
+      url: https://github.com/kubernetes/kops/releases/download/v{{ .Version }}/kops-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  kube-beacon:
+    description: >
+      Open Source runtime scanner for k8s cluster and perform security audit
+      checks based on CIS Kubernetes Benchmark specification
+    url: https://github.com/chen-keinan/kube-beacon/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/chen-keinan/kube-beacon/releases
+    fetch:
+      url: https://github.com/chen-keinan/kube-beacon/releases/download/v{{ .Version }}/kube-beacon_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tgz
+    install:
+      type: tgz
+      binaries:
+        - kube-beacon
+
+  kube-bench:
+    description: >
+      Checks whether Kubernetes is deployed according to security best practices as
+      defined in the CIS Kubernetes Benchmark
+    url: https://github.com/aquasecurity/kube-bench/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/aquasecurity/kube-bench/releases
+    fetch:
+      url: https://github.com/aquasecurity/kube-bench/releases/download/v{{ .Version }}/kube-bench_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kube-bench
+
+  kube-dump:
+    description: Backup a Kubernetes cluster as a yaml manifest
+    url: https://github.com/WoozyMasta/kube-dump/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/WoozyMasta/kube-dump/releases
+    fetch:
+      url: https://raw.githubusercontent.com/WoozyMasta/kube-dump/{{ .Version }}/kube-dump
+    install:
+      type: direct
+
+  kube-linter:
+    description: >
+      KubeLinter is a static analysis tool that checks Kubernetes YAML files and Helm charts to ensure
+      the applications represented in them adhere to best practices.
+    url: https://github.com/stackrox/kube-linter
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/stackrox/kube-linter/releases
+    fetch:
+      url: https://github.com/stackrox/kube-linter/releases/download/v{{ .Version }}/kube-linter-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kube-linter
+    supported_platforms:
+      - os: linux
+        arch: amd64
+
+  kubeaudit:
+    description: kubeaudit helps you audit your Kubernetes clusters against common security controls
+    url: https://github.com/Shopify/kubeaudit/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/Shopify/kubeaudit/releases
+    fetch:
+      url: https://github.com/Shopify/kubeaudit/releases/download/v{{ .Version }}/kubeaudit_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubeaudit
+
+  kubecolor:
+    description: colorizes kubectl output
+    url: https://github.com/dty1er/kubecolor/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dty1er/kubecolor/releases
+    fetch:
+      url: https://github.com/dty1er/kubecolor/releases/download/v{{ .Version }}/kubecolor_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubecolor
+
+  kubectl:
+    description: Production-Grade Container Scheduling and Management (cli)
+    url: https://github.com/kubernetes/kubernetes/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes/kubernetes/releases
+    fetch:
+      url: https://storage.googleapis.com/kubernetes-release/release/v{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl
+    install:
+      type: direct
+
+  kubectl-krew:
+    description: Find and install kubectl plugins
+    url: https://github.com/kubernetes-sigs/krew/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes-sigs/krew/releases
+    fetch:
+      url: https://github.com/kubernetes-sigs/krew/releases/download/v{{ .Version }}/krew-{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - krew-{{ .OS }}_{{ .Arch }}
+
+  kubectx:
+    description: Faster way to switch between clusters in kubectl
+    url: https://github.com/ahmetb/kubectx/
+    map:
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ahmetb/kubectx/releases
+    fetch:
+      url: https://github.com/ahmetb/kubectx/releases/download/v{{ .Version }}/kubectx_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubectx
+
+  kubeeye:
+    description: >
+      KubeEye aims to find various problems on Kubernetes,
+      such as application misconfiguration,
+      unhealthy cluster components and node problems.
+    url: https://github.com/kubesphere/kubeeye/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubesphere/kubeeye/releases
+      exclude: "0.4.0"
+    fetch:
+      url: https://github.com/kubesphere/kubeeye/releases/download/v{{ .Version }}/kubeeye-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - ke
+
+  kubefwd:
+    description: Forward multiple ports in Kubernetes
+    url: https://github.com/txn2/kubefwd/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/txn2/kubefwd/releases
+    fetch:
+      url: https://github.com/txn2/kubefwd/releases/download/{{ .Version }}/kubefwd_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubefwd
+
+  kubens:
+    description: Faster way to switch between namespaces in kubectl
+    url: https://github.com/ahmetb/kubectx/
+    map:
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ahmetb/kubectx/releases
+    fetch:
+      url: https://github.com/ahmetb/kubectx/releases/download/v{{ .Version }}/kubens_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubens
+
+  kubent:
+    description: kube-no-trouble - Easily check your clusters for use of deprecated APIs
+    url: https://github.com/doitintl/kube-no-trouble/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/doitintl/kube-no-trouble/releases
+    fetch:
+      url: https://github.com/doitintl/kube-no-trouble/releases/download/{{ .Version }}/kubent-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubent
+
+  kubepug:
+    description: Kubernetes PreUpGrade (Checker)
+    url: https://github.com/rikatz/kubepug/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/rikatz/kubepug/releases
+    fetch:
+      url: https://github.com/rikatz/kubepug/releases/download/v{{ .Version }}/kubepug_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubepug
+
+  kuberlogic:
+    description: >
+      Kuberlogic is an open-source product that deploys and manages software on
+      top of the Kubernetes cluster and turns infrastructure into a managed
+      PaaS.
+    url: https://github.com/kuberlogic/kuberlogic/
+    # Seems that binaries are not produced anymore :/
+    # list:
+    #   type: github-releases
+    #   url: https://api.github.com/repos/kuberlogic/kuberlogic/releases
+    map:
+      amd64: x86_64
+    list:
+      type: static
+      versions:
+        - 0.0.15
+        - 0.0.14
+        - 0.0.13
+        - 0.0.12
+    fetch:
+      url: https://github.com/kuberlogic/kuberlogic/releases/download/{{ .Version }}/kuberlogic_{{ .Arch }}_{{ .OS }}
+    install:
+      type: direct
+
+  kubescape:
+    description: >
+      kubescape is the first tool for testing if Kubernetes is deployed
+      securely as defined in Kubernetes Hardening Guidance by to NSA and CISA
+    url: https://github.com/armosec/kubescape/
+    map:
+      darwin: macos
+      linux: ubuntu
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/armosec/kubescape/releases
+    fetch:
+      url: https://github.com/armosec/kubescape/releases/download/v{{ .Version }}/kubescape-{{ .OS }}-latest
+    install:
+      type: direct
+
+  kubeseal:
+    description: A Kubernetes controller and tool for one-way encrypted Secrets
+    url: https://github.com/bitnami-labs/sealed-secrets/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/bitnami-labs/sealed-secrets/releases
+    fetch:
+      url: https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ .Version }}/kubeseal-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubeseal
+
+  kubesec:
+    description: >
+      Secure Secret management for Kubernetes (with gpg, Google Cloud KMS and
+      AWS KMS backends)
+    url: https://github.com/shyiko/kubesec/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/shyiko/kubesec/releases
+    fetch:
+      url: https://github.com/shyiko/kubesec/releases/download/{{ .Version }}/kubesec-{{ .Version }}-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  kubeshark:
+    description: >
+      The API traffic analyzer for Kubernetes providing real-time K8s
+      protocol-level visibility, capturing and monitoring all traffic and
+      payloads going in, out and across containers, pods, nodes and clusters.
+      Inspired by Wireshark, purposely built for Kubernetes
+    url: https://github.com/kubeshark/kubeshark/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubeshark/kubeshark/releases
+    fetch:
+      url: https://github.com/kubeshark/kubeshark/releases/download/{{ .VersionMajor }}.{{ .VersionPatch }}/kubeshark_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+    post_install_message: >
+      Warning: replaces Mizu
+
+  kubestr:
+    description: >
+      A tool to discover, validate and evaluate Kubernetes storage options
+    url: https://github.com/kastenhq/kubestr/
+    map:
+      darwin: MacOS
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kastenhq/kubestr/releases
+    fetch:
+      url: https://github.com/kastenhq/kubestr/releases/download/v{{ .Version }}/kubestr_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubestr
+
+  kubesurvival:
+    description: >
+      Significantly reduce Kubernetes costs by finding the cheapest machine
+      types that can run your workloads
+    url: https://github.com/aporia-ai/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/aporia-ai/kubesurvival/releases
+    fetch:
+      url: https://github.com/aporia-ai/kubesurvival/releases/download/v{{ .Version }}/KubeSurvival_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubesurvival
+
+  kubeswitch:
+    description: The kubectx for operators
+    url: https://github.com/danielfoehrKn/kubeswitch/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/danielfoehrKn/kubeswitch/releases
+    fetch:
+      url: https://github.com/danielfoehrKn/kubeswitch/releases/download/{{ .Version }}/switcher_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  kubetail:
+    description: Repository for kubetail - The pod log tailer
+    url: https://github.com/jbvmio/kubetail/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/jbvmio/kubetail/releases
+    fetch:
+      url: https://github.com/jbvmio/kubetail/releases/download/v{{ .Version }}/{{ .OS }}.{{ .Arch }}.kubetail.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubetail
+
+  kubeval:
+    description: >
+      Validate your Kubernetes configuration files, supports multiple
+      Kubernetes versions
+    url: https://github.com/instrumenta/kubeval/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/instrumenta/kubeval/releases
+    fetch:
+      url: https://github.com/instrumenta/kubeval/releases/download/v{{ .Version }}/kubeval-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubeval
+
+  kustomize:
+    description: Customization of kubernetes YAML configurations
+    url: https://github.com/kubernetes-sigs/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes-sigs/kustomize/releases
+      prefix: "kustomize/"
+    fetch:
+      url: https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v{{ .Version }}/kustomize_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kustomize
+
+  kyverno:
+    description: >
+      Kyverno (Greek for “govern”) is a policy engine designed specifically for
+      Kubernetes.
+    url: https://github.com/kyverno/kyverno/
+    map:
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kyverno/kyverno/releases
+    fetch:
+      url: https://github.com/kyverno/kyverno/releases/download/v{{ .Version }}/kyverno-cli_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kyverno
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: s390x
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+
+  lazydocker:
+    description: The lazier way to manage everything docker
+    url: https://github.com/jesseduffield/lazydocker/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/jesseduffield/lazydocker/releases
+    fetch:
+      url: https://github.com/jesseduffield/lazydocker/releases/download/v{{ .Version }}/lazydocker_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - lazydocker
+
+  # Note that https://github.com/jesseduffield/lazygit/issues/1791 can break
+  # future deployments
+  lazygit:
+    description: A simple terminal UI for git commands.
+    url: https://github.com/jesseduffield/lazygit/
+    map:
+      amd64: x86_64
+      "386": 32-bit
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/jesseduffield/lazygit/releases
+    fetch:
+      url: https://github.com/jesseduffield/lazygit/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}.{{ .VersionPatch }}/lazygit_{{ .VersionMajor }}.{{ .VersionMinor }}.{{ .VersionPatch }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - lazygit
+
+  # Not supported: version does not comply to semver
+  # linkerd:
+  #   description: >
+  #     Linkerd is an ultralight, security-first service mesh for Kubernetes.
+  #     Linkerd adds critical security, observability, and reliability features
+  #     to your Kubernetes stack with no code change required.
+  #   url: https://github.com/linkerd/linkerd2/
+  #   list:
+  #     type: github-releases
+  #     exclude: "edge"
+  #     url: https://api.github.com/repos/linkerd/linkerd2/releases
+  #   fetch:
+  #     url: https://github.com/linkerd/linkerd2/releases/download/stable-{{ .Version }}/linkerd2-cli-stable-{{ .Version }}-{{ .OS }}-{{ .Arch }}
+  #          https://github.com/linkerd/linkerd2/releases/download/stable-18.9.1/linkerd2-cli-stable-18.9.1-linux-amd64:
+  #          https://github.com/linkerd/linkerd2/releases/download/stable-2.12.3/linkerd2-cli-stable-2.12.3-linux-amd64
+  #   install:
+  #     type: direct
+  #     binaries:
+  #       - linkerd
+
+  local-php-security-checker:
+    description: PHP security vulnerabilities checker
+    url: https://github.com/fabpot/local-php-security-checker/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/fabpot/local-php-security-checker/releases
+    fetch:
+      url: https://github.com/fabpot/local-php-security-checker/releases/download/v{{ .Version }}/local-php-security-checker_{{ .Version }}_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  logcli:
+    description: Like Prometheus, but for logs (cli).
+    url: https://github.com/grafana/loki/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/grafana/loki/releases
+    fetch:
+      url: https://github.com/grafana/loki/releases/download/v{{ .Version }}/logcli-{{ .OS }}-{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - "logcli-{{ .OS }}-{{ .Arch }}"
+
+  loki:
+    description: Like Prometheus, but for logs.
+    url: https://github.com/grafana/loki/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/grafana/loki/releases
+    fetch:
+      url: https://github.com/grafana/loki/releases/download/v{{ .Version }}/loki-{{ .OS }}-{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - "loki-{{ .OS }}-{{ .Arch }}"
+
+  lsd:
+    description: The next gen ls command
+    url: https://github.com/Peltoche/lsd/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/Peltoche/lsd/releases
+    fetch:
+      url: https://github.com/Peltoche/lsd/releases/download/v{{ .Version }}/lsd-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - lsd
+
+  lux:
+    description: Fast, simple and clean video downloader
+    url: https://github.com/iawia002/lux/
+    map:
+      amd64: x86_64
+      "386": i386
+      arm: ARM
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      openbsd: Openbsd
+      freebsd: Freebsd
+      netbsd: Netbsd
+    supported_platforms:
+      - os: linux
+        arch: i386
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: i386
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      - os: freebsd
+        arch: i386
+      - os: freebsd
+        arch: amd64
+      - os: openbsd
+        arch: i386
+      - os: openbsd
+        arch: i386
+      - os: openbsd
+        arch: arm64
+      - os: netbsd
+        arch: i386
+      - os: netbsd
+        arch: amd64
+      - os: netbsd
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/iawia002/lux/releases
+    fetch:
+      url: https://github.com/iawia002/lux/releases/download/v{{ .Version }}/lux_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - lux
+
+  mage:
+    description: a Make/rake-like dev tool using Go
+    url: https://github.com/magefile/mage/
+    map:
+      amd64: 64bit
+      arm: ARM
+      arm64: ARM64
+      darwin: macOS
+      linux: Linux
+      freebsd: FreeBSD
+      netbsd: NetBSD
+      openbsd: OpenBSD
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/magefile/mage/releases
+    fetch:
+      url: https://github.com/magefile/mage/releases/download/v{{ .Version }}/mage_{{ .Version }}_{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - mage
+
+  mcfly:
+    description: Fly through your shell history. Great Scott!
+    url: https://github.com/cantino/mcfly/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-musl
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cantino/mcfly/releases
+    fetch:
+      url: https://github.com/cantino/mcfly/releases/download/v{{ .Version }}/mcfly-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - mcfly
+
+  micro:
+    description: A modern and intuitive terminal-based text editor
+    url: https://github.com/zyedidia/micro/
+    # Mapping doesn't work for Darvin - there's no .Arch present in the package name
+    map:
+      amd64: "64"
+      i386: "32"
+      arm: "-arm"
+      arm64: "-arm64"
+      windows: "win"
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/zyedidia/micro/releases
+    fetch:
+      url: https://github.com/zyedidia/micro/releases/download/v{{ .Version }}/micro-{{ .Version }}-{{ .OS }}{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - micro
+
+  migrate:
+    description: CLI database migrations tool.
+    url: https://github.com/golang-migrate/migrate/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/golang-migrate/migrate/releases
+    fetch:
+      url: https://github.com/golang-migrate/migrate/releases/download/v{{ .Version }}/migrate.{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - migrate # v4.15 started naming files without OS / Arch
+
+  miller:
+    description: >
+      Miller is like awk, sed, cut, join, and sort for name-indexed data such as
+      CSV, TSV, and tabular JSON
+    url: https://github.com/johnkerl/miller/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/johnkerl/miller/releases
+    fetch:
+      url: https://github.com/johnkerl/miller/releases/download/v{{ .Version }}/miller-{{.Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - mlr
+
+  minikube:
+    description: Run Kubernetes locally
+    url: https://github.com/kubernetes/minikube/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes/minikube/releases
+    fetch:
+      url: https://github.com/kubernetes/minikube/releases/download/v{{ .Version }}/minikube-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - minikube-{{ .OS }}-{{ .Arch }}
+
+  mizu:
+    description: Replaced by kubeshark
+    url: https://github.com/up9inc/mizu/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/up9inc/mizu/releases
+    fetch:
+      url: https://github.com/up9inc/mizu/releases/download/{{ .VersionMajor }}.{{ .VersionPatch }}/mizu_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+    post_install_message: >
+      Warning: mizu is replaced by kubeshark.
+
+  mygopherhose:
+    description: Faster import for mysqldumps
+    url: https://github.com/devops-works/mygopherhose/
+    map:
+      i386: 386
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/mygopherhose/releases
+    fetch:
+      url: https://github.com/devops-works/mygopherhose/releases/download/v{{ .Version }}/mygopherhose_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: i386
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+
+  mysql_random_data_load:
+    description: MySQL random data loader
+    url: https://github.com/Percona-Lab/mysql_random_data_load/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/Percona-Lab/mysql_random_data_load/releases
+    fetch:
+      url: https://github.com/Percona-Lab/mysql_random_data_load/releases/download/v{{ .Version }}/mysql_random_data_load_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - mysql_random_data_load
+
+  naabu:
+    description: >
+      A fast port scanner written in go with focus on reliability and
+      simplicity. Designed to be used in combination with other tools for
+      attack surface discovery in bug bounties and pentests
+    url: https://github.com/projectdiscovery/naabu/
+    map:
+      windows: win
+      darwin: macOS
+      i386: "386"
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/projectdiscovery/naabu/releases
+    fetch:
+      url: https://github.com/projectdiscovery/naabu/releases/download/v{{ .Version }}/naabu_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - naabu
+
+  node-problem-detector:
+    description: This is a place for various problem detectors running on the Kubernetes nodes.
+    url: https://github.com/kubernetes/node-problem-detector/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kubernetes/node-problem-detector/releases
+    fetch:
+      url: https://github.com/kubernetes/node-problem-detector/releases/download/v{{ .Version }}/node-problem-detector-v{{ .Version }}-{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - node-problem-detector
+
+  nomad:
+    description: >
+      Nomad is an easy-to-use, flexible, and performant workload orchestrator
+      that can deploy a mix of microservice, batch, containerized, and non-containerized
+      applications. Nomad is easy to operate and scale and has native Consul and
+      Vault integrations.
+    url: https://www.nomadproject.io/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/hashicorp/nomad/releases
+    fetch:
+      url: https://releases.hashicorp.com/nomad/{{ .Version }}/nomad_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - nomad
+
+  noti:
+    description: Monitor a process and trigger a notification
+    url: https://github.com/variadico/noti
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/variadico/noti/releases
+    fetch:
+      url: https://github.com/variadico/noti/releases/download/{{ .Version }}/noti{{ .Version }}.{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - noti
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      - os: windows
+        arch: amd64
+
+  nuclei:
+    description: >
+      Fast and customizable vulnerability scanner based on simple YAML based DSL.
+    url: https://github.com/projectdiscovery/nuclei/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/projectdiscovery/nuclei/releases
+    fetch:
+      url: https://github.com/projectdiscovery/nuclei/releases/download/v{{ .Version }}/nuclei_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - nuclei
+
+  onefetch:
+    description: Git repository summary on your terminal
+    url: https://github.com/o2sh/onefetch/
+    map:
+      windows: win
+      darwin: mac
+    list:
+      type: github-releases
+      exclude: otohttp
+      url: https://api.github.com/repos/o2sh/onefetch/releases
+    fetch:
+      url: https://github.com/o2sh/onefetch/releases/download/{{ .Version }}/onefetch-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - onefetch
+
+  operator-sdk:
+    description: >
+      SDK for building Kubernetes applications. Provides high level APIs,
+      useful abstractions, and project scaffolding.
+    url: https://github.com/operator-framework/operator-sdk/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/operator-framework/operator-sdk/releases
+    fetch:
+      url: https://github.com/operator-framework/operator-sdk/releases/download/v{{ .Version }}/operator-sdk_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  oto:
+    description: Go driven rpc code generation tool for right now (cli).
+    url: https://github.com/pacedotdev/oto/
+    map:
+      amd64: x86_64
+      linux: Linux
+      darwin: Darwin
+    list:
+      type: github-releases
+      exclude: otohttp
+      url: https://api.github.com/repos/pacedotdev/oto/releases
+    fetch:
+      url: https://github.com/pacedotdev/oto/releases/download/v{{ .Version }}/oto_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - oto
+
+  packer:
+    description: >
+      Packer is a tool for creating identical machine images for
+      multiple platforms from a single source configuration.
+    url: https://www.packer.io/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/hashicorp/packer/releases
+    fetch:
+      url: https://releases.hashicorp.com/packer/{{ .Version }}/packer_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - packer
+
+  pandoc-plot:
+    description: >
+      Render and include figures in Pandoc documents using your plotting
+      toolkit of choice
+    url: https://laurentrdc.github.io/pandoc-plot/
+    map:
+      amd64: x86_64
+      linux: Linux
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/LaurentRDC/pandoc-plot/releases
+    fetch:
+      url: https://github.com/LaurentRDC/pandoc-plot/releases/download/{{ .Version }}/pandoc-plot-{{ .OS }}-{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - pandoc-plot
+
+  parca:
+    description: >
+      Continuous profiling for analysis of CPU, memory usage over time, and down to the line number.
+      Saving infrastructure cost, improving performance, and increasing reliability.
+    url: https://github.com/parca-dev/parca/
+    map:
+      amd64: x86_64
+      linux: Linux
+      darwin: Darwin
+    list:
+      type: github-releases
+      exclude: otohttp
+      url: https://api.github.com/repos/parca-dev/parca/releases
+    fetch:
+      url: https://github.com/parca-dev/parca/releases/download/v{{ .Version }}/parca_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - parca
+
+  pass-checker:
+    description: Get the entropy of your password, the maximum time needed to break it, and if the SHA1 sum appears in HaveIBeenPwned.com API.
+    url: https://github.com/devops-works/pass-checker/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/pass-checker/releases
+    fetch:
+      url: https://github.com/devops-works/pass-checker/releases/download/v{{ .Version }}/pass-checker_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  peco:
+    description: Simplistic interactive filtering tool
+    url: https://github.com/peco/peco/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/peco/peco/releases
+    fetch:
+      url: https://github.com/peco/peco/releases/download/v{{ .Version }}/peco_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - peco
+
+  peirates:
+    description: Peirates - Kubernetes Penetration Testing tool
+    url: https://www.inguardians.com/peirates/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/inguardians/peirates/releases
+    fetch:
+      url: https://github.com/inguardians/peirates/releases/download/v{{ .Version }}/peirates-{{ .OS }}-{{ .Arch }}.tar.xz
+    install:
+      type: tarxz
+      binaries:
+        - peirates
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: 386
+      - os: linux
+        arch: arm
+
+  pet:
+    description: Simple command-line snippet manager, written in Go.
+    url: https://github.com/knqyf263/pet
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/knqyf263/pet/releases
+    fetch:
+      url: https://github.com/knqyf263/pet/releases/download/v{{ .Version }}/pet_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pet
+
+  pgmetrics:
+    description: Collect and display information and stats from a running PostgreSQL server
+    url: https://pgmetrics.io/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/rapidloop/pgmetrics/releases
+    fetch:
+      filters: filters
+      url: https://github.com/rapidloop/pgmetrics/releases/download/v{{ .Version }}/pgmetrics_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pgmetrics
+
+  phpsecscan:
+    description: PHP vulnerability scanner (standalone or as a webserver) using FoP advisories
+    url: https://github.com/devops-works/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/phpsecscan/releases
+    fetch:
+      url: https://github.com/devops-works/phpsecscan/releases/download/v{{ .Version }}/phpsecscan_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - phpsecscan
+
+  pint:
+    description: Prometheus rule linter
+    url: https://github.com/cloudflare/pint/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cloudflare/pint/releases
+    fetch:
+      url: https://github.com/cloudflare/pint/releases/download/v{{ .Version }}/pint-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pint-linux-amd64
+
+  plow:
+    description: >
+      A high-performance HTTP benchmarking tool with real-time web
+      UI and terminal displaying
+    url: https://github.com/six-ddc/plow/
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/six-ddc/plow/releases
+    fetch:
+      url: https://github.com/six-ddc/plow/releases/download/v{{ .Version }}/plow_{{.Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - plow
+
+  pluto:
+    description: A cli tool to help discover deprecated apiVersions in Kubernetes
+    url: https://github.com/FairwindsOps/pluto/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/FairwindsOps/pluto/releases
+    fetch:
+      url: https://github.com/FairwindsOps/pluto/releases/download/v{{ .Version }}/pluto_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pluto
+
+  pnpm:
+    description: Fast, disk space efficient package manager for nodejs
+    url: https://github.com/pnpm/pnpm
+    map:
+      amd64: x64
+      darwin: macos
+      windows: win
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/pnpm/pnpm/releases
+    fetch:
+      url: https://github.com/pnpm/pnpm/releases/download/v{{ .Version }}/pnpm-{{ .OS }}-{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+      binaries:
+        - pnpm
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      - os: windows
+        arch: amd64
+
+  pomerium:
+    description: Pomerium is an identity-aware access proxy.
+    url: https://github.com/pomerium/pomerium/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/pomerium/pomerium/releases
+    fetch:
+      url: https://github.com/pomerium/pomerium/releases/download/v{{ .Version }}/pomerium-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pomerium
+
+  pomerium-cli:
+    description: Pomerium is an identity-aware access proxy (cli).
+    url: https://github.com/pomerium/cli/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/pomerium/cli/releases
+    fetch:
+      url: https://github.com/pomerium/cli/releases/download/v{{ .Version }}/pomerium-cli-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pomerium-cli
+
+  popeye:
+    description: A Kubernetes cluster resource sanitizer
+    url: https://github.com/derailed/popeye/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/derailed/popeye/releases
+    fetch:
+      url: https://github.com/derailed/popeye/releases/download/v{{ .Version }}/popeye_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - popeye
+
+  procs:
+    description: A modern replacement for ps written in Rust.
+    url: https://github.com/dalance/procs/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dalance/procs/releases
+    fetch:
+      url: https://github.com/dalance/procs/releases/download/v{{ .Version }}/procs-v{{ .Version }}-x86_64-linux.zip
+    install:
+      type: zip
+      binaries:
+        - procs
+
+  promtail:
+    description: Like Prometheus, but for logs (promtail).
+    url: https://github.com/grafana/loki/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/grafana/loki/releases
+    fetch:
+      url: https://github.com/grafana/loki/releases/download/v{{ .Version }}/promtail-{{ .OS }}-{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - "promtail-{{ .OS }}-{{ .Arch }}"
+
+  pscale:
+    description: The CLI for PlanetScale Database
+    url: https://github.com/planetscale/cli/
+    map:
+      darwin: macOS
+      windows: windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/planetscale/cli/releases
+    fetch:
+      url: https://github.com/planetscale/cli/releases/download/v{{ .Version }}/pscale_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pscale
+
+  pulumi:
+    description: Modern Infrastructure as Code. Any cloud, any language
+    url: https://github.com/pulumi/pulumi/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/pulumi/pulumi/releases
+    fetch:
+      url: https://github.com/pulumi/pulumi/releases/download/v{{ .Version }}/pulumi-v{{ .Version }}-{{ .OS }}-x64.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pulumi
+
+  pwru:
+    description: Packet, where are you? -- Linux kernel networking debugger
+    url: https://github.com/cilium/pwru
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cilium/pwru/releases
+    fetch:
+      url: https://github.com/cilium/pwru/releases/download/v{{ .Version }}/pwru-{{.OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - pwru
+
+  rancher:
+    description: >
+      Rancher is an open source software platform that enables organizations to
+      run and manage Docker and Kubernetes in production. (cli)
+    url: https://rancher.com/docs/rancher/v1.6/en/
+    list:
+      type: static
+      versions:
+        - 0.6.7
+    fetch:
+      url: https://releases.rancher.com/cli/v{{ .Version }}/rancher-{{ .OS }}-{{ .Arch }}-v{{ .Version }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - "rancher-v{{ .Version }}/rancher"
+
+  regctl:
+    description: Client interface for the registry API. This includes regctl for a command line interface to manage registries.
+    url: https://github.com/regclient/regclient
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/regclient/regclient/releases
+    fetch:
+      url: https://github.com/regclient/regclient/releases/download/v{{ .Version }}/regctl-{{ .OS }}-{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+      binaries:
+        - regctl
+
+  rga:
+    description: ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, etc.
+    url: https://github.com/phiresky/ripgrep-all/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-musl
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/phiresky/ripgrep-all/releases
+    fetch:
+      url: https://github.com/phiresky/ripgrep-all/releases/download/v{{ .Version }}/ripgrep_all-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - rga
+
+  rg:
+    description: ripgrep is a line-oriented search tool that recursively searches your current directory for a regex pattern
+    url: https://github.com/BurntSushi/ripgrep/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-musl
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/BurntSushi/ripgrep/releases
+    fetch:
+      url: https://github.com/BurntSushi/ripgrep/releases/download/{{ .Version }}/ripgrep-{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - "^rg$" # ripgrep binary is named rg
+
+  ruflood:
+    description: Helping Ukraine by flooding russian state-controlled media/bureau/bank websites.
+    url: https://github.com/zegkljan/ruflood/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/zegkljan/ruflood/releases
+    fetch:
+      url: https://github.com/zegkljan/ruflood/releases/download/v{{ .Version }}/ruflood-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  saml2aws:
+    description: >
+      CLI tool which enables you to login and retrieve AWS temporary
+      credentials using a SAML IDP
+    url: https://github.com/Versent/saml2aws/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/Versent/saml2aws/releases
+    fetch:
+      url: https://github.com/Versent/saml2aws/releases/download/v{{ .Version }}/saml2aws_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - saml2aws
+
+  scan-exporter:
+    description: Scans targets and exposes results to Prometheus.
+    url: https://github.com/devops-works/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/scan-exporter/releases
+    fetch:
+      url: https://github.com/devops-works/scan-exporter/releases/download/v{{ .Version }}/scan-exporter_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  sd:
+    description: Intuitive find & replace CLI (sed alternative)
+    url: https://github.com/chmln/sd/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/chmln/sd/releases
+    fetch:
+      url: https://github.com/chmln/sd/releases/download/v{{ .Version }}/sd-v{{ .Version }}-{{ .Arch }}-{{ .OS }}
+    install:
+      type: direct
+      binaries:
+        - sd
+
+  shaloc:
+    description: >
+      LAN-scoped command line sharing tool with cool features (zip archives,
+      AES-256, download limits...).
+    url: https://github.com/eze-kiel/shaloc/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/eze-kiel/shaloc/releases
+    fetch:
+      url: https://github.com/eze-kiel/shaloc/releases/download/v{{ .Version }}/shaloc_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  shdotenv:
+    description: dotenv support for shell and POSIX-compliant .env syntax specification.
+    url: https://github.com/ko1nksm/shdotenv/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ko1nksm/shdotenv/releases
+      version_from: name
+    fetch:
+      url: https://github.com/ko1nksm/shdotenv/releases/download/v{{ .Version }}/shdotenv
+    install:
+      type: direct
+
+  shell2http:
+    description: Executing shell commands via HTTP server
+    url: https://github.com/msoap/shell2http/
+    map:
+      i386: 386
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/msoap/shell2http/releases
+    fetch:
+      url: https://github.com/msoap/shell2http/releases/download/v{{ .Version }}/shell2http_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - shell2http
+
+  # Removed because status is unclear:
+  # repo is redirected to https://github.com/jumppad-labs/jumppad
+  #
+  # shipyard:
+  #   description: Modern cloud native development environments
+  #   url: https://shipyard.run/
+  #   map:
+  #     amd64: x86_64
+  #   list:
+  #     type: github-releases
+  #     url: https://api.github.com/repos/shipyard-run/shipyard/releases
+  #   fetch:
+  #     url: https://github.com/shipyard-run/shipyard/releases/download/v{{ .Version }}/shipyard_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+  #   install:
+  #     type: tgz
+  #     binaries:
+  #       - shipyard
+
+  skaffold:
+    description: Skaffold handles the workflow for building, pushing and deploying your application, allowing you to focus on what matters most writing code.
+    url: https://skaffold.dev/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/GoogleContainerTools/skaffold/releases
+    fetch:
+      url: https://storage.googleapis.com/skaffold/releases/v{{ .Version }}/skaffold-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  slides:
+    description: Terminal based presentation tool
+    url: https://maaslalani.com/slides/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/maaslalani/slides/releases
+    fetch:
+      url: https://github.com/maaslalani/slides/releases/download/v{{ .Version }}/slides_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    map:
+      i386: "386"
+    install:
+      type: tgz
+      binaries:
+        - slides
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: i386
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+
+  sloop:
+    description: Kubernetes History Visualization
+    url: https://github.com/salesforce/sloop/
+    list:
+      # type: github-releases
+      # url: https://api.github.com/repos/salesforce/sloop/releases
+      type: static
+      versions:
+        - 1.1
+    fetch:
+      url: https://github.com/salesforce/sloop/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}/sloop_{{ .VersionMajor }}.{{ .VersionMinor }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - sloop
+    post_install_message: >
+      Warning: salesforce does not seem to produce binaries anymore; there are
+      more recent versions at the github repo. See
+      https://github.com/salesforce/sloop/releases
+
+  slowql-digest:
+    description: >
+      A package to parse slow query logs in Go, with associated tooling
+      (digester, replayer...), and compatible with multiple databases (MySQL,
+      MariaDB, PerconaDB...).
+    url: https://github.com/devops-works/slowql/
+    map:
+      i386: "386"
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/slowql/releases
+    fetch:
+      url: https://github.com/devops-works/slowql/releases/download/v{{ .Version }}/digest_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: i386
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+
+  slowql-replayer:
+    description: >
+      A package to parse slow query logs in Go, with associated tooling
+      (digester, replayer...), and compatible with multiple databases (MySQL,
+      MariaDB, PerconaDB...).
+    url: https://github.com/devops-works/slowql/
+    map:
+      i386: "386"
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/slowql/releases
+    fetch:
+      url: https://github.com/devops-works/slowql/releases/download/v{{ .Version }}/replayer_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: i386
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+
+  snowcat:
+    description: a tool to audit the istio service mesh
+    url: https://github.com/praetorian-inc/snowcat
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/praetorian-inc/snowcat/releases
+    fetch:
+      url: https://github.com/praetorian-inc/snowcat/releases/download/v{{ .Version }}/snowcat_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - snowcat
+
+  sonobuoy:
+    description: >
+      Sonobuoy is a diagnostic tool that makes it easier to understand the
+      state of a Kubernetes cluster by running a set of Kubernetes conformance
+      tests and other plugins in an accessible and non-destructive manner.
+    url: https://github.com/vmware-tanzu/sonobuoy
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/vmware-tanzu/sonobuoy/releases
+    fetch:
+      url: https://github.com/vmware-tanzu/sonobuoy/releases/download/v{{ .Version }}/sonobuoy_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - sonobuoy
+
+  sops:
+    description: Simple and flexible tool for managing secrets
+    url: https://github.com/getsops/sops/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/getsops/sops/releases
+    fetch:
+      url: https://github.com/getsops/sops/releases/download/v{{ .Version }}/sops-v{{ .Version }}.{{ .OS }}.{{ .Arch }}
+    install:
+      type: direct
+
+  spt:
+    description: A Spotify client for the terminal written in Rust.
+    url: https://github.com/Rigellute/spotify-tui/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/Rigellute/spotify-tui/releases
+    fetch:
+      url: https://github.com/Rigellute/spotify-tui/releases/download/v{{ .Version }}/spotify-tui-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - spt
+
+  sshproxy:
+    description: Proxy SSH connections on a gateway
+    url: https://github.com/cea-hpc/sshproxy/
+    map:
+      amd64: x86_64
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/cea-hpc/sshproxy/releases
+    fetch:
+      url: https://github.com/cea-hpc/sshproxy/releases/download/v{{ .Version }}/sshproxy_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - sshproxy
+
+  ssllabs-scan:
+    description: >
+      A command-line reference-implementation client for SSL Labs APIs,
+      designed for automated and/or bulk testing.
+    url: https://github.com/ssllabs/ssllabs-scan/
+    map:
+      amd64: 64
+      darwin: osx
+      windows: win
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ssllabs/ssllabs-scan/releases
+    fetch:
+      url: https://github.com/ssllabs/ssllabs-scan/releases/download/v{{ .Version }}/ssllabs-scan_{{ .Version }}-{{ .OS }}{{ .Arch }}.tgz
+    install:
+      type: tgz
+      binaries:
+        - ssllabs-scan
+
+  ssosync:
+    description: Populate AWS SSO directly with your G Suite users and groups using either a CLI or AWS Lambda
+    url: https://github.com/awslabs/ssosync/
+    map:
+      amd64: x86_64
+      arm: armv6
+      darwin: Darwin
+      linux: Linux
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/awslabs/ssosync/releases
+    fetch:
+      url: https://github.com/awslabs/ssosync/releases/download/v{{ .Version }}/ssosync_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - ssosync
+    supported_platforms:
+      - os: darwin
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: arm
+      - os: linux
+        arch: i386
+      - os: linux
+        arch: amd64
+
+  starship:
+    description: The minimal, blazing-fast, and infinitely customizable prompt for any shell!
+    url: https://github.com/starship/starship/
+    map:
+      amd64: x86_64
+      i386: i686
+      darwin: apple-darwin
+      linux: unknown-linux-gnu
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/starship/starship/releases
+    fetch:
+      url: https://github.com/starship/starship/releases/download/v{{ .Version }}/starship-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - starship
+
+  steampipe:
+    description: Use SQL to instantly query your cloud services (AWS, Azure, GCP and more). Open source CLI. No DB required.
+    url: https://github.com/turbot/steampipe
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/turbot/steampipe/releases
+    fetch:
+      url: https://github.com/turbot/steampipe/releases/download/v{{ .Version }}/steampipe_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - steampipe
+    supported_platforms:
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: amd64
+
+  stern:
+    description: >
+      ⎈ Multi pod and container log tailing for Kubernetes -- Friendly fork of
+      https://github.com/wercker/stern
+    url: https://github.com/stern/stern/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/stern/stern/releases
+    fetch:
+      url: https://github.com/stern/stern/releases/download/v{{ .Version }}/stern_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - stern
+
+  stoppropaganda:
+    description: DOS application to stop pro-Russian aggression websites. Support Ukraine!
+    url: https://github.com/erkexzcx/stoppropaganda/
+    map:
+      amd64: x86_64
+      arm64: aarch64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/erkexzcx/stoppropaganda/releases
+    fetch:
+      url: https://github.com/erkexzcx/stoppropaganda/releases/download/v{{ .Version }}/stoppropaganda_v{{ .Version }}_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  subfinder:
+    description: >
+      Subfinder is a subdomain discovery tool that discovers valid subdomains for websites.
+      Designed as a passive framework to be useful for bug bounties and safe for penetration
+      testing.
+    url: https://github.com/projectdiscovery/subfinder/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/projectdiscovery/subfinder/releases
+    fetch:
+      url: https://github.com/projectdiscovery/subfinder/releases/download/v{{ .Version }}/subfinder_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - subfinder
+
+  subfinder-win:
+    description: >
+      Subfinder is a subdomain discovery tool that discovers valid subdomains for websites.
+      Designed as a passive framework to be useful for bug bounties and safe for penetration
+      testing (windows).
+    url: https://github.com/projectdiscovery/subfinder/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/projectdiscovery/subfinder/releases
+    fetch:
+      url: https://github.com/projectdiscovery/subfinder/releases/download/v{{ .Version }}/subfinder_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - subfinder
+
+  swag:
+    description: Automatically generate RESTful API documentation with Swagger 2.0 for Go.
+    url: https://github.com/swaggo/swag/
+    map:
+      darwin: Darwin
+      linux: Linux
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/swaggo/swag/releases
+    fetch:
+      url: https://github.com/swaggo/swag/releases/download/v{{ .Version }}/swag_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - swag
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: i386
+      - os: darwin
+        arch: amd64
+
+  swagger:
+    description: Swagger 2.0 implementation for go
+    url: https://github.com/go-swagger/go-swagger/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/go-swagger/go-swagger/releases
+    fetch:
+      url: https://github.com/go-swagger/go-swagger/releases/download/v{{ .Version }}/swagger_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+
+  sx:
+    description: Fast, modern, easy-to-use network scanner
+    url: https://github.com/v-byte-cpu/sx/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/v-byte-cpu/sx/releases
+    fetch:
+      url: https://github.com/v-byte-cpu/sx/releases/download/v{{ .Version }}/sx_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - sx
+
+  sysz:
+    description: An fzf terminal UI for systemctl
+    url: https://github.com/joehillen/sysz/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/joehillen/sysz/releases
+    fetch:
+      url: https://github.com/joehillen/sysz/releases/download/{{ .Version }}/sysz
+    install:
+      type: direct
+
+  tailwindcss:
+    description: A utility-first CSS framework for rapid UI development.
+    url: https://github.com/tailwindlabs/tailwindcss/
+    map:
+      darwin: macos
+      amd64: x64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/tailwindlabs/tailwindcss/releases
+    fetch:
+      url: https://github.com/tailwindlabs/tailwindcss/releases/download/v{{ .Version }}/tailwindcss-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  tanka:
+    description: Flexible, reusable and concise configuration for Kubernetes
+    url: https://github.com/grafana/tanka/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/grafana/tanka/releases
+    fetch:
+      url: https://github.com/grafana/tanka/releases/download/v{{ .Version }}/tk-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  task:
+    description: A task runner / simpler Make alternative written in Go
+    url: https://github.com/go-task/task/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/go-task/task/releases
+    fetch:
+      url: https://github.com/go-task/task/releases/download/v{{ .Version }}/task_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - task
+
+  taskctl:
+    description: simple modern alternative to GNU Make.
+    url: https://github.com/taskctl/taskctl/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/taskctl/taskctl/releases
+    fetch:
+      url: https://github.com/taskctl/taskctl/releases/download/{{ .Version }}/taskctl_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - taskctl
+
+  telegraf-tailcount:
+    description: Counts new lines in growing file and return InfluxDB metrics on STDOUT.
+    url: https://github.com/devops-works/telegraf-tailcount/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/devops-works/telegraf-tailcount/releases
+    fetch:
+      url: https://github.com/devops-works/telegraf-tailcount/releases/download/v{{ .Version }}/telegraf-tailcount_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: openbsd
+        arch: i386
+      - os: openbsd
+        arch: amd64
+      - os: openbsd
+        arch: arm64
+      - os: freebsd
+        arch: i386
+      - os: freebsd
+        arch: amd64
+
+  telepresence:
+    description: Fast, local development for Kubernetes and OpenShift microservices.
+    url: https://www.telepresence.io/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/telepresenceio/telepresence/tags
+      version_from: name
+    fetch:
+      url: https://app.getambassador.io/download/tel2/{{ .OS }}/{{ .Arch }}/{{ .Version }}/telepresence
+    install:
+      type: direct
+
+  teler:
+    description: Real-time HTTP Intrusion Detection
+    url: https://github.com/kitabisa/teler/
+    map:
+      arm: ARM
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/kitabisa/teler/releases
+    fetch:
+      url: https://github.com/kitabisa/teler/releases/download/v{{ .Version }}/teler_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - teler
+
+  templ:
+    description: A language for writing HTML user interfaces in Go.
+    url: https://github.com/a-h/templ/
+    map:
+      darwin: Darwin
+      linux: Linux
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/a-h/templ/releases
+    fetch:
+      url: https://github.com/a-h/templ/releases/download/v{{ .Version }}/templ_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - templ
+
+  termshark:
+    description: A terminal UI for tshark, inspired by Wireshark
+    url: https://github.com/gcla/termshark/
+    map:
+      amd64: x64
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/gcla/termshark/releases
+    fetch:
+      url: https://github.com/gcla/termshark/releases/download/v{{ .Version }}/termshark_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+
+    install:
+      type: tgz
+      binaries:
+        - termshark
+
+  terraform:
+    description: >
+      Terraform enables you to safely and predictably create, change, and improve infrastructure.
+      It is an open source tool that codifies APIs into declarative configuration files that can
+      be shared amongst team members, treated as code, edited, reviewed, and versioned.
+    url: https://www.terraform.io/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/hashicorp/terraform/releases
+    fetch:
+      url: https://releases.hashicorp.com/terraform/{{ .Version }}/terraform_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - terraform
+
+  terraform-docs:
+    description: >
+      Generate documentation from Terraform modules in various output formats
+    url: https://github.com/terraform-docs/terraform-docs/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/terraform-docs/terraform-docs/releases
+    fetch:
+      url: https://github.com/terraform-docs/terraform-docs/releases/download/v{{ .Version }}/terraform-docs-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - terraform-docs
+
+  terraform-inventory:
+    description: terraform-inventory creates an ansible inventory from terraform
+    url: https://github.com/adammck/terraform-inventory/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/adammck/terraform-inventory/releases
+    fetch:
+      url: https://github.com/adammck/terraform-inventory/releases/download/v{{ .VersionMajor }}.{{ .VersionMinor }}/terraform-inventory_v{{ .VersionMajor }}.{{ .VersionMinor }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - terraform-inventory
+
+  terragrunt:
+    description: >
+      Terragrunt is a thin wrapper for Terraform that provides extra
+      tools for working with multiple Terraform modules.
+    url: https://github.com/gruntwork-io/terragrunt/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/gruntwork-io/terragrunt/releases
+    fetch:
+      url: https://github.com/gruntwork-io/terragrunt/releases/download/v{{ .Version }}/terragrunt_{{ .OS }}_{{ .Arch }}{{ .ExeExtension }}
+    install:
+      type: direct
+
+  terrascan:
+    description: >
+      Detect compliance and security violations across Infrastructure as Code
+      to mitigate risk before provisioning cloud native infrastructure.
+    url: https://github.com/accurics/terrascan/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/accurics/terrascan/releases
+    fetch:
+      url: https://github.com/accurics/terrascan/releases/download/v{{ .Version }}/terrascan_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - terrascan
+
+  tf2pulumi:
+    description: A tool to convert Terraform projects to Pulumi TypeScript programs
+    url: https://github.com/pulumi/tf2pulumi/
+    map:
+      amd64: x64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/pulumi/tf2pulumi/releases
+    fetch:
+      url: https://github.com/pulumi/tf2pulumi/releases/download/v{{ .Version }}/tf2pulumi-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - tf2pulumi
+
+  tflint:
+    description: >
+      TFLint is a Terraform linter focused on possible errors, best
+      practices, etc. (Terraform >= 0.12)
+    url: https://github.com/terraform-linters/tflint/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/terraform-linters/tflint/releases
+    fetch:
+      url: https://github.com/terraform-linters/tflint/releases/download/v{{ .Version }}/tflint_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - tflint
+
+  tfsec:
+    description: >
+      TFsec uses static analysis of your terraform templates to spot potential
+      security issues.
+    url: https://github.com/tfsec/tfsec/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/tfsec/tfsec/releases
+    fetch:
+      url: https://github.com/tfsec/tfsec/releases/download/v{{ .Version }}/tfsec-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  tlder:
+    description: >
+      TLDs finder — check domain name availability across all valid top-level
+      domains.
+    url: https://github.com/dwisiswant0/tlder/
+    map:
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dwisiswant0/tlder/releases
+    fetch:
+      url: https://github.com/dwisiswant0/tlder/releases/download/v{{ .Version }}/tlder_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - "tlder"
+    supported_platforms:
+      - os: linux
+        arch: 386
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: armv6
+      - os: darwin
+        arch: 386
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      - os: darwin
+        arch: armv6
+
+  tlsexp:
+    description: TLS certificate expiration checker.
+    url: https://gitlab.com/devopsworks/tools/tlsexp/
+    list:
+      type: gitlab-releases
+      url: https://gitlab.com/api/v4/projects/18627217/releases
+    fetch:
+      url: https://gitlab.com/api/v4/projects/18627217/packages/generic/tlsexp/{{ .Version }}/tlsexp-{{.OS }}-{{ .Arch }}-v{{ .Version }}.gz
+    install:
+      type: gzip
+      binaries:
+        - "tlsexp-{{.OS }}-{{ .Arch }}-v{{ .Version }}.gz"
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: amd64
+      - os: freebsd
+        arch: amd64
+      - os: openbsd
+        arch: amd64
+
+
+  tofu:
+    description: OpenTofu lets you declaratively manage your cloud infrastructure.
+    url: https://github.com/opentofu/opentofu
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/opentofu/opentofu/releases
+    fetch:
+      url: https://github.com/opentofu/opentofu/releases/download/v{{ .Version }}/tofu_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - tofu
+
+
+  toji:
+    description: >
+      Toji is a Toggle ➡ Jira bridge: sync your Toggl entries directly into
+      Jira issues worklog
+    url: https://github.com/leucos/toji/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/leucos/toji/releases
+    fetch:
+      url: https://github.com/leucos/toji/releases/download/v{{ .Version }}/toji_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - toji
+
+  traefik:
+    description: The Cloud Native Application Proxy
+    url: https://github.com/traefik/traefik/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/traefik/traefik/releases
+    fetch:
+      url: https://github.com/traefik/traefik/releases/download/v{{ .Version }}/traefik_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - traefik
+
+  trivy:
+    description: >
+      A Simple and Comprehensive Vulnerability Scanner for Containers, Suitable
+      for CI
+    url: https://github.com/aquasecurity/trivy/
+    map:
+      amd64: 64bit
+      "386": 32bit
+      arm: ARM
+      arm64: ARM64
+      linux: Linux
+      darwin: macOS
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/aquasecurity/trivy/releases
+    fetch:
+      url: https://github.com/aquasecurity/trivy/releases/download/v{{ .Version }}/trivy_{{ .Version }}_{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - trivy
+
+  trufflehog:
+    description: Find credentials all over the place https://trufflesecurity.com
+    url: https://github.com/trufflesecurity/trufflehog
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/trufflesecurity/trufflehog/releases
+    fetch:
+      url: https://github.com/trufflesecurity/trufflehog/releases/download/v{{ .Version }}/trufflehog_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - trufflehog
+
+  underpass:
+    description: Self-hosted ngrok alternative
+    url: https://github.com/cjdenio/underpass/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      version_from: name
+      url: https://api.github.com/repos/cjdenio/underpass/tags
+    fetch:
+      filters: filters
+      url: https://github.com/cjdenio/underpass/releases/download/v{{ .Version }}/underpass_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - underpass
+
+  updatecli:
+    description: Updatecli is an automation engine
+    url: https://www.updatecli.io
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: armv6
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: armv6
+    map:
+      darwin: Darwin
+      linux: Linux
+      amd64: x86_64
+    list:
+      type: github-releases
+      version_from: name
+      url: https://api.github.com/repos/updatecli/updatecli/tags
+    fetch:
+      filters: filters
+      url: https://github.com/updatecli/updatecli/releases/download/v{{ .Version }}/updatecli_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - updatecli
+
+  upx:
+    description: UPX - the Ultimate Packer for eXecutables
+    url: https://github.com/upx/upx/
+    list:
+      type: github-releases
+      version_from: name
+      url: https://api.github.com/repos/upx/upx/tags
+    fetch:
+      filters: filters
+      url: https://github.com/upx/upx/releases/download/v{{ .Version }}/upx-{{ .Version }}-{{ .Arch }}_{{ .OS }}.tar.xz
+    install:
+      type: tarxz
+      binaries:
+        - upx
+
+  vagrant:
+    description: A toolfor building and distributing development environments.
+    url: https://www.vagrantup.com/
+    list:
+      type: github-releases
+      version_from: name
+      url: https://api.github.com/repos/hashicorp/vagrant/tags
+    fetch:
+      url: https://releases.hashicorp.com/vagrant/{{ .Version }}/vagrant_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - vagrant
+
+  vault:
+    description: >
+      A tool for secrets management, encryption as a service, and privileged
+      access management
+    url: https://www.vaultproject.io/
+    list:
+      type: github-releases
+      version_from: name
+      url: https://api.github.com/repos/hashicorp/vault/tags
+    fetch:
+      url: https://releases.hashicorp.com/vault/{{ .Version }}/vault_{{ .Version }}_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - vault
+
+  velero:
+    description: A tool for backup a kubernetes cluster.
+    url: https://github.com/vmware-tanzu/velero
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/vmware-tanzu/velero/releases
+    fetch:
+      url: https://github.com/vmware-tanzu/velero/releases/download/v{{ .Version }}/velero-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - velero
+    supported_platforms:
+      - os: windows
+        arch: amd64
+      - os: linux
+        arch: arm
+      - os: linux
+        arch: ppc64le
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+
+  vmctl:
+    description: Victoria Metrics command line tool
+    url: https://github.com/VictoriaMetrics/vmctl/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/VictoriaMetrics/vmctl/releases
+    fetch:
+      url: https://github.com/VictoriaMetrics/vmctl/releases/download/{{ .Version }}/vmctl-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - vmctl-{{ .OS }}-{{ .Arch }}
+
+  # targets are really limited by the current release naming scheme
+  # https://github.com/vi/websocat/issues/148
+
+  websocat:
+    description: >
+      About Command-line client for WebSockets,
+      like netcat (or curl) for ws:// with advanced socat-like functions
+    url: https://github.com/vi/websocat/
+    map:
+      darwin: apple-darwin
+      linux: unknown-linux-musl
+      freebsd: unknown-freebsd
+      windows: win64
+      amd64: x86_64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/vi/websocat/releases
+    fetch:
+      url: https://github.com/vi/websocat/releases/download/v{{ .Version }}/websocat.{{ .Arch }}-{{ .OS }}
+    install:
+      type: direct
+
+  wtf:
+    description: The personal information dashboard for your terminal
+    url: https://github.com/wtfutil/wtf/
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: armv6
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/wtfutil/wtf/releases
+    fetch:
+      url: https://github.com/wtfutil/wtf/releases/download/v{{ .Version }}/wtf_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - wtfutil
+
+  wuzz:
+    description: Interactive cli tool for HTTP inspection
+    url: https://github.com/asciimoo/wuzz/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/asciimoo/wuzz/releases
+    fetch:
+      url: https://github.com/asciimoo/wuzz/releases/download/v{{ .Version }}/wuzz_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+
+  xh:
+    description: Friendly and fast tool for sending HTTP requests
+    url: https://github.com/ducaale/xh/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-musl
+      windows: pc-windows-msvc
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/ducaale/xh/releases
+    fetch:
+      url: https://github.com/ducaale/xh/releases/download/v{{ .Version }}/xh-v{{ .Version }}-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - xh
+
+  yamlfmt:
+    description: An extensible command line tool or library to format yaml files
+    url: https://github.com/google/yamlfmt
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/google/yamlfmt/releases
+    fetch:
+      url: https://github.com/google/yamlfmt/releases/download/v{{ .Version }}/yamlfmt_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - yamlfmt
+
+  yeshttp:
+    description: A HTTP server that always says yes
+    url: https://gitlab.com/devopsworks/tools/yeshttp/
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: amd64
+      - os: freebsd
+        arch: amd64
+      - os: openbsd
+        arch: amd64
+    list:
+      type: gitlab-releases
+      url: https://gitlab.com/api/v4/projects/33117108/releases
+    fetch:
+      url: https://gitlab.com/api/v4/projects/33117108/packages/generic/yeshttp/{{ .Version }}/yeshttp-{{.OS }}-{{ .Arch }}-{{ .Version }}.gz
+    install:
+      type: gzip
+      binaries:
+        - "yeshttp-{{.OS }}-{{ .Arch }}-{{ .Version }}.gz"
+
+  yh:
+    description: YAML syntax highlighter to bring colours to kubectl output
+    url: https://github.com/andreazorzetto/yh/
+    map:
+      darwin: osx
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/andreazorzetto/yh/releases
+    fetch:
+      url: https://github.com/andreazorzetto/yh/releases/download/v{{ .Version }}/yh-{{ .OS }}-{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - yh
+
+  yj:
+    description: Convert between YAML, TOML, JSON, and HCL.
+    url: https://github.com/sclevine/yj/
+    map:
+      darwin: macos
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/sclevine/yj/releases
+    fetch:
+      url: https://github.com/sclevine/yj/releases/download/v{{ .Version }}/yj-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+      binaries:
+        - yj
+
+  yor:
+    description: >
+      Extensible auto-tagger for your IaC files.
+      The ultimate way to link entities in the cloud back to the codified
+      resource which created it.
+    url: https://github.com/bridgecrewio/yor/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/bridgecrewio/yor/releases
+    fetch:
+      url: https://github.com/bridgecrewio/yor/releases/download/{{ .Version }}/yor_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+      # https://github.com/bridgecrewio/yor/releases/download/0.1.139/yor-0.1.139-linux-amd64.tar.gz:
+      # https://github.com/bridgecrewio/yor/releases/download/0.1.139/yor_0.1.139_linux_amd64.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - yor
+
+  yq:
+    description: a lightweight and portable command-line YAML processor
+    url: https://github.com/mikefarah/yq/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/mikefarah/yq/releases
+    fetch:
+      url: https://github.com/mikefarah/yq/releases/download/v{{ .Version }}/yq_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
+      binaries:
+        - yq
+
+  ytt:
+    description: YAML templating tool that works on YAML structure instead of text
+    url: https://github.com/vmware-tanzu/carvel-ytt/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/vmware-tanzu/carvel-ytt/releases
+    fetch:
+      url: https://github.com/vmware-tanzu/carvel-ytt/releases/download/v{{ .Version }}/ytt-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
+  ksd:
+    description: Kubernetes secret decoder
+    url: https://github.com/mfuentesg/ksd/
+    map:
+      darwin: Darwin
+      linux: Linux
+      amd64: x86_64
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: i386
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/mfuentesg/ksd/releases
+    fetch:
+      url: https://github.com/mfuentesg/ksd/releases/download/v{{ .Version }}/ksd_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - ksd
