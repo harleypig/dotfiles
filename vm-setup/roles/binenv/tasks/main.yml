@@ -10,3 +10,7 @@
 
 - debug:
     var: result.stdout
+
+- name: Install specified packages using binenv
+  command: binenv install {{ item }}
+  loop: "{{ binenv_packages }}"

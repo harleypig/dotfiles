@@ -1,0 +1,4 @@
+---
+binenv_packages:
+  - glow
+  - gh
