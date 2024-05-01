@@ -239,4 +239,4 @@
   diffstat = diff --stat -r
 
   # Show latest vX.Y.Z tag
-	latest-tag = tag --list 'v*' --sort=-v:refname | head -n 1
+  latest-tag = !"git tag --list 'v*' --sort=-v:refname | head -n 1"
