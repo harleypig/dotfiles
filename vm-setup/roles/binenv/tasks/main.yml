@@ -1,0 +1,12 @@
+- name: Download the latest binenv release from GitHub
+  get_url:
+    url: "https://github.com/devops-works/binenv/releases/latest/download/binenv_linux_amd64"
+    dest: "/usr/local/bin/binenv"
+    mode: '0755'
+
+- name: Verify binenv is installed
+  command: binenv --version
+  register: result
+
+- debug:
+    var: result.stdout
