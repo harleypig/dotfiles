@@ -1,7 +1,5 @@
 ---
-common_pkgs_packages:
-  - ansible
-  - ansible-lint
+cli_pkgs_packages:
   - aptitude
   - build-essential
   - ca-certificates
@@ -12,7 +10,6 @@ common_pkgs_packages:
   - elinks
   - expect
   - git
-  - glow
   - htop
   - jq
   - "linux-headers-{{ ansible_kernel }}"
