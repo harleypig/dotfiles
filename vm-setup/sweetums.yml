@@ -7,7 +7,10 @@
 
   roles:
     - role: version_tracking
-    - role: common_pkgs
+    - role: cli_pkgs
+    # ???: https://github.com/ctorgalson/ansible-role-nerdfonts
+    #      https://github.com/hurricanehrndz/ansible-nerdfonts
+    #      https://github.com/gikeymarcia/ansible-role-nerdfonts
     #- role: nerd_font
     - role: nodejs
     - role: pip_pkgs
@@ -17,9 +20,9 @@
     - role: docker
     - role: misc_configuration
 
-    - role: gnome_settings
-      vars:
-        gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
+    #- role: gnome_settings
+    #  vars:
+    #    gnome_settings_tilix_profile_filename: "{{ playbook_dir }}/harleypig-tilix-profile.dconf"
 
     - role: version_tracking
       vars:
