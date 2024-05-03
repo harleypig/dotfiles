@@ -14,7 +14,7 @@ md() { mkdir -p "$@" && cd "$@" || return; }
 
 #-----------------------------------------------------------------------------
 shopt -s autocd cdspell direxpand dirspell globstar cdable_vars checkhash \
-         checkwinsize dotglob extglob nocaseglob 2> /dev/null
+  checkwinsize dotglob extglob nocaseglob 2> /dev/null
 
 umask 022
 
@@ -119,3 +119,14 @@ command -v plandex &> /dev/null \
 # https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
 # See inputrc for macros
 #run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
+
+#-----------------------------------------------------------------------------
+# binenv
+
+if command -v binenv &> /dev/null; then
+  BINENV_BINDIR="/home/harleypig/.local/bin"
+  BINENV_CACHEDIR="/home/harleypig/.cache/binenv"
+  BINENV_CONFDIR="/home/harleypig/projects/dotfiles/config/binenv"
+
+  source <(binenv completion bash)
+fi
