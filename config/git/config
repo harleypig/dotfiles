@@ -109,6 +109,12 @@
 [difftool]
   prompt = false
 
+[difftool "vimdiff"]
+	cmd = vim -d \"$LOCAL\" \"$REMOTE\"
+
+[difftool "gvimdiff"]
+	cmd = gvim -d \"$LOCAL\" \"$REMOTE\"
+
 ##################################################################################
 # Merge
 
