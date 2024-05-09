@@ -10,14 +10,12 @@ regex="#[0-9]+"
 # Check if the commit message matches the pattern
 if [[ $commit_message =~ $regex ]]; then
     work_item_id="${BASH_REMATCH[0]}"
-    # Check if the work item exists in the TPE project
-    # Simulating a check - replace this with actual API call or database query
-    # Assuming 'tpe_check_work_item' is a command or function that returns 0 if exists
-    if tpe_check_work_item "$work_item_id"; then
+    # Check if the work item exists in the Azure DevOps project
+    # Using 'az boards work-item show' to check for the existence of the work item
+    if az boards work-item show --id "$work_item_id" &> /dev/null; then
         git commit -m "$commit_message"
-        # Add the commit message to the work item
-        # Assuming 'tpe_add_comment_to_work_item' is a command or function
-        tpe_add_comment_to_work_item "$work_item_id" "$commit_message"
+        # Add a comment to the work item in Azure DevOps
+        az boards work-item update --id "$work_item_id" --discussion "$commit_message"
     else
         echo "Error: Invalid work item ID $work_item_id"
         exit 1
