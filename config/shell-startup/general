@@ -138,7 +138,7 @@ fi
 
 vaultpath="$(command -v vault 2> /dev/null)"
 
-if [[ -n vaultpath ]]; then
+if [[ -n $vaultpath ]]; then
   complete -C "$vaultpath" vault
 fi
 
@@ -147,55 +147,10 @@ unset vaultpath
 #-----------------------------------------------------------------------------
 # aider
 
-# AIDER_4: Description for AIDER_4
-# AIDER_4O: Description for AIDER_4O
-# AIDER_4_TURBO_VISION: Description for AIDER_4_TURBO_VISION
-# AIDER_AIDERIGNORE: Description for AIDER_AIDERIGNORE
-# AIDER_APPLY: Description for AIDER_APPLY
-# AIDER_ASSISTANT_OUTPUT_COLOR: Description for AIDER_ASSISTANT_OUTPUT_COLOR
-# AIDER_AUTO_COMMITS: Description for AIDER_AUTO_COMMITS
-# AIDER_CHAT_HISTORY_FILE: Description for AIDER_CHAT_HISTORY_FILE
-# AIDER_CHECK_UPDATE: Description for AIDER_CHECK_UPDATE
-# AIDER_CODE_THEME: Description for AIDER_CODE_THEME
-# AIDER_COMMIT: Description for AIDER_COMMIT
-# AIDER_DARK_MODE: Description for AIDER_DARK_MODE
-# AIDER_DIRTY_COMMITS: Description for AIDER_DIRTY_COMMITS
-# AIDER_DRY_RUN: Description for AIDER_DRY_RUN
-# AIDER_EDIT_FORMAT: Description for AIDER_EDIT_FORMAT
-# AIDER_ENCODING: Description for AIDER_ENCODING
-# AIDER_ENV_FILE: Description for AIDER_ENV_FILE
-# AIDER_GIT: Description for AIDER_GIT
-# AIDER_GITIGNORE: Description for AIDER_GITIGNORE
-# AIDER_GUI: Description for AIDER_GUI
-# AIDER_INPUT_HISTORY_FILE: Description for AIDER_INPUT_HISTORY_FILE
-# AIDER_LIGHT_MODE: Description for AIDER_LIGHT_MODE
-# AIDER_MAP_TOKENS: Description for AIDER_MAP_TOKENS
-# AIDER_MAX_CHAT_HISTORY_TOKENS: Description for AIDER_MAX_CHAT_HISTORY_TOKENS
-# AIDER_MESSAGE: Description for AIDER_MESSAGE
-# AIDER_MESSAGE_FILE: Description for AIDER_MESSAGE_FILE
-# AIDER_MODEL: Description for AIDER_MODEL
-# AIDER_MODELS: Description for AIDER_MODELS
-# AIDER_OPUS: Description for AIDER_OPUS
-# AIDER_PRETTY: Description for AIDER_PRETTY
-# AIDER_RESTORE_CHAT_HISTORY: Description for AIDER_RESTORE_CHAT_HISTORY
-# AIDER_SHOW_DIFFS: Description for AIDER_SHOW_DIFFS
-# AIDER_SHOW_MODEL_WARNINGS: Description for AIDER_SHOW_MODEL_WARNINGS
-# AIDER_SHOW_PROMPTS: Description for AIDER_SHOW_PROMPTS
-# AIDER_SHOW_REPO_MAP: Description for AIDER_SHOW_REPO_MAP
-# AIDER_SKIP_CHECK_UPDATE: Description for AIDER_SKIP_CHECK_UPDATE
-# AIDER_SONNET: Description for AIDER_SONNET
-# AIDER_STREAM: Description for AIDER_STREAM
-# AIDER_TOOL_ERROR_COLOR: Description for AIDER_TOOL_ERROR_COLOR
-# AIDER_TOOL_OUTPUT_COLOR: Description for AIDER_TOOL_OUTPUT_COLOR
-# AIDER_USER_INPUT_COLOR: Description for AIDER_USER_INPUT_COLOR
-# AIDER_VERBOSE: Description for AIDER_VERBOSE
-# AIDER_VOICE_LANGUAGE: Description for AIDER_VOICE_LANGUAGE
-# AIDER_WEAK_MODEL: Description for AIDER_WEAK_MODEL
-# AIDER_YES: Description for AIDER_YES
-# ANTHROPIC_API_KEY: Description for ANTHROPIC_API_KEY
-# OPENAI_API_BASE: Description for OPENAI_API_BASE
-# OPENAI_API_DEPLOYMENT_ID: Description for OPENAI_API_DEPLOYMENT_ID
-# OPENAI_API_KEY: Description for OPENAI_API_KEY
-# OPENAI_API_TYPE: Description for OPENAI_API_TYPE
-# OPENAI_API_VERSION: Description for OPENAI_API_VERSION
-# OPENAI_ORGANIZATION_ID: Description for OPENAI_ORGANIZATION_ID
+# OPENAI_API_KEY is loaded in 000-loadtokens
+
+if command -v aider &> /dev/null; then
+  export AIDER_MAP_TOKENS=2048
+  export AIDER_DARK_MODE=true
+  export AIDER_GITIGNORE=false
+fi

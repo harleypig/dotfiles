@@ -1,6 +1,9 @@
 # From http://help.github.com/git-ignore
 
 .aider.*
+# Use environment variables
+#!.aider.conf.yml
+!.aiderignore
 
 # Compiled source #
 ###################
