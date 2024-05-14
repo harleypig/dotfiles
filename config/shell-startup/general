@@ -130,3 +130,16 @@ if command -v binenv &> /dev/null; then
 
   source <(binenv completion bash)
 fi
+
+#-----------------------------------------------------------------------------
+# Vault
+
+vaultpath="$(command -v vault 2> /dev/null)"
+
+if [[ -n vaultpath ]]; then
+  complete -C "$vaultpath" vault
+fi
+
+unset vaultpath
+
+#-----------------------------------------------------------------------------
