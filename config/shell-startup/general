@@ -21,13 +21,25 @@ umask 022
 # System
 #-----------------------------------------------------------------------------
 # Aider Environment Variables:
-# AIDER_API_KEY: The API key for accessing the Aider service.
-# AIDER_MODEL: The model to use for Aider operations.
-# AIDER_CHAT_HISTORY_FILE: The file to store chat history.
-# AIDER_OUTPUT_FORMAT: The format for Aider's output.
-# AIDER_GIT_COMMIT_MESSAGE: The commit message to use for Aider's git operations.
-# AIDER_LOG_LEVEL: The log level for Aider's logging.
-# AIDER_TIMEOUT: The timeout setting for Aider operations.
+# AIDER_API_KEY: The API key for accessing the Aider service. [env var: AIDER_API_KEY]
+# AIDER_MODEL: The model to use for Aider operations. [env var: AIDER_MODEL]
+# AIDER_CHAT_HISTORY_FILE: The file to store chat history. [env var: AIDER_CHAT_HISTORY_FILE]
+# AIDER_OUTPUT_FORMAT: The format for Aider's output. [env var: AIDER_OUTPUT_FORMAT]
+# AIDER_GIT_COMMIT_MESSAGE: The commit message to use for Aider's git operations. [env var: AIDER_GIT_COMMIT_MESSAGE]
+# AIDER_LOG_LEVEL: The log level for Aider's logging. [env var: AIDER_LOG_LEVEL]
+# AIDER_TIMEOUT: The timeout setting for Aider operations. [env var: AIDER_TIMEOUT]
+# AIDER_API_BASE_URL: The base URL for the Aider API. [env var: AIDER_API_BASE_URL]
+# AIDER_PROXY: The proxy settings for Aider. [env var: AIDER_PROXY]
+# AIDER_CACHE_DIR: The directory to store Aider's cache. [env var: AIDER_CACHE_DIR]
+# AIDER_CONFIG_FILE: The configuration file for Aider. [env var: AIDER_CONFIG_FILE]
+# AIDER_LOG_FILE: The file to store Aider's logs. [env var: AIDER_LOG_FILE]
+# AIDER_MAX_RETRIES: The maximum number of retries for Aider operations. [env var: AIDER_MAX_RETRIES]
+# AIDER_RETRY_DELAY: The delay between retries for Aider operations. [env var: AIDER_RETRY_DELAY]
+# AIDER_SSL_VERIFY: Whether to verify SSL certificates for Aider. [env var: AIDER_SSL_VERIFY]
+# AIDER_TIMEOUT_CONNECT: The connection timeout for Aider. [env var: AIDER_TIMEOUT_CONNECT]
+# AIDER_TIMEOUT_READ: The read timeout for Aider. [env var: AIDER_TIMEOUT_READ]
+# AIDER_TIMEOUT_TOTAL: The total timeout for Aider operations. [env var: AIDER_TIMEOUT_TOTAL]
+# AIDER_USER_AGENT: The user agent string for Aider. [env var: AIDER_USER_AGENT]
 #-----------------------------------------------------------------------------
 
 alias aider-help='aider --help'
