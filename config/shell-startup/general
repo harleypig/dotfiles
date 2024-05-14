@@ -138,8 +138,17 @@ fi
 
 vaultpath="$(command -v vault 2> /dev/null)"
 
-if [[ -n $vaultpath ]]; then
+if [[ -n $vaultpath ]] \
+&& [[ -r $HOME/projects/private_dotfiles/vault.addr ]]; then
+
+  export VAULT_ADDR="$(<$HOME/projects/private_dotfiles/vault.addr)"
+  export LDAP_PASS="$(<$HOME/projects/private_dotfiles/ldap.pass)"
+
+  source set-vault-token
+
   complete -C "$vaultpath" vault
+
+  unset vaultpath LDAP_PASS
 fi
 
 unset vaultpath
