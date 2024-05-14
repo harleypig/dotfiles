@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Ensure VAULT_ADDR is set
+if [ -z "$VAULT_ADDR" ]; then
+  echo "VAULT_ADDR is not set. Please set it and try again."
+  exit 1
+fi
+
+# Ensure the password file exists
+PASSWORD_FILE="$HOME/projects/private_dotfiles/ldap.pass"
+if [ ! -f "$PASSWORD_FILE" ]; then
+  echo "Password file not found at $PASSWORD_FILE"
+  exit 1
+fi
+
+# Read the password from the file
+PASSWORD=$(cat "$PASSWORD_FILE")
+
+# Authenticate with Vault using LDAP and set the VAULT_TOKEN environment variable
+VAULT_TOKEN=$(vault login -method=ldap username="$USER" password="$PASSWORD" -token-only)
+
+if [ $? -ne 0 ]; then
+  echo "Failed to authenticate with Vault."
+  exit 1
+fi
+
+export VAULT_TOKEN
+echo "VAULT_TOKEN has been set successfully."
