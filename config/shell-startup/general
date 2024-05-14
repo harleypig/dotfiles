@@ -19,6 +19,17 @@ shopt -s autocd cdspell direxpand dirspell globstar cdable_vars checkhash \
 umask 022
 
 # System
+#-----------------------------------------------------------------------------
+# Aider Environment Variables:
+# AIDER_API_KEY: The API key for accessing the Aider service.
+# AIDER_MODEL: The model to use for Aider operations.
+# AIDER_CHAT_HISTORY_FILE: The file to store chat history.
+# AIDER_OUTPUT_FORMAT: The format for Aider's output.
+# AIDER_GIT_COMMIT_MESSAGE: The commit message to use for Aider's git operations.
+# AIDER_LOG_LEVEL: The log level for Aider's logging.
+# AIDER_TIMEOUT: The timeout setting for Aider operations.
+#-----------------------------------------------------------------------------
+
 alias aider-help='aider --help'
 alias c='clear'
 alias ..='cd ..'
