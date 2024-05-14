@@ -19,6 +19,7 @@ shopt -s autocd cdspell direxpand dirspell globstar cdable_vars checkhash \
 umask 022
 
 # System
+alias aider-help='aider --help'
 alias c='clear'
 alias ..='cd ..'
 alias ...='cd ../..'
