@@ -1,28 +1,35 @@
-#!/bin/bash
+#!/usr/bin/expect -f
 
 # Ensure VAULT_ADDR is set
-if [ -z "$VAULT_ADDR" ]; then
-  echo "VAULT_ADDR is not set. Please set it and try again."
+if { [info exists env(VAULT_ADDR)] == 0 } {
+  puts "VAULT_ADDR is not set. Please set it and try again."
   exit 1
-fi
+}
 
-# Ensure the password file exists
-PASSWORD_FILE="$HOME/projects/private_dotfiles/ldap.pass"
-if [ ! -f "$PASSWORD_FILE" ]; then
-  echo "Password file not found at $PASSWORD_FILE"
+# Ensure USER is set
+if { [info exists env(USER)] == 0 } {
+  puts "USER is not set. Please set it and try again."
   exit 1
-fi
+}
 
-# Read the password from the file
-PASSWORD=$(cat "$PASSWORD_FILE")
+# Ensure LDAP_PASS is set
+if { [info exists env(LDAP_PASS)] == 0 } {
+  puts "LDAP_PASS is not set. Please set it and try again."
+  exit 1
+}
 
 # Authenticate with Vault using LDAP and set the VAULT_TOKEN environment variable
-VAULT_TOKEN=$(vault login -method=ldap username="$USER" password="$PASSWORD" -token-only)
-
-if [ $? -ne 0 ]; then
-  echo "Failed to authenticate with Vault."
-  exit 1
-fi
-
-export VAULT_TOKEN
-echo "VAULT_TOKEN has been set successfully."
+spawn vault login -method=ldap username=$env(USER) -token-only
+expect "Password (will be hidden):"
+send "$env(LDAP_PASS)\r"
+expect {
+  "Success! You are now authenticated" {
+    set VAULT_TOKEN $expect_out(buffer)
+    set env(VAULT_TOKEN) $VAULT_TOKEN
+    puts "VAULT_TOKEN has been set successfully."
+  }
+  timeout {
+    puts "Failed to authenticate with Vault."
+    exit 1
+  }
+}
