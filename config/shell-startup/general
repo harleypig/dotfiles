@@ -18,31 +18,9 @@ shopt -s autocd cdspell direxpand dirspell globstar cdable_vars checkhash \
 
 umask 022
 
+#-----------------------------------------------------------------------------
 # System
-#-----------------------------------------------------------------------------
-# Aider Environment Variables:
-# AIDER_API_KEY: The API key for accessing the Aider service. [env var: AIDER_API_KEY]
-# AIDER_MODEL: The model to use for Aider operations. [env var: AIDER_MODEL]
-# AIDER_CHAT_HISTORY_FILE: The file to store chat history. [env var: AIDER_CHAT_HISTORY_FILE]
-# AIDER_OUTPUT_FORMAT: The format for Aider's output. [env var: AIDER_OUTPUT_FORMAT]
-# AIDER_GIT_COMMIT_MESSAGE: The commit message to use for Aider's git operations. [env var: AIDER_GIT_COMMIT_MESSAGE]
-# AIDER_LOG_LEVEL: The log level for Aider's logging. [env var: AIDER_LOG_LEVEL]
-# AIDER_TIMEOUT: The timeout setting for Aider operations. [env var: AIDER_TIMEOUT]
-# AIDER_API_BASE_URL: The base URL for the Aider API. [env var: AIDER_API_BASE_URL]
-# AIDER_PROXY: The proxy settings for Aider. [env var: AIDER_PROXY]
-# AIDER_CACHE_DIR: The directory to store Aider's cache. [env var: AIDER_CACHE_DIR]
-# AIDER_CONFIG_FILE: The configuration file for Aider. [env var: AIDER_CONFIG_FILE]
-# AIDER_LOG_FILE: The file to store Aider's logs. [env var: AIDER_LOG_FILE]
-# AIDER_MAX_RETRIES: The maximum number of retries for Aider operations. [env var: AIDER_MAX_RETRIES]
-# AIDER_RETRY_DELAY: The delay between retries for Aider operations. [env var: AIDER_RETRY_DELAY]
-# AIDER_SSL_VERIFY: Whether to verify SSL certificates for Aider. [env var: AIDER_SSL_VERIFY]
-# AIDER_TIMEOUT_CONNECT: The connection timeout for Aider. [env var: AIDER_TIMEOUT_CONNECT]
-# AIDER_TIMEOUT_READ: The read timeout for Aider. [env var: AIDER_TIMEOUT_READ]
-# AIDER_TIMEOUT_TOTAL: The total timeout for Aider operations. [env var: AIDER_TIMEOUT_TOTAL]
-# AIDER_USER_AGENT: The user agent string for Aider. [env var: AIDER_USER_AGENT]
-#-----------------------------------------------------------------------------
 
-alias aider-help='aider --help'
 alias c='clear'
 alias ..='cd ..'
 alias ...='cd ../..'
@@ -167,3 +145,57 @@ fi
 unset vaultpath
 
 #-----------------------------------------------------------------------------
+# aider
+
+# [env var: AIDER_4]
+# [env var: AIDER_4O]
+# [env var: AIDER_4_TURBO_VISION]
+# [env var: AIDER_AIDERIGNORE]
+# [env var: AIDER_APPLY]
+# [env var: AIDER_ASSISTANT_OUTPUT_COLOR]
+# [env var: AIDER_AUTO_COMMITS]
+# [env var: AIDER_CHAT_HISTORY_FILE]
+# [env var: AIDER_CHECK_UPDATE]
+# [env var: AIDER_CODE_THEME]
+# [env var: AIDER_COMMIT]
+# [env var: AIDER_DARK_MODE]
+# [env var: AIDER_DIRTY_COMMITS]
+# [env var: AIDER_DRY_RUN]
+# [env var: AIDER_EDIT_FORMAT]
+# [env var: AIDER_ENCODING]
+# [env var: AIDER_ENV_FILE]
+# [env var: AIDER_GIT]
+# [env var: AIDER_GITIGNORE]
+# [env var: AIDER_GUI]
+# [env var: AIDER_INPUT_HISTORY_FILE]
+# [env var: AIDER_LIGHT_MODE]
+# [env var: AIDER_MAP_TOKENS]
+# [env var: AIDER_MAX_CHAT_HISTORY_TOKENS]
+# [env var: AIDER_MESSAGE]
+# [env var: AIDER_MESSAGE_FILE]
+# [env var: AIDER_MODEL]
+# [env var: AIDER_MODELS]
+# [env var: AIDER_OPUS]
+# [env var: AIDER_PRETTY]
+# [env var: AIDER_RESTORE_CHAT_HISTORY]
+# [env var: AIDER_SHOW_DIFFS]
+# [env var: AIDER_SHOW_MODEL_WARNINGS]
+# [env var: AIDER_SHOW_PROMPTS]
+# [env var: AIDER_SHOW_REPO_MAP]
+# [env var: AIDER_SKIP_CHECK_UPDATE]
+# [env var: AIDER_SONNET]
+# [env var: AIDER_STREAM]
+# [env var: AIDER_TOOL_ERROR_COLOR]
+# [env var: AIDER_TOOL_OUTPUT_COLOR]
+# [env var: AIDER_USER_INPUT_COLOR]
+# [env var: AIDER_VERBOSE]
+# [env var: AIDER_VOICE_LANGUAGE]
+# [env var: AIDER_WEAK_MODEL]
+# [env var: AIDER_YES]
+# [env var: ANTHROPIC_API_KEY]
+# [env var: OPENAI_API_BASE]
+# [env var: OPENAI_API_DEPLOYMENT_ID]
+# [env var: OPENAI_API_KEY]
+# [env var: OPENAI_API_TYPE]
+# [env var: OPENAI_API_VERSION]
+# [env var: OPENAI_ORGANIZATION_ID]
