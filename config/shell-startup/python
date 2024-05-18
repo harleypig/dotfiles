@@ -23,3 +23,5 @@ function mkvenv() {
     && [[ -f dev-requirements.txt ]] \
     && pip install -r dev-requirements.txt
 }
+
+command -v poetry &> /dev/null && source "$XDG_CONFIG_HOME/completions/poetry"

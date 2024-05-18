@@ -112,10 +112,6 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 #export ANSIBLE_CONFIG="${XDG_CONFIG_HOME}/ansible.cfg"
 
 #-----------------------------------------------------------------------------
-command -v plandex &> /dev/null \
-  && source "$XDG_CONFIG_HOME/completions/plandex"
-
-#-----------------------------------------------------------------------------
 # Mimic Zsh run-help ability
 # Press alt+h to get help for word on cursor
 # https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
