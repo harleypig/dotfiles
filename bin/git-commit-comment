@@ -1,30 +1,32 @@
 #!/bin/bash
 
-# Usage: git-commit-comment "commit message"
+msg="$1"
 
-commit_message="$1"
+declare -a az_opts=('boards' 'work-item')
 
-# Regex to find a hash followed by a string of numbers (e.g., #123456)
+# Regex to find a hash followed by a string of numbers (e.g., #123456) also
+# known as a work item id.
 regex="#[0-9]+"
 
-# Check if the commit message matches the pattern
-if [[ $commit_message =~ $regex ]]; then
-    wiid="${BASH_REMATCH[0]}"
-    work_item_id="${wiid#\#}"
+if [[ $msg =~ $regex ]]; then
+  _id="${BASH_REMATCH[0]}"
+  id="${_id#\#}"
 
-    # Check if the work item exists in the Azure DevOps project
-    # Using 'az boards work-item show' to check for the existence of the work item
-    if az boards work-item show --id "$work_item_id" &> /dev/null; then
-        # Strip the work item ID from the commit message
-        stripped_commit_message="${commit_message//$wiid/}"
-        git commit -m "$stripped_commit_message"
-        # Add a comment to the work item in Azure DevOps
-        az boards work-item update --id "$work_item_id" --discussion "$commit_message"
-    else
-        echo "Error: Invalid work item ID $work_item_id"
-        exit 1
-    fi
 else
-    # No pattern matched, don't commit, just warn.
-    echo "Use normal commit if not including a work item id."
+  echo "Use normal commit if not including a work item id."
+fi
+
+if ! az "${az_opts[@]}" show --id "$id" &> /dev/null; then
+  echo "Error: Invalid work item ID $id"
+  exit 1
+fi
+
+if ! git commit -m "$msg" &> /dev/null; then
+  echo "Error: Could not commit"
+  exit 1
+fi
+
+if ! az "${az_opts[@]}" update --id "$id" --discussion "${msg//$_id/}" &> /dev/nulll; then
+  echo "Error: Problem adding comment to work item"
+  exit 1
 fi
