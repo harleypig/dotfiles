@@ -9,7 +9,9 @@ regex="#[0-9]+"
 
 # Check if the commit message matches the pattern
 if [[ $commit_message =~ $regex ]]; then
-    work_item_id="${BASH_REMATCH[0]}"
+    wiid="${BASH_REMATCH[0]}"
+    work_item_id="${wiid#\#}"
+
     # Check if the work item exists in the Azure DevOps project
     # Using 'az boards work-item show' to check for the existence of the work item
     if az boards work-item show --id "$work_item_id" &> /dev/null; then
@@ -21,6 +23,6 @@ if [[ $commit_message =~ $regex ]]; then
         exit 1
     fi
 else
-    # No pattern matched, proceed with normal commit
-    git commit -m "$commit_message"
+    # No pattern matched, don't commit, just warn.
+    echo "Use normal commit if not including a work item id."
 fi
