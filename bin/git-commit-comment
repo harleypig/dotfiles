@@ -15,7 +15,9 @@ if [[ $commit_message =~ $regex ]]; then
     # Check if the work item exists in the Azure DevOps project
     # Using 'az boards work-item show' to check for the existence of the work item
     if az boards work-item show --id "$work_item_id" &> /dev/null; then
-        git commit -m "$commit_message"
+        # Strip the work item ID from the commit message
+        stripped_commit_message="${commit_message//$wiid/}"
+        git commit -m "$stripped_commit_message"
         # Add a comment to the work item in Azure DevOps
         az boards work-item update --id "$work_item_id" --discussion "$commit_message"
     else
