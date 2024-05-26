@@ -3,10 +3,10 @@
 command -v tmux &> /dev/null || return 0
 
 # swap this window to the left
-alias swapl='tmux swap-window -t -1'
+alias swapl='tmux swap-window -t -1 ; tmux select_window -t -'
 
 # swap this window to the right
-alias swapr='tmux swap-window -t +1'
+alias swapr='tmux swap-window -t +1 ; tmux select_window -t +'
 
 # swap this window with the one passed in
 alias swapw='tmux swap-window -t'
