@@ -38,11 +38,11 @@
 [remote "origin"]
   prune = true
   pruneTags = true
-  fetch = +refs/tags/*:refs/tags/*
-  fetch = +refs/notes/*:refs/notes/*
-  push = +refs/heads/*:refs/heads/*
-  push = +refs/tags/*:refs/tags/*
-  push = +refs/notes/*:refs/notes/*
+  #fetch = +refs/tags/*:refs/tags/*
+  #fetch = +refs/notes/*:refs/notes/*
+  #push = +refs/heads/*:refs/heads/*
+  #push = +refs/tags/*:refs/tags/*
+  #push = +refs/notes/*:refs/notes/*
 
 [push]
   # https://git-scm.com/docs/git-config#Documentation/git-config.txt-pushdefault
