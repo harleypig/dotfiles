@@ -44,7 +44,7 @@ export CVS_RSH='ssh'
 # https://wiki.archlinux.org/index.php/Core_Utilities#ls
 eval $(dircolors -b)
 
-alias l='ls -Al --color=auto'
+alias l='ls -AFl --color=auto'
 alias sl=ls
 
 #-----------------------------------------------------------------------------
