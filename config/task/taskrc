@@ -1,0 +1,44 @@
+# Taskwarrior program configuration file.
+# For more documentation, see http://taskwarrior.org or try 'man task', 'man task-color',
+# 'man task-sync' or 'man taskrc'
+
+# Here is an example of entries that use the default, override and blank values
+#   variable=foo   -- By specifying a value, this overrides the default
+#   variable=      -- By specifying no value, this means no default
+#   #variable=foo  -- By commenting out the line, or deleting it, this uses the default
+
+# Use the command 'task show' to see all defaults and overrides
+
+# Files
+data.location=$HOME/projects/private_dotfiles/.task
+
+#include $HOME/projects/private_dotfiles/.task/include/bugwarrior.config
+include $HOME/projects/private_dotfiles/.task/include/general.config
+include $HOME/projects/private_dotfiles/.task/include/generated_reports.config
+include $HOME/projects/private_dotfiles/.task/include/incubate.config
+#include $HOME/projects/private_dotfiles/.task/include/sched.config
+#include $HOME/projects/private_dotfiles/.task/include/taskd.config
+include $HOME/projects/private_dotfiles/.task/include/theme.config
+include $HOME/projects/private_dotfiles/.task/include/timew.config
+#include $HOME/projects/private_dotfiles/.task/include/intheam.config
+
+context.work=+work
+context.personal=+personal
+context.project=+project
+
+# Taskwarrior::Kusarigama Setup
+kusarigama.plugins=Command::Wait,ProjectAlias,ProjectDefaults,SingleActive
+
+report.wait.columns=id
+report.wait.description=pseudo-report for command
+
+project.finance.defaults=+personal
+project.health.defaults=+personal
+project.household.defaults=+personal
+project.maintenance.defaults=+personal
+project.personal.defaults=+personal
+project.project.defaults=+project
+project.spiritual.defaults=+personal
+project.work.defaults=+work
+
+context.test=pro:test
