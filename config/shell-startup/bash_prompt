@@ -135,17 +135,14 @@ _venv() {
 }
 
 #----------------------------------------------------------------------------
-# Append the last command, clear the history cache and reread the history file
-_history() {
-  history -a
-  history -c
-  history -r
-}
-
-#----------------------------------------------------------------------------
 _update_prompt() {
   # don't use 'local exit_status' here because it wipes out PIPESTATUS.
   exit_status=$(_exit_status "${PIPESTATUS[@]}")
+
+  # Append the last command, clear the history cache and reread the history
+  # file
+  history -a
+  history -cr
 
   local user_color hostname_color finalchr loadavg
 
@@ -163,7 +160,7 @@ _update_prompt() {
   # Build the prompt.
   local prompt_color system_reboot pacman_status finalchr loadavg
 
-  PS1="\n$color_off$(_history)$prompt_color"
+  PS1="\n$color_off$prompt_color"
 
   command -v system-needs-reboot &> /dev/null \
     && PS1+="$(system-needs-reboot)"
