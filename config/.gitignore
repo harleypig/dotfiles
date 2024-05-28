@@ -1,3 +1,4 @@
+ansible/collections/**
 Bitwarden\ CLI/**
 coc/**
 Code/**
@@ -6,15 +7,14 @@ docker/buildx/**
 evolution/**
 gtk-3.0/**
 ibus/**
+packer/plugins/**
 pulse/**
 tree-sitter/**
 yelp/**
 
-ansible/collections/**
-packer/plugins/**
-
 ansible/galaxy_token
 dconf/user
+docker/config.json
 docker/.token_seed
 docker/.token_seed.lock
 .gsd-keyboard.settings-ported
