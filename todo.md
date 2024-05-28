@@ -10,3 +10,5 @@ create a check4update script for
 add git-status to tmux status line
   if in tmux disable git-status in bash prompt
   add git-status to vim status line except when in tmux
+
+look into using lesshst and/or lesskey configuration instead of less (shell-startup)

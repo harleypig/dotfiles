@@ -142,7 +142,8 @@ _update_prompt() {
   # Append the last command, clear the history cache and reread the history
   # file
   history -a
-  history -cr
+  history -c
+  history -r
 
   local user_color hostname_color finalchr loadavg
 
