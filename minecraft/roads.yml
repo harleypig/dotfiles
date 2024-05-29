@@ -1,0 +1,63 @@
+base_style: Roads
+bulding:
+
+  - template:
+    front: unknown
+    style: unknown
+    dimension:
+      x: 0
+      y: 0
+      z: 0
+    block:
+      x: 0
+      y: 0
+      z: 0
+
+  # Need to build this and make 3-5 levels
+  # First level needs to be as simple as possible.
+  # Last level needs tracks.
+  # x should always be the width of the segment
+  # z should always be the length of the segment
+  # y needs to be revisited to make sure we catch any bugs
+  # block should be the Decoration Controller
+  #
+  # need:
+  #   corner (3-5 levels)
+  #   t-intersection (3-5 levels)
+  #   4-way intersection (3-5 levels)
+
+  - straight_long:
+    front: none
+    style: harleypig
+    dimension:
+      x: 7
+      y: 5
+      z: 10
+    block:
+      x: 0
+      y: 0
+      z: 0
+
+  - straight_medium:
+    front: none
+    style: harleypig
+    dimension:
+      x: 7
+      y: 5
+      z: 5
+    block:
+      x: 0
+      y: 0
+      z: 0
+
+  - straight_one:
+    front: none
+    style: harleypig
+    dimension:
+      x: 7
+      y: 5
+      z: 1
+    block:
+      x: 0
+      y: 0
+      z: 0

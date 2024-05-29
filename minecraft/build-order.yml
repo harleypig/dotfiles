@@ -1,0 +1,33 @@
+# Order of build (level 1):
+
+level1:
+  - builder
+  - builder
+  - townhall
+  - tavern
+
+level2:
+  - notes:
+    - "upgrade all buildings to level 2"
+  - builder
+  - builder
+  - forester
+  - miner
+  - residence
+  - tavern
+  - townhall
+
+level3:
+  - notes:
+    - "upgrade all buildings to level 3"
+    - "add a new builder"
+  - builder
+  - builder
+  - builder
+  - warehouse
+  - courier
+  - forester
+  - miner
+  - residence
+  - tavern
+  - townhall

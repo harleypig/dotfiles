@@ -1,0 +1,163 @@
+# Assumptions:
+#
+#  - Block placement is based on front left corner (as you are facing the
+#    block, not the front of the building, since they don't always match).
+#  - Block placement 0 is ground level. Plus is up, minus is down.
+#  - Townhall block would be 5 blocks in on the x-axis, 8 on the y-axis, and
+#    1 block up.
+#  - If style exists it can have two kinds of values.
+#    - alt/standard (will use base_style)
+#    - Style Name (alt)
+#  - 'front' is facing, reverse, left, right
+#    - 'facing' is facing you, even if the front of the building is behind
+#      you.
+#    - 'reverse' is in the direction you are facing the block
+#    - 'left' and 'right' is to the left or right as you are facing the
+#      block.
+
+# Need (no research required):
+#  guard tower
+#  forester
+#  mine
+#  farm
+#  fisher
+#  bakery
+#  chicken farmer
+#  restaurant
+#  cowhand
+#  shepherd
+#  swineherd
+#  university
+#  enchanter
+#  rabbit
+#  apiary
+
+base_style: Medieval Oak
+bulding:
+
+  - template:
+    front: unknown
+    style: unknown
+    dimension:
+      x: 0
+      y: 0
+      z: 0
+    block:
+      x: 0
+      y: 0
+      z: 0
+
+  - townhall:
+    front: facing
+    dimension:
+      x: 15
+      y: 26
+      z: 22
+    block:
+      x: 5
+      y: 1
+      z: 8
+
+  - builder:
+    front: left
+    dimension:
+      x: 11
+      y: 20
+      z: 14
+    block:
+      x: 8
+      y: 1
+      z: 11
+
+  - builder:
+    style: alt
+    front: reverse
+    dimension:
+      x: 17
+      y: 22
+      z: 16
+    block:
+      x: 8
+      y: 0
+      z: 4
+
+  - tavern:
+    front: right
+    dimension:
+      x: 13
+      y: 20
+      z: 16
+    block:
+      x: 1
+      y: -1
+      z: 4
+
+  - residence:
+    front: right
+    dimension:
+      x: 14
+      y: 19
+      z: 15
+    block:
+      x: 2
+      y: 1
+      z: 5
+
+  - residence:
+    front: right
+    style: alt
+    dimension:
+      x: 14
+      y: 17
+      z: 15
+    block:
+      x: 8
+      y: 0
+      z: 7
+
+  - residence:
+    front: facing
+    style: grachtenpand
+    dimension:
+      x: 18
+      y: 28
+      z: 9
+    block:
+      x: 7
+      y: 0
+      z: 6
+
+  - warehouse:
+    front: left
+    dimension:
+      x: 25
+      y: 28
+      z: 23
+    block:
+      x: 19
+      y: 1
+      z: 15
+
+  - warehouse:
+    front: right
+    style: alt
+    dimension:
+      x: 21
+      y: 22
+      z: 29
+    block:
+      x: 11
+      y: 0
+      z: 10
+
+  - courier:
+    front: facing
+    style: Stalactite
+    dimension:
+      x: 8
+      y: 6
+      z: 8
+    block:
+      x: 2
+      y: 0
+      z: 6
