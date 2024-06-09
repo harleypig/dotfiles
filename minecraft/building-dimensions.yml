@@ -17,7 +17,6 @@
 
 # Need (no research required):
 #  guard tower
-#  forester
 #  mine
 #  farm
 #  fisher
@@ -127,6 +126,18 @@ bulding:
       y: 0
       z: 6
 
+  - residence:
+    front: facing
+    style: Cavern (alt)
+    dimension:
+      x: 27
+      y: 7
+      z: 12
+    block:
+      x: 2
+      y: 0
+      z: 4
+
   - warehouse:
     front: left
     dimension:
@@ -161,3 +172,72 @@ bulding:
       x: 2
       y: 0
       z: 6
+
+  - forester:
+    front: reverse
+    dimension:
+      x: 14
+      y: 13
+      z: 14
+    block:
+      x: 4
+      y: 0
+      z: 5
+
+  - forester:
+    front: right
+    style: alt
+    dimension:
+      x: 17
+      y: 16
+      z: 11
+    block:
+      x: 14
+      y: 0
+      z: 2
+
+  - fisher:
+    front: right
+    dimension:
+      x: 18
+      y: 21
+      z: 26
+    block:
+      x: 11
+      y: 0
+      z: 12
+
+  - fisher:
+    front: left
+    style: alt
+    dimension:
+      x: 17
+      y: 22
+      z: 20
+    block:
+      x: 4
+      y: 0
+      z: 10
+
+  - farm:
+    front: right
+    dimension:
+      x: 21
+      y: 24
+      z: 23
+    block:
+      x: 2
+      y: 1
+      z: 8
+
+  - farm:
+    front: facing
+    style: alt
+    dimension:
+      x: 15
+      y: 16
+      z: 18
+    block:
+      x: 8
+      y: 1
+      z: 10

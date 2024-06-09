@@ -2,16 +2,16 @@
 
 level1:
   - builder
-  - builder
   - townhall
   - tavern
+  - forester
 
 level2:
   - notes:
+    - "add new builder"
     - "upgrade all buildings to level 2"
   - builder
   - builder
-  - forester
   - miner
   - residence
   - tavern
