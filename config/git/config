@@ -6,7 +6,7 @@
   name  = Alan Young
 
 [credential]
-  helper = git-credential-helper
+  helper = creds-helper
 
 [include]
   path = ../../gitconfig.user
@@ -112,10 +112,10 @@
   prompt = false
 
 [difftool "vimdiff"]
-	cmd = vim -d \"$LOCAL\" \"$REMOTE\"
+  cmd = vim -d \"$LOCAL\" \"$REMOTE\"
 
 [difftool "gvimdiff"]
-	cmd = gvim -d \"$LOCAL\" \"$REMOTE\"
+  cmd = gvim -d \"$LOCAL\" \"$REMOTE\"
 
 ##################################################################################
 # Merge
