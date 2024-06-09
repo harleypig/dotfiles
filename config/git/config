@@ -5,6 +5,9 @@
   email = harleypig@harleypig.com
   name  = Alan Young
 
+[credential]
+  helper = git-credential-helper
+
 [include]
   path = ../../gitconfig.user
 
