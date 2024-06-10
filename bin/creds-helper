@@ -28,21 +28,15 @@ while read -r line; do
 done
 
 # Check if the host exists in .netrc and get the password
-GIT_CREDENTIALS="$(awk -v host="$host" '
-  $1 == "machine" && $2 == host {machine_found=1}
-  machine_found && $1 == "password" {password=$2}
-  END {if (machine_found && password) print password}
+[[ -r ~/.netrc ]] && GIT_CREDENTIALS="$(awk -v host="$host" '
+  $1 == "machine" && $2 == host {found=1}
+  found && $1 == "password" {print $2; exit}
 ' ~/.netrc)"
 
 # If not found in .netrc, check the PAT file
-if [[ -z $GIT_CREDENTIALS ]]; then
-  PAT_FILE="$HOME/projects/private_dotfiles/api-key.github"
-  if [[ -f $PAT_FILE ]]; then
-    GIT_CREDENTIALS=$(<"$PAT_FILE")
-  fi
-fi
+[[ -z $GIT_CREDENTIALS ]] \
+  && [[ -r $HOME/projects/private_dotfiles/api-key.github ]] \
+  && GIT_CREDENTIALS=$(<"$PAT_FILE")
 
 # Output the password if found, otherwise let Git prompt for credentials
-if [[ -n $GIT_CREDENTIALS ]]; then
-  echo "password=$GIT_CREDENTIALS"
-fi
+[[ -n $GIT_CREDENTIALS ]] && echo "password=$GIT_CREDENTIALS"
