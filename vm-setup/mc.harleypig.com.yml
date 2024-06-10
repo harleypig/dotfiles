@@ -1,0 +1,7 @@
+---
+- name: Setup Sweetums environment
+  hosts: localhost
+
+  roles:
+    - role: cli_pkgs
+    - role: docker
