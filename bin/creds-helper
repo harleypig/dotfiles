@@ -29,8 +29,9 @@ done
 
 # Check if the host exists in .netrc and get the password
 GIT_CREDENTIALS="$(awk -v host="$host" '
-  $1 == "machine" && $2 == host {found=1}
-  found && $1 == "password" {print $2; exit}
+  $1 == "machine" && $2 == host {machine_found=1}
+  machine_found && $1 == "password" {password=$2}
+  END {if (machine_found && password) print password}
 ' ~/.netrc)"
 
 # If not found in .netrc, check the PAT file
