@@ -27,7 +27,21 @@ while read -r line; do
   esac
 done
 
-GIT_CREDENTIALS="$(grep -A1 "$username" ~/.netrc | grep '^password' | awk '{print $2}')"
+# Check if the host exists in .netrc and get the password
+GIT_CREDENTIALS="$(awk -v host="$host" '
+  $1 == "machine" && $2 == host {found=1}
+  found && $1 == "password" {print $2; exit}
+' ~/.netrc)"
 
-# After printing out the input, you can still output the password if needed
-[[ -n $GIT_CREDENTIALS ]] && echo "password=$GIT_CREDENTIALS"
+# If not found in .netrc, check the PAT file
+if [[ -z $GIT_CREDENTIALS ]]; then
+  PAT_FILE="$HOME/projects/private_dotfiles/api-key.github"
+  if [[ -f $PAT_FILE ]]; then
+    GIT_CREDENTIALS=$(<"$PAT_FILE")
+  fi
+fi
+
+# Output the password if found, otherwise let Git prompt for credentials
+if [[ -n $GIT_CREDENTIALS ]]; then
+  echo "password=$GIT_CREDENTIALS"
+fi
