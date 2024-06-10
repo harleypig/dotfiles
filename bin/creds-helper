@@ -1,8 +1,5 @@
 #!/bin/bash
 
-printf '%s\n' "$@"
-exit
-
 # This script expects the 'user' variable to be set, which it uses to find the
 # corresponding password in ~/.netrc
 #
@@ -16,6 +13,8 @@ exit
 # - path: The path on the server.
 # - username: The username for authentication.
 # - password: The password for authentication.
+
+declare protocol host path username password
 
 # Read the input from Git
 while read -r line; do
