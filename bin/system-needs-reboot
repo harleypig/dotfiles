@@ -10,6 +10,7 @@
 
 # Don't run on harleypig.com
 [[ $HOSTNAME == 'harleypig.com' ]] && exit 0
+[[ -r /etc/os-release ]] || exit 0
 
 # Not supporting CentOS
 source /etc/os-release

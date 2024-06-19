@@ -17,6 +17,8 @@
   pager        = less -FIJRWX
   safecrlf     = true
   filemode     = true
+  autocrlf     = false
+  eol          = lf
 
 [apply]
   ignorewhitespace = change
