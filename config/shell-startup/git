@@ -178,3 +178,10 @@ if [[ -r "$XDG_CONFIG_HOME/completions/git" ]]; then
   __git_complete grm _git_rm
 
 fi
+
+#-----------------------------------------------------------------------------
+# cygwin specific stuff
+
+#if [[ "$(uname -o)" == "Cygwin" ]]; then
+#  alias git="'$(cygpath -u "C:\Program Files\Git\bin\git.exe")'"
+#fi
