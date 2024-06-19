@@ -157,4 +157,5 @@ fi
 if [[ "$(uname -o)" == "Cygwin" ]]; then
   # cygwin specific (not in bash manpage)
   set -o igncr
+  alias git="'$(cygpath -u "C:\Program Files\Git\bin\git.exe")'"
 fi
