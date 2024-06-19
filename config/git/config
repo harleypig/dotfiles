@@ -5,9 +5,9 @@
   email = harleypig@harleypig.com
   name  = Alan Young
 
-[credential]
-  #helper = creds-helper
-  helper = /cygdrive/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe
+#[credential]
+#  #helper = creds-helper
+#  helper = /cygdrive/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe
 
 [include]
   path = ../../gitconfig.user
