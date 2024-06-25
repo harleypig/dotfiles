@@ -6,7 +6,7 @@ SETUP=
 if [[ $HOSTNAME == 'sweetums' ]]; then
   SETUP='/cygdrive/c/tools/cygwin-pkgs/setup-x86_64.exe'
 
-elif [[ $HOSTNAME == 'UT-108L-3905Q3' ]]
+elif [[ $HOSTNAME == 'UT-108L-3905Q3' ]]; then
   SETUP='/cygdrive/c/Apps/cygwin-pkgs/setup-x86_64.exe'
 fi
 
