@@ -12,3 +12,6 @@ add git-status to tmux status line
   add git-status to vim status line except when in tmux
 
 look into using lesshst and/or lesskey configuration instead of less (shell-startup)
+
+bash changes
+  https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges

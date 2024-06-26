@@ -141,17 +141,6 @@ fi
 unset vaultpath
 
 #-----------------------------------------------------------------------------
-# aider
-
-# OPENAI_API_KEY is loaded in 000-loadtokens
-
-if command -v aider &> /dev/null; then
-  export AIDER_MAP_TOKENS=2048
-  export AIDER_DARK_MODE=true
-  export AIDER_GITIGNORE=false
-fi
-
-#-----------------------------------------------------------------------------
 # cygwin specific stuff
 
 if [[ "$(uname -o)" == "Cygwin" ]]; then
