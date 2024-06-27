@@ -87,7 +87,7 @@ unsetfuncs 'debug'
 #
 #   The last one defaults to PATH
 
-# XXX: Convert this to an external library.
+# XXX: Add options for first and last place
 
 addpath() {
   local target="PATH"
