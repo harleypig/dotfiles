@@ -8,6 +8,11 @@ variable "files_from_yaml" {
   }))
   
   validation {
+    condition = can(regex("^filename[0-9]+\\.txt$", each.value.filename))
+    error_message = "filename must be 'filenameX.txt' where X is any valid number."
+  }
+
+  validation {
     condition = alltrue([
       can(regex("^filename[0-9]+\\.txt$", each.value.filename)),
       can(regex("^0[0-7]{3}$", each.value.file_permission)),
@@ -15,6 +20,6 @@ variable "files_from_yaml" {
       !contains(tolist([1, 3, 5, 7]), tonumber(substr(each.value.file_permission, 2, 1))),
       !contains(tolist([1, 3, 5, 7]), tonumber(substr(each.value.file_permission, 3, 1)))
     ])
-    error_message = "filename must be 'filenameX.txt' where X is any valid number. file_permission must be non-executable."
+    error_message = "file_permission must be a valid 4-digit number and non-executable."
   }
 }
