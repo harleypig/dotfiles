@@ -1,0 +1,3 @@
+filename1.txt:
+  content: "Test doc"
+  permissions: 0644
