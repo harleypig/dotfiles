@@ -6,7 +6,26 @@ export LESSHISTFILE="${XDG_CACHE_HOME}/less/history"
 # See man less for other LESSKEY options
 #export LESSKEY="${XDG_CONFIG_HOME}/less/lesskey"
 
-export LESS='--hilite-search --IGNORE-CASE --status-column --RAW-CONTROL-CHARS --hilite-unread --tabs=2 -X'
+declare -a lessopts
+
+lessopts+=('--hilite-search')
+lessopts+=('--HILITE-UNREAD')
+lessopts+=('--ignore-case')
+lessopts+=('--LONG-PROMPT')
+lessopts+=('--no-init')
+lessopts+=('--quit-if-one-screen')
+lessopts+=('--RAW-CONTROL-CHARS')
+lessopts+=('--search-skip-screen')
+lessopts+=('--status-column')
+lessopts+=('--tabs=2')
+lessopts+=('--jump-target=3')
+lessopts+=('--QUIET')
+lessopts+=('--incsearch')
+
+#export LESS='--hilite-search --IGNORE-CASE --status-column --RAW-CONTROL-CHARS --hilite-unread --tabs=2 -X'
+export LESS="${lessopts[*]}"
+
+unset lessopts
 
 # This will color man output, but also any less outupt with the proper codes embedded.
 
