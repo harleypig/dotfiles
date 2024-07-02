@@ -3,9 +3,3 @@ variable "data_folder" {
   type        = string
   default     = "myfolder"
 }
-
-variable "filename_pattern" {
-  description = "Pattern for filenames"
-  type        = string
-  default     = "^filename[0-9]+\\.txt$"
-}
