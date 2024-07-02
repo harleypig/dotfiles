@@ -8,7 +8,7 @@ variable "files_from_yaml" {
   }))
 
   validation {
-    condition = can(regex("^filename[0-9]+\\.txt$", each.value.filename))
+    condition = can(regex(var.filename_pattern, each.value.filename))
     error_message = "filename must be 'filenameX.txt' where X is any valid number."
   }
 

@@ -3,7 +3,7 @@ locals {
     for file in try(fileset(var.data_folder, "**/*.yaml"), []) : [
       for key, newfile in yamldecode(file("${var.data_folder}/${file}")) :
       merge(newfile, {
-        filename             = "${key}"
+        filename             = "${var.filename_pattern}"
         content              = newfile.content
         file_permission      = newfile.permissions
         directory_permission = try(newfile.directory_permission, null)
