@@ -4,6 +4,16 @@ variable "data_folder" {
   default     = "myfolder"
 }
 
+variable "filename" {
+  description = "The filename to be used"
+  type        = string
+
+  validation {
+    condition     = contains(["filename1.txt", "filename2.txt"], var.filename)
+    error_message = "Filename must be either 'filename1.txt' or 'filename2.txt'."
+  }
+}
+
 # because we are modifying a key value in the object, we need to redefine the
 # entire object
 
