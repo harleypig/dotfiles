@@ -51,7 +51,7 @@ run "bad_filename" {
   expect_fail = true
 
   config = {
-    module "yaml_file_bad" {
+    module "yaml_file" {
       source          = "../.."
       files_from_yaml = {
         "badfile.txt" = {
@@ -69,7 +69,7 @@ run "good_filename" {
   expect_fail = false
 
   config = {
-    module "yaml_file_good" {
+    module "yaml_file" {
       source          = "../.."
       files_from_yaml = {
         "filename123.txt" = {
