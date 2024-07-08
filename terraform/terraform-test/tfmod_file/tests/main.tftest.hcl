@@ -1,5 +1,6 @@
 run "bad_filename" {
   command = plan
+  expect_fail = true
   variables {
     test_filenames = {
       badfile = {
