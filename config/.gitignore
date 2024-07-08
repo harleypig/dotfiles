@@ -1,4 +1,5 @@
 ansible/collections/**
+asciinema/**
 Bitwarden\ CLI/**
 coc/**
 Code/**

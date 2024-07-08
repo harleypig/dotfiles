@@ -3,7 +3,7 @@ variable "test_filenames" {
   type = map(object({
     filename             = string
     content              = string
-    file_permission      = optional(string, "")
-    directory_permission = optional(string, "")
+    file_permission      = optional(string, "0644")
+    directory_permission = optional(string, "0755")
   }))
 }
