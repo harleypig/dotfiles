@@ -14,7 +14,7 @@ run "good_filename" {
 run "bad_filename" {
   command = plan
 
-  expect_failures = ["All filenames must match the pattern 'filenameXXX.txt' where XXX is any number."]
+  expect_failures = [var.test_filenames["badfile.txt"]]
 
   variables {
     test_filenames = {
