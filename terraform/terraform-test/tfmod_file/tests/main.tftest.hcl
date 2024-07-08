@@ -14,7 +14,7 @@ run "good_filename" {
 run "bad_filename" {
   command = plan
 
-  expect_failures = [var.files_from_yaml]
+  expect_failures = ["All filenames must match the pattern 'filenameXXX.txt' where XXX is any number."]
 
   variables {
     test_filenames = {
