@@ -1,0 +1,16 @@
+#!/bin/bash
+
+url="${1:?url must be passed}"
+
+declare -a ppargs
+ppargs+=('-vf' 'scale=1920:1080')
+ppargs+=('-c:v' 'libx264')
+ppargs+=('-crf' '23')
+ppargs+=('-preset' 'medium')
+ppargs+=('-c:a' 'aac')
+ppargs+=('-b:a' '192k')
+
+yt-dlp "$url" \
+  --recode-video mp4 \
+  --postprocessor-args "${ppargs[*]}" \
+  --output "%(title)s.%(ext)s"
