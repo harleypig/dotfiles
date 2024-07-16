@@ -5,5 +5,9 @@ terraform {
       source  = "hashicorp/local"
       version = "2.2.3"
     }
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 3.5.0"
+    }
   }
 }
