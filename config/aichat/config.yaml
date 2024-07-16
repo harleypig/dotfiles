@@ -1,0 +1,6 @@
+model: openai
+clients:
+- type: openai
+keybindings: vi
+buffer_editor: vim
+wrap: auto
