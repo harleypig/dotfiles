@@ -79,7 +79,8 @@ print the date and time in the upper right corner of the terminal window. For ex
   # Save cursor position
   tput sc
   # Move cursor to upper right corner
-  tput cup 0 $(($(tput cols) - 20))
+  cols=${COLUMNS:-$(tput cols)}
+  tput cup 0 $((cols - 20))
   # Print date and time
   date '+%Y-%m-%d %H:%M:%S'
   # Restore cursor position
