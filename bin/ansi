@@ -61,19 +61,21 @@ Colors:
     bright_blue, bright_purple, bright_cyan, bright_white
 
   Hex colors (format: #RRGGBB):
-    You can specify colors using hexadecimal notation. For example:
-    - fg #FF5733: Sets the foreground color to a shade of orange.
-    - bg #33FF57: Sets the background color to a shade of green.
-    The hex value should be in the format #RRGGBB, where RR, GG, and BB are
-    two-digit hexadecimal numbers representing the red, green, and blue
-    components of the color, respectively.
+    You can specify colors using hexadecimal notation. The hex value should be
+    in the format #RRGGBB, where RR, GG, and BB are two-digit hexadecimal
+    numbers representing the red, green, and blue components of the color,
+    respectively.
 
 Example usage:
   ${0##*/} -sb fg red bg black # Red foreground and black background for PS1 prompts
   ${0##*/} -n fg blue          # Blue text and reset attributes for PROMPT_COMMAND
   ${0##*/} fg green bg yellow  # Green text on yellow background for general display
+  ${0##*/} fg #FF5733          # Sets the foreground color to a shade of orange.
+  ${0##*/} bg #33FF57          # Sets the background color to a shade of green.
 
-You can also use any other tput command as an argument.
+You can also use any other tput command as an argument. For example, you could
+print the date and time in the upper right corner of the terminal window.
+
 To find more tput commands, refer to the tput documentation with 'man tput'.
 
 EOF
