@@ -74,7 +74,16 @@ Example usage:
   ${0##*/} bg #33FF57          # Sets the background color to a shade of green.
 
 You can also use any other tput command as an argument. For example, you could
-print the date and time in the upper right corner of the terminal window.
+print the date and time in the upper right corner of the terminal window. For example:
+
+  # Save cursor position
+  tput sc
+  # Move cursor to upper right corner
+  tput cup 0 $(($(tput cols) - 20))
+  # Print date and time
+  date '+%Y-%m-%d %H:%M:%S'
+  # Restore cursor position
+  tput rc
 
 To find more tput commands, refer to the tput documentation with 'man tput'.
 
