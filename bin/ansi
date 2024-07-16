@@ -2,22 +2,25 @@
 
 ##############################################################################
 # This script provides a versatile _ansi() function for generating ANSI escape
-# sequences to format and color text in the terminal. The function is designed
-# to work both in the PS1 prompt and for general display purposes. Two
-# options, -sb and -n, allow users to choose the appropriate delimiters for
-# the escape sequences, ensuring accurate character counting and proper
-# formatting.
+# sequences to format and color text in the terminal.
+#
+# The function is designed to work both in the PS1 prompt and for general
+# display purposes. Two options, -sb and -n, allow users to choose the
+# appropriate delimiters for the escape sequences, ensuring accurate character
+# counting and proper formatting.
 
 ##############################################################################
+# Resources:
+#
 # Peruse /usr/share/doc/xterm/*
-
+#
 # https://github.com/fidian/ansi has some good ideas, and some interesting
 # things to try, but I don't like the way they're doing things. So I'll keep
 # my own stuff for now.
-
+#
 # http://mywiki.wooledge.org/BashFAQ/037
 # http://wiki.bash-hackers.org/scripting/terminalcodes
-
+#
 # Convert rgb (0-255 0-255 0-255) to 8-bit 0-255
 # XXX: Figure out how to do hex
 
@@ -38,8 +41,8 @@ Options:
   (none) No delimiters are used for general display purposes.
 
 Commands:
-  fg [color]       Set foreground color.
-  bg [color]       Set background color.
+  fg [color]       Set foreground color. (See Colors below)
+  bg [color]       Set background color. (See Colors below)
   off              Reset all attributes.
   bell             Emit a terminal bell.
   reverse          Swap foreground and background colors.
@@ -50,15 +53,20 @@ Commands:
   underline_on     Enable underline.
   underline_off    Disable underline.
 
-Pre-defined colors:
-  black, red, green, yellow, blue, purple, cyan, white,
-  bright_black, bright_red, bright_green, bright_yellow,
-  bright_blue, bright_purple, bright_cyan, bright_white
+Colors:
+
+  Pre-defined colors:
+    black, red, green, yellow, blue, purple, cyan, white,
+    bright_black, bright_red, bright_green, bright_yellow,
+    bright_blue, bright_purple, bright_cyan, bright_white
+
+  Hex colors:
+    describe hex color usage here
 
 Example usage:
-  ${0##*/} -sb fg red bg black       # Red foreground and black background for PS1 prompts
-  ${0##*/} -n fg blue off            # Blue text and reset attributes for PROMPT_COMMAND
-  ${0##*/} fg green bg yellow off    # Green text on yellow background for general display
+  ${0##*/} -sb fg red bg black # Red foreground and black background for PS1 prompts
+  ${0##*/} -n fg blue          # Blue text and reset attributes for PROMPT_COMMAND
+  ${0##*/} fg green bg yellow  # Green text on yellow background for general display
 
 You can also use any other tput command as an argument.
 To find more tput commands, refer to the tput documentation with 'man tput'.
