@@ -60,8 +60,13 @@ Colors:
     bright_black, bright_red, bright_green, bright_yellow,
     bright_blue, bright_purple, bright_cyan, bright_white
 
-  Hex colors:
-    describe hex color usage here
+  Hex colors (format: #RRGGBB):
+    You can specify colors using hexadecimal notation. For example:
+    - fg #FF5733: Sets the foreground color to a shade of orange.
+    - bg #33FF57: Sets the background color to a shade of green.
+    The hex value should be in the format #RRGGBB, where RR, GG, and BB are
+    two-digit hexadecimal numbers representing the red, green, and blue
+    components of the color, respectively.
 
 Example usage:
   ${0##*/} -sb fg red bg black # Red foreground and black background for PS1 prompts
