@@ -183,7 +183,7 @@ function _ansi() {
         ;;
 
       *) # Handle any other tput commands
-        seq=$(tput "$cmd") ;;
+        seq=$(tput $cmd) ;;
 
     esac
 
