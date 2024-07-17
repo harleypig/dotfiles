@@ -1,4 +1,6 @@
-mock_provider "google" {}
+mock_provider "google" {
+  access_token = "mock-access-token"
+}
 
 run "good_filename" {
   command = plan
