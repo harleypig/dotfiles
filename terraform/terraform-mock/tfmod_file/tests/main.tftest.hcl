@@ -1,5 +1,5 @@
 mock_provider "google" {
-  access_token = "mock-access-token"
+  credentials = file("mock_credentials.json")
 }
 
 run "good_filename" {
