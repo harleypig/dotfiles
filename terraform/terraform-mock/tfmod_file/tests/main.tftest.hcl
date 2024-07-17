@@ -17,4 +17,14 @@ run "good_filename" {
       }
     }
   }
+
+  assert {
+    condition     = (mock_resource.google_storage_bucket_object.file.bucket == "mock-bucket")
+    error_message = "Bucket name does not match"
+  }
+
+  assert {
+    condition     = (mock_resource.google_storage_bucket_object.file.name == "filename42.txt")
+    error_message = "File name does not match"
+  }
 }
