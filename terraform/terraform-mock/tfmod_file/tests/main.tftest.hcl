@@ -9,4 +9,19 @@ run "good_filename" {
       }
     }
   }
+
+  variables {
+    project_id  = "mock-project-id"
+    region      = "mock-region"
+    bucket_name = "mock-bucket-name"
+  }
+
+  mock {
+    path     = "google_storage_bucket_object.file"
+    response = {
+      id     = "mock-id"
+      bucket = "mock-bucket"
+      name   = "mock-name"
+    }
+  }
 }
