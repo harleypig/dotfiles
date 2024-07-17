@@ -1,15 +1,15 @@
-mock_provider "google" {
-  credentials = file("mock_credentials.json")
+mock_provider "google" {}
+
+mock_resource "google_storage_bucket_object" "file" {
+  id     = "mock-id"
+  bucket = "mock-bucket"
+  name   = "mock-name"
 }
 
 run "good_filename" {
   command = plan
 
   variables {
-    project_id  = "mock-project-id"
-    region      = "mock-region"
-    bucket_name = "mock-bucket-name"
-
     test_filenames = {
       "filename42.txt" = {
         filename = "filename42.txt"

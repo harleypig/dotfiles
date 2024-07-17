@@ -13,16 +13,3 @@ locals {
   }
 }
 
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-resource "google_storage_bucket_object" "file" {
-  for_each   = local.files_from_yaml
-  depends_on = [local_file.yaml_files]
-
-  bucket = var.bucket_name
-  name   = basename(each.key)
-  source = each.key
-}
