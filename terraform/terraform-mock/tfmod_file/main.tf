@@ -1,3 +1,9 @@
+locals {
+  files_from_yaml = {
+    for f in var.files_from_yaml : f["filename"] => f
+  }
+}
+
 resource "local_file" "yaml_files" {
   for_each = local.files_from_yaml
 
@@ -15,10 +21,3 @@ resource "google_storage_bucket_object" "file" {
   name   = basename(each.key)
   source = each.key
 }
-
-locals {
-  files_from_yaml = {
-    for f in var.files_from_yaml : f["filename"] => f
-  }
-}
-
