@@ -15,3 +15,18 @@ variable "files_from_yaml" {
     error_message = "All filenames must match the pattern 'filenameXXX.txt' where XXX is any number."
   }
 }
+
+variable "project_id" {
+  description = "The id of the GCP  project."
+  type        = string
+}
+
+variable "region" {
+  description = "The region of the GCP project."
+  type        = string
+}
+
+variable "bucket_name" {
+  description = "The name of the bucket."
+  type        = string
+}
