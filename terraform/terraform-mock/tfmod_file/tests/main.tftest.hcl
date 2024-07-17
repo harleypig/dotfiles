@@ -6,6 +6,14 @@ mock_resource "google_storage_bucket_object" "file" {
   name   = "mock-name"
 }
 
+mock_resource "local_file" "yaml_files" {
+  id     = "mock-id"
+  filename = "mock-filename"
+  content  = "mock-content"
+  file_permission = "mock-permission"
+  directory_permission = "mock-directory-permission"
+}
+
 run "good_filename" {
   command = plan
 
