@@ -220,5 +220,50 @@ Run `terraform init`, `terraform fmt`, and `terraform validate`. Everything shou
 
 Run `terraform test -verbose`. You should see the following output.
 
+Check the resource labeled `google_storage_bucket_object`. The values should
+match what you set in the `main.tftest.hcl` file.
+
 ```
+$ terraform test -verbose
+main.tftest.hcl... in progress
+  run "good_filename"... pass
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.test_files.google_storage_bucket_object.file["filename42.txt"] will be created
+  + resource "google_storage_bucket_object" "file" {
+      + bucket        = "mock-bucket"
+      + content       = (sensitive value)
+      + content_type  = (known after apply)
+      + crc32c        = (known after apply)
+      + id            = (known after apply)
+      + kms_key_name  = (known after apply)
+      + md5hash       = (known after apply)
+      + media_link    = (known after apply)
+      + name          = "filename42.txt"
+      + output_name   = (known after apply)
+      + self_link     = (known after apply)
+      + source        = "filename42.txt"
+      + storage_class = (known after apply)
+    }
+
+  # module.test_files.local_file.yaml_files["filename42.txt"] will be created
+  + resource "local_file" "yaml_files" {
+      + content              = "This should succeed"
+      + directory_permission = "0755"
+      + file_permission      = "0644"
+      + filename             = "filename42.txt"
+      + id                   = (known after apply)
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+main.tftest.hcl... tearing down
+main.tftest.hcl... pass
+
+Success! 1 passed, 0 failed.
 ```
