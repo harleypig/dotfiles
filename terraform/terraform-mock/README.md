@@ -1,9 +1,20 @@
-# Tests in Terraform
+# Mocking in Terraform Tests
 
-[Terraform tests](https://developer.hashicorp.com/terraform/language/tests)
-let authors validate that module configuration updates do not introduce
-breaking changes. Tests run against test-specific, short-lived resources,
-preventing any risk to your existing infrastructure or state.
+[Mocking](https://developer.hashicorp.com/terraform/language/tests/mocking)
+allow authors to test the basics of their code without actually creating
+infrastructure.
+
+Previously, we created files to test our `tfmod_file` module which creates
+files with our specified content. Our requirements have changed. Now we need
+to push those files to a bucket in GCP.
+
+Once we've made those changes, we want to test that we've written our code
+correctly, but we don't want waste resources on mistakes that can be caught
+before going to the cloud.
+
+**FIXME**
+
+We will be using the same files created in the previous tutorial.
 
 ## Warning
 
@@ -17,24 +28,44 @@ This tutorial **does not** create real infrstructure.
 There a few different ways to setup tests for terraform. This document will
 focus on how our ADO agents are configured.
 
-* Change to `tfmod_file` and create a directory called `tests`.
-  * `cd tfmod_file` and `mkdir tests`
-* Copy `versions.tf` to the `tests` directory.
-  * `cp ../versions.tf tests`
-* Change to `tests`.
-  * `cd tests`
+* Change to the `tfmod_file` directory.
+  * `cd tfmod_file`
 
-## Create `main.tf`
+variables.tf and terraform-mock/tfmod_file/variables.tf differ
+versions.tf and terraform-mock/tfmod_file/versions.tf differ
 
-Create a minimal `main.tf` that passes the data on to the module we're
-testing.
+tests/main.tf and terraform-mock/tfmod_file/tests/main.tf differ
+tests/main.tftest.hcl and terraform-mock/tfmod_file/tests/main.tftest.hcl differ
+tests/variables.tf and terraform-mock/tfmod_file/tests/variables.tf differ
+tests/versions.tf and terraform-mock/tfmod_file/tests/versions.tf differ
 
-Paste the following code into a file named `main.tf` and save it.
+### `tfmod_file/main.tf`
+
+Modify the `main.tf` file and add the resource block
 
 ```
-module "test_files" {
-  source          = "../"
-  files_from_yaml = var.test_filenames
+resource "local_file" "yaml_files" {
+  for_each = local.files_from_yaml
+
+  filename             = each.key
+  content              = each.value["content"]
+  file_permission      = each.value["file_permission"]
+  directory_permission = each.value["directory_permission"]
+}
+
+locals {
+  files_from_yaml = {
+    for f in var.files_from_yaml : f["filename"] => f
+  }
+}
+
+resource "google_storage_bucket_object" "file" {
+  for_each   = local.files_from_yaml
+  depends_on = [local_file.yaml_files]
+
+  bucket = var.bucket_name
+  name   = basename(each.key)
+  source = each.key
 }
 ```
 
