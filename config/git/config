@@ -5,8 +5,13 @@
   email = harleypig@harleypig.com
   name  = Alan Young
 
+# Cygwin Setup
+# This setup depends on Git for Windows being installed. If you have installed
+# it in a different location you'll need to adjust the path for the helper.
+#
+# Add the following section to your gitconfig.user file.
+#
 #[credential]
-#  #helper = creds-helper
 #  helper = /cygdrive/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe
 
 [include]
