@@ -28,20 +28,36 @@ This tutorial **does not** create real infrstructure.
 There a few different ways to setup tests for terraform. This document will
 focus on how our ADO agents are configured.
 
+## Changes to the module
+
+Modify the `tfmod_file` to support pushing the created files to a GCP bucket.
+
 * Change to the `tfmod_file` directory.
   * `cd tfmod_file`
 
-variables.tf and terraform-mock/tfmod_file/variables.tf differ
-versions.tf and terraform-mock/tfmod_file/versions.tf differ
+### `versions.tf`
 
-tests/main.tf and terraform-mock/tfmod_file/tests/main.tf differ
-tests/main.tftest.hcl and terraform-mock/tfmod_file/tests/main.tftest.hcl differ
-tests/variables.tf and terraform-mock/tfmod_file/tests/variables.tf differ
-tests/versions.tf and terraform-mock/tfmod_file/tests/versions.tf differ
+Modify the `versions.tf` file to include the necessary provider.
 
-### `tfmod_file/main.tf`
+```
+terraform {
+  required_version = ">=1.3.2"
+  required_providers {
+    local = {
+      source  = "hashicorp/local"
+      version = "2.2.3"
+    }
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 4.0"
+    }
+  }
+}
+```
 
-Modify the `main.tf` file and add the resource block
+### `main.tf`
+
+Modify the `main.tf` file and add the resource block below.
 
 ```
 resource "local_file" "yaml_files" {
@@ -69,13 +85,80 @@ resource "google_storage_bucket_object" "file" {
 }
 ```
 
-## Create `variables.tf`
+### `variables.tf`
 
-The variable definition is the same as the modules defintion, but we don't
-need the validation check and we'll provide default options for fields we
-won't be using in the test.
+Modify the `variables.tf` file to include the new variables `project_id`, `region`, and `bucket_name`.
 
-Paste the following code into a file named `variables.tf` and save it.
+```
+variable "files_from_yaml" {
+  description = "files in the module"
+  type = map(object({
+    filename             = string
+    content              = string
+    file_permission      = string
+    directory_permission = string
+  }))
+
+  validation {
+    condition = alltrue([
+      for filename, file in var.files_from_yaml :
+      can(regex("^filename\\d+\\.txt$", filename))
+    ])
+    error_message = "All filenames must match the pattern 'filenameXXX.txt' where XXX is any number."
+  }
+}
+
+variable "project_id" {
+  description = "The id of the GCP  project."
+  type        = string
+}
+
+variable "region" {
+  description = "The region of the GCP project."
+  type        = string
+}
+
+variable "bucket_name" {
+  description = "The name of the bucket."
+  type        = string
+}
+```
+
+## Changes to the test files
+
+Modify the `tfmod_file` test files to support pushing the created files to a GCP bucket.
+
+* Change to the tests directory
+  * `cd tests`
+
+tests/main.tf and terraform-mock/tfmod_file/tests/main.tf differ
+tests/main.tftest.hcl and terraform-mock/tfmod_file/tests/main.tftest.hcl differ
+tests/variables.tf and terraform-mock/tfmod_file/tests/variables.tf differ
+tests/versions.tf and terraform-mock/tfmod_file/tests/versions.tf differ
+
+### `versions.tf`
+
+The test versions file needs to match the modules versions file.
+
+`cp ../versions.tf .`
+
+### `main.tf`
+
+Modify the test `main.tf` file to add the `project_id`, `region`, and `bucket_name` variables.
+
+```
+module "test_files" {
+  source          = "../"
+  files_from_yaml = var.test_filenames
+  project_id      = var.project_id
+  region          = var.region
+  bucket_name     = var.bucket_name
+}
+```
+
+### `tfmod_file/variables.tf`
+
+Modify the `variables.tf` file to add the variable definitions for `project_id`, `region`, and `bucket_name`.
 
 ```
 variable "test_filenames" {
@@ -87,19 +170,40 @@ variable "test_filenames" {
     directory_permission = optional(string, "0755")
   }))
 }
+
+variable "project_id" {
+  description = "The id of the GCP  project."
+  type        = string
+}
+
+variable "region" {
+  description = "The region of the GCP project."
+  type        = string
+}
+
+variable "bucket_name" {
+  description = "The name of the bucket."
+  type        = string
+}
 ```
 
-## Create `main.tftest.hcl`
+## `main.tftest.hcl`
 
-Now we write the code that runs the test.
-
-Paste the following code into a file named `variables.tf` and save it.
+Modify the `main.tftest.hcl` file to include a mock provider and resource and mock values for the bucket.
 
 ```
+mock_provider "google" {
+  mock_resource "google_storage_bucket_object" {}
+}
+
 run "good_filename" {
   command = plan
 
   variables {
+    project_id  = "mock-id"
+    region      = "mock-region"
+    bucket_name = "mock-bucket"
+
     test_filenames = {
       "filename42.txt" = {
         filename = "filename42.txt"
@@ -112,16 +216,9 @@ run "good_filename" {
 
 ## Run the test
 
-Run `terraform init`, `terraform fmt`, `terraform validate`, and `terraform
-plan`. Everything should pass before continuing.
+Run `terraform init`, `terraform fmt`, and `terraform validate`. Everything should pass before continuing.
 
-Run `terraform test`. You should see the following output.
+Run `terraform test -verbose`. You should see the following output.
 
 ```
-main.tftest.hcl... in progress
-  run "good_filename"... pass
-main.tftest.hcl... tearing down
-main.tftest.hcl... pass
-
-Success! 1 passed, 0 failed.
 ```
