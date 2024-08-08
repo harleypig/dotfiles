@@ -36,7 +36,8 @@ tmux_winidx_circled() {
 # shellcheck disable=SC2139,SC2230
 # XXX: Detect multiple sessions and give opportunity to choose
 if which ta &> /dev/null; then
-  echo 'alias ta already exists'
+  #echo 'alias ta already exists'
+  :
 
 else
   ta() {
