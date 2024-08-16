@@ -1,6 +1,11 @@
 # shellcheck shell=bash
 
-if command -v npm &> /dev/null; then
+if command -v nvm &> /dev/null; then
+  export NVM_DIR="$XDG_CONFIG_HOME/npm"
+  [[ -s $NVM_DIR/nvm.sh ]] && source "$NVM_DIR/nvm.sh"
+  [[ -s $NVM_DIR/bash-completion ]] && source "$NVM_DIR/bash-completion"
+
+elif command -v npm &> /dev/null; then
   export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
   mkdir -p "$XDG_DATA_HOME/npm/bin"
   mkdir -p "$XDG_DATA_HOME/npm/lib/node_modules"
