@@ -14,13 +14,14 @@ pulse/**
 tree-sitter/**
 yelp/**
 
+.gsd-keyboard.settings-ported
 ansible/galaxy_token
 dconf/user
-docker/config.json
 docker/.token_seed
 docker/.token_seed.lock
-.gsd-keyboard.settings-ported
+docker/config.json
 mimeapps.list
+nvm
 packer/checkpoint_cache
 packer/checkpoint_signature
 pgcli/history
