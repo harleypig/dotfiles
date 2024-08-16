@@ -2,8 +2,8 @@
 
 #-----------------------------------------------------------------------------
 export XDG_DOTVIM="$HOME/projects/dotvim"
-
-#export VIMINIT='source $XDG_DOTVIM/.vimrc'
+export VIMINIT='source $XDG_DOTVIM/.vimrc'
+export VIMCONFIG="$XDG_DOTVIM/.vim"
 
 #command -v gvim &> /dev/null \
 #  && export GVIMINIT='let $MYGVIMRC="$XDG_DOTVIM/.gvimrc" | source $MYGVIMRC'
@@ -14,5 +14,4 @@ export XDG_DOTVIM="$HOME/projects/dotvim"
 # Setup CoC variables
 
 # Look for coc-settings.json in dotvim/.vim
-export VIMCONFIG="$XDG_DOTVIM/.vim"
 export COC_DATA_HOME="$XDG_DATA_HOME/vim"
