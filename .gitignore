@@ -10,3 +10,4 @@ gitconfig.user*
 node_modules/**
 package-lock.json
 package.json
+nvm_nodejs_org_mirror
