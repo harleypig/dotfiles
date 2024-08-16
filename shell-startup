@@ -43,7 +43,7 @@ declare -x DOTFILES="$HOME"
   && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
 
 # Export initial path settings
-export PATH="$DOTFILES/bin:$PATH"
+export PATH="$DOTFILES/bin:$HOME/.local/bin:$PATH"
 
 #-----------------------------------------------------------------------------
 # XDG Variables
