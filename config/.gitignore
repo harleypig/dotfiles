@@ -8,6 +8,7 @@ docker/buildx/**
 evolution/**
 gtk-3.0/**
 ibus/**
+nvm/**
 packer/plugins/**
 pulse/**
 tree-sitter/**
