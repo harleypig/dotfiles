@@ -153,13 +153,13 @@
 #  FG/BG: normal, black, red, green, yellow, blue, magenta, cyan and white
 #   ATTR: bold, dim, ul, blink and reverse
 
-[color]
-  branch      = auto
-  diff        = auto
-  grep        = auto
-  interactive = auto
-  showbranch  = true
-  status      = auto
+#[color]
+#  branch      = auto
+#  diff        = auto
+#  grep        = auto
+#  interactive = auto
+#  showbranch  = true
+#  status      = auto
 
 [color "branch"]
 #  FG/BG: normal, black, red, green, yellow, blue, magenta, cyan and white
@@ -168,7 +168,7 @@
   current  = green reverse
   local    = cyan
   plain    = white
-  remote   = blue
+  remote   = brightblue
   upstream = blue reverse
 
 [color "diff"]
