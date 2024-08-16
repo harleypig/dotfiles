@@ -4,6 +4,7 @@ if command -v nvm &> /dev/null; then
   export NVM_DIR="$XDG_CONFIG_HOME/npm"
   [[ -s $NVM_DIR/nvm.sh ]] && source "$NVM_DIR/nvm.sh"
   [[ -s $NVM_DIR/bash-completion ]] && source "$NVM_DIR/bash-completion"
+  [[ -s $DOTFILES/nvm_nodejs_org_mirror ]] && source "$DOTFILES/nvm_nodejs_org_mirror"
 
 elif command -v npm &> /dev/null; then
   export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
