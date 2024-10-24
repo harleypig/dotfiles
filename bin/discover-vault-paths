@@ -8,7 +8,7 @@ get_secrets() {
   local path="$1"
   local -a work
 
-  printf '%s%s%s%s\n' "$(ansi sc)" "$(ansi el)" "Looking $path ..."
+  printf '%s%s%s%s\r' "$(ansi sc)" "$(ansi el)" "Looking $path ..."
   readarray -t work < <(vault list -format="yaml" "$path")
 
   work=("${work[@]/#- /}")
