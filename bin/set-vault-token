@@ -1,35 +1,16 @@
-#!/usr/bin/expect -f
+#!/bin/bash
 
-# Ensure VAULT_ADDR is set
-if { [info exists env(VAULT_ADDR)] == 0 } {
-  puts "VAULT_ADDR is not set. Please set it and try again."
-  exit 1
-}
-
-# Ensure USER is set
-if { [info exists env(USER)] == 0 } {
-  puts "USER is not set. Please set it and try again."
-  exit 1
-}
-
-# Ensure LDAP_PASS is set
-if { [info exists env(LDAP_PASS)] == 0 } {
-  puts "LDAP_PASS is not set. Please set it and try again."
-  exit 1
-}
-
-# Authenticate with Vault using LDAP and set the VAULT_TOKEN environment variable
-spawn vault login -method=ldap username=$env(USER) -token-only
-expect "Password (will be hidden):"
-send "$env(LDAP_PASS)\r"
-expect {
-  "Success! You are now authenticated" {
-    set VAULT_TOKEN $expect_out(buffer)
-    set env(VAULT_TOKEN) $VAULT_TOKEN
-    puts "VAULT_TOKEN has been set successfully."
-  }
-  timeout {
-    puts "Failed to authenticate with Vault."
+command -v vault &> /dev/null || {
+    echo "Error: vault is required to run this script"
     exit 1
-  }
+}
+
+declare user="${1:-$USER}"
+declare -x VAULT_TOKEN
+
+VAULT_TOKEN="$(vault login -token-only -method=ldap username="$user")" || {
+    declare rc=$?
+    echo "$VAULT_TOKEN"
+    unset VAULT_TOKEN
+    return $rc
 }

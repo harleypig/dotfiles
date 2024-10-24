@@ -1,0 +1,40 @@
+#!/bin/bash
+
+declare -a paths
+
+printf '%s' "$(ansi sc)"
+
+get_secrets() {
+  local path="$1"
+  local -a work
+
+  printf '%s%s%s%s' "$(ansi sc)" "$(ansi el)" "Looking $path ..."
+  readarray -t work < <(vault list -format="yaml" "$path")
+
+  work=("${work[@]/#- /}")
+
+  for p in "${work[@]}"; do
+    newpath = "$path$p"
+
+    # The space in ": -1" is required
+    if [[ ${p: -1} == '/' ]]; then
+      get_secrets "$newpath"
+    else
+      paths+=("$newpath")
+    fi
+  done
+
+  sleep .5
+}
+
+for p in dai/ dao/; do
+  get_secrets "$p"
+done
+
+if [[ -n $1 ]]; then
+  printf '%s\n' "${paths[@]}" > "$1"
+
+else
+  printf '%s\n' "${paths[@]}"
+  printf '\nTo save paths to a file: %s filename\n' "${0##*/}"
+fi
