@@ -14,7 +14,7 @@ get_secrets() {
   work=("${work[@]/#- /}")
 
   for p in "${work[@]}"; do
-    newpath = "$path$p"
+    newpath="$path$p"
 
     # The space in ": -1" is required
     if [[ ${p: -1} == '/' ]]; then
