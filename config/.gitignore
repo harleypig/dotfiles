@@ -6,6 +6,7 @@ Code/**
 dlv/**
 docker/buildx/**
 evolution/**
+go/telemetry/**
 gtk-3.0/**
 ibus/**
 nvm/**

@@ -1,0 +1,4 @@
+filename2.txt:
+  content: "Another document"
+  permissions: 0755
+  directory_permission: 0755
