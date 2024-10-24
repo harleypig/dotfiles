@@ -4,6 +4,9 @@ coverage
 .aider.*
 !.aider.conf.yml
 
+*.swp
+*~
+
 venv
 gitconfig.user*
 
