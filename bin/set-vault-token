@@ -24,9 +24,9 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
         set exit_status [lindex $result 3]
         if {$exit_status != 0} {
             puts "Error: Vault login failed with exit status $exit_status"
+            puts -nonewline $expect_out(buffer)
             exit $exit_status
         }
-        puts -nonewline $expect_out(buffer)
       }
     }
 EOF
