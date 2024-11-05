@@ -20,12 +20,7 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
       }
       "Success! You are now authenticated" {
         log_user 1
-      "Success! You are now authenticated" {
-        set VAULT_TOKEN $expect_out(buffer)
-        set env(VAULT_TOKEN) $VAULT_TOKEN
-      }
-      timeout {
-        exit 1
+        puts $expect_out(buffer)
       }
     }
 EOF
