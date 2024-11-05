@@ -10,10 +10,13 @@ declare -x VAULT_TOKEN
 
 if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
     expect <<EOF
+    log_user 0
     spawn vault login -token-only -method=ldap username=$user
     expect "Password (will be hidden):"
     send "$LDAP_PASS\r"
     expect {
+      "Success! You are now authenticated" {
+        log_user 1
       "Success! You are now authenticated" {
         set VAULT_TOKEN $expect_out(buffer)
         set env(VAULT_TOKEN) $VAULT_TOKEN
