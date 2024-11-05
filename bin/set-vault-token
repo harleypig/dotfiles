@@ -9,7 +9,7 @@ declare user="${1:-$USER}"
 declare -x VAULT_TOKEN
 
 # Check if 'expect' is available and 'LDAP_PASS' is set
-if command -v expect &> /dev/null && [ -n "$LDAP_PASS" ]; then
+if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
     # Use expect script logic
     expect <<EOF
     spawn vault login -method=ldap username=$user -token-only
