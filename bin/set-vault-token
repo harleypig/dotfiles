@@ -8,9 +8,7 @@ command -v vault &> /dev/null || {
 declare user="${1:-$USER}"
 declare -x VAULT_TOKEN
 
-# Check if 'expect' is available and 'LDAP_PASS' is set
 if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
-    # Use expect script logic
     expect <<EOF
     spawn vault login -method=ldap username=$user -token-only
     expect "Password (will be hidden):"
@@ -19,7 +17,6 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
       "Success! You are now authenticated" {
         set VAULT_TOKEN $expect_out(buffer)
         set env(VAULT_TOKEN) $VAULT_TOKEN
-        puts "VAULT_TOKEN has been set successfully."
       }
       timeout {
         puts "Failed to authenticate with Vault."
@@ -28,7 +25,6 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
     }
 EOF
 else
-    # Use existing logic to query the user for their password
     VAULT_TOKEN="$(vault login -token-only -method=ldap username="$user")" || {
         declare rc=$?
         echo "$VAULT_TOKEN"
