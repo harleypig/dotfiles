@@ -17,6 +17,7 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
       "Success! You are now authenticated" {
         set VAULT_TOKEN $expect_out(buffer)
         set env(VAULT_TOKEN) $VAULT_TOKEN
+        log_user 0
       }
       timeout {
         puts "Failed to authenticate with Vault."
