@@ -9,7 +9,7 @@ declare user="${1:-$USER}"
 declare -x VAULT_TOKEN
 
 if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
-    expect <<EOF
+    VAULT_TOKEN=$(expect <<EOF
     set timeout 10
     log_user 0
     spawn vault login -token-only -method=ldap username=$user
@@ -20,10 +20,11 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
       }
       "Success! You are now authenticated" {
         log_user 1
-        puts $expect_out(buffer)
+        puts -nonewline $expect_out(buffer)
       }
     }
 EOF
+    )
 else
     VAULT_TOKEN="$(vault login -token-only -method=ldap username="$user")" || {
         declare rc=$?
