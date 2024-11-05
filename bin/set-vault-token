@@ -10,6 +10,7 @@ declare -x VAULT_TOKEN
 
 if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
     expect <<EOF
+    set timeout 10
     log_user 0
     spawn vault login -token-only -method=ldap username=$user
     expect "Password (will be hidden):"
@@ -22,7 +23,6 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
         set env(VAULT_TOKEN) $VAULT_TOKEN
       }
       timeout {
-        puts "Failed to authenticate with Vault."
         exit 1
       }
     }
