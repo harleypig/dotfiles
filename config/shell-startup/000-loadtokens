@@ -23,7 +23,7 @@ if command -v vault &> /dev/null; then
 
   [[ -r $private_dotfiles/pass.ldap ]] && {
     export LDAP_PASS="$(<$private_dotfiles/pass.ldap)"
-    source set-vault-token
+    #source set-vault-token
   }
 fi
 
