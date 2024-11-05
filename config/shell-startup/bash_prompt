@@ -55,15 +55,16 @@ function _parent() {
 
   parents=${parents/%-+*/}
   parents=${parents//---bash/}
-  parents=${parents//gnome-terminal-/}
-  parents=${parents//login/}
   parents=${parents//---pstree/}
   parents=${parents//: server/}
+  parents=${parents//gnome-terminal-/}
+  parents=${parents//login/}
+  parents=${parents//node/}
+  parents=${parents//poetry/}
   parents=${parents//sshd/}
   parents=${parents//su/}
-  parents=${parents//tmux/}
   parents=${parents//tilix/}
-  parents=${parents//poetry/}
+  parents=${parents//tmux/}
 
   [[ -n $parents ]] \
     && printf '\[%s\](%s)\[%s\] ' \

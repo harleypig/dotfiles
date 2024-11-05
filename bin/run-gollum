@@ -8,6 +8,6 @@ declare -a gopts
 gopts+=('--port' "${GOLLUM_PORT:-6000}")
 gopts+=('--page-file-dir' "${GOLLUM_PAGES:-pages}")
 
-repo="$HOME/projects/sites/wiki.harleypig.com"
+repo="$PROJECTS_DIR/sites/wiki.harleypig.com"
 
 $gollum "${gopts[@]}" "$repo"

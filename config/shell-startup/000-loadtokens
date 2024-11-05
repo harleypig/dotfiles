@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 
-private_dotfiles="$HOME/projects/private_dotfiles"
+private_dotfiles="$PROJECTS_DIR/private_dotfiles"
 
 #-----------------------------------------------------------------------------
 [[ -r $private_dotfiles/api-key.azure ]] \

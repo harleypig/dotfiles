@@ -10,6 +10,6 @@ $HOME/go/bin
 $HOME/.dotnet/tools
 $HOME/Dropbox/bin
 $HOME/videos/bin
-$HOME/projects/depot_tools
-$HOME/projects/android-sdk/tools
-$HOME/projects/android-sdk/platform-tools
+$PROJECTS_DIR/depot_tools
+$PROJECTS_DIR/android-sdk/tools
+$PROJECTS_DIR/android-sdk/platform-tools

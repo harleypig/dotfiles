@@ -4,7 +4,7 @@
 # Settings
 
 azure_url_pattern="dev.azure.com"
-projects_path="$HOME/projects"
+projects_path="$PROJECTS_DIR"
 clone_path=
 no_pull=0
 no_clone=0

@@ -10,17 +10,17 @@
 # Use the command 'task show' to see all defaults and overrides
 
 # Files
-data.location=$HOME/projects/private_dotfiles/.task
+data.location=$PROJECTS_DIR/private_dotfiles/.task
 
-#include $HOME/projects/private_dotfiles/.task/include/bugwarrior.config
-include $HOME/projects/private_dotfiles/.task/include/general.config
-include $HOME/projects/private_dotfiles/.task/include/generated_reports.config
-include $HOME/projects/private_dotfiles/.task/include/incubate.config
-#include $HOME/projects/private_dotfiles/.task/include/sched.config
-#include $HOME/projects/private_dotfiles/.task/include/taskd.config
-include $HOME/projects/private_dotfiles/.task/include/theme.config
-include $HOME/projects/private_dotfiles/.task/include/timew.config
-#include $HOME/projects/private_dotfiles/.task/include/intheam.config
+#include $PROJECTS_DIR/private_dotfiles/.task/include/bugwarrior.config
+include $PROJECTS_DIR/private_dotfiles/.task/include/general.config
+include $PROJECTS_DIR/private_dotfiles/.task/include/generated_reports.config
+include $PROJECTS_DIR/private_dotfiles/.task/include/incubate.config
+#include $PROJECTS_DIR/private_dotfiles/.task/include/sched.config
+#include $PROJECTS_DIR/private_dotfiles/.task/include/taskd.config
+include $PROJECTS_DIR/private_dotfiles/.task/include/theme.config
+include $PROJECTS_DIR/private_dotfiles/.task/include/timew.config
+#include $PROJECTS_DIR/private_dotfiles/.task/include/intheam.config
 
 context.work=+work
 context.personal=+personal

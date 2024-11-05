@@ -39,8 +39,12 @@ unsetfuncs() { _unset_funcs+=("$@"); }
 # as the dotfiles directory.
 
 declare -x DOTFILES="$HOME"
-[[ -L ${BASH_SOURCE[0]} ]] \
-  && DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
+declare -x PROJECTS_DIR="$HOME/projects"
+
+[[ -L ${BASH_SOURCE[0]} ]] && {
+  DOTFILES=$(dirname "$(readlink -nf "${BASH_SOURCE[0]}")")
+  PROJECTS_DIR="${DOTFILES%/*}"
+}
 
 # Export initial path settings
 export PATH="$DOTFILES/bin:$HOME/.local/bin:$PATH"

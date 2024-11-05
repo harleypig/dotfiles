@@ -1,3 +1,3 @@
 $DOTFILES/dot-general/.bash_logout
-$HOME/projects/dotvim_new/.vim
-$HOME/projects/dotvim_new/.vimrc
+$PROJECTS_DIR/dotvim_new/.vim
+$PROJECTS_DIR/dotvim_new/.vimrc
