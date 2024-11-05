@@ -1,6 +1,11 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
+    "ghcr.io/jpawlowski/devcontainer-features/codespaces-dotfiles:1": {
+      "repository": "https://github.com/harleypig/dotfiles",
+      "targetPath": "~/projects",
+      "installCommand": "/bin/bash .devcontainer/setup.sh"
+    }
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": false,
       "installOhMyZsh": false,
@@ -18,9 +23,5 @@
       "package": "aider-chat"
     },
     "ghcr.io/devcontainers/features/git": {},
-    "ghcr.io/jpawlowski/devcontainer-features/codespaces-dotfiles:1": {
-      "repository": "https://github.com/harleypig/dotfiles",
-      "installCommand": "/bin/bash .devcontainer/setup.sh"
-    }
   }
 }
