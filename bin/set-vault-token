@@ -25,7 +25,8 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
     }
 EOF
     )
-    echo ">>>$VAULT_TOKEN<<<"
+    exec 3>&-
+    echo ">>>$VAULT_TOKEN<<<" >&2
 else
     VAULT_TOKEN="$(vault login -token-only -method=ldap username="$user")" || {
         declare rc=$?
