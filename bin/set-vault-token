@@ -13,9 +13,11 @@ if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
     set timeout 10
     log_user 0
     spawn vault login -token-only -method=ldap username=$user
-    expect "Password (will be hidden):"
-    send "$LDAP_PASS\r"
     expect {
+      "Password (will be hidden):" {
+        send "$LDAP_PASS\r"
+        exp_continue
+      }
       "Success! You are now authenticated" {
         log_user 1
       "Success! You are now authenticated" {
