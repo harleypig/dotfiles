@@ -8,36 +8,36 @@ command -v vault &> /dev/null || {
 declare user="${1:-$USER}"
 declare -x VAULT_TOKEN
 
-if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
-    VAULT_TOKEN=$(expect <<EOF
-    set timeout 10
-    log_user 0
-    spawn vault login -token-only -method=ldap username=$user
-    expect {
-      "Password (will be hidden):" {
-        send "$LDAP_PASS\r"
-        exp_continue
-      }
-      eof {
-        log_user 1
-        catch wait result
-        set exit_status [lindex $result 3]
-        if {$exit_status != 0} {
-            puts "Error: Vault login failed with exit status $exit_status"
-            puts -nonewline $expect_out(buffer)
-            exit $exit_status
-        }
-      }
-    }
-EOF
-    )
+# if command -v expect &> /dev/null && [[ -n $LDAP_PASS ]]; then
+#     VAULT_TOKEN=$(expect <<EOF
+#     set timeout 10
+#     log_user 0
+#     spawn vault login -token-only -method=ldap username=$user
+#     expect {
+#       "Password (will be hidden):" {
+#         send "$LDAP_PASS\r"
+#         exp_continue
+#       }
+#       eof {
+#         log_user 1
+#         catch wait result
+#         set exit_status [lindex $result 3]
+#         if {$exit_status != 0} {
+#             puts "Error: Vault login failed with exit status $exit_status"
+#             puts -nonewline $expect_out(buffer)
+#             exit $exit_status
+#         }
+#       }
+#     }
+# EOF
+#     )
 
-    echo ">>>$VAULT_TOKEN<<<" >&2
-else
+#     echo ">>>$VAULT_TOKEN<<<" >&2
+# else
     VAULT_TOKEN="$(vault login -token-only -method=ldap username="$user")" || {
         declare rc=$?
         echo "$VAULT_TOKEN"
         unset VAULT_TOKEN
         return $rc
     }
-fi
+#fi
