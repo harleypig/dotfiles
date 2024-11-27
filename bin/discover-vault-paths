@@ -1,9 +1,22 @@
 #!/bin/bash
 
+#-----------------------------------------------------------------------------
+[[ -n $VAULT_TOKEN ]] || {
+  cat <<EOT
+Vault token is not set. Set that by running the following command
+and entering your LDAP password:
+
+source set-vault-token
+EOT
+
+  exit 1
+}
+
+#-----------------------------------------------------------------------------
+declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
 declare -a paths
 
-printf '%s' "$(ansi sc)"
-
+#-----------------------------------------------------------------------------
 get_secrets() {
   local path="$1"
   local -a work
@@ -27,14 +40,10 @@ get_secrets() {
   sleep .5
 }
 
+#-----------------------------------------------------------------------------
 for p in dai/ dao/; do
   get_secrets "$p"
 done
 
-if [[ -n $1 ]]; then
-  printf '%s\n' "${paths[@]}" > "$1"
-
-else
-  printf '%s\n' "${paths[@]}"
-  printf '\nTo save paths to a file: %s filename\n' "${0##*/}"
-fi
+printf '%s\n' "${paths[@]}" > "$vaultpaths"
+printf '\nVault paths saved to %s\n' "$vaultpaths"

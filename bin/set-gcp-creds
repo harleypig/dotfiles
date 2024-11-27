@@ -1,0 +1,47 @@
+#!/bin/bash
+
+#-----------------------------------------------------------------------------
+[[ -n $VAULT_TOKEN ]] || {
+  cat <<EOT
+Vault token is not set. Set that by running the following command
+and entering your LDAP password:
+
+source set-vault-token
+EOT
+
+  exit 1
+}
+
+#-----------------------------------------------------------------------------
+declare credspath credsfile vaultpaths scname scpath
+
+credspath="$XDG_CACHE_HOME/gcp-creds"
+mkdir -p "$credspath" || {
+  echo "Can't access $credspath"
+  exit 1
+}
+
+vaultpaths="$XDG_CACHE_HOME/vault-paths"
+
+#-----------------------------------------------------------------------------
+if [[ -n $1 ]]; then
+  scpath="$(grep "$1" "$vaultpaths")"
+  credsfile="$credspath/$scpath.json"
+
+else
+  scname="$(grep -ri "^[^#]*tfServiceConnectionName:[[:space:]]*[\"']sandbox" azure-pipelines.yml \
+    | cut -d ':' -f 2 | tr -d '[:space:]"'\''')"
+
+  scname="${scname#sandbox-cloud-}"
+
+  scpath="$(grep "$scname" "$vaultpaths")"
+  credsfile="$credspath/sandbox-$scname.json"
+fi
+
+#-----------------------------------------------------------------------------
+vault read -format=json "$scpath" \
+  | jq -r '.data["creds.json"]' \
+  | base64 -d \
+  | jq -S '.' > "$credsfile"
+
+export GOOGLE_APPLICATION_CREDENTIALS="$credsfile"
