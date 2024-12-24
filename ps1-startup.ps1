@@ -29,6 +29,4 @@ if (Test-Path -Path $apiKeyFile) {
     }
 }
 
-# Remove these variables in one command AI!
-Remove-Variable -Name scriptPath
-Remove-Variable -Name private_dotfiles
+Remove-Variable -Name scriptPath, private_dotfiles
