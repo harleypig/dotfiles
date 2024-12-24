@@ -1,5 +1,6 @@
 # Declare and initialize variables
 $scriptPath = $MyInvocation.MyCommand.Path
+# Change all occurrences of dotfiles and projects_dir to be environment variables. AI!
 $DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
 $PROJECTS_DIR = Split-Path -Parent $DOTFILES
 
