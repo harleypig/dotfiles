@@ -9,8 +9,7 @@ $PROJECTS_DIR = $env:PROJECTS_DIR
 
 # Update the PATH environment variable
 $env:PATH = "$env:DOTFILES\bin;$HOME\.local\bin;$env:PATH"
-# Convert the following bash alias to a powershell alias AI!
-alias dumppath='echo -e ${PATH//:/\\n}'
+Set-Alias -Name dumppath -Value { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
 
 # Private dotfiles variable (local to this script)
 $private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
