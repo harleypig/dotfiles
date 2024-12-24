@@ -1,8 +1,11 @@
 # Declare and initialize variables
 $scriptPath = $MyInvocation.MyCommand.Path
-# Set separate DOTFILES and PROJECTS_DIR powershell variables based on the equivalent environment variables. Don't replace existing setting AI!
-$env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
-$env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
+if (-not $env:DOTFILES) {
+    $env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
+}
+if (-not $env:PROJECTS_DIR) {
+    $env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
+}
 $env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
 $env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
 
