@@ -1,4 +1,5 @@
 # Declare and initialize variables
+# unset scriptPath at end of script AI!
 $scriptPath = $MyInvocation.MyCommand.Path
 $DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
 $PROJECTS_DIR = Split-Path -Parent $DOTFILES
@@ -12,7 +13,7 @@ $private_dotfiles = Join-Path $PROJECTS_DIR "private_dotfiles"
 # Check if the OpenAI API key file exists and is readable
 $apiKeyFile = Join-Path $private_dotfiles "api-key.openai"
 if (Test-Path -Path $apiKeyFile) {
-    $OPENAI_API_KEY = (Get-Content -Path $apiKeyFile -Raw).TrimEnd()
+    $env:OPENAI_API_KEY = (Get-Content -Path $apiKeyFile -Raw).TrimEnd()
 
     # Check if the 'aider' command is available
     if (Get-Command aider -ErrorAction SilentlyContinue) {
