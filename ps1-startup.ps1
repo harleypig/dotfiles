@@ -1,5 +1,4 @@
 # Declare and initialize variables
-# unset scriptPath at end of script AI!
 $scriptPath = $MyInvocation.MyCommand.Path
 $DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
 $PROJECTS_DIR = Split-Path -Parent $DOTFILES
@@ -25,3 +24,5 @@ if (Test-Path -Path $apiKeyFile) {
         $env:AIDER_WATCH_FILES = $true
     }
 }
+
+Remove-Variable -Name scriptPath
