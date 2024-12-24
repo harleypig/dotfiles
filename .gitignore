@@ -1,7 +1,9 @@
 # coverage?
 coverage
 
-.aider.*
+#.aider.*
+.aider*
+.env
 !.aider.conf.yml
 
 *.swp
