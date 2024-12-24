@@ -11,8 +11,8 @@ $PROJECTS_DIR = $env:PROJECTS_DIR
 $env:PATH = "$env:DOTFILES\bin;$HOME\.local\bin;$env:PATH"
 
 # Private dotfiles variable (local to this script)
-# Unset private_dotfiles at end of script. AI!
 $private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
+Remove-Variable -Name private_dotfiles
 
 # Check if the OpenAI API key file exists and is readable
 $apiKeyFile = Join-Path $private_dotfiles "api-key.openai"
