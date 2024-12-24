@@ -1,14 +1,13 @@
 # Declare and initialize variables
 $scriptPath = $MyInvocation.MyCommand.Path
-# Change all occurrences of dotfiles and projects_dir to be environment variables. AI!
-$DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
-$PROJECTS_DIR = Split-Path -Parent $DOTFILES
+$env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
+$env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
 
 # Update the PATH environment variable
-$PATH = "$DOTFILES\bin;$HOME\.local\bin;$PATH"
+$PATH = "$env:DOTFILES\bin;$HOME\.local\bin;$PATH"
 
 # Private dotfiles variable (local to this script)
-$private_dotfiles = Join-Path $PROJECTS_DIR "private_dotfiles"
+$private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
 
 # Check if the OpenAI API key file exists and is readable
 $apiKeyFile = Join-Path $private_dotfiles "api-key.openai"
