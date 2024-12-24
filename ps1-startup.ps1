@@ -1,4 +1,4 @@
-# Declare and initialize variables
+# Declare and initialize variables, make some of them dual purpose
 $scriptPath = $MyInvocation.MyCommand.Path
 
 $env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
@@ -9,6 +9,8 @@ $PROJECTS_DIR = $env:PROJECTS_DIR
 
 # Update the PATH environment variable
 $env:PATH = "$env:DOTFILES\bin;$HOME\.local\bin;$env:PATH"
+# Convert the following bash alias to a powershell alias AI!
+alias dumppath='echo -e ${PATH//:/\\n}'
 
 # Private dotfiles variable (local to this script)
 $private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
