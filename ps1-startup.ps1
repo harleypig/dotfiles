@@ -12,7 +12,6 @@ $env:PATH = "$env:DOTFILES\bin;$HOME\.local\bin;$env:PATH"
 function dumppath {
     $env:PATH -split ';' | ForEach-Object { Write-Output $_ }
 }
-Set-Alias -Name dumppath -Value dumppath
 
 # Private dotfiles variable (local to this script)
 $private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
