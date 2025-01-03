@@ -8,8 +8,6 @@ $env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
 $PROJECTS_DIR = $env:PROJECTS_DIR
 
 #-----------------------------------------------------------------------------
-# Convert this load_files function to powershell please, AI?
-
 function Load-Files {
     # Define the directories to load files from
     $loadDirs = @(
@@ -17,7 +15,8 @@ function Load-Files {
         Join-Path $HOME ".psshell_startup.d"
     )
 
-    # Iterate over each directory
+    # Please fix this comment to be more readable, AI!
+    # Iterate over each directory rather than all files at once because we want to load these files in the order of the directories.
     foreach ($loadDir in $loadDirs) {
         if (Test-Path -Path $loadDir) {
             # Get all files in the directory, excluding those with '_inactive' in their names
