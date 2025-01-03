@@ -36,7 +36,9 @@ function Load-Files {
 Load-Files
 
 # Update the PATH environment variable
-$env:PATH = "$env:DOTFILES\powershell\bin;$HOME\.local\bin;$env:PATH"
+$env:PATH = "$env:DOTFILES\powershell\bin;" `
+            + "$HOME\.local\bin;" `
+            + "$env:PATH"
 function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
 
 # Private dotfiles variable (local to this script)
