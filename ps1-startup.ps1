@@ -1,4 +1,4 @@
-# Declare and initialize variables, make some of them dual purpose
+# Declare and initialize variables, making some of them dual purpose
 $scriptPath = $MyInvocation.MyCommand.Path
 
 $env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
@@ -15,10 +15,12 @@ function Load-Files {
         Join-Path $HOME ".psshell_startup.d"
     )
 
-    # Iterate over each directory separately to ensure files are loaded in the order of the directories.
+    # Iterate over each directory separately to ensure files are loaded in
+    # the order of the directories.
     foreach ($loadDir in $loadDirs) {
         if (Test-Path -Path $loadDir) {
-            # Get all files in the directory, excluding those with '_inactive' in their names
+            # Get all files in the directory, excluding those with '_inactive'
+            # in their names
             $loadFiles = Get-ChildItem -Path $loadDir -File `
                          | Where-Object { $_.Name -notmatch '_inactive' } `
                          | Sort-Object Name
@@ -43,7 +45,7 @@ $env:PATH = "$env:DOTFILES\powershell\bin;" `
             + "$env:PATH"
 function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
 
-# Private dotfiles variable (local to this script)
+# Private dotfiles variable, local to this script
 $private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
 
 # Check if the OpenAI API key file exists and is readable
