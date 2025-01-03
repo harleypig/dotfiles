@@ -63,6 +63,9 @@ if (Test-Path -Path $apiKeyFile) {
 
 Remove-Variable -Name scriptPath, private_dotfiles
 
+# Remove the Load-Files function from the environment
+Remove-Item -Path Function:Load-Files
+
 # Depends on PSReadline
 # export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
 
