@@ -10,25 +10,32 @@ $PROJECTS_DIR = $env:PROJECTS_DIR
 #-----------------------------------------------------------------------------
 # Convert this load_files function to powershell please, AI?
 
-load_files() {
-  declare -a load_dirs
-  load_dirs+=("$DOTFILES/powershell/psshell-startup")
-  load_dirs+=("$HOME/.psshell_startup.d")
+function Load-Files {
+    # Define the directories to load files from
+    $loadDirs = @(
+        Join-Path $env:DOTFILES "powershell/psshell-startup"
+        Join-Path $HOME ".psshell_startup.d"
+    )
 
-  # Run each directory instead of doing a find on all directories at once
-  # because we want these files loaded in this particular order.
+    # Iterate over each directory
+    foreach ($loadDir in $loadDirs) {
+        if (Test-Path -Path $loadDir) {
+            # Get all files in the directory, excluding those with '_inactive' in their names
+            $loadFiles = Get-ChildItem -Path $loadDir -File | Where-Object { $_.Name -notmatch '_inactive' } | Sort-Object Name
 
-  for load_dir in "${load_dirs[@]}"; do
-    [[ -d $load_dir ]] || continue
-
-    readarray -t load_files < <(/usr/bin/find "$load_dir" -type f -not -iname '*_inactive' | /usr/bin/sort)
-
-    for f in "${load_files[@]}"; do
-      # shellcheck disable=SC1090
-      [[ -r $f ]] && source "$f"
-    done
-  done
+            # Source each file
+            foreach ($file in $loadFiles) {
+                if (Test-Path -Path $file.FullName -PathType Leaf) {
+                    # Execute the file
+                    . $file.FullName
+                }
+            }
+        }
+    }
 }
+
+# Call the function to load the files
+Load-Files
 
 # Update the PATH environment variable
 $env:PATH = "$env:DOTFILES\powershell\bin;$HOME\.local\bin;$env:PATH"
