@@ -7,6 +7,29 @@ $DOTFILES = $env:DOTFILES
 $env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
 $PROJECTS_DIR = $env:PROJECTS_DIR
 
+#-----------------------------------------------------------------------------
+# Convert this load_files function to powershell please, AI?
+
+load_files() {
+  declare -a load_dirs
+  load_dirs+=("$DOTFILES/powershell/psshell-startup")
+  load_dirs+=("$HOME/.psshell_startup.d")
+
+  # Run each directory instead of doing a find on all directories at once
+  # because we want these files loaded in this particular order.
+
+  for load_dir in "${load_dirs[@]}"; do
+    [[ -d $load_dir ]] || continue
+
+    readarray -t load_files < <(/usr/bin/find "$load_dir" -type f -not -iname '*_inactive' | /usr/bin/sort)
+
+    for f in "${load_files[@]}"; do
+      # shellcheck disable=SC1090
+      [[ -r $f ]] && source "$f"
+    done
+  done
+}
+
 # Update the PATH environment variable
 $env:PATH = "$env:DOTFILES\powershell\bin;$HOME\.local\bin;$env:PATH"
 function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
@@ -32,3 +55,8 @@ if (Test-Path -Path $apiKeyFile) {
 }
 
 Remove-Variable -Name scriptPath, private_dotfiles
+
+# Depends on PSReadline
+# export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
+
+# export EDITOR=code
