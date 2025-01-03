@@ -19,7 +19,9 @@ function Load-Files {
     foreach ($loadDir in $loadDirs) {
         if (Test-Path -Path $loadDir) {
             # Get all files in the directory, excluding those with '_inactive' in their names
-            $loadFiles = Get-ChildItem -Path $loadDir -File | Where-Object { $_.Name -notmatch '_inactive' } | Sort-Object Name
+            $loadFiles = Get-ChildItem -Path $loadDir -File `
+                         | Where-Object { $_.Name -notmatch '_inactive' } `
+                         | Sort-Object Name
 
             # Source each file
             foreach ($file in $loadFiles) {
