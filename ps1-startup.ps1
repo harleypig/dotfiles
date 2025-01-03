@@ -15,8 +15,7 @@ function Load-Files {
         Join-Path $HOME ".psshell_startup.d"
     )
 
-    # Please fix this comment to be more readable, AI!
-    # Iterate over each directory rather than all files at once because we want to load these files in the order of the directories.
+    # Iterate over each directory separately to ensure files are loaded in the order of the directories.
     foreach ($loadDir in $loadDirs) {
         if (Test-Path -Path $loadDir) {
             # Get all files in the directory, excluding those with '_inactive' in their names
