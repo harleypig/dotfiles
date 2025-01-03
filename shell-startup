@@ -120,6 +120,7 @@ run_hook() {
     debug "hook not readable: $hook"
     return 1
   }
+  # shellcheck disable=SC1090
   source "$hook" || {
     debug "hook failed: $hook"
     return 1
