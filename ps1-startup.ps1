@@ -8,7 +8,7 @@ $env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
 $PROJECTS_DIR = $env:PROJECTS_DIR
 
 # Update the PATH environment variable
-$env:PATH = "$env:DOTFILES\bin;$HOME\.local\bin;$env:PATH"
+$env:PATH = "$env:DOTFILES\powershell\bin;$HOME\.local\bin;$env:PATH"
 function dumppath {
     $env:PATH -split ';' | ForEach-Object { Write-Output $_ }
 }
@@ -27,6 +27,7 @@ if (Test-Path -Path $apiKeyFile) {
         $env:AIDER_EDITOR = "code"
         $env:AIDER_GITIGNORE = $false
         $env:AIDER_MAP_TOKENS = 2048
+        $env:AIDER_SHOW_RELEASE_NOTES = $true
         $env:AIDER_VIM = $true
         $env:AIDER_WATCH_FILES = $true
     }
