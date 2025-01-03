@@ -9,9 +9,7 @@ $PROJECTS_DIR = $env:PROJECTS_DIR
 
 # Update the PATH environment variable
 $env:PATH = "$env:DOTFILES\powershell\bin;$HOME\.local\bin;$env:PATH"
-function dumppath {
-    $env:PATH -split ';' | ForEach-Object { Write-Output $_ }
-}
+function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
 
 # Private dotfiles variable (local to this script)
 $private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
