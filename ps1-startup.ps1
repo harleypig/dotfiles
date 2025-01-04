@@ -35,12 +35,16 @@ function Load-Files {
 # Call the function to load the files
 Load-Files
 
-# Update the PATH environment variable
+# We want this to be after all the other files are loaded because these paths
+# take precedence.
 $env:PATH = "$env:DOTFILES\powershell\bin;" `
             + "$HOME\.local\bin;" `
             + "$env:PATH"
+
+# TBD: move to a file found by Load-Files
 function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
 
+# TBD: move to `000-loadtokens` in psshell-startup
 # Private dotfiles variable, local to this script
 $private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
 
@@ -61,10 +65,12 @@ if (Test-Path -Path $apiKeyFile) {
     }
 }
 
+# Remove work or scratch variables and functions from the environment
 Remove-Variable -Name scriptPath, private_dotfiles
-
-# Remove the Load-Files function from the environment
 Remove-Item -Path Function:Load-Files
+
+#-----------------------------------------------------------------------------
+# TBD:
 
 # Depends on PSReadline
 # export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
