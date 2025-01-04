@@ -8,7 +8,7 @@ $env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
 $PROJECTS_DIR = $env:PROJECTS_DIR
 
 #-----------------------------------------------------------------------------
-function Load-Files { # please fix this unapproved verbe, AI!
+function Import-Files {
     # Define the directories to load files from
     $loadDirs = @(
         Join-Path $env:DOTFILES "powershell/psshell-startup"
@@ -33,7 +33,7 @@ function Load-Files { # please fix this unapproved verbe, AI!
 }
 
 # Call the function to load the files
-Load-Files
+Import-Files
 
 # We want this to be after all the other files are loaded because these paths
 # take precedence.
@@ -67,7 +67,7 @@ if (Test-Path -Path $apiKeyFile) {
 
 # Remove work or scratch variables and functions from the environment
 Remove-Variable -Name scriptPath, private_dotfiles
-Remove-Item -Path Function:Load-Files
+Remove-Item -Path Function:Import-Files
 
 #-----------------------------------------------------------------------------
 # TBD:
