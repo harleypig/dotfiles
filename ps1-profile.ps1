@@ -21,6 +21,17 @@
     - On Linux/macOS, make the script executable using `chmod +x`.
 #>
 
+# Check for help parameters
+param (
+    [switch]$h,
+    [switch]$help
+)
+
+if ($h -or $help) {
+    Get-Help -Name $MyInvocation.MyCommand.Path
+    exit 0
+}
+
 # Get the current directory
 $currentDir = Get-Location
 
