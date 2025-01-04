@@ -114,12 +114,14 @@ unsetfuncs 'addpath'
 # XXX: Does this actually work?
 
 run_hook() {
+  # shellcheck disable=SC2154
   local hook="$dfdir/$1"
   debug "running hook: $hook"
   [[ -r $hook ]] || {
     debug "hook not readable: $hook"
     return 1
   }
+
   # shellcheck disable=SC1090
   source "$hook" || {
     debug "hook failed: $hook"
