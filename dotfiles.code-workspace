@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../private_dotfiles"
+		},
+		{
+			"path": "../dotvim"
+		}
+	],
+	"settings": {
+		"powershell.cwd": "dotfiles"
+	}
+}
