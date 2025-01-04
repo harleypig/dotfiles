@@ -8,7 +8,7 @@ $env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
 $PROJECTS_DIR = $env:PROJECTS_DIR
 
 #-----------------------------------------------------------------------------
-function Load-Files {
+function Load-Files { # please fix this unapproved verbe, AI!
     # Define the directories to load files from
     $loadDirs = @(
         Join-Path $env:DOTFILES "powershell/psshell-startup"
