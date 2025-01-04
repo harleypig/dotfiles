@@ -59,7 +59,6 @@ if (Test-Path -Path $apiKeyFile) {
         $env:AIDER_EDITOR = "code"
         $env:AIDER_GITIGNORE = $false
         $env:AIDER_MAP_TOKENS = 2048
-        $env:AIDER_SHOW_RELEASE_NOTES = $true
         $env:AIDER_VIM = $true
         $env:AIDER_WATCH_FILES = $true
     }
