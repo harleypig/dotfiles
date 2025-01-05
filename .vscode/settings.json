@@ -21,3 +21,11 @@
     // File Management
     "files.autoSave": "afterDelay"
 }
+
+set   clipboard+=unnamed
+set   encoding=utf-8
+set   history=1000
+set   listchars=tab:\ \ 
+set   matchpairs+=<:>
+set   mouse=
+set   path=.,$HOME
