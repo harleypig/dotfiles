@@ -42,7 +42,8 @@
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
 
-    // AI conversion rules for Vim 'set' commands:
+    // VSCode does not have a direct equivalent for Vim's 'leader' character.
+    // Consider customizing keybindings in keybindings.json for similar functionality.
     // # Use only the vim settings commented in this file.
     // 1. Avoid adding duplicate settings.
     // 2. Place each setting in the appropriate section of the settings file.
