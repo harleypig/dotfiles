@@ -1,4 +1,10 @@
 {
+    // Note: Some vim `formatoptions` flags are not directly supported in
+    // VSCode.
+    // 't', 'c', 'r', 'o' are partially supported with formatOnType and
+    //  wordWrap settings.
+    // 'q', '1' are not directly supported.
+
     // Terminal
     "terminal.integrated.cwd": "${workspaceFolder}",
 
@@ -51,13 +57,6 @@
     //    alternatives or workarounds for the 'set' line.
     // 6. Retain these instructions for future reference.
 
-    // Note: Some `formatoptions` flags are not directly supported in VSCode.
-    // 't', 'c', 'r', 'o' are partially supported with formatOnType and
-    //  wordWrap settings.
-    // 'q', '1' are not directly supported.
-
 // set nocopyindent
-    // set   t_te= and set t_ti= have no direct equivalent in VSCode.
-    // These are terminal control sequences specific to Vim.
 
 }
