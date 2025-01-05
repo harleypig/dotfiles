@@ -5,3 +5,15 @@
     "editor.rulers": [78],
     "editor.autoIndent": "full"
 }
+
+set   autoread
+set nocursorline
+set   expandtab
+set nohidden
+set   list
+set   showcmd
+set   showmatch
+set   termguicolors
+set   terse
+set   title
+set   wildmenu
