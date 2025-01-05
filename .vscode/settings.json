@@ -42,7 +42,10 @@
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true
 
-    // AI conversion rules for Vim 'set' commands:
+    // VSCode equivalents for Vim's gutter options:
+    // - "editor.lineNumbers": "on" enables line numbers in the gutter.
+    // - "editor.showFoldingControls": "always" shows folding controls in the gutter.
+    // - "editor.codeLens": true enables code lens features in the gutter.
     // # Use only the vim settings commented in this file.
     // 1. Avoid adding duplicate settings.
     // 2. Place each setting in the appropriate section of the settings file.
