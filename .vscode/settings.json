@@ -59,5 +59,6 @@
 
     // VSCode does not have a direct equivalent for foldlevelstart=99.
     // Consider using extensions or manual folding as alternatives.
-// set   concealcursor=nc
+    // VSCode does not have a direct equivalent for concealcursor=nc.
+    // Consider using extensions or manual adjustments as alternatives.
 }
