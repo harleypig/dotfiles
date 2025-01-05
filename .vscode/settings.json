@@ -45,7 +45,6 @@
     // Search
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
-    "search.smartCase": true
 
     // AI conversion rules for Vim 'set' commands:
     // # Use only the vim settings commented in this file.
@@ -58,12 +57,6 @@
     // 6. Retain these instructions for future reference.
 
 // set noautochdir
-// set   wrapscan
-// set   incsearch
-// set   magic
-// set   ignorecase
-// set   smartcase
-// set   wrap
 // set   linebreak
 // set   display=uhex,lastline
 // set   foldlevelstart=99
