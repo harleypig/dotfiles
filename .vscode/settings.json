@@ -19,13 +19,36 @@
     "window.title": "${activeEditorShort}${separator}${rootName}${separator}${appName}",
 
     // File Management
-    "files.autoSave": "afterDelay"
-}
+    "files.autoSave": "afterDelay",
 
-set   clipboard+=unnamed
-set   encoding=utf-8
-set   history=1000
-set   listchars=tab:\ \ 
-set   matchpairs+=<:>
-set   mouse=
-set   path=.,$HOME
+    // Clipboard
+    "editor.clipboard": "system",
+
+    // Encoding
+    "files.encoding": "utf8",
+
+    // History
+    "files.history": 1000,
+
+    // Display
+    "editor.renderControlCharacters": true,
+    "editor.renderWhitespace": "all",
+    "editor.matchBrackets": "always",
+    "editor.lineNumbers": "on",
+    "editor.scrollBeyondLastLine": false,
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 78,
+    "editor.rulers": [78],
+    "editor.showFoldingControls": "always",
+    "workbench.colorTheme": "Default Dark+",
+    "window.title": "${activeEditorShort}${separator}${rootName}${separator}${appName}",
+
+    // Indentation
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+
+    // Search
+    "search.useIgnoreFiles": true,
+    "search.smartCase": true,
+    "search.useGlobalIgnoreFiles": true
