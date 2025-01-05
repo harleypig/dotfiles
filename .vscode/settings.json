@@ -15,10 +15,9 @@
     "editor.formatOnType": true,
     "editor.matchBrackets": "always",
     "editor.rulers": [78],
-    "editor.scrollBeyondLastLine": false,
+    "editor.scrollBeyondLastLine": true,
     "editor.showFoldingControls": "always",
     "editor.suggestSelection": "first",
-// set   linebreak
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 0,
     "window.title": "${activeEditorShort}${separator}${rootName}${separator}${appName}",
@@ -60,8 +59,6 @@
 
 // set noautochdir
 // set   linebreak
-    "editor.renderControlCharacters": true,
-    "editor.scrollBeyondLastLine": true,
 // set   foldlevelstart=99
 // set   concealcursor=nc
 }
