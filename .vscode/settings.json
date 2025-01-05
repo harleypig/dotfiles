@@ -57,6 +57,7 @@
     //    alternatives or workarounds for the 'set' line.
     // 6. Retain these instructions for future reference.
 
-// set   foldlevelstart=99
+    // VSCode does not have a direct equivalent for foldlevelstart=99.
+    // Consider using extensions or manual folding as alternatives.
 // set   concealcursor=nc
 }
