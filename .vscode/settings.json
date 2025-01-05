@@ -32,6 +32,7 @@
     "editor.autoIndent": "full",
     "editor.formatOnType": true,
     "editor.cursorWrap": true,
+    "editor.wordWrap": "wordWrapColumn",
 
     // Search
     "search.useIgnoreFiles": true,
@@ -50,7 +51,7 @@
     // 8. Retain these instructions for future reference.
 
 set   formatoptions=tcroq1
-set   wrapmargin=2
+" set   wrapmargin=2
 set   backspace=indent,eol,start
 set   textwidth=78
 set   autoindent
