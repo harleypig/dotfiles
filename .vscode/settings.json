@@ -3,7 +3,6 @@
     "terminal.integrated.cwd": "${workspaceFolder}",
 
     // Editor Behavior
-    "editor.autoIndent": "full",
     "editor.suggestSelection": "first",
     "editor.cursorBlinking": "solid",
     "editor.matchBrackets": "always",
@@ -31,26 +30,9 @@
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
     "editor.autoIndent": "full",
-    "editor.suggestSelection": "first",
-    "editor.cursorBlinking": "solid",
 
     // Search
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
     "search.smartCase": true,
 }
-
-set   report=1
-set   shortmess=a
-set   softtabstop=2
-set   tabstop=2
-set   undolevels=1000
-set   updatecount=10
-set   updatetime=1000
-set   virtualedit=block
-set   wildignore+=*/.git/
-set   wildignore+=*/CVS/
-set   wildignore+=*/SVN/
-set   wildmode=list:longest,full
-
-set   hlsearch
