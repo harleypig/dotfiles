@@ -19,6 +19,5 @@
     "window.title": "${activeEditorShort}${separator}${rootName}${separator}${appName}",
 
     // File Management
-    "files.autoSave": "afterDelay",
-    "workbench.editor.enablePreview": false
+    "files.autoSave": "afterDelay"
 }
