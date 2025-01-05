@@ -20,6 +20,31 @@
 
     // File Management
     "files.autoSave": "afterDelay"
+},
+
+// Clipboard
+"editor.clipboard": "system",
+
+// Encoding
+"files.encoding": "utf8",
+
+// History
+"files.history": 1000,
+
+// Display
+"editor.renderControlCharacters": true,
+"editor.renderWhitespace": "all",
+"editor.matchBrackets": "always",
+"editor.lineNumbers": "on",
+
+// Indentation
+"editor.tabSize": 2,
+"editor.insertSpaces": true,
+
+// Search
+"search.useIgnoreFiles": true,
+"search.smartCase": true,
+"search.useGlobalIgnoreFiles": true
 }
 
 set   clipboard+=unnamed
