@@ -57,7 +57,7 @@
     // 'q', '1' are not directly supported.
 
 // set nocopyindent
-// set   t_te=
-// set   t_ti=
+    // set   t_te= and set t_ti= have no direct equivalent in VSCode.
+    // These are terminal control sequences specific to Vim.
 
 }
