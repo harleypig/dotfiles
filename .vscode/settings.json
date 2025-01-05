@@ -36,3 +36,23 @@
     "search.useGlobalIgnoreFiles": true,
     "search.smartCase": true,
 }
+
+# AI convert the following vim set commands using the following rules:
+# * Avoid duplicating existing settings.
+# * Place the setting in the proper location in the settings file.
+# * Place setting in a group, adding the group if it doesn't exist.
+# * Remove the set line below, unless the following rule matches.
+# * If a vim setting doesn't have a matching vscode setting, leave it with notes on why and any possible workarounds.
+# * Leave these instructions in place.
+# AI
+
+set   formatoptions=tcroq1
+set   wrapmargin=2
+set   backspace=indent,eol,start
+set   textwidth=78
+set   autoindent
+set   smartindent
+set nocopyindent
+set   shiftwidth=2
+set   t_te=
+set   t_ti=
