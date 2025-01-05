@@ -36,13 +36,13 @@
     "search.useGlobalIgnoreFiles": true,
     "search.smartCase": true,
 
-    // AI convert the following vim set commands using the following rules:
-    // * Avoid duplicating existing settings.
-    // * Place the setting in the proper location in the settings file.
-    // * Place setting in a group, adding the group if it doesn't exist.
-    // * Remove the set line below, unless the following rule matches.
-    // * If a vim setting doesn't have a matching vscode setting, leave it with notes on why and any possible workarounds.
-    // * Leave these instructions in place.
+    // AI conversion rules for Vim 'set' commands:
+    // 1. Avoid duplicating existing settings.
+    // 2. Place each setting in the appropriate section of the settings file.
+    // 3. Group settings logically, creating new groups if necessary.
+    // 4. Remove the 'set' line after conversion, unless specified otherwise.
+    // 5. If no equivalent VSCode setting exists, leave the 'set' line with notes on alternatives or workarounds.
+    // 6. Retain these instructions for future reference.
 
 set   formatoptions=tcroq1
 set   wrapmargin=2
