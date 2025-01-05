@@ -57,6 +57,16 @@
     //    alternatives or workarounds for the 'set' line.
     // 6. Retain these instructions for future reference.
 
-// set nocopyindent
-
+// set   whichwrap=b,s,<,>,[,]
+// set noautochdir
+// set   wrapscan
+// set   incsearch
+// set   magic
+// set   ignorecase
+// set   smartcase
+// set   wrap
+// set   linebreak
+// set   display=uhex,lastline
+// set   foldlevelstart=99
+// set   concealcursor=nc
 }
