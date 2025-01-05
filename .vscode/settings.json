@@ -58,7 +58,6 @@
     // 6. Retain these instructions for future reference.
 
 // set noautochdir
-// set   linebreak
 // set   foldlevelstart=99
 // set   concealcursor=nc
 }
