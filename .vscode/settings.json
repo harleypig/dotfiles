@@ -50,7 +50,7 @@
     //    notes on alternatives or workarounds.
     // 6. Retain these instructions for future reference.
 
-" set   formatoptions=tcroq1
+// set   formatoptions=tcroq1
 // set   wrapmargin=2
 // set   backspace=indent,eol,start
 // set   textwidth=78
