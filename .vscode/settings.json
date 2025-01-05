@@ -35,7 +35,6 @@
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
     "search.smartCase": true,
-}
 
     // AI convert the following vim set commands using the following rules:
     // * Avoid duplicating existing settings.
@@ -44,7 +43,6 @@
     // * Remove the set line below, unless the following rule matches.
     // * If a vim setting doesn't have a matching vscode setting, leave it with notes on why and any possible workarounds.
     // * Leave these instructions in place.
-# AI
 
 set   formatoptions=tcroq1
 set   wrapmargin=2
@@ -56,3 +54,5 @@ set nocopyindent
 set   shiftwidth=2
 set   t_te=
 set   t_ti=
+
+}
