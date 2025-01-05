@@ -60,7 +60,8 @@
 
 // set noautochdir
 // set   linebreak
-// set   display=uhex,lastline
+    "editor.renderControlCharacters": true,
+    "editor.scrollBeyondLastLine": true,
 // set   foldlevelstart=99
 // set   concealcursor=nc
 }
