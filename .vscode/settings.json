@@ -46,8 +46,8 @@
     // 2. Place each setting in the appropriate section of the settings file.
     // 3. Group settings logically, creating new groups if necessary.
     // 4. Remove the 'set' line after conversion, unless otherwise specified.
-    // 5. If no equivalent VSCode setting exists, comment the 'set' line with
-    //    notes on alternatives or workarounds.
+    // 5. If no equivalent VSCode setting exists, use a JSON comment to note
+    //    alternatives or workarounds for the 'set' line.
     // 6. Retain these instructions for future reference.
 
 // set   formatoptions=tcroq1
