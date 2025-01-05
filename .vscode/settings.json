@@ -41,13 +41,13 @@
     "editor.cursorSurroundingLines": 999999,
 
     // AI conversion rules for Vim 'set' commands:
-    // 3. Avoid duplicating existing settings.
-    // 4. Place each setting in the appropriate section of the settings file.
-    // 5. Group settings logically, creating new groups if necessary.
-    // 6. Remove the 'set' line after conversion, unless otherwise specified.
-    // 7. If no equivalent VSCode setting exists, comment the 'set' line with
+    // 1. Avoid duplicating existing settings.
+    // 2. Place each setting in the appropriate section of the settings file.
+    // 3. Group settings logically, creating new groups if necessary.
+    // 4. Remove the 'set' line after conversion, unless otherwise specified.
+    // 5. If no equivalent VSCode setting exists, comment the 'set' line with
     //    notes on alternatives or workarounds.
-    // 8. Retain these instructions for future reference.
+    // 6. Retain these instructions for future reference.
 
 // set   formatoptions=tcroq1
 // set   wrapmargin=2
