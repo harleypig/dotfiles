@@ -17,7 +17,17 @@ in the appropriate locations.
 ensure you have the latest features and security patches. Use `Update-Module`
 for this purpose.
 
-# Give an example for updating all modules and scripts, please. AI!
+# Example for updating all modules and scripts
+
+To update all installed PowerShell modules and scripts, you can use the following commands:
+
+```powershell
+# Update all installed modules
+Get-InstalledModule | ForEach-Object { Update-Module -Name $_.Name }
+
+# Update all installed scripts
+Get-InstalledScript | ForEach-Object { Update-Script -Name $_.Name }
+```
 
 2. **Configure Execution Policy**: Set the execution policy to a level that balances security and functionality. For most users, `RemoteSigned` is a good choice. Use `Set-ExecutionPolicy RemoteSigned`.
 
