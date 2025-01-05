@@ -30,6 +30,7 @@
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
     "editor.autoIndent": "full",
+    "editor.formatOnType": true,
     "editor.cursorWrap": true,
 
     // Search
@@ -48,7 +49,7 @@
     // 7. If a matching VSCode setting is unavailable, comment the 'set' line with notes on alternatives or workarounds.
     // 8. Keep these instructions for future reference.
 
-set   formatoptions=tcroq1
+" set   formatoptions=tcroq1
 set   wrapmargin=2
 set   backspace=indent,eol,start
 set   textwidth=78
