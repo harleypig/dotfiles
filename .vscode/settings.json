@@ -45,6 +45,7 @@
     // Search
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
+    "search.smartCase": true,
 
     // AI conversion rules for Vim 'set' commands:
     // # Use only the vim settings commented in this file.
