@@ -1,17 +1,24 @@
 {
+    // Terminal
     "terminal.integrated.cwd": "${workspaceFolder}",
+
+    // Editor Behavior
+    "editor.autoIndent": "full",
+    "editor.insertSpaces": true,
+    "editor.suggestSelection": "first",
+    "editor.cursorBlinking": "solid",
+    "editor.matchBrackets": "always",
+
+    // Display
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 78,
     "editor.rulers": [78],
-    "editor.autoIndent": "full",
-    "files.autoSave": "afterDelay",
-    "editor.cursorBlinking": "solid",
-    "editor.insertSpaces": true,
-    "workbench.editor.enablePreview": false,
     "editor.renderWhitespace": "all",
     "editor.showFoldingControls": "always",
-    "editor.matchBrackets": "always",
     "workbench.colorTheme": "Default Dark+",
     "window.title": "${activeEditorShort}${separator}${rootName}${separator}${appName}",
-    "editor.suggestSelection": "first"
+
+    // File Management
+    "files.autoSave": "afterDelay",
+    "workbench.editor.enablePreview": false
 }
