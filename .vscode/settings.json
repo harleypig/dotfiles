@@ -57,12 +57,7 @@
     // 'q', '1' are not directly supported.
 
 // set   wrapmargin=2
-    // set   backspace=indent,eol,start
-// set   textwidth=78
-// set   autoindent
-// set   smartindent
 // set nocopyindent
-// set   shiftwidth=2
 // set   t_te=
 // set   t_ti=
 
