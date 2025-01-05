@@ -37,13 +37,13 @@
     "search.smartCase": true,
 }
 
-# AI convert the following vim set commands using the following rules:
-# * Avoid duplicating existing settings.
-# * Place the setting in the proper location in the settings file.
-# * Place setting in a group, adding the group if it doesn't exist.
-# * Remove the set line below, unless the following rule matches.
-# * If a vim setting doesn't have a matching vscode setting, leave it with notes on why and any possible workarounds.
-# * Leave these instructions in place.
+    // AI convert the following vim set commands using the following rules:
+    // * Avoid duplicating existing settings.
+    // * Place the setting in the proper location in the settings file.
+    // * Place setting in a group, adding the group if it doesn't exist.
+    // * Remove the set line below, unless the following rule matches.
+    // * If a vim setting doesn't have a matching vscode setting, leave it with notes on why and any possible workarounds.
+    // * Leave these instructions in place.
 # AI
 
 set   formatoptions=tcroq1
