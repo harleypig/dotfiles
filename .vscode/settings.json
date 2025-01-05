@@ -15,16 +15,19 @@
     "editor.matchBrackets": "always",
     "editor.rulers": [78],
     "editor.scrollBeyondLastLine": true,
-    "editor.showFoldingControls": "always",
     "editor.suggestSelection": "first",
     "editor.wordWrap": "on",
     //"editor.wordWrapColumn": 1,
 
     // Display
-    "editor.lineNumbers": "on",
+    "editor.cursorSurroundingLines": 999999,
     "editor.renderControlCharacters": true,
     "editor.renderWhitespace": "all",
-    "editor.cursorSurroundingLines": 999999,
+
+    // Gutter
+    "editor.codeLens": true,
+    "editor.lineNumbers": "on",
+    "editor.showFoldingControls": "always",
 
     // File Management
     "files.autoSave": "afterDelay",
@@ -42,10 +45,7 @@
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true
 
-    // VSCode equivalents for Vim's gutter options:
-    // - "editor.lineNumbers": "on" enables line numbers in the gutter.
-    // - "editor.showFoldingControls": "always" shows folding controls in the gutter.
-    // - "editor.codeLens": true enables code lens features in the gutter.
+    // # Conversion rules for Vim 'set' commands:
     // # Use only the vim settings commented in this file.
     // 1. Avoid adding duplicate settings.
     // 2. Place each setting in the appropriate section of the settings file.
