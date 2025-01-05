@@ -32,7 +32,6 @@
     "editor.autoIndent": "full",
     "editor.formatOnType": true,
     "editor.cursorWrap": true,
-    "editor.wordWrap": "wordWrapColumn",
 
     // Search
     "search.useIgnoreFiles": true,
@@ -41,6 +40,7 @@
     "editor.cursorSurroundingLines": 999999,
 
     // AI conversion rules for Vim 'set' commands:
+    // # Use only the vim settings commented in this file.
     // 1. Avoid duplicating existing settings.
     // 2. Place each setting in the appropriate section of the settings file.
     // 3. Group settings logically, creating new groups if necessary.
