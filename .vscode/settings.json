@@ -10,6 +10,7 @@
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 78,
     "editor.formatOnSave": true,
+    "editor.backspace": "indent,eol,start",
     "editor.rulers": [78],
     "editor.showFoldingControls": "always",
     "workbench.colorTheme": "Default Dark+",
@@ -52,7 +53,7 @@
 
 // set   formatoptions=tcroq1
 // set   wrapmargin=2
-// set   backspace=indent,eol,start
+    // set   backspace=indent,eol,start
 // set   textwidth=78
 // set   autoindent
 // set   smartindent
