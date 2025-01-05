@@ -7,16 +7,18 @@
     "editor.suggestSelection": "first",
     "editor.cursorBlinking": "solid",
     "editor.matchBrackets": "always",
+    "editor.scrollBeyondLastLine": false,
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 78,
+    "editor.rulers": [78],
+    "editor.showFoldingControls": "always",
+    "workbench.colorTheme": "Default Dark+",
+    "window.title": "${activeEditorShort}${separator}${rootName}${separator}${appName}",
 
     // Display
     "editor.lineNumbers": "on",
     "editor.renderControlCharacters": true,
     "editor.renderWhitespace": "all",
-    "editor.rulers": [78],
-    "editor.scrollBeyondLastLine": false,
-    "editor.showFoldingControls": "always",
-    "editor.wordWrap": "on",
-    "editor.wordWrapColumn": 78,
 
     // File Management
     "files.autoSave": "afterDelay",
@@ -28,10 +30,14 @@
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
+    "editor.autoIndent": "full",
+    "editor.suggestSelection": "first",
+    "editor.cursorBlinking": "solid",
 
     // Search
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
+    "search.smartCase": true,
 }
 
 set   report=1
