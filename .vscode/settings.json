@@ -1,6 +1,7 @@
 {
     "terminal.integrated.cwd": "${workspaceFolder}",
-    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrap": "on",
     "editor.wordWrapColumn": 78,
+    "editor.rulers": [78],
     "editor.autoIndent": "full"
 }
