@@ -18,8 +18,9 @@
     "editor.scrollBeyondLastLine": false,
     "editor.showFoldingControls": "always",
     "editor.suggestSelection": "first",
-    "editor.wordWrap": "wordWrapColumn",
-    "editor.wordWrapColumn": 78,
+// set   linebreak
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 0,
     "window.title": "${activeEditorShort}${separator}${rootName}${separator}${appName}",
     "workbench.colorTheme": "Default Dark+",
 
