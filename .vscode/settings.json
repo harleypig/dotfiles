@@ -35,6 +35,7 @@
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
     "search.smartCase": true,
+    "editor.cursorSurroundingLines": 999999,
 
     // AI conversion rules for Vim 'set' commands:
     // 1. Ensure no duplication of existing settings.

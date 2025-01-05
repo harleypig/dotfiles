@@ -18,7 +18,7 @@ set   smartcase             " override 'ignorecase' when pattern has upper case 
 " Display
 
 set   scroll=11 " number of lines to scroll for CTRL-U and CTRL-D
-set   scrolloff=999999 " number of screen lines to show around the cursor
+" set   scrolloff=999999 " number of screen lines to show around the cursor
 set   wrap  " long lines wrap
 set   linebreak  " wrap long lines at a character in 'breakat'
 set   display=uhex,lastline " include "lastline" to show the last line even if it doesn't fit
