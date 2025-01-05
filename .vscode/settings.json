@@ -18,6 +18,7 @@
     "editor.lineNumbers": "on",
     "editor.renderControlCharacters": true,
     "editor.renderWhitespace": "all",
+    "editor.cursorSurroundingLines": 999999,
 
     // File Management
     "files.autoSave": "afterDelay",
@@ -37,7 +38,6 @@
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
     "search.smartCase": true,
-    "editor.cursorSurroundingLines": 999999,
 
     // AI conversion rules for Vim 'set' commands:
     // # Use only the vim settings commented in this file.
