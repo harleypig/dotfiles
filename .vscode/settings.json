@@ -18,7 +18,7 @@
     "editor.showFoldingControls": "always",
     "editor.suggestSelection": "first",
     "editor.wordWrap": "on",
-    "editor.wordWrapColumn": 0,
+    //"editor.wordWrapColumn": 1,
 
     // Display
     "editor.lineNumbers": "on",
