@@ -7,7 +7,7 @@
 
 " Movement
 
-set   whichwrap=b,s,<,>,[,] " list of flags specifying which commands wrap to another line
+" set   whichwrap=b,s,<,>,[,] " list of flags specifying which commands wrap to another line
 set noautochdir             " change to directory of file in buffer
 set   wrapscan              " search commands wrap around the end of the buffer
 set   incsearch             " show match for partly typed search command

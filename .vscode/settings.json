@@ -30,6 +30,7 @@
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
     "editor.autoIndent": "full",
+    "editor.cursorWrap": true,
 
     // Search
     "search.useIgnoreFiles": true,
