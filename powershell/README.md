@@ -13,7 +13,11 @@ in the appropriate locations.
 
 ## Best Practices After Initial Setup
 
-1. **Update PowerShell Modules**: Regularly update your PowerShell modules to ensure you have the latest features and security patches. Use `Update-Module` for this purpose.
+1. **Update PowerShell Modules**: Regularly update your PowerShell modules to
+ensure you have the latest features and security patches. Use `Update-Module`
+for this purpose.
+
+# Give an example for updating all modules and scripts, please. AI!
 
 2. **Configure Execution Policy**: Set the execution policy to a level that balances security and functionality. For most users, `RemoteSigned` is a good choice. Use `Set-ExecutionPolicy RemoteSigned`.
 
