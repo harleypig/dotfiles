@@ -38,6 +38,8 @@
     "editor.cursorSurroundingLines": 999999,
 
     // AI conversion rules for Vim 'set' commands:
+    // # Make each set line a comment if it isn't already done.
+    // # Convert only the first set command per request to avoid confusion.
     // 1. Ensure no duplication of existing settings.
     // 2. Insert each setting into the correct section of the settings file.
     // 3. Organize settings into logical groups, creating new groups if needed.
