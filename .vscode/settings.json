@@ -33,3 +33,18 @@
     "search.useIgnoreFiles": true,
     "search.useGlobalIgnoreFiles": true,
 }
+
+set   report=1
+set   shortmess=a
+set   softtabstop=2
+set   tabstop=2
+set   undolevels=1000
+set   updatecount=10
+set   updatetime=1000
+set   virtualedit=block
+set   wildignore+=*/.git/
+set   wildignore+=*/CVS/
+set   wildignore+=*/SVN/
+set   wildmode=list:longest,full
+
+set   hlsearch
