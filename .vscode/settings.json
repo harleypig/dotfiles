@@ -41,13 +41,13 @@
 
     // AI conversion rules for Vim 'set' commands:
     // # Use only the vim settings commented in this file.
-    // 1. Ensure no duplicate settings are added.
-    // 2. Insert each setting into the correct section of the settings file.
-    // 3. Organize settings into logical groups, creating new groups if needed.
-    // 4. Delete the 'set' line after conversion, unless otherwise instructed.
-    // 5. If a matching VSCode setting is unavailable, comment the 'set' line with
+    // 1. Avoid adding duplicate settings.
+    // 2. Place each setting in the appropriate section of the settings file.
+    // 3. Group settings logically, creating new groups if necessary.
+    // 4. Remove the 'set' line after conversion, unless otherwise specified.
+    // 5. If no equivalent VSCode setting exists, comment the 'set' line with
     //    notes on alternatives or workarounds.
-    // 6. Keep these instructions for future reference.
+    // 6. Retain these instructions for future reference.
 
 // set   formatoptions=tcroq1
 // set   wrapmargin=2
