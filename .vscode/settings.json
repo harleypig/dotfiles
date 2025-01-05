@@ -10,6 +10,9 @@
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 78,
     "editor.formatOnSave": true,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 78,
+    "editor.formatOnType": true,
     "editor.backspace": "indent,eol,start",
     "editor.rulers": [78],
     "editor.showFoldingControls": "always",
@@ -51,7 +54,10 @@
     //    alternatives or workarounds for the 'set' line.
     // 6. Retain these instructions for future reference.
 
-// set   formatoptions=tcroq1
+    // set   formatoptions=tcroq1
+    // Note: Some formatoptions flags are not directly supported in VSCode.
+    // 't', 'c', 'r', 'o' are partially supported with formatOnType and wordWrap settings.
+    // 'q', '1' are not directly supported.
 // set   wrapmargin=2
     // set   backspace=indent,eol,start
 // set   textwidth=78
