@@ -3,25 +3,24 @@
     "terminal.integrated.cwd": "${workspaceFolder}",
 
     // Editor Behavior
-    "editor.suggestSelection": "first",
+    "editor.backspace": "indent,eol,start",
     "editor.cursorBlinking": "solid",
-    "editor.matchBrackets": "always",
-    "editor.scrollBeyondLastLine": false,
-    "editor.wordWrap": "on",
-    "editor.wordWrapColumn": 78,
     "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.matchBrackets": "always",
+    "editor.rulers": [78],
+    "editor.scrollBeyondLastLine": false,
+    "editor.showFoldingControls": "always",
+    "editor.suggestSelection": "first",
     "editor.wordWrap": "wordWrapColumn",
     "editor.wordWrapColumn": 78,
-    "editor.formatOnType": true,
-    "editor.backspace": "indent,eol,start",
-    "editor.rulers": [78],
-    "editor.showFoldingControls": "always",
-    "workbench.colorTheme": "Default Dark+",
     "window.title": "${activeEditorShort}${separator}${rootName}${separator}${appName}",
+    "workbench.colorTheme": "Default Dark+",
 
     // Display
     "editor.lineNumbers": "on",
     "editor.renderControlCharacters": true,
+    "editor.cursorWrap": true,
     "editor.renderWhitespace": "all",
     "editor.cursorSurroundingLines": 999999,
 
@@ -36,8 +35,6 @@
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
     "editor.autoIndent": "full",
-    "editor.formatOnType": true,
-    "editor.cursorWrap": true,
 
     // Search
     "search.useIgnoreFiles": true,
@@ -54,10 +51,11 @@
     //    alternatives or workarounds for the 'set' line.
     // 6. Retain these instructions for future reference.
 
-    // set   formatoptions=tcroq1
-    // Note: Some formatoptions flags are not directly supported in VSCode.
-    // 't', 'c', 'r', 'o' are partially supported with formatOnType and wordWrap settings.
+    // Note: Some `formatoptions` flags are not directly supported in VSCode.
+    // 't', 'c', 'r', 'o' are partially supported with formatOnType and
+    //  wordWrap settings.
     // 'q', '1' are not directly supported.
+
 // set   wrapmargin=2
     // set   backspace=indent,eol,start
 // set   textwidth=78
