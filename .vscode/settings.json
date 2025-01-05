@@ -41,24 +41,23 @@
     "editor.cursorSurroundingLines": 999999,
 
     // AI conversion rules for Vim 'set' commands:
-    // 1. Comment all 'set' lines in the vscode settings.json format if not already done.
-    // 2. Convert only the first 'set' command per request to prevent confusion.
     // 3. Avoid duplicating existing settings.
     // 4. Place each setting in the appropriate section of the settings file.
     // 5. Group settings logically, creating new groups if necessary.
     // 6. Remove the 'set' line after conversion, unless otherwise specified.
-    // 7. If no equivalent VSCode setting exists, comment the 'set' line with notes on alternatives or workarounds.
+    // 7. If no equivalent VSCode setting exists, comment the 'set' line with
+    //    notes on alternatives or workarounds.
     // 8. Retain these instructions for future reference.
 
-set   formatoptions=tcroq1
-" set   wrapmargin=2
-set   backspace=indent,eol,start
-set   textwidth=78
-set   autoindent
-set   smartindent
-set nocopyindent
-set   shiftwidth=2
-set   t_te=
-set   t_ti=
+// set   formatoptions=tcroq1
+// set   wrapmargin=2
+// set   backspace=indent,eol,start
+// set   textwidth=78
+// set   autoindent
+// set   smartindent
+// set nocopyindent
+// set   shiftwidth=2
+// set   t_te=
+// set   t_ti=
 
 }
