@@ -51,28 +51,27 @@ function Global:Remove-Git { param ( [string[]]$Paths) git rm $Paths }
 function Global:Status-GitShort { git status -s }
 
 #-----------------------------------------------------------------------------
-# All these aliases need to be global. Fix that, aI!
-Set-Alias -Name ga -Value Add-Git
-Set-Alias -Name gall -Value Add-GitAll
-Set-Alias -Name gb -Value Branch-Git
-Set-Alias -Name gba -Value Branch-GitAll
-Set-Alias -Name gc -Value Commit-Git
-Set-Alias -Name gca -Value Commit-GitAll
-Set-Alias -Name gco -Value Checkout-Git
-Set-Alias -Name gcp -Value CherryPick-Git
-Set-Alias -Name gd -Value Diff-Git
-Set-Alias -Name gdc -Value Diff-GitCached
-Set-Alias -Name gds -Value DiffStat-Git
-Set-Alias -Name gf -Value Fetch-Git
-Set-Alias -Name gl -Value Pull-Git
-Set-Alias -Name glg -Value Log-Git
-Set-Alias -Name gmv -Value Move-Git
-Set-Alias -Name gp -Value Push-Git
-Set-Alias -Name gpa -Value Push-GitAllRemotes
-Set-Alias -Name gpall -Value Push-GitAll
-Set-Alias -Name grm -Value Remove-Git
-Set-Alias -Name gs -Value Status-GitShort
-Set-Alias -Name gtl -Value Set-GitTopLevelLocation
+Set-Alias -Scope Global -Name ga -Value Add-Git
+Set-Alias -Scope Global -Name gall -Value Add-GitAll
+Set-Alias -Scope Global -Name gb -Value Branch-Git
+Set-Alias -Scope Global -Name gba -Value Branch-GitAll
+Set-Alias -Scope Global -Name gc -Value Commit-Git
+Set-Alias -Scope Global -Name gca -Value Commit-GitAll
+Set-Alias -Scope Global -Name gco -Value Checkout-Git
+Set-Alias -Scope Global -Name gcp -Value CherryPick-Git
+Set-Alias -Scope Global -Name gd -Value Diff-Git
+Set-Alias -Scope Global -Name gdc -Value Diff-GitCached
+Set-Alias -Scope Global -Name gds -Value DiffStat-Git
+Set-Alias -Scope Global -Name gf -Value Fetch-Git
+Set-Alias -Scope Global -Name gl -Value Pull-Git
+Set-Alias -Scope Global -Name glg -Value Log-Git
+Set-Alias -Scope Global -Name gmv -Value Move-Git
+Set-Alias -Scope Global -Name gp -Value Push-Git
+Set-Alias -Scope Global -Name gpa -Value Push-GitAllRemotes
+Set-Alias -Scope Global -Name gpall -Value Push-GitAll
+Set-Alias -Scope Global -Name grm -Value Remove-Git
+Set-Alias -Scope Global -Name gs -Value Status-GitShort
+Set-Alias -Scope Global -Name gtl -Value Set-GitTopLevelLocation
 
 #-----------------------------------------------------------------------------
 # TBD
