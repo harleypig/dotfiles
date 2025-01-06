@@ -40,14 +40,58 @@ function Set-GitTopLevelLocation {
 Set-Alias -Name gtl -Value Set-GitTopLevelLocation
 
 #-----------------------------------------------------------------------------
-# Convert the following functions to powershell. Be sure to use approved verbs for the names. Create aliases for each function using the old name as the alias. AI!
-function ga() { git add "$@"; }
-function gca() { git commit -a -v -m "$@"; }
-function gc() { git commit -v -m "$@"; }
-function gco() { git checkout "$@"; }
-function gf() { git fetch --all --tags; }
-function gmv() { git mv "$@"; }
-function grm() { git rm "$@"; }
+function Add-Git {
+    param (
+        [string[]]$Paths
+    )
+    git add $Paths
+}
+Set-Alias -Name ga -Value Add-Git
+
+function Commit-GitAll {
+    param (
+        [string]$Message
+    )
+    git commit -a -v -m $Message
+}
+Set-Alias -Name gca -Value Commit-GitAll
+
+function Commit-Git {
+    param (
+        [string]$Message
+    )
+    git commit -v -m $Message
+}
+Set-Alias -Name gc -Value Commit-Git
+
+function Checkout-Git {
+    param (
+        [string]$Branch
+    )
+    git checkout $Branch
+}
+Set-Alias -Name gco -Value Checkout-Git
+
+function Fetch-Git {
+    git fetch --all --tags
+}
+Set-Alias -Name gf -Value Fetch-Git
+
+function Move-Git {
+    param (
+        [string[]]$Paths
+    )
+    git mv $Paths
+}
+Set-Alias -Name gmv -Value Move-Git
+
+function Remove-Git {
+    param (
+        [string[]]$Paths
+    )
+    git rm $Paths
+}
+Set-Alias -Name grm -Value Remove-Git
 
 #-----------------------------------------------------------------------------
 alias gall='git add .'
