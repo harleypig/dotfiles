@@ -3,8 +3,10 @@
     Elevates a command to run with administrative privileges.
 
 .DESCRIPTION
-    This script allows you to run a specified command with elevated privileges using PowerShell's RunAs verb.
-    It accepts an arbitrary number of parameters as part of the command to be executed.
+    This script allows you to run a specified command with elevated
+    privileges using PowerShell's RunAs verb.
+    It accepts an arbitrary number of
+    parameters as part of the command to be executed.
 
 .PARAMETER Command
     The command and its parameters to be executed with elevated privileges.
