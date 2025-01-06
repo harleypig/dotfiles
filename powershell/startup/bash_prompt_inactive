@@ -1,0 +1,188 @@
+# shellcheck shell=bash
+
+# Ideas ripped off and made to fit from:
+#   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
+#   http://www.termsys.demon.co.uk/vtansi.htm
+#   https://gist.github.com/621452
+#   https://gist.github.com/623142
+
+#----------------------------------------------------------------------------
+# Only setup the prompt if we are in an interactive session
+
+[[ $- == *i* ]] || {
+  debug "Not in interactive mode."
+  return 0
+}
+
+#----------------------------------------------------------------------------
+export prompt_color color_off
+
+prompt_color="$(ansi -n fg cyan)"
+color_off="$(ansi -n off)"
+
+#----------------------------------------------------------------------------
+function join_array() {
+  (($# != 2)) && die "must pass delimiter and array name"
+
+  local delim="$1"
+  local -n _array_="$2"
+
+  #eval "_array_=(\"\${$2[@]}\")"
+
+  first="${_array_[0]}"
+  rest=("${_array_[@]:1}")
+
+  printf '%s' "$first"
+  printf '%s' "${rest[@]/#/$delim}"
+}
+
+#----------------------------------------------------------------------------
+# The _parent function is called once during the .bash_prompt startup to
+# determine the parent processes for the current shell session. The result is
+# stored in the 'parent_output' variable and used in every prompt update. This
+# implementation is based on the understanding that the pstree value doesn't
+# change during a single shell session.
+#
+# XXX: This assumption is currently being tested for correctness.
+
+function _parent() {
+
+  command -v pstree &> /dev/null || return 0
+
+  local parents
+
+  parents=$(pstree -A $PPID 2> /dev/null) || return 1
+
+  parents=${parents/%-+*/}
+  parents=${parents//---bash/}
+  parents=${parents//---pstree/}
+  parents=${parents//: server/}
+  parents=${parents//gnome-terminal-/}
+  parents=${parents//login/}
+  parents=${parents//node/}
+  parents=${parents//poetry/}
+  parents=${parents//sshd/}
+  parents=${parents//su/}
+  parents=${parents//tilix/}
+  parents=${parents//tmux/}
+
+  [[ -n $parents ]] \
+    && printf '\[%s\](%s)\[%s\] ' \
+      "$(ansi -n fg bright_yellow bg red)" "$parents" "$(ansi -n off)"
+}
+
+# 'parent' will only ever change upon a new shell, so set it here
+parent=$(_parent)
+
+#----------------------------------------------------------------------------
+function _exit_status() {
+  local -a status
+
+  local color_bad color_good
+
+  color_bad="$(ansi -n bg red fg white)"
+  color_good="$(ansi -n bg blue fg yellow)"
+
+  for s in "$@"; do
+
+    # Wrap the exit symbols in appropriate ansi codes.
+
+    # If a command is still writing to the pipe and a later command exits, the
+    # first command will exit with a status of 141.  This causes confusion
+    # with commands like echo or head.
+
+    # Doing this *will* cause confusion if something does exit abnormally but
+    # doesn't throw an appropriate exit status.
+
+    case "$s" in
+      0 | 141) status+="$color_good $s $color_off" ;;
+      *) status+="$color_bad $s $color_off" ;;
+    esac
+  done
+
+  statuscodes=$(join_array ' | ' 'status')
+
+  printf '%s' "$statuscodes"
+}
+
+#----------------------------------------------------------------------------
+# This needs work for poetry setups
+
+_venv() {
+  [[ -z $VIRTUAL_ENV ]] && [[ -z $POETRY_ACTIVE ]] && return 0
+
+  local color curpwd dir name
+
+  curpwd="$(readlink -ne "$PWD")"
+
+  if [[ -n $POETRY_ACTIVE ]]; then
+    # XXX: Figure out a way to detect true hostname directory
+    #      Look into setting virtualenvs.in-project with poetry config
+    color="$(ansi -n fg bright_purple)"
+    dir="poetry venv"
+
+  else
+    # XXX: If manually starting a poetry venv, this will be permanently red
+    color="$(ansi -n fg bright_green)"
+    dir="venv"
+
+    if [[ ! $curpwd =~ ^${VIRTUAL_ENV%/*} ]]; then
+      color="$(ansi -n fg red)"
+      dir="venv: ${VIRTUAL_ENV%/*}"
+    fi
+  fi
+
+  printf '%s(%s)%s ' "$color" "$dir" "$color_off"
+}
+
+#----------------------------------------------------------------------------
+_update_prompt() {
+  # don't use 'local exit_status' here because it wipes out PIPESTATUS.
+  exit_status=$(_exit_status "${PIPESTATUS[@]}")
+
+  # Append the last command, clear the history cache and reread the history
+  # file
+  history -a
+  history -c
+  history -r
+
+  local user_color hostname_color finalchr loadavg
+
+  if [[ $UID -eq 0 ]]; then
+    user_color="$(ansi -n fg bright_red)"
+    finalchr='!!'
+
+  else
+    user_color="$(ansi -n fg bright_cyan)"
+    finalchr='\$'
+  fi
+
+  hostname_color="$(ansi -n fg yellow)"
+
+  # Build the prompt.
+  local prompt_color system_reboot pacman_status finalchr loadavg
+
+  PS1="\n$color_off$prompt_color"
+
+  command -v system-needs-reboot &> /dev/null \
+    && PS1+="$(system-needs-reboot)"
+
+  command -v pacman-status &> /dev/null \
+    && PS1+="$(pacman-status)"
+
+  command -v loadavg &> /dev/null && {
+    loadavg="$(loadavg)"
+    [[ -n $loadavg ]] && PS1+="$loadavg\n"
+  }
+
+  PS1+="$parent$user_color\u@$hostname_color\h: "
+
+  # We're assuming dir-readable and git-status are on the system; we want to
+  # be notified in a glaring way if they're not.
+  PS1+="$(_venv)$(dir-readable)$(git-status)\n"
+  PS1+="$exit_status $finalchr "
+
+  unset exit_status
+}
+
+[[ -n $PS1 ]] && PROMPT_COMMAND='_update_prompt'

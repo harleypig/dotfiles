@@ -1,0 +1,89 @@
+# shellcheck shell=bash
+
+command -v terraform &> /dev/null || return 0
+
+#-----------------------------------------------------------------------------
+alias tf='terraform'
+
+#-----------------------------------------------------------------------------
+# XXX: Compare with this gist, which is what's being sourced above
+#
+# https://gist.githubusercontent.com/zish/85dccece461e050077997ff5d7d9c9d4/raw/c4719a2443e4be0010fd4c3dbc8a94ad14b4e6ee/terraform_bash_completion.sh
+#
+# Completions:
+#
+# [x] terraform <subcommands>
+# [x] terraform <version|-version> no more completions
+# [x] terraform -help <subcommands without -help|-chdir>
+# [x] terraform -chdir=path <subcommands without version|-version|-help|-chdir>
+# [ ] terraform [-chdir=path] subcommand <subcmd parameters>
+#
+# Future development considerations for completion handling:
+#
+# * Handling flags that can be used with subcommands (e.g., `-input=false` for apply).
+# * Completing file paths for subcommands that require a file (e.g., `terraform apply <file>`).
+# * Completing resource names for commands like `terraform import`.
+# * Completing variable names for commands like `terraform console`.
+#
+# These would require more advanced parsing and understanding of the Terraform context.
+
+_terraform() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local prev="${COMP_WORDS[COMP_CWORD-1]}"
+  local subcommands
+
+  #echo "prev: $prev"
+
+  subcommands="$(terraform | awk '/^  [a-z-]/ {print $1}' | sed 's/=.*/=/')"
+
+  if [[ $COMP_CWORD -eq 1 ]] && [[ $prev == 'terraform' ]]; then
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+
+  elif [[ $COMP_CWORD -eq 2 ]] && [[ $prev =~ -?version ]]; then
+    COMPREPLY=()
+
+  elif [[ $COMP_CWORD -eq 2 ]] && [[ $prev == '-help' ]]; then
+    subcommands="$(echo "$subcommands" \
+      | sed 's/\(-help\|-chdir=\)//; s/\s\+/ /g')"
+
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+
+  elif [[ ${COMP_WORDS[1]} == '-chdir' ]]; then
+    subcommands="$(echo "$subcommands" \
+      | sed 's/\(-help\|-chdir=\|-?version\)//; s/\s\+/ /g')"
+
+    COMPREPLY=($(compgen -W "${subcommands}" -- "$cur"))
+
+  elif [[ $cur == *-chdir=* ]]; then
+    # If the current word is -chdir=, append an underscore and reposition the cursor
+    COMPREPLY=("${cur}_")
+    # Move the cursor after the equals sign
+    local point=$(( ${#cur} + 1 ))
+    COMP_POINT=$point
+
+  else
+    COMPREPLY=()
+  fi
+
+#  if [[ "$command_so_far" =~ ^-chdir=[^[:space:]]+ ]]; then
+#    subcmd="${COMP_WORDS[2]}"
+#  else
+#    subcmd="${COMP_WORDS[1]}"
+#  fi
+#
+#  # Validate the subcommand
+#  if [[ " $subcommands " =~ " $subcmd " ]]; then
+#    # Generate a completion list for the subcommand
+#    # This is where you would add your logic to generate completions for the specific subcommand
+#    # For example, if the subcommand is 'apply', you might want to complete file names
+#    if [[ "$subcmd" == "apply" ]]; then
+#      COMPREPLY=($(compgen -f -- "$cur")) # This is just an example, adjust as needed
+#    fi
+#  fi
+}
+
+complete -F _terraform terraform
+
+#-----------------------------------------------------------------------------
+[[ -r "$XDG_CONFIG_HOME/completions/terrraform" ]] \
+  && source "$XDG_CONFIG_HOME/completions/terraform"

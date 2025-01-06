@@ -46,28 +46,8 @@ $env:PATH = "$DOTFILES\powershell\bin;" `
             + "$HOME\.local\bin;" `
             + "$env:PATH"
 
-# TBD: move to `000-loadtokens` in psshell-startup
-# Private dotfiles variable, local to this script
-$private_dotfiles = Join-Path $PROJECTS_DIR "private_dotfiles"
-
-# Check if the OpenAI API key file exists and is readable
-$apiKeyFile = Join-Path $private_dotfiles "api-key.openai"
-if (Test-Path -Path $apiKeyFile) {
-    $env:OPENAI_API_KEY = (Get-Content -Path $apiKeyFile -Raw).TrimEnd()
-
-    # Check if the 'aider' command is available
-    if (Get-Command aider -ErrorAction SilentlyContinue) {
-        $env:AIDER_DARK_MODE = $true
-        $env:AIDER_EDITOR = "code"
-        $env:AIDER_GITIGNORE = $false
-        $env:AIDER_MAP_TOKENS = 2048
-        $env:AIDER_VIM = $true
-        $env:AIDER_WATCH_FILES = $true
-    }
-}
-
 # Remove work or scratch variables and functions from the environment
-Remove-Variable -Name scriptPath, private_dotfiles
+Remove-Variable -Name scriptPath
 Remove-Item -Path Function:Import-Files
 
 #-----------------------------------------------------------------------------
