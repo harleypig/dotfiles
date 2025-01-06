@@ -28,16 +28,14 @@ function Get-GitTopLevel {
 }
 
 #-----------------------------------------------------------------------------
-# Convert this to a powershell function. Please note 'gtoplevel' has been renamed to 'Get-GitTopLevel'. AI!
 # Go to current git repo toplevel directory.
-function gtl() {
-  local dir
-  dir="$(gtoplevel)" || return 1
-
-  cd "$dir" || {
-    echo "Unable to change to $dir"
-    return 1
-  }
+function Go-ToGitTopLevel {
+    $dir = Get-GitTopLevel
+    if (-not $dir) {
+        Write-Output "Unable to change to $dir"
+        return
+    }
+    Set-Location -Path $dir
 }
 
 #-----------------------------------------------------------------------------
