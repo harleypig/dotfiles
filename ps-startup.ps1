@@ -20,11 +20,12 @@ function Import-Files {
     foreach ($loadDir in $loadDirs) {
         if (Test-Path -Path $loadDir) {
             $loadFiles = Get-ChildItem -Path $loadDir -File `
-                         | Where-Object { $_.Name -notmatch '_inactive' -and $_.Extension -eq '.ps1' } `
+                         | Where-Object { $_.Name -and $_.Extension -eq '.ps1' } `
                          | Sort-Object Name
 
             foreach ($file in $loadFiles) {
                 if (Test-Path -Path $file.FullName -PathType Leaf) {
+                  # Add a message stating which files are being sourced AI!
                     . $file.FullName
                 }
             }
