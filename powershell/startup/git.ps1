@@ -28,19 +28,17 @@ function Get-GitTopLevel {
 }
 
 #-----------------------------------------------------------------------------
-# Convert this function to a powershell function and fix the set-alias to use this function instead AI!
 # Go to current git repo toplevel directory.
-function gtl() {
-  local dir
-  dir="$(gtoplevel)" || return 1
-
-  cd "$dir" || {
-    echo "Unable to change to $dir"
-    return 1
-  }
+function Go-ToGitTopLevel {
+    $dir = Get-GitTopLevel
+    if (-not $dir) {
+        Write-Output "Unable to change to $dir"
+        return
+    }
+    Set-Location -Path $dir
 }
 
-Set-Alias -Name gtl -Value Get-GitTopLevel
+Set-Alias -Name gtl -Value Go-ToGitTopLevel
 
 #-----------------------------------------------------------------------------
 ## Go to current git toplevel directory, perform the git command and return
