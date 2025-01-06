@@ -11,34 +11,12 @@ in the appropriate locations.
 * Set the profile for powershell using the `ps-profile.ps1` script. Use
   `ps-profile -h` for details.
 
-## Best Practices After Initial Setup
+* Update your modules and scripts. See `Update-All -h` for details.
 
-1. **Update PowerShell Modules**: Regularly update your PowerShell modules to
-ensure you have the latest features and security patches. Use `Update-Module`
-for this purpose.
+* Set the execution policy to `RemoteSigned` (unless you have a different use
+  case, in which case you'll know what you need to do).
 
-# Example for updating all modules and scripts
+  Run `Elevate Set-ExecutionPolicy RemoteSigned`. `Elevate` is a script in the
+  bin directory this document is stored in.
 
-To update all installed PowerShell modules and scripts, you can use the following commands:
-
-```powershell
-# Update all installed modules
-Get-InstalledModule | ForEach-Object { Update-Module -Name $_.Name }
-
-# Update all installed scripts
-Get-InstalledScript | ForEach-Object { Update-Script -Name $_.Name }
-```
-
-2. **Configure Execution Policy**: Set the execution policy to a level that balances security and functionality. For most users, `RemoteSigned` is a good choice. Use `Set-ExecutionPolicy RemoteSigned`.
-
-3. **Install Useful Modules**: Consider installing modules like `PSReadLine` for enhanced command-line editing, `Pester` for testing, and `PowerShellGet` for easy module management.
-
-4. **Customize Your Profile**: Add frequently used functions, aliases, and environment variables to your PowerShell profile. This can greatly enhance your productivity.
-
-5. **Enable Transcription**: For auditing and logging purposes, enable transcription using `Start-Transcript` to keep a record of your PowerShell sessions.
-
-6. **Regular Backups**: Regularly back up your PowerShell profile and scripts to prevent data loss.
-
-7. **Security Practices**: Regularly review and update your security settings, including permissions and access controls for scripts and modules.
-
-8. **Learn and Explore**: Continuously learn new PowerShell features and best practices to improve your scripting skills.
+* Install the modules listed in `ps-packages.txt` in this directory.

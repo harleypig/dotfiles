@@ -11,14 +11,11 @@
     The command and its parameters to be executed with elevated privileges.
 
 .EXAMPLE
-    .\Elevate.ps1 -Command "choco", "install", "terraform"
+    Elevate choco install terraform
     This example runs the Chocolatey install command for Terraform with elevated
     privileges.
-
-.NOTES
-    Author: Your Name
-    Date: 2025-01-05
 #>
+
 param (
     [Parameter(Mandatory=$false, HelpMessage="Display help information.")]
     [switch]$h,
