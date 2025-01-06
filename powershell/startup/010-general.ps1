@@ -1,6 +1,8 @@
 Set-Alias -Name c -Value Clear-Host
 Set-Alias -Name h -Value Get-History
 
+# Modify the Go-ParentDirectory function to accept a number, defaulting to 1, then loop the set-location command that many times AI!
+
 function Go-ParentDirectory {
   Set-Location -Path ..
 }
