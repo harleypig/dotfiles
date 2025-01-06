@@ -25,6 +25,11 @@ if (Test-Path "$private_dotfiles/api-key.linode") {
 }
 
 #-----------------------------------------------------------------------------
+# Convert the following bash code to powershell using set-variable as elsewhere in this file AI!
+[[ -f $private_dotfiles/api-key.grok ]] \
+  && export XAI_API_KEY="$(<$private_dotfiles/api-key.grok)"
+
+#-----------------------------------------------------------------------------
 # Vault
 
 if (Get-Command vault -ErrorAction SilentlyContinue) {
