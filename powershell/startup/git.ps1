@@ -18,14 +18,13 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 #bind -x '"\C-gr": "git branch -ra | column"'
 
 #-----------------------------------------------------------------------------
-# Convert this function to a powershell function AI!
-function gtoplevel() {
-  git rev-parse --show-toplevel 2> /dev/null || {
-    echo "Not in a git repository."
-    return 1
-  }
-
-  return 0
+function Get-GitTopLevel {
+    $topLevel = git rev-parse --show-toplevel 2>$null
+    if (-not $topLevel) {
+        Write-Output "Not in a git repository."
+        return $null
+    }
+    return $topLevel
 }
 
 #-----------------------------------------------------------------------------
