@@ -1,7 +1,9 @@
 Set-Alias -Name c -Value Clear-Host
 Set-Alias -Name h -Value Get-History
 
-# Create a function that changes to the parent directory AI!
+function Go-ParentDirectory {
+  Set-Location -Path ..
+}
 
 
 
