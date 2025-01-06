@@ -18,8 +18,10 @@ if (Test-Path "$private_dotfiles/api-key.openai") {
 
 #-----------------------------------------------------------------------------
 if (Test-Path "$private_dotfiles/api-key.linode") {
-  # Convert this token variable the same way too, please, AI!
-  $env:LINODE_TOKEN = Get-Content -Path "$private_dotfiles/api-key.linode" -Raw
+  Set-Variable -Name LINODE_TOKEN `
+    -Scope Global `
+    -Option Constant `
+    -Value (Get-Content -Path "$private_dotfiles/api-key.linode" -Raw)
 }
 
 #-----------------------------------------------------------------------------
