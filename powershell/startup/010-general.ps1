@@ -11,8 +11,8 @@ function Go-ParentDirectory {
   }
 }
 
-# Create 2 one line functions that call Go-ParentDirectory. The first with 2, the second with 3 AI!
-
+function Go-UpTwoLevels { Go-ParentDirectory -levels 2 }
+function Go-UpThreeLevels { Go-ParentDirectory -levels 3 }
 
 
 # PowerShell does not have a direct equivalent for 'df', but you can use Get-PSDrive
