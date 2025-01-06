@@ -1,9 +1,15 @@
 Set-Alias -Name c -Value Clear-Host
+Set-Alias -Name h -Value Get-History
+
+# Create a function that changes to the parent directory AI!
+
+
+
+
 Set-Alias -Name .. -Value Set-Location -ArgumentList ..
 Set-Alias -Name ... -Value Set-Location -ArgumentList ../..
 Set-Alias -Name .... -Value Set-Location -ArgumentList ../../..
 # PowerShell does not have a direct equivalent for 'df', but you can use Get-PSDrive
-Set-Alias -Name h -Value Get-History
 # PowerShell does not have a direct equivalent for 'rd', 'vim', or 'find', but you can use Remove-Item, Invoke-Vim, and Get-ChildItem respectively
 
 #: #-----------------------------------------------------------------------------
