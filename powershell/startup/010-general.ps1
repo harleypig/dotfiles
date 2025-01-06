@@ -3,6 +3,7 @@
 Set-Alias -Name c -Value Clear-Host
 Set-Alias -Name h -Value Get-History
 
+# Please fix the unapproved verb warning for Go-ParentDirectory and the two functions that use it AI!
 function Go-ParentDirectory {
   param (
     [int]$levels = 1
