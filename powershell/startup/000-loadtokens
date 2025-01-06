@@ -1,0 +1,32 @@
+# Convert this bash startup script to powershell, AI!
+
+private_dotfiles="$PROJECTS_DIR/private_dotfiles"
+
+#-----------------------------------------------------------------------------
+[[ -r $private_dotfiles/api-key.azure ]] \
+  && export AZURE_DEVOPS_EXT_PAT="$(<$private_dotfiles/api-key.azure)"
+
+#-----------------------------------------------------------------------------
+[[ -r $private_dotfiles/api-key.openai ]] \
+  && export OPENAI_API_KEY="$(<$private_dotfiles/api-key.openai)"
+
+#-----------------------------------------------------------------------------
+#[[ -f $private_dotfiles/api-key.linode ]] \
+#  && export LINODE_TOKEN="$(<$private_dotfiles/api-key.linode)"
+
+#-----------------------------------------------------------------------------
+# Vault
+
+if command -v vault &> /dev/null; then
+  [[ -r $private_dotfiles/vault.addr ]] \
+    && export VAULT_ADDR="$(<$private_dotfiles/vault.addr)"
+
+  [[ -r $private_dotfiles/pass.ldap ]] && {
+    export LDAP_PASS="$(<$private_dotfiles/pass.ldap)"
+    #source set-vault-token
+  }
+fi
+
+#-----------------------------------------------------------------------------
+unset private_dotfiles
+
