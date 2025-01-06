@@ -3,8 +3,7 @@
 Set-Alias -Name c -Value Clear-Host
 Set-Alias -Name h -Value Get-History
 
-# Please fix the unapproved verb warning for Go-ParentDirectory and the two functions that use it AI!
-function Go-ParentDirectory {
+function Set-ParentDirectory {
   param (
     [int]$levels = 1
   )
@@ -17,12 +16,12 @@ function Go-ParentDirectory {
 #  -Value (Get-Command Go-ParentDirectory) `
 #  -Option Private
 
-function Go-UpTwoLevels { Go-ParentDirectory -levels 2 }
-function Go-UpThreeLevels { Go-ParentDirectory -levels 3 }
+function Set-UpTwoLevels { Set-ParentDirectory -levels 2 }
+function Set-UpThreeLevels { Set-ParentDirectory -levels 3 }
 
-Set-Alias -Scope Global -Name .. -Value Go-ParentDirectory
-Set-Alias -Name ... -Value Go-UpTwoLevels
-Set-Alias -Name .... -Value Go-UpThreeLevels
+Set-Alias -Scope Global -Name .. -Value Set-ParentDirectory
+Set-Alias -Name ... -Value Set-UpTwoLevels
+Set-Alias -Name .... -Value Set-UpThreeLevels
 
 Write-Host "Aliases created:"
 Get-Alias | Where-Object { $_.Name -in '..', '...', '....', 'c', 'h' } | ForEach-Object {
