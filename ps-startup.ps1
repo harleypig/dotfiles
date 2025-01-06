@@ -7,16 +7,14 @@ Set-Variable -Name DOTFILES `
   -Scope Global `
   -Value "$(Split-Path -Parent (Resolve-Path -Path $scriptPath))"
 
-# Replace all occurrences of $env:DOTFILES with $DOTFILES AI!
-
-$env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
+$PROJECTS_DIR = Split-Path -Parent $DOTFILES
 $PROJECTS_DIR = $env:PROJECTS_DIR
 
 #-----------------------------------------------------------------------------
 function Import-Files {
     # Define the directories to load files from
     $loadDirs = @(
-        Join-Path $env:DOTFILES "powershell/startup"
+        Join-Path $DOTFILES "powershell/startup"
         Join-Path $HOME ".psshell_startup.d"
     )
 
@@ -42,7 +40,7 @@ Import-Files
 
 # We want this to be after all the other files are loaded because these paths
 # take precedence.
-$env:PATH = "$env:DOTFILES\powershell\bin;" `
+$env:PATH = "$DOTFILES\powershell\bin;" `
             + "$HOME\.local\bin;" `
             + "$env:PATH"
 
