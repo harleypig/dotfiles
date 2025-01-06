@@ -15,6 +15,7 @@ if (Test-Path "$private_dotfiles/api-key.openai") {
 #-----------------------------------------------------------------------------
 if (Test-Path "$private_dotfiles/api-key.linode") {
     $env:LINODE_TOKEN = Get-Content -Path "$private_dotfiles/api-key.linode" -Raw
+    $LINODE_TOKEN = $env:LINODE_TOKEN
 }
 
 #-----------------------------------------------------------------------------
