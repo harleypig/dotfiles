@@ -27,15 +27,18 @@ function Get-GitTopLevel {
     return $topLevel
 }
 
+# Create an alias that calls Get-GitTopLevel named gtl AI!
+
 #-----------------------------------------------------------------------------
 # Go to current git repo toplevel directory.
-function Go-ToGitTopLevel {
-    $dir = Get-GitTopLevel
-    if (-not $dir) {
-        Write-Output "Unable to change to $dir"
-        return
-    }
-    Set-Location -Path $dir
+function gtl() {
+  local dir
+  dir="$(gtoplevel)" || return 1
+
+  cd "$dir" || {
+    echo "Unable to change to $dir"
+    return 1
+  }
 }
 
 #-----------------------------------------------------------------------------
