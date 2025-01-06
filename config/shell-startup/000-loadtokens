@@ -11,8 +11,8 @@ private_dotfiles="$PROJECTS_DIR/private_dotfiles"
   && export OPENAI_API_KEY="$(<$private_dotfiles/api-key.openai)"
 
 #-----------------------------------------------------------------------------
-#[[ -f $private_dotfiles/api-key.linode ]] \
-#  && export LINODE_TOKEN="$(<$private_dotfiles/api-key.linode)"
+[[ -f $private_dotfiles/api-key.linode ]] \
+  && export LINODE_TOKEN="$(<$private_dotfiles/api-key.linode)"
 
 #-----------------------------------------------------------------------------
 # Vault
