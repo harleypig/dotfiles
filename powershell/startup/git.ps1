@@ -8,19 +8,9 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     return
 }
 
-# All these functions need to be global. Please fix that AI!
-
 #-----------------------------------------------------------------------------
-# TBD: Fix inputrc setup
 
-# Show git short status for current directory by pressing Ctl-g-s.
-#bind -x '"\C-gs": "git status -s ."'
-
-# Show all local and remote branches for all remotes by pressing Ctl-g-r.
-#bind -x '"\C-gr": "git branch -ra | column"'
-
-#-----------------------------------------------------------------------------
-function Get-GitTopLevel {
+function Global:Get-GitTopLevel {
     $topLevel = git rev-parse --show-toplevel 2>$null
     if (-not $topLevel) {
         Write-Output "Not in a git repository."
