@@ -90,20 +90,73 @@ function Remove-Git {
     git rm $Paths
 }
 
-# Convert these bash aliases to powershell functions. Be sure to use approved verbs for the name of the function. Create aliases for each in the alias section below, using the old name of the alias as the new name AI!
-alias gall='git add .'
-alias gba='git branch -ra -v'
-alias gb='git branch'
-alias gcp='git cherry-pick'
-alias gdc='git diff --cached'
-alias gd='git diff'
-alias gds='git diffstat'
-alias glg='git lg'
-alias gl='git pull'
-alias gpa='git remote | xargs -L1 git push --all'
-alias gpall='git push --all'
-alias gp='git push'
-alias gs='git status -s'
+function Add-GitAll {
+    git add .
+}
+Set-Alias -Name gall -Value Add-GitAll
+
+function Branch-GitAll {
+    git branch -ra -v
+}
+Set-Alias -Name gba -Value Branch-GitAll
+
+function Branch-Git {
+    git branch
+}
+Set-Alias -Name gb -Value Branch-Git
+
+function CherryPick-Git {
+    param (
+        [string]$Commit
+    )
+    git cherry-pick $Commit
+}
+Set-Alias -Name gcp -Value CherryPick-Git
+
+function Diff-GitCached {
+    git diff --cached
+}
+Set-Alias -Name gdc -Value Diff-GitCached
+
+function Diff-Git {
+    git diff
+}
+Set-Alias -Name gd -Value Diff-Git
+
+function DiffStat-Git {
+    git diffstat
+}
+Set-Alias -Name gds -Value DiffStat-Git
+
+function Log-Git {
+    git lg
+}
+Set-Alias -Name glg -Value Log-Git
+
+function Pull-Git {
+    git pull
+}
+Set-Alias -Name gl -Value Pull-Git
+
+function Push-GitAllRemotes {
+    git remote | ForEach-Object { git push --all $_ }
+}
+Set-Alias -Name gpa -Value Push-GitAllRemotes
+
+function Push-GitAll {
+    git push --all
+}
+Set-Alias -Name gpall -Value Push-GitAll
+
+function Push-Git {
+    git push
+}
+Set-Alias -Name gp -Value Push-Git
+
+function Status-GitShort {
+    git status -s
+}
+Set-Alias -Name gs -Value Status-GitShort
 
 #-----------------------------------------------------------------------------
 Set-Alias -Name gtl -Value Set-GitTopLevelLocation
