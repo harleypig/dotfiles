@@ -27,14 +27,19 @@ if (Test-Path "$private_dotfiles/api-key.linode") {
 #-----------------------------------------------------------------------------
 # Vault
 
-# Convert the env variables in this section the same way please AI!
 if (Get-Command vault -ErrorAction SilentlyContinue) {
   if (Test-Path "$private_dotfiles/vault.addr") {
-    $env:VAULT_ADDR = Get-Content -Path "$private_dotfiles/vault.addr" -Raw
+    Set-Variable -Name VAULT_ADDR `
+      -Scope Global `
+      -Option Constant `
+      -Value (Get-Content -Path "$private_dotfiles/vault.addr" -Raw)
   }
 
   if (Test-Path "$private_dotfiles/pass.ldap") {
-    $env:LDAP_PASS = Get-Content -Path "$private_dotfiles/pass.ldap" -Raw
+    Set-Variable -Name LDAP_PASS `
+      -Scope Global `
+      -Option Constant `
+      -Value (Get-Content -Path "$private_dotfiles/pass.ldap" -Raw)
   }
 }
 
