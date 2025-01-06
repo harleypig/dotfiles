@@ -6,8 +6,10 @@ Set-Variable -Name DOTFILES `
   -Option Constant `
   -Value "$(Split-Path -Parent (Resolve-Path -Path $scriptPath))"
 
-# Convert the projects_dir to use Set-Variable the same way the DOTFILES is set AI!
-$PROJECTS_DIR = Split-Path -Parent $DOTFILES
+Set-Variable -Name PROJECTS_DIR `
+  -Scope Global `
+  -Option Constant `
+  -Value (Split-Path -Parent $DOTFILES)
 
 #-----------------------------------------------------------------------------
 
