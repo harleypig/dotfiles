@@ -10,9 +10,8 @@ Set-Variable -Name DOTFILES `
 $PROJECTS_DIR = Split-Path -Parent $DOTFILES
 #$PROJECTS_DIR = $env:PROJECTS_DIR
 
-# Replace all occurrences of $env:PROJECTS_DIR with $PROJECTS_DIR AI!
-
 #-----------------------------------------------------------------------------
+
 function Import-Files {
     # Define the directories to load files from
     $loadDirs = @(
@@ -48,7 +47,7 @@ $env:PATH = "$DOTFILES\powershell\bin;" `
 
 # TBD: move to `000-loadtokens` in psshell-startup
 # Private dotfiles variable, local to this script
-$private_dotfiles = Join-Path $env:PROJECTS_DIR "private_dotfiles"
+$private_dotfiles = Join-Path $PROJECTS_DIR "private_dotfiles"
 
 # Check if the OpenAI API key file exists and is readable
 $apiKeyFile = Join-Path $private_dotfiles "api-key.openai"
