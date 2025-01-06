@@ -14,6 +14,8 @@ if (Test-Path "$private_dotfiles/api-key.openai") {
     -Scope Global `
     -Option Constant `
     -Value (Get-Content -Path "$private_dotfiles/api-key.openai" -Raw)
+
+  $env:OPENAI_API_KEY = $OPENAI_API_KEY
 }
 
 #-----------------------------------------------------------------------------

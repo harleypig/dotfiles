@@ -15,6 +15,10 @@ private_dotfiles="$PROJECTS_DIR/private_dotfiles"
   && export LINODE_TOKEN="$(<$private_dotfiles/api-key.linode)"
 
 #-----------------------------------------------------------------------------
+[[ -f $private_dotfiles/api-key.grok ]] \
+  && export XAI_API_KEY="$(<$private_dotfiles/api-key.grok)"
+
+#-----------------------------------------------------------------------------
 # Vault
 
 if command -v vault &> /dev/null; then
