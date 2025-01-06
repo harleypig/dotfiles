@@ -23,7 +23,10 @@ Set-Alias -Scope Global -Name .. -Value Go-ParentDirectory
 Set-Alias -Name ... -Value Go-UpTwoLevels
 Set-Alias -Name .... -Value Go-UpThreeLevels
 
-# Add code to display which aliases have been created AI!
+Write-Host "Aliases created:"
+Get-Alias | Where-Object { $_.Name -in '..', '...', '....', 'c', 'h' } | ForEach-Object {
+    Write-Host "$($_.Name) -> $($_.Definition)"
+}
 
 # TBD: move to a file found by Load-Files
 function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
