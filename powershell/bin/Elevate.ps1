@@ -1,6 +1,7 @@
 param (
-    [Parameter(Mandatory=$true, Position=0)]
-    [string]$Command
+    [Parameter(Mandatory=$true, Position=0, ValueFromRemainingArguments=$true)]
+    [string[]]$Command
 )
 
-Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile -Command `$Command"
+$commandString = $Command -join ' '
+Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile -Command `$commandString"
