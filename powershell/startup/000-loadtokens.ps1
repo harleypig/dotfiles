@@ -2,8 +2,10 @@ $private_dotfiles = "$PROJECTS_DIR/private_dotfiles"
 
 #-----------------------------------------------------------------------------
 if (Test-Path "$private_dotfiles/api-key.azure") {
-  # Convert this token variable to use set-variable, making it a constant and a global AI!
-  $env:AZURE_DEVOPS_EXT_PAT = Get-Content -Path "$private_dotfiles/api-key.azure" -Raw
+  Set-Variable -Name AZURE_DEVOPS_EXT_PAT `
+    -Scope Global `
+    -Option Constant `
+    -Value (Get-Content -Path "$private_dotfiles/api-key.azure" -Raw)
 }
 
 #-----------------------------------------------------------------------------
