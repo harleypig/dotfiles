@@ -7,17 +7,18 @@ $private_dotfiles = Join-Path $PROJECTS_DIR "private_dotfiles"
 # Check if the OpenAI API key file exists and is readable
 $apiKeyFile = Join-Path $private_dotfiles "api-key.openai"
 
-# Modify this test to check if aider, an application, is available and if OPENAI_API_KEY (not $env:OPENAI_API_KEY) is set, then set the variables using set-variable as global AI!
 if (Test-Path -Path $apiKeyFile) {
-    $env:OPENAI_API_KEY = (Get-Content -Path $apiKeyFile -Raw).TrimEnd()
+    Set-Variable -Name OPENAI_API_KEY `
+      -Scope Global `
+      -Option Constant `
+      -Value ((Get-Content -Path $apiKeyFile -Raw).TrimEnd())
 
-    # Check if the 'aider' command is available
     if (Get-Command aider -ErrorAction SilentlyContinue) {
-        $env:AIDER_DARK_MODE = $true
-        $env:AIDER_EDITOR = "code"
-        $env:AIDER_GITIGNORE = $false
-        $env:AIDER_MAP_TOKENS = 2048
-        $env:AIDER_VIM = $true
-        $env:AIDER_WATCH_FILES = $true
+        Set-Variable -Name AIDER_DARK_MODE -Scope Global -Value $true
+        Set-Variable -Name AIDER_EDITOR -Scope Global -Value "code"
+        Set-Variable -Name AIDER_GITIGNORE -Scope Global -Value $false
+        Set-Variable -Name AIDER_MAP_TOKENS -Scope Global -Value 2048
+        Set-Variable -Name AIDER_VIM -Scope Global -Value $true
+        Set-Variable -Name AIDER_WATCH_FILES -Scope Global -Value $true
     }
 }
