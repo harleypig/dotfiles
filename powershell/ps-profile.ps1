@@ -23,13 +23,13 @@
 
 # Check for help parameters
 param (
-    [switch]$h,
-    [switch]$help
+  [switch]$h,
+  [switch]$help
 )
 
 if ($h -or $help) {
-    Get-Help -Name $MyInvocation.MyCommand.Path
-    exit 0
+  Get-Help -Name $MyInvocation.MyCommand.Path
+  exit 0
 }
 
 # Get the current directory
@@ -41,9 +41,9 @@ $profileContent = ". $sourcePath"
 
 # Check if $PROFILE exists
 if (Test-Path $PROFILE) {
-    $existingProfileContent = Get-Content -Path $PROFILE
-    if ($existingProfileContent -notcontains $profileContent) {
-        Write-Host @"
+  $existingProfileContent = Get-Content -Path $PROFILE
+  if ($existingProfileContent -notcontains $profileContent) {
+    Write-Host @"
 
 Profile already exists at: $PROFILE
 To include your startup script, add the following line to your profile:
@@ -58,24 +58,24 @@ and already includes the necessary content.
 
 "@ -ForegroundColor Green
 
-    }
-    exit 0
+  }
+  exit 0
 }
 
 # Create a new profile file that sources ps1-startup.ps1
 try {
-    # Ensure the profile directory exists
-    $profileDir = Split-Path -Path $PROFILE
-    if (-not (Test-Path $profileDir)) {
-        New-Item -ItemType Directory -Path $profileDir -Force
-    }
+  # Ensure the profile directory exists
+  $profileDir = Split-Path -Path $PROFILE
+  if (-not (Test-Path $profileDir)) {
+    New-Item -ItemType Directory -Path $profileDir -Force
+  }
 
-    # Write the content to the profile file
-    Set-Content -Path $PROFILE -Value $profileContent -Encoding UTF8
+  # Write the content to the profile file
+  Set-Content -Path $PROFILE -Value $profileContent -Encoding UTF8
 
-    Write-Output "Profile created at: $PROFILE"
-    Write-Output "The file sources: $sourcePath"    
+  Write-Output "Profile created at: $PROFILE"
+  Write-Output "The file sources: $sourcePath"    
 } catch {
-    Write-Error "Failed to create the profile file: $_"
-    exit 1
+  Write-Error "Failed to create the profile file: $_"
+  exit 1
 }

@@ -34,35 +34,35 @@
 #>
 
 param (
-    [switch]$Full,
-    [string]$File = "./ps-packages.txt",
-    [switch]$Quiet
+  [switch]$Full,
+  [string]$File = "./ps-packages.txt",
+  [switch]$Quiet
 )
 
 # Check if the file path is writable
 try {
-    # Resolve the full path of the file
-    $resolvedFile = (Resolve-Path -Path $File -ErrorAction SilentlyContinue).Path
-    if (-not $resolvedFile) {
-        $resolvedFile = Join-Path -Path (Get-Location).Path -ChildPath $File
-    }
+  # Resolve the full path of the file
+  $resolvedFile = (Resolve-Path -Path $File -ErrorAction SilentlyContinue).Path
+  if (-not $resolvedFile) {
+    $resolvedFile = Join-Path -Path (Get-Location).Path -ChildPath $File
+  }
 
-    # Extract the directory from the resolved file path
-    $fileDirectory = [System.IO.Path]::GetDirectoryName($resolvedFile)
+  # Extract the directory from the resolved file path
+  $fileDirectory = [System.IO.Path]::GetDirectoryName($resolvedFile)
 
-    # Validate directory
-    if (-not (Test-Path -Path $fileDirectory)) {
-        throw "The directory '$fileDirectory' does not exist."
-    }
-    if (-not (Test-Path -Path $fileDirectory -PathType Container)) {
-        throw "The specified path '$fileDirectory' is not a valid directory."
-    }
-    if (-not (Get-Acl -Path $fileDirectory).Access | Where-Object { $_.FileSystemRights -match 'Write' }) {
-        throw "The directory '$fileDirectory' is not writable."
-    }
+  # Validate directory
+  if (-not (Test-Path -Path $fileDirectory)) {
+    throw "The directory '$fileDirectory' does not exist."
+  }
+  if (-not (Test-Path -Path $fileDirectory -PathType Container)) {
+    throw "The specified path '$fileDirectory' is not a valid directory."
+  }
+  if (-not (Get-Acl -Path $fileDirectory).Access | Where-Object { $_.FileSystemRights -match 'Write' }) {
+    throw "The directory '$fileDirectory' is not writable."
+  }
 
-    # Update the $File variable to the resolved full path
-    $File = $resolvedFile
+  # Update the $File variable to the resolved full path
+  $File = $resolvedFile
 } catch {
     Write-Error "Error: Unable to write to the specified file path '$File'. $_"
     exit 1

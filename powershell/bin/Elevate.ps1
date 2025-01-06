@@ -17,18 +17,18 @@
 #>
 
 param (
-    [Parameter(Mandatory=$false, HelpMessage="Display help information.")]
-    [switch]$h,
+  [Parameter(Mandatory=$false, HelpMessage="Display help information.")]
+  [switch]$h,
 
-    [Parameter(Mandatory=$true, Position=0, ValueFromRemainingArguments=$true,
-               HelpMessage="The command and its parameters to be executed with
-               elevated privileges.")]
-    [string[]]$Command
+  [Parameter(Mandatory=$true, Position=0, ValueFromRemainingArguments=$true,
+             HelpMessage="The command and its parameters to be executed with
+             elevated privileges.")]
+  [string[]]$Command
 )
 
 if ($h) {
-    Get-Help -Full
-    return
+  Get-Help -Full
+  return
 }
 
 $commandString = $Command -join ' '
