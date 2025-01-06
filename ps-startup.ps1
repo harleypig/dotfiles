@@ -25,8 +25,8 @@ function Import-Files {
 
             foreach ($file in $loadFiles) {
                 if (Test-Path -Path $file.FullName -PathType Leaf) {
-                  # Add a message stating which files are being sourced AI!
-                    . $file.FullName
+                  Write-Host "Sourcing file: $($file.FullName)"
+                  . $file.FullName
                 }
             }
         }
