@@ -1,14 +1,13 @@
 # Declare and initialize variables, making some of them dual purpose
 $scriptPath = $MyInvocation.MyCommand.Path
 
-#$env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
-#$DOTFILES = $env:DOTFILES
 Set-Variable -Name DOTFILES `
   -Scope Global `
+  -Option Constant `
   -Value "$(Split-Path -Parent (Resolve-Path -Path $scriptPath))"
 
+# Convert the projects_dir to use Set-Variable the same way the DOTFILES is set AI!
 $PROJECTS_DIR = Split-Path -Parent $DOTFILES
-#$PROJECTS_DIR = $env:PROJECTS_DIR
 
 #-----------------------------------------------------------------------------
 
