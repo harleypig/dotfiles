@@ -11,7 +11,7 @@ $PROJECTS_DIR = $env:PROJECTS_DIR
 function Import-Files {
     # Define the directories to load files from
     $loadDirs = @(
-        Join-Path $env:DOTFILES "powershell/psshell-startup"
+        Join-Path $env:DOTFILES "powershell/startup"
         Join-Path $HOME ".psshell_startup.d"
     )
 
