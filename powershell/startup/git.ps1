@@ -27,7 +27,7 @@ function Get-GitTopLevel {
     return $topLevel
 }
 
-# Create an alias that calls Get-GitTopLevel named gtl AI!
+Set-Alias -Name gtl -Value Get-GitTopLevel
 
 #-----------------------------------------------------------------------------
 # Go to current git repo toplevel directory.
