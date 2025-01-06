@@ -9,13 +9,16 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 }
 
 #-----------------------------------------------------------------------------
+# TBD: Fix inputrc setup
+
 # Show git short status for current directory by pressing Ctl-g-s.
-bind -x '"\C-gs": "git status -s ."'
+#bind -x '"\C-gs": "git status -s ."'
 
 # Show all local and remote branches for all remotes by pressing Ctl-g-r.
-bind -x '"\C-gr": "git branch -ra | column"'
+#bind -x '"\C-gr": "git branch -ra | column"'
 
 #-----------------------------------------------------------------------------
+# Convert this function to a powershell function AI!
 function gtoplevel() {
   git rev-parse --show-toplevel 2> /dev/null || {
     echo "Not in a git repository."
