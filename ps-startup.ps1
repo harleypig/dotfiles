@@ -19,9 +19,8 @@ function Import-Files {
     # the order of the directories.
     foreach ($loadDir in $loadDirs) {
         if (Test-Path -Path $loadDir) {
-          # Modify the Where-Object to only load ps1 files AI!
             $loadFiles = Get-ChildItem -Path $loadDir -File `
-                         | Where-Object { $_.Name -notmatch '_inactive' } `
+                         | Where-Object { $_.Name -notmatch '_inactive' -and $_.Extension -eq '.ps1' } `
                          | Sort-Object Name
 
             foreach ($file in $loadFiles) {
