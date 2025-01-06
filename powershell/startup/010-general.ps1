@@ -1,13 +1,10 @@
-# Convert the following aliases to powershell aliases please, AI!
-#: alias c='clear'
-#: alias ..='cd ..'
-#: alias ...='cd ../..'
-#: alias ....='cd ../../..'
-#: alias df='df -h'
-#: alias h='history'
-#: #alias rd=rmdir
-#: #alias v='vim'
-#: #alias f='find'
+Set-Alias -Name c -Value Clear-Host
+Set-Alias -Name .. -Value Set-Location -ArgumentList ..
+Set-Alias -Name ... -Value Set-Location -ArgumentList ../..
+Set-Alias -Name .... -Value Set-Location -ArgumentList ../../..
+# PowerShell does not have a direct equivalent for 'df', but you can use Get-PSDrive
+Set-Alias -Name h -Value Get-History
+# PowerShell does not have a direct equivalent for 'rd', 'vim', or 'find', but you can use Remove-Item, Invoke-Vim, and Get-ChildItem respectively
 
 #: #-----------------------------------------------------------------------------
 #: alias dumppath='echo -e ${PATH//:/\\n}'
