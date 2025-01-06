@@ -27,9 +27,8 @@ function Get-GitTopLevel {
     return $topLevel
 }
 
-Set-Alias -Name gtl -Value Get-GitTopLevel
-
 #-----------------------------------------------------------------------------
+# Convert this function to a powershell function and fix the set-alias to use this function instead AI!
 # Go to current git repo toplevel directory.
 function gtl() {
   local dir
@@ -40,6 +39,8 @@ function gtl() {
     return 1
   }
 }
+
+Set-Alias -Name gtl -Value Get-GitTopLevel
 
 #-----------------------------------------------------------------------------
 ## Go to current git toplevel directory, perform the git command and return
