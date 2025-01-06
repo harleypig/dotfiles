@@ -50,8 +50,8 @@ To include your startup script, add the following line to your profile:
 $profileContent
 
 "@ -ForegroundColor Green
-   } else {
-        Write-Host @"
+  } else {
+    Write-Host @"
 
 Profile already exists at: $PROFILE
 and already includes the necessary content.
