@@ -10,8 +10,10 @@ if (Test-Path "$private_dotfiles/api-key.azure") {
 
 #-----------------------------------------------------------------------------
 if (Test-Path "$private_dotfiles/api-key.openai") {
-  # Convert this variable the same way aI!
-  $env:OPENAI_API_KEY = Get-Content -Path "$private_dotfiles/api-key.openai" -Raw
+  Set-Variable -Name OPENAI_API_KEY `
+    -Scope Global `
+    -Option Constant `
+    -Value (Get-Content -Path "$private_dotfiles/api-key.openai" -Raw)
 }
 
 #-----------------------------------------------------------------------------
