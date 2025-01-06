@@ -4,7 +4,7 @@ $scriptPath = $MyInvocation.MyCommand.Path
 Set-Variable -Name DOTFILES `
   -Scope Global `
   -Option Constant `
-  -Value "$(Split-Path -Parent (Resolve-Path -Path $scriptPath))"
+  -Value (Split-Path -Parent (Resolve-Path -Path $scriptPath))
 
 Set-Variable -Name PROJECTS_DIR `
   -Scope Global `

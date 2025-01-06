@@ -20,3 +20,9 @@ shelling from vim, which is a common use case.
 
 This setup has been found to work well, but as with any configuration, it may
 not be suitable for all use cases or environments.
+
+## Powershell
+
+## VSCode
+
+Consider using Todo Tree Extension for XXX: or TBD: highlights.
