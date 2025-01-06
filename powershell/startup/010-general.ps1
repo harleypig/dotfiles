@@ -11,12 +11,10 @@ function Go-ParentDirectory {
   }
 }
 
+# Create 2 one line functions that call Go-ParentDirectory. The first with 2, the second with 3 AI!
 
 
 
-Set-Alias -Name .. -Value Set-Location -ArgumentList ..
-Set-Alias -Name ... -Value Set-Location -ArgumentList ../..
-Set-Alias -Name .... -Value Set-Location -ArgumentList ../../..
 # PowerShell does not have a direct equivalent for 'df', but you can use Get-PSDrive
 # PowerShell does not have a direct equivalent for 'rd', 'vim', or 'find', but you can use Remove-Item, Invoke-Vim, and Get-ChildItem respectively
 
