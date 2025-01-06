@@ -27,6 +27,7 @@ if (Test-Path "$private_dotfiles/api-key.linode") {
 #-----------------------------------------------------------------------------
 # Vault
 
+# Convert the env variables in this section the same way please AI!
 if (Get-Command vault -ErrorAction SilentlyContinue) {
   if (Test-Path "$private_dotfiles/vault.addr") {
     $env:VAULT_ADDR = Get-Content -Path "$private_dotfiles/vault.addr" -Raw
