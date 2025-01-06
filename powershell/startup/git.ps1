@@ -28,8 +28,7 @@ function Get-GitTopLevel {
 }
 
 #-----------------------------------------------------------------------------
-# Fix the unapproved verb warning for this function AI!
-function Go-ToGitTopLevel {
+function Set-GitTopLevelLocation {
     $dir = Get-GitTopLevel
     if (-not $dir) {
         Write-Output "Unable to change to $dir"
@@ -38,7 +37,7 @@ function Go-ToGitTopLevel {
     Set-Location -Path $dir
 }
 
-Set-Alias -Name gtl -Value Go-ToGitTopLevel
+Set-Alias -Name gtl -Value Set-GitTopLevelLocation
 
 #-----------------------------------------------------------------------------
 ## Go to current git toplevel directory, perform the git command and return
