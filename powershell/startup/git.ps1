@@ -28,7 +28,7 @@ function Get-GitTopLevel {
 }
 
 #-----------------------------------------------------------------------------
-# Go to current git repo toplevel directory.
+# Fix the unapproved verb warning for this function AI!
 function Go-ToGitTopLevel {
     $dir = Get-GitTopLevel
     if (-not $dir) {
