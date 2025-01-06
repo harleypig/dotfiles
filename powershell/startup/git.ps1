@@ -28,6 +28,7 @@ function Get-GitTopLevel {
 }
 
 #-----------------------------------------------------------------------------
+# Convert this to a powershell function. Please note 'gtoplevel' has been renamed to 'Get-GitTopLevel'. AI!
 # Go to current git repo toplevel directory.
 function gtl() {
   local dir
