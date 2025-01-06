@@ -12,7 +12,8 @@
 
 .EXAMPLE
     .\Elevate.ps1 -Command "choco", "install", "terraform"
-    This example runs the Chocolatey install command for Terraform with elevated privileges.
+    This example runs the Chocolatey install command for Terraform with elevated
+    privileges.
 
 .NOTES
     Author: Your Name
