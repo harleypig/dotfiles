@@ -9,7 +9,6 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 }
 
 #-----------------------------------------------------------------------------
-
 function Global:Get-GitTopLevel {
     $topLevel = git rev-parse --show-toplevel 2>$null
     if (-not $topLevel) {
@@ -52,6 +51,7 @@ function Global:Remove-Git { param ( [string[]]$Paths) git rm $Paths }
 function Global:Status-GitShort { git status -s }
 
 #-----------------------------------------------------------------------------
+# All these aliases need to be global. Fix that, aI!
 Set-Alias -Name ga -Value Add-Git
 Set-Alias -Name gall -Value Add-GitAll
 Set-Alias -Name gb -Value Branch-Git
