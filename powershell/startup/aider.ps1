@@ -1,18 +1,7 @@
 # OPENAI_API_KEY is loaded in 000-loadtokens
 
-# if command -v aider &> /dev/null; then
-
-$private_dotfiles = Join-Path $PROJECTS_DIR "private_dotfiles"
-
-# Check if the OpenAI API key file exists and is readable
-$apiKeyFile = Join-Path $private_dotfiles "api-key.openai"
-
+# The first test should test if OPENAI_API_KEY is set AI!
 if (Test-Path -Path $apiKeyFile) {
-    Set-Variable -Name OPENAI_API_KEY `
-      -Scope Global `
-      -Option Constant `
-      -Value ((Get-Content -Path $apiKeyFile -Raw).TrimEnd())
-
     if (Get-Command aider -ErrorAction SilentlyContinue) {
         Set-Variable -Name AIDER_DARK_MODE -Scope Global -Value $true
         Set-Variable -Name AIDER_EDITOR -Scope Global -Value "code"
