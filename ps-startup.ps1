@@ -1,8 +1,13 @@
 # Declare and initialize variables, making some of them dual purpose
 $scriptPath = $MyInvocation.MyCommand.Path
 
-$env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
-$DOTFILES = $env:DOTFILES
+#$env:DOTFILES = Split-Path -Parent (Resolve-Path -Path $scriptPath)
+#$DOTFILES = $env:DOTFILES
+Set-Variable -Name DOTFILES `
+  -Scope Global `
+  -Value "$(Split-Path -Parent (Resolve-Path -Path $scriptPath))"
+
+# Replace all occurrences of $env:DOTFILES with $DOTFILES AI!
 
 $env:PROJECTS_DIR = Split-Path -Parent $env:DOTFILES
 $PROJECTS_DIR = $env:PROJECTS_DIR
@@ -25,7 +30,6 @@ function Import-Files {
 
             foreach ($file in $loadFiles) {
                 if (Test-Path -Path $file.FullName -PathType Leaf) {
-                  Write-Host "Sourcing file: $($file.FullName)"
                   . $file.FullName
                 }
             }
