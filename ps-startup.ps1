@@ -8,7 +8,9 @@ Set-Variable -Name DOTFILES `
   -Value "$(Split-Path -Parent (Resolve-Path -Path $scriptPath))"
 
 $PROJECTS_DIR = Split-Path -Parent $DOTFILES
-$PROJECTS_DIR = $env:PROJECTS_DIR
+#$PROJECTS_DIR = $env:PROJECTS_DIR
+
+# Replace all occurrences of $env:PROJECTS_DIR with $PROJECTS_DIR AI!
 
 #-----------------------------------------------------------------------------
 function Import-Files {
