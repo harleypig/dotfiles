@@ -4,8 +4,9 @@
 # https://gist.github.com/chrismccoy/8775224
 # https://github.com/git/git/blob/master/mergetools/vimdiff
 
-# Convert the following line to powershell AI!
-command -v git &> /dev/null || return 0
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    return
+}
 
 #-----------------------------------------------------------------------------
 # Show git short status for current directory by pressing Ctl-g-s.
