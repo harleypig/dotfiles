@@ -1,32 +1,34 @@
-# Convert this bash startup script to powershell, AI!
-
-private_dotfiles="$PROJECTS_DIR/private_dotfiles"
+$private_dotfiles = "$env:PROJECTS_DIR/private_dotfiles"
 
 #-----------------------------------------------------------------------------
-[[ -r $private_dotfiles/api-key.azure ]] \
-  && export AZURE_DEVOPS_EXT_PAT="$(<$private_dotfiles/api-key.azure)"
+if (Test-Path "$private_dotfiles/api-key.azure") {
+    $env:AZURE_DEVOPS_EXT_PAT = Get-Content -Path "$private_dotfiles/api-key.azure" -Raw
+}
 
 #-----------------------------------------------------------------------------
-[[ -r $private_dotfiles/api-key.openai ]] \
-  && export OPENAI_API_KEY="$(<$private_dotfiles/api-key.openai)"
+if (Test-Path "$private_dotfiles/api-key.openai") {
+    $env:OPENAI_API_KEY = Get-Content -Path "$private_dotfiles/api-key.openai" -Raw
+}
 
 #-----------------------------------------------------------------------------
-#[[ -f $private_dotfiles/api-key.linode ]] \
-#  && export LINODE_TOKEN="$(<$private_dotfiles/api-key.linode)"
+#if (Test-Path "$private_dotfiles/api-key.linode") {
+#    $env:LINODE_TOKEN = Get-Content -Path "$private_dotfiles/api-key.linode" -Raw
+#}
 
 #-----------------------------------------------------------------------------
 # Vault
 
-if command -v vault &> /dev/null; then
-  [[ -r $private_dotfiles/vault.addr ]] \
-    && export VAULT_ADDR="$(<$private_dotfiles/vault.addr)"
+if (Get-Command vault -ErrorAction SilentlyContinue) {
+    if (Test-Path "$private_dotfiles/vault.addr") {
+        $env:VAULT_ADDR = Get-Content -Path "$private_dotfiles/vault.addr" -Raw
+    }
 
-  [[ -r $private_dotfiles/pass.ldap ]] && {
-    export LDAP_PASS="$(<$private_dotfiles/pass.ldap)"
-    #source set-vault-token
-  }
-fi
+    if (Test-Path "$private_dotfiles/pass.ldap") {
+        $env:LDAP_PASS = Get-Content -Path "$private_dotfiles/pass.ldap" -Raw
+        #. .\set-vault-token.ps1
+    }
+}
 
 #-----------------------------------------------------------------------------
-unset private_dotfiles
+Remove-Variable -Name private_dotfiles
 
