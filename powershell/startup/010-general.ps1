@@ -14,7 +14,9 @@ function Go-ParentDirectory {
 function Go-UpTwoLevels { Go-ParentDirectory -levels 2 }
 function Go-UpThreeLevels { Go-ParentDirectory -levels 3 }
 
-# Create three aliases, named '..', '...', and '....', that call their matching functions AI!
+Set-Alias -Name .. -Value Go-ParentDirectory
+Set-Alias -Name ... -Value Go-UpTwoLevels
+Set-Alias -Name .... -Value Go-UpThreeLevels
 
 # PowerShell does not have a direct equivalent for 'df', but you can use Get-PSDrive
 # PowerShell does not have a direct equivalent for 'rd', 'vim', or 'find', but you can use Remove-Item, Invoke-Vim, and Get-ChildItem respectively
