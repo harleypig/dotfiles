@@ -19,6 +19,7 @@ function Import-Files {
     # the order of the directories.
     foreach ($loadDir in $loadDirs) {
         if (Test-Path -Path $loadDir) {
+          # Modify the Where-Object to only load ps1 files AI!
             $loadFiles = Get-ChildItem -Path $loadDir -File `
                          | Where-Object { $_.Name -notmatch '_inactive' } `
                          | Sort-Object Name
@@ -40,9 +41,6 @@ Import-Files
 $env:PATH = "$env:DOTFILES\powershell\bin;" `
             + "$HOME\.local\bin;" `
             + "$env:PATH"
-
-# TBD: move to a file found by Load-Files
-function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
 
 # TBD: move to `000-loadtokens` in psshell-startup
 # Private dotfiles variable, local to this script
