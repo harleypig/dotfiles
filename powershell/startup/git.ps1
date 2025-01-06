@@ -30,7 +30,7 @@ function Get-GitTopLevel {
 }
 
 #-----------------------------------------------------------------------------
-function Set-GitTopLevelLocation {
+function Global:Set-GitTopLevelLocation {
     $dir = Get-GitTopLevel
     if (-not $dir) {
         Write-Output "Unable to change to $dir"
@@ -40,26 +40,26 @@ function Set-GitTopLevelLocation {
 }
 
 #-----------------------------------------------------------------------------
-function Add-Git { param ( [string[]]$Paths) git add $Paths }
-function Add-GitAll { git add .  }
-function Branch-Git { git branch }
-function Branch-GitAll { git branch -ra -v }
-function Checkout-Git { param ( [string]$Branch) git checkout $Branch }
-function CherryPick-Git { param ( [string]$Commit) git cherry-pick $Commit }
-function Commit-Git { param ( [string]$Message) git commit -v -m $Message }
-function Commit-GitAll { param ( [string]$Message) git commit -a -v -m $Message }
-function Diff-Git { git diff }
-function Diff-GitCached { git diff --cached }
-function DiffStat-Git { git diffstat }
-function Fetch-Git { git fetch --all --tags }
-function Log-Git { git lg }
-function Move-Git { param ( [string[]]$Paths) git mv $Paths }
-function Pull-Git { git pull }
-function Push-Git { git push }
-function Push-GitAll { git push --all }
-function Push-GitAllRemotes { git remote | ForEach-Object { git push --all $_ } }
-function Remove-Git { param ( [string[]]$Paths) git rm $Paths }
-function Status-GitShort { git status -s }
+function Global:Add-Git { param ( [string[]]$Paths) git add $Paths }
+function Global:Add-GitAll { git add .  }
+function Global:Branch-Git { git branch }
+function Global:Branch-GitAll { git branch -ra -v }
+function Global:Checkout-Git { param ( [string]$Branch) git checkout $Branch }
+function Global:CherryPick-Git { param ( [string]$Commit) git cherry-pick $Commit }
+function Global:Commit-Git { param ( [string]$Message) git commit -v -m $Message }
+function Global:Commit-GitAll { param ( [string]$Message) git commit -a -v -m $Message }
+function Global:Diff-Git { git diff }
+function Global:Diff-GitCached { git diff --cached }
+function Global:DiffStat-Git { git diffstat }
+function Global:Fetch-Git { git fetch --all --tags }
+function Global:Log-Git { git lg }
+function Global:Move-Git { param ( [string[]]$Paths) git mv $Paths }
+function Global:Pull-Git { git pull }
+function Global:Push-Git { git push }
+function Global:Push-GitAll { git push --all }
+function Global:Push-GitAllRemotes { git remote | ForEach-Object { git push --all $_ } }
+function Global:Remove-Git { param ( [string[]]$Paths) git rm $Paths }
+function Global:Status-GitShort { git status -s }
 
 #-----------------------------------------------------------------------------
 Set-Alias -Name ga -Value Add-Git
