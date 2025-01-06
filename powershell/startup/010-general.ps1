@@ -25,9 +25,14 @@ Set-Alias -Scope Global -Name .... -Value Set-UpThreeLevels
 #: # https://wiki.archlinux.org/index.php/Core_Utilities#ls
 #: eval $(dircolors -b)
 #: 
-# Conver this to a function that does the same thing in powershell as in bash AI!
-#: alias l='ls -AFl --color=auto'
-#: alias sl=ls
+function l {
+    param (
+        [string]$Path = "."
+    )
+    Get-ChildItem -Path $Path -Force | Format-List
+}
+
+Set-Alias -Name sl -Value Get-ChildItem
 #: 
 #: #-----------------------------------------------------------------------------
 #: alias diffdir='diff -qr'
