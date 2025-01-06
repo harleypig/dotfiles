@@ -1,9 +1,5 @@
-# Make all aliases in this file constants.
-
-Set-Alias -Name c -Value Clear-Host
-Set-Alias -Name h -Value Get-History
-
-function Set-ParentDirectory {
+##############################################################################
+function Global:Set-ParentDirectory {
   param (
     [int]$levels = 1
   )
@@ -12,34 +8,24 @@ function Set-ParentDirectory {
     Set-Location -Path ..
   }
 }
-#Set-Variable -Name Go-ParentDirectory `
-#  -Value (Get-Command Go-ParentDirectory) `
-#  -Option Private
 
-function Set-UpTwoLevels { Set-ParentDirectory -levels 2 }
-function Set-UpThreeLevels { Set-ParentDirectory -levels 3 }
+function Global:Set-UpTwoLevels { Set-ParentDirectory -levels 2 }
+function Global:Set-UpThreeLevels { Set-ParentDirectory -levels 3 }
 
-Set-Alias -Scope Global -Name .. -Value Set-ParentDirectory
-Set-Alias -Name ... -Value Set-UpTwoLevels
-Set-Alias -Name .... -Value Set-UpThreeLevels
-
-Write-Host "Aliases created:"
-Get-Alias | Where-Object { $_.Name -in '..', '...', '....', 'c', 'h' } | ForEach-Object {
-    Write-Host "$($_.Name) -> $($_.Definition)"
-}
-
-# TBD: move to a file found by Load-Files
 function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
 
-#: #-----------------------------------------------------------------------------
-#: alias dumppath='echo -e ${PATH//:/\\n}'
-#: alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
-#: alias dotfiles='cd $DOTFILES'
-#: 
+##############################################################################
+Set-Alias -Scope Global -Name c -Value Clear-Host
+Set-Alias -Scope Global -Name h -Value Get-History
+Set-Alias -Scope Global -Name .. -Value Set-ParentDirectory
+Set-Alias -Scope Global -Name ... -Value Set-UpTwoLevels
+Set-Alias -Scope Global -Name .... -Value Set-UpThreeLevels
+
 #: #-----------------------------------------------------------------------------
 #: # https://wiki.archlinux.org/index.php/Core_Utilities#ls
 #: eval $(dircolors -b)
 #: 
+# Conver this to a function that does the same thing in powershell as in bash AI!
 #: alias l='ls -AFl --color=auto'
 #: alias sl=ls
 #: 
