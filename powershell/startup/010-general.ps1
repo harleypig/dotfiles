@@ -1,3 +1,5 @@
+# Make all aliases in this file constants.
+
 Set-Alias -Name c -Value Clear-Host
 Set-Alias -Name h -Value Get-History
 
@@ -10,16 +12,21 @@ function Go-ParentDirectory {
     Set-Location -Path ..
   }
 }
+#Set-Variable -Name Go-ParentDirectory `
+#  -Value (Get-Command Go-ParentDirectory) `
+#  -Option Private
 
 function Go-UpTwoLevels { Go-ParentDirectory -levels 2 }
 function Go-UpThreeLevels { Go-ParentDirectory -levels 3 }
 
-Set-Alias -Name .. -Value Go-ParentDirectory
+Set-Alias -Scope Global -Name .. -Value Go-ParentDirectory
 Set-Alias -Name ... -Value Go-UpTwoLevels
 Set-Alias -Name .... -Value Go-UpThreeLevels
 
-# PowerShell does not have a direct equivalent for 'df', but you can use Get-PSDrive
-# PowerShell does not have a direct equivalent for 'rd', 'vim', or 'find', but you can use Remove-Item, Invoke-Vim, and Get-ChildItem respectively
+# Add code to display which aliases have been created AI!
+
+# TBD: move to a file found by Load-Files
+function dumppath { $env:PATH -split ';' | ForEach-Object { Write-Output $_ } }
 
 #: #-----------------------------------------------------------------------------
 #: alias dumppath='echo -e ${PATH//:/\\n}'
