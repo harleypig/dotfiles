@@ -1,0 +1,108 @@
+#!/bin/cat
+$Id: FAQ.Zimbra.txt,v 1.14 2023/12/01 15:47:43 gilles Exp gilles $
+
+This documentation is also available online at
+https://imapsync.lamiral.info/FAQ.d/
+https://imapsync.lamiral.info/FAQ.d/FAQ.Zimbra.txt
+
+
+=======================================================================
+      Imapsync tips for Zimbra. Specific issues and solutions.
+=======================================================================
+
+Please, don't follow
+https://wiki.zimbra.com/wiki/Guide_to_imapsync
+It's obsolete and it will give you, and me, more difficulties than 
+doing a standard sync without additional options.
+
+Questions answered in this FAQ are:
+
+Q. How to migrate from Zimbra to XXX?
+
+Q. Which Zimbra server releases are supported by imapsync? 
+   Quick answer: All releases.
+
+Q. How to migrate from Zimbra with an admin account?
+
+Q. I got this "NO APPEND failed" error:
+could not append ( Subject:... Flags:[\Flagged \Seen EmailswithStickyNotes:FLAG51135] ) 
+to folder XXX: 316 NO APPEND failed
+What can I do?
+
+Q. Zimbra disconnects without reason
+   Could not select: * BYE ... Zimbra IMAP4rev1 server closing connection
+
+Q. Imapsync finds 0 folders on a Zimbra account.
+
+Now the questions again with their answers.
+
+
+=======================================================================
+Q. How to migrate from Zimbra to XXX?
+
+The basic default (only credendials) should work fine with Zimbra.
+
+=======================================================================
+Q. Which Zimbra server releases are supported by imapsync? 
+   Quick answer: All releases.
+
+A. So far, Zimbra releases reported ok:
+   https://imapsync.lamiral.info/S/imapservers.shtml
+   Zimbra-IMAP 3.0.1 GA 160, 3.1.0 Build 279, 4.0.5, 4.5.2, 4.5.6, 
+   Zimbra 5.0.24_GA_3356.RHEL4 [host1], 5.5, any 6.x, any 8.x
+
+=======================================================================
+Q. How to migrate from Zimbra with an admin account?
+
+A. Use:
+
+  imapsync ... --user1 "normal_user" --authuser1 "admin_user"  --password1 "admin_user_password"
+
+To setup or use a Zimbra admin user see:
+https://zimbra.github.io/adminguide/8.8.9/index.html#_administrator_accounts
+...
+https://zimbra.github.io/adminguide/8.8.15/index.html#_administrator_accounts
+
+Thanks to Richard Street from thinkround for this tip.
+
+=======================================================================
+Q. I got this "NO APPEND failed" error:
+could not append ( Subject:... Flags:[\Flagged \Seen EmailswithStickyNotes:FLAG51135] ) 
+to folder XXX: 316 NO APPEND failed
+What can I do?
+
+A1.
+https://zimbra.github.io/adminguide/8.8.10/index.html
+Flagging
+Users can create flags and assign them to messages, contacts, and files in Briefcase folders.
+In the Admin Console, see COS -> Features -> Mail Features container
+
+Is Flagging on on host2? 
+If yes, see https://imapsync.lamiral.info/FAQ.d/FAQ.Flags.txt
+
+=======================================================================
+Q. Zimbra disconnects without reason
+   Could not select: * BYE ... Zimbra IMAP4rev1 server closing connection
+
+A. The cause of this problem may be that some users have a subscription 
+   of a shared folder from a mailbox locked and so the shared folder.
+   The access problems may happen in a lot of folders, 
+   not only the shared/locked one.
+
+   It should work after removing the locked/shared folder.
+
+   Thanks to Danny Herrlitz for this input!
+
+=======================================================================
+Q. Imapsync finds 0 folders on a Zimbra account.
+
+A. Check there are no broken mountpoints in the account you are trying 
+   to sync. Broken mountpoints appear strike through in the webmail.
+
+   Just remove the broken mountpoint (clicking on it in the webmail 
+   will show a popup you just have to confirm) and Zimbra will stop 
+   answering there's zero IMAP folder to the LIST "" *.
+
+   From https://github.com/imapsync/imapsync/issues/426
+
+=======================================================================

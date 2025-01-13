@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Variables for source server (host1)
+HOST1="imap.gmail.com"
+USER1="alansyoungiii@gmail.com"
+# Follow steps for first question, option #1 in FAQ.d\FAQ.Gmail.txt
+PASSWORD1=""
+
+# Variables for destination server (host2)
+HOST2="taylor.mxrouting.net"
+USER2="harleypig@harleypig.com"
+PASSWORD2="$MXROUTE_PASSWORD"
+
+# Array for imapsync options (assigning each value separately for easy commenting)
+declare -a iopts
+#iopts+=('--automap')
+iopts+=('--noreleasecheck')
+# Don't need this because we're moving all to a single folder
+#iopts+=('--skipemptyfolders')
+
+# sync unidentified messages
+iopts+=('--addheader')
+
+# Include only MySentMail and Finance/MXRoute folders for testing
+#iopts+=("--folder" "MySentMail")
+#iopts+=("--folder" "Linode")
+
+# Sync all email to this folder, except for what follows.
+iopts+=('--regextrans2' 's/.*/ToBeFiltered/')
+iopts+=('--f1f2' 'MySentMail=Sent')
+
+# Source creds
+iopts+=('--gmail1')
+iopts+=('--host1' "$HOST1")
+iopts+=('--user1' "$USER1")
+iopts+=('--password1' "$PASSWORD1")
+
+# Target creds
+iopts+=('--host2' "$HOST2")
+iopts+=('--user2' "$USER2")
+iopts+=('--password2' "$PASSWORD2")
+
+# Check creds, don't do anything else.
+# Comment when ready to go.
+#iopts+=('--justlogin')
+
+# Exit after having printed the initial folder sizes.
+# Comment when ready to go.
+#iopts+=('--justfoldersizes')
+
+# Only work on folders, don't do anything else. `--dry` makes this a folder check.
+# Comment when ready to go.
+#iopts+=('--justfolders')
+
+# Don't really do anything.
+# Comment when ready to go.
+#iopts+=('--dry')
+
+# Debugging. Uncomment to use.
+# Show debug notes for the folders part only.
+#iopts+=('--debugfolders')
+# Show debug notes for flags.
+#iopts+=('--debugflags')
+# Show IMAP notes for host1. Very verbose.
+#iopts+=('--debugimap1')
+
+# Run the imapsync command using the variables
+./imapsync "${iopts[@]}"
+
+echo "The sync is over."
+read -n 1 -s -r -p "Press any key to continue..."

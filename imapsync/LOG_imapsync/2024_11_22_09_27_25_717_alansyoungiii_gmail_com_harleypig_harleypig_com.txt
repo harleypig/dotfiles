@@ -1,0 +1,407 @@
+Here is imapsync 2.290 on host sweetums, a MSWin32 system with 16.4/31.8 free GiB of RAM, 46.89% used by processes.
+with Perl 5.32.1 and Mail::IMAPClient 3.43
+Transfer started at Friday 22 November 2024-11-22 09:27:25 Ame
+PID is 38376 my PPID is unknown under MSWin32 (too complicated)
+Log file is LOG_imapsync/2024_11_22_09_27_25_717_alansyoungiii_gmail_com_harleypig_harleypig_com.txt ( to change it, use --logfile path ; or use --nolog to turn off logging )
+Load is unknown on 12 cores
+Real user id is harleypig (uid 0)
+Effective user id is harleypig (euid 0)
+$RCSfile: imapsync,v $ $Revision: 2.290 $ $Date: 2024/08/20 10:37:23 $ 
+Command line used, run by perl.exe:
+C:\Users\harleypig\Downloads\imapsync_2.290\imapsync_2.290\imapsync.exe --noreleasecheck --folder MySentMail --folder Linode --regextrans2 s/.*/ToBeFiltered/ --f1f2 MySentMail=Sent --gmail1 --host1 imap.gmail.com --user1 alansyoungiii@gmail.com --password1 MASKED --host2 taylor.mxrouting.net --user2 harleypig@harleypig.com --password2 MASKED
+Current directory is C:/Users/harleypig/Downloads/imapsync_2.290/imapsync_2.290
+Temp directory is C:\Users\harleypig\cygwin/tmp ( to change it use --tmpdir dirpath )
+Creating temp directory C:\Users\harleypig\cygwin/tmp
+kill -QUIT 38376 # special behavior: call to sub catch_exit
+kill -TERM 38376 # special behavior: call to sub catch_exit
+kill -INT 38376 # special behavior: call to sub catch_reconnect
+kill -HUP 38376 # special behavior: call to sub catch_print
+Logging to a logfile by default. To turn off logging, use --nolog
+File C:\Users\harleypig\cygwin/tmp/imapsync.pid does not exist
+PID file is C:\Users\harleypig\cygwin/tmp/imapsync.pid ( to change it, use --pidfile filepath ; to avoid it use --pidfile "" )
+Writing my PID 38376 in C:\Users\harleypig\cygwin/tmp/imapsync.pid
+Writing also my logfile name in C:\Users\harleypig\cygwin/tmp/imapsync.pid : LOG_imapsync/2024_11_22_09_27_25_717_alansyoungiii_gmail_com_harleypig_harleypig_com.txt
+Modules version list ( use --no-modulesversion to turn off printing this Perl modules list ):
+Authen::NTLM         1.09
+CGI                  Not installed
+Compress::Zlib       2.1
+Crypt::OpenSSL::RSA  0.33
+Digest::HMAC_MD5     1.04
+Digest::HMAC_SHA1    1.04
+Digest::MD5          2.58
+Digest::SHA          6.02
+Encode               3.19
+Encode::IMAPUTF7     1.05
+File::Copy::Recursive 0.45
+File::Spec           3.78
+Getopt::Long         2.52
+HTML::Entities       3.81
+IO::Socket           1.51
+IO::Socket::INET     1.51
+IO::Socket::INET6    2.73
+IO::Socket::IP       0.42
+IO::Socket::SSL      2.083
+IO::Tee              0.65
+JSON                 4.10
+JSON::WebToken       0.10
+LWP                  6.72
+MIME::Base64         3.16
+Mail::IMAPClient     3.43
+Net::Ping            2.74
+Net::SSLeay          1.92
+Term::ReadKey        2.38
+Test::MockObject     1.20200122
+Time::HiRes          1.9764
+Unicode::String      2.10
+
+Info: will resync flags for already transferred messages. Use --noresyncflags to not resync flags.
+Host2: probing ssl on port 993 ( use --nosslcheck to avoid this ssl probe ) 
+Probing imap ssl on host taylor.mxrouting.net port 993, got banner: * OK [CAPABILITY IMAP4rev1 SASL-IR LOGIN-REFERRALS ID ENABLE IDLE LITERAL+ AUTH=PLAIN] Dovecot DA ready.
+Host2: sslcheck detected open ssl port 993 so turning ssl on (use --nossl2 --notls2 to turn off SSL and TLS wizardry)
+SSL debug mode level is --debugssl 1 (can be set from 0 meaning no debug to 4 meaning max debug)
+Host1: SSL default mode is like --sslargs1 "SSL_verify_mode=0", meaning for host1 SSL_VERIFY_NONE, ie, do not check the server certificate.
+Host1: Use --sslargs1 SSL_verify_mode=1 to have SSL_VERIFY_PEER, ie, check the server certificate. of host1
+Host2: SSL default mode is like --sslargs2 "SSL_verify_mode=0", meaning for host2 SSL_VERIFY_NONE, ie, do not check the server certificate.
+Host2: Use --sslargs2 SSL_verify_mode=1 to have SSL_VERIFY_PEER, ie, check the server certificate. of host2
+Info: turned ON syncinternaldates, will set the internal dates (arrival dates) on host2 same as host1.
+Host1: will try to use LOGIN authentication on host1
+Host2: will try to use LOGIN authentication on host2
+Host1: imap connection timeout is 120 seconds
+Host2: imap connection timeout is 120 seconds
+Host1: imap connection keepalive is on on host1. Use --nokeepalive1 to disable it.
+Host2: imap connection keepalive is on on host2. Use --nokeepalive2 to disable it.
+Host1: IMAP server [imap.gmail.com] port [993] user [alansyoungiii@gmail.com]
+Host2: IMAP server [taylor.mxrouting.net] port [993] user [harleypig@harleypig.com]
+Host1: connecting and login on host1 [imap.gmail.com] port [993] with user [alansyoungiii@gmail.com]
+Host1 IP address: 74.125.137.109 Local IP address: 192.168.51.175
+Host1 banner: * OK Gimap ready for requests from 160.7.245.254 gr8mb78606509oob
+Host1 capability before authentication: IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER AUTH
+Host1: success login on [imap.gmail.com] with user [alansyoungiii@gmail.com] auth [LOGIN] or [LOGIN]
+Host2: connecting and login on host2 [taylor.mxrouting.net] port [993] with user [harleypig@harleypig.com]
+Host2 IP address: 168.119.13.219 Local IP address: 192.168.51.175
+Host2 banner: * OK [CAPABILITY IMAP4rev1 SASL-IR LOGIN-REFERRALS ID ENABLE IDLE LITERAL+ AUTH=PLAIN] Dovecot DA ready.
+Host2 capability before authentication: IMAP4rev1 SASL-IR LOGIN-REFERRALS ID ENABLE IDLE LITERAL+ AUTH=PLAIN AUTH
+Host2: success login on [taylor.mxrouting.net] with user [harleypig@harleypig.com] auth [LOGIN] or [LOGIN]
+Host1: state Authenticated
+Host2: state Authenticated
+Host1 capability once authenticated: IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584 COMPRESS UTF8 APPENDLIMIT
+Host2 capability once authenticated: IMAP4rev1 SASL-IR LOGIN-REFERRALS ID ENABLE IDLE SORT SORT=DISPLAY THREAD=REFERENCES THREAD=REFS THREAD=ORDEREDSUBJECT MULTIAPPEND URL-PARTIAL CATENATE UNSELECT CHILDREN NAMESPACE UIDPLUS LIST-EXTENDED I18NLEVEL=1 CONDSTORE QRESYNC ESEARCH ESORT SEARCHRES WITHIN CONTEXT=SEARCH LIST-STATUS BINARY MOVE SNIPPET=FUZZY PREVIEW=FUZZY PREVIEW STATUS=SIZE SAVEDATE LITERAL+ NOTIFY XAPPLEPUSHSERVICE QUOTA THREAD I18NLEVEL CONTEXT SNIPPET PREVIEW STATUS
+Host1: found ID capability. Sending/receiving ID, presented in raw IMAP for now.
+In order to avoid sending/receiving ID, use option --noid
+Sending: 4 ID ("name" "imapsync" "version" "2.290" "os" "MSWin32" "vendor" "Gilles LAMIRAL" "support-url" "https://imapsync.lamiral.info/" "date" "20-Aug-2024 10:37:23 +0000" "side" "host1")
+Sent 183 bytes
+Read: 	* ID ("name" "GImap" "vendor" "Google, Inc." "support-url" "https://support.google.com/mail" "version" "gmail.imap-server_20241111.06_p0" "remote-host" "160.7.245.254")
+  	4 OK Success
+Host2: found ID capability. Sending/receiving ID, presented in raw IMAP for now.
+In order to avoid sending/receiving ID, use option --noid
+Sending: 4 ID ("name" "imapsync" "version" "2.290" "os" "MSWin32" "vendor" "Gilles LAMIRAL" "support-url" "https://imapsync.lamiral.info/" "date" "20-Aug-2024 10:37:23 +0000" "side" "host2")
+Sent 183 bytes
+Read: 	* ID ("name" "Dovecot")
+  	4 OK ID completed (0.001 + 0.000 secs).
+
+Host2: QUOTA capability found, presented in raw IMAP on next lines
+Sending: 5 GETQUOTAROOT INBOX
+Sent 22 bytes
+Read: 	5 OK No quota (0.001 + 0.000 secs).
+
+Host2: Quota current storage is 0 bytes. Limit is 0 bytes. So 0 % full
+Host1: Compression is off. Use --compress1 to allow compression on host1
+Host2: Compression is off. Use --compress2 to allow compression on host2
+Compression often generates annoying errors, especially with SSL connexions, Gmail, Office365. So, avoid it.
+Host1: found 33 folders.
+Host2: found 10 folders.
+Host1: guessing separator from folder listing: [/]
+Host1: separator given by NAMESPACE: [/]
+Host2: guessing separator from folder listing: [.]
+Host2: separator given by NAMESPACE: [.]
+Host1: guessing prefix from folder listing: []
+Host1: prefix given by NAMESPACE: []
+Host2: guessing prefix from folder listing: []
+Host2: prefix given by NAMESPACE: []
+Host1: separator and prefix: [/][]
+Host2: separator and prefix: [.][]
+Host1: Checking wanted folders exist. Use --nocheckfoldersexist to avoid this check (shared of public namespace targeted).
+Host1: Checking wanted folders are selectable. Use --nocheckselectable to avoid this check.
+Turned on automapping folders ( use --noautomap to turn off automapping )
+
+++++ Listing folders
+All foldernames are presented between brackets like [X] where X is the foldername.
+When a foldername contains non-ASCII characters it is presented in the form
+[X] = [Y] where
+X is the imap foldername you have to use in command line options and
+Y is the utf8 output just printed for convenience, to recognize it.
+
+Host1: folders list (first the raw imap format then the [X] = [Y]):
+* LIST (\HasNoChildren) "/" "Arch"
+* LIST (\HasNoChildren) "/" "Church"
+* LIST (\HasNoChildren) "/" "DMARC"
+* LIST (\HasNoChildren) "/" "DollarShaveClub"
+* LIST (\HasNoChildren) "/" "Family"
+* LIST (\HasChildren) "/" "Finances"
+* LIST (\HasNoChildren) "/" "Finances/Coinbase"
+* LIST (\HasNoChildren) "/" "Finances/GreenSky"
+* LIST (\HasNoChildren) "/" "Finances/MXRoute"
+* LIST (\HasNoChildren) "/" "Finances/MakeMyMovie"
+* LIST (\HasNoChildren) "/" "Finances/MyInvest"
+* LIST (\HasNoChildren) "/" "Finances/Payments"
+* LIST (\HasNoChildren) "/" "Finances/Questar"
+* LIST (\HasNoChildren) "/" "Finances/Rose Hill Dairy"
+* LIST (\HasNoChildren) "/" "Finances/Taxes"
+* LIST (\HasNoChildren) "/" "Finances/TotalFitness"
+* LIST (\HasNoChildren) "/" "HackerNews"
+* LIST (\HasNoChildren) "/" "Health"
+* LIST (\HasNoChildren) "/" "INBOX"
+* LIST (\HasNoChildren) "/" "JPay"
+* LIST (\HasNoChildren) "/" "Keybase"
+* LIST (\HasNoChildren) "/" "Kickstarter"
+* LIST (\HasChildren) "/" "Linode"
+* LIST (\HasNoChildren) "/" "Linode/Payments"
+* LIST (\HasNoChildren) "/" "Medical"
+* LIST (\HasNoChildren) "/" "MySentMail"
+* LIST (\HasNoChildren) "/" "Nebo"
+* LIST (\HasNoChildren) "/" "OpenCulture"
+* LIST (\HasNoChildren) "/" "PLUG"
+* LIST (\HasNoChildren) "/" "Perl"
+* LIST (\HasNoChildren) "/" "ReedGroup"
+* LIST (\HasNoChildren) "/" "ToBeFiltered"
+* LIST (\HasNoChildren) "/" "YNAB"
+12 OK Success
+
+[Arch]
+[Church]
+[DMARC]
+[DollarShaveClub]
+[Family]
+[Finances]
+[Finances/Coinbase]
+[Finances/GreenSky]
+[Finances/MXRoute]
+[Finances/MakeMyMovie]
+[Finances/MyInvest]
+[Finances/Payments]
+[Finances/Questar]
+[Finances/Rose Hill Dairy]
+[Finances/Taxes]
+[Finances/TotalFitness]
+[HackerNews]
+[Health]
+[INBOX]
+[JPay]
+[Keybase]
+[Kickstarter]
+[Linode]
+[Linode/Payments]
+[Medical]
+[MySentMail]
+[Nebo]
+[OpenCulture]
+[PLUG]
+[Perl]
+[ReedGroup]
+[ToBeFiltered]
+[YNAB]
+
+Host2: folders list (first the raw imap format then the [X] = [Y]):
+* LIST (\HasChildren \UnMarked) "." Linode
+* LIST (\HasNoChildren) "." Linode.Billing
+* LIST (\HasNoChildren \UnMarked) "." ToBeFiltered
+* LIST (\HasNoChildren \UnMarked) "." Archive
+* LIST (\HasNoChildren \UnMarked) "." Junk
+* LIST (\HasNoChildren \Marked) "." Trash
+* LIST (\HasNoChildren \UnMarked) "." Sent
+* LIST (\HasNoChildren \UnMarked) "." Drafts
+* LIST (\HasNoChildren \UnMarked) "." INBOX.spam
+* LIST (\HasChildren) "." INBOX
+11 OK List completed (0.001 + 0.000 secs).
+
+[Archive]
+[Drafts]
+[INBOX]
+[INBOX.spam]
+[Junk]
+[Linode]
+[Linode.Billing]
+[Sent]
+[ToBeFiltered]
+[Trash]
+
+Folders in host2 not in host1:
+[Trash]
+[Linode.Billing]
+[Junk]
+[INBOX.spam]
+[Drafts]
+[Archive]
+
+Folders mapping from --f1f2 options, it overrides --automap:
+[MySentMail]                             -> [Sent]                                   
+
+Checking SEARCH ALL works on both accounts. To avoid that check, use --nochecknoabletosearch
+Host1: checking if SEARCH ALL works on INBOX
+Host1: folder [INBOX] has 3 messages mentioned by SELECT
+Host1: folder [INBOX] has 3 messages found by SEARCH ALL
+Host1: folder [INBOX] has the same messages count (3) by SELECT and SEARCH ALL
+Host2: checking if SEARCH ALL works on INBOX
+Host2: folder [INBOX] has 0 messages mentioned by SELECT
+Host2: folder [INBOX] has 0 messages found by SEARCH ALL
+Host2: folder [INBOX] has the same messages count (0) by SELECT and SEARCH ALL
+Good! SEARCH ALL works on both accounts.
+
+Folders sizes before the synchronization. It can take some time. Be patient.
+You can remove foldersizes listings by using "--nofoldersizes" and "--nofoldersizesatend"
+but then you will also lose the ETA (Estimation Time of Arrival) given after each message copy.
+Host1 folder     1/2 [Linode]                            Size:   1077205 Messages:    57 Biggest:     54266
+Host2 folder     1/2 [ToBeFiltered]                      Size:    235518 Messages:    10 Biggest:     37960
+Host2-Host1                                                      -841687             -47             -16306
+
+Host1 folder     2/2 [MySentMail]                        Size: 716074682 Messages: 19972 Biggest:  28030709
+Host2 folder     2/2 [Sent]                              Size: 716052287 Messages: 19969 Biggest:  28030709
+Host2-Host1                                                       -22395              -3                  0
+
+Host1 Nb folders:                     2 folders
+Host2 Nb folders:                     2 folders
+
+Host1 Nb messages:                20029 messages
+Host2 Nb messages:                19979 messages
+
+Host1 Total size:             717151887 bytes (683.929 MiB)
+Host2 Total size:             716287805 bytes (683.105 MiB)
+
+Host1 Biggest message:         28030709 bytes (26.732 MiB)
+Host2 Biggest message:         28030709 bytes (26.732 MiB)
+
+Time spent on sizing:        38.6 seconds
+++++ Looping on each one of 2 folders to sync
+ETA: Friday 22 November 2024-11-22 09:28:04 Ame  0 s  20029/20029 msgs left
+Folder     1/2 [Linode]                            -> [ToBeFiltered]                     
+Host1: folder [Linode] has 57 messages in total (mentioned by SELECT)
+Host2: folder [ToBeFiltered] has 10 messages in total (mentioned by SELECT)
+Host2: folder [ToBeFiltered] permanentflags: 
+Host1: folder [Linode] considering 57 messages
+Host2: folder [ToBeFiltered] considering 10 messages
+Host1: folder [Linode] selected 57 messages, duplicates 0
+Host2: folder [ToBeFiltered] selected 10 messages, duplicates 0
+msg Linode/498 {15363}         copied to ToBeFiltered/58         0.49 msgs/s  7.426 KiB/s 15.003 KiB copied ETA: Friday 22 November 2024-11-22 20:42:33 Ame  40467 s  20028/20029 msgs left
+msg Linode/502 {15353}         copied to ToBeFiltered/59         0.81 msgs/s  12.151 KiB/s 29.996 KiB copied ETA: Friday 22 November 2024-11-22 16:20:09 Ame  24722 s  20027/20029 msgs left
+msg Linode/505 {15426}         copied to ToBeFiltered/60         1.02 msgs/s  15.383 KiB/s 45.061 KiB copied ETA: Friday 22 November 2024-11-22 14:54:01 Ame  19554 s  20026/20029 msgs left
+msg Linode/511 {16517}         copied to ToBeFiltered/61         1.12 msgs/s  17.092 KiB/s 61.190 KiB copied ETA: Friday 22 November 2024-11-22 14:26:51 Ame  17923 s  20025/20029 msgs left
+msg Linode/512 {15967}         copied to ToBeFiltered/62         1.23 msgs/s  18.847 KiB/s 76.783 KiB copied ETA: Friday 22 November 2024-11-22 14:00:05 Ame  16317 s  20024/20029 msgs left
+msg Linode/513 {15975}         copied to ToBeFiltered/63         1.33 msgs/s  20.412 KiB/s 92.384 KiB copied ETA: Friday 22 November 2024-11-22 13:39:53 Ame  15104 s  20023/20029 msgs left
+msg Linode/515 {15971}         copied to ToBeFiltered/64         1.41 msgs/s  21.686 KiB/s 107.980 KiB copied ETA: Friday 22 November 2024-11-22 13:25:32 Ame  14243 s  20022/20029 msgs left
+msg Linode/518 {15973}         copied to ToBeFiltered/65         1.48 msgs/s  22.828 KiB/s 123.579 KiB copied ETA: Friday 22 November 2024-11-22 13:13:58 Ame  13549 s  20021/20029 msgs left
+msg Linode/522 {16444}         copied to ToBeFiltered/66         1.47 msgs/s  22.863 KiB/s 139.638 KiB copied ETA: Friday 22 November 2024-11-22 13:14:37 Ame  13587 s  20020/20029 msgs left
+msg Linode/525 {15997}         copied to ToBeFiltered/67         1.50 msgs/s  23.261 KiB/s 155.260 KiB copied ETA: Friday 22 November 2024-11-22 13:10:53 Ame  13362 s  20019/20029 msgs left
+msg Linode/526 {15999}         copied to ToBeFiltered/68         1.55 msgs/s  24.009 KiB/s 170.884 KiB copied ETA: Friday 22 November 2024-11-22 13:04:04 Ame  12953 s  20018/20029 msgs left
+msg Linode/527 {16084}         copied to ToBeFiltered/69         1.58 msgs/s  24.565 KiB/s 186.591 KiB copied ETA: Friday 22 November 2024-11-22 12:59:22 Ame  12671 s  20017/20029 msgs left
+msg Linode/528 {16081}         copied to ToBeFiltered/70         1.62 msgs/s  25.154 KiB/s 202.295 KiB copied ETA: Friday 22 November 2024-11-22 12:54:35 Ame  12383 s  20016/20029 msgs left
+msg Linode/529 {16089}         copied to ToBeFiltered/71         1.65 msgs/s  25.663 KiB/s 218.007 KiB copied ETA: Friday 22 November 2024-11-22 12:50:37 Ame  12145 s  20015/20029 msgs left
+msg Linode/531 {16175}         copied to ToBeFiltered/72         1.68 msgs/s  26.143 KiB/s 233.803 KiB copied ETA: Friday 22 November 2024-11-22 12:47:05 Ame  11932 s  20013/20029 msgs left
+msg Linode/533 {16169}         copied to ToBeFiltered/73         1.70 msgs/s  26.519 KiB/s 249.593 KiB copied ETA: Friday 22 November 2024-11-22 12:44:25 Ame  11772 s  20012/20029 msgs left
+msg Linode/537 {16162}         copied to ToBeFiltered/74         1.73 msgs/s  26.936 KiB/s 265.376 KiB copied ETA: Friday 22 November 2024-11-22 12:41:31 Ame  11597 s  20011/20029 msgs left
+msg Linode/538 {15721}         copied to ToBeFiltered/75         1.75 msgs/s  27.238 KiB/s 280.729 KiB copied ETA: Friday 22 November 2024-11-22 12:39:12 Ame  11458 s  20010/20029 msgs left
+msg Linode/541 {16576}         copied to ToBeFiltered/76         1.74 msgs/s  27.239 KiB/s 296.916 KiB copied ETA: Friday 22 November 2024-11-22 12:39:34 Ame  11480 s  20009/20029 msgs left
+msg Linode/542 {16573}         copied to ToBeFiltered/77         1.73 msgs/s  27.089 KiB/s 313.101 KiB copied ETA: Friday 22 November 2024-11-22 12:40:59 Ame  11563 s  20008/20029 msgs left
+msg Linode/546 {16533}         copied to ToBeFiltered/78         1.73 msgs/s  27.111 KiB/s 329.246 KiB copied ETA: Friday 22 November 2024-11-22 12:41:06 Ame  11570 s  20007/20029 msgs left
+msg Linode/548 {16511}         copied to ToBeFiltered/79         1.73 msgs/s  27.126 KiB/s 345.370 KiB copied ETA: Friday 22 November 2024-11-22 12:41:15 Ame  11578 s  20006/20029 msgs left
+msg Linode/550 {16520}         copied to ToBeFiltered/80         1.73 msgs/s  27.145 KiB/s 361.503 KiB copied ETA: Friday 22 November 2024-11-22 12:41:20 Ame  11583 s  20004/20029 msgs left
+msg Linode/553 {16510}         copied to ToBeFiltered/81         1.72 msgs/s  27.135 KiB/s 377.626 KiB copied ETA: Friday 22 November 2024-11-22 12:41:36 Ame  11598 s  20001/20029 msgs left
+msg Linode/555 {16769}         copied to ToBeFiltered/82         1.72 msgs/s  27.141 KiB/s 394.002 KiB copied ETA: Friday 22 November 2024-11-22 12:41:52 Ame  11614 s  20000/20029 msgs left
+msg Linode/559 {17004}         copied to ToBeFiltered/83         1.72 msgs/s  27.157 KiB/s 410.607 KiB copied ETA: Friday 22 November 2024-11-22 12:42:09 Ame  11630 s  19998/20029 msgs left
+msg Linode/565 {17731}         copied to ToBeFiltered/84         1.72 msgs/s  27.248 KiB/s 427.923 KiB copied ETA: Friday 22 November 2024-11-22 12:42:10 Ame  11630 s  19995/20029 msgs left
+msg Linode/569 {17754}         copied to ToBeFiltered/85         1.72 msgs/s  27.329 KiB/s 445.261 KiB copied ETA: Friday 22 November 2024-11-22 12:42:14 Ame  11634 s  19993/20029 msgs left
+msg Linode/570 {17748}         copied to ToBeFiltered/86         1.72 msgs/s  27.363 KiB/s 462.593 KiB copied ETA: Friday 22 November 2024-11-22 12:42:35 Ame  11655 s  19992/20029 msgs left
+msg Linode/572 {17751}         copied to ToBeFiltered/87         1.71 msgs/s  27.415 KiB/s 479.928 KiB copied ETA: Friday 22 November 2024-11-22 12:42:47 Ame  11666 s  19991/20029 msgs left
+msg Linode/575 {17220}         copied to ToBeFiltered/88         1.71 msgs/s  27.459 KiB/s 496.744 KiB copied ETA: Friday 22 November 2024-11-22 12:42:47 Ame  11665 s  19990/20029 msgs left
+msg Linode/578 {17223}         copied to ToBeFiltered/89         1.71 msgs/s  27.479 KiB/s 513.563 KiB copied ETA: Friday 22 November 2024-11-22 12:42:57 Ame  11674 s  19989/20029 msgs left
+msg Linode/579 {17225}         copied to ToBeFiltered/90         1.71 msgs/s  27.520 KiB/s 530.385 KiB copied ETA: Friday 22 November 2024-11-22 12:42:57 Ame  11674 s  19988/20029 msgs left
+msg Linode/581 {17224}         copied to ToBeFiltered/91         1.71 msgs/s  27.553 KiB/s 547.205 KiB copied ETA: Friday 22 November 2024-11-22 12:42:58 Ame  11674 s  19986/20029 msgs left
+msg Linode/582 {17531}         copied to ToBeFiltered/92         1.71 msgs/s  27.599 KiB/s 564.325 KiB copied ETA: Friday 22 November 2024-11-22 12:43:00 Ame  11676 s  19985/20029 msgs left
+msg Linode/583 {18216}         copied to ToBeFiltered/93         1.72 msgs/s  27.870 KiB/s 582.114 KiB copied ETA: Friday 22 November 2024-11-22 12:41:39 Ame  11595 s  19984/20029 msgs left
+msg Linode/585 {18217}         copied to ToBeFiltered/94         1.74 msgs/s  28.131 KiB/s 599.904 KiB copied ETA: Friday 22 November 2024-11-22 12:40:22 Ame  11517 s  19982/20029 msgs left
+msg Linode/587 {18234}         copied to ToBeFiltered/95         1.75 msgs/s  28.382 KiB/s 617.711 KiB copied ETA: Friday 22 November 2024-11-22 12:39:10 Ame  11444 s  19981/20029 msgs left
+msg Linode/588 {19493}         copied to ToBeFiltered/96         1.76 msgs/s  28.676 KiB/s 636.747 KiB copied ETA: Friday 22 November 2024-11-22 12:38:02 Ame  11376 s  19980/20029 msgs left
+msg Linode/589 {18862}         copied to ToBeFiltered/97         1.77 msgs/s  28.923 KiB/s 655.167 KiB copied ETA: Friday 22 November 2024-11-22 12:37:01 Ame  11314 s  19979/20029 msgs left
+msg Linode/635 {54266}         copied to ToBeFiltered/98         1.77 msgs/s  30.567 KiB/s 708.161 KiB copied ETA: Friday 22 November 2024-11-22 12:36:36 Ame  11289 s  19978/20029 msgs left
+msg Linode/636 {18841}         copied to ToBeFiltered/99         1.78 msgs/s  30.779 KiB/s 726.561 KiB copied ETA: Friday 22 November 2024-11-22 12:35:35 Ame  11228 s  19977/20029 msgs left
+msg Linode/640 {19531}         copied to ToBeFiltered/100        1.79 msgs/s  31.008 KiB/s 745.634 KiB copied ETA: Friday 22 November 2024-11-22 12:34:39 Ame  11171 s  19976/20029 msgs left
+msg Linode/641 {19529}         copied to ToBeFiltered/101        1.79 msgs/s  31.157 KiB/s 764.705 KiB copied ETA: Friday 22 November 2024-11-22 12:34:11 Ame  11142 s  19975/20029 msgs left
+msg Linode/642 {19546}         copied to ToBeFiltered/102        1.80 msgs/s  31.353 KiB/s 783.793 KiB copied ETA: Friday 22 November 2024-11-22 12:33:25 Ame  11096 s  19974/20029 msgs left
+msg Linode/643 {19535}         copied to ToBeFiltered/103        1.81 msgs/s  31.522 KiB/s 802.870 KiB copied ETA: Friday 22 November 2024-11-22 12:32:48 Ame  11059 s  19973/20029 msgs left
+msg Linode/649 {19548}         copied to ToBeFiltered/104        1.81 msgs/s  31.718 KiB/s 821.960 KiB copied ETA: Friday 22 November 2024-11-22 12:32:02 Ame  11012 s  19972/20029 msgs left
+ETA: Friday 22 November 2024-11-22 12:32:03 Ame  11013 s  19972/20029 msgs left
+Folder     2/2 [MySentMail]                        -> [Sent]                             
+Host1: folder [MySentMail] has 19972 messages in total (mentioned by SELECT)
+Host2: folder [Sent] has 19969 messages in total (mentioned by SELECT)
+Host2: folder [Sent] permanentflags: 
+Host1: folder [MySentMail] considering 19972 messages
+Host2: folder [Sent] considering 19969 messages
+Host1: parsing headers of folder [MySentMail]. It can take time for huge folders. Be patient.
+Host1: folder [MySentMail] selected 19972 messages, duplicates 4
+Host2: parsing headers of folder [Sent]. It can take time for huge folders. Be patient.
+Host2: folder [Sent] selected 19969 messages, duplicates 1
+msg MySentMail/18006 {2432}        copied to Sent/19970      0.73 msgs/s  12.547 KiB/s 824.335 KiB copied ETA: Friday 22 November 2024-11-22 10:14:35 Ame  2725 s  1991/20029 msgs left
+ETA: Friday 22 November 2024-11-22 09:29:10 Ame  0 s  0/20029 msgs left
+++++ End looping on each folder
+
+Folders sizes after the synchronization.
+You can remove this foldersizes listing by using  "--nofoldersizesatend"
+Host1 folder     1/2 [Linode]                            Size:   1077205 Messages:    57 Biggest:     54266
+Host2 folder     1/2 [ToBeFiltered]                      Size:   1077205 Messages:    57 Biggest:     54266
+Host2-Host1                                                            0               0                  0
+
+Host1 folder     2/2 [MySentMail]                        Size: 716074682 Messages: 19972 Biggest:  28030709
+Host2 folder     2/2 [Sent]                              Size: 716054719 Messages: 19970 Biggest:  28030709
+Host2-Host1                                                       -19963              -2                  0
+
+Host1 Nb folders:                     2 folders
+Host2 Nb folders:                     2 folders
+
+Host1 Nb messages:                20029 messages
+Host2 Nb messages:                20027 messages
+
+Host1 Total size:             717151887 bytes (683.929 MiB)
+Host2 Total size:             717131924 bytes (683.910 MiB)
+
+Host1 Biggest message:         28030709 bytes (26.732 MiB)
+Host2 Biggest message:         28030709 bytes (26.732 MiB)
+
+Time spent on sizing:        12.4 seconds
+++++ Statistics
+Transfer started on                     : Friday 22 November 2024-11-22 09:27:25 Ame
+Transfer ended on                       : Friday 22 November 2024-11-22 09:29:22 Ame
+Transfer time                           : 116.9 sec
+Folders synced                          : 2/2 synced
+Folders deleted on host2                : 0 
+Messages transferred                    : 48 
+Messages skipped                        : 19981
+Messages found duplicate on host1       : 4
+Messages found duplicate on host2       : 1
+Messages found crossduplicate on host2  : 0
+Messages void (noheader) on host1       : 0  
+Messages void (noheader) on host2       : 0
+Messages found in host1 not in host2    : 0 messages
+Messages found in host2 not in host1    : 1 messages
+Messages deleted on host1               : 0
+Messages deleted on host2               : 0
+Total bytes transferred                 : 844119 (824.335 KiB)
+Total bytes skipped                     : 716295769 (683.113 MiB)
+Message rate                            : 0.4 messages/s
+Average bandwidth rate                  : 7.1 KiB/s
+Reconnections to host1                  : 0
+Reconnections to host2                  : 0
+Memory consumption at the end           : 314.5 MiB (*time 10.2 MiB*h) (started with 183.4 MiB)
+Load end is                             : unknown on 12 cores
+CPU time and %cpu                       : 8.515 sec 7.3 %cpu 0.6 %allcpus
+Biggest message transferred             : 54266 bytes (52.994 KiB)
+Memory/biggest message ratio            : 6077.7
+Start difference host2 - host1          : -50 messages, -864082 bytes (-843.830 KiB)
+Final difference host2 - host1          : -2 messages, -19963 bytes (-19.495 KiB)
+The sync looks good, all 20025 identified messages in host1 are on host2.
+There is no unidentified message on host1.
+The sync is not strict, there are 1 among 20026 identified messages in host2 that are not on host1. Use --delete2 and sync again to delete them and have a strict sync.
+Detected 0 errors
+Check if a new imapsync release is available by adding --releasecheck
+Homepage: https://imapsync.lamiral.info/
+Exiting with return value 0 (EX_OK: successful termination) 0/50 nb_errors/max_errors PID 38376
+Removing pidfile C:\Users\harleypig\cygwin/tmp/imapsync.pid
+Log file is LOG_imapsync/2024_11_22_09_27_25_717_alansyoungiii_gmail_com_harleypig_harleypig_com.txt ( to change it, use --logfile filepath ; or use --nolog to turn off logging )

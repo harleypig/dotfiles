@@ -1,0 +1,49 @@
+
+$Id: FAQ.Principles.txt,v 1.10 2021/04/18 13:00:00 gilles Exp gilles $
+
+This documentation is also available online at
+https://imapsync.lamiral.info/FAQ.d/
+https://imapsync.lamiral.info/FAQ.d/FAQ.Principles.txt
+
+
+=======================================================================
+             Imapsync principles and design ideas  
+=======================================================================
+
+
+Questions answered in this FAQ are:
+
+Q. Give me some design ideas of imapsync
+
+Now the questions again with their answers.
+
+=======================================================================
+Q. Give me some design ideas of imapsync
+
+R.
+
+* No configuration file
+* Stateless
+* Rsync in mind
+* Reliable
+* Robuste
+* The user is not an expert, help him with:
+  * Good behavior by default. 
+  * No harm by default. 
+  * Prefer fixing an issue in the code than documenting the issue
+  * Inline help suggestions
+
+Consequences of those design ideas:
+
+* Stateless: 
+
+   * A sync can be done by another tool before or after imapsync, it is
+   safe as long as the other tools don't modify the messages' headers 
+   "Message-Id:" and "Received:", or at least "Message-Id:".
+
+   * Ready to run in a container.
+
+
+
+=======================================================================
+=======================================================================

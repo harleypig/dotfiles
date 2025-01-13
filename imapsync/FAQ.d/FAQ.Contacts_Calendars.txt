@@ -1,0 +1,107 @@
+#!/bin/cat
+$Id: FAQ.Contacts_Calendars.txt,v 1.17 2022/05/31 22:21:55 gilles Exp gilles $
+
+This documentation is also available online at
+https://imapsync.lamiral.info/FAQ.d/
+https://imapsync.lamiral.info/FAQ.d/FAQ.Contacts_Calendars.txt
+
+=======================================================================
+           Imapsync issues about syncing Contacts & Calendars.
+=======================================================================
+
+Questions answered in this FAQ are:
+
+Q. Can I copy or sync Contacts, Calendars, Tasks or Chat messages with imapsync?
+Q. How can I copy or synchronize Calendars or Contacts?
+Q. How can I avoid copying Calendar or Contacts folders?
+
+Now the questions again with their answers.
+
+=======================================================================
+Q. Can I copy or sync Contacts, Calendars, Tasks or Chat messages with imapsync?
+
+R. No, Imapsync can't migrate Contacts, Calendars, Tasks nor Chat messages.
+  It's because most IMAP servers don't get Contacts and Calendar 
+  events via IMAP. In other words, messages synced by imapsync from 
+  Contacts/Calendars/Tasks/Chat folders are not used by email servers to set 
+  or get the contacts, calendars, tasks, or chat messages. 
+  No way via IMAP, no way via imapsync.
+  
+  So it's a good idea to avoid syncing contacts and calendars when
+  using imapsync. See at the end of this document
+  "How can I avoid copying Calendar or Contacts folders?"
+  
+  But see also the question below
+  "How can I copy or synchronize Calendars or Contacts?".
+
+=======================================================================
+Q. How can I copy or synchronize Calendars or Contacts?
+
+R1. Synchronizing Calendars or Contacts can't be done with imapsync. 
+    For detailed explanations, see the question above
+    "Can I copy or sync Calendars or Contacts with imapsync?".
+
+R2. Synchronizing Calendars or Contacts can be done, not
+    with imapsync, depending on the imap server software tool used.
+
+a) From Exchange to Exchange, export contacts and calendar to
+   PST format files on host1 and import them on host2.
+
+b) From Gmail to Gmail, export and import calendars in ical format, 
+   extension for those files is .ics.
+   Contacts can be copied using a csv file. See the help page
+   http://support.google.com/mail/bin/topic.py?hl=en&topic=1669027
+
+c) For Outlook, use caldavsynchronizer.
+   Homepage: http://caldavsynchronizer.org/
+   Outlook CalDav Synchronizer is a free Outlook Plugin, which synchronizes 
+   events, tasks, and contacts between Outlook and Google, SOGo, Nextcloud or 
+   any other CalDAV or CardDAV server. 
+   Supported Outlook versions are Office 365, 2019, 2016, 2013, 2010, and 2007.
+   Free and Open Source software tool.
+
+
+d) Etc. Search the web. There are also specific tools and paid services.
+   There's no silver bullet to migrate Calendars and Contacts,
+   if you find one, tell me!
+   Also, consider asking experts at the Sumatra company 
+   https://twitter.com/sumatra_dev
+   http://sumatra.com/
+   
+e) I plan to make tools for that but so far nothing has begun
+   more than this discussion:
+http://linux-france.tk/prj/imapsync_list/msg01797.html
+http://linux-france.tk/prj/imapsync_list/msg01811.html
+
+=======================================================================
+Q. How can I avoid copying Calendar or Contacts folders?
+
+R. You can avoid synchronizing Calendar or Contacts folders with
+  the --exclude option. First, you have to search what is their
+  exact name. The listing of folders printed by imapsync at the
+  beginning of a run will surely help to find their names. 
+  Assuming their names are "Calendars" and "Contacts", use:
+
+    imapsync ... --exclude "Calendar" --exclude "Contacts" 
+
+  Be aware that this syntax will exclude all folders that have
+  Calendar or Contacts in their names, as a substring,
+  like "MyCalendarZ" or "TheContactsImDoneWith". 
+  Also, case matters: "calendar" does not match "Calendar".
+  
+  To strictly avoid only "Calendar" or "Contacts" use 
+  the following
+
+  On windows:
+  
+    imapsync ... --exclude "^Calendar$" --exclude "^Contacts$" 
+
+  On Unix:
+  
+    imapsync ... --exclude '^Calendar$' --exclude '^Contacts$'
+    or
+    imapsync ... --exclude "^Calendar\$" --exclude "^Contacts\$" 
+
+
+=======================================================================
+=======================================================================

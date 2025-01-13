@@ -1,0 +1,242 @@
+#!/bin/cat
+# $Id: FAQ.Docker.txt,v 1.14 2024/08/06 20:07:19 gilles Exp gilles $
+
+This document is also available online at
+https://imapsync.lamiral.info/FAQ.d/
+https://imapsync.lamiral.info/FAQ.d/FAQ.Docker.txt
+
+======================================================================
+           Installing and using imapsync docker image
+======================================================================
+
+Questions answered in this FAQ are:
+
+
+Q. How can I install and use the imapsync Docker image on my amd64 system?
+
+Q. How can I install and use the imapsync Docker image on my i386 system?
+
+Q. How can I install or update only the imapsync Docker image on my system?
+
+Q. How can I launch the online imapsync service included in the imapsync 
+   docker image?
+
+Q. Where is the imapsync Docker hub location?
+
+Q. How can I mask the passwords on the command line without mounting
+   inside the container?
+
+Q. Why imapsync isn't logging to a file in Docker context. 
+   How can I allow it?
+
+Q. Any tips for the Docker Mailcow distribution?
+
+Q. How can I build my own image?
+
+Q. What do you do to update the docker hub image?
+
+Now the questions again with their answers.
+
+======================================================================
+Q. How can I install and use the imapsync Docker image on my amd64 system?
+
+A. Install Docker on your system. Once Docker is installed on your system,
+   all you have to do in order install and run imapsync is the command line:
+
+  docker run --rm gilleslamiral/imapsync imapsync <usual imapsync arguments>
+
+======================================================================
+Q. How can I install and use the imapsync Docker image on my i386 system?
+
+A1. You can't do it directly for now. It will throw this error when running it:
+
+  docker run --rm gilleslamiral/imapsync imapsync
+  standard_init_linux.go:211: exec user process caused "exec format error"
+
+I plan to make the image multi-plateform. Drop me a note if you are
+eager to have it.
+
+A2. Build the image on a i386 system with the exact same Dockerfile provided
+and run it on your i386 system.
+
+======================================================================
+Q. How can I install or update only the imapsync Docker image on my system?
+
+A. To install or update the imapsync image, run:
+
+  docker pull gilleslamiral/imapsync
+
+======================================================================
+Q. How can I launch the online imapsync service included in the imapsync 
+   docker image?
+
+A1. To install and run the online imapsync service on the classical 
+    http port 80 only:
+
+    docker run --publish 80:8080 gilleslamiral/imapsync /servimapsync
+
+A2. To install and run the online imapsync service on the classical 
+    https port 443 only:
+
+   docker run --publish 443:8443 gilleslamiral/imapsync /servimapsync
+
+An issue with the previous command is that the certificate inside the
+image corresponds to the hostname https://docker.lamiral.info/ which is
+not yours so your browser will complain about an unsafe ssl
+certificate when using your own online service https://example.com/
+See below for a solution.
+
+A3. To install and run the online imapsync service on both classical http
+    and https ports:
+
+    docker run --publish 80:8080 --publish 443:8443 gilleslamiral/imapsync /servimapsync
+
+A4. To use your own ssl certificate with the online imapsync service:
+
+   chmod +r /etc/letsencrypt/live/docker.lamiral.info/privkey.pem
+
+   docker run --publish 443:8443 \
+        --volume /etc/letsencrypt/live/docker.lamiral.info/privkey.pem:/var/tmp/privkey.pem \
+        --volume /etc/letsencrypt/live/docker.lamiral.info/fullchain.pem:/var/tmp/fullchain.pem \
+        gilleslamiral/imapsync /servimapsync
+
+Replace the path part "/docker.lamiral.info/" by your hostname in the
+previous commands. The "chmod +r" command on the secret key is not a
+good practice but it is practical in this Docker context. I leave you
+a better safe solution as an exercise.
+
+A5. To use your own version of the file imapsync_form_extra.html, use:
+
+docker run  \
+        --publish 80:8080 \
+        --volume /home/me/imapsync/imapsync_form_extra.html:/var/tmp/imapsync_form_extra.html \
+        gilleslamiral/imapsync /servimapsync
+
+It is the same thing to do for the files imapsync_form.css and imapsync_form.js,
+in case you want to use your own modified versions.
+They are also located in the /var/tmp/ directory of the Docker image. 
+
+A6. To get logging in your Docker online imapsync service, do:
+
+First, to add logging to files with the the imapsync runs, in this cgi+docker context,
+you have to add a line in the file imapsync_form_extra.html saying "--log" is on.
+It can be done with a hidden parameter, like this, near line 174:
+
+<input type="hidden" name="log"       value="on">
+<input type="hidden" name="automap"   value="on">
+<input type="hidden" name="addheader" value="on">
+
+The last two lines are already there, the first line is also there,
+but commented. Just remove the <!-- --> surrounding it.
+
+Second,
+
+mkdir /var/tmp/imapsync_cgi
+chown nobody  /var/tmp/imapsync_cgi
+
+Then,
+
+docker run  \
+        --publish 80:8080 \
+        --volume /home/me/imapsync/imapsync_form_extra.html:/var/tmp/imapsync_form_extra.html \
+        --volume  /var/tmp/imapsync_cgi:/var/tmp/imapsync_cgi  \
+        gilleslamiral/imapsync /servimapsync
+
+See the discussion at https://github.com/imapsync/imapsync/issues/450#issuecomment-2264272561
+
+
+======================================================================
+Q. Where is the imapsync Docker hub location?
+
+A. Here:
+
+  https://hub.docker.com/r/gilleslamiral/imapsync/
+
+======================================================================
+Q. How can I mask the passwords on the command line without mounting 
+   anything inside the container?
+
+A. Use a file defining the environment variables 
+   IMAPSYNC_PASSWORD1 and IMAPSYNC_PASSWORD2
+
+  cat ./secret.txt
+IMAPSYNC_PASSWORD1=secret1
+IMAPSYNC_PASSWORD2=secret2
+
+Use that file like this for a run:
+
+  docker run --rm --env-file ./secret.txt gilleslamiral/imapsync imapsync ...
+
+See:
+https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file
+https://stackoverflow.com/a/30494145/491175
+
+======================================================================
+Q. Why imapsync isn't logging to a file in Docker context. 
+   How can I allow it?
+
+A. In Docker context, writing the log is disabled by default because you 
+   don't have an easy access to the logfile after the sync. The logfile is 
+   inside the docker and no longer available after the sync, unless
+   a special mount is done before.
+
+Starting with imapsync release 2.113 the logging can be turned on 
+by using the option --log. You can add access to the logfile with a mount 
+or similar. See https://docs.docker.com/storage/volumes/"
+
+See also
+https://github.com/imapsync/imapsync/issues/283
+
+======================================================================
+Q. Any tips for the Docker Mailcow distribution?
+
+A. With the Mailcow distribution, imapsync is running inside a Docker 
+   container. Quoting Mathilde:
+
+To make it work with Mailcow, options should be added like this:
+
+  --regexflag=s/\\Indexed//gi
+
+Without spaces, without quotes.
+
+See the original Mathilde's comment:
+
+https://github.com/imapsync/imapsync/issues/201#issuecomment-559500077
+
+======================================================================
+Q. How can I build my own image?
+
+A. Use the following command to build the image:
+
+   docker build -t gilleslamiral/imapsync . 
+ 
+   with the Dockerfile in the current directory.
+
+The latest Dockerfile can be found at
+https://imapsync.lamiral.info/INSTALL.d/Dockerfile
+or at
+https://hub.docker.com/r/gilleslamiral/imapsync
+or at
+https://imapsync.lamiral.info/INSTALL.d/INSTALL.Docker_build.txt
+
+
+======================================================================
+Q. What do you do to update the docker hub image?
+
+A. In my imapsync directory, I do the following
+
+    make docker_build
+    make docker_upload_docker_hub
+    
+Then I go to
+https://hub.docker.com/r/gilleslamiral/imapsync
+
+I edit and update the docker "Readme" with the last Dockerfile I used.
+I also update INSTALL.Docker_build.txt with the last Dockerfile
+
+I also update the last Dockerfile on the imapsync site with:
+
+   make upload_index
+
+======================================================================
+======================================================================
