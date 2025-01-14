@@ -190,7 +190,7 @@ if [[ -r $path_to_exports_script ]]; then
   source "$path_to_exports_script"
 fi
 
-[[ -r "$DOTFILES/app_env_vars" ]] && source "$DOTFILES/app_env_vars"
+#[[ -r "$DOTFILES/app_env_vars" ]] && source "$DOTFILES/app_env_vars"
 
 # shellcheck disable=SC1091
 [[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \

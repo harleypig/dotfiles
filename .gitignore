@@ -13,6 +13,8 @@ venv
 gitconfig.user*
 
 node_modules/**
+cygdrive/**
+
 package-lock.json
 package.json
 nvm_nodejs_org_mirror

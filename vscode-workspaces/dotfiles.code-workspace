@@ -1,7 +1,7 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"path": ".."
 		},
 		{
 			"path": "../private_dotfiles"
@@ -11,6 +11,6 @@
 		}
 	],
 	"settings": {
-		"powershell.cwd": "dotfiles"
+		"powershell.cwd": "."
 	}
 }
