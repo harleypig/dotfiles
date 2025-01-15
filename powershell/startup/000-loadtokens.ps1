@@ -1,13 +1,14 @@
 $private_dotfiles = "$PROJECTS_DIR/private_dotfiles"
 
 #-----------------------------------------------------------------------------
-# Modify this if statement to check for the azure cli and only set the variable if it exists, AI!
-if (Test-Path "$private_dotfiles/api-key.azure") {
-  Set-Variable -Name AZURE_DEVOPS_EXT_PAT `
-    -Scope Global `
-    -Option Constant `
-    -Value (Get-Content -Path "$private_dotfiles/api-key.azure" -Raw)
+if (Get-Command az -ErrorAction SilentlyContinue) {
+  if (Test-Path "$private_dotfiles/api-key.azure") {
+    Set-Variable -Name AZURE_DEVOPS_EXT_PAT `
+      -Scope Global `
+      -Option Constant `
+      -Value (Get-Content -Path "$private_dotfiles/api-key.azure" -Raw)
   }
+}
 
 #-----------------------------------------------------------------------------
 if (Get-Command aider -ErrorAction SilentlyContinue) {
