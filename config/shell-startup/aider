@@ -13,7 +13,7 @@ if command -v aider &> /dev/null; then
   export AIDER_VIM=true
   export AIDER_WATCH_FILES=true
 
-  # XXX: Need to add check for windows and use code instead of vim for editor.
+  # XXX: Need to add check for windows and use code instead of vim for editor, AI!
   # export AIDER_EDITOR="code --wait"
   # export AIDER_EDITOR="vim"
 fi
