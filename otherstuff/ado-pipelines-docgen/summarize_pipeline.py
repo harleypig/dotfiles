@@ -4,21 +4,27 @@ import yaml
 import os
 import argparse
 
+#-----------------------------------------------------------------------------
 def load_pipeline_file(pipeline_file):
     """Load and parse the YAML pipeline file."""
     try:
+        # Ensure we do not return 'None' AI!
         with open(pipeline_file, 'r') as file:
             return yaml.safe_load(file)
+
     except PermissionError:
         print(f"Error: Permission denied when trying to read {pipeline_file}")
         exit(1)
+
     except FileNotFoundError:
-        print(f"Error: File {pipeline_file} not found")
-        exit(1)
-    except yaml.YAMLError as exc:
-        print(f"Error parsing YAML file: {exc}")
+        print(f"Error: File not found: {pipeline_file}")
         exit(1)
 
+    except yaml.YAMLError as exc:
+        print(f"Error: Could not parse YAML file: {exc}")
+        exit(1)
+
+#-----------------------------------------------------------------------------
 def summarize_pipeline(pipeline_file):
     pipeline = load_pipeline_file(pipeline_file)
     if pipeline is None:
