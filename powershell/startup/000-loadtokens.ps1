@@ -9,6 +9,7 @@ if (Test-Path "$private_dotfiles/api-key.azure") {
   }
 
 #-----------------------------------------------------------------------------
+# Format this if statement, please, AI!
 if (Get-Command aider -ErrorAction SilentlyContinue) {
   if (Test-Path "$private_dotfiles/api-key.openai") {
   Set-Variable -Name OPENAI_API_KEY `
@@ -17,6 +18,7 @@ if (Get-Command aider -ErrorAction SilentlyContinue) {
     -Value ((Get-Content -Path "$private_dotfiles/api-key.openai" -Raw).Trim())
 
   $env:OPENAI_API_KEY = $OPENAI_API_KEY
+}
 }
 
 #-----------------------------------------------------------------------------
