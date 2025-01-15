@@ -4,12 +4,14 @@ import argparse
 import sys
 import yaml
 import os
-def print_to_stderr(message):
+
+#-----------------------------------------------------------------------------
+def warn(message):
     """Print a message to stderr."""
     print(message, file=sys.stderr)
 
 #-----------------------------------------------------------------------------
-def load_pipeline_file(pipeline_file):
+def load_file(pipeline_file):
     """Load and parse the YAML pipeline file."""
     try:
         with open(pipeline_file, 'r') as file:
@@ -19,27 +21,27 @@ def load_pipeline_file(pipeline_file):
                 raise ValueError("YAML file is empty or contains no valid data")
 
             return pipeline
+
     except PermissionError:
-        print_to_stderr(f"Error: Permission denied when trying to read {pipeline_file}")
+        warn(f"Error: Permission denied when trying to read {pipeline_file}")
         exit(1)
 
     except FileNotFoundError:
-        print_to_stderr(f"Error: File not found: {pipeline_file}")
+        warn(f"Error: File not found: {pipeline_file}")
         exit(1)
 
     except yaml.YAMLError as exc:
-        print_to_stderr(f"Error: Could not parse YAML file: {exc}")
+        warn(f"Error: Could not parse YAML file: {exc}")
         exit(1)
 
     except ValueError as ve:
-        print_to_stderr(f"Error: {ve}")
+        warn(f"Error: {ve}")
         exit(1)
 
 #-----------------------------------------------------------------------------
+# I only need the parameters definitons for the summary, AI!
 def summarize_pipeline(pipeline_file):
-    pipeline = load_pipeline_file(pipeline_file)
-    if pipeline is None:
-        return
+    pipeline = load_file(pipeline_file)
 
     summary = {
         "name": pipeline.get('name', 'Unnamed Pipeline'),
