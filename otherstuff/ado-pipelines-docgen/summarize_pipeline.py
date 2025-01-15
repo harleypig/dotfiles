@@ -10,8 +10,10 @@ def load_pipeline_file(pipeline_file):
     try:
         with open(pipeline_file, 'r') as file:
             pipeline = yaml.safe_load(file)
+
             if pipeline is None:
                 raise ValueError("YAML file is empty or contains no valid data")
+
             return pipeline
 
     except PermissionError:
