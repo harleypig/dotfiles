@@ -6,6 +6,9 @@ import os
 import argparse
 
 #-----------------------------------------------------------------------------
+# Create a function that prints a message to stderr, AI!
+
+#-----------------------------------------------------------------------------
 def load_pipeline_file(pipeline_file):
     """Load and parse the YAML pipeline file."""
     try:
