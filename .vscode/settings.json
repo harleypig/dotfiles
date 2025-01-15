@@ -45,7 +45,6 @@
   // Search
   "search.useIgnoreFiles": true,
   "search.useGlobalIgnoreFiles": true
-},
   "python": {
     "formatting.provider": "black",
     "linting.enabled": true,
