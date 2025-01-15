@@ -23,6 +23,7 @@ if (Get-Command aider -ErrorAction SilentlyContinue) {
 }
 
 #-----------------------------------------------------------------------------
+# Modify this if statement to check for the linode cli and only set the variable if it exists, AI!
 if (Test-Path "$private_dotfiles/api-key.linode") {
   Set-Variable -Name LINODE_TOKEN `
     -Scope Global `
