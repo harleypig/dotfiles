@@ -4,15 +4,20 @@ import yaml
 import os
 import argparse
 
-# Add error handling for invalid permissions on file and missing file, AI!
 def load_pipeline_file(pipeline_file):
     """Load and parse the YAML pipeline file."""
-    with open(pipeline_file, 'r') as file:
-        try:
+    try:
+        with open(pipeline_file, 'r') as file:
             return yaml.safe_load(file)
-        except yaml.YAMLError as exc:
-            print(f"Error parsing YAML file: {exc}")
-            exit(1)
+    except PermissionError:
+        print(f"Error: Permission denied when trying to read {pipeline_file}")
+        exit(1)
+    except FileNotFoundError:
+        print(f"Error: File {pipeline_file} not found")
+        exit(1)
+    except yaml.YAMLError as exc:
+        print(f"Error parsing YAML file: {exc}")
+        exit(1)
 
 def summarize_pipeline(pipeline_file):
     pipeline = load_pipeline_file(pipeline_file)
