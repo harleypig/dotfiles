@@ -20,6 +20,15 @@ if (Get-Command aider -ErrorAction SilentlyContinue) {
 
     $env:OPENAI_API_KEY = $OPENAI_API_KEY
   }
+
+  if (Test-Path "$private_dotfiles/api-key.grok") {
+    Set-Variable -Name XAI_API_KEY `
+      -Scope Global `
+      -Option Constant `
+      -Value (Get-Content -Path "$private_dotfiles/api-key.grok" -Raw)
+
+    $env:XAI_API_KEY = $XAI_API_KEY
+  }
 }
 
 #-----------------------------------------------------------------------------
@@ -30,14 +39,6 @@ if (Get-Command linode -ErrorAction SilentlyContinue) {
       -Option Constant `
       -Value (Get-Content -Path "$private_dotfiles/api-key.linode" -Raw)
   }
-}
-
-#-----------------------------------------------------------------------------
-if (Test-Path "$private_dotfiles/api-key.grok") {
-  Set-Variable -Name XAI_API_KEY `
-    -Scope Global `
-    -Option Constant `
-    -Value (Get-Content -Path "$private_dotfiles/api-key.grok" -Raw)
 }
 
 #-----------------------------------------------------------------------------
