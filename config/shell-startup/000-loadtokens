@@ -3,9 +3,10 @@
 private_dotfiles="$PROJECTS_DIR/private_dotfiles"
 
 #-----------------------------------------------------------------------------
-# Modify this section to check for the azure cli and only set the variable if it exists, AI!
-[[ -r $private_dotfiles/api-key.azure ]] \
-  && export AZURE_DEVOPS_EXT_PAT="$(<$private_dotfiles/api-key.azure)"
+if command -v az &> /dev/null; then
+  [[ -r $private_dotfiles/api-key.azure ]] \
+    && export AZURE_DEVOPS_EXT_PAT="$(<$private_dotfiles/api-key.azure)"
+fi
 
 #-----------------------------------------------------------------------------
 [[ -r $private_dotfiles/api-key.openai ]] \
