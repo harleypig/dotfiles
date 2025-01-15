@@ -3,10 +3,9 @@
 import sys
 import yaml
 import os
-import argparse
-
-#-----------------------------------------------------------------------------
-# Create a function that prints a message to stderr, AI!
+def print_to_stderr(message):
+    """Print a message to stderr."""
+    print(message, file=sys.stderr)
 
 #-----------------------------------------------------------------------------
 def load_pipeline_file(pipeline_file):
@@ -20,19 +19,19 @@ def load_pipeline_file(pipeline_file):
 
             return pipeline
     except PermissionError:
-        print(f"Error: Permission denied when trying to read {pipeline_file}", file=sys.stderr)
+        print_to_stderr(f"Error: Permission denied when trying to read {pipeline_file}")
         exit(1)
 
     except FileNotFoundError:
-        print(f"Error: File not found: {pipeline_file}", file=sys.stderr)
+        print_to_stderr(f"Error: File not found: {pipeline_file}")
         exit(1)
 
     except yaml.YAMLError as exc:
-        print(f"Error: Could not parse YAML file: {exc}", file=sys.stderr)
+        print_to_stderr(f"Error: Could not parse YAML file: {exc}")
         exit(1)
 
     except ValueError as ve:
-        print(f"Error: {ve}", file=sys.stderr)
+        print_to_stderr(f"Error: {ve}")
         exit(1)
 
 #-----------------------------------------------------------------------------
