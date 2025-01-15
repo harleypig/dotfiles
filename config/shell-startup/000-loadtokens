@@ -9,12 +9,13 @@ if command -v az &> /dev/null; then
 fi
 
 #-----------------------------------------------------------------------------
-# Modify this section to check for the aider command and only set the two variables if it exists, AI!
-[[ -r $private_dotfiles/api-key.openai ]] \
-  && export OPENAI_API_KEY="$(<$private_dotfiles/api-key.openai)"
+if command -v aider &> /dev/null; then
+  [[ -r $private_dotfiles/api-key.openai ]] \
+    && export OPENAI_API_KEY="$(<$private_dotfiles/api-key.openai)"
 
-[[ -f $private_dotfiles/api-key.grok ]] \
-  && export XAI_API_KEY="$(<$private_dotfiles/api-key.grok)"
+  [[ -f $private_dotfiles/api-key.grok ]] \
+    && export XAI_API_KEY="$(<$private_dotfiles/api-key.grok)"
+fi
 
 #-----------------------------------------------------------------------------
 [[ -f $private_dotfiles/api-key.linode ]] \
