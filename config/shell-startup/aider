@@ -11,4 +11,9 @@ if command -v aider &> /dev/null; then
   export AIDER_MAP_TOKENS=2048
   export AIDER_MAX_CHAT_HISTORY_TOKENS=2048
   export AIDER_VIM=true
+  export AIDER_WATCH_FILES=true
+
+  # XXX: Need to add check for windows and use code instead of vim for editor.
+  # export AIDER_EDITOR="code --wait"
+  # export AIDER_EDITOR="vim"
 fi

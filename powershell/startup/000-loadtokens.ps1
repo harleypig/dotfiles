@@ -10,6 +10,7 @@ if (Test-Path "$private_dotfiles/api-key.azure") {
 
 #-----------------------------------------------------------------------------
 if (Test-Path "$private_dotfiles/api-key.openai") {
+  #  $OPENAI_API_KEY = Get-Content `
   Set-Variable -Name OPENAI_API_KEY `
     -Scope Global `
     -Option Constant `

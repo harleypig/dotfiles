@@ -1,10 +1,3 @@
-archive/*
-#bin/*
-tests/*
-
-#vm-setup/**
-vm-setup/credentials.yml
-
 bin/Is
 bin/where
 config/shell-startup/less
