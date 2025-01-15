@@ -27,6 +27,9 @@ def load_pipeline_file(pipeline_file):
     except yaml.YAMLError as exc:
         print(f"Error: Could not parse YAML file: {exc}")
         exit(1)
+    except ValueError as ve:
+        print(f"Error: {ve}")
+        exit(1)
 
 #-----------------------------------------------------------------------------
 def summarize_pipeline(pipeline_file):
