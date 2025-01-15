@@ -8,9 +8,11 @@ import argparse
 def load_pipeline_file(pipeline_file):
     """Load and parse the YAML pipeline file."""
     try:
-        # Ensure we do not return 'None' AI!
         with open(pipeline_file, 'r') as file:
-            return yaml.safe_load(file)
+            pipeline = yaml.safe_load(file)
+            if pipeline is None:
+                raise ValueError("YAML file is empty or contains no valid data")
+            return pipeline
 
     except PermissionError:
         print(f"Error: Permission denied when trying to read {pipeline_file}")
