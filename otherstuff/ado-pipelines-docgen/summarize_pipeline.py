@@ -4,6 +4,7 @@ import yaml
 import os
 import argparse
 
+# Add error handling for invalid permissions on file and missing file, AI!
 def load_pipeline_file(pipeline_file):
     """Load and parse the YAML pipeline file."""
     with open(pipeline_file, 'r') as file:
