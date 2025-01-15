@@ -1,4 +1,5 @@
 # shellcheck shell=bash
+# shellcheck disable=SC2155,SC2086
 
 private_dotfiles="$PROJECTS_DIR/private_dotfiles"
 
