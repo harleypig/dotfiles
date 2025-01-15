@@ -45,4 +45,6 @@
   // Search
   "search.useIgnoreFiles": true,
   "search.useGlobalIgnoreFiles": true
+
+  // AI! Add python specific seetings in the form of "python": {...}
 }
