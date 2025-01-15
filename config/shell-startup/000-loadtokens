@@ -18,6 +18,7 @@ if command -v aider &> /dev/null; then
 fi
 
 #-----------------------------------------------------------------------------
+# Modify this section to check for the linode cli and only set the variable if it exists, AI!
 [[ -f $private_dotfiles/api-key.linode ]] \
   && export LINODE_TOKEN="$(<$private_dotfiles/api-key.linode)"
 
