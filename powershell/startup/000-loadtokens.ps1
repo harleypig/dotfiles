@@ -10,11 +10,12 @@ if (Test-Path "$private_dotfiles/api-key.azure") {
 
 #-----------------------------------------------------------------------------
 if (Test-Path "$private_dotfiles/api-key.openai") {
+  # Modify this if statement to check for the aider command and only set the variable if it exist, AI!
   #  $OPENAI_API_KEY = Get-Content `
   Set-Variable -Name OPENAI_API_KEY `
     -Scope Global `
     -Option Constant `
-    -Value (Get-Content -Path "$private_dotfiles/api-key.openai" -Raw)
+    -Value ((Get-Content -Path "$private_dotfiles/api-key.openai" -Raw).Trim())
 
   $env:OPENAI_API_KEY = $OPENAI_API_KEY
 }
