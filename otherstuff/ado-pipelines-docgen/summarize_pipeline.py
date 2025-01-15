@@ -5,6 +5,7 @@ import os
 import argparse
 
 def summarize_pipeline(pipeline_file):
+    # Move the open and parsing of the file into it's own function, aI!
     with open(pipeline_file, 'r') as file:
         try:
             pipeline = yaml.safe_load(file)
