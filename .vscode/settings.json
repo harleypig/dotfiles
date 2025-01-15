@@ -45,7 +45,11 @@
   // Search
   "search.useIgnoreFiles": true,
   "search.useGlobalIgnoreFiles": true,
+
+  // Python specific stuff
+  // Add settings that match any of the above settings (they seem to be different globally), AI!
   "python": {
+    // The formatter needs to be yapf, AI!
     "formatting.provider": "black",
     "linting.enabled": true,
     "linting.pylintEnabled": true,
