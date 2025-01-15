@@ -39,25 +39,14 @@ def load_file(pipeline_file):
         exit(1)
 
 #-----------------------------------------------------------------------------
-# I only need the parameters definitons for the summary, AI!
 def summarize_pipeline(pipeline_file):
     pipeline = load_file(pipeline_file)
 
     summary = {
         "name": pipeline.get('name', 'Unnamed Pipeline'),
         "trigger": pipeline.get('trigger', {}),
-        "variables": pipeline.get('variables', {}),
-        "jobs": []
+        "variables": pipeline.get('variables', {})
     }
-
-    if 'jobs' in pipeline:
-        for job in pipeline['jobs']:
-            job_summary = {
-                "name": job.get('job', 'Unnamed Job'),
-                "steps": len(job.get('steps', [])),
-                "pool": job.get('pool', {}).get('vmImage', 'Not specified')
-            }
-            summary['jobs'].append(job_summary)
 
     return summary
 
