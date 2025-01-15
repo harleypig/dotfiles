@@ -45,6 +45,12 @@
   // Search
   "search.useIgnoreFiles": true,
   "search.useGlobalIgnoreFiles": true
-
-  // AI! Add python specific seetings in the form of "python": {...}
+},
+  "python": {
+    "formatting.provider": "black",
+    "linting.enabled": true,
+    "linting.pylintEnabled": true,
+    "linting.pylintArgs": ["--disable=C0111,C0301,W0611"],
+    "analysis.typeCheckingMode": "basic"
+  }
 }
