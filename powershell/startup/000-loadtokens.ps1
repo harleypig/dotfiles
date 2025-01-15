@@ -6,12 +6,11 @@ if (Test-Path "$private_dotfiles/api-key.azure") {
     -Scope Global `
     -Option Constant `
     -Value (Get-Content -Path "$private_dotfiles/api-key.azure" -Raw)
-}
+  }
 
 #-----------------------------------------------------------------------------
-if (Test-Path "$private_dotfiles/api-key.openai") {
-  # Modify this if statement to check for the aider command and only set the variable if it exist, AI!
-  #  $OPENAI_API_KEY = Get-Content `
+if (Get-Command aider -ErrorAction SilentlyContinue) {
+  if (Test-Path "$private_dotfiles/api-key.openai") {
   Set-Variable -Name OPENAI_API_KEY `
     -Scope Global `
     -Option Constant `
