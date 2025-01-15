@@ -4,14 +4,19 @@ import yaml
 import os
 import argparse
 
-def summarize_pipeline(pipeline_file):
-    # Move the open and parsing of the file into it's own function, aI!
+def load_pipeline_file(pipeline_file):
+    """Load and parse the YAML pipeline file."""
     with open(pipeline_file, 'r') as file:
         try:
-            pipeline = yaml.safe_load(file)
+            return yaml.safe_load(file)
         except yaml.YAMLError as exc:
             print(f"Error parsing YAML file: {exc}")
-            return
+            return None
+
+def summarize_pipeline(pipeline_file):
+    pipeline = load_pipeline_file(pipeline_file)
+    if pipeline is None:
+        return
 
     summary = {
         "name": pipeline.get('name', 'Unnamed Pipeline'),
