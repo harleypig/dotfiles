@@ -4,7 +4,6 @@ import yaml
 import os
 import argparse
 
-# Exit on exceoption instead of returning, AI!
 def load_pipeline_file(pipeline_file):
     """Load and parse the YAML pipeline file."""
     with open(pipeline_file, 'r') as file:
@@ -12,7 +11,7 @@ def load_pipeline_file(pipeline_file):
             return yaml.safe_load(file)
         except yaml.YAMLError as exc:
             print(f"Error parsing YAML file: {exc}")
-            return None
+            exit(1)
 
 def summarize_pipeline(pipeline_file):
     pipeline = load_pipeline_file(pipeline_file)
