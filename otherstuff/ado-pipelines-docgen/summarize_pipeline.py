@@ -15,21 +15,20 @@ def load_pipeline_file(pipeline_file):
                 raise ValueError("YAML file is empty or contains no valid data")
 
             return pipeline
-# Exception messages should go to stderr, AI!
     except PermissionError:
-        print(f"Error: Permission denied when trying to read {pipeline_file}")
+        print(f"Error: Permission denied when trying to read {pipeline_file}", file=sys.stderr)
         exit(1)
 
     except FileNotFoundError:
-        print(f"Error: File not found: {pipeline_file}")
+        print(f"Error: File not found: {pipeline_file}", file=sys.stderr)
         exit(1)
 
     except yaml.YAMLError as exc:
-        print(f"Error: Could not parse YAML file: {exc}")
+        print(f"Error: Could not parse YAML file: {exc}", file=sys.stderr)
         exit(1)
 
     except ValueError as ve:
-        print(f"Error: {ve}")
+        print(f"Error: {ve}", file=sys.stderr)
         exit(1)
 
 #-----------------------------------------------------------------------------
