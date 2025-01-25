@@ -15,5 +15,8 @@
   ],
   "settings": {
     "powershell.cwd": "."
+  },
+  "extensions": {
+    "recommendations": []
   }
 }
