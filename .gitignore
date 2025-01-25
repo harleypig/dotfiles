@@ -18,3 +18,6 @@ cygdrive/**
 package-lock.json
 package.json
 nvm_nodejs_org_mirror
+
+# Ignore VSCode syncsettings UI state
+.vscode/syncsettings/profiles/default/data/ui-state.yml

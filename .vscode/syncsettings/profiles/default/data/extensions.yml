@@ -1,0 +1,48 @@
+disabled: []
+enabled:
+  - id: EditorConfig.EditorConfig
+    uuid: f60a60a6-95ba-42d4-b41c-3d24c1b89588
+  - id: eeyore.yapf
+    uuid: 0403a0b4-43f1-441a-807a-97c5e4f4606d
+  - id: feiskyer.chatgpt-copilot
+    uuid: 1356f8e8-fb46-45d3-a4f9-43dfd69a7624
+  - id: GitHub.codespaces
+    uuid: 4023d3e5-c840-4cdd-8b54-51c77548aa3f
+  - id: GitHub.remotehub
+    uuid: fc7d7e85-2e58-4c1c-97a3-2172ed9a77cd
+  - id: GitHub.vscode-pull-request-github
+    uuid: 69ddd764-339a-4ecc-97c1-9c4ece58e36d
+  - id: hashicorp.terraform
+    uuid: 4a23294b-fd16-4c51-9759-da9936474cf8
+  - id: hediet.vscode-drawio
+    uuid: ea6a6046-2132-421f-a984-664909fcf0b8
+  - id: ionutvmi.reg
+    uuid: 9f8192be-78bf-4153-806d-08ae956ce8b0
+  - id: mads-hartmann.bash-ide-vscode
+    uuid: b1b0f283-8246-4e90-832e-a6c409d378d1
+  - id: ms-azuretools.vscode-docker
+    uuid: 0479fc1c-3d67-49f9-b087-fb9069afe48f
+  - id: ms-python.debugpy
+    uuid: 4bd5d2c9-9d65-401a-b0b2-7498d9f17615
+  - id: ms-python.python
+    uuid: f1f59ae4-9318-4f3c-a9b5-81b2eaa5f8a5
+  - id: ms-vscode-remote.remote-containers
+    uuid: 93ce222b-5f6f-49b7-9ab1-a0463c6238df
+  - id: ms-vscode-remote.remote-wsl
+    uuid: f0c5397b-d357-4197-99f0-cb4202f22818
+  - id: ms-vscode.azure-repos
+    uuid: 25cfa506-1433-4595-a73f-61666807126d
+  - id: ms-vscode.powershell
+    uuid: 40d39ce9-c381-47a0-80c8-a6661f731eab
+  - id: ms-vscode.remote-repositories
+    uuid: cf5142f0-3701-4992-980c-9895a750addf
+  - id: ni.azdo-wiki-md
+    uuid: b98508c5-f7c7-478f-83ca-073dae9e0761
+  - id: richie5um2.vscode-sort-json
+    uuid: 3fb77af3-b8b3-4cb9-9137-f555bd80e2b1
+  - id: szTheory.vscode-packer-powertools
+    uuid: 4a04e57b-5703-4272-a068-896d237c2194
+  - id: vscodevim.vim
+    uuid: d96e79c6-8b25-4be3-8545-0e0ecefcae03
+  - id: zokugun.cron-tasks
+    uuid: b7bbbbd5-7a39-4312-87aa-ef6a41de67fb

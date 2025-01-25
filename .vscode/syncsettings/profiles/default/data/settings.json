@@ -1,0 +1,86 @@
+{
+  "chat.commandCenter.enabled": false,
+  "explorer.confirmDragAndDrop": false,
+  "hediet.vscode-drawio.resizeImages": null,
+  "python.createEnvironment.trigger": "off",
+  "syncSettings.additionalFiles": [],
+  "update.showReleaseNotes": false,
+  "window.zoomLevel": 0.75,
+  "editor": {
+    "accessibilitySupport": "off",
+    "fontFamily": "Inconsolata Nerd Font, Inconsolata, Consolas, 'Courier New', monospace",
+    "fontSize": 20,
+    "fontLigatures": false,
+    "fontVariations": false,
+    "fontWeight": "normal",
+    "formatOnSave": true,
+    "mouseWheelZoom": true,
+    "suggestOnTriggerCharacters": false,
+    "formatOnType": true
+  },
+  "files": {
+    "autoSave": "afterDelay",
+    "eol": "\n"
+  },
+  "git": {
+    "confirmSync": false,
+    "openRepositoryInParentFolders": "always",
+    "path": "C:\\Program Files\\Git\\bin\\git.exe",
+  },
+  "powershell": {
+    "codeFormatting.avoidSemicolonsAsLineTerminators": true,
+    "codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
+    "codeFormatting.trimWhitespaceAroundPipe": true,
+    "codeFormatting.useConstantStrings": true,
+    "enableReferencesCodeLens": false,
+  },
+  "scm": {
+    "inputFontFamily": "editor",
+    "inputFontSize": 15,
+  },
+  "terminal.integrated": {
+    "defaultProfile.windows": "Cygwin",
+    "fontSize": 18,
+    "profiles.windows": {
+      "Aider (PowerShell)": {
+        "args": [
+          "-NoExit",
+          "-Command",
+          "Set-Location '${cwd}'; aider"
+        ],
+        "icon": "zap",
+        "overrideName": true,
+        "path": "pwsh"
+      },
+      "Command Prompt": {
+        "path": [
+          "${env:windir}\\Sysnative\\cmd.exe",
+          "${env:windir}\\System32\\cmd.exe"
+        ]
+      },
+      "Cygwin": {
+        "args": [
+          "--login"
+        ],
+        "path": "C:\\tools\\cygwin\\bin\\bash.exe"
+      },
+      "Git Bash": {
+        "source": "Git Bash"
+      },
+      "PowerShell": {
+        "icon": "terminal-powershell",
+        "source": "PowerShell"
+      },
+    },
+  },
+  "font-profile.profile": "default",
+  "font-profile.profiles": {
+    "default": {
+      "editor.fontFamily": "Inconsolata Nerd Font, Inconsolata, Consolas, 'Courier New', monospace",
+      "editor.fontLigatures": false,
+      "editor.fontSize": 20,
+      "editor.fontWeight": "normal",
+      "editor.fontVariations": false
+    }
+  },
+}
