@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    "eeyore.yapf",
+    "ni.azdo-wiki-md",
+    "ms-vscode.azure-repos",
+    "mads-hartmann.bash-ide-vscode",
+    "hediet.vscode-drawio",
+    "editorconfig.editorconfig",
+    "github.codespaces",
+    "github.vscode-pull-request-github",
+    "github.remotehub",
+    "hashicorp.terraform",
+    "sztheory.vscode-packer-powertools",
+    "ms-vscode.powershell",
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ionutvmi.reg",
+    "vscodevim.vim",
+    "ms-vscode-remote.remote-wsl"
+  ]
+}
