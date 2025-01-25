@@ -20,6 +20,8 @@ enabled:
     uuid: 9f8192be-78bf-4153-806d-08ae956ce8b0
   - id: mads-hartmann.bash-ide-vscode
     uuid: b1b0f283-8246-4e90-832e-a6c409d378d1
+  - id: mechatroner.rainbow-csv
+    uuid: 3792588c-3d35-442d-91ea-fe6a755e8155
   - id: ms-azuretools.vscode-docker
     uuid: 0479fc1c-3d67-49f9-b087-fb9069afe48f
   - id: ms-python.debugpy
@@ -28,12 +30,18 @@ enabled:
     uuid: f1f59ae4-9318-4f3c-a9b5-81b2eaa5f8a5
   - id: ms-vscode-remote.remote-containers
     uuid: 93ce222b-5f6f-49b7-9ab1-a0463c6238df
+  - id: ms-vscode-remote.remote-ssh
+    uuid: 607fd052-be03-4363-b657-2bd62b83d28a
+  - id: ms-vscode-remote.remote-ssh-edit
+    uuid: bfeaf631-bcff-4908-93ed-fda4ef9a0c5c
   - id: ms-vscode-remote.remote-wsl
     uuid: f0c5397b-d357-4197-99f0-cb4202f22818
   - id: ms-vscode.azure-repos
     uuid: 25cfa506-1433-4595-a73f-61666807126d
   - id: ms-vscode.powershell
     uuid: 40d39ce9-c381-47a0-80c8-a6661f731eab
+  - id: ms-vscode.remote-explorer
+    uuid: 11858313-52cc-4e57-b3e4-d7b65281e34b
   - id: ms-vscode.remote-repositories
     uuid: cf5142f0-3701-4992-980c-9895a750addf
   - id: ni.azdo-wiki-md
