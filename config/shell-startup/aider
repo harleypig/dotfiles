@@ -8,6 +8,7 @@
 if command -v aider &> /dev/null; then
   export AIDER_DARK_MODE=true
   export AIDER_GITIGNORE=false
+  export AIDER_LINE_ENDINGS='lf'
   export AIDER_MAP_TOKENS=2048
   export AIDER_MAX_CHAT_HISTORY_TOKENS=2048
   export AIDER_VIM=true
