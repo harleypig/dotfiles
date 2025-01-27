@@ -62,7 +62,8 @@ function s3cmd {
         Invoke-Expression "& $activateScript"
 
         # Run s3cmd with all provided arguments
-        Start-Process -FilePath "python" -ArgumentList "$HOME\.local\bin\s3cmd", @args -NoNewWindow -Wait
+        $arguments = "$HOME\.local\bin\s3cmd " + ($args -join ' ')
+        Start-Process -FilePath "python" -ArgumentList $arguments -NoNewWindow -Wait
     } finally {
         # Deactivate the virtual environment to clean up
         if (Test-Path function:deactivate) {
