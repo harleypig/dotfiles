@@ -53,6 +53,26 @@ Remove-Variable -Name scriptPath
 Remove-Item -Path Function:Import-Files
 
 #-----------------------------------------------------------------------------
+# make sure this is idiomatic powershell please AI!
+function s3cmd {
+  $venvPath = "$HOME\pipx\venvs\s3cmd\Scripts"
+  $activateScript = Join-Path -Path $venvPath -ChildPath "Activate.ps1"
+
+  try {
+      # Activate the virtual environment
+      . $activateScript
+
+      # Run s3cmd with all provided arguments
+      python "$HOME\.local\bin\s3cmd" @args
+  } finally {
+      # Deactivate the virtual environment to clean up
+      if (Test-Path function:deactivate) {
+          deactivate
+      }
+  }
+}
+
+#-----------------------------------------------------------------------------
 # TBD:
 
 # Depends on PSReadline
