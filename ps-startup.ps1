@@ -42,8 +42,10 @@ Import-Files
 
 # We want this to be after all the other files are loaded because these paths
 # take precedence.
+# XXX: Move python path to dedicated python setup file
 $env:PATH = "$DOTFILES\powershell\bin;" `
             + "$HOME\.local\bin;" `
+            + "$HOME\AppData\Roaming\Python\Python312\Scripts;" `
             + "$env:PATH"
 
 # Remove work or scratch variables and functions from the environment
