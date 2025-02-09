@@ -6,10 +6,14 @@ Set-Variable -Name DOTFILES `
   -Option Constant `
   -Value (Split-Path -Parent (Resolve-Path -Path $scriptPath))
 
+$env:DOTFILES = $DOTFILES
+
 Set-Variable -Name PROJECTS_DIR `
   -Scope Global `
   -Option Constant `
   -Value (Split-Path -Parent $DOTFILES)
+
+$env:PROJECTS_DIR = $PROJECTS_DIR
 
 #-----------------------------------------------------------------------------
 
