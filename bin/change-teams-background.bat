@@ -12,12 +12,13 @@
 :: Background Video Requirements
 :: NOT SUPPORTED BY MICROSOFT
 
-# Format the following lines as comments, wrapped to 79 characters in length, AI!
-* File Format: Use MP4 files for compatibility.
-* Resolution: Aim for at least 1920 x 1080 pixels to ensure clarity.
-* Aspect Ratio: Maintain a 16:9 aspect ratio to prevent distortion.
-* File Size: Keep the file size reasonable to avoid performance issues; smaller files are preferable.
-* Duration: Shorter loops (e.g., 10-20 seconds) can minimize resource usage.
+:: File Format: Use MP4 files for compatibility.
+:: Resolution: Aim for at least 1920 x 1080 pixels to ensure clarity.
+:: Aspect Ratio: Maintain a 16:9 aspect ratio to prevent distortion.
+:: File Size: Keep the file size reasonable to avoid performance
+:: issues; smaller files are preferable.
+:: Duration: Shorter loops (e.g., 10-20 seconds) can minimize resource
+:: usage.
 
 setlocal
 
