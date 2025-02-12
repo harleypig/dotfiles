@@ -25,8 +25,11 @@ setlocal
 :: Set the source directory containing the images
 set "sourceDir=C:\path\to\your\images"
 
+:: Set the target image name
+set "targetImage=background.jpg"
+
 :: Set the destination path for the Teams background
-set "destPath=%APPDATA%\Microsoft\Teams\Backgrounds\Uploads\background.jpg"
+set "destPath=%APPDATA%\Microsoft\Teams\Backgrounds\Uploads\%targetImage%"
 
 :: ---------------------------------------------------------------------------
 :: Copy a random background image
