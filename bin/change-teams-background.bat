@@ -11,15 +11,15 @@
 :: ---------------------------------------------------------------------------
 :: Background Video Requirements
 :: NOT SUPPORTED BY MICROSOFT
-
 :: File Format: Use MP4 files for compatibility.
 :: Resolution: Aim for at least 1920 x 1080 pixels to ensure clarity.
 :: Aspect Ratio: Maintain a 16:9 aspect ratio to prevent distortion.
 :: File Size: Keep the file size reasonable to avoid performance
-:: issues; smaller files are preferable.
+::   issues; smaller files are preferable.
 :: Duration: Shorter loops (e.g., 10-20 seconds) can minimize resource
-:: usage.
+::   usage.
 
+:: ---------------------------------------------------------------------------
 setlocal
 
 :: Set the source directory containing the images
@@ -28,6 +28,9 @@ set "sourceDir=C:\path\to\your\images"
 :: Set the destination path for the Teams background
 set "destPath=%APPDATA%\Microsoft\Teams\Backgrounds\Uploads\background.jpg"
 
+:: ---------------------------------------------------------------------------
+:: Copy a random background image
+:: ---------------------------------------------------------------------------
 :: Count the number of image files in the source directory
 for /f %%A in ('dir /b /a-d "%sourceDir%\*.jpg" ^| find /c /v ""') do set fileCount=%%A
 
