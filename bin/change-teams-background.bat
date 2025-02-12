@@ -1,4 +1,9 @@
 @echo off
+:: Background Image Requirements:
+:: Resolution: Use images with a resolution of at least 1920 x 1080 pixels. RAMSAC.COM
+:: Aspect Ratio: Maintain a 16:9 aspect ratio to prevent distortion. RAMSAC.COM
+:: File Format: Acceptable formats include PNG and JPEG. PNG is recommended to avoid potential orientation issues associated with some JPEG files. HUDDLET.COM
+:: File Size: Ensure the image file size is between 100 KB and 2 MB.
 setlocal
 
 :: Set the source directory containing the images
