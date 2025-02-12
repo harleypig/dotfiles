@@ -35,14 +35,14 @@ set "destPath=%APPDATA%\Microsoft\Teams\Backgrounds\Uploads\%targetImage%"
 :: ---------------------------------------------------------------------------
 :: Copy a random background image
 :: ---------------------------------------------------------------------------
-:: Count the number of image files in the source directory
-for /f %%A in ('dir /b /a-d "%sourceDir%\*.jpg" ^| find /c /v ""') do set fileCount=%%A
+:: Count the number of image files (JPG and PNG) in the source directory
+for /f %%A in ('dir /b /a-d "%sourceDir%\*.jpg" "%sourceDir%\*.png" ^| find /c /v ""') do set fileCount=%%A
 
 :: Generate a random number between 1 and the number of files
 set /a randomIndex=%random% %% fileCount + 1
 
-:: Select a random file
-for /f "tokens=*" %%F in ('dir /b /a-d "%sourceDir%\*.jpg"') do (
+:: Select a random file (JPG or PNG)
+for /f "tokens=*" %%F in ('dir /b /a-d "%sourceDir%\*.jpg" "%sourceDir%\*.png"') do (
     set /a currentIndex+=1
     if %currentIndex%==%randomIndex% (
         set "randomFile=%%F"
