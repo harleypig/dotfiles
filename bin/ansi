@@ -98,6 +98,7 @@ hex_to_256() {
 #-----------------------------------------------------------------------------
 function _ansi() {
   [[ -t 1 ]] && return 0
+  [[ -z $TERM ]] && return 0
   # convert convenience values to what tput understands
 
   local -A color
