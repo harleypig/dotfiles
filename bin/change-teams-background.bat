@@ -29,6 +29,7 @@ set "sourceDir=C:\path\to\your\images"
 set "targetImage=background.jpg"
 
 :: Set the destination path for the Teams background
+:: DO NOT CHANGE THIS UNLESS YOU KNOW WHAT YOU ARE DOING
 set "destPath=%APPDATA%\Microsoft\Teams\Backgrounds\Uploads\%targetImage%"
 
 :: ---------------------------------------------------------------------------
