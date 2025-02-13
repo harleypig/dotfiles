@@ -3,6 +3,7 @@
 PROMPT_DIRTRIM=2
 
 #-----------------------------------------------------------------------------
+# shellcheck disable=SC2139,SC2086
 alias wget="wget --hsts-file="$XDG_CACHE_HOME/wget-hsts""
 
 #-----------------------------------------------------------------------------
@@ -42,6 +43,7 @@ export CVS_RSH='ssh'
 
 #-----------------------------------------------------------------------------
 # https://wiki.archlinux.org/index.php/Core_Utilities#ls
+# shellcheck disable=SC2046
 eval $(dircolors -b)
 
 alias l='ls -AFl --color=auto'
@@ -104,10 +106,11 @@ alias h='history'
 
 #-----------------------------------------------------------------------------
 command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
+
+#-----------------------------------------------------------------------------
 export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 
 #-----------------------------------------------------------------------------
-
 # This overrides local ansible.cfg
 #export ANSIBLE_CONFIG="${XDG_CONFIG_HOME}/ansible.cfg"
 
@@ -121,6 +124,7 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 #-----------------------------------------------------------------------------
 # binenv
 
+# shellcheck disable=SC2034,SC1090
 if command -v binenv &> /dev/null; then
   BINENV_BINDIR="/home/harleypig/.local/bin"
   BINENV_CACHEDIR="/home/harleypig/.cache/binenv"
@@ -133,7 +137,6 @@ fi
 # Vault
 
 if command -v vault &> /dev/null; then
-
   vaultpath="$(command -v vault 2> /dev/null)"
 
   if [[ -n $vaultpath ]]; then
@@ -165,6 +168,13 @@ fi
 #-----------------------------------------------------------------------------
 # gcloud stuff
 
+# shellcheck disable=SC1091
 if command -v gcloud &> /dev/null; then
   alias gcloud-auth='gcloud auth login --no-launch-browser && gcloud auth application-default login --no-launch-browser'
+
+  gcpath="$(gcloud info --format='value(installation.sdk_root)')"
+  # Change cmpltn_file to completion_file, AI!
+  cmpltn_file="$gcpath/completion.bash.inc"
+  [[ -f $cmpltn_file ]] && source $cmpltn_file
+  unset gcpath cmpltn_file
 fi
