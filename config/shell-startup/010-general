@@ -173,8 +173,7 @@ if command -v gcloud &> /dev/null; then
   alias gcloud-auth='gcloud auth login --no-launch-browser && gcloud auth application-default login --no-launch-browser'
 
   gcpath="$(gcloud info --format='value(installation.sdk_root)')"
-  # Change cmpltn_file to completion_file, AI!
-  cmpltn_file="$gcpath/completion.bash.inc"
-  [[ -f $cmpltn_file ]] && source $cmpltn_file
-  unset gcpath cmpltn_file
+  completion_file="$gcpath/completion.bash.inc"
+  [[ -f $completion_file ]] && source $completion_file
+  unset gcpath completion_file
 fi
