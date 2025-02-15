@@ -97,11 +97,12 @@ hex_to_256() {
 
 #-----------------------------------------------------------------------------
 function _ansi() {
-  [[ ! -t 0 ]] && return 0
+  # If not interactive, don't colorize
+  [[ ! -t 0 || $- != *i* ]] && return 0
   # XXX: Consider removing these if the above works
-  [[ -z $TERM ]] && return 0
-  [[ $TERM == 'unknown ' ]] && return 0
-  [[ $TERM == 'dumb' ]] && return 0
+  # [[ -z $TERM ]] && return 0
+  # [[ $TERM == 'unknown ' ]] && return 0
+  # [[ $TERM == 'dumb' ]] && return 0
 
   # convert convenience values to what tput understands
   local -A color
