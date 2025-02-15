@@ -9,6 +9,9 @@
 command -v git &> /dev/null || return 0
 
 #-----------------------------------------------------------------------------
+
+# Detect if we're in an interactive session. If we are, then run these two bind commands, AI!
+
 # Show git short status for current directory by pressing Ctl-g-s.
 bind -x '"\C-gs": "git status -s ."'
 
