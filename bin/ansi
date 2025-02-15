@@ -98,7 +98,7 @@ hex_to_256() {
 #-----------------------------------------------------------------------------
 function _ansi() {
   [[ ! -t 0 ]] && return 0
-  # Are these necessary if the above is working, AI!
+  # XXX: Consider removing these if the above works
   [[ -z $TERM ]] && return 0
   [[ $TERM == 'unknown ' ]] && return 0
   [[ $TERM == 'dumb' ]] && return 0
