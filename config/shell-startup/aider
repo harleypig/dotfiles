@@ -14,6 +14,11 @@ if command -v aider &> /dev/null; then
   export AIDER_VIM=true
   export AIDER_WATCH_FILES=true
 
+  export AIDER_COMMIT_PROMPT="Follow the Conventional Commits specification for the commit message. The commit message should start with a type (e.g., feat, fix, chore)
+followed by a concise summary of the changes. In the body, include a list of files affected and a brief description of the changes made to each.
+Format the descriptions as a bullet list, with each item indented for clarity and readability. Ensure the list is well-organized and easy to
+understand."
+
   if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
     export AIDER_EDITOR="code --wait"
   else
