@@ -196,7 +196,8 @@ mount_volume() {
   [[ ! -e "$device_path" ]] && die "Volume '$vlabel' device not found"
 
   if ! blkid "$device_path" &> /dev/null; then
-    die "Volume '$vlabel' does not have a filesystem. Please create one first."
+    warn "Volume '$vlabel' does not have a filesystem. Formatting with ext4."
+    sudo mkfs.ext4 "$device_path" || die "Problem formatting volume '$vlabel' with ext4"
   fi
 
   local mount_dir="/mnt/${mount_point:-$vlabel}"
