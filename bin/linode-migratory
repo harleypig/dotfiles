@@ -86,17 +86,31 @@ setup() {
 
 #-----------------------------------------------------------------------------
 mount_volume() {
-  # Create code, AI!
-  #   First variable is linode label and does the label exist in linodes? If
-  #   not, die with message. This is required.
-  #   Second variable is volume label and does the label exist in volumes? If
-  #   not, die with message. This is required.
-  #   If the volume is mounted
-  #     and mounted to the default linode, die with message indicating that
-  #     and mounted to another linode, die with message indicating which
-  #     linode
-  #   ((DRYRUN)) && return 0
-  #   Mount volume
+  local linode_label="$1"
+  local volume_label="$2"
+
+  [[ -z "$linode_label" ]] && die "Linode label is required"
+  [[ -z "$volume_label" ]] && die "Volume label is required"
+
+  [[ ! -v linodes["$linode_label"] ]] && die "Linode label '$linode_label' not found"
+  [[ ! -v volumes["$volume_label"] ]] && die "Volume label '$volume_label' not found"
+
+  local volume_info="${volumes[$volume_label]}"
+  IFS=',' read -r vid linode_mounted <<< "$volume_info"
+
+  if [[ -n "$linode_mounted" ]]; then
+    if [[ "$linode_mounted" == "$default_linode" ]]; then
+      die "Volume '$volume_label' is already mounted to the default Linode '$default_linode'"
+    else
+      die "Volume '$volume_label' is already mounted to Linode '$linode_mounted'"
+    fi
+  fi
+
+  ((DRYRUN)) && return 0
+
+  # Mount volume
+  $lin volumes-attach "$vid" "${linodes[$linode_label]}" --config_id 1
+  debug "Mounted volume '$volume_label' to Linode '$linode_label'"
 }
 
 ##############################################################################
