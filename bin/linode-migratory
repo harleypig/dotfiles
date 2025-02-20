@@ -83,6 +83,7 @@ setup() {
   get_linodes
   get_volumes
 
+  # XXX: Maybe use column -t for output?
   if ((SHOWINFO)); then
     echo "Linodes:"
     printf "%-20s %-10s\n" "Label" "ID"
@@ -130,9 +131,50 @@ attach_volume() {
   debug "$lin volumes attach $vid --linode_id ${linodes[$llabel]}"
   ((DRYRUN)) && return 0
 
+  # AI: Prompt yes/no for confirmation to attach volume to linode
+
   $lin volumes attach "$vid" --linode_id "${linodes[$llabel]}" \
     || die "Problem attaching volume '$vlabel' to '$llabel'"
+
+  # AI: report volume attached
 }
+
+# AI!
+# detach_volume
+#   volume id required
+#   is volume attached?
+#     no: die with message
+#   is volume attached to this linode?
+#     yes:
+#       detect if volume is mounted and unmount_volume if it is
+#     no:
+#       warn cannot detect if volume is mounted on remote linode and possible
+#       consequences if volume is detached while mounted
+#   prompt for confirmation to detach from this linode
+#   debug command about to be called
+#   ((DRYRUN)) && return 0
+#   detach volume
+#   report volume detached
+#
+# mount_volume
+#   volume id required
+#   is volume attached to this linode?
+#     no: die with message
+#   detect /dev/disk/by-id/...
+#   does volume have a filesystem?
+#     no: die with message to mk filesystem first
+#   command line parameter mount_point passed?
+#     yes: mount_dir == mount_point
+#     no: mount_dir == volume label
+#   warn sudo is about to ask for password
+#   debug mount command about to be called
+#   ((DRYRN)) && return 0
+#   mkdir -p mount_dir
+#   mount volume to mount_dir
+#   report volume mounted and where
+#
+# unmount_volume
+#   reverse of mount_volume
 
 ##############################################################################
 
