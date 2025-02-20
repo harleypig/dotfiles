@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "NOT READY!"
+exit 1
+
+declare -A linodes
+
+# Create a function that populates the linodes dict as linodes[label]=id, AI!
+lin linodes list --format id,label --text --no-headers
+
+# Make the filesystem
+# Only once!
+mkfs.ext4 "/dev/disk/by-id/scsi-0Linode_Volume_migratory"
+
+mkdir /mnt/migratory
+mount "/dev/disk/by-id/scsi-0Linode_Volume_migratory" "/mnt/migratory"
+
