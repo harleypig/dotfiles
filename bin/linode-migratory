@@ -16,17 +16,15 @@ exit 1
 ##############################################################################
 # Functions
 #-----------------------------------------------------------------------------
-# Modify get_linodes, AI!
-#   list also returns ipv4
-#   read id, label and ipv4
-#   if ipv4 matches current_ip then set current_linode to label
-#   change variable id to lid because id is a reserved word
 get_linodes() {
-  readarray -t raw < <(lin linodes list --format id,label --text --no-headers)
+  readarray -t raw < <(lin linodes list --format id,label,ipv4 --text --no-headers)
 
   for line in "${raw[@]}"; do
-    read -r id label <<< "$line"
-    linodes["$label"]="$id"
+    read -r lid label ipv4 <<< "$line"
+    linodes["$label"]="$lid"
+    if [[ "$ipv4" == *"$current_ip"* ]]; then
+      current_linode="$label"
+    fi
   done
 }
 
