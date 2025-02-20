@@ -5,6 +5,7 @@ exit 1
 
 declare -A linodes
 
+# I prefer populating the array first (using readarray) then looping, AI!
 populate_linodes() {
     while IFS=',' read -r id label; do
         linodes["$label"]="$id"
