@@ -3,15 +3,25 @@
 echo "NOT READY!"
 exit 1
 
-declare -A linodes
+declare -A linodes volumes
 
-populate_linodes() {
-    IFS=',' readarray -t linode_data < <(lin linodes list --format id,label --text --no-headers)
-    for line in "${linode_data[@]}"; do
-        IFS=',' read -r id label <<< "$line"
-        linodes["$label"]="$id"
-    done
+##############################################################################
+# Functions
+#-----------------------------------------------------------------------------
+get_linodes() {
+  readarray -t raw < <(lin linodes list --format id,label --text --no-headers)
+
+  for line in "${raw[@]}"; do
+    read -r id label <<< "$line"
+    linodes["$label"]="$id"
+  done
 }
+
+#-----------------------------------------------------------------------------
+# Following the style in get_linodes, create a function called get_volumes,
+# AI!
+
+##############################################################################
 
 # Make the filesystem
 # Only once!
