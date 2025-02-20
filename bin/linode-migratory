@@ -83,7 +83,20 @@ setup() {
   get_linodes
   get_volumes
 
-  # Add code to show linodes and volumes in two tables if ((SHOWINFO)), AI!
+  if ((SHOWINFO)); then
+    echo "Linodes:"
+    printf "%-20s %-10s\n" "Label" "ID"
+    for label in "${!linodes[@]}"; do
+      printf "%-20s %-10s\n" "$label" "${linodes[$label]}"
+    done
+
+    echo -e "\nVolumes:"
+    printf "%-20s %-10s %-20s\n" "Label" "ID" "Attached To"
+    for label in "${!volumes[@]}"; do
+      IFS=',' read -r vid attached <<< "${volumes[$label]}"
+      printf "%-20s %-10s %-20s\n" "$label" "$vid" "${attached:-Not Attached}"
+    done
+  fi
 }
 
 #-----------------------------------------------------------------------------
