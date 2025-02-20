@@ -5,8 +5,11 @@ exit 1
 
 declare -A linodes
 
-# Create a function that populates the linodes dict as linodes[label]=id, AI!
-lin linodes list --format id,label --text --no-headers
+populate_linodes() {
+    while IFS=',' read -r id label; do
+        linodes["$label"]="$id"
+    done < <(lin linodes list --format id,label --text --no-headers)
+}
 
 # Make the filesystem
 # Only once!
