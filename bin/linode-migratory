@@ -205,6 +205,8 @@ mount_volume() {
   debug "sudo mount $device_path $mount_dir"
   ((DRYRUN)) && return 0
 
+  # Change this to make the mount point read/write for any user on the system,
+  # AI!
   sudo mkdir -p "$mount_dir"
   sudo mount "$device_path" "$mount_dir" \
     || die "Problem mounting volume '$vlabel' to '$mount_dir'"
@@ -219,7 +221,7 @@ unmount_volume() {
   [[ -z "$vlabel" ]] && die "Volume label is required"
   [[ ! -v volumes["$vlabel"] ]] && die "Volume label '$vlabel' not found"
 
-  local device_path="/dev/disk/by-id/scsi-0linode_Volume_$vlabel"
+  local device_path="/dev/disk/by-id/scsi-0Linode_Volume_$vlabel"
   [[ ! -e "$device_path" ]] && die "Volume '$vlabel' device not found"
 
   local mount_dir=$(findmnt -n -o TARGET -S "$device_path")
