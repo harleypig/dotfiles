@@ -30,17 +30,17 @@ get_linodes() {
 }
 
 #-----------------------------------------------------------------------------
-# Modify get_volumes, AI!
-#   get linode_label from volumes list
-#   if linode_label is not null, then add it to volumes as "$id,$linode_label"
-#   change variable id to vid because id is a reserved word
 get_volumes() {
   local raw
-  readarray -t raw < <(lin volumes list --format id,label --text --no-headers)
+  readarray -t raw < <(lin volumes list --format id,label,linode_label --text --no-headers)
 
   for line in "${raw[@]}"; do
-    read -r id label <<< "$line"
-    volumes["$label"]="$id"
+    read -r vid label linode_label <<< "$line"
+    if [[ -n "$linode_label" ]]; then
+      volumes["$label"]="$vid,$linode_label"
+    else
+      volumes["$label"]="$vid"
+    fi
   done
 }
 
