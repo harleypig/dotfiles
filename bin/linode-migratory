@@ -40,14 +40,17 @@ get_linodes() {
   readarray -t raw < <(lin linodes list --format id,label,ipv4 --text --no-headers)
 
   if [[ ${#raw[@]} -eq 0 ]]; then
-    die "No Linodes found. Is the LINODE_CLI_TOKEN correct?"
+    die "No linodes found. Is the LINODE_CLI_TOKEN correct?"
   fi
 
   for line in "${raw[@]}"; do
     read -r lid label ipv4 <<< "$line"
     linodes["$label"]="$lid"
+    # Add a debug call here printing label and id from the linodes dict, AI!
     if [[ "$ipv4" == *"$current_ip"* ]]; then
       current_linode="$label"
+      # Add a debug call here stating current linode found and what it
+      # is, AI
     fi
   done
 }
@@ -56,6 +59,10 @@ get_linodes() {
 get_volumes() {
   local raw
   readarray -t raw < <(lin volumes list --format id,label,linode_label --text --no-headers)
+
+  if [[ ${#raw[@]} -eq 0 ]]; then
+    die "No volumes found. Is the LINODE_CLI_TOKEN correct?"
+  fi
 
   for line in "${raw[@]}"; do
     read -r vid label linode_label <<< "$line"
