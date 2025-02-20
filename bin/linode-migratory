@@ -205,13 +205,13 @@ mount_volume() {
   debug "sudo mount $device_path $mount_dir"
   ((DRYRUN)) && return 0
 
-  # Change this to make the mount point read/write for any user on the system,
-  # AI!
   sudo mkdir -p "$mount_dir"
-  sudo mount "$device_path" "$mount_dir" \
+  sudo mount -o rw,dmask=022,fmask=133 "$device_path" "$mount_dir" \
     || die "Problem mounting volume '$vlabel' to '$mount_dir'"
 
-  echo "Volume '$vlabel' has been mounted to '$mount_dir'"
+  sudo chmod -R 777 "$mount_dir"
+
+  echo "Volume '$vlabel' has been mounted to '$mount_dir' with read/write permissions for all users"
 }
 
 #-----------------------------------------------------------------------------
