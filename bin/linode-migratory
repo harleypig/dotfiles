@@ -50,7 +50,7 @@ get_linodes() {
 
     if [[ "$ipv4" == *"$current_ip"* ]]; then
       current_linode="$label"
-      debug "Current Linode found: $label"
+      debug "Current linode found: $label"
     fi
   done
 }
@@ -66,11 +66,11 @@ get_volumes() {
 
   for line in "${raw[@]}"; do
     read -r vid label linode_label <<< "$line"
-    if [[ -n "$linode_label" ]]; then
-      volumes["$label"]="$vid,$linode_label"
-    else
-      volumes["$label"]="$vid"
-    fi
+
+    [[ -n "$linode_label" ]] && vid="$vid,$linode_label"
+
+    volumes["$label"]="$vid"
+    debug "Added volume: Label=$label, ID=${linodes[$label]}"
   done
 }
 
