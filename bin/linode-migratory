@@ -17,6 +17,7 @@ exit 1
 # Functions
 #-----------------------------------------------------------------------------
 get_linodes() {
+  local raw
   readarray -t raw < <(lin linodes list --format id,label,ipv4 --text --no-headers)
 
   for line in "${raw[@]}"; do
@@ -29,7 +30,12 @@ get_linodes() {
 }
 
 #-----------------------------------------------------------------------------
+# Modify get_volumes, AI!
+#   get linode_label from volumes list
+#   if linode_label is not null, then add it to volumes as "$id,$linode_label"
+#   change variable id to vid because id is a reserved word
 get_volumes() {
+  local raw
   readarray -t raw < <(lin volumes list --format id,label --text --no-headers)
 
   for line in "${raw[@]}"; do
