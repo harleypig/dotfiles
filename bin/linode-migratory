@@ -85,9 +85,7 @@ setup() {
 }
 
 #-----------------------------------------------------------------------------
-# This function attaches the volume. Please change occurrences of 'mount'
-# appropiately, please, AI!
-mount_volume() {
+attach_volume() {
   local llabel="$1"
   local vlabel="$2"
 
@@ -108,9 +106,9 @@ mount_volume() {
 
   [[ -n "$mounted" ]] && {
     if [[ "$mounted" == "$default_linode" ]]; then
-      die "Volume '$vlabel' is mounted to this linode"
+      die "Volume '$vlabel' is attached to this linode"
     else
-      die "Volume '$vlabel' is mounted to '$mounted'"
+      die "Volume '$vlabel' is attached to '$mounted'"
     fi
   }
 
