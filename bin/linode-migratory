@@ -46,7 +46,7 @@ get_linodes() {
   for line in "${raw[@]}"; do
     read -r lid label ipv4 <<< "$line"
     linodes["$label"]="$lid"
-    debug "Added Linode: Label=$label, ID=${linodes[$label]}"
+    debug "Added linode: Label=$label, ID=${linodes[$label]}"
 
     if [[ "$ipv4" == *"$current_ip"* ]]; then
       default_linode="$label"
@@ -85,40 +85,48 @@ setup() {
 }
 
 #-----------------------------------------------------------------------------
+# This function attaches the volume. Please change occurrences of 'mount'
+# appropiately, please, AI!
 mount_volume() {
-  local linode_label="$1"
-  local volume_label="$2"
+  local llabel="$1"
+  local vlabel="$2"
 
-  [[ -z "$linode_label" ]] && die "Linode label is required"
-  [[ -z "$volume_label" ]] && die "Volume label is required"
+  [[ -z "$llabel" ]] \
+    && die "Linode label is required"
 
-  [[ ! -v linodes["$linode_label"] ]] && die "Linode label '$linode_label' not found"
-  [[ ! -v volumes["$volume_label"] ]] && die "Volume label '$volume_label' not found"
+  [[ ! -v linodes["$llabel"] ]] \
+    && die "Linode label '$llabel' not found"
 
-  local volume_info="${volumes[$volume_label]}"
-  IFS=',' read -r vid linode_mounted <<< "$volume_info"
+  [[ -z "$vlabel" ]] \
+    && die "Volume label is required"
 
-  if [[ -n "$linode_mounted" ]]; then
-    if [[ "$linode_mounted" == "$default_linode" ]]; then
-      die "Volume '$volume_label' is already mounted to the default Linode '$default_linode'"
+  [[ ! -v volumes["$vlabel"] ]] \
+    && die "Volume label '$vlabel' not found"
+
+  local volume_info="${volumes[$vlabel]}"
+  IFS=',' read -r vid mounted <<< "$volume_info"
+
+  [[ -n "$mounted" ]] && {
+    if [[ "$mounted" == "$default_linode" ]]; then
+      die "Volume '$vlabel' is mounted to this linode"
     else
-      die "Volume '$volume_label' is already mounted to Linode '$linode_mounted'"
+      die "Volume '$vlabel' is mounted to '$mounted'"
     fi
-  fi
+  }
 
+  debug "$lin volumes attach $vid --linode_id ${linodes[$llabel]}"
   ((DRYRUN)) && return 0
 
-  # Mount volume
-  $lin volumes-attach "$vid" "${linodes[$linode_label]}" --config_id 1
-  debug "Mounted volume '$volume_label' to Linode '$linode_label'"
+  $lin volumes attach "$vid" --linode_id "${linodes[$llabel]}" \
+    || die "Problem attaching volume '$vlabel' to '$llabel'"
 }
 
 ##############################################################################
 
 # Make the filesystem
 # Only once!
-#mkfs.ext4 "/dev/disk/by-id/scsi-0Linode_Volume_migratory"
+#mkfs.ext4 "/dev/disk/by-id/scsi-0linode_Volume_migratory"
 
 #mkdir /mnt/migratory
-#mount "/dev/disk/by-id/scsi-0Linode_Volume_migratory" "/mnt/migratory"
+#mount "/dev/disk/by-id/scsi-0linode_Volume_migratory" "/mnt/migratory"
 
