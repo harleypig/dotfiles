@@ -1,13 +1,26 @@
 #!/bin/bash
 
+declare -A linodes volumes
+declare current_ip current_linode='none'
+
+current_ip="$( ip addr show \
+  | grep -oP '(?<=inet\s)\d+(\.\d+){3}' \
+  | grep -v '127.0.0.1' \
+  | head -n 1)"
+
+echo "Current IP: $current_ip"
+
 echo "NOT READY!"
 exit 1
-
-declare -A linodes volumes
 
 ##############################################################################
 # Functions
 #-----------------------------------------------------------------------------
+# Modify get_linodes, AI!
+#   list also returns ipv4
+#   read id, label and ipv4
+#   if ipv4 matches current_ip then set current_linode to label
+#   change variable id to lid because id is a reserved word
 get_linodes() {
   readarray -t raw < <(lin linodes list --format id,label --text --no-headers)
 
