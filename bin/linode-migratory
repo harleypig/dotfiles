@@ -40,7 +40,7 @@ get_linodes() {
   readarray -t raw < <(lin linodes list --format id,label,ipv4 --text --no-headers)
 
   if [[ ${#raw[@]} -eq 0 ]]; then
-    die "No linodes found. Do you have the necessary permissions?"
+    die "No linodes found. Does the token have the necessary permissions?"
   fi
 
   for line in "${raw[@]}"; do
@@ -61,7 +61,7 @@ get_volumes() {
   readarray -t raw < <(lin volumes list --format id,label,linode_label --text --no-headers)
 
   if [[ ${#raw[@]} -eq 0 ]]; then
-    die "No volumes found. Do you have the necessary permissions?"
+    die "No volumes found. Does the token have the necessary permissions?"
   fi
 
   for line in "${raw[@]}"; do
