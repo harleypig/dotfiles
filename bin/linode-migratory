@@ -131,50 +131,100 @@ attach_volume() {
   debug "$lin volumes attach $vid --linode_id ${linodes[$llabel]}"
   ((DRYRUN)) && return 0
 
-  # AI: Prompt yes/no for confirmation to attach volume to linode
+  # Prompt for confirmation to attach volume to linode
+  read -p "Are you sure you want to attach volume '$vlabel' to '$llabel'? (y/n): " confirm
+  [[ "$confirm" != [yY] ]] && die "Volume attachment cancelled"
 
   $lin volumes attach "$vid" --linode_id "${linodes[$llabel]}" \
     || die "Problem attaching volume '$vlabel' to '$llabel'"
 
-  # AI: report volume attached
+  echo "Volume '$vlabel' has been attached to '$llabel'"
 }
 
-# AI!
-# detach_volume
-#   volume id required
-#   is volume attached?
-#     no: die with message
-#   is volume attached to this linode?
-#     yes:
-#       detect if volume is mounted and unmount_volume if it is
-#     no:
-#       warn cannot detect if volume is mounted on remote linode and possible
-#       consequences if volume is detached while mounted
-#   prompt for confirmation to detach from this linode
-#   debug command about to be called
-#   ((DRYRUN)) && return 0
-#   detach volume
-#   report volume detached
-#
-# mount_volume
-#   volume id required
-#   is volume attached to this linode?
-#     no: die with message
-#   detect /dev/disk/by-id/...
-#   does volume have a filesystem?
-#     no: die with message to mk filesystem first
-#   command line parameter mount_point passed?
-#     yes: mount_dir == mount_point
-#     no: mount_dir == volume label
-#   warn sudo is about to ask for password
-#   debug mount command about to be called
-#   ((DRYRN)) && return 0
-#   mkdir -p mount_dir
-#   mount volume to mount_dir
-#   report volume mounted and where
-#
-# unmount_volume
-#   reverse of mount_volume
+detach_volume() {
+  local vlabel="$1"
+
+  [[ -z "$vlabel" ]] && die "Volume label is required"
+  [[ ! -v volumes["$vlabel"] ]] && die "Volume label '$vlabel' not found"
+
+  local vinfo="${volumes[$vlabel]}"
+  IFS=',' read -r vid attached <<< "$vinfo"
+
+  [[ -z "$attached" ]] && die "Volume '$vlabel' is not attached to any Linode"
+
+  if [[ "$attached" == "$default_linode" ]]; then
+    if mount | grep -q "/dev/disk/by-id/scsi-0linode_Volume_$vlabel"; then
+      unmount_volume "$vlabel"
+    fi
+    read -p "Are you sure you want to detach volume '$vlabel' from '$default_linode'? (y/n): " confirm
+    [[ "$confirm" != [yY] ]] && die "Volume detachment cancelled"
+    debug "$lin volumes detach $vid"
+    ((DRYRUN)) && return 0
+    $lin volumes detach "$vid" || die "Problem detaching volume '$vlabel' from '$default_linode'"
+    echo "Volume '$vlabel' has been detached from '$default_linode'"
+  else
+    warn "Volume '$vlabel' is attached to '$attached'. Cannot detect if it's mounted on a remote Linode. Detaching while mounted can cause data loss."
+    read -p "Are you sure you want to detach volume '$vlabel' from '$attached'? (y/n): " confirm
+    [[ "$confirm" != [yY] ]] && die "Volume detachment cancelled"
+    debug "$lin volumes detach $vid"
+    ((DRYRUN)) && return 0
+    $lin volumes detach "$vid" || die "Problem detaching volume '$vlabel' from '$attached'"
+    echo "Volume '$vlabel' has been detached from '$attached'"
+  fi
+}
+
+mount_volume() {
+  local vlabel="$1"
+  local mount_point="$2"
+
+  [[ -z "$vlabel" ]] && die "Volume label is required"
+  [[ ! -v volumes["$vlabel"] ]] && die "Volume label '$vlabel' not found"
+
+  local vinfo="${volumes[$vlabel]}"
+  IFS=',' read -r vid attached <<< "$vinfo"
+
+  [[ -z "$attached" ]] && die "Volume '$vlabel' is not attached to this Linode"
+  [[ "$attached" != "$default_linode" ]] && die "Volume '$vlabel' is not attached to this Linode"
+
+  local device_path="/dev/disk/by-id/scsi-0linode_Volume_$vlabel"
+  [[ ! -e "$device_path" ]] && die "Volume '$vlabel' device not found"
+
+  if ! blkid "$device_path" &> /dev/null; then
+    die "Volume '$vlabel' does not have a filesystem. Please create one first."
+  fi
+
+  local mount_dir="${mount_point:-$vlabel}"
+  warn "sudo will ask for your password to mount the volume."
+
+  debug "sudo mount $device_path /mnt/$mount_dir"
+  ((DRYRUN)) && return 0
+
+  sudo mkdir -p "/mnt/$mount_dir"
+  sudo mount "$device_path" "/mnt/$mount_dir" || die "Problem mounting volume '$vlabel' to '/mnt/$mount_dir'"
+
+  echo "Volume '$vlabel' has been mounted to '/mnt/$mount_dir'"
+}
+
+unmount_volume() {
+  local vlabel="$1"
+
+  [[ -z "$vlabel" ]] && die "Volume label is required"
+  [[ ! -v volumes["$vlabel"] ]] && die "Volume label '$vlabel' not found"
+
+  local mount_dir="/mnt/$vlabel"
+  if ! mount | grep -q "$mount_dir"; then
+    die "Volume '$vlabel' is not mounted"
+  fi
+
+  warn "sudo will ask for your password to unmount the volume."
+
+  debug "sudo umount $mount_dir"
+  ((DRYRUN)) && return 0
+
+  sudo umount "$mount_dir" || die "Problem unmounting volume '$vlabel' from '$mount_dir'"
+
+  echo "Volume '$vlabel' has been unmounted from '$mount_dir'"
+}
 
 ##############################################################################
 
