@@ -40,8 +40,7 @@ get_linodes() {
   readarray -t raw < <(lin linodes list --format id,label,ipv4 --text --no-headers)
 
   if [[ ${#raw[@]} -eq 0 ]]; then
-    # Change the message to something about having the right permissions, AI
-    die "No linodes found. Is the LINODE_CLI_TOKEN correct?"
+    die "No linodes found. Do you have the necessary permissions?"
   fi
 
   for line in "${raw[@]}"; do
@@ -62,8 +61,7 @@ get_volumes() {
   readarray -t raw < <(lin volumes list --format id,label,linode_label --text --no-headers)
 
   if [[ ${#raw[@]} -eq 0 ]]; then
-    # Change the message to something about having the right permissions, AI!
-    die "No volumes found. Is the LINODE_CLI_TOKEN correct?"
+    die "No volumes found. Do you have the necessary permissions?"
   fi
 
   for line in "${raw[@]}"; do
