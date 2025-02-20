@@ -18,8 +18,14 @@ get_linodes() {
 }
 
 #-----------------------------------------------------------------------------
-# Following the style in get_linodes, create a function called get_volumes,
-# AI!
+get_volumes() {
+  readarray -t raw < <(lin volumes list --format id,label --text --no-headers)
+
+  for line in "${raw[@]}"; do
+    read -r id label <<< "$line"
+    volumes["$label"]="$id"
+  done
+}
 
 ##############################################################################
 
