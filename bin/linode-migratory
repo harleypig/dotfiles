@@ -46,7 +46,9 @@ get_linodes() {
   for line in "${raw[@]}"; do
     read -r lid label ipv4 <<< "$line"
     linodes["$label"]="$lid"
+    # Use the linodes dict to print these values, AI!
     debug "Added Linode: Label=$label, ID=$lid"
+
     if [[ "$ipv4" == *"$current_ip"* ]]; then
       current_linode="$label"
       debug "Current Linode found: $label"
