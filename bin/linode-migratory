@@ -14,7 +14,7 @@ lin="$(command -v linode-cli &> /dev/null)"
   exit 1
 }
 
-declare -i DEBUG=0 DRYRUN=0
+declare -i DEBUG=0 DRYRUN=0 SHOWINFO=0
 declare -A linodes volumes
 declare current_ip default_linode default_volume
 
@@ -82,6 +82,8 @@ get_volumes() {
 setup() {
   get_linodes
   get_volumes
+
+  # Add code to show linodes and volumes in two tables if ((SHOWINFO)), AI!
 }
 
 #-----------------------------------------------------------------------------
@@ -101,14 +103,14 @@ attach_volume() {
   [[ ! -v volumes["$vlabel"] ]] \
     && die "Volume label '$vlabel' not found"
 
-  local volume_info="${volumes[$vlabel]}"
-  IFS=',' read -r vid mounted <<< "$volume_info"
+  local vinfo="${volumes[$vlabel]}"
+  IFS=',' read -r vid attached <<< "$vinfo"
 
-  [[ -n "$mounted" ]] && {
-    if [[ "$mounted" == "$default_linode" ]]; then
+  [[ -n "$attached" ]] && {
+    if [[ "$attached" == "$default_linode" ]]; then
       die "Volume '$vlabel' is attached to this linode"
     else
-      die "Volume '$vlabel' is attached to '$mounted'"
+      die "Volume '$vlabel' is attached to '$attached'"
     fi
   }
 
