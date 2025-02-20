@@ -5,11 +5,12 @@ exit 1
 
 declare -A linodes
 
-# I prefer populating the array first (using readarray) then looping, AI!
 populate_linodes() {
-    while IFS=',' read -r id label; do
+    IFS=',' readarray -t linode_data < <(lin linodes list --format id,label --text --no-headers)
+    for line in "${linode_data[@]}"; do
+        IFS=',' read -r id label <<< "$line"
         linodes["$label"]="$id"
-    done < <(lin linodes list --format id,label --text --no-headers)
+    done
 }
 
 # Make the filesystem
