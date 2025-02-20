@@ -14,8 +14,9 @@ lin="$(command -v linode-cli &> /dev/null)"
   exit 1
 }
 
+declare -i DEBUG=0 DRYRUN=0
 declare -A linodes volumes
-declare current_ip current_linode='none'
+declare current_ip default_linode default_volume
 
 current_ip="$( ip addr show \
   | grep -oP '(?<=inet\s)\d+(\.\d+){3}' \
@@ -37,11 +38,10 @@ debug() { ((DEBUG)) && warn "$@"; }
 #-----------------------------------------------------------------------------
 get_linodes() {
   local raw
-  readarray -t raw < <(lin linodes list --format id,label,ipv4 --text --no-headers)
+  readarray -t raw < <($lin linodes list --format id,label,ipv4 --text --no-headers)
 
-  if [[ ${#raw[@]} -eq 0 ]]; then
-    die "No linodes found. Does the token have the necessary permissions?"
-  fi
+  [[ ${#raw[@]} -eq 0 ]] \
+    && die "No linodes found. Does the token have the necessary permissions?"
 
   for line in "${raw[@]}"; do
     read -r lid label ipv4 <<< "$line"
@@ -49,7 +49,7 @@ get_linodes() {
     debug "Added Linode: Label=$label, ID=${linodes[$label]}"
 
     if [[ "$ipv4" == *"$current_ip"* ]]; then
-      current_linode="$label"
+      default_linode="$label"
       debug "Current linode found: $label"
     fi
   done
@@ -58,11 +58,10 @@ get_linodes() {
 #-----------------------------------------------------------------------------
 get_volumes() {
   local raw
-  readarray -t raw < <(lin volumes list --format id,label,linode_label --text --no-headers)
+  readarray -t raw < <($lin volumes list --format id,label,linode_label --text --no-headers)
 
-  if [[ ${#raw[@]} -eq 0 ]]; then
-    die "No volumes found. Does the token have the necessary permissions?"
-  fi
+  [[ ${#raw[@]} -eq 0 ]] \
+    && die "No volumes found. Does the token have the necessary permissions?"
 
   for line in "${raw[@]}"; do
     read -r vid label linode_label <<< "$line"
@@ -71,6 +70,11 @@ get_volumes() {
 
     volumes["$label"]="$vid"
     debug "Added volume: Label=$label, ID=${linodes[$label]}"
+
+    if [[ ${#raw[@]} -eq 1 ]]; then
+      default_volume="$label"
+      debug "Default volume: $label"
+    fi
   done
 }
 
@@ -82,9 +86,17 @@ setup() {
 
 #-----------------------------------------------------------------------------
 mount_volume() {
-  # Create code
-  #   first variable is volume label
-  #   second variable is linode label
+  # Create code, AI!
+  #   First variable is linode label and does the label exist in linodes? If
+  #   not, die with message. This is required.
+  #   Second variable is volume label and does the label exist in volumes? If
+  #   not, die with message. This is required.
+  #   If the volume is mounted
+  #     and mounted to the default linode, die with message indicating that
+  #     and mounted to another linode, die with message indicating which
+  #     linode
+  #   ((DRYRUN)) && return 0
+  #   Mount volume
 }
 
 ##############################################################################
