@@ -39,8 +39,9 @@ get_linodes() {
   local raw
   readarray -t raw < <(lin linodes list --format id,label,ipv4 --text --no-headers)
 
-  # Check for an empty array. If it is, die with error and a question about
-  # the right token, AI!
+  if [[ ${#raw[@]} -eq 0 ]]; then
+    die "No Linodes found. Is the LINODE_CLI_TOKEN correct?"
+  fi
 
   for line in "${raw[@]}"; do
     read -r lid label ipv4 <<< "$line"
