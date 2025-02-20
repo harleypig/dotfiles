@@ -221,9 +221,10 @@ unmount_volume() {
 
   local device_path="/dev/disk/by-id/scsi-0linode_Volume_$vlabel"
   [[ ! -e "$device_path" ]] && die "Volume '$vlabel' device not found"
-  # Find mount point of device_path and set mount_dir, AI!
 
-  local mount_dir="/mnt/$vlabel"
+  local mount_dir=$(findmnt -n -o TARGET -S "$device_path")
+  [[ -z "$mount_dir" ]] && die "Volume '$vlabel' is not mounted"
+
   if ! mount | grep -q "$mount_dir"; then
     die "Volume '$vlabel' is not mounted"
   fi
