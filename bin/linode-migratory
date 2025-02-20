@@ -141,6 +141,7 @@ attach_volume() {
   echo "Volume '$vlabel' has been attached to '$llabel'"
 }
 
+#-----------------------------------------------------------------------------
 detach_volume() {
   local vlabel="$1"
 
@@ -150,29 +151,31 @@ detach_volume() {
   local vinfo="${volumes[$vlabel]}"
   IFS=',' read -r vid attached <<< "$vinfo"
 
-  [[ -z "$attached" ]] && die "Volume '$vlabel' is not attached to any Linode"
+  [[ -z "$attached" ]] \
+    && die "Volume '$vlabel' is not attached to any Linode"
 
   if [[ "$attached" == "$default_linode" ]]; then
     if mount | grep -q "/dev/disk/by-id/scsi-0linode_Volume_$vlabel"; then
       unmount_volume "$vlabel"
     fi
-    read -p "Are you sure you want to detach volume '$vlabel' from '$default_linode'? (y/n): " confirm
-    [[ "$confirm" != [yY] ]] && die "Volume detachment cancelled"
-    debug "$lin volumes detach $vid"
-    ((DRYRUN)) && return 0
-    $lin volumes detach "$vid" || die "Problem detaching volume '$vlabel' from '$default_linode'"
-    echo "Volume '$vlabel' has been detached from '$default_linode'"
+
   else
     warn "Volume '$vlabel' is attached to '$attached'. Cannot detect if it's mounted on a remote Linode. Detaching while mounted can cause data loss."
-    read -p "Are you sure you want to detach volume '$vlabel' from '$attached'? (y/n): " confirm
-    [[ "$confirm" != [yY] ]] && die "Volume detachment cancelled"
-    debug "$lin volumes detach $vid"
-    ((DRYRUN)) && return 0
-    $lin volumes detach "$vid" || die "Problem detaching volume '$vlabel' from '$attached'"
-    echo "Volume '$vlabel' has been detached from '$attached'"
   fi
+
+  read -p "Are you sure you want to detach volume '$vlabel' from '$attached'? (y/n): " confirm
+  [[ "$confirm" != [yY] ]] && die "Volume detachment cancelled"
+
+  debug "$lin volumes detach $vid"
+  ((DRYRUN)) && return 0
+
+  $lin volumes detach "$vid" \
+    || die "Problem detaching volume '$vlabel' from '$attached'"
+
+  echo "Volume '$vlabel' has been detached from '$attached'"
 }
 
+#-----------------------------------------------------------------------------
 mount_volume() {
   local vlabel="$1"
   local mount_point="$2"
@@ -183,8 +186,11 @@ mount_volume() {
   local vinfo="${volumes[$vlabel]}"
   IFS=',' read -r vid attached <<< "$vinfo"
 
-  [[ -z "$attached" ]] && die "Volume '$vlabel' is not attached to this Linode"
-  [[ "$attached" != "$default_linode" ]] && die "Volume '$vlabel' is not attached to this Linode"
+  [[ -z "$attached" ]] \
+    && die "Volume '$vlabel' is not attached to this Linode"
+
+  [[ "$attached" != "$default_linode" ]] \
+    && die "Volume '$vlabel' is not attached to this Linode"
 
   local device_path="/dev/disk/by-id/scsi-0linode_Volume_$vlabel"
   [[ ! -e "$device_path" ]] && die "Volume '$vlabel' device not found"
@@ -193,23 +199,29 @@ mount_volume() {
     die "Volume '$vlabel' does not have a filesystem. Please create one first."
   fi
 
-  local mount_dir="${mount_point:-$vlabel}"
+  local mount_dir="/mnt/${mount_point:-$vlabel}"
   warn "sudo will ask for your password to mount the volume."
 
-  debug "sudo mount $device_path /mnt/$mount_dir"
+  debug "sudo mount $device_path $mount_dir"
   ((DRYRUN)) && return 0
 
-  sudo mkdir -p "/mnt/$mount_dir"
-  sudo mount "$device_path" "/mnt/$mount_dir" || die "Problem mounting volume '$vlabel' to '/mnt/$mount_dir'"
+  sudo mkdir -p "$mount_dir"
+  sudo mount "$device_path" "$mount_dir" \
+    || die "Problem mounting volume '$vlabel' to '$mount_dir'"
 
-  echo "Volume '$vlabel' has been mounted to '/mnt/$mount_dir'"
+  echo "Volume '$vlabel' has been mounted to '$mount_dir'"
 }
 
+#-----------------------------------------------------------------------------
 unmount_volume() {
   local vlabel="$1"
 
   [[ -z "$vlabel" ]] && die "Volume label is required"
   [[ ! -v volumes["$vlabel"] ]] && die "Volume label '$vlabel' not found"
+
+  local device_path="/dev/disk/by-id/scsi-0linode_Volume_$vlabel"
+  [[ ! -e "$device_path" ]] && die "Volume '$vlabel' device not found"
+  # Find mount point of device_path and set mount_dir, AI!
 
   local mount_dir="/mnt/$vlabel"
   if ! mount | grep -q "$mount_dir"; then
@@ -221,7 +233,8 @@ unmount_volume() {
   debug "sudo umount $mount_dir"
   ((DRYRUN)) && return 0
 
-  sudo umount "$mount_dir" || die "Problem unmounting volume '$vlabel' from '$mount_dir'"
+  sudo umount "$mount_dir" \
+    || die "Problem unmounting volume '$vlabel' from '$mount_dir'"
 
   echo "Volume '$vlabel' has been unmounted from '$mount_dir'"
 }
