@@ -5,6 +5,8 @@ inspired by Pragmatic Programming principles.
 
 - Security: Consider security implications and implement best practices to protect against vulnerabilities and attacks.
 
+- Style: Use spaces, not tabs. Indent with 2 spaces. Use paragraph-style spacing between code chunks.
+
 - DRY: Avoid duplication; use functions/modules.
 - KISS: Code should be simple, clear, and easy to understand.
 - YAGNI: Implement features only when needed.
