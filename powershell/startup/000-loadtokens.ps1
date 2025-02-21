@@ -8,7 +8,7 @@ if (Test-Path $private_dotfiles -and Test-Path $config_file) {
     if ($line -match "^\s*#") {
       continue
     }
-    elseif ($line -match "^(?<varName>[^=]+)=(?<fileName>.+)$") {
+    elseif ($line -match "^(?<varName>[^=]+)\s*=\s*(?<fileName>.+)$") {
       $varName = $matches['varName']
       $fileName = $matches['fileName']
       $filePath = Join-Path -Path $private_dotfiles -ChildPath $fileName
