@@ -5,7 +5,10 @@ if (Test-Path $private_dotfiles -and Test-Path $config_file) {
   $config_lines = Get-Content -Path $config_file
 
   foreach ($line in $config_lines) {
-    if ($line -match "^(?<varName>[^=]+)=(?<fileName>.+)$") {
+    if ($line -match "^\s*#") {
+      continue
+    }
+    elseif ($line -match "^(?<varName>[^=]+)=(?<fileName>.+)$") {
       $varName = $matches['varName']
       $fileName = $matches['fileName']
       $filePath = Join-Path -Path $private_dotfiles -ChildPath $fileName
