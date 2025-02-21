@@ -14,7 +14,6 @@ if [[ -d $private_dotfiles && -r $config_file ]]; then
 
     filePath="$private_dotfiles/$fileName"
 
-    echo "here? $line"
     [[ -r $filePath ]] \
       && export "$varName"="$(<"$filePath")"
   done
