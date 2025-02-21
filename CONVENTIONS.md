@@ -26,4 +26,9 @@ inspired by Pragmatic Programming principles.
 - Commits: Write clear, imperative commit messages, following the Conventional Commits specification.
 - Branching: Use a consistent branching strategy.
 
-- Style: Use spaces, not tabs. Indent with 2 spaces. Use paragraph-style spacing between code chunks.
+- Style:
+  - Use spaces, not tabs.
+  - Indent with 2 spaces.
+  - Use paragraph-style spacing between code chunks.
+  - Line Length: 80 characters for comments, for code where possible.
+  - Cuddled Braces and Brackets: Use cuddled braces and brackets where feasible.
