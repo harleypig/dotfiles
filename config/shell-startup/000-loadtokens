@@ -9,10 +9,11 @@ if [[ -d $private_dotfiles && -r $config_file ]]; then
 
   for line in "${config_lines[@]}"; do
     IFS='=' read -r varName fileName <<< "$line"
+
     filePath="$private_dotfiles/$fileName"
-    if [[ -r $filePath ]]; then
-      export "$varName"="$(<"$filePath")"
-    fi
+
+    [[ -r $filePath ]] \
+      && export "$varName"="$(<"$filePath")"
   done
 fi
 
