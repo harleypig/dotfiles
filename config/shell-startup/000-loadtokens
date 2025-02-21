@@ -9,6 +9,7 @@ if [[ -d $private_dotfiles && -r $config_file ]]; then
 
   for line in "${config_lines[@]}"; do
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
+
     IFS='=' read -r varName fileName <<< "$line"
 
     filePath="$private_dotfiles/$fileName"

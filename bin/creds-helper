@@ -35,7 +35,7 @@ done
 
 # If not found in .netrc, check the PAT file
 [[ -z $GIT_CREDENTIALS ]] \
-  && [[ -r $PROJECTS_DIR/private_dotfiles/api-key.github ]] \
+  && [[ -r $PROJECTS_DIR/private_dotfiles/api-key/github ]] \
   && GIT_CREDENTIALS=$(<"$PAT_FILE")
 
 # Output the password if found, otherwise let Git prompt for credentials
