@@ -12,6 +12,7 @@ if (Get-Command aider -ErrorAction SilentlyContinue) {
     }
 
     $env:AIDER_EDITOR = "code --wait"
+
     $commitPromptPath = "$env:DOTFILES\aider.commit_prompt"
     if (Test-Path $commitPromptPath) {
         $env:AIDER_COMMIT_PROMPT = Get-Content $commitPromptPath -Raw
