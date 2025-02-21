@@ -1,7 +1,6 @@
 # OPENAI_API_KEY is loaded in 000-loadtokens
 
 if (Get-Command aider -ErrorAction SilentlyContinue) {
-    #Set-Variable -Name AIDER_
     $env:AIDER_DARK_MODE = "true"
     $env:AIDER_EDITOR = "code --wait"
     $env:AIDER_GITIGNORE = "false"

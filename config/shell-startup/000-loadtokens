@@ -17,6 +17,6 @@ if [[ -d $private_dotfiles && -r $config_file ]]; then
     [[ -r $filePath ]] \
       && export "$varName"="$(<"$filePath")"
   done
-fi
 
-unset private_dotfiles config_file
+  unset private_dotfiles config_file line filePath varName fileName
+fi
