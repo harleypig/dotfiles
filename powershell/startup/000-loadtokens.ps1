@@ -5,7 +5,7 @@ if (Test-Path $private_dotfiles -and Test-Path $config_file) {
   $config_lines = Get-Content -Path $config_file
 
   foreach ($line in $config_lines) {
-    if ($line -match "^\s*#") {
+    if ($line -match "^\s*#" -or $line -notmatch "=") {
       continue
     }
     elseif ($line -match "^(?<varName>[^=]+)\s*=\s*(?<fileName>.+)$") {
