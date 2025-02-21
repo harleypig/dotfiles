@@ -1,8 +1,7 @@
 $private_dotfiles = "$PROJECTS_DIR/private_dotfiles/api-key"
 $config_file = "$DOTFILES/api-keys.cfg"
 
-# Add a test for existence of private_dotfiles directory, AI!
-if (Test-Path $config_file) {
+if (Test-Path $private_dotfiles -and Test-Path $config_file) {
   $config_lines = Get-Content -Path $config_file
 
   foreach ($line in $config_lines) {
@@ -19,4 +18,4 @@ if (Test-Path $config_file) {
   }
 }
 
-Remove-Variable -Name private_dotfiles config_file
+Remove-Variable -Name private_dotfiles, config_file
