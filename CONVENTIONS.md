@@ -31,4 +31,4 @@ inspired by Pragmatic Programming principles.
   - Indent with 2 spaces.
   - Use paragraph-style spacing between code chunks.
   - Line Length: 80 characters for comments, for code where possible.
-  - Cuddled Braces and Brackets: Use cuddled braces and brackets where feasible.
+  - Braces and Brackets: Use cuddled braces and brackets where feasible.
