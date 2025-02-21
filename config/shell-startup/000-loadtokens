@@ -1,41 +1,18 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2155,SC2086
 
-private_dotfiles="$PROJECTS_DIR/private_dotfiles"
+private_dotfiles="$PROJECTS_DIR/private_dotfiles/api-key"
+config_file="$PROJECTS_DIR/dotfiles/api-keys.cfg"
 
-#-----------------------------------------------------------------------------
-if command -v az &> /dev/null; then
-  [[ -r $private_dotfiles/api-key.azure ]] \
-    && export AZURE_DEVOPS_EXT_PAT="$(<$private_dotfiles/api-key.azure)"
+if [[ -r $config_file ]]; then
+  readarray -t config_lines < "$config_file"
+  for line in "${config_lines[@]}"; do
+    IFS='=' read -r varName fileName <<< "$line"
+    filePath="$private_dotfiles/$fileName"
+    if [[ -r $filePath ]]; then
+      export "$varName"="$(<"$filePath")"
+    fi
+  done
 fi
 
-#-----------------------------------------------------------------------------
-if command -v aider &> /dev/null; then
-  [[ -r $private_dotfiles/api-key.openai ]] \
-    && export OPENAI_API_KEY="$(<$private_dotfiles/api-key.openai)"
-
-  [[ -f $private_dotfiles/api-key.grok ]] \
-    && export XAI_API_KEY="$(<$private_dotfiles/api-key.grok)"
-fi
-
-#-----------------------------------------------------------------------------
-if command -v linode-cli &> /dev/null; then
-  [[ -f $private_dotfiles/api-key.linode ]] \
-    && export LINODE_TOKEN="$(<$private_dotfiles/api-key.linode)"
-fi
-
-#-----------------------------------------------------------------------------
-# Vault
-
-if command -v vault &> /dev/null; then
-  [[ -r $private_dotfiles/vault.addr ]] \
-    && export VAULT_ADDR="$(<$private_dotfiles/vault.addr)"
-
-  [[ -r $private_dotfiles/pass.ldap ]] && {
-    export LDAP_PASS="$(<$private_dotfiles/pass.ldap)"
-    #source set-vault-token
-  }
-fi
-
-#-----------------------------------------------------------------------------
 unset private_dotfiles

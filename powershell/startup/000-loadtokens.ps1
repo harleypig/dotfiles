@@ -1,64 +1,20 @@
-$private_dotfiles = "$PROJECTS_DIR/private_dotfiles"
+$private_dotfiles = "$PROJECTS_DIR/private_dotfiles/api-key"
+$config_file = "$PROJECTS_DIR/dotfiles/api-keys.cfg"
 
-#-----------------------------------------------------------------------------
-if (Get-Command az -ErrorAction SilentlyContinue) {
-  if (Test-Path "$private_dotfiles/api-key.azure") {
-    Set-Variable -Name AZURE_DEVOPS_EXT_PAT `
-      -Scope Global `
-      -Option Constant `
-      -Value (Get-Content -Path "$private_dotfiles/api-key.azure" -Raw)
+if (Test-Path $config_file) {
+  $config_lines = Get-Content -Path $config_file
+  foreach ($line in $config_lines) {
+    if ($line -match "^(?<varName>[^=]+)=(?<fileName>.+)$") {
+      $varName = $matches['varName']
+      $fileName = $matches['fileName']
+      $filePath = Join-Path -Path $private_dotfiles -ChildPath $fileName
+
+      if (Test-Path $filePath) {
+        $value = (Get-Content -Path $filePath -Raw).Trim()
+        $env:$varName = $value
+      }
+    }
   }
 }
 
-#-----------------------------------------------------------------------------
-if (Get-Command aider -ErrorAction SilentlyContinue) {
-  if (Test-Path "$private_dotfiles/api-key.openai") {
-    Set-Variable -Name OPENAI_API_KEY `
-      -Scope Global `
-      -Option Constant `
-      -Value ((Get-Content -Path "$private_dotfiles/api-key.openai" -Raw).Trim())
-
-    $env:OPENAI_API_KEY = $OPENAI_API_KEY
-  }
-
-  if (Test-Path "$private_dotfiles/api-key.grok") {
-    Set-Variable -Name XAI_API_KEY `
-      -Scope Global `
-      -Option Constant `
-      -Value (Get-Content -Path "$private_dotfiles/api-key.grok" -Raw)
-
-    $env:XAI_API_KEY = $XAI_API_KEY
-  }
-}
-
-#-----------------------------------------------------------------------------
-if (Get-Command linode -ErrorAction SilentlyContinue) {
-  if (Test-Path "$private_dotfiles/api-key.linode") {
-    Set-Variable -Name LINODE_TOKEN `
-      -Scope Global `
-      -Option Constant `
-      -Value (Get-Content -Path "$private_dotfiles/api-key.linode" -Raw)
-  }
-}
-
-#-----------------------------------------------------------------------------
-# Vault
-
-if (Get-Command vault -ErrorAction SilentlyContinue) {
-  if (Test-Path "$private_dotfiles/vault.addr") {
-    Set-Variable -Name VAULT_ADDR `
-      -Scope Global `
-      -Option Constant `
-      -Value (Get-Content -Path "$private_dotfiles/vault.addr" -Raw)
-  }
-
-  if (Test-Path "$private_dotfiles/pass.ldap") {
-    Set-Variable -Name LDAP_PASS `
-      -Scope Global `
-      -Option Constant `
-      -Value (Get-Content -Path "$private_dotfiles/pass.ldap" -Raw)
-  }
-}
-
-#-----------------------------------------------------------------------------
 Remove-Variable -Name private_dotfiles
