@@ -1,5 +1,6 @@
 if (Get-Command aider -ErrorAction SilentlyContinue) {
     $envFilePath = "$env:DOTFILES\aider.env"
+
     if (Test-Path $envFilePath) {
         Get-Content $envFilePath | ForEach-Object {
             if ($_ -match "^(.*?)=(.*)$") {
