@@ -3,7 +3,7 @@
 This document outlines coding conventions for projects using Aider and AI,
 inspired by Pragmatic Programming principles.
 
-* Consider security implications of the code. Implement security best practices to protect against vulnerabilities and attacks.
+- Security: Consider security implications and implement best practices to protect against vulnerabilities and attacks.
 
 - DRY: Avoid duplication; use functions/modules.
 - KISS: Code should be simple, clear, and easy to understand.
