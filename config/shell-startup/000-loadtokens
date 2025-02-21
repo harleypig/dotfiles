@@ -4,8 +4,7 @@
 private_dotfiles="$PROJECTS_DIR/private_dotfiles/api-key"
 config_file="$PROJECTS_DIR/dotfiles/api-keys.cfg"
 
-# Add a test for the existence of private_dotfiles, AI!
-if [[ -r $config_file ]]; then
+if [[ -d $private_dotfiles && -r $config_file ]]; then
   readarray -t config_lines < "$config_file"
 
   for line in "${config_lines[@]}"; do
