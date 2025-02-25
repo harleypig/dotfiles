@@ -97,12 +97,19 @@ hex_to_256() {
 
 #-----------------------------------------------------------------------------
 function _ansi() {
-  # If not interactive, don't colorize
-  [[ ! -t 0 || $- != *i* ]] && return 0
-  # XXX: Consider removing these if the above works
-  # [[ -z $TERM ]] && return 0
-  # [[ $TERM == 'unknown ' ]] && return 0
-  # [[ $TERM == 'dumb' ]] && return 0
+  # Return immediately if:
+  # - stdout is not a terminal OR
+  # - shell is not interactive OR
+  # - TERM is not set OR
+  # - TERM is dumb/unknown/null OR
+  # - tput is not available
+  if [[ ! -t 1 ]] || \
+     [[ $- != *i* ]] || \
+     [[ -z "${TERM}" ]] || \
+     [[ "${TERM}" =~ ^(dumb|unknown|null)$ ]] || \
+     ! command -v tput >/dev/null 2>&1; then
+    return 0
+  fi
 
   # convert convenience values to what tput understands
   local -A color
