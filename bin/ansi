@@ -98,7 +98,7 @@ hex_to_256() {
 #-----------------------------------------------------------------------------
 function _ansi() {
   # Return immediately if tput doesn't exist or returns an error
-  if ! command -v tput >/dev/null 2>&1 || ! tput cols >/dev/null 2>&1; then
+  if ! command -v tput &>/dev/null || ! tput cols &>/dev/null; then
     return 0
   fi
 
