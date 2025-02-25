@@ -97,18 +97,8 @@ hex_to_256() {
 
 #-----------------------------------------------------------------------------
 function _ansi() {
-  # Return immediately if:
-  # - stdout is not a terminal OR
-  # - shell is not interactive OR
-  #   [[ $- != *i* ]] || \
-  # - TERM is not set OR
-  # - TERM is dumb/unknown/null OR
-  # - tput is not available
-  if [[ ! -t 1 ]]; then
-#  if [[ ! -t 1 ]] || \
-#     [[ -z "${TERM}" ]] || \
-#     [[ "${TERM}" =~ ^(dumb|unknown|null)$ ]] || \
-#     ! command -v tput >/dev/null 2>&1; then
+  # Return immediately if tput doesn't exist or returns an error
+  if ! command -v tput >/dev/null 2>&1 || ! tput cols >/dev/null 2>&1; then
     return 0
   fi
 
