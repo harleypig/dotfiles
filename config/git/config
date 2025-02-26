@@ -44,7 +44,9 @@
   fsckobjects = true
 
 [fetch]
+  all = true
   prune = true
+  pruneTags = true
   fsckobjects = false
 
 [remote "origin"]
@@ -57,33 +59,9 @@
   #push = +refs/notes/*:refs/notes/*
 
 [push]
-  # https://git-scm.com/docs/git-config#Documentation/git-config.txt-pushdefault
-  #
-  # push.default settings determine the default behavior of `git push` when no
-  # refspec is explicitly given:
-  #
-  # nothing - Requires an explicit refspec to push; ideal for users who prefer
-  # explicitness to avoid mistakes.
-  #
-  # current - Pushes the current branch to a branch with the same name on the
-  # remote; suitable for both central and non-central workflows.
-  #
-  # upstream - Pushes the current branch to its upstream branch, typically
-  # used in a central workflow where the push destination is the same as the
-  # fetch source.
-  #
-  # simple - Pushes the current branch to a branch with the same name on the
-  # remote only if it has the same name as the local branch. This is the
-  # safest mode, recommended for beginners, and is the default setting since
-  # Git 2.0.
-  #
-  # matching - Pushes all local branches that have the same name as remote
-  # branches. This mode is not recommended for shared repositories as it
-  # requires all corresponding branches to be ready for push.
-
   default = upstream
-  followtags = true
   autoSetupRemote = true
+  followtags = true
 
 ##################################################################################
 # Branch
@@ -113,10 +91,10 @@
   colorMoved = dimmed-zebra
   colorMovedWS = ignore-all-space
   guitool = gvimdiff
+  ignoreSubmodules = dirty
   mnemonicPrefix = true
   renames = copies
   tool = vimdiff
-  ignoreSubmodules = dirty
 
 [difftool]
   prompt = false
