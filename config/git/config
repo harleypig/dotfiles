@@ -177,8 +177,10 @@
   au   = add -u
 
   # --- Removing from index ---
-  unadd = reset HEAD --     # Undo git add
-  unstage = reset HEAD^ --  # Undo last commit, specific files or all
+  # Undo git add for listed files or all files
+  unadd = reset HEAD --
+  # Undo last commit, specific files or all
+  unstage = reset HEAD^ --
 
   # --- Branching ---
   b    = branch
