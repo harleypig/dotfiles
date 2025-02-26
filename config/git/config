@@ -252,6 +252,6 @@
   l    = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
   lc   = log ORIG_HEAD.. --stat --no-merges  # List changes for each commit
   lp   = log --graph --topo-order --pretty=format:'%h : (%aN) %s'
-  logm = log --merges --decorate --date=short --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
-  logn = log --decorate --numstat --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
+  lm = log --merges --decorate --date=short --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
+  ln = log --decorate --numstat --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
   latest-tag = !"git tag --list 'v*' --sort=-v:refname | head -n 1"

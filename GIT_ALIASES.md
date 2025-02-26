@@ -76,8 +76,8 @@ These aliases are accessible via `git aliasname`.
 - `latest-tag` - Show most recent version tag
 - `lc` - Show changes since branch point
 - `lp` - Show logs with author and graph
-- `logm` - Show merge logs with decoration
-- `logn` - Show logs with numstat
+- `lm` - Show merge logs with decoration
+- `ln` - Show logs with numstat
 - `search` - Search commit contents
 - `since` - Show commits since date
 - `until` - Show commits until date
