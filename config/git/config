@@ -18,11 +18,13 @@
   path = ../../gitconfig.user
 
 [core]
-  editor       = vim
-  safecrlf     = true
-  filemode     = true
-  autocrlf     = false
-  eol          = lf
+  autocrlf    = false
+  compression = 9
+  editor      = vim
+  eol         = lf
+  filemode    = true
+  pager       = less -FIJRWX
+  safecrlf    = true
 
 [apply]
   ignorewhitespace = change
@@ -78,13 +80,13 @@
   expire = 90
   autoupdate = true
 
-
 [stash]
   showpatch = true
 
 [rebase]
   autostash = true
   autosquash = true
+  updaterefs = true
 
 ##################################################################################
 # Diff
@@ -130,10 +132,6 @@
 
 ##################################################################################
 # Output
-
-[core]
-  compression = 9
-  pager      = less -FIJRWX
 
 [column]
   ui = auto
