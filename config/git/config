@@ -45,6 +45,7 @@
 
 [branch]
   autosetupmerge = true
+  sort = -committerdate
 
 [branch "master"]
   rebase = true
@@ -195,6 +196,9 @@
   cb   = commit --branch
   ci   = commit --interactive
   cm   = commit -m
+
+  # Commits not pushed
+  out = "log @{u}.."
 
   # --- Conflict resolution ---
   conflicted = "diff --name-only --diff-filter=U"
