@@ -194,7 +194,6 @@
   # --- Branching ---
   b    = branch
   ba   = branch -a
-  ball = branch -ar
   # Current branch
   bc   = "rev-parse --abbrev-ref HEAD"
 
@@ -229,10 +228,6 @@
 
   # --- Pulling ---
   p = pull
-
-  # --- Pruning ---
-  prune = fetch -prune
-  prune-all = "!git remote | xargs -n 1 git remote prune"
 
   # --- Status ---
   s    = status
