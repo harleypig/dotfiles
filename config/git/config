@@ -109,10 +109,12 @@
 # Diff
 
 [diff]
-  algorithm = minimal
-  guitool   = gvimdiff
-  renames   = copies
-  tool      = vimdiff
+  algorithm = histogram
+  colorMoved = plain
+  guitool = gvimdiff
+  mnemonicPrefix = true
+  renames = copies
+  tool = vimdiff
   ignoreSubmodules = dirty
 
 [difftool]
