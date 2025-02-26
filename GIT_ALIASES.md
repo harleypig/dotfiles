@@ -1,5 +1,7 @@
 # Git Aliases
 
+These aliases are accessible via `git aliasname`.
+
 ## Utility
 - `aliases` - Show all defined git aliases
 
