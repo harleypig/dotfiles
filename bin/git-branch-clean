@@ -77,29 +77,28 @@ fi
 # Fetch and prune to ensure we have current remote information
 git fetch --prune
 
-# Find branches with gone upstreams
-# Format: refs/heads/branch-name [gone]
-readarray -t gone_branches < <(git for-each-ref --format '%(refname) %(upstream:track)' refs/heads |
-                              awk '$2 == "[gone]" {sub("refs/heads/", "", $1); print $1}')
+# Get all branch information at once
+# For each branch, output: branch_name<tab>reason
+readarray -t branches < <(
+  {
+    # Get branches with gone upstreams
+    git for-each-ref --format '%(refname) %(upstream:track)' refs/heads |
+      awk '$2 == "[gone]" {sub("refs/heads/", "", $1); print $1 "\tremote branch gone"}'
 
-for branch in "${gone_branches[@]}"; do
-  remove_branch "$branch" "remote branch gone"
+    # If -a specified, get branches never pushed
+    if ((all)); then
+      git branch -vv |
+        awk '/^[^*]/ && ! /\[.*\]/ {
+          gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1)
+          print $1 "\tnever pushed"
+        }'
+    fi
+  }
+)
+
+# Process all branches
+for branch_info in "${branches[@]}"; do
+  branch=${branch_info%%$'\t'*}
+  reason=${branch_info#*$'\t'}
+  remove_branch "$branch" "$reason"
 done
-
-# If -a specified, find branches never pushed
-if ((all)); then
-  # Get branch listing with verbose info (-vv)
-  # Find lines that:
-  #   - Don't start with * (not current branch)
-  #   - Don't have [...] (no upstream tracking)
-  # Then extract and trim the branch name
-  readarray -t unpushed_branches < <(git branch -vv |
-                                    awk '/^[^*]/ && ! /\[.*\]/ {
-                                      gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1)
-                                      print $1
-                                    }')
-
-  for branch in "${unpushed_branches[@]}"; do
-    remove_branch "$branch" "never pushed"
-  done
-fi
