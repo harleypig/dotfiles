@@ -25,22 +25,21 @@ all=0
 #-----------------------------------------------------------------------------
 # Print usage information from script comments
 # Optional arg: Additional text to print after usage
-print_usage() {
+usage() {
   sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0"
-  if [[ -n "${1:-}" ]]; then
-    echo
-    echo "$1"
-  fi
+  [[ -n "${1:-}" ]] && printf '\n%s\n' "$@" >&2
+  exit 1
 }
 
 #-----------------------------------------------------------------------------
 remove_branch() {
   local branch="$1"
   local reason="$2"
-  
+
   if [[ -n "$branch" ]]; then
     if ((dry_run)); then
       echo "Would delete branch: $branch ($reason)"
+
     elif ((force)); then
       echo "Deleting branch: $branch"
       git branch -D "$branch"
@@ -49,39 +48,26 @@ remove_branch() {
 }
 
 ##############################################################################
-# Show help if no parameters
-if [[ $# -eq 0 ]]; then
-  print_usage
-  exit 0
-fi
+git rev-parse --git-dir &> /dev/null || usage "Error: not a git repository"
+(($#)) || usage
 
 while getopts "nfah" opt; do
   case $opt in
     n) dry_run=1 ;;
     f) force=1 ;;
     a) all=1 ;;
-    h)
-      print_usage
-      exit 0
-      ;;
-    *) 
-      echo "Invalid option: -$OPTARG" >&2
-      exit 1
-      ;;
+    h) usage ;;
+    *) usage "Invalid option: -$OPTARG" ;;
   esac
 done
 
-# Require -f for actual deletion
-if [[ $force -eq 0 && $dry_run -eq 0 ]]; then
-  print_usage "Error: -f required for branch deletion\nUse -n for dry run or -h for help" >&2
-  exit 1
-fi
+# Can't force and dry-run
+[[ $force -eq 1 && $dry_run -eq 1 ]] \
+  && usage "Error: -f and -n are mutually exclusive"
 
-# Ensure we're in a git repository
-if ! git rev-parse --git-dir > /dev/null 2>&1; then
-  echo "Error: not a git repository" >&2
-  exit 1
-fi
+# Require -f for actual deletion
+[[ $force -eq 0 && $dry_run -eq 0 ]] \
+  && usage "Error: -f required for branch deletion"
 
 ##############################################################################
 # Fetch and prune to ensure we have current remote information
