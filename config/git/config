@@ -23,8 +23,10 @@
   editor      = vim
   eol         = lf
   filemode    = true
+  fsmonitor   = true
   pager       = less -FIJRWX
   safecrlf    = true
+  untrackedCache = true
 
 [apply]
   ignorewhitespace = change
@@ -116,7 +118,7 @@
 [merge]
   tool = fugitive
   guitool = kdiff3
-  conflictstyle = diff3
+  conflictstyle = zdiff3
 
 [mergetool]
   prompt = false
