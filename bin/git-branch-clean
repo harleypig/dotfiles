@@ -23,6 +23,17 @@ all=0
 # Functions
 
 #-----------------------------------------------------------------------------
+# Print usage information from script comments
+# Optional arg: Additional text to print after usage
+print_usage() {
+  sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0"
+  if [[ -n "${1:-}" ]]; then
+    echo
+    echo "$1"
+  fi
+}
+
+#-----------------------------------------------------------------------------
 remove_branch() {
   local branch="$1"
   local reason="$2"
@@ -40,7 +51,7 @@ remove_branch() {
 ##############################################################################
 # Show help if no parameters
 if [[ $# -eq 0 ]]; then
-  sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0"
+  print_usage
   exit 0
 fi
 
@@ -50,7 +61,7 @@ while getopts "nfah" opt; do
     f) force=1 ;;
     a) all=1 ;;
     h)
-      sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0"
+      print_usage
       exit 0
       ;;
     *) 
@@ -62,8 +73,7 @@ done
 
 # Require -f for actual deletion
 if [[ $force -eq 0 && $dry_run -eq 0 ]]; then
-  echo "Error: -f required for branch deletion" >&2
-  echo "Use -n for dry run or -h for help" >&2
+  print_usage "Error: -f required for branch deletion\nUse -n for dry run or -h for help" >&2
   exit 1
 fi
 
