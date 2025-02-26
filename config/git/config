@@ -216,8 +216,6 @@
 
   # --- Fetching ---
   f    = fetch
-  fa   = fetch --all
-  fp   = fetch --prune
 
   # --- File operations ---
   find = !git ls-tree -r --name-only HEAD | grep --color $1
