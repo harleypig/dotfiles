@@ -37,6 +37,7 @@ remove_branch() {
   fi
 }
 
+##############################################################################
 # Show help if no parameters
 if [[ $# -eq 0 ]]; then
   sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0"
@@ -72,6 +73,7 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
   exit 1
 fi
 
+##############################################################################
 # Fetch and prune to ensure we have current remote information
 git fetch --prune
 
