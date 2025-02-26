@@ -75,7 +75,6 @@ These aliases are accessible via `git aliasname`.
 - `last` - Show last commit
 - `latest-tag` - Show most recent version tag
 - `lc` - Show changes since branch point
-- `lp` - Show logs with author and graph
 - `lm` - Show merge logs with decoration
 - `ln` - Show logs with numstat
 - `search` - Search commit contents
