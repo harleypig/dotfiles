@@ -12,7 +12,7 @@ These aliases are accessible via `git aliasname`.
 - `au` - Add modified/deleted files only
 
 ## Removing
-- `unadd` - Undo git add for specific files
+- `unadd` - Undo git add, specific or all files
 - `unstage` - Undo last commit, specific or all files
 
 ## Branching
