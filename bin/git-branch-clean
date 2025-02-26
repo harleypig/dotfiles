@@ -23,8 +23,7 @@ all=0
 # Functions
 
 #-----------------------------------------------------------------------------
-# Rename process_branch to remove_branch, AI!
-process_branch() {
+remove_branch() {
   local branch="$1"
   local reason="$2"
   
@@ -82,7 +81,7 @@ readarray -t gone_branches < <(git for-each-ref --format '%(refname) %(upstream:
                               awk '$2 == "[gone]" {sub("refs/heads/", "", $1); print $1}')
 
 for branch in "${gone_branches[@]}"; do
-  process_branch "$branch" "remote branch gone"
+  remove_branch "$branch" "remote branch gone"
 done
 
 # If -a specified, find branches never pushed
@@ -99,6 +98,6 @@ if ((all)); then
                                     }')
 
   for branch in "${unpushed_branches[@]}"; do
-    process_branch "$branch" "never pushed"
+    remove_branch "$branch" "never pushed"
   done
 fi
