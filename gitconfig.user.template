@@ -2,19 +2,19 @@
 # Copy this file to gitconfig.user and uncomment/modify as needed
 
 [user]
-  # These override the settings in the main config
-  #email = your.email@example.com
-  #name = Your Name
+  name = Alan Young
+  email = your.email@example.com
 
 # Uncomment and configure these sections to enable GPG signing
 #[commit]
-  #gpgsign = true
-
+#  gpgsign = true
+#
 #[tag]
-  #gpgsign = true
-
+#  gpgsign = true
+#
 #[gpg]
-  #program = gpg  # or gpg2, depending on your system
-
+#  program = gpg  # or gpg2, depending on your system
+#
 #[user]
-  #signingkey = YOUR_KEY_ID  # Get this from `gpg --list-secret-keys --keyid-format LONG`
+#  # Get this from `gpg --list-secret-keys --keyid-format LONG`
+#  signingkey = YOUR_KEY_ID

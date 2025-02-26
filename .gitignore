@@ -11,6 +11,7 @@ coverage
 
 venv
 gitconfig.user*
+!gitconfig.user.template
 
 node_modules/**
 cygdrive/**
