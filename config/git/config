@@ -168,39 +168,35 @@
 # Aliases
 
 [alias]
-  # Show the defined aliases
+  # --- Information ---
   aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
+  s    = status
+  ss   = status -s
+  st   = status -sb
+  changes = diff --name-status -r
 
-  # --- Adding ---
+  # --- File Management ---
+  find = !git ls-tree -r --name-only HEAD | grep --color $1
+  ignore = !git status &> /dev/null && \
+            echo $1 >> $(git rev-parse --show-toplevel)/.gitignore
+  ignored = !git ls-files --others -i --exclude-standard
+  new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
+
+  # --- File Tracking ---
+  assume      = update-index --assume-unchanged
+  assumed     = "!git ls-files -v | grep ^h | cut -c 3-"
+  unassume    = update-index --no-assume-unchanged
+  unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
+  untrack     = rm --cache --
+  wip         = !"git add -A; git ls-files --deleted -z | xargs -0 git rm; git commit -m 'wip'"
+
+  # --- Staging Management ---
   a    = add
   aa   = add --all
   ai   = add --interactive
   au   = add -u
-
-  # --- Removing from index ---
-  # Undo git add for listed files or all files
-  unadd = reset HEAD --
-  # Undo last commit, specific files or all
-  unstage = reset HEAD^ --
-
-  # --- Branching ---
-  b    = branch
-  ba   = branch -a
-  # Current branch
-  bc   = "rev-parse --abbrev-ref HEAD"
-  co   = checkout
-
-  # --- Committing ---
-  c    = commit
-  ca   = commit --amend
-  cb   = commit --branch
-  ci   = commit --interactive
-  cm   = commit -m
-  # Show commits not pushed to upstream
-  out  = "log @{u}.."
-
-  # --- Conflict resolution ---
-  conflicted = "diff --name-only --diff-filter=U"
+  unadd = reset HEAD --     # Undo git add for listed files or all files
+  unstage = reset HEAD^ --  # Undo last commit, specific files or all
 
   # --- Diffing ---
   d    = diff --color --color-words --abbrev
@@ -208,52 +204,34 @@
   dd   = diff --color --color-words --abbrev --dirstat
   ds   = diff --color --color-words --abbrev --stat
   dt   = difftool
+  diffstat = diff --stat -r
 
-  # --- Fetching ---
+  # --- Committing ---
+  c    = commit
+  ca   = commit --amend
+  cb   = commit --branch
+  ci   = commit --interactive
+  cm   = commit -m
+  out  = "log @{u}.."      # Show commits not pushed to upstream
+
+  # --- Branching ---
+  b    = branch
+  ba   = branch -a
+  bc   = "rev-parse --abbrev-ref HEAD"  # Current branch
+  co   = checkout
+
+  # --- Remote Operations ---
   f    = fetch
+  pl   = pull
+  m    = merge
 
-  # --- File operations ---
-  find = !git ls-tree -r --name-only HEAD | grep --color $1
-  ignore = !git status &> /dev/null && \
-            echo $1 >> $(git rev-parse --show-toplevel)/.gitignore
+  # --- Conflict Resolution ---
+  conflicted = "diff --name-only --diff-filter=U"
 
-  ignored = !git ls-tree --others -i --exclude-standard
-
-  # --- Merging ---
-  m = merge
-
-  # --- Pulling ---
-  pl = pull
-
-  # --- Status ---
-  s    = status
-  ss   = status -s
-  st   = status -sb
-
-
-  # --- Tracking ---
-  untrack = rm --cache --
-
-  assumed     = "!git ls-files -v | grep ^h | cut -c 3-"
-  assume      = update-index --assume-unchanged
-  unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
-  unassume    = update-index --no-assume-unchanged
-  wip         = !"git add -A; git ls-files --deleted -z | xargs -0 git rm; git commit -m 'wip'"
-
-  # --- Logging ---
+  # --- History ---
   l    = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
-
-  # List changes for each commit
-  lc   = log ORIG_HEAD.. --stat --no-merges
-
+  lc   = log ORIG_HEAD.. --stat --no-merges  # List changes for each commit
   lp   = log --graph --topo-order --pretty=format:'%h : (%aN) %s'
   logm = log --merges --decorate --date=short --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
   logn = log --decorate --numstat --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
-
-  # List new files for the incoming merge
-  new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
-  changes = diff --name-status -r
-  diffstat = diff --stat -r
-
-  # Show latest vX.Y.Z tag
   latest-tag = !"git tag --list 'v*' --sort=-v:refname | head -n 1"
