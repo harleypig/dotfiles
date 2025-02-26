@@ -67,14 +67,11 @@
 [remote "origin"]
   prune = true
   pruneTags = true
-  #fetch = +refs/tags/*:refs/tags/*
-  #fetch = +refs/notes/*:refs/notes/*
-  #push = +refs/heads/*:refs/heads/*
-  #push = +refs/tags/*:refs/tags/*
-  #push = +refs/notes/*:refs/notes/*
+  fetch = +refs/tags/*:refs/tags/*
+  fetch = +refs/notes/*:refs/notes/*
 
 [push]
-  default = upstream
+  default = current
   autoSetupRemote = true
   followtags = true
 
