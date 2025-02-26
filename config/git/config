@@ -74,6 +74,8 @@
 
 [rerere]
   enabled = true
+  gc = true
+  expire = 90
 
 
 [stash]
