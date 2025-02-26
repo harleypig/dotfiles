@@ -1,6 +1,13 @@
 #!/bin/bash
 
 # TODO: Finish updating to current standards. Or just scrap it and start over.
+#       Need to find repositories
+#         with uncommitted changes
+#         with unpushed branches
+#         with unpulled changes
+#
+#       Future, if possible, fix these conditions.
+
 
 # git-all - Run git commands on all repositories under REPOHOME
 #
