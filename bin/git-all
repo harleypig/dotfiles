@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: Finish updating to current standards. Or just scrap it and start over.
+
 # git-all - Run git commands on all repositories under REPOHOME
 #
 # Usage: git-all [-Sv] [command...]
