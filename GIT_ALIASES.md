@@ -4,6 +4,8 @@ These aliases are accessible via `git aliasname`.
 
 ## Information
 - `aliases` - Show all defined git aliases
+- `root` - Show repository root directory
+- `remotes` - List remotes with URLs
 - `s` - Show working tree status
 - `ss` - Show short status
 - `st` - Show status with branch info
@@ -40,17 +42,23 @@ These aliases are accessible via `git aliasname`.
 - `diffstat` - Show change statistics
 
 ## Committing
+- `amend` - Amend commit without editing message
 - `c` - Record changes to repository
 - `ca` - Modify the last commit
 - `cb` - Commit with branch name
 - `ci` - Commit interactively
 - `cm` - Commit with message
 - `out` - Show commits not pushed to upstream
+- `undo` - Undo last commit keeping changes staged
 
 ## Branching
 - `b` - List branches
 - `ba` - List all branches including remote
 - `bc` - Show current branch name
+- `bd` - Delete branch if merged
+- `bD` - Force delete branch
+- `bm` - Show merged branches
+- `bnm` - Show unmerged branches
 - `co` - Switch branches or restore files
 
 ## Remote Operations
@@ -62,9 +70,14 @@ These aliases are accessible via `git aliasname`.
 - `conflicted` - Show files with merge conflicts
 
 ## History
+- `graph` - Compact graph view
 - `l` - Show commit logs with graph
+- `last` - Show last commit
+- `latest-tag` - Show most recent version tag
 - `lc` - Show changes since branch point
 - `lp` - Show logs with author and graph
 - `logm` - Show merge logs with decoration
 - `logn` - Show logs with numstat
-- `latest-tag` - Show most recent version tag
+- `search` - Search commit contents
+- `since` - Show commits since date
+- `until` - Show commits until date

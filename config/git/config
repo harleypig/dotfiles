@@ -228,7 +228,26 @@
   # --- Conflict Resolution ---
   conflicted = "diff --name-only --diff-filter=U"
 
+  # --- Information ---
+  root = rev-parse --show-toplevel    # Show repository root directory
+  remotes = remote -v                 # List remotes with URLs
+
+  # --- Branching ---
+  bm = branch --merged               # Show merged branches
+  bnm = branch --no-merged          # Show unmerged branches
+  bd = branch -d                    # Delete branch if merged
+  bD = branch -D                    # Force delete branch
+
+  # --- Committing ---
+  amend = commit --amend --no-edit  # Amend commit without editing message
+  undo = reset --soft HEAD^         # Undo last commit keeping changes staged
+
   # --- History ---
+  last = log -1 HEAD                # Show last commit
+  graph = log --graph --oneline     # Compact graph view
+  search = log -p -S               # Search commit contents
+  since = log --since              # Show commits since date
+  until = log --until              # Show commits until date
   l    = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
   lc   = log ORIG_HEAD.. --stat --no-merges  # List changes for each commit
   lp   = log --graph --topo-order --pretty=format:'%h : (%aN) %s'
