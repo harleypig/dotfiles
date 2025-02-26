@@ -12,8 +12,8 @@ These aliases are accessible via `git aliasname`.
 - `au` - Add modified/deleted files only
 
 ## Removing
-- `unadd` - Remove specific files from staging
-- `unstage` - Remove all files from staging
+- `unadd` - Undo git add for specific files
+- `unstage` - Undo last commit, keep changes
 
 ## Branching
 - `b` - List branches
