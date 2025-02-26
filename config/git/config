@@ -102,6 +102,7 @@
 
 [mergetool "fugitive"]
   cmd = vim -f -c \"Gvdiff\" \"$MERGED\"
+
 [diff]
   algorithm = histogram
   colorMoved = dimmed-zebra
@@ -226,10 +227,10 @@
   ignored = !git ls-tree --others -i --exclude-standard
 
   # --- Merging ---
-  m    = merge
+  m = merge
 
   # --- Pulling ---
-  p    = pull
+  p = pull
 
   # --- Pruning ---
   prune = fetch -prune
