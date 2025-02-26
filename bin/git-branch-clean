@@ -2,20 +2,29 @@
 #
 # git-branch-clean - Delete local branches that no longer exist on remote
 #
-# Usage: git branch-clean [-n] [-h]
+# Usage: git branch-clean [-n|-f] [-h]
 #
 # Options:
 #   -n  Dry run - show what would be deleted
+#   -f  Force delete branches (required for actual deletion)
 #   -h  Show this help message
 
 set -euo pipefail
 
 # Process command line options
 dry_run=0
+force=0
 
-while getopts "nh" opt; do
+# Show help if no parameters
+if [[ $# -eq 0 ]]; then
+  sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0"
+  exit 0
+fi
+
+while getopts "nfh" opt; do
   case $opt in
     n) dry_run=1 ;;
+    f) force=1 ;;
     h) 
       sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0"
       exit 0
@@ -26,6 +35,13 @@ while getopts "nh" opt; do
       ;;
   esac
 done
+
+# Require -f for actual deletion
+if [[ $force -eq 0 && $dry_run -eq 0 ]]; then
+  echo "Error: -f required for branch deletion" >&2
+  echo "Use -n for dry run or -h for help" >&2
+  exit 1
+fi
 
 # Ensure we're in a git repository
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
@@ -41,7 +57,7 @@ while IFS= read -r branch; do
   if [[ -n "$branch" ]]; then
     if ((dry_run)); then
       echo "Would delete branch: $branch"
-    else
+    elif ((force)); then
       echo "Deleting branch: $branch"
       git branch -D "$branch"
     fi
