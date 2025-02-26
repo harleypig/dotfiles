@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+
 # git-all - Run git commands on all repositories under REPOHOME
 #
 # Usage: git-all [-Sv] [command...]
