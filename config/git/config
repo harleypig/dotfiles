@@ -250,7 +250,7 @@
   since = log --since              # Show commits since date
   until = log --until              # Show commits until date
   l    = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
-  lc   = log ORIG_HEAD.. --stat --no-merges  # List changes for each commit
+  lc   = log ORIG_HEAD.. --no-merges --pretty=format:'%Cred%h%Creset %s%C(yellow)%d%Creset'  # Changes since branch point
   lm = log --merges --decorate --date=short --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
   ln = log --decorate --numstat --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
   latest-tag = !"git tag --list 'v*' --sort=-v:refname | head -n 1"
