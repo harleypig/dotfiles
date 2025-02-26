@@ -5,6 +5,9 @@
   email = harleypig@harleypig.com
   name  = Alan Young
 
+[github]
+  user = harleypig
+
 # Cygwin Setup
 # This setup depends on Git for Windows being installed. If you have installed
 # it in a different location you'll need to adjust the path for the helper.
@@ -125,12 +128,6 @@
 
 [mergetool "fugitive"]
   cmd = vim -f -c \"Gvdiff\" \"$MERGED\"
-
-##################################################################################
-# Misc
-
-[github]
-  user = harleypig
 
 ##################################################################################
 # Output
