@@ -110,7 +110,8 @@
 
 [diff]
   algorithm = histogram
-  colorMoved = plain
+  colorMoved = dimmed-zebra
+  colorMovedWS = ignore-all-space
   guitool = gvimdiff
   mnemonicPrefix = true
   renames = copies
