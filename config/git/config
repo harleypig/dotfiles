@@ -18,6 +18,7 @@
 #  helper = /cygdrive/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe
 
 [include]
+  # See .gitconfig.user.template
   path = ../../gitconfig.user
 
 [core]
