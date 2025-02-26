@@ -29,25 +29,25 @@ declare -A output
 # Output formatting functions
 print_error() {
   local msg=$1; shift
-  printf "\033[1;31m::\033[0m ${msg}\n" "$@" >&2
+  printf "$(ansi fg red)::$(ansi off) ${msg}\n" "$@" >&2
 }
 
 print_header() {
   local msg=$1; shift
-  printf " \033[1;32m==>\033[1;0m\033[1;1m ${msg}\033[1;0m\n" "$@" >&2
+  printf " $(ansi fg green)==>$(ansi off)$(ansi bold) ${msg}$(ansi off)\n" "$@" >&2
 }
 
 print_subheader() {
   local msg=$1; shift
-  printf " \033[1;34m  ->\033[1;0m\033[1;1m ${msg}\033[1;0m\n" "$@" >&2
+  printf " $(ansi fg blue)  ->$(ansi off)$(ansi bold) ${msg}$(ansi off)\n" "$@" >&2
 }
 
 print_success() {
-  printf " \033[1;0m\033[0;34m[\033[1;37mPASS\033[0;34m] \033[0;36m %s\033[0m\n" "$1"
+  printf " $(ansi fg blue)[$(ansi fg bright_white)PASS$(ansi fg blue)] $(ansi fg cyan)%s$(ansi off)\n" "$1"
 }
 
 print_failure() {
-  printf " \033[1;0m\033[0;34m[\033[1;31mFAIL\033[0;34m] \033[0;36m %s\033[0m\n" "$1" >&2
+  printf " $(ansi fg blue)[$(ansi fg red)FAIL$(ansi fg blue)] $(ansi fg cyan)%s$(ansi off)\n" "$1" >&2
 }
 
 breadlink() {
