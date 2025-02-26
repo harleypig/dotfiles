@@ -70,13 +70,10 @@ These aliases are accessible via `git aliasname`.
 - `conflicted` - Show files with merge conflicts
 
 ## History
-- `graph` - Compact graph view
 - `l` - Show commit logs with graph
-- `last` - Show last commit
+- `last` - Show last commit with graph
 - `latest-tag` - Show most recent version tag
-- `lc` - Show changes since branch point in oneline format
-- `lm` - Show merge logs with decoration
-- `ln` - Show logs with numstat
-- `search` - Search commit contents
-- `since` - Show commits since date
-- `until` - Show commits until date
+- `lc` - Show changes since branch point with graph
+- `lm` - Show merge logs with graph
+- `since` - Show commits since date with graph
+- `until` - Show commits until date with graph
