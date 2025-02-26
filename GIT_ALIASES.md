@@ -27,6 +27,7 @@ These aliases are accessible via `git aliasname`.
 - `cb` - Commit with branch name
 - `ci` - Commit interactively
 - `cm` - Commit with message
+- `out` - Show commits not pushed to upstream
 
 ## Conflict Resolution
 - `conflicted` - Show files with merge conflicts
@@ -75,4 +76,3 @@ These aliases are accessible via `git aliasname`.
 - `changes` - Show status of changes
 - `diffstat` - Show change statistics
 - `latest-tag` - Show most recent version tag
-- `out` - Show commits not pushed to upstream

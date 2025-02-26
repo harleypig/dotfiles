@@ -196,9 +196,7 @@
   cb   = commit --branch
   ci   = commit --interactive
   cm   = commit -m
-
-  # Commits not pushed
-  out = "log @{u}.."
+  out  = "log @{u}.."      # Show commits not pushed to upstream
 
   # --- Conflict resolution ---
   conflicted = "diff --name-only --diff-filter=U"
