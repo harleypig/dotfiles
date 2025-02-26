@@ -13,7 +13,7 @@ These aliases are accessible via `git aliasname`.
 
 ## Removing
 - `unadd` - Undo git add for specific files
-- `unstage` - Undo last commit, keep changes
+- `unstage` - Undo last commit, specific or all files
 
 ## Branching
 - `b` - List branches
