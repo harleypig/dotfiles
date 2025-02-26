@@ -50,7 +50,7 @@ These aliases are accessible via `git aliasname`.
 - `m` - Join development histories
 
 ## Pulling
-- `p` - Fetch and integrate with another repo
+- `pl` - Fetch and integrate with another repo
 
 ## Status
 - `s` - Show working tree status

@@ -220,7 +220,7 @@
   m = merge
 
   # --- Pulling ---
-  p = pull
+  pl = pull
 
   # --- Status ---
   s    = status
