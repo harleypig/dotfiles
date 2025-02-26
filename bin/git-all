@@ -1,45 +1,52 @@
 #!/bin/bash
-# Usage: git-all [-Sfhv] [command...]"
 #
-#   -S    Show repos which have uncommitted changes. If this"
-#          option is specified, all other options are ignored."
+# git-all - Run git commands on all repositories under REPOHOME
 #
-#   -v    print error output in job summary for failed jobs"
+# Usage: git-all [-Sv] [command...]
 #
-# Actions will be performed on $REPOHOME, which defaults to $HOME"
-# if not specified."
+# Options:
+#   -S  Show repos which have uncommitted changes
+#       If specified, all other options are ignored
+#   -v  Print error output in job summary for failed jobs
 #
-# See https://github.com/falconindy/bin-scripts/blob/master/git-all
-# Commit: a4726de
+# Environment:
+#   REPOHOME  Directory to search for git repos (default: $HOME)
+#
+# Originally from: https://github.com/falconindy/bin-scripts
 
+set -euo pipefail
+
+# Configuration
 REPOHOME=${REPOHOME:-$HOME}
 VERBOSE=0
 
+# Tracking variables
 count=0
 declare -a fail
 declare -a pass
 declare -A output
 
-die() {
-  local mesg=$1; shift
-  printf "\033[1;31m::\033[0m ${mesg}\n" "$@" >&2
+# Output formatting functions
+print_error() {
+  local msg=$1; shift
+  printf "\033[1;31m::\033[0m ${msg}\n" "$@" >&2
 }
 
-msg() {
-  local mesg=$1; shift
-  printf " \033[1;32m==>\033[1;0m\033[1;1m ${mesg}\033[1;0m\n" "$@" >&2
+print_header() {
+  local msg=$1; shift
+  printf " \033[1;32m==>\033[1;0m\033[1;1m ${msg}\033[1;0m\n" "$@" >&2
 }
 
-msg2() {
-  local mesg=$1; shift
-  printf " \033[1;34m  ->\033[1;0m\033[1;1m ${mesg}\033[1;0m\n" "$@" >&2
+print_subheader() {
+  local msg=$1; shift
+  printf " \033[1;34m  ->\033[1;0m\033[1;1m ${msg}\033[1;0m\n" "$@" >&2
 }
 
-repopass() {
+print_success() {
   printf " \033[1;0m\033[0;34m[\033[1;37mPASS\033[0;34m] \033[0;36m %s\033[0m\n" "$1"
 }
 
-repofail() {
+print_failure() {
   printf " \033[1;0m\033[0;34m[\033[1;31mFAIL\033[0;34m] \033[0;36m %s\033[0m\n" "$1" >&2
 }
 
