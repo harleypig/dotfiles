@@ -1,0 +1,12 @@
+#!/bin/bash
+
+private_dotfiles="$PROJECTS_DIR/private_dotfiles"
+apikey_dir="$private_dotfiles/api-key"
+
+mkdir -p "$apikey_dir"
+
+> "$private_dotfiles/vault-secrets"
+> "$private_dotfiles/terraform-vars"
+> "$apikey_dir/azure"
+> "$apikey_dir/pass.ldap"
+> "$apikey_dir/vault.addr"
