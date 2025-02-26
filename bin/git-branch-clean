@@ -26,7 +26,7 @@ all=0
 # Print usage information from script comments
 # Optional arg: Additional text to print after usage
 usage() {
-  sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0"
+  sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0" >&2
   [[ -n "${1:-}" ]] && printf '\n%s\n' "$@" >&2
   exit 1
 }
