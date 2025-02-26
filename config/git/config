@@ -18,9 +18,7 @@
   path = ../../gitconfig.user
 
 [core]
-  compression  = 9
   editor       = vim
-  pager        = less -FIJRWX
   safecrlf     = true
   filemode     = true
   autocrlf     = false
@@ -96,8 +94,6 @@
 [rerere]
   enabled = true
 
-[status]
-  showuntrackedfiles = all
 
 [stash]
   showpatch = true
@@ -140,19 +136,23 @@
   cmd = vim -f -c \"Gvdiff\" \"$MERGED\"
 
 ##################################################################################
-# Column Settings
-
-[column]
-  ui = auto
-
-##################################################################################
 # Misc
 
 [github]
   user = harleypig
 
 ##################################################################################
-# Color
+# Output
+
+[core]
+  compression = 9
+  pager      = less -FIJRWX
+
+[column]
+  ui = auto
+
+[status]
+  showuntrackedfiles = all
 
 # 'git help config', search for 'list of colors'
 # Colors: <FG> [<BG>] [<ATTR>]
@@ -168,9 +168,6 @@
 #  status      = auto
 
 [color "branch"]
-#  FG/BG: normal, black, red, green, yellow, blue, magenta, cyan and white
-#   ATTR: bold, dim, ul, blink and reverse
-
   current  = green reverse
   local    = cyan
   plain    = white
@@ -178,9 +175,6 @@
   upstream = blue reverse
 
 [color "diff"]
-#  FG/BG: normal, black, red, green, yellow, blue, magenta, cyan and white
-#   ATTR: bold, dim, ul, blink and reverse
-
   commit     = white black reverse
   context    = white dim
   frag       = magenta bold
@@ -197,6 +191,7 @@
   unmerged  = red dim
 
 ##################################################################################
+# Aliases
 
 [alias]
   # Show the defined aliases
