@@ -75,3 +75,4 @@ These aliases are accessible via `git aliasname`.
 - `changes` - Show status of changes
 - `diffstat` - Show change statistics
 - `latest-tag` - Show most recent version tag
+- `out` - Show commits not pushed to upstream
