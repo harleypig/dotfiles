@@ -188,12 +188,14 @@
   ba   = branch -a
   # Current branch
   bc   = "rev-parse --abbrev-ref HEAD"
+  co   = checkout
 
   # --- Committing ---
   c    = commit
+  ca   = commit --amend
   cb   = commit --branch
   ci   = commit --interactive
-  co   = checkout
+  cm   = commit -m
 
   # --- Conflict resolution ---
   conflicted = "diff --name-only --diff-filter=U"
