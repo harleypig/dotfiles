@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# AI!
+# Parameters
+#  list pathname
+#  get pathname keyname
+#
+# pathname can be a partial path
+# search vault-paths and store possible matches in an array
+# if more than one result, use select to allow the user to choose
+#
+# if command is list, list the keys in the path
+# if command is get, return the value of keyname
