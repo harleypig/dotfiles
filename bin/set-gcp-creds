@@ -30,44 +30,67 @@ and entering your LDAP password:
 source set-vault-token"
 
 #-----------------------------------------------------------------------------
-# AI!
-# If a parameter is passed, then use that for get-vault-key,
-# then if azure-pipelines.yml exists in the current directory then
-# grep azure-pipelines.yml in the current directory as described below.
-#
-# search for 'tfServiceConnectionName:' in azure-pipelines.yml and put the
-# results in an array
-#   * do as much as possible in the subshell
-#   * remove everything past the first hash '#'
-#   * only need the value ... the right side of the colon
-#   * remove all whitespace
-#   * remove prefix (sandbox|zions)-cloud-(dev|test)?-
-#   * remove empty elements
-#
-# if there are more than one elements, then prompt the user to select one
-#
-# get-vault-key get <name> creds.json | base64 -d | jq -rS '.' > $credsfile
+# Parameter handling
+declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
+declare credspath="${XDG_CACHE_HOME:-$HOME/.cache}/gcp-creds"
+declare scname scpath credsfile
+declare -a scnames
 
-declare scname scpath
+# Create credentials directory if it doesn't exist
+mkdir -p "$credspath"
 
 if [[ -n $1 ]]; then
-  scpath="$(grep "$1" "$vaultpaths")"
-  credsfile="$credspath/$scpath.json"
-
-else
-  scname="$(grep -ri "^[^#]*tfServiceConnectionName:[[:space:]]*[\"']sandbox" azure-pipelines.yml \
-    | cut -d ':' -f 2 | tr -d '[:space:]"'\''')"
-
-  scname="${scname#sandbox-cloud-}"
-
-  scpath="$(grep "$scname" "$vaultpaths")"
+  # Use the provided parameter directly
+  scpath=$(get-vault-key get "$1" "creds.json" 2>/dev/null)
+  [[ -n $scpath ]] || die "Could not find credentials for '$1'"
+  credsfile="$credspath/${1//\//-}.json"
+elif [[ -f azure-pipelines.yml ]]; then
+  # Extract service connection names from azure-pipelines.yml
+  readarray -t scnames < <(grep -i "tfServiceConnectionName:" azure-pipelines.yml | 
+                          sed 's/#.*$//' |                   # Remove comments
+                          cut -d ':' -f 2 |                  # Get value after colon
+                          tr -d '[:space:]"'\''' |           # Remove whitespace and quotes
+                          sed -E 's/^(sandbox|zions)-cloud-(dev|test)?-//' | # Remove prefix
+                          grep -v "^$")                      # Remove empty lines
+  
+  # Handle case with no service connections found
+  [[ ${#scnames[@]} -eq 0 ]] && die "No service connection names found in azure-pipelines.yml"
+  
+  # If multiple service connections, let user select one
+  if [[ ${#scnames[@]} -gt 1 ]]; then
+    echo "Multiple service connections found:"
+    PS3="Select a service connection (0 to cancel): "
+    select name in "${scnames[@]}" "Cancel"; do
+      if [[ "$REPLY" == "0" || "$name" == "Cancel" ]]; then
+        die "Operation cancelled by user"
+      elif [[ -n "$name" ]]; then
+        scname="$name"
+        break
+      fi
+    done
+  else
+    scname="${scnames[0]}"
+    echo "Using service connection: $scname"
+  fi
+  
+  # Determine path and credentials file name
   credsfile="$credspath/sandbox-$scname.json"
+else
+  die "No parameter provided and no azure-pipelines.yml found in current directory"
 fi
 
 #-----------------------------------------------------------------------------
-vault read -format=json "$scpath" \
-  | jq -r '.data["creds.json"]' \
-  | base64 -d \
-  | jq -S '.' > "$credsfile"
+# Get credentials and save to file
+if [[ -z $scpath ]]; then
+  # If we have a service connection name but no path yet, find it
+  scpath=$(get-vault-key get "dai/gcp/$scname" "creds.json" 2>/dev/null)
+  [[ -n $scpath ]] || die "Could not find credentials for service connection '$scname'"
+fi
 
+# Save credentials to file
+echo "$scpath" | base64 -d | jq -S '.' > "$credsfile"
+
+# Set environment variable
 export GOOGLE_APPLICATION_CREDENTIALS="$credsfile"
+echo "GCP credentials set to: $credsfile"
+echo "GOOGLE_APPLICATION_CREDENTIALS has been exported"
