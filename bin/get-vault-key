@@ -1,13 +1,88 @@
 #!/bin/bash
 
-# AI!
-# Parameters
-#  list pathname
-#  get pathname keyname
-#
-# pathname can be a partial path
-# search vault-paths and store possible matches in an array
-# if more than one result, use select to allow the user to choose
-#
-# if command is list, list the keys in the path
-# if command is get, return the value of keyname
+#-----------------------------------------------------------------------------
+[[ -n $VAULT_TOKEN ]] || {
+  cat <<EOT
+Vault token is not set. Set that by running the following command
+and entering your LDAP password:
+
+source set-vault-token
+EOT
+
+  exit 1
+}
+
+#-----------------------------------------------------------------------------
+usage() {
+  cat <<EOT
+Usage: $(basename "$0") list|get pathname [keyname]
+
+  list pathname    - List all keys in the specified vault path
+  get pathname key - Get the value of the specified key from the vault path
+
+  pathname can be a partial path. If multiple matches are found,
+  you will be prompted to select one.
+EOT
+  exit 1
+}
+
+#-----------------------------------------------------------------------------
+# Check arguments
+[[ $# -lt 2 ]] && usage
+
+command="$1"
+pathname="$2"
+keyname="$3"
+
+if [[ "$command" != "list" && "$command" != "get" ]]; then
+  echo "Error: Command must be 'list' or 'get'"
+  usage
+fi
+
+if [[ "$command" == "get" && -z "$keyname" ]]; then
+  echo "Error: Key name is required for 'get' command"
+  usage
+fi
+
+#-----------------------------------------------------------------------------
+# Find matching paths
+declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
+declare -a matches
+
+if [[ ! -f "$vaultpaths" ]]; then
+  echo "Error: Vault paths file not found. Run 'discover-vault-paths' first."
+  exit 1
+fi
+
+readarray -t matches < <(grep -i "$pathname" "$vaultpaths")
+
+if [[ ${#matches[@]} -eq 0 ]]; then
+  echo "Error: No matching paths found for '$pathname'"
+  exit 1
+fi
+
+#-----------------------------------------------------------------------------
+# If multiple matches, let user select one
+selected_path=""
+if [[ ${#matches[@]} -eq 1 ]]; then
+  selected_path="${matches[0]}"
+else
+  echo "Multiple matching paths found:"
+  PS3="Select a path: "
+  select path in "${matches[@]}"; do
+    if [[ -n "$path" ]]; then
+      selected_path="$path"
+      break
+    fi
+  done
+fi
+
+#-----------------------------------------------------------------------------
+# Execute the command
+if [[ "$command" == "list" ]]; then
+  echo "Listing keys in $selected_path:"
+  vault list "$selected_path"
+elif [[ "$command" == "get" ]]; then
+  echo "Getting value of '$keyname' from $selected_path:"
+  vault read -format=json "$selected_path" | jq -r ".data[\"$keyname\"]"
+fi
