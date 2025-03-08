@@ -10,6 +10,9 @@ die() { (($#)) && warn "$@"; exit 1; }
 usage() {
   msg="$*"
 
+  # Read the usage into a string, add msg if it exists and use the die
+  # function, AI!
+
   cat <<EOT
 Usage: ${0##*/} list|get pathname [keyname]
 
