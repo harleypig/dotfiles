@@ -78,29 +78,25 @@ else
 fi
 
 #-----------------------------------------------------------------------------
-# get-vault-key returns a json format with 'creds.json' => value and 'path' =>
-# the path to the key. The result of the following command, if not null, needs
-# to be parsed out to credspath+="$path" and
-# credsfile="$credspath/creds.json", AI!
-scpath="$(get-vault-key get "$scname" "creds.json" 2> /dev/null)"
+# Get credentials JSON from vault
+result="$(get-vault-key get "$scname" "creds.json" 2> /dev/null)"
 
-[[ -n $scpath ]] || die "Could not find credentials for '$scname'"
+[[ -n $result ]] || die "Could not find credentials for '$scname'"
+
+# Parse the JSON result to extract credentials and path
+creds_json=$(echo "$result" | jq -r '."creds.json"')
+vault_path=$(echo "$result" | jq -r '.path')
 
 # Create credentials directory if it doesn't exist
 mkdir -p "$credspath"
 
-credsfile="$credspath/${1//\//-}.json"
+# Create a filename based on the vault path
+path_basename=$(basename "$vault_path" | tr -d '/')
+credsfile="$credspath/${path_basename}.json"
 
 #-----------------------------------------------------------------------------
-# Get credentials and save to file
-if [[ -z $scpath ]]; then
-  # If we have a service connection name but no path yet, find it
-  scpath=$(get-vault-key get "dai/gcp/$scname" "creds.json" 2>/dev/null)
-  [[ -n $scpath ]] || die "Could not find credentials for service connection '$scname'"
-fi
-
 # Save credentials to file
-echo "$scpath" | base64 -d | jq -S '.' > "$credsfile"
+echo "$creds_json" | base64 -d | jq -S '.' > "$credsfile"
 
 # Set environment variable
 export GOOGLE_APPLICATION_CREDENTIALS="$credsfile"
