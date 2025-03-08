@@ -99,6 +99,9 @@ read -r creds_json vault_path < \
 path_basename=$(basename "$vault_path" | tr -d '/')
 credsfile="$credspath/${path_basename}.json"
 
+echo "credsfile: $credsfile"
+exit
+
 #-----------------------------------------------------------------------------
 # Save credentials to file
 echo "$creds_json" | base64 -d | jq -S '.' > "$credsfile"
