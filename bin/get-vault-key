@@ -63,7 +63,7 @@ declare -a matches
 readarray -t matches < <(grep -i "$pathname" "$vaultpaths")
 
 [[ ${#matches[@]} -eq 0 ]] \
-  || die "Error: No matching paths found for '$pathname'"
+  && die "Error: No matching paths found for '$pathname'"
 
 #-----------------------------------------------------------------------------
 # If multiple matches, let user select one
