@@ -1,16 +1,10 @@
 #!/bin/bash
 
+##############################################################################
+# Functions
 #-----------------------------------------------------------------------------
-[[ -n $VAULT_TOKEN ]] || {
-  cat <<EOT
-Vault token is not set. Set that by running the following command
-and entering your LDAP password:
-
-source set-vault-token
-EOT
-
-  exit 1
-}
+warn() { printf '%s\n' "$@" >&2; }
+die() { (($#)) && warn "$@"; exit 1; }
 
 #-----------------------------------------------------------------------------
 usage() {
@@ -26,8 +20,23 @@ EOT
   exit 1
 }
 
+##############################################################################
+# Setup and Sanity
+#-----------------------------------------------------------------------------
+[[ -n $VAULT_TOKEN ]] || {
+  cat <<EOT
+Vault token is not set. Set that by running the following command
+and entering your LDAP password:
+
+source set-vault-token
+EOT
+
+  exit 1
+}
+
 #-----------------------------------------------------------------------------
 # Check arguments
+# The first argument must be one of 'list' or 'get', AI!
 [[ $# -lt 2 ]] && usage
 
 command="$1"
