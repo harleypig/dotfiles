@@ -67,16 +67,16 @@ readarray -t matches < <(grep -i "$pathname" "$vaultpaths")
 
 #-----------------------------------------------------------------------------
 # If multiple matches, let user select one
-declare selected_path=""
+declare selected_path="${matches[0]}"
 
-if [[ ${#matches[@]} -eq 1 ]]; then
-  selected_path="${matches[0]}"
-else
+if [[ ${#matches[@]} -gt 1 ]]; then
   echo "Multiple matching paths found:"
   PS3="Select a path (0 to cancel): "
+
   select path in "${matches[@]}" "Cancel"; do
     if [[ "$REPLY" == "0" || "$path" == "Cancel" ]]; then
       die "Operation cancelled by user"
+
     elif [[ -n "$path" ]]; then
       selected_path="$path"
       break
