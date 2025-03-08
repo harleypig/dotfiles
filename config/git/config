@@ -69,8 +69,8 @@
 [remote "origin"]
   prune = true
   pruneTags = true
-  fetch = +refs/tags/*:refs/tags/*
-  fetch = +refs/notes/*:refs/notes/*
+  #fetch = +refs/tags/*:refs/tags/*
+  #fetch = +refs/notes/*:refs/notes/*
 
 [push]
   default = current
