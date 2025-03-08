@@ -23,11 +23,18 @@ EOT
 ##############################################################################
 # Setup and Sanity
 #-----------------------------------------------------------------------------
-[[ -n $VAULT_TOKEN ]] \
-  || die "Vault token is not set. Set that by running the following command
-and entering your LDAP password:
+# Check if vault token is set, if not try to source set-vault-token
+if [[ -z $VAULT_TOKEN ]]; then
+  warn "Vault token not set. Attempting to set it now..."
+  warn "In the future, run 'source set-vault-token' in your session to avoid this message."
 
-source set-vault-token"
+  source set-vault-token 2>/dev/null \
+    || die "Failed to set vault token. Please run 'source set-vault-token' manually."
+
+  [[ -z $VAULT_TOKEN ]] && die "Vault token still not set after running set-vault-token."
+
+  warn "Vault token successfully set."
+fi
 
 #-----------------------------------------------------------------------------
 # Parameter handling

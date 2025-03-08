@@ -1,16 +1,26 @@
 #!/bin/bash
 
+##############################################################################
+# Functions
 #-----------------------------------------------------------------------------
-[[ -n $VAULT_TOKEN ]] || {
-  cat <<EOT
-Vault token is not set. Set that by running the following command
-and entering your LDAP password:
+warn() { printf '%s\n' "$@" >&2; }
+die() { (($#)) && warn "$@"; exit 1; }
 
-source set-vault-token
-EOT
+##############################################################################
+# Setup and Sanity
+#-----------------------------------------------------------------------------
+# Check if vault token is set, if not try to source set-vault-token
+if [[ -z $VAULT_TOKEN ]]; then
+  warn "Vault token not set. Attempting to set it now..."
+  warn "In the future, run 'source set-vault-token' in your session to avoid this message."
 
-  exit 1
-}
+  source set-vault-token 2>/dev/null \
+    || die "Failed to set vault token. Please run 'source set-vault-token' manually."
+
+  [[ -z $VAULT_TOKEN ]] && die "Vault token still not set after running set-vault-token."
+
+  warn "Vault token successfully set."
+fi
 
 #-----------------------------------------------------------------------------
 declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
