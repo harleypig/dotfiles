@@ -91,6 +91,6 @@ if [[ "$command" == "list" ]]; then
   vault list "$selected_path"
 
 elif [[ "$command" == "get" ]]; then
-  echo "Getting value of '$keyname' from $selected_path:"
-  vault read -format=json "$selected_path" | jq -r ".data[\"$keyname\"]"
+  #echo "Getting value of '$keyname' from $selected_path:"
+  vault read -format=json "$selected_path" | jq -Sr '.'
 fi
