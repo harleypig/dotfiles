@@ -21,10 +21,14 @@ Usage: ${0##*/} list|get pathname [keyname]
   The 'get' command returns a JSON object containing:
     - The requested key's value
     - The vault path where the key was found
-EOT
 
-# Add a simple example of what the json object would like at the end of the
-# help please, AI!
+  Example:
+    $ ${0##*/} get dai/gcp/project api-key
+    {
+      "api-key": "abcdef123456",
+      "path": "dai/gcp/project"
+    }
+EOT
 )
 
   # If message provided, append it to usage text
