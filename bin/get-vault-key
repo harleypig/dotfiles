@@ -91,5 +91,7 @@ if [[ "$command" == "list" ]]; then
   vault read -format=json "$selected_path" | jq -Sr '.data | keys[]'
 
 elif [[ "$command" == "get" ]]; then
+  # Change the output to be a json format, with '$keyname' => data[$keyname]
+  # and 'path' => '$selected_path', AI!
   vault read -format=json "$selected_path" | jq -Sr ".data[\"$keyname\"]"
 fi
