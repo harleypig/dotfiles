@@ -21,32 +21,28 @@ EOT
 )
 
   # If message provided, append it to usage text
-  [[ -n "$*" ]] && usage_text+=$'\n\n'"$*"$'\n\n'
-  
-  # Use die function to display message and exit
+  (($#)) && usage_text+=$'\n\n'"$*"$'\n\n'
+
   die "$usage_text"
 }
 
 ##############################################################################
 # Setup and Sanity
 #-----------------------------------------------------------------------------
-[[ -n $VAULT_TOKEN ]] || die "Vault token is not set. Set that by running the following command
+[[ -n $VAULT_TOKEN ]] \
+  || die "Vault token is not set. Set that by running the following command
 and entering your LDAP password:
 
 source set-vault-token"
 
 #-----------------------------------------------------------------------------
 # Parameter handling
-[[ $# -lt 2 ]] && usage "Error: Not enough arguments"
-
 command="$1"
 
 # Validate command is either 'list' or 'get'
 case "$command" in
   list|get) ;;
-  *)
-    usage "Error: Command must be 'list' or 'get'"
-    ;;
+  *) usage "Error: Command must be 'list' or 'get'" ;;
 esac
 
 pathname="$2"
@@ -61,22 +57,20 @@ fi
 declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
 declare -a matches
 
-if [[ ! -f "$vaultpaths" ]]; then
-  die "Error: Vault paths file not found. Run 'discover-vault-paths' first."
-fi
+[[ ! -f "$vaultpaths" ]] \
+  || die "Error: Vault paths file ($vaultpaths) not found. Run 'discover-vault-paths' first."
 
 readarray -t matches < <(grep -i "$pathname" "$vaultpaths")
 
-if [[ ${#matches[@]} -eq 0 ]]; then
-  die "Error: No matching paths found for '$pathname'"
-fi
+[[ ${#matches[@]} -eq 0 ]] \
+  || die "Error: No matching paths found for '$pathname'"
 
 #-----------------------------------------------------------------------------
 # If multiple matches, let user select one
-selected_path=""
-if [[ ${#matches[@]} -eq 1 ]]; then
-  selected_path="${matches[0]}"
-else
+declare selected_path="${matches[0]}"
+
+# Add a 'Cancel' option to the possible choices, AI!
+if [[ ${#matches[@]} -gt 1 ]]; then
   echo "Multiple matching paths found:"
   PS3="Select a path: "
   select path in "${matches[@]}"; do
