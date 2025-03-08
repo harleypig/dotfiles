@@ -9,6 +9,7 @@ die() { (($#)) && warn "$@"; exit 1; }
 #-----------------------------------------------------------------------------
 usage() {
   local usage_text
+  # update usage to match current functionality, please, AI!
   usage_text=$(cat <<EOT
 Usage: ${0##*/} list|get pathname [keyname]
 
@@ -31,16 +32,15 @@ EOT
 #-----------------------------------------------------------------------------
 # Check if vault token is set, if not try to source set-vault-token
 if [[ -z $VAULT_TOKEN ]]; then
-  echo "Vault token not set. Attempting to set it now..."
-  echo "In the future, run 'source set-vault-token' in your session to avoid this message."
-  
-  if ! source set-vault-token 2>/dev/null; then
-    die "Failed to set vault token. Please run 'source set-vault-token' manually."
-  fi
-  
+  warn "Vault token not set. Attempting to set it now..."
+  warn "In the future, run 'source set-vault-token' in your session to avoid this message."
+
+  source set-vault-token 2>/dev/null \
+    || die "Failed to set vault token. Please run 'source set-vault-token' manually."
+
   [[ -z $VAULT_TOKEN ]] && die "Vault token still not set after running set-vault-token."
-  
-  echo "Vault token successfully set."
+
+  warn "Vault token successfully set."
 fi
 
 #-----------------------------------------------------------------------------
@@ -98,8 +98,6 @@ if [[ "$command" == "list" ]]; then
   vault read -format=json "$selected_path" | jq -Sr '.data | keys[]'
 
 elif [[ "$command" == "get" ]]; then
-  # XXX: selected_path can be a partial and have globs. Need to figure out how
-  # to get actual and full path
   vault read -format=json "$selected_path" | jq -Sr "{
     \"$keyname\": .data[\"$keyname\"],
     \"path\": \"$selected_path\"
