@@ -41,21 +41,23 @@ mkdir -p "$credspath"
 
 if [[ -n $1 ]]; then
   # Use the provided parameter directly
-  scpath=$(get-vault-key get "$1" "creds.json" 2>/dev/null)
+  scpath="$(get-vault-key get "$1" "creds.json" 2> /dev/null)"
+
   [[ -n $scpath ]] || die "Could not find credentials for '$1'"
   credsfile="$credspath/${1//\//-}.json"
+
 elif [[ -f azure-pipelines.yml ]]; then
   # Extract service connection names from azure-pipelines.yml
-  readarray -t scnames < <(grep -i "tfServiceConnectionName:" azure-pipelines.yml | 
+  readarray -t scnames < <(grep -i "tfServiceConnectionName:" azure-pipelines.yml |
                           sed 's/#.*$//' |                   # Remove comments
                           cut -d ':' -f 2 |                  # Get value after colon
                           tr -d '[:space:]"'\''' |           # Remove whitespace and quotes
                           sed -E 's/^(sandbox|zions)-cloud-(dev|test)?-//' | # Remove prefix
                           grep -v "^$")                      # Remove empty lines
-  
+
   # Handle case with no service connections found
   [[ ${#scnames[@]} -eq 0 ]] && die "No service connection names found in azure-pipelines.yml"
-  
+
   # If multiple service connections, let user select one
   if [[ ${#scnames[@]} -gt 1 ]]; then
     echo "Multiple service connections found:"
@@ -72,7 +74,7 @@ elif [[ -f azure-pipelines.yml ]]; then
     scname="${scnames[0]}"
     echo "Using service connection: $scname"
   fi
-  
+
   # Determine path and credentials file name
   credsfile="$credspath/sandbox-$scname.json"
 else
