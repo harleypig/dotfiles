@@ -15,9 +15,7 @@ Usage: ${0##*/} [options]
   Discovers and caches all vault paths for later use by other scripts.
   Paths are saved to ${XDG_CACHE_HOME:-$HOME/.cache}/vault-paths
 
-Options:
-  -h, --help     Display this help message and exit
-  -v, --verbose  Show more detailed progress information
+  --help, -h Show this help
 EOT
 )
 
@@ -72,6 +70,7 @@ get_secrets() {
 }
 
 #-----------------------------------------------------------------------------
+# Add check here for -h or --help and show usage, AI!
 for p in dai/ dao/; do
   get_secrets "$p"
 done
