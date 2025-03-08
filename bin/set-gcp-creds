@@ -1,29 +1,55 @@
 #!/bin/bash
 
+##############################################################################
+# Functions
 #-----------------------------------------------------------------------------
-[[ -n $VAULT_TOKEN ]] || {
-  cat <<EOT
-Vault token is not set. Set that by running the following command
+warn() { printf '%s\n' "$@" >&2; }
+die() { (($#)) && warn "$@"; exit 1; }
+
+#-----------------------------------------------------------------------------
+usage() {
+  local usage_text
+  usage_text=$(cat <<EOT
+Usage: ${0##*/}
+EOT
+)
+
+  # If message provided, append it to usage text
+  (($#)) && usage_text+=$'\n\n'"$*"$'\n\n'
+
+  die "$usage_text"
+}
+
+##############################################################################
+# Setup and Sanity
+#-----------------------------------------------------------------------------
+[[ -n $VAULT_TOKEN ]] \
+  || die "Vault token is not set. Set that by running the following command
 and entering your LDAP password:
 
-source set-vault-token
-EOT
-
-  exit 1
-}
+source set-vault-token"
 
 #-----------------------------------------------------------------------------
-declare credspath credsfile vaultpaths scname scpath
+# AI!
+# If a parameter is passed, then use that for get-vault-key,
+# then if azure-pipelines.yml exists in the current directory then
+# grep azure-pipelines.yml in the current directory as described below.
+#
+# search for 'tfServiceConnectionName:' in azure-pipelines.yml and put the
+# results in an array
+#   * do as much as possible in the subshell
+#   * remove everything past the first hash '#'
+#   * only need the value ... the right side of the colon
+#   * remove all whitespace
+#   * remove prefix (sandbox|zions)-cloud-(dev|test)?-
+#   * remove empty elements
+#
+# if there are more than one elements, then prompt the user to select one
+#
+# get-vault-key get <name> creds.json | base64 -d | jq -rS '.' > $credsfile
 
-credspath="$XDG_CACHE_HOME/gcp-creds"
-mkdir -p "$credspath" || {
-  echo "Can't access $credspath"
-  exit 1
-}
+declare scname scpath
 
-vaultpaths="$XDG_CACHE_HOME/vault-paths"
-
-#-----------------------------------------------------------------------------
 if [[ -n $1 ]]; then
   scpath="$(grep "$1" "$vaultpaths")"
   credsfile="$credspath/$scpath.json"
