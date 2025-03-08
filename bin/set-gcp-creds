@@ -79,15 +79,9 @@ fi
 
 #-----------------------------------------------------------------------------
 # Get credentials JSON from vault
-# Modify the following to use read creds_json vault_path < <(get-vault-key
-# ...), AI!
-result="$(get-vault-key get "$scname" "creds.json" 2> /dev/null)"
+read -r creds_json vault_path < <(get-vault-key get "$scname" "creds.json" 2> /dev/null | jq -r '."creds.json" + "\n" + .path')
 
-[[ -n $result ]] || die "Could not find credentials for '$scname'"
-
-# Parse the JSON result to extract credentials and path
-creds_json=$(echo "$result" | jq -r '."creds.json"')
-vault_path=$(echo "$result" | jq -r '.path')
+[[ -n $creds_json && -n $vault_path ]] || die "Could not find credentials for '$scname'"
 
 # Create credentials directory if it doesn't exist
 mkdir -p "$credspath"
