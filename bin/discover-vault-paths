@@ -70,7 +70,12 @@ get_secrets() {
 }
 
 #-----------------------------------------------------------------------------
-# Add check here for -h or --help and show usage, AI!
+# Check for help flags
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  usage
+fi
+
+# Discover vault paths
 for p in dai/ dao/; do
   get_secrets "$p"
 done
