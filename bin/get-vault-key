@@ -87,7 +87,8 @@ fi
 #-----------------------------------------------------------------------------
 # Execute the command
 if [[ "$command" == "list" ]]; then
-  echo "Listing keys in $selected_path:"
+  echo "Listing secrets in $selected_path:"
+  # Modify this to display keys in data, AI!
   vault list "$selected_path"
 
 elif [[ "$command" == "get" ]]; then
