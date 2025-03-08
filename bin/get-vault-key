@@ -8,6 +8,9 @@ die() { (($#)) && warn "$@"; exit 1; }
 
 #-----------------------------------------------------------------------------
 usage() {
+  msg="$*"
+
+  # Convert the basename here to use parameter expansion, AI!
   cat <<EOT
 Usage: $(basename "$0") list|get pathname [keyname]
 
@@ -16,6 +19,9 @@ Usage: $(basename "$0") list|get pathname [keyname]
 
   pathname can be a partial path. If multiple matches are found,
   you will be prompted to select one.
+
+$msg
+
 EOT
   exit 1
 }
@@ -35,12 +41,9 @@ EOT
 }
 
 #-----------------------------------------------------------------------------
-# Check arguments
-[[ $# -lt 2 ]] && usage
+# Parameter handling
 
 command="$1"
-pathname="$2"
-keyname="$3"
 
 # Validate command is either 'list' or 'get'
 case "$command" in
@@ -55,6 +58,9 @@ if [[ "$command" == "get" && -z "$keyname" ]]; then
   echo "Error: Key name is required for 'get' command"
   usage
 fi
+
+pathname="$2"
+keyname="$3"
 
 #-----------------------------------------------------------------------------
 # Find matching paths
