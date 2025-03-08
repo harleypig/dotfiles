@@ -10,9 +10,8 @@ die() { (($#)) && warn "$@"; exit 1; }
 usage() {
   msg="$*"
 
-  # Convert the basename here to use parameter expansion, AI!
   cat <<EOT
-Usage: $(basename "$0") list|get pathname [keyname]
+Usage: ${0##*/} list|get pathname [keyname]
 
   list pathname    - List all keys in the specified vault path
   get pathname key - Get the value of the specified key from the vault path
