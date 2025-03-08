@@ -36,9 +36,6 @@ declare credspath="${XDG_CACHE_HOME:-$HOME/.cache}/gcp-creds"
 declare scname scpath credsfile
 declare -a scnames
 
-# Create credentials directory if it doesn't exist
-mkdir -p "$credspath"
-
 if [[ -n $1 ]]; then
   scname="$1"
 
@@ -81,10 +78,17 @@ else
 fi
 
 #-----------------------------------------------------------------------------
-# Use the provided parameter directly
+# get-vault-key returns a json format with 'creds.json' => value and 'path' =>
+# the path to the key. The result of the following command, if not null, needs
+# to be parsed out to credspath+="$path" and
+# credsfile="$credspath/creds.json", AI!
 scpath="$(get-vault-key get "$scname" "creds.json" 2> /dev/null)"
 
-[[ -n $scpath ]] || die "Could not find credentials for '$1'"
+[[ -n $scpath ]] || die "Could not find credentials for '$scname'"
+
+# Create credentials directory if it doesn't exist
+mkdir -p "$credspath"
+
 credsfile="$credspath/${1//\//-}.json"
 
 #-----------------------------------------------------------------------------
