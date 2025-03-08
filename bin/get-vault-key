@@ -22,6 +22,9 @@ Usage: ${0##*/} list|get pathname [keyname]
     - The requested key's value
     - The vault path where the key was found
 EOT
+
+# Add a simple example of what the json object would like at the end of the
+# help please, AI!
 )
 
   # If message provided, append it to usage text
