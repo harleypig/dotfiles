@@ -9,15 +9,18 @@ die() { (($#)) && warn "$@"; exit 1; }
 #-----------------------------------------------------------------------------
 usage() {
   local usage_text
-  # update usage to match current functionality, please, AI!
   usage_text=$(cat <<EOT
 Usage: ${0##*/} list|get pathname [keyname]
 
   list pathname    - List all keys in the specified vault path
-  get pathname key - Get the value of the specified key from the vault path
+  get pathname key - Get the value of the specified key and return it as JSON
 
   pathname can be a partial path. If multiple matches are found,
   you will be prompted to select one.
+
+  The 'get' command returns a JSON object containing:
+    - The requested key's value
+    - The vault path where the key was found
 EOT
 )
 
