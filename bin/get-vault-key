@@ -57,7 +57,7 @@ fi
 declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
 declare -a matches
 
-[[ ! -f "$vaultpaths" ]] \
+[[ -f "$vaultpaths" ]] \
   || die "Error: Vault paths file ($vaultpaths) not found. Run 'discover-vault-paths' first."
 
 readarray -t matches < <(grep -i "$pathname" "$vaultpaths")
