@@ -79,6 +79,8 @@ fi
 
 #-----------------------------------------------------------------------------
 # Get credentials JSON from vault
+# Modify the following to use read creds_json vault_path < <(get-vault-key
+# ...), AI!
 result="$(get-vault-key get "$scname" "creds.json" 2> /dev/null)"
 
 [[ -n $result ]] || die "Could not find credentials for '$scname'"
