@@ -21,7 +21,7 @@ EOT
 )
 
   # If message provided, append it to usage text
-  [[ -n "$*" ]] && usage_text+=$'\n\n'"$*"
+  [[ -n "$*" ]] && usage_text+=$'\n\n'"$*"$'\n\n'
   
   # Use die function to display message and exit
   die "$usage_text"
@@ -30,6 +30,7 @@ EOT
 ##############################################################################
 # Setup and Sanity
 #-----------------------------------------------------------------------------
+# Use die here, AI!
 [[ -n $VAULT_TOKEN ]] || {
   cat <<EOT
 Vault token is not set. Set that by running the following command
