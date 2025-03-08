@@ -49,11 +49,14 @@ if [[ -n $1 ]]; then
 elif [[ -f azure-pipelines.yml ]]; then
   # Extract service connection names from azure-pipelines.yml
   readarray -t scnames < <(grep -i "tfServiceConnectionName:" azure-pipelines.yml |
-                          sed 's/#.*$//' |                   # Remove comments
-                          cut -d ':' -f 2 |                  # Get value after colon
-                          tr -d '[:space:]"'\''' |           # Remove whitespace and quotes
-                          sed -E 's/^(sandbox|zions)-cloud-(dev|test)?-//' | # Remove prefix
-                          grep -v "^$")                      # Remove empty lines
+                          sed -E '
+                            s/#.*$//;                        # Remove comments
+                            s/^[^:]*://;                     # Get value after colon
+                            s/^[[:space:]]*|[[:space:]]*$//g; # Trim whitespace
+                            s/["'\''']//g;                   # Remove quotes
+                            s/^(sandbox|zions)-cloud-(dev|test)?-//; # Remove prefix
+                            /^$/d                            # Remove empty lines
+                          ')
 
   # Handle case with no service connections found
   [[ ${#scnames[@]} -eq 0 ]] && die "No service connection names found in azure-pipelines.yml"
