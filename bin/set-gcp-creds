@@ -36,6 +36,8 @@ declare credspath="${XDG_CACHE_HOME:-$HOME/.cache}/gcp-creds"
 declare scname scpath credsfile
 declare -a scnames
 
+mkdir -p "$credspath" || die "Unable to create creds directory"
+
 if [[ -n $1 ]]; then
   scname="$1"
 
@@ -79,12 +81,12 @@ fi
 
 #-----------------------------------------------------------------------------
 # Get credentials JSON from vault
-read -r creds_json vault_path < <(get-vault-key get "$scname" "creds.json" 2> /dev/null | jq -r '."creds.json" + "\n" + .path')
+read -r creds_json vault_path < \
+  <(get-vault-key get "$scname" "creds.json" 2> /dev/null \
+    | jq -r '."creds.json" + "\n" + .path')
 
-[[ -n $creds_json && -n $vault_path ]] || die "Could not find credentials for '$scname'"
-
-# Create credentials directory if it doesn't exist
-mkdir -p "$credspath"
+[[ -n $creds_json && -n $vault_path ]] \
+  || die "Could not find credentials for '$scname'"
 
 # Create a filename based on the vault path
 path_basename=$(basename "$vault_path" | tr -d '/')
