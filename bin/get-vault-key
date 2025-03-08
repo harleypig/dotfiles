@@ -87,11 +87,10 @@ fi
 #-----------------------------------------------------------------------------
 # Execute the command
 if [[ "$command" == "list" ]]; then
-  echo "Listing secrets in $selected_path:"
-  # Modify this to display keys in data, AI!
-  vault list "$selected_path"
+  echo "Listing keys in $selected_path:"
+  vault read -format=json "$selected_path" | jq -r '.data | keys[]'
 
 elif [[ "$command" == "get" ]]; then
-  #echo "Getting value of '$keyname' from $selected_path:"
-  vault read -format=json "$selected_path" | jq -Sr '.'
+  echo "Getting value of '$keyname' from $selected_path:"
+  vault read -format=json "$selected_path" | jq -r ".data[\"$keyname\"]"
 fi
