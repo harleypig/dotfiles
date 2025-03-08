@@ -56,9 +56,6 @@ if [[ "$command" == "get" && -z "$keyname" ]]; then
   usage "Error: Key name is required for 'get' command"
 fi
 
-pathname="$2"
-keyname="$3"
-
 #-----------------------------------------------------------------------------
 # Find matching paths
 declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
