@@ -7,8 +7,24 @@ warn() { printf '%s\n' "$@" >&2; }
 die() { (($#)) && warn "$@"; exit 1; }
 
 #-----------------------------------------------------------------------------
-# Add a usage function here, please AI!
 usage() {
+  local usage_text
+  usage_text=$(cat <<EOT
+Usage: ${0##*/} [options]
+
+  Discovers and caches all vault paths for later use by other scripts.
+  Paths are saved to ${XDG_CACHE_HOME:-$HOME/.cache}/vault-paths
+
+Options:
+  -h, --help     Display this help message and exit
+  -v, --verbose  Show more detailed progress information
+EOT
+)
+
+  # If message provided, append it to usage text
+  (($#)) && usage_text+=$'\n\n'"$*"$'\n\n'
+
+  die "$usage_text"
 }
 
 ##############################################################################
