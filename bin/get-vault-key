@@ -8,12 +8,8 @@ die() { (($#)) && warn "$@"; exit 1; }
 
 #-----------------------------------------------------------------------------
 usage() {
-  msg="$*"
-
-  # Read the usage into a string, add msg if it exists and use the die
-  # function, AI!
-
-  cat <<EOT
+  local usage_text
+  usage_text=$(cat <<EOT
 Usage: ${0##*/} list|get pathname [keyname]
 
   list pathname    - List all keys in the specified vault path
@@ -21,11 +17,14 @@ Usage: ${0##*/} list|get pathname [keyname]
 
   pathname can be a partial path. If multiple matches are found,
   you will be prompted to select one.
-
-$msg
-
 EOT
-  exit 1
+)
+
+  # If message provided, append it to usage text
+  [[ -n "$*" ]] && usage_text+=$'\n\n'"$*"
+  
+  # Use die function to display message and exit
+  die "$usage_text"
 }
 
 ##############################################################################
@@ -44,6 +43,7 @@ EOT
 
 #-----------------------------------------------------------------------------
 # Parameter handling
+[[ $# -lt 2 ]] && usage "Error: Not enough arguments"
 
 command="$1"
 
@@ -51,14 +51,15 @@ command="$1"
 case "$command" in
   list|get) ;;
   *)
-    echo "Error: Command must be 'list' or 'get'"
-    usage
+    usage "Error: Command must be 'list' or 'get'"
     ;;
 esac
 
+pathname="$2"
+keyname="$3"
+
 if [[ "$command" == "get" && -z "$keyname" ]]; then
-  echo "Error: Key name is required for 'get' command"
-  usage
+  usage "Error: Key name is required for 'get' command"
 fi
 
 pathname="$2"
@@ -70,15 +71,13 @@ declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
 declare -a matches
 
 if [[ ! -f "$vaultpaths" ]]; then
-  echo "Error: Vault paths file not found. Run 'discover-vault-paths' first."
-  exit 1
+  die "Error: Vault paths file not found. Run 'discover-vault-paths' first."
 fi
 
 readarray -t matches < <(grep -i "$pathname" "$vaultpaths")
 
 if [[ ${#matches[@]} -eq 0 ]]; then
-  echo "Error: No matching paths found for '$pathname'"
-  exit 1
+  die "Error: No matching paths found for '$pathname'"
 fi
 
 #-----------------------------------------------------------------------------
