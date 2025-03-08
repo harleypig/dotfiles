@@ -30,17 +30,10 @@ EOT
 ##############################################################################
 # Setup and Sanity
 #-----------------------------------------------------------------------------
-# Use die here, AI!
-[[ -n $VAULT_TOKEN ]] || {
-  cat <<EOT
-Vault token is not set. Set that by running the following command
+[[ -n $VAULT_TOKEN ]] || die "Vault token is not set. Set that by running the following command
 and entering your LDAP password:
 
-source set-vault-token
-EOT
-
-  exit 1
-}
+source set-vault-token"
 
 #-----------------------------------------------------------------------------
 # Parameter handling
