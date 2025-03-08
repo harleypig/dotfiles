@@ -71,7 +71,7 @@ keyname="$3"
 
 #-----------------------------------------------------------------------------
 # Find matching paths
-declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
+declare vaultpaths="${XDG_CACHE_HOME:-$HOME/.cache}/vault-paths"
 declare -a matches
 
 [[ -f "$vaultpaths" ]] \

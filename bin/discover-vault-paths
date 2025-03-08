@@ -23,7 +23,7 @@ if [[ -z $VAULT_TOKEN ]]; then
 fi
 
 #-----------------------------------------------------------------------------
-declare vaultpaths="$XDG_CACHE_HOME/vault-paths"
+declare vaultpaths="${XDG_CACHE_HOME:-$HOME/.cache}/vault-paths"
 declare -a paths
 
 #-----------------------------------------------------------------------------
