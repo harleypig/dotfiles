@@ -29,14 +29,19 @@ EOT
 ##############################################################################
 # Setup and Sanity
 #-----------------------------------------------------------------------------
-# Modify this to source set-vault-token. Print a message before calling it
-# suggesting the user run this command in their session to prevent seeing this
-# message. If the source call fails, die with a message, AI!
-[[ -n $VAULT_TOKEN ]] \
-  || die "Vault token is not set. Set that by running the following command
-and entering your LDAP password:
-
-source set-vault-token"
+# Check if vault token is set, if not try to source set-vault-token
+if [[ -z $VAULT_TOKEN ]]; then
+  echo "Vault token not set. Attempting to set it now..."
+  echo "In the future, run 'source set-vault-token' in your session to avoid this message."
+  
+  if ! source set-vault-token 2>/dev/null; then
+    die "Failed to set vault token. Please run 'source set-vault-token' manually."
+  fi
+  
+  [[ -z $VAULT_TOKEN ]] && die "Vault token still not set after running set-vault-token."
+  
+  echo "Vault token successfully set."
+fi
 
 #-----------------------------------------------------------------------------
 # Parameter handling
