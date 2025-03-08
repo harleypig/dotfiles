@@ -36,17 +36,20 @@ EOT
 
 #-----------------------------------------------------------------------------
 # Check arguments
-# The first argument must be one of 'list' or 'get', AI!
 [[ $# -lt 2 ]] && usage
 
 command="$1"
 pathname="$2"
 keyname="$3"
 
-if [[ "$command" != "list" && "$command" != "get" ]]; then
-  echo "Error: Command must be 'list' or 'get'"
-  usage
-fi
+# Validate command is either 'list' or 'get'
+case "$command" in
+  list|get) ;;
+  *)
+    echo "Error: Command must be 'list' or 'get'"
+    usage
+    ;;
+esac
 
 if [[ "$command" == "get" && -z "$keyname" ]]; then
   echo "Error: Key name is required for 'get' command"
