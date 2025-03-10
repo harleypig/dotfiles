@@ -7,6 +7,23 @@ import argparse
 import hvac
 from pathlib import Path
 
+# Custom exceptions
+class VaultKeyError(Exception):
+    """Base exception for VaultKeyManager errors."""
+    pass
+
+class VaultPathNotFoundError(VaultKeyError):
+    """Exception raised when a vault path is not found."""
+    pass
+
+class VaultAuthenticationError(VaultKeyError):
+    """Exception raised when vault authentication fails."""
+    pass
+
+class VaultSecretNotFoundError(VaultKeyError):
+    """Exception raised when a secret is not found."""
+    pass
+
 # Constants
 XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
 VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
@@ -30,25 +47,40 @@ class VaultKeyManager:
         sys.exit(exit_code)
 
     #-------------------------------------------------------------------------
+    def load_vault_paths(self):
+        """Load the vault paths from the JSON file."""
+        try:
+            with open(VAULT_PATHS_FILE, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            raise VaultPathNotFoundError(f"Vault paths file not found. Run '{sys.argv[0]} discover' first.")
+        except json.JSONDecodeError:
+            raise VaultKeyError(f"Error parsing vault paths file. The file may be corrupted.")
+        except Exception as e:
+            raise VaultKeyError(f"Error loading vault paths: {str(e)}")
+
+    #-------------------------------------------------------------------------
     def get_vault_client(self):
         """Get a configured vault client."""
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
 
         if not token:
-            self.die("Vault token is not set. Run 'source set-vault-token' and try again.")
+            raise VaultAuthenticationError("Vault token is not set. Run 'source set-vault-token' and try again.")
 
         # Create and return the client
         try:
             client = hvac.Client(url=os.environ.get('VAULT_ADDR', 'https://vault.example.com'), token=token)
 
             if not client.is_authenticated():
-                self.die("Vault authentication failed. Check your token and try again.")
+                raise VaultAuthenticationError("Vault authentication failed. Check your token and try again.")
 
             return client
 
+        except VaultAuthenticationError:
+            raise
         except Exception as e:
-            self.die(f"Error connecting to Vault: {str(e)}")
+            raise VaultKeyError(f"Error connecting to Vault: {str(e)}")
 
     #-------------------------------------------------------------------------
     def discover_paths(self, client):
@@ -162,7 +194,7 @@ class VaultKeyManager:
             else:
                 print("No secrets found or unexpected data format.")
         except Exception as e:
-            self.die(f"Error listing secrets at {path}: {str(e)}")
+            raise VaultKeyError(f"Error listing secrets at {path}: {str(e)}")
 
     #-------------------------------------------------------------------------
     def get_secret(self, client, path, secret_name):
@@ -179,11 +211,13 @@ class VaultKeyManager:
                     }
                     print(json.dumps(result, indent=2))
                 else:
-                    self.die(f"Secret '{secret_name}' not found in path '{path}'")
+                    raise VaultSecretNotFoundError(f"Secret '{secret_name}' not found in path '{path}'")
             else:
-                self.die(f"No data found at path '{path}' or unexpected data format.")
+                raise VaultKeyError(f"No data found at path '{path}' or unexpected data format.")
+        except VaultKeyError:
+            raise
         except Exception as e:
-            self.die(f"Error getting secret from {path}: {str(e)}")
+            raise VaultKeyError(f"Error getting secret from {path}: {str(e)}")
 
 #-----------------------------------------------------------------------------
 def main():
@@ -208,33 +242,38 @@ def main():
     manager = VaultKeyManager()
 
     # Get vault client
-    client = manager.get_vault_client()
+    try:
+        client = manager.get_vault_client()
+    except VaultKeyError as e:
+        manager.die(str(e))
 
     if args.command == 'discover':
-        manager.discover_paths(client)
+        try:
+            manager.discover_paths(client)
+        except VaultKeyError as e:
+            manager.die(str(e))
 
     elif args.command == 'list' or args.command == 'get':
-        # Load vault paths
         try:
-            with open(VAULT_PATHS_FILE, 'r') as f:
-                vault_structure = json.load(f)
-        except FileNotFoundError:
-            manager.die(f"Vault paths file not found. Run '{sys.argv[0]} discover' first.")
+            # Load vault paths
+            vault_structure = manager.load_vault_paths()
 
-        # Find matching paths
-        matches = manager.find_matching_paths(vault_structure, args.path)
+            # Find matching paths
+            matches = manager.find_matching_paths(vault_structure, args.path)
 
-        if not matches:
-            manager.die(f"No matching paths found for '{args.path}'")
+            if not matches:
+                manager.die(f"No matching paths found for '{args.path}'")
 
-        # Select path if multiple matches
-        selected_path = manager.select_path(matches)
+            # Select path if multiple matches
+            selected_path = manager.select_path(matches)
 
-        # Execute command
-        if args.command == 'list':
-            manager.list_secrets(client, selected_path)
-        elif args.command == 'get':
-            manager.get_secret(client, selected_path, args.secret)
+            # Execute command
+            if args.command == 'list':
+                manager.list_secrets(client, selected_path)
+            elif args.command == 'get':
+                manager.get_secret(client, selected_path, args.secret)
+        except VaultKeyError as e:
+            manager.die(str(e))
 
     else:
         parser.print_help()
