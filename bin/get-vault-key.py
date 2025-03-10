@@ -107,14 +107,14 @@ class VaultKeyManager:
     def discover_paths(self, client, root_paths=None):
         """
         Discover all paths and secrets in Vault and save to a file.
-        
+
         Args:
             client: The vault client
             root_paths: List of root paths to start discovery from (default: ['dai', 'dao'])
         """
         if root_paths is None:
             root_paths = ['dai', 'dao']
-            
+
         self.warn("Discovering vault paths...")
 
         # Initialize the structure
@@ -196,6 +196,7 @@ class VaultKeyManager:
         print("Multiple matching paths found:")
         for i, path in enumerate(matches, 1):
             print(f"  {i}) {path}")
+
         print("  0) Cancel")
 
         while True:
@@ -218,11 +219,14 @@ class VaultKeyManager:
             print(f"Listing secrets in {path}:")
             # Read the secret
             response = client.secrets.kv.v2.read_secret_version(path=path)
+
             if response and 'data' in response and 'data' in response['data']:
                 for key in response['data']['data'].keys():
                     print(key)
+
             else:
                 print("No secrets found or unexpected data format.")
+
         except Exception as e:
             raise VaultKeyError(f"Error listing secrets at {path}: {str(e)}")
 
@@ -239,13 +243,18 @@ class VaultKeyManager:
                         secret_name: response['data']['data'][secret_name],
                         "path": path
                     }
+
                     print(json.dumps(result, indent=2))
+
                 else:
                     raise VaultSecretNotFoundError(f"Secret '{secret_name}' not found in path '{path}'")
+
             else:
                 raise VaultKeyError(f"No data found at path '{path}' or unexpected data format.")
+
         except VaultKeyError:
             raise
+
         except Exception as e:
             raise VaultKeyError(f"Error getting secret from {path}: {str(e)}")
 
@@ -256,6 +265,10 @@ def main():
 
     # discover command
     discover_parser = subparsers.add_parser('discover', help='Discover all vault paths and secrets')
+    # Add optional argument for root paths
+    discover_parser.add_argument('--root-paths', nargs='+',
+                                 help='Root paths to start discovery from (default: dai dao)')
+
 
     # list command
     list_parser = subparsers.add_parser('list', help='List secrets at a path')
@@ -274,27 +287,22 @@ def main():
     # Get vault client
     try:
         client = manager.get_vault_client()
+
     except VaultKeyError as e:
         manager.die(str(e))
 
     if args.command == 'discover':
         try:
-            # Add optional argument for root paths
-            discover_parser.add_argument('--root-paths', nargs='+', 
-                                        help='Root paths to start discovery from (default: dai dao)')
-            
             # Get root paths if provided
             root_paths = args.root_paths if hasattr(args, 'root_paths') and args.root_paths else None
-            
+
             manager.discover_paths(client, root_paths)
+
         except VaultKeyError as e:
             manager.die(str(e))
 
     elif args.command == 'list' or args.command == 'get':
         try:
-            # Load vault paths if not already loaded
-            vault_data = manager.vault_data or manager.load_vault_paths()
-
             # Find matching paths
             matches = manager.find_matching_paths(vault_data, args.path)
 
@@ -307,8 +315,10 @@ def main():
             # Execute command
             if args.command == 'list':
                 manager.list_secrets(client, selected_path)
+
             elif args.command == 'get':
                 manager.get_secret(client, selected_path, args.secret)
+
         except VaultKeyError as e:
             manager.die(str(e))
 
