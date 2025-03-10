@@ -309,35 +309,44 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
             print("Please enter a number.")
 
 #-----------------------------------------------------------------------------
-# Make global options show in help for subcommands, AI!
 def parseargs():
     """Parse command line arguments and return the parsed arguments."""
+    # Create a parent parser for common options
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    
+    # Add global options to the parent parser
+    parent_parser.add_argument('--cache-dir',
+                       default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
+                       help=f'Directory to store vault paths file (default: {CACHE_DIR})')
+    parent_parser.add_argument('--paths-file',
+                       default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
+                       help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
+    
+    # Create the main parser that will display in the top-level help
     parser = argparse.ArgumentParser(description="Vault key management utility")
-
-    # Global options
+    
+    # Add the global options to the main parser too
     parser.add_argument('--cache-dir',
                        default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
                        help=f'Directory to store vault paths file (default: {CACHE_DIR})')
-
     parser.add_argument('--paths-file',
                        default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
                        help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
-
+    
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
-
-    # discover command
-    discover_parser = subparsers.add_parser('discover', help='Discover all vault paths and secrets')
-
-    # Add optional argument for root paths
+    
+    # Create subparsers with the parent parser
+    discover_parser = subparsers.add_parser('discover', parents=[parent_parser], 
+                                           help='Discover all vault paths and secrets')
     discover_parser.add_argument('--root-paths', nargs='+',
-                                 help='Root paths to start discovery from (default: dai dao)')
-
-    # list command
-    list_parser = subparsers.add_parser('list', help='List secrets at a path')
+                               help='Root paths to start discovery from (default: dai dao)')
+    
+    list_parser = subparsers.add_parser('list', parents=[parent_parser], 
+                                       help='List secrets at a path')
     list_parser.add_argument('path', help='Path to list secrets from')
-
-    # get command
-    get_parser = subparsers.add_parser('get', help='Get a specific secret value')
+    
+    get_parser = subparsers.add_parser('get', parents=[parent_parser], 
+                                      help='Get a specific secret value')
     get_parser.add_argument('path', help='Path to the secret')
     get_parser.add_argument('secret', help='Name of the secret to retrieve')
 
