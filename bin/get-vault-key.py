@@ -17,13 +17,12 @@ def warn(message):
     print(message, file=sys.stderr)
 
 #-----------------------------------------------------------------------------
-# Allow the caller to set the exit value, default to 1, AI!
-def die(message=None):
-    """Print an error message and exit."""
+def die(message=None, exit_code=1):
+    """Print an error message and exit with the specified code (default 1)."""
     if message is not None:
         warn(message)
 
-    sys.exit(1)
+    sys.exit(exit_code)
 
 #-----------------------------------------------------------------------------
 def get_vault_client():
