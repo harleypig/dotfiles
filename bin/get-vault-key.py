@@ -36,11 +36,10 @@ class VaultKeyManager:
     #-------------------------------------------------------------------------
     def __init__(self):
         """Initialize the VaultKeyManager and load vault paths if available."""
-        # Change vault_structure to vault_data, AI!
-        self.vault_structure = None
+        self.vault_data = None
 
         try:
-            self.vault_structure = self.load_vault_paths()
+            self.vault_data = self.load_vault_paths()
 
         except VaultPathNotFoundError:
             # It's okay if the file doesn't exist yet
@@ -108,7 +107,7 @@ class VaultKeyManager:
         self.warn("Discovering vault paths...")
 
         # Initialize the structure
-        vault_structure = {}
+        vault_data = {}
 
         # Helper function to recursively discover paths
         def discover_recursive(path, structure):
@@ -145,13 +144,13 @@ class VaultKeyManager:
 
         # Start discovery from root paths
         for root_path in ['dai', 'dao']:
-            vault_structure[root_path] = {}
-            discover_recursive(root_path, vault_structure[root_path])
+            vault_data[root_path] = {}
+            discover_recursive(root_path, vault_data[root_path])
 
         # Save to file
         os.makedirs(os.path.dirname(VAULT_PATHS_FILE), exist_ok=True)
         with open(VAULT_PATHS_FILE, 'w') as f:
-            json.dump(vault_structure, f, indent=2)
+            json.dump(vault_data, f, indent=2)
 
         print(f"Vault paths saved to {VAULT_PATHS_FILE}")
 
@@ -275,11 +274,11 @@ def main():
 
     elif args.command == 'list' or args.command == 'get':
         try:
-            # Load vault paths
-            vault_structure = manager.load_vault_paths()
+            # Load vault paths if not already loaded
+            vault_data = manager.vault_data or manager.load_vault_paths()
 
             # Find matching paths
-            matches = manager.find_matching_paths(vault_structure, args.path)
+            matches = manager.find_matching_paths(vault_data, args.path)
 
             if not matches:
                 manager.die(f"No matching paths found for '{args.path}'")
