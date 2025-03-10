@@ -309,15 +309,17 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
             print("Please enter a number.")
 
 #-----------------------------------------------------------------------------
+# Make global options show in help for subcommands, AI!
 def parseargs():
     """Parse command line arguments and return the parsed arguments."""
     parser = argparse.ArgumentParser(description="Vault key management utility")
 
     # Global options
-    parser.add_argument('--cache-dir', 
+    parser.add_argument('--cache-dir',
                        default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
                        help=f'Directory to store vault paths file (default: {CACHE_DIR})')
-    parser.add_argument('--paths-file', 
+
+    parser.add_argument('--paths-file',
                        default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
                        help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
 
@@ -325,6 +327,7 @@ def parseargs():
 
     # discover command
     discover_parser = subparsers.add_parser('discover', help='Discover all vault paths and secrets')
+
     # Add optional argument for root paths
     discover_parser.add_argument('--root-paths', nargs='+',
                                  help='Root paths to start discovery from (default: dai dao)')
