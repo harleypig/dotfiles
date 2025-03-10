@@ -313,7 +313,7 @@ def parseargs():
     """Parse command line arguments and return the parsed arguments."""
     # Create a parent parser for common options
     parent_parser = argparse.ArgumentParser(add_help=False)
-    
+
     # Add global options to the parent parser
     parent_parser.add_argument('--cache-dir',
                        default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
@@ -321,10 +321,11 @@ def parseargs():
     parent_parser.add_argument('--paths-file',
                        default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
                        help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
-    
+
+    #-------------------------------------------------------------------------
     # Create the main parser that will display in the top-level help
     parser = argparse.ArgumentParser(description="Vault key management utility")
-    
+
     # Add the global options to the main parser too
     parser.add_argument('--cache-dir',
                        default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
@@ -332,24 +333,28 @@ def parseargs():
     parser.add_argument('--paths-file',
                        default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
                        help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
-    
+
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
-    
+
+    #-------------------------------------------------------------------------
     # Create subparsers with the parent parser
-    discover_parser = subparsers.add_parser('discover', parents=[parent_parser], 
+    discover_parser = subparsers.add_parser('discover', parents=[parent_parser],
                                            help='Discover all vault paths and secrets')
     discover_parser.add_argument('--root-paths', nargs='+',
                                help='Root paths to start discovery from (default: dai dao)')
-    
-    list_parser = subparsers.add_parser('list', parents=[parent_parser], 
+
+    #-------------------------------------------------------------------------
+    list_parser = subparsers.add_parser('list', parents=[parent_parser],
                                        help='List secrets at a path')
     list_parser.add_argument('path', help='Path to list secrets from')
-    
-    get_parser = subparsers.add_parser('get', parents=[parent_parser], 
+
+    #-------------------------------------------------------------------------
+    get_parser = subparsers.add_parser('get', parents=[parent_parser],
                                       help='Get a specific secret value')
     get_parser.add_argument('path', help='Path to the secret')
     get_parser.add_argument('secret', help='Name of the secret to retrieve')
 
+    #-------------------------------------------------------------------------
     return parser.parse_args()
 
 #-----------------------------------------------------------------------------
