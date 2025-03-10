@@ -103,8 +103,6 @@ class VaultKeyManager:
         # Create the client
         try:
             self.client = hvac.Client(url=self.vault_addr, token=token)
-            #self.client = hvac.Client(url=self.vault_addr)
-            #self.client.token = token
 
             if not self.client.is_authenticated():
                 raise VaultAuthenticationError("Vault authentication failed. Check your token and try again.")
