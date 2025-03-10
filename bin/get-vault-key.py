@@ -94,6 +94,7 @@ class VaultKeyManager:
         # Check if vault_addr is provided or available in environment
         if vault_addr is None:
             vault_addr = os.environ.get('VAULT_ADDR')
+
             if vault_addr is None:
                 raise VaultAuthenticationError("Vault address is not set. Set VAULT_ADDR environment variable or provide vault_addr parameter.")
 
@@ -324,9 +325,14 @@ def parseargs():
     parent_parser.add_argument('--cache-dir',
                        default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
                        help=f'Directory to store vault paths file (default: {CACHE_DIR})')
+
     parent_parser.add_argument('--paths-file',
                        default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
                        help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
+
+    # add a global vault_addr argument that defaults to the environment
+    # variable VAULT_ADDR. This argument cannot be empty, so fail if nothing
+    # is passed and VAULT_ADDR is not set, AI!
 
     #-------------------------------------------------------------------------
     # Create the main parser that will display in the top-level help
