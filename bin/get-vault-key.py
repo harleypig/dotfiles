@@ -33,7 +33,16 @@ class VaultSecretNotFoundError(VaultKeyError):
 class VaultKeyManager:
     """Class to manage Vault keys and paths."""
 
-    # Create init function that loads json file if it exists, ai!
+    def __init__(self):
+        """Initialize the VaultKeyManager and load vault paths if available."""
+        self.vault_structure = None
+        try:
+            self.vault_structure = self.load_vault_paths()
+        except VaultPathNotFoundError:
+            # It's okay if the file doesn't exist yet
+            pass
+        except VaultKeyError as e:
+            self.warn(f"Warning: {str(e)}")
 
     #-------------------------------------------------------------------------
     @staticmethod
