@@ -330,9 +330,9 @@ def parseargs():
                        default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
                        help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
 
-    # add a global vault_addr argument that defaults to the environment
-    # variable VAULT_ADDR. This argument cannot be empty, so fail if nothing
-    # is passed and VAULT_ADDR is not set, AI!
+    parent_parser.add_argument('--vault-addr',
+                       default=os.environ.get('VAULT_ADDR'),
+                       help='Vault server address (default: from VAULT_ADDR environment variable)')
 
     #-------------------------------------------------------------------------
     # Create the main parser that will display in the top-level help
@@ -345,6 +345,9 @@ def parseargs():
     parser.add_argument('--paths-file',
                        default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
                        help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
+    parser.add_argument('--vault-addr',
+                       default=os.environ.get('VAULT_ADDR'),
+                       help='Vault server address (default: from VAULT_ADDR environment variable)')
 
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
 
@@ -383,11 +386,17 @@ def main():
         vault_paths_filename=args.paths_file
     )
 
+    # Check if vault address is provided
+    if not args.vault_addr:
+        die("Vault address is not set. Use --vault-addr or set VAULT_ADDR environment variable.")
+
     if args.command == 'discover':
         try:
             # Get root paths if provided, otherwise use defaults
             root_paths = args.root_paths if hasattr(args, 'root_paths') and args.root_paths else ['dai', 'dao']
 
+            # Set vault client with provided address
+            manager.set_vault_client(vault_addr=args.vault_addr)
             manager.discover_paths(root_paths)
 
         except (VaultKeyError, ValueError) as e:
@@ -407,6 +416,9 @@ def main():
             # Select path if multiple matches
             selected_path = manager.select_path(matches)
 
+            # Set vault client with provided address
+            manager.set_vault_client(vault_addr=args.vault_addr)
+            
             # Execute command
             if args.command == 'list':
                 manager.list_secrets(selected_path)
