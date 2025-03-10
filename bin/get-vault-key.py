@@ -97,15 +97,14 @@ class VaultKeyManager:
         if not token:
             raise VaultAuthenticationError("Vault token is not set. Run 'source set-vault-token' and try again.")
 
-        # Use instance variable if no vault_addr is provided
-        if vault_addr is None:
-            raise VaultAuthenticationError("Vault address is not set. Set VAULT_ADDR environment variable or provide vault_addr parameter.")
+        if self.vault_addr is None:
+            raise VaultAuthenticationError("Vault address is not set.")
 
         # Create the client
         try:
-            #self.client = hvac.Client(url=self.vault_addr, token=token)
-            self.client = hvac.Client(url=self.vault_addr)
-            self.client.token = token
+            self.client = hvac.Client(url=self.vault_addr, token=token)
+            #self.client = hvac.Client(url=self.vault_addr)
+            #self.client.token = token
 
             if not self.client.is_authenticated():
                 raise VaultAuthenticationError("Vault authentication failed. Check your token and try again.")

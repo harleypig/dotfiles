@@ -66,8 +66,9 @@ esac
 pathname="$2"
 keyname="$3"
 
-[[ "$command" == "get" && -z "$keyname" ]] \
+if [[ $command == "get" ]] && [[ -z $keyname ]]; then
   || usage "Error: Key name is required for 'get' command"
+fi
 
 #-----------------------------------------------------------------------------
 # Find matching paths
