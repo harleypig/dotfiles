@@ -381,7 +381,8 @@ def main():
             die(str(e))
 
     else:
-        parser.print_help()
+        # Re-create parser to show help
+        argparse.ArgumentParser(description="Vault key management utility").print_help()
         sys.exit(1)
 
 #-----------------------------------------------------------------------------
