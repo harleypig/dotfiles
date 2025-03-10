@@ -7,6 +7,46 @@ import argparse
 import hvac
 from pathlib import Path
 
+#-----------------------------------------------------------------------------
+def select_from_list(items, prompt="Select an option", cancel_option=True):
+    """
+    Display a list of choices and allow the user to select one.
+    
+    Args:
+        items: List of items to choose from
+        prompt: Prompt to display to the user
+        cancel_option: Whether to include a cancel option
+        
+    Returns:
+        The selected item, or None if cancelled
+    """
+    if not items:
+        return None
+        
+    if len(items) == 1:
+        return items[0]
+    
+    print(f"{prompt}:")
+    for i, item in enumerate(items, 1):
+        print(f"  {i}) {item}")
+    
+    if cancel_option:
+        print("  0) Cancel")
+    
+    while True:
+        try:
+            choice = input(f"{prompt} (0-{len(items)}): ")
+            if choice == "0" and cancel_option:
+                return None
+                
+            choice = int(choice)
+            if 1 <= choice <= len(items):
+                return items[choice - 1]
+            else:
+                print(f"Invalid selection. Please enter a number between {0 if cancel_option else 1} and {len(items)}.")
+        except ValueError:
+            print("Please enter a number.")
+
 # Constants
 XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
 VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
@@ -190,27 +230,10 @@ class VaultKeyManager:
     #-------------------------------------------------------------------------
     def select_path(self, matches):
         """Let the user select a path if multiple matches are found."""
-        if len(matches) == 1:
-            return matches[0]
-
-        print("Multiple matching paths found:")
-        for i, path in enumerate(matches, 1):
-            print(f"  {i}) {path}")
-
-        print("  0) Cancel")
-
-        while True:
-            try:
-                choice = input("Select a path (0 to cancel): ")
-                if choice == "0":
-                    self.die("Operation cancelled by user")
-                choice = int(choice)
-                if 1 <= choice <= len(matches):
-                    return matches[choice - 1]
-                else:
-                    self.warn("Invalid selection. Try again.")
-            except ValueError:
-                self.warn("Please enter a number.")
+        selected = select_from_list(matches, prompt="Select a path")
+        if selected is None:
+            self.die("Operation cancelled by user")
+        return selected
 
     #-------------------------------------------------------------------------
     def list_secrets(self, client, path):
@@ -303,6 +326,9 @@ def main():
 
     elif args.command == 'list' or args.command == 'get':
         try:
+            # Load vault paths if not already loaded
+            vault_data = manager.vault_data or manager.load_vault_paths()
+            
             # Find matching paths
             matches = manager.find_matching_paths(vault_data, args.path)
 
