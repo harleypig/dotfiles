@@ -118,8 +118,7 @@ class VaultKeyManager:
         if root_paths is None:
             root_paths = ['dai', 'dao']
 
-        # Change this to a print statement, AI!
-        self.warn("Discovering vault paths...")
+        print("Discovering vault paths...")
 
         # Initialize the structure
         vault_data = {}
