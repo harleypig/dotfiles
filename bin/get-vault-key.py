@@ -341,6 +341,7 @@ def main():
     args = parseargs()
 
     # Create manager instance with command line args taking precedence over env vars
+    # Move these defaults to the argument parser setup above, AI!
     manager = VaultKeyManager(
         cache_dir=args.cache_dir or os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
         vault_paths_filename=args.paths_file or os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME)
