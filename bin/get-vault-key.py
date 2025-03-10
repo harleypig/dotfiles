@@ -310,10 +310,7 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
 
 #-----------------------------------------------------------------------------
 def parseargs():
-    # move parser setup and return parsed arguments here, AI!
-
-#-----------------------------------------------------------------------------
-def main():
+    """Parse command line arguments and return the parsed arguments."""
     parser = argparse.ArgumentParser(description="Vault key management utility")
 
     # Global options
@@ -328,7 +325,6 @@ def main():
     discover_parser.add_argument('--root-paths', nargs='+',
                                  help='Root paths to start discovery from (default: dai dao)')
 
-
     # list command
     list_parser = subparsers.add_parser('list', help='List secrets at a path')
     list_parser.add_argument('path', help='Path to list secrets from')
@@ -338,7 +334,11 @@ def main():
     get_parser.add_argument('path', help='Path to the secret')
     get_parser.add_argument('secret', help='Name of the secret to retrieve')
 
-    args = parser.parse_args()
+    return parser.parse_args()
+
+#-----------------------------------------------------------------------------
+def main():
+    args = parseargs()
 
     # Create manager instance with command line args taking precedence over env vars
     manager = VaultKeyManager(
