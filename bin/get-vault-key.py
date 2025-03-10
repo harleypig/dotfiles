@@ -68,7 +68,7 @@ def discover_paths(client):
                         structure['secrets'] = []
                     structure['secrets'].append(key)
         except Exception as e:
-            print(f"Error listing {path}: {str(e)}", file=sys.stderr)
+            warn(f"Error listing {path}: {str(e)}")
 
     # Start discovery from root paths
     for root_path in ['dai', 'dao']:
