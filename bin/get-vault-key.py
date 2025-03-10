@@ -320,10 +320,13 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
             print("Please enter a number.")
 
 #-----------------------------------------------------------------------------
-# Add boolean variable showhelp. Defaults to false. If true, print help
-# instead of parsing and returning parsed values, AI!
-def parseargs():
-    """Parse command line arguments and return the parsed arguments."""
+def parseargs(showhelp=False):
+    """
+    Parse command line arguments and return the parsed arguments.
+    
+    Args:
+        showhelp: If True, print help and exit instead of parsing arguments
+    """
     # Create a parent parser for common options
     parent_parser = argparse.ArgumentParser(add_help=False)
 
@@ -380,11 +383,15 @@ def parseargs():
     get_parser.add_argument('secret', help='Name of the secret to retrieve')
 
     #-------------------------------------------------------------------------
+    if showhelp:
+        parser.print_help()
+        sys.exit(0)
+    
     return parser.parse_args()
 
 #-----------------------------------------------------------------------------
 def main():
-    args = parseargs()
+    args = parseargs(showhelp=len(sys.argv) <= 1)
 
     # Create manager instance
     manager = VaultKeyManager(
@@ -426,8 +433,8 @@ def main():
             die(str(e))
 
     else:
-        # Re-create parser to show help
-        argparse.ArgumentParser(description="Vault key management utility").print_help()
+        # Show help for invalid command
+        parseargs(showhelp=True)
         sys.exit(1)
 
 #-----------------------------------------------------------------------------
