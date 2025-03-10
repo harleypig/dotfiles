@@ -309,6 +309,10 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
             print("Please enter a number.")
 
 #-----------------------------------------------------------------------------
+def parseargs():
+    # move parser setup and return parsed arguments here, AI!
+
+#-----------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description="Vault key management utility")
 
