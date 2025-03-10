@@ -7,6 +7,11 @@ import argparse
 import hvac
 from pathlib import Path
 
+# Constants
+XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
+VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
+
+#-----------------------------------------------------------------------------
 # Custom exceptions
 class VaultKeyError(Exception):
     """Base exception for VaultKeyManager errors."""
@@ -24,13 +29,11 @@ class VaultSecretNotFoundError(VaultKeyError):
     """Exception raised when a secret is not found."""
     pass
 
-# Constants
-XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
-VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
-
 #-----------------------------------------------------------------------------
 class VaultKeyManager:
     """Class to manage Vault keys and paths."""
+
+    # Create init function that loads json file if it exists, ai!
 
     #-------------------------------------------------------------------------
     @staticmethod
@@ -52,10 +55,13 @@ class VaultKeyManager:
         try:
             with open(VAULT_PATHS_FILE, 'r') as f:
                 return json.load(f)
+
         except FileNotFoundError:
             raise VaultPathNotFoundError(f"Vault paths file not found. Run '{sys.argv[0]} discover' first.")
+
         except json.JSONDecodeError:
             raise VaultKeyError(f"Error parsing vault paths file. The file may be corrupted.")
+
         except Exception as e:
             raise VaultKeyError(f"Error loading vault paths: {str(e)}")
 
