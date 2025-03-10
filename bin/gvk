@@ -1,0 +1,7 @@
+#!/bin/bash
+
+venvdir='.gkv-venv'
+
+# If $venvdir does not exist, or $venvdir/bin/activate does not exist, then
+# install a virtual environment, make sure to update dependencies. Force it if
+# needed, AI!
