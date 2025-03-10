@@ -80,31 +80,24 @@ class VaultKeyManager:
             raise VaultKeyError(f"Error loading vault paths: {str(e)}")
 
     #-------------------------------------------------------------------------
-    # Modify this function to do the followingi, ai!
-    #   * Set self.client to client.
-    #   * Don't return anything.
-    #   * If client is already set just return.
-    #   * Rename function to set_vault_client.
-    #
-    # Also, any function in this class that uses client should use self.client
-    # instead, and should call this function first.
-
-    def get_vault_client(self):
-        """Get a configured vault client."""
+    def set_vault_client(self):
+        """Set up and configure the vault client if not already set."""
+        # If client is already set, just return
+        if hasattr(self, 'client') and self.client is not None:
+            return
+            
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
 
         if not token:
             raise VaultAuthenticationError("Vault token is not set. Run 'source set-vault-token' and try again.")
 
-        # Create and return the client
+        # Create the client
         try:
-            client = hvac.Client(url=os.environ.get('VAULT_ADDR', 'https://vault.example.com'), token=token)
+            self.client = hvac.Client(url=os.environ.get('VAULT_ADDR', 'https://vault.example.com'), token=token)
 
-            if not client.is_authenticated():
+            if not self.client.is_authenticated():
                 raise VaultAuthenticationError("Vault authentication failed. Check your token and try again.")
-
-            return client
 
         except VaultAuthenticationError:
             raise
@@ -113,14 +106,15 @@ class VaultKeyManager:
             raise VaultKeyError(f"Error connecting to Vault: {str(e)}")
 
     #-------------------------------------------------------------------------
-    def discover_paths(self, client, root_paths=None):
+    def discover_paths(self, root_paths=None):
         """
         Discover all paths and secrets in Vault and save to a file.
 
         Args:
-            client: The vault client
             root_paths: List of root paths to start discovery from (default: ['dai', 'dao'])
         """
+        # Ensure client is set
+        self.set_vault_client()
         if root_paths is None:
             root_paths = ['dai', 'dao']
 
@@ -133,7 +127,7 @@ class VaultKeyManager:
         def discover_recursive(path, structure):
             try:
                 # List items at the current path
-                response = client.secrets.kv.v2.list_secrets(path=path)
+                response = self.client.secrets.kv.v2.list_secrets(path=path)
 
                 if not response or 'data' not in response or 'keys' not in response['data']:
                     return
@@ -205,12 +199,14 @@ class VaultKeyManager:
         return selected
 
     #-------------------------------------------------------------------------
-    def list_secrets(self, client, path):
+    def list_secrets(self, path):
         """List all secrets at the specified path."""
+        # Ensure client is set
+        self.set_vault_client()
         try:
             print(f"Listing secrets in {path}:")
             # Read the secret
-            response = client.secrets.kv.v2.read_secret_version(path=path)
+            response = self.client.secrets.kv.v2.read_secret_version(path=path)
 
             if response and 'data' in response and 'data' in response['data']:
                 for key in response['data']['data'].keys():
@@ -223,11 +219,13 @@ class VaultKeyManager:
             raise VaultKeyError(f"Error listing secrets at {path}: {str(e)}")
 
     #-------------------------------------------------------------------------
-    def get_secret(self, client, path, secret_name):
+    def get_secret(self, path, secret_name):
         """Get the value of a specific secret."""
+        # Ensure client is set
+        self.set_vault_client()
         try:
             # Read the secret
-            response = client.secrets.kv.v2.read_secret_version(path=path)
+            response = self.client.secrets.kv.v2.read_secret_version(path=path)
 
             if response and 'data' in response and 'data' in response['data']:
                 if secret_name in response['data']['data']:
@@ -321,19 +319,12 @@ def main():
     # Create manager instance
     manager = VaultKeyManager()
 
-    # Get vault client
-    try:
-        client = manager.get_vault_client()
-
-    except VaultKeyError as e:
-        manager.die(str(e))
-
     if args.command == 'discover':
         try:
             # Get root paths if provided
             root_paths = args.root_paths if hasattr(args, 'root_paths') and args.root_paths else None
 
-            manager.discover_paths(client, root_paths)
+            manager.discover_paths(root_paths)
 
         except VaultKeyError as e:
             manager.die(str(e))
@@ -354,10 +345,10 @@ def main():
 
             # Execute command
             if args.command == 'list':
-                manager.list_secrets(client, selected_path)
+                manager.list_secrets(selected_path)
 
             elif args.command == 'get':
-                manager.get_secret(client, selected_path, args.secret)
+                manager.get_secret(selected_path, args.secret)
 
         except VaultKeyError as e:
             manager.die(str(e))
