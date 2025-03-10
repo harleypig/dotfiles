@@ -314,8 +314,12 @@ def parseargs():
     parser = argparse.ArgumentParser(description="Vault key management utility")
 
     # Global options
-    parser.add_argument('--cache-dir', help='Directory to store vault paths file')
-    parser.add_argument('--paths-file', help='Name of the vault paths file')
+    parser.add_argument('--cache-dir', 
+                       default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
+                       help=f'Directory to store vault paths file (default: {CACHE_DIR})')
+    parser.add_argument('--paths-file', 
+                       default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
+                       help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
 
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
 
@@ -340,11 +344,10 @@ def parseargs():
 def main():
     args = parseargs()
 
-    # Create manager instance with command line args taking precedence over env vars
-    # Move these defaults to the argument parser setup above, AI!
+    # Create manager instance
     manager = VaultKeyManager(
-        cache_dir=args.cache_dir or os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
-        vault_paths_filename=args.paths_file or os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME)
+        cache_dir=args.cache_dir,
+        vault_paths_filename=args.paths_file
     )
 
     if args.command == 'discover':
