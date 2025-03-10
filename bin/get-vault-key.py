@@ -13,9 +13,9 @@ from pathlib import Path
 
 #-----------------------------------------------------------------------------
 # Setup and Sanity
-# Set the path for vault paths file
 CACHE_DIR = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
-VAULT_PATHS_FILE = os.path.join(CACHE_DIR, 'vault-paths.json')
+VAULT_PATHS_FILENAME = 'vault-paths.json'
+VAULT_PATHS_FILE = os.path.join(CACHE_DIR, VAULT_PATHS_FILENAME)
 
 #-----------------------------------------------------------------------------
 # Custom exceptions
@@ -40,6 +40,11 @@ class VaultKeyManager:
     """Class to manage Vault keys and paths."""
 
     #-------------------------------------------------------------------------
+    # Modify this function to allow for cache_dir and vault_paths_filename,
+    # defaulting to the environment variables above. Create the
+    # vault_paths_file class variable and set it to
+    # 'cache_dir/vault_paths_filename'. Modify the rest of this class to use
+    # this variable, AI!
     def __init__(self):
         """Initialize the VaultKeyManager and load vault paths if available."""
         self.vault_data = None
