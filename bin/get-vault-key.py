@@ -43,7 +43,11 @@ class VaultKeyManager:
             cache_dir: Directory to store vault paths file (default: from environment)
             vault_paths_filename: Name of the vault paths file (default: from environment)
         """
-        # cache_dir and vault_paths_filename cannot be None, AI!
+        if cache_dir is None:
+            raise ValueError("cache_dir cannot be None")
+        if vault_paths_filename is None:
+            raise ValueError("vault_paths_filename cannot be None")
+            
         self.cache_dir = cache_dir
         self.vault_paths_filename = vault_paths_filename
         self.vault_paths_file = os.path.join(self.cache_dir, self.vault_paths_filename)
