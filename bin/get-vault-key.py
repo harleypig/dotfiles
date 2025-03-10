@@ -61,10 +61,9 @@ class VaultKeyManager:
             # It's okay if the file doesn't exist yet
             pass
 
-        except VaultKeyError as e:
-            # This should just return an exception as below, let the caller
-            # determine whether or not to die or warn, AI!
-            self.warn(f"Warning: {str(e)}")
+        except VaultKeyError:
+            # Re-raise the exception for the caller to handle
+            raise
 
     #-------------------------------------------------------------------------
     @staticmethod
