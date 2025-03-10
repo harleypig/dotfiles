@@ -13,10 +13,9 @@ from pathlib import Path
 
 #-----------------------------------------------------------------------------
 # Setup and Sanity
-# Modify this section to set VAULT_PATHS_FILE. XDG_CACHE_HOME should not exist
-# for the rest of the script, AI!
-XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
-VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
+# Set the path for vault paths file
+CACHE_DIR = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
+VAULT_PATHS_FILE = os.path.join(CACHE_DIR, 'vault-paths.json')
 
 #-----------------------------------------------------------------------------
 # Custom exceptions
