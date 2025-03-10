@@ -340,17 +340,21 @@ def parseargs():
     # Create subparsers with the parent parser
     discover_parser = subparsers.add_parser('discover', parents=[parent_parser],
                                            help='Discover all vault paths and secrets')
+
     discover_parser.add_argument('--root-paths', nargs='+',
+                               metavar='<root path>',
                                help='Root paths to start discovery from (default: dai dao)')
 
     #-------------------------------------------------------------------------
     list_parser = subparsers.add_parser('list', parents=[parent_parser],
                                        help='List secrets at a path')
+
     list_parser.add_argument('path', help='Path to list secrets from')
 
     #-------------------------------------------------------------------------
     get_parser = subparsers.add_parser('get', parents=[parent_parser],
                                       help='Get a specific secret value')
+
     get_parser.add_argument('path', help='Path to the secret')
     get_parser.add_argument('secret', help='Name of the secret to retrieve')
 
