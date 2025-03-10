@@ -35,15 +35,16 @@ class VaultKeyManager:
     """Class to manage Vault keys and paths."""
 
     #-------------------------------------------------------------------------
-    # Add vault_addr, AI!
-    def __init__(self, cache_dir=None, vault_paths_filename=None):
+    def __init__(self, cache_dir=None, vault_paths_filename=None, vault_addr=None):
         """
         Initialize the VaultKeyManager and load vault paths if available.
 
         Args:
             cache_dir: Directory to store vault paths file (default: from environment)
             vault_paths_filename: Name of the vault paths file (default: from environment)
+            vault_addr: Vault server address (default: from environment)
         """
+        self.vault_addr = vault_addr
         if cache_dir is None:
             raise ValueError("cache_dir cannot be None")
 
@@ -92,9 +93,9 @@ class VaultKeyManager:
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
 
-        # Check if vault_addr is provided or available in environment
+        # Use instance variable if no vault_addr is provided
         if vault_addr is None:
-            vault_addr = os.environ.get('VAULT_ADDR')
+            vault_addr = self.vault_addr or os.environ.get('VAULT_ADDR')
 
             if vault_addr is None:
                 raise VaultAuthenticationError("Vault address is not set. Set VAULT_ADDR environment variable or provide vault_addr parameter.")
@@ -384,7 +385,8 @@ def main():
     # Create manager instance
     manager = VaultKeyManager(
         cache_dir=args.cache_dir,
-        vault_paths_filename=args.paths_file
+        vault_paths_filename=args.paths_file,
+        vault_addr=args.vault_addr
     )
 
     if args.command == 'discover':
