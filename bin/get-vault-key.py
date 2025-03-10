@@ -44,7 +44,7 @@ class VaultKeyManager:
     def __init__(self, cache_dir=None, vault_paths_filename=None):
         """
         Initialize the VaultKeyManager and load vault paths if available.
-        
+
         Args:
             cache_dir: Directory to store vault paths file (default: from environment)
             vault_paths_filename: Name of the vault paths file (default: from environment)
@@ -62,6 +62,8 @@ class VaultKeyManager:
             pass
 
         except VaultKeyError as e:
+            # This should just return an exception as below, let the caller
+            # determine whether or not to die or warn, AI!
             self.warn(f"Warning: {str(e)}")
 
     #-------------------------------------------------------------------------
@@ -312,11 +314,11 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
 #-----------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description="Vault key management utility")
-    
+
     # Global options
     parser.add_argument('--cache-dir', help='Directory to store vault paths file')
     parser.add_argument('--paths-file', help='Name of the vault paths file')
-    
+
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
 
     # discover command
