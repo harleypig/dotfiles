@@ -15,8 +15,9 @@ def warn(message):
     """Print a warning message to stderr."""
     print(message, file=sys.stderr)
 
-def die(message):
+def die(message=None):
     """Print an error message and exit."""
+    # Use warn and only if message is not None, AI!
     print(message, file=sys.stderr)
     sys.exit(1)
 
