@@ -2,6 +2,30 @@
 
 venvdir='.gkv-venv'
 
-# If $venvdir does not exist, or $venvdir/bin/activate does not exist, then
-# install a virtual environment, make sure to update dependencies. Force it if
-# needed, AI!
+# Check if virtual environment exists and create if needed
+if [[ ! -d "$venvdir" || ! -f "$venvdir/bin/activate" ]]; then
+    echo "Setting up virtual environment in $venvdir..."
+    python3 -m venv "$venvdir" || { echo "Failed to create virtual environment"; exit 1; }
+fi
+
+# Activate the virtual environment
+source "$venvdir/bin/activate" || { echo "Failed to activate virtual environment"; exit 1; }
+
+# Create requirements.txt if it doesn't exist
+if [[ ! -f "$venvdir/requirements.txt" ]]; then
+    cat > "$venvdir/requirements.txt" << EOF
+hvac>=1.0.2
+EOF
+fi
+
+# Install or update dependencies
+pip install -q --upgrade -r "$venvdir/requirements.txt" || { echo "Failed to install dependencies"; exit 1; }
+
+# Get the directory where this script is located
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Run the get-vault-key.py script with all arguments passed to this script
+python "$script_dir/get-vault-key.py" "$@"
+
+# Deactivate the virtual environment
+deactivate
