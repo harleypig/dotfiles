@@ -35,6 +35,7 @@ class VaultKeyManager:
     """Class to manage Vault keys and paths."""
 
     #-------------------------------------------------------------------------
+    # Add vault_addr, AI!
     def __init__(self, cache_dir=None, vault_paths_filename=None):
         """
         Initialize the VaultKeyManager and load vault paths if available.
@@ -385,10 +386,6 @@ def main():
         cache_dir=args.cache_dir,
         vault_paths_filename=args.paths_file
     )
-
-    # Check if vault address is provided
-    if not args.vault_addr:
-        die("Vault address is not set. Use --vault-addr or set VAULT_ADDR environment variable.")
 
     if args.command == 'discover':
         try:
