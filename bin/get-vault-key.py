@@ -7,7 +7,14 @@ import argparse
 import hvac
 from pathlib import Path
 
-# Constants
+# TODO:
+# * add option to set cache filename
+# * add option to set cache directory
+
+#-----------------------------------------------------------------------------
+# Setup and Sanity
+# Modify this section to set VAULT_PATHS_FILE. XDG_CACHE_HOME should not exist
+# for the rest of the script, AI!
 XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
 VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
 
@@ -85,7 +92,7 @@ class VaultKeyManager:
         # If client is already set, just return
         if hasattr(self, 'client') and self.client is not None:
             return
-            
+
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
 
