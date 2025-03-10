@@ -17,8 +17,8 @@ def warn(message):
 
 def die(message=None):
     """Print an error message and exit."""
-    # Use warn and only if message is not None, AI!
-    print(message, file=sys.stderr)
+    if message is not None:
+        warn(message)
     sys.exit(1)
 
 def get_vault_client():
