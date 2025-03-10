@@ -41,12 +41,17 @@ class VaultKeyManager:
 
     #-------------------------------------------------------------------------
     # Modify this function to allow for cache_dir and vault_paths_filename,
-    # defaulting to the environment variables above. Create the
-    # vault_paths_file class variable and set it to
-    # 'cache_dir/vault_paths_filename'. Modify the rest of this class to use
-    # this variable, AI!
-    def __init__(self):
-        """Initialize the VaultKeyManager and load vault paths if available."""
+    def __init__(self, cache_dir=None, vault_paths_filename=None):
+        """
+        Initialize the VaultKeyManager and load vault paths if available.
+        
+        Args:
+            cache_dir: Directory to store vault paths file (default: from environment)
+            vault_paths_filename: Name of the vault paths file (default: from environment)
+        """
+        self.cache_dir = cache_dir or CACHE_DIR
+        self.vault_paths_filename = vault_paths_filename or VAULT_PATHS_FILENAME
+        self.vault_paths_file = os.path.join(self.cache_dir, self.vault_paths_filename)
         self.vault_data = None
 
         try:
@@ -78,11 +83,11 @@ class VaultKeyManager:
     def load_vault_paths(self):
         """Load the vault paths from the JSON file."""
         try:
-            with open(VAULT_PATHS_FILE, 'r') as f:
+            with open(self.vault_paths_file, 'r') as f:
                 return json.load(f)
 
         except FileNotFoundError:
-            raise VaultPathNotFoundError(f"Vault paths file not found. Run '{sys.argv[0]} discover' first.")
+            raise VaultPathNotFoundError(f"Vault paths file not found at {self.vault_paths_file}. Run '{sys.argv[0]} discover' first.")
 
         except json.JSONDecodeError:
             raise VaultKeyError(f"Error parsing vault paths file. The file may be corrupted.")
@@ -173,11 +178,11 @@ class VaultKeyManager:
             discover_recursive(root_path, vault_data[root_path])
 
         # Save to file
-        os.makedirs(os.path.dirname(VAULT_PATHS_FILE), exist_ok=True)
-        with open(VAULT_PATHS_FILE, 'w') as f:
+        os.makedirs(os.path.dirname(self.vault_paths_file), exist_ok=True)
+        with open(self.vault_paths_file, 'w') as f:
             json.dump(vault_data, f, indent=2)
 
-        print(f"Vault paths saved to {VAULT_PATHS_FILE}")
+        print(f"Vault paths saved to {self.vault_paths_file}")
 
     #-------------------------------------------------------------------------
     def find_matching_paths(self, structure, search_path):
@@ -307,6 +312,11 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
 #-----------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description="Vault key management utility")
+    
+    # Global options
+    parser.add_argument('--cache-dir', help='Directory to store vault paths file')
+    parser.add_argument('--paths-file', help='Name of the vault paths file')
+    
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
 
     # discover command
@@ -327,8 +337,11 @@ def main():
 
     args = parser.parse_args()
 
-    # Create manager instance
-    manager = VaultKeyManager()
+    # Create manager instance with command line args taking precedence over env vars
+    manager = VaultKeyManager(
+        cache_dir=args.cache_dir or os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
+        vault_paths_filename=args.paths_file or os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME)
+    )
 
     if args.command == 'discover':
         try:
