@@ -11,6 +11,8 @@ from pathlib import Path
 XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
 VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
 
+# Create a warn function that prints to stderr, AI!
+
 def die(message):
     """Print an error message and exit."""
     print(message, file=sys.stderr)
@@ -22,7 +24,7 @@ def get_vault_client():
     token = os.environ.get('VAULT_TOKEN')
     if not token:
         die("Vault token is not set. Run 'source set-vault-token' and try again.")
-    
+
     # Create and return the client
     try:
         client = hvac.Client(url=os.environ.get('VAULT_ADDR', 'https://vault.example.com'), token=token)
@@ -35,10 +37,10 @@ def get_vault_client():
 def discover_paths(client):
     """Discover all paths and secrets in Vault and save to a file."""
     print("Discovering vault paths...")
-    
+
     # Initialize the structure
     vault_structure = {}
-    
+
     # Helper function to recursively discover paths
     def discover_recursive(path, structure):
         try:
@@ -46,9 +48,9 @@ def discover_paths(client):
             response = client.secrets.kv.v2.list_secrets(path=path)
             if not response or 'data' not in response or 'keys' not in response['data']:
                 return
-            
+
             keys = response['data']['keys']
-            
+
             for key in keys:
                 # If key ends with /, it's a directory
                 if key.endswith('/'):
@@ -65,50 +67,50 @@ def discover_paths(client):
                     structure['secrets'].append(key)
         except Exception as e:
             print(f"Error listing {path}: {str(e)}", file=sys.stderr)
-    
+
     # Start discovery from root paths
     for root_path in ['dai', 'dao']:
         vault_structure[root_path] = {}
         discover_recursive(root_path, vault_structure[root_path])
-    
+
     # Save to file
     os.makedirs(os.path.dirname(VAULT_PATHS_FILE), exist_ok=True)
     with open(VAULT_PATHS_FILE, 'w') as f:
         json.dump(vault_structure, f, indent=2)
-    
+
     print(f"Vault paths saved to {VAULT_PATHS_FILE}")
 
 def find_matching_paths(structure, search_path):
     """Find all paths that match the search pattern."""
     matches = []
-    
+
     def search_recursive(current_path, struct, prefix=""):
         # Check if this node has secrets
         if 'secrets' in struct and search_path.lower() in (prefix + current_path).lower():
             matches.append(prefix + current_path)
-        
+
         # Recursively search subdirectories
         for key, value in struct.items():
             if key != 'secrets':  # Skip the secrets list
                 new_prefix = prefix + current_path + "/" if current_path else prefix
                 search_recursive(key, value, new_prefix)
-    
+
     # Start recursive search from the root
     for root_key, root_value in structure.items():
         search_recursive(root_key, root_value)
-    
+
     return matches
 
 def select_path(matches):
     """Let the user select a path if multiple matches are found."""
     if len(matches) == 1:
         return matches[0]
-    
+
     print("Multiple matching paths found:")
     for i, path in enumerate(matches, 1):
         print(f"  {i}) {path}")
     print("  0) Cancel")
-    
+
     while True:
         try:
             choice = input("Select a path (0 to cancel): ")
@@ -159,27 +161,27 @@ def get_secret(client, path, secret_name):
 def main():
     parser = argparse.ArgumentParser(description="Vault key management utility")
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
-    
+
     # discover command
     discover_parser = subparsers.add_parser('discover', help='Discover all vault paths and secrets')
-    
+
     # list command
     list_parser = subparsers.add_parser('list', help='List secrets at a path')
     list_parser.add_argument('path', help='Path to list secrets from')
-    
+
     # get command
     get_parser = subparsers.add_parser('get', help='Get a specific secret value')
     get_parser.add_argument('path', help='Path to the secret')
     get_parser.add_argument('secret', help='Name of the secret to retrieve')
-    
+
     args = parser.parse_args()
-    
+
     # Get vault client
     client = get_vault_client()
-    
+
     if args.command == 'discover':
         discover_paths(client)
-    
+
     elif args.command == 'list' or args.command == 'get':
         # Load vault paths
         try:
@@ -187,22 +189,22 @@ def main():
                 vault_structure = json.load(f)
         except FileNotFoundError:
             die(f"Vault paths file not found. Run '{sys.argv[0]} discover' first.")
-        
+
         # Find matching paths
         matches = find_matching_paths(vault_structure, args.path)
-        
+
         if not matches:
             die(f"No matching paths found for '{args.path}'")
-        
+
         # Select path if multiple matches
         selected_path = select_path(matches)
-        
+
         # Execute command
         if args.command == 'list':
             list_secrets(client, selected_path)
         elif args.command == 'get':
             get_secret(client, selected_path, args.secret)
-    
+
     else:
         parser.print_help()
         sys.exit(1)
