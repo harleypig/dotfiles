@@ -91,14 +91,16 @@ class VaultKeyManager:
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
 
-        # vault_addr cannot be none, ai!
+        # Use default vault address if not provided
+        if vault_addr is None:
+            vault_addr = os.environ.get('VAULT_ADDR', 'https://vault.example.com')
 
         if not token:
             raise VaultAuthenticationError("Vault token is not set. Run 'source set-vault-token' and try again.")
 
         # Create the client
         try:
-            self.client = hvac.Client(url=os.environ.get('VAULT_ADDR', 'https://vault.example.com'), token=token)
+            self.client = hvac.Client(url=vault_addr, token=token)
 
             if not self.client.is_authenticated():
                 raise VaultAuthenticationError("Vault authentication failed. Check your token and try again.")
