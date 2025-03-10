@@ -11,6 +11,7 @@ from pathlib import Path
 XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
 VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
 
+# Switch any prints that use stderr to use warn instead, AI!
 def warn(message):
     """Print a warning message to stderr."""
     print(message, file=sys.stderr)
