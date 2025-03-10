@@ -11,16 +11,21 @@ from pathlib import Path
 XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
 VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
 
+#-----------------------------------------------------------------------------
 def warn(message):
     """Print a warning message to stderr."""
     print(message, file=sys.stderr)
 
+#-----------------------------------------------------------------------------
+# Allow the caller to set the exit value, default to 1, AI!
 def die(message=None):
     """Print an error message and exit."""
     if message is not None:
         warn(message)
+
     sys.exit(1)
 
+#-----------------------------------------------------------------------------
 def get_vault_client():
     """Get a configured vault client."""
     # Check if VAULT_TOKEN is set
@@ -37,6 +42,7 @@ def get_vault_client():
     except Exception as e:
         die(f"Error connecting to Vault: {str(e)}")
 
+#-----------------------------------------------------------------------------
 def discover_paths(client):
     """Discover all paths and secrets in Vault and save to a file."""
     print("Discovering vault paths...")
@@ -83,6 +89,7 @@ def discover_paths(client):
 
     print(f"Vault paths saved to {VAULT_PATHS_FILE}")
 
+#-----------------------------------------------------------------------------
 def find_matching_paths(structure, search_path):
     """Find all paths that match the search pattern."""
     matches = []
@@ -104,6 +111,7 @@ def find_matching_paths(structure, search_path):
 
     return matches
 
+#-----------------------------------------------------------------------------
 def select_path(matches):
     """Let the user select a path if multiple matches are found."""
     if len(matches) == 1:
@@ -127,6 +135,7 @@ def select_path(matches):
         except ValueError:
             warn("Please enter a number.")
 
+#-----------------------------------------------------------------------------
 def list_secrets(client, path):
     """List all secrets at the specified path."""
     try:
@@ -141,6 +150,7 @@ def list_secrets(client, path):
     except Exception as e:
         die(f"Error listing secrets at {path}: {str(e)}")
 
+#-----------------------------------------------------------------------------
 def get_secret(client, path, secret_name):
     """Get the value of a specific secret."""
     try:
@@ -161,6 +171,7 @@ def get_secret(client, path, secret_name):
     except Exception as e:
         die(f"Error getting secret from {path}: {str(e)}")
 
+#-----------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description="Vault key management utility")
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
@@ -212,5 +223,6 @@ def main():
         parser.print_help()
         sys.exit(1)
 
+#-----------------------------------------------------------------------------
 if __name__ == "__main__":
     main()
