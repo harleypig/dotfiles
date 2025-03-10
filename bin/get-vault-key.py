@@ -60,6 +60,7 @@ class VaultKeyManager:
         """Print an error message and exit with the specified code (default 1)."""
         if message is not None:
             VaultKeyManager.warn(message)
+
         sys.exit(exit_code)
 
     #-------------------------------------------------------------------------
@@ -98,6 +99,7 @@ class VaultKeyManager:
 
         except VaultAuthenticationError:
             raise
+
         except Exception as e:
             raise VaultKeyError(f"Error connecting to Vault: {str(e)}")
 
@@ -143,6 +145,7 @@ class VaultKeyManager:
                 self.warn(f"Error listing {path}: {str(e)}")
 
         # Start discovery from root paths
+        # Make the root paths a parameter that defaults to ['dai', 'dao'], AI!
         for root_path in ['dai', 'dao']:
             vault_data[root_path] = {}
             discover_recursive(root_path, vault_data[root_path])
