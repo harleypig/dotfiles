@@ -14,122 +14,128 @@ VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
 #-----------------------------------------------------------------------------
 class VaultKeyManager:
     """Class to manage Vault keys and paths."""
-    
+
+    #-------------------------------------------------------------------------
     @staticmethod
     def warn(message):
         """Print a warning message to stderr."""
         print(message, file=sys.stderr)
-    
+
+    #-------------------------------------------------------------------------
     @staticmethod
     def die(message=None, exit_code=1):
         """Print an error message and exit with the specified code (default 1)."""
         if message is not None:
             VaultKeyManager.warn(message)
         sys.exit(exit_code)
-    
+
+    #-------------------------------------------------------------------------
     def get_vault_client(self):
         """Get a configured vault client."""
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
-        
+
         if not token:
             self.die("Vault token is not set. Run 'source set-vault-token' and try again.")
-        
+
         # Create and return the client
         try:
             client = hvac.Client(url=os.environ.get('VAULT_ADDR', 'https://vault.example.com'), token=token)
-            
+
             if not client.is_authenticated():
                 self.die("Vault authentication failed. Check your token and try again.")
-            
+
             return client
-        
+
         except Exception as e:
             self.die(f"Error connecting to Vault: {str(e)}")
-    
+
+    #-------------------------------------------------------------------------
     def discover_paths(self, client):
         """Discover all paths and secrets in Vault and save to a file."""
         self.warn("Discovering vault paths...")
-        
+
         # Initialize the structure
         vault_structure = {}
-        
+
         # Helper function to recursively discover paths
         def discover_recursive(path, structure):
             try:
                 # List items at the current path
                 response = client.secrets.kv.v2.list_secrets(path=path)
-                
+
                 if not response or 'data' not in response or 'keys' not in response['data']:
                     return
-                
+
                 keys = response['data']['keys']
-                
+
                 for key in keys:
                     # If key ends with /, it's a directory
                     if key.endswith('/'):
                         subpath = f"{path}/{key[:-1]}" if path else key[:-1]
-                        
+
                         # Create nested structure
                         if key[:-1] not in structure:
                             structure[key[:-1]] = {}
-                        
+
                         # Recursively discover
                         discover_recursive(subpath, structure[key[:-1]])
-                    
+
                     else:
                         # It's a secret
                         if 'secrets' not in structure:
                             structure['secrets'] = []
-                        
+
                         structure['secrets'].append(key)
-            
+
             except Exception as e:
                 self.warn(f"Error listing {path}: {str(e)}")
-        
+
         # Start discovery from root paths
         for root_path in ['dai', 'dao']:
             vault_structure[root_path] = {}
             discover_recursive(root_path, vault_structure[root_path])
-        
+
         # Save to file
         os.makedirs(os.path.dirname(VAULT_PATHS_FILE), exist_ok=True)
         with open(VAULT_PATHS_FILE, 'w') as f:
             json.dump(vault_structure, f, indent=2)
-        
+
         print(f"Vault paths saved to {VAULT_PATHS_FILE}")
-    
+
+    #-------------------------------------------------------------------------
     def find_matching_paths(self, structure, search_path):
         """Find all paths that match the search pattern."""
         matches = []
-        
+
         def search_recursive(current_path, struct, prefix=""):
             # Check if this node has secrets
             if 'secrets' in struct and search_path.lower() in (prefix + current_path).lower():
                 matches.append(prefix + current_path)
-            
+
             # Recursively search subdirectories
             for key, value in struct.items():
                 if key != 'secrets':  # Skip the secrets list
                     new_prefix = prefix + current_path + "/" if current_path else prefix
                     search_recursive(key, value, new_prefix)
-        
+
         # Start recursive search from the root
         for root_key, root_value in structure.items():
             search_recursive(root_key, root_value)
-        
+
         return matches
-    
+
+    #-------------------------------------------------------------------------
     def select_path(self, matches):
         """Let the user select a path if multiple matches are found."""
         if len(matches) == 1:
             return matches[0]
-        
+
         print("Multiple matching paths found:")
         for i, path in enumerate(matches, 1):
             print(f"  {i}) {path}")
         print("  0) Cancel")
-        
+
         while True:
             try:
                 choice = input("Select a path (0 to cancel): ")
@@ -142,7 +148,8 @@ class VaultKeyManager:
                     self.warn("Invalid selection. Try again.")
             except ValueError:
                 self.warn("Please enter a number.")
-    
+
+    #-------------------------------------------------------------------------
     def list_secrets(self, client, path):
         """List all secrets at the specified path."""
         try:
@@ -156,7 +163,8 @@ class VaultKeyManager:
                 print("No secrets found or unexpected data format.")
         except Exception as e:
             self.die(f"Error listing secrets at {path}: {str(e)}")
-    
+
+    #-------------------------------------------------------------------------
     def get_secret(self, client, path, secret_name):
         """Get the value of a specific secret."""
         try:
@@ -195,7 +203,7 @@ def main():
     get_parser.add_argument('secret', help='Name of the secret to retrieve')
 
     args = parser.parse_args()
-    
+
     # Create manager instance
     manager = VaultKeyManager()
 
