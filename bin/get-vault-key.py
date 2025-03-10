@@ -82,7 +82,7 @@ class VaultKeyManager:
             raise VaultKeyError(f"Error loading vault paths: {str(e)}")
 
     #-------------------------------------------------------------------------
-    def set_vault_client(self):
+    def set_vault_client(self, vault_addr=None):
         """Set up and configure the vault client if not already set."""
         # If client is already set, just return
         if hasattr(self, 'client') and self.client is not None:
@@ -90,6 +90,8 @@ class VaultKeyManager:
 
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
+
+        # vault_addr cannot be none, ai!
 
         if not token:
             raise VaultAuthenticationError("Vault token is not set. Run 'source set-vault-token' and try again.")
