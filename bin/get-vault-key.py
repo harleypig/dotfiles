@@ -7,10 +7,6 @@ import argparse
 import hvac
 from pathlib import Path
 
-# TODO:
-# * add option to set cache filename
-# * add option to set cache directory
-
 #-----------------------------------------------------------------------------
 # Setup and Sanity
 CACHE_DIR = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
@@ -90,8 +86,8 @@ class VaultKeyManager:
         except FileNotFoundError:
             raise VaultPathNotFoundError(f"Vault paths file not found at {self.vault_paths_file}. Run '{sys.argv[0]} discover' first.")
 
-        except json.JSONDecodeError:
-            raise VaultKeyError(f"Error parsing vault paths file. The file may be corrupted.")
+        except json.JSONDecodeError as e:
+            raise VaultKeyError(f"Error parsing vault paths file ({self.vault_paths_file}). The file may be corrupted: {str(e)}")
 
         except Exception as e:
             raise VaultKeyError(f"Error loading vault paths: {str(e)}")
