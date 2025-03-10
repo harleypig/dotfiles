@@ -11,7 +11,6 @@ from pathlib import Path
 XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
 VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
 
-# Switch any prints that use stderr to use warn instead, AI!
 def warn(message):
     """Print a warning message to stderr."""
     print(message, file=sys.stderr)
@@ -123,9 +122,9 @@ def select_path(matches):
             if 1 <= choice <= len(matches):
                 return matches[choice - 1]
             else:
-                print("Invalid selection. Try again.")
+                warn("Invalid selection. Try again.")
         except ValueError:
-            print("Please enter a number.")
+            warn("Please enter a number.")
 
 def list_secrets(client, path):
     """List all secrets at the specified path."""
