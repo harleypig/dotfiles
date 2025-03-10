@@ -167,7 +167,7 @@ class VaultKeyManager:
                         structure['secrets'].append(key)
 
             except Exception as e:
-                self.warn(f"Error listing {path}: {str(e)}")
+                raise VaultKeyError(f"Error listing {path}: {str(e)}")
 
         # Start discovery from root paths
         for root_path in root_paths:
