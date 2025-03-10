@@ -50,10 +50,10 @@ class VaultKeyManager:
         if vault_paths_filename is None:
             raise ValueError("vault_paths_filename cannot be None")
 
-        self.vault_addr = vault_addr
         self.cache_dir = cache_dir
-        self.vault_paths_filename = vault_paths_filename
+        self.vault_addr = vault_addr
         self.vault_data = None
+        self.vault_paths_filename = vault_paths_filename
 
         try:
             self.vault_data = self.load_vault_paths()
@@ -85,7 +85,7 @@ class VaultKeyManager:
             raise VaultKeyError(f"Error loading vault paths: {str(e)}")
 
     #-------------------------------------------------------------------------
-    def set_vault_client(self, vault_addr=None):
+    def set_vault_client(self):
         """Set up and configure the vault client if not already set."""
         # If client is already set, just return
         if hasattr(self, 'client') and self.client is not None:
@@ -94,19 +94,18 @@ class VaultKeyManager:
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
 
-        # Use instance variable if no vault_addr is provided
-        if vault_addr is None:
-            vault_addr = self.vault_addr or os.environ.get('VAULT_ADDR')
-
-            if vault_addr is None:
-                raise VaultAuthenticationError("Vault address is not set. Set VAULT_ADDR environment variable or provide vault_addr parameter.")
-
         if not token:
             raise VaultAuthenticationError("Vault token is not set. Run 'source set-vault-token' and try again.")
 
+        # Use instance variable if no vault_addr is provided
+        if vault_addr is None:
+            raise VaultAuthenticationError("Vault address is not set. Set VAULT_ADDR environment variable or provide vault_addr parameter.")
+
         # Create the client
         try:
-            self.client = hvac.Client(url=vault_addr, token=token)
+            #self.client = hvac.Client(url=self.vault_addr, token=token)
+            self.client = hvac.Client(url=self.vault_addr)
+            self.client.token = token
 
             if not self.client.is_authenticated():
                 raise VaultAuthenticationError("Vault authentication failed. Check your token and try again.")
@@ -323,7 +322,7 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
 def parseargs(showhelp=False):
     """
     Parse command line arguments and return the parsed arguments.
-    
+
     Args:
         showhelp: If True, print help and exit instead of parsing arguments
     """
@@ -386,7 +385,7 @@ def parseargs(showhelp=False):
     if showhelp:
         parser.print_help()
         sys.exit(0)
-    
+
     return parser.parse_args()
 
 #-----------------------------------------------------------------------------
