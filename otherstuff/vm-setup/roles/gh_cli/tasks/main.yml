@@ -1,5 +1,0 @@
-- name: "Install GitHub CLI"
-  become: yes
-  apt:
-    name: gh
-    state: present

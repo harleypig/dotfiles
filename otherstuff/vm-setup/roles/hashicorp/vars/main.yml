@@ -1,4 +1,0 @@
----
-hashicorp_packages:
-  - terraform
-  - packer

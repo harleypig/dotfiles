@@ -1,8 +1,0 @@
----
-- name: Install nodejs packages
-  become: true
-  npm: # noqa: fqcn[action]
-    name: "{{ item }}"
-    global: true
-    state: present
-  loop: "{{ nodejs_packages }}"

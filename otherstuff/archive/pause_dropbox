@@ -1,5 +1,0 @@
-#!/bin/bash
-
-/usr/bin/dropbox stop
-sleep 30
-/usr/bin/dropbox start

@@ -1,9 +1,0 @@
----
-pip_pkgs_groups:
-  common:
-    - aider-chat
-    - pre-commit
-    - yamllint
-    - vim-vint
-#  linode:
-#    - linode-cli

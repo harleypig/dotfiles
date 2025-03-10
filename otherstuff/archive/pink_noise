@@ -1,8 +1,0 @@
-#!/bin/bash
-
-len='7:00:00'
-
-if [ "$1" != '' ]; then len=$1; fi
-
-#sox -t sl - -t sl - synth $len pinknoise < /dev/zero | sox -t sl - -t ossdsp /dev/dsp band -n 1200 200 vibro 20 .1
-play -t sl - synth $len  pinknoise band -n 1200 200 tremolo 20 .1 < /dev/zero

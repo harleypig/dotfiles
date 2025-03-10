@@ -1,7 +1,0 @@
----
-- name: Install CLI Packages
-  become: yes # noqa: yaml[truthy]
-  apt:
-    name: "{{ cli_pkgs_packages }}"
-    state: present
-    update_cache: true

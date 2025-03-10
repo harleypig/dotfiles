@@ -1,7 +1,0 @@
-#!/bin/bash
-
-for ext in $(gnome-extensions list --enabled); do
-    echo "--------------------------------"
-    gnome-extensions info "$ext"
-    echo
-done > gnome-extensions.dump

@@ -1,7 +1,0 @@
----
-- name: Install requested packages
-  become: true
-  apt:
-    state: latest # noqa: package-latest
-    update_cache: true
-    name: "{{ install_pkgs_packages }}"

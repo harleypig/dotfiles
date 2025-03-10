@@ -1,9 +1,0 @@
----
-dependencies:
-  - role: add_repo
-    vars:
-      add_repo_filename: 'hashicorp'
-      add_repo_key_url: 'https://apt.releases.hashicorp.com/gpg'
-      add_repo_name: 'HashiCorp'
-      add_repo_urls:
-        - 'deb https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main'
