@@ -91,7 +91,7 @@ class VaultKeyManager:
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
 
-        # Use default vault address if not provided
+        # raise the appropriate class exception if vault_addr is none, ai!
         if vault_addr is None:
             vault_addr = os.environ.get('VAULT_ADDR', 'https://vault.example.com')
 
