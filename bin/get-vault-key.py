@@ -61,20 +61,7 @@ class VaultKeyManager:
             # Re-raise the exception for the caller to handle
             raise
 
-    #-------------------------------------------------------------------------
-    @staticmethod
-    def warn(message):
-        """Print a warning message to stderr."""
-        print(message, file=sys.stderr)
-
-    #-------------------------------------------------------------------------
-    @staticmethod
-    def die(message=None, exit_code=1):
-        """Print an error message and exit with the specified code (default 1)."""
-        if message is not None:
-            VaultKeyManager.warn(message)
-
-        sys.exit(exit_code)
+    # Static methods moved outside the class
 
     #-------------------------------------------------------------------------
     def load_vault_paths(self):
@@ -208,7 +195,7 @@ class VaultKeyManager:
         """Let the user select a path if multiple matches are found."""
         selected = select_from_list(matches, prompt="Select a path")
         if selected is None:
-            self.die("Operation cancelled by user")
+            die("Operation cancelled by user")
         return selected
 
     #-------------------------------------------------------------------------
@@ -261,6 +248,18 @@ class VaultKeyManager:
 
         except Exception as e:
             raise VaultKeyError(f"Error getting secret from {path}: {str(e)}")
+
+#-----------------------------------------------------------------------------
+def warn(message):
+    """Print a warning message to stderr."""
+    print(message, file=sys.stderr)
+
+#-----------------------------------------------------------------------------
+def die(message=None, exit_code=1):
+    """Print an error message and exit with the specified code (default 1)."""
+    if message is not None:
+        warn(message)
+    sys.exit(exit_code)
 
 #-----------------------------------------------------------------------------
 def select_from_list(items, prompt="Select an option", cancel_option=True):
@@ -348,7 +347,7 @@ def main():
             manager.discover_paths(root_paths)
 
         except VaultKeyError as e:
-            manager.die(str(e))
+            die(str(e))
 
     elif args.command == 'list' or args.command == 'get':
         try:
@@ -359,7 +358,7 @@ def main():
             matches = manager.find_matching_paths(vault_data, args.path)
 
             if not matches:
-                manager.die(f"No matching paths found for '{args.path}'")
+                die(f"No matching paths found for '{args.path}'")
 
             # Select path if multiple matches
             selected_path = manager.select_path(matches)
@@ -372,7 +371,7 @@ def main():
                 manager.get_secret(selected_path, args.secret)
 
         except VaultKeyError as e:
-            manager.die(str(e))
+            die(str(e))
 
     else:
         parser.print_help()
