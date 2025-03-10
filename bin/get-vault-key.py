@@ -11,6 +11,7 @@ from pathlib import Path
 XDG_CACHE_HOME = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
 VAULT_PATHS_FILE = os.path.join(XDG_CACHE_HOME, 'vault-paths.json')
 
+# Convert all functions, except for the main function, to be a class, AI!
 #-----------------------------------------------------------------------------
 def warn(message):
     """Print a warning message to stderr."""
@@ -27,24 +28,29 @@ def die(message=None, exit_code=1):
 #-----------------------------------------------------------------------------
 def get_vault_client():
     """Get a configured vault client."""
+
     # Check if VAULT_TOKEN is set
     token = os.environ.get('VAULT_TOKEN')
+
     if not token:
         die("Vault token is not set. Run 'source set-vault-token' and try again.")
 
     # Create and return the client
     try:
         client = hvac.Client(url=os.environ.get('VAULT_ADDR', 'https://vault.example.com'), token=token)
+
         if not client.is_authenticated():
             die("Vault authentication failed. Check your token and try again.")
+
         return client
+
     except Exception as e:
         die(f"Error connecting to Vault: {str(e)}")
 
 #-----------------------------------------------------------------------------
 def discover_paths(client):
     """Discover all paths and secrets in Vault and save to a file."""
-    print("Discovering vault paths...")
+    warn("Discovering vault paths...")
 
     # Initialize the structure
     vault_structure = {}
@@ -54,6 +60,7 @@ def discover_paths(client):
         try:
             # List items at the current path
             response = client.secrets.kv.v2.list_secrets(path=path)
+
             if not response or 'data' not in response or 'keys' not in response['data']:
                 return
 
@@ -63,16 +70,21 @@ def discover_paths(client):
                 # If key ends with /, it's a directory
                 if key.endswith('/'):
                     subpath = f"{path}/{key[:-1]}" if path else key[:-1]
+
                     # Create nested structure
                     if key[:-1] not in structure:
                         structure[key[:-1]] = {}
+
                     # Recursively discover
                     discover_recursive(subpath, structure[key[:-1]])
+
                 else:
                     # It's a secret
                     if 'secrets' not in structure:
                         structure['secrets'] = []
+
                     structure['secrets'].append(key)
+
         except Exception as e:
             warn(f"Error listing {path}: {str(e)}")
 
