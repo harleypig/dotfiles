@@ -44,16 +44,15 @@ class VaultKeyManager:
             vault_paths_filename: Name of the vault paths file (default: from environment)
             vault_addr: Vault server address (default: from environment)
         """
-        self.vault_addr = vault_addr
         if cache_dir is None:
             raise ValueError("cache_dir cannot be None")
 
         if vault_paths_filename is None:
             raise ValueError("vault_paths_filename cannot be None")
 
+        self.vault_addr = vault_addr
         self.cache_dir = cache_dir
         self.vault_paths_filename = vault_paths_filename
-        self.vault_paths_file = os.path.join(self.cache_dir, self.vault_paths_filename)
         self.vault_data = None
 
         try:
@@ -70,15 +69,17 @@ class VaultKeyManager:
     #-------------------------------------------------------------------------
     def load_vault_paths(self):
         """Load the vault paths from the JSON file."""
+        vault_paths_file = os.path.join(self.cache_dir, self.vault_paths_filename)
+
         try:
-            with open(self.vault_paths_file, 'r') as f:
+            with open(vault_paths_file, 'r') as f:
                 return json.load(f)
 
         except FileNotFoundError:
-            raise VaultPathNotFoundError(f"Vault paths file not found at {self.vault_paths_file}. Run '{sys.argv[0]} discover' first.")
+            raise VaultPathNotFoundError(f"Vault paths file not found at {vault_paths_file}. Run '{sys.argv[0]} discover' first.")
 
         except json.JSONDecodeError as e:
-            raise VaultKeyError(f"Error parsing vault paths file ({self.vault_paths_file}). The file may be corrupted: {str(e)}")
+            raise VaultKeyError(f"Error parsing vault paths file ({vault_paths_file}). The file may be corrupted: {str(e)}")
 
         except Exception as e:
             raise VaultKeyError(f"Error loading vault paths: {str(e)}")
@@ -174,11 +175,12 @@ class VaultKeyManager:
             discover_recursive(root_path, vault_data[root_path])
 
         # Save to file
-        os.makedirs(os.path.dirname(self.vault_paths_file), exist_ok=True)
-        with open(self.vault_paths_file, 'w') as f:
+        vault_paths_file = os.path.join(self.cache_dir, self.vault_paths_filename)
+        os.makedirs(os.path.dirname(vault_paths_file), exist_ok=True)
+        with open(vault_paths_file, 'w') as f:
             json.dump(vault_data, f, indent=2)
 
-        print(f"Vault paths saved to {self.vault_paths_file}")
+        print(f"Vault paths saved to {vault_paths_file}")
 
     #-------------------------------------------------------------------------
     def find_matching_paths(self, structure, search_path):
@@ -318,6 +320,8 @@ def select_from_list(items, prompt="Select an option", cancel_option=True):
             print("Please enter a number.")
 
 #-----------------------------------------------------------------------------
+# Add boolean variable showhelp. Defaults to false. If true, print help
+# instead of parsing and returning parsed values, AI!
 def parseargs():
     """Parse command line arguments and return the parsed arguments."""
     # Create a parent parser for common options
@@ -395,7 +399,6 @@ def main():
             root_paths = args.root_paths if hasattr(args, 'root_paths') and args.root_paths else ['dai', 'dao']
 
             # Set vault client with provided address
-            manager.set_vault_client(vault_addr=args.vault_addr)
             manager.discover_paths(root_paths)
 
         except (VaultKeyError, ValueError) as e:
@@ -403,11 +406,8 @@ def main():
 
     elif args.command == 'list' or args.command == 'get':
         try:
-            # Load vault paths if not already loaded
-            vault_data = manager.vault_data or manager.load_vault_paths()
-
             # Find matching paths
-            matches = manager.find_matching_paths(vault_data, args.path)
+            matches = manager.find_matching_paths(args.path)
 
             if not matches:
                 die(f"No matching paths found for '{args.path}'")
@@ -415,9 +415,6 @@ def main():
             # Select path if multiple matches
             selected_path = manager.select_path(matches)
 
-            # Set vault client with provided address
-            manager.set_vault_client(vault_addr=args.vault_addr)
-            
             # Execute command
             if args.command == 'list':
                 manager.list_secrets(selected_path)
