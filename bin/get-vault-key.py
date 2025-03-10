@@ -91,9 +91,11 @@ class VaultKeyManager:
         # Check if VAULT_TOKEN is set
         token = os.environ.get('VAULT_TOKEN')
 
-        # raise the appropriate class exception if vault_addr is none, ai!
+        # Check if vault_addr is provided or available in environment
         if vault_addr is None:
-            vault_addr = os.environ.get('VAULT_ADDR', 'https://vault.example.com')
+            vault_addr = os.environ.get('VAULT_ADDR')
+            if vault_addr is None:
+                raise VaultAuthenticationError("Vault address is not set. Set VAULT_ADDR environment variable or provide vault_addr parameter.")
 
         if not token:
             raise VaultAuthenticationError("Vault token is not set. Run 'source set-vault-token' and try again.")
