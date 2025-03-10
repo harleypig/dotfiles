@@ -45,9 +45,10 @@ class VaultKeyManager:
         """
         if cache_dir is None:
             raise ValueError("cache_dir cannot be None")
+
         if vault_paths_filename is None:
             raise ValueError("vault_paths_filename cannot be None")
-            
+
         self.cache_dir = cache_dir
         self.vault_paths_filename = vault_paths_filename
         self.vault_paths_file = os.path.join(self.cache_dir, self.vault_paths_filename)
@@ -63,8 +64,6 @@ class VaultKeyManager:
         except VaultKeyError:
             # Re-raise the exception for the caller to handle
             raise
-
-    # Static methods moved outside the class
 
     #-------------------------------------------------------------------------
     def load_vault_paths(self):
@@ -118,6 +117,8 @@ class VaultKeyManager:
         """
         # Ensure client is set
         self.set_vault_client()
+
+        # Don't default root_paths here and root_paths cannot be None, AI!
         if root_paths is None:
             root_paths = ['dai', 'dao']
 
