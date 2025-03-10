@@ -108,19 +108,18 @@ class VaultKeyManager:
             raise VaultKeyError(f"Error connecting to Vault: {str(e)}")
 
     #-------------------------------------------------------------------------
-    def discover_paths(self, root_paths=None):
+    def discover_paths(self, root_paths):
         """
         Discover all paths and secrets in Vault and save to a file.
 
         Args:
-            root_paths: List of root paths to start discovery from (default: ['dai', 'dao'])
+            root_paths: List of root paths to start discovery from
         """
         # Ensure client is set
         self.set_vault_client()
 
-        # Don't default root_paths here and root_paths cannot be None, AI!
         if root_paths is None:
-            root_paths = ['dai', 'dao']
+            raise ValueError("root_paths cannot be None")
 
         print("Discovering vault paths...")
 
@@ -345,12 +344,12 @@ def main():
 
     if args.command == 'discover':
         try:
-            # Get root paths if provided
-            root_paths = args.root_paths if hasattr(args, 'root_paths') and args.root_paths else None
+            # Get root paths if provided, otherwise use defaults
+            root_paths = args.root_paths if hasattr(args, 'root_paths') and args.root_paths else ['dai', 'dao']
 
             manager.discover_paths(root_paths)
 
-        except VaultKeyError as e:
+        except (VaultKeyError, ValueError) as e:
             die(str(e))
 
     elif args.command == 'list' or args.command == 'get':
