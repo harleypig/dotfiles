@@ -104,8 +104,17 @@ class VaultKeyManager:
             raise VaultKeyError(f"Error connecting to Vault: {str(e)}")
 
     #-------------------------------------------------------------------------
-    def discover_paths(self, client):
-        """Discover all paths and secrets in Vault and save to a file."""
+    def discover_paths(self, client, root_paths=None):
+        """
+        Discover all paths and secrets in Vault and save to a file.
+        
+        Args:
+            client: The vault client
+            root_paths: List of root paths to start discovery from (default: ['dai', 'dao'])
+        """
+        if root_paths is None:
+            root_paths = ['dai', 'dao']
+            
         self.warn("Discovering vault paths...")
 
         # Initialize the structure
@@ -145,8 +154,7 @@ class VaultKeyManager:
                 self.warn(f"Error listing {path}: {str(e)}")
 
         # Start discovery from root paths
-        # Make the root paths a parameter that defaults to ['dai', 'dao'], AI!
-        for root_path in ['dai', 'dao']:
+        for root_path in root_paths:
             vault_data[root_path] = {}
             discover_recursive(root_path, vault_data[root_path])
 
@@ -271,7 +279,14 @@ def main():
 
     if args.command == 'discover':
         try:
-            manager.discover_paths(client)
+            # Add optional argument for root paths
+            discover_parser.add_argument('--root-paths', nargs='+', 
+                                        help='Root paths to start discovery from (default: dai dao)')
+            
+            # Get root paths if provided
+            root_paths = args.root_paths if hasattr(args, 'root_paths') and args.root_paths else None
+            
+            manager.discover_paths(client, root_paths)
         except VaultKeyError as e:
             manager.die(str(e))
 
