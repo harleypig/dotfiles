@@ -85,7 +85,10 @@ These filters pull out specific pieces of data:
 ```bash
 # Identity filter (.) - passes input unchanged
 echo '{"a": 1}' | jq '.'
-# Output: {"a": 1}
+# Output:
+# {
+#    "a": 1
+# }
 
 # Object Identifier (.field)
 echo '{"name": "John", "age": 30}' | jq '.age'
@@ -97,7 +100,9 @@ echo '[10, 20, 30]' | jq '.[1]'
 
 # Array/Object Value Iterator (.[] or .[])
 echo '{"a": 1, "b": 2}' | jq '.[]'
-# Output (each on a new line): 1 2
+# Output (each on a new line):
+# 1
+# 2
 ```
 
 #### 2. Construction Filters
