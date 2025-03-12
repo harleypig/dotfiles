@@ -287,3 +287,31 @@ The `-L .` flag adds the current directory to the search path for includes.
 Saving jq programs in files makes them reusable, easier to maintain, and
 allows you to build more complex data processing pipelines while keeping your
 code organized.
+
+## Resources
+
+### Official Resources
+
+- [jq Homepage](https://stedolan.github.io/jq/) - The official website for jq
+- [jq Manual](https://stedolan.github.io/jq/manual/) - Comprehensive documentation
+- [jq GitHub Repository](https://github.com/stedolan/jq) - Source code and issue tracking
+- [jq Play](https://jqplay.org/) - Interactive jq playground to test expressions online
+
+### Tutorials and Guides
+
+- [jq Cookbook](https://github.com/stedolan/jq/wiki/Cookbook) - Collection of practical recipes
+- [Learn jq in Y Minutes](https://learnxinyminutes.com/docs/jq/) - Quick syntax overview
+- [Parsing JSON with jq](https://programminghistorian.org/en/lessons/json-and-jq) - Detailed tutorial from Programming Historian
+
+### Community Resources
+
+- [Stack Overflow jq Tag](https://stackoverflow.com/questions/tagged/jq) - Q&A for specific jq problems
+- [jq Subreddit](https://www.reddit.com/r/jq/) - Community discussions and examples
+- [jq Wiki](https://github.com/stedolan/jq/wiki) - Community-maintained documentation
+
+### Books and In-depth Learning
+
+- [jq Primer: Munging JSON Data](https://earthly.dev/blog/jq-select/) - Comprehensive guide to jq filtering
+- [JSON at Work](https://www.oreilly.com/library/view/json-at-work/9781491982389/) - O'Reilly book with extensive jq coverage
+
+These resources range from beginner-friendly introductions to advanced techniques, making it easier to find help regardless of your experience level with jq.
