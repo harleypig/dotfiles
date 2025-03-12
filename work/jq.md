@@ -336,7 +336,6 @@ code organized.
 ### Community Resources
 
 - [Stack Overflow jq Tag](https://stackoverflow.com/questions/tagged/jq) - Q&A for specific jq problems
-- [jq Subreddit](https://www.reddit.com/r/jq/) - Community discussions and examples
 - [jq Wiki](https://github.com/stedolan/jq/wiki) - Community-maintained documentation
 
 ### Books and In-depth Learning
