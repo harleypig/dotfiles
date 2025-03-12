@@ -135,8 +135,17 @@ class VaultKeyManager:
         # Helper function to recursively discover paths
         def discover_recursive(path, structure):
             try:
-                # List items at the current path (KV v1)
-                response = self.client.secrets.kv.v1.list_secrets(path=path)
+                # List items at the current path
+                try:
+                    # Try KV v2 first with empty mount point
+                    response = self.client.secrets.kv.v2.list_secrets(mount_point='', path=path)
+                except Exception:
+                    try:
+                        # Fall back to KV v1
+                        response = self.client.secrets.kv.v1.list_secrets(path=path)
+                    except Exception:
+                        # Try direct list method as last resort
+                        response = self.client.list(path)
 
                 if not response or 'data' not in response or 'keys' not in response['data']:
                     return
@@ -215,12 +224,25 @@ class VaultKeyManager:
         self.set_vault_client()
         try:
             print(f"Listing secrets in {path}:")
-            # Read the secret (KV v1)
-            response = self.client.secrets.kv.v1.read_secret(path=path)
-
-            if response and 'data' in response:
-                for key in response['data'].keys():
-                    print(key)
+            try:
+                # Try KV v2 first with empty mount point
+                response = self.client.secrets.kv.v2.read_secret_version(mount_point='', path=path)
+                if response and 'data' in response and 'data' in response['data']:
+                    for key in response['data']['data'].keys():
+                        print(key)
+            except Exception:
+                try:
+                    # Fall back to KV v1
+                    response = self.client.secrets.kv.v1.read_secret(path=path)
+                    if response and 'data' in response:
+                        for key in response['data'].keys():
+                            print(key)
+                except Exception:
+                    # Try direct read method as last resort
+                    response = self.client.read(path)
+                    if response and 'data' in response:
+                        for key in response['data'].keys():
+                            print(key)
 
             else:
                 print("No secrets found or unexpected data format.")
@@ -234,18 +256,53 @@ class VaultKeyManager:
         # Ensure client is set
         self.set_vault_client()
         try:
-            # Read the secret (KV v1)
-            response = self.client.secrets.kv.v1.read_secret(path=path)
-
-            if response and 'data' in response:
-                if secret_name in response['data']:
-                    # Create JSON response
-                    result = {
-                        secret_name: response['data'][secret_name],
-                        "path": path
-                    }
-
-                    print(json.dumps(result, indent=2))
+            try:
+                # Try KV v2 first with empty mount point
+                response = self.client.secrets.kv.v2.read_secret_version(mount_point='', path=path)
+                
+                if response and 'data' in response and 'data' in response['data']:
+                    if secret_name in response['data']['data']:
+                        # Create JSON response
+                        result = {
+                            secret_name: response['data']['data'][secret_name],
+                            "path": path
+                        }
+                        print(json.dumps(result, indent=2))
+                    else:
+                        raise VaultSecretNotFoundError(f"Secret '{secret_name}' not found in path '{path}'")
+            except VaultSecretNotFoundError:
+                raise
+            except Exception:
+                try:
+                    # Fall back to KV v1
+                    response = self.client.secrets.kv.v1.read_secret(path=path)
+                    
+                    if response and 'data' in response:
+                        if secret_name in response['data']:
+                            # Create JSON response
+                            result = {
+                                secret_name: response['data'][secret_name],
+                                "path": path
+                            }
+                            print(json.dumps(result, indent=2))
+                        else:
+                            raise VaultSecretNotFoundError(f"Secret '{secret_name}' not found in path '{path}'")
+                except VaultSecretNotFoundError:
+                    raise
+                except Exception:
+                    # Try direct read method as last resort
+                    response = self.client.read(path)
+                    
+                    if response and 'data' in response:
+                        if secret_name in response['data']:
+                            # Create JSON response
+                            result = {
+                                secret_name: response['data'][secret_name],
+                                "path": path
+                            }
+                            print(json.dumps(result, indent=2))
+                        else:
+                            raise VaultSecretNotFoundError(f"Secret '{secret_name}' not found in path '{path}'")
 
                 else:
                     raise VaultSecretNotFoundError(f"Secret '{secret_name}' not found in path '{path}'")
