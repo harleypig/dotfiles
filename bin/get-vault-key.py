@@ -5,6 +5,7 @@ import sys
 import json
 import argparse
 import hvac
+import re
 from pathlib import Path
 
 #-----------------------------------------------------------------------------
@@ -193,27 +194,104 @@ class VaultKeyManager:
     print(f"Vault paths saved to {vault_paths_file}")
 
   #-------------------------------------------------------------------------
-  def find_matching_paths(self, structure, search_path):
-    """Find all paths that match the search pattern."""
+  def find_matching_paths(self, search_path, use_regex=False):
+    """
+    Find all paths that match the search pattern.
+    
+    Args:
+        search_path: The path pattern to search for
+        use_regex: If True, treat search_path as a regex pattern
+    
+    Returns:
+        List of matching paths
+    """
+    if self.vault_data is None:
+      self.vault_data = self.load_vault_paths()
+      
     matches = []
-
-    def search_recursive(current_path, struct, prefix=""):
-      # Check if this node has secrets
-      if 'secrets' in struct and search_path.lower() in (prefix +
-                                                         current_path).lower():
-        matches.append(prefix + current_path)
-
-      # Recursively search subdirectories
-      for key, value in struct.items():
-        if key != 'secrets':  # Skip the secrets list
-          new_prefix = prefix + current_path + "/" if current_path else prefix
-          search_recursive(key, value, new_prefix)
-
-    # Start recursive search from the root
-    for root_key, root_value in structure.items():
-      search_recursive(root_key, root_value)
-
+    
+    # Compile regex pattern if using regex
+    pattern = None
+    if use_regex:
+      try:
+        pattern = re.compile(search_path, re.IGNORECASE)
+      except re.error as e:
+        raise VaultKeyError(f"Invalid regex pattern: {str(e)}")
+    else:
+      # For non-regex searches, convert to lowercase once
+      search_lower = search_path.lower()
+    
+    # Lazily initialize the all_paths cache
+    if not hasattr(self, '_all_paths_cache') or self._all_paths_cache is None:
+      self._all_paths_cache = self._get_all_paths(self.vault_data)
+    
+    # Filter paths that could potentially match
+    candidate_paths = []
+    for path in self._all_paths_cache:
+      if use_regex:
+        # For regex, we can do a quick substring check if the pattern contains literal text
+        literals = self._extract_literals_from_regex(search_path)
+        if literals and not any(lit.lower() in path.lower() for lit in literals):
+          continue  # Skip if none of the literal parts are in the path
+      else:
+        # For non-regex, simple substring check
+        if search_lower not in path.lower():
+          continue
+      
+      candidate_paths.append(path)
+    
+    # Now do the actual matching on the filtered candidates
+    for path in candidate_paths:
+      if use_regex:
+        if pattern.search(path):
+          matches.append(path)
+      else:
+        # Already know it contains the substring
+        matches.append(path)
+    
     return matches
+    
+  #-------------------------------------------------------------------------
+  def _get_all_paths(self, structure):
+    """Get a flat list of all paths in the structure."""
+    all_paths = []
+    
+    def collect_paths(current_path, struct, prefix=""):
+      full_path = prefix + current_path
+      
+      if 'secrets' in struct:
+        all_paths.append(full_path)
+      
+      for key, value in struct.items():
+        if key != 'secrets':
+          new_prefix = full_path + "/" if current_path else prefix
+          collect_paths(key, value, new_prefix)
+    
+    for root_key, root_value in structure.items():
+      collect_paths(root_key, root_value)
+    
+    return all_paths
+    
+  #-------------------------------------------------------------------------
+  def _extract_literals_from_regex(self, regex_pattern):
+    """Extract literal substrings from a regex pattern."""
+    # This is a simplified implementation
+    # A more robust version would handle more regex features
+    literals = []
+    current = ""
+    
+    for char in regex_pattern:
+      if char in "\\^$.|?*+()[{":
+        if current:
+          literals.append(current)
+          current = ""
+      else:
+        current += char
+    
+    if current:
+      literals.append(current)
+    
+    return [lit for lit in literals if len(lit) > 2]  # Only return substantial literals
 
   #-------------------------------------------------------------------------
   def select_path(self, matches):
@@ -400,6 +478,8 @@ def parseargs(showhelp=False):
     'list', parents=[parent_parser], help='List secrets at a path')
 
   list_parser.add_argument('path', help='Path to list secrets from')
+  list_parser.add_argument('--regex', '-r', action='store_true',
+                          help='Treat path as a regex pattern')
 
   #-------------------------------------------------------------------------
   get_parser = subparsers.add_parser(
@@ -407,6 +487,8 @@ def parseargs(showhelp=False):
 
   get_parser.add_argument('path', help='Path to the secret')
   get_parser.add_argument('secret', help='Name of the secret to retrieve')
+  get_parser.add_argument('--regex', '-r', action='store_true',
+                         help='Treat path as a regex pattern')
 
   #-------------------------------------------------------------------------
   if showhelp:
@@ -441,7 +523,8 @@ def main():
   elif args.command == 'list' or args.command == 'get':
     try:
       # Find matching paths
-      matches = manager.find_matching_paths(args.path)
+      matches = manager.find_matching_paths(
+        args.path, use_regex=args.regex if hasattr(args, 'regex') else False)
 
       if not matches:
         die(f"No matching paths found for '{args.path}'")
