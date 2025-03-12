@@ -13,15 +13,20 @@ ibus/**
 nvm/**
 packer/plugins/**
 pulse/**
+rustup/**
+synergy/**
+Synergy/**
 tree-sitter/**
 yelp/**
 
-.gsd-keyboard.settings-ported
 ansible/galaxy_token
 dconf/user
+docker/config.json
 docker/.token_seed
 docker/.token_seed.lock
-docker/config.json
+gh/hosts.yml
+.gsd-keyboard.settings-ported
+linode-cli
 mimeapps.list
 nvm
 packer/checkpoint_cache
@@ -29,4 +34,3 @@ packer/checkpoint_signature
 pgcli/history
 pgcli/log
 user-dirs.locale
-linode-cli

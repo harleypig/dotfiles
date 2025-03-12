@@ -1,44 +1,56 @@
-# Taskwarrior program configuration file.
-# For more documentation, see http://taskwarrior.org or try 'man task', 'man task-color',
-# 'man task-sync' or 'man taskrc'
+ # Taskwarrior program configuration file
+ data.location=$PROJECTS_DIR/private_dotfiles/.task
 
-# Here is an example of entries that use the default, override and blank values
-#   variable=foo   -- By specifying a value, this overrides the default
-#   variable=      -- By specifying no value, this means no default
-#   #variable=foo  -- By commenting out the line, or deleting it, this uses the default
+ # Single include for all configuration
+ include $PROJECTS_DIR/private_dotfiles/.task/include/main.config
 
-# Use the command 'task show' to see all defaults and overrides
+ # This is updated automatically by Taskwarrior
+ news.version=3.3.0
 
-# Files
-data.location=$PROJECTS_DIR/private_dotfiles/.task
-
-#include $PROJECTS_DIR/private_dotfiles/.task/include/bugwarrior.config
-include $PROJECTS_DIR/private_dotfiles/.task/include/general.config
-include $PROJECTS_DIR/private_dotfiles/.task/include/generated_reports.config
-include $PROJECTS_DIR/private_dotfiles/.task/include/incubate.config
-#include $PROJECTS_DIR/private_dotfiles/.task/include/sched.config
-#include $PROJECTS_DIR/private_dotfiles/.task/include/taskd.config
-include $PROJECTS_DIR/private_dotfiles/.task/include/theme.config
-include $PROJECTS_DIR/private_dotfiles/.task/include/timew.config
-#include $PROJECTS_DIR/private_dotfiles/.task/include/intheam.config
-
-context.work=+work
-context.personal=+personal
-context.project=+project
-
-# Taskwarrior::Kusarigama Setup
-kusarigama.plugins=Command::Wait,ProjectAlias,ProjectDefaults,SingleActive
-
-report.wait.columns=id
-report.wait.description=pseudo-report for command
-
-project.finance.defaults=+personal
-project.health.defaults=+personal
-project.household.defaults=+personal
-project.maintenance.defaults=+personal
-project.personal.defaults=+personal
-project.project.defaults=+project
-project.spiritual.defaults=+personal
-project.work.defaults=+work
-
-context.test=pro:test
+# Remove this when everything is working.
+# # Taskwarrior program configuration file.
+# # For more documentation, see http://taskwarrior.org or try 'man task', 'man task-color',
+# # 'man task-sync' or 'man taskrc'
+#
+# # Here is an example of entries that use the default, override and blank values
+# #   variable=foo   -- By specifying a value, this overrides the default
+# #   variable=      -- By specifying no value, this means no default
+# #   #variable=foo  -- By commenting out the line, or deleting it, this uses the default
+#
+# # Use the command 'task show' to see all defaults and overrides
+#
+# # Files
+# data.location=$PROJECTS_DIR/private_dotfiles/.task
+#
+# #include $PROJECTS_DIR/private_dotfiles/.task/include/bugwarrior.config
+# include $PROJECTS_DIR/private_dotfiles/.task/include/general.config
+# include $PROJECTS_DIR/private_dotfiles/.task/include/generated_reports.config
+# include $PROJECTS_DIR/private_dotfiles/.task/include/incubate.config
+# #include $PROJECTS_DIR/private_dotfiles/.task/include/sched.config
+# #include $PROJECTS_DIR/private_dotfiles/.task/include/taskd.config
+# include $PROJECTS_DIR/private_dotfiles/.task/include/theme.config
+# include $PROJECTS_DIR/private_dotfiles/.task/include/timew.config
+# #include $PROJECTS_DIR/private_dotfiles/.task/include/intheam.config
+#
+# context.work=+work
+# context.personal=+personal
+# context.project=+project
+#
+# # Taskwarrior::Kusarigama Setup
+# #kusarigama.plugins=Command::Wait,ProjectAlias,ProjectDefaults,SingleActive
+#
+# report.wait.columns=id
+# report.wait.description=pseudo-report for command
+#
+# project.finance.defaults=+personal
+# project.health.defaults=+personal
+# project.household.defaults=+personal
+# project.maintenance.defaults=+personal
+# project.personal.defaults=+personal
+# project.project.defaults=+project
+# project.spiritual.defaults=+personal
+# project.work.defaults=+work
+#
+# context.test=pro:test
+# news.version=3.3.0
+context=health
