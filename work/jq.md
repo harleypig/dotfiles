@@ -2,7 +2,9 @@
 
 ## What is jq and Why Use It?
 
-jq is a lightweight and flexible command-line JSON processor. Think of it as "sed for JSON data" - it lets you slice, filter, map, and transform structured data with the same ease that sed, awk, and grep let you play with text.
+`jq` is a lightweight and flexible command-line JSON processor. Think of it as
+"sed for JSON data" - it lets you slice, filter, map, and transform structured
+data with the same ease that sed, awk, and grep let you play with text.
 
 ### Common Use Cases:
 
@@ -59,7 +61,11 @@ echo '{"name": "John", "age": 30}' | jq '.name'
 
 # Select elements from an array
 echo '[1, 2, 3, 4]' | jq '.[]'
-# Output (each on a new line): 1 2 3 4
+# Output (each on a new line):
+# 1
+# 2
+# 3
+# 4
 
 # Combine operations
 echo '{"users": [{"name": "Alice", "role": "admin"}, {"name": "Bob", "role": "user"}]}' | jq '.users[] | select(.role == "admin") | .name'
