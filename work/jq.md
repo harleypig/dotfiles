@@ -111,7 +111,7 @@ These filters create new JSON structures:
 
 ```bash
 # Create an object
-echo '{"first": "John", "last": "Doe"}' | jq '{name: .first + " " + .last}'
+echo '{"first": "John", "last": "Doe"}' | jq '{name: (.first + " " + .last)}'
 # Output: {"name": "John Doe"}
 
 # Create an array
