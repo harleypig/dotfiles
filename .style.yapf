@@ -8,6 +8,20 @@ indent_width = 2
 # Ensure tabs are never used for indentation
 use_tabs = false
 
-# You might also want these settings for consistency
+# Settings for consistency
 continuation_indent_width = 2
 column_limit = 79
+
+# Improve dictionary/list splitting behavior
+split_before_dict_set_generator = true
+split_before_first_argument = true
+split_before_named_assigns = true
+split_complex_comprehension = true
+
+# Prevent splitting after dictionary key
+split_before_dot = true
+split_penalty_after_opening_bracket = 0
+split_penalty_for_added_line_split = 30
+
+# Discourage breaking between brackets/braces
+split_penalty_after_unary_operator = 10000
