@@ -1,0 +1,130 @@
+{
+  "dai": {
+    "production": {
+      "api": {
+        "secrets": [
+          "api_key",
+          "client_id",
+          "client_secret"
+        ]
+      },
+      "database": {
+        "primary": {
+          "secrets": [
+            "username",
+            "password",
+            "connection_string"
+          ]
+        },
+        "replica": {
+          "secrets": [
+            "username",
+            "password",
+            "connection_string"
+          ]
+        }
+      },
+      "secrets": [
+        "environment",
+        "region",
+        "deployment_key"
+      ]
+    },
+    "staging": {
+      "api": {
+        "secrets": [
+          "api_key",
+          "client_id",
+          "client_secret"
+        ]
+      },
+      "database": {
+        "secrets": [
+          "username",
+          "password",
+          "connection_string"
+        ]
+      },
+      "secrets": [
+        "environment",
+        "region"
+      ]
+    },
+    "development": {
+      "api": {
+        "secrets": [
+          "api_key",
+          "client_id"
+        ]
+      },
+      "secrets": [
+        "environment",
+        "debug_mode"
+      ]
+    }
+  },
+  "dao": {
+    "test": {
+      "auth": {
+        "secrets": [
+          "username",
+          "password",
+          "token"
+        ]
+      },
+      "secrets": [
+        "environment",
+        "log_level"
+      ]
+    },
+    "shared": {
+      "certificates": {
+        "secrets": [
+          "ca_cert",
+          "server_cert",
+          "private_key"
+        ]
+      },
+      "config": {
+        "app": {
+          "secrets": [
+            "settings",
+            "feature_flags",
+            "maintenance_mode"
+          ]
+        },
+        "secrets": [
+          "global_timeout",
+          "retry_count"
+        ]
+      }
+    }
+  },
+  "system": {
+    "backup": {
+      "secrets": [
+        "schedule",
+        "retention_days",
+        "storage_path"
+      ]
+    },
+    "monitoring": {
+      "alerts": {
+        "secrets": [
+          "email_recipients",
+          "sms_recipients",
+          "threshold"
+        ]
+      },
+      "metrics": {
+        "collection": {
+          "secrets": [
+            "interval",
+            "batch_size",
+            "endpoint"
+          ]
+        }
+      }
+    }
+  }
+}
