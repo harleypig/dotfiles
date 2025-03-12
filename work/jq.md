@@ -112,11 +112,19 @@ These filters create new JSON structures:
 ```bash
 # Create an object
 echo '{"first": "John", "last": "Doe"}' | jq '{name: (.first + " " + .last)}'
-# Output: {"name": "John Doe"}
+# Output:
+# {
+#   "name": "John Doe"
+# }
 
 # Create an array
 echo '{"a": 1, "b": 2}' | jq '[.a, .b, .a + .b]'
-# Output: [1, 2, 3]
+# Output:
+# [
+#   1,
+#   2,
+#   3
+# ]
 ```
 
 #### 3. Iteration Filters
@@ -126,11 +134,20 @@ These filters process collections of data:
 ```bash
 # map - Apply a filter to each element
 echo '[1, 2, 3]' | jq 'map(. * 2)'
-# Output: [2, 4, 6]
+# Output:
+# [
+#   2,
+#   4,
+#   6
+# ]
 
 # select - Keep elements that match a condition
 echo '[1, 2, 3, 4]' | jq 'map(select(. % 2 == 0))'
-# Output: [2, 4]
+# Output:
+# [
+#   2,
+#   4
+# ]
 ```
 
 ### Combining Filters
@@ -147,8 +164,14 @@ echo '{"orders": [
 ]}' | jq '.orders[] | {order_id: .id, total: (.items | map(.price) | add)}'
 
 # Output:
-# {"order_id": 1, "total": 30}
-# {"order_id": 2, "total": 30}
+# {
+#   "order_id": 1,
+#   "total": 30
+# }
+# {
+#   "order_id": 2,
+#   "total": 30
+# }
 ```
 
 Let's analyze how this filter works step by step:
