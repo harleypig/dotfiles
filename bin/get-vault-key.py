@@ -40,10 +40,8 @@ class VaultKeyManager:
   """Class to manage Vault keys and paths."""
 
   #-------------------------------------------------------------------------
-  def __init__(self,
-               cache_dir=None,
-               vault_paths_filename=None,
-               vault_addr=None):
+  def __init__(
+      self, cache_dir=None, vault_paths_filename=None, vault_addr=None):
     """
         Initialize the VaultKeyManager and load vault paths if available.
 
@@ -99,6 +97,7 @@ class VaultKeyManager:
   #-------------------------------------------------------------------------
   def set_vault_client(self):
     """Set up and configure the vault client if not already set."""
+
     # If client is already set, just return
     if hasattr(self, 'client') and self.client is not None:
       return
@@ -149,8 +148,8 @@ class VaultKeyManager:
     # Helper function to recursively discover paths
     def discover_recursive(path, structure):
       try:
-        # List items at the current path using KV v1 only
-        response = self.client.secrets.kv.v1.list_secrets(path=path)
+        response = self.client.secrets.kv.v1.list_secrets(
+          path=path, mount_point='')
 
         if not response or 'data' not in response or 'keys' not in response[
             'data']:
@@ -397,16 +396,14 @@ def parseargs(showhelp=False):
     help='Root paths to start discovery from (default: dai dao)')
 
   #-------------------------------------------------------------------------
-  list_parser = subparsers.add_parser('list',
-                                      parents=[parent_parser],
-                                      help='List secrets at a path')
+  list_parser = subparsers.add_parser(
+    'list', parents=[parent_parser], help='List secrets at a path')
 
   list_parser.add_argument('path', help='Path to list secrets from')
 
   #-------------------------------------------------------------------------
-  get_parser = subparsers.add_parser('get',
-                                     parents=[parent_parser],
-                                     help='Get a specific secret value')
+  get_parser = subparsers.add_parser(
+    'get', parents=[parent_parser], help='Get a specific secret value')
 
   get_parser.add_argument('path', help='Path to the secret')
   get_parser.add_argument('secret', help='Name of the secret to retrieve')
@@ -424,9 +421,10 @@ def main():
   args = parseargs(showhelp=len(sys.argv) <= 1)
 
   # Create manager instance
-  manager = VaultKeyManager(cache_dir=args.cache_dir,
-                            vault_paths_filename=args.paths_file,
-                            vault_addr=args.vault_addr)
+  manager = VaultKeyManager(
+    cache_dir=args.cache_dir,
+    vault_paths_filename=args.paths_file,
+    vault_addr=args.vault_addr)
 
   if args.command == 'discover':
     try:
