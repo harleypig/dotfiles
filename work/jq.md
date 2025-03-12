@@ -197,7 +197,8 @@ scripts and data processing pipelines.
 
 ## Saving jq Programs in Files
 
-For complex or frequently used jq operations, you can save your jq programs in files rather than typing them on the command line each time.
+For complex or frequently used jq operations, you can save your jq programs in
+files rather than typing them on the command line each time.
 
 ### Creating a jq Program File
 
@@ -283,4 +284,6 @@ jq -L . -f process-orders.jq orders.json
 
 The `-L .` flag adds the current directory to the search path for includes.
 
-Saving jq programs in files makes them reusable, easier to maintain, and allows you to build more complex data processing pipelines while keeping your code organized.
+Saving jq programs in files makes them reusable, easier to maintain, and
+allows you to build more complex data processing pipelines while keeping your
+code organized.
