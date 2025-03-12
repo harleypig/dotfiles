@@ -1,0 +1,13 @@
+[style]
+# Use PEP8 style as the base
+based_on_style = pep8
+
+# Override indentation to be 2 spaces
+indent_width = 2
+
+# Ensure tabs are never used for indentation
+use_tabs = false
+
+# You might also want these settings for consistency
+continuation_indent_width = 2
+column_limit = 79
