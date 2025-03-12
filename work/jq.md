@@ -193,7 +193,9 @@ combining simple, focused filters.
 - **Comma operator (`,`)**: Run multiple filters on the same input
   ```bash
   echo '{"a": 1, "b": 2}' | jq '.a, .b'
-  # Output (each on a new line): 1 2
+  # Output:
+  # 1
+  # 2
   ```
 
 Remember that jq's filter-based approach makes complex JSON transformations
