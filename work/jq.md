@@ -130,7 +130,7 @@ echo '[1, 2, 3, 4]' | jq 'map(select(. % 2 == 0))'
 
 ### Combining Filters
 
-The real power of jq comes from combining filters with the pipe operator (`|`):
+The real power of jq comes from combining filters with the pipe operator (`|`). Let's break down a complex example to see how data flows through each step:
 
 ```bash
 # Complex transformation
@@ -143,6 +143,30 @@ echo '{"orders": [
 # {"order_id": 1, "total": 30}
 # {"order_id": 2, "total": 30}
 ```
+
+Let's analyze how this filter works step by step:
+
+1. `.orders[]` 
+   - Takes the input JSON and selects the "orders" array
+   - The `[]` iterates through each element in the array
+   - Outputs each order object individually to the next filter
+
+2. `{order_id: .id, total: (...)}` 
+   - For each order object, constructs a new object with two fields:
+     - "order_id": copied from the input object's "id" field
+     - "total": calculated by the sub-expression in parentheses
+
+3. Inside the parentheses: `.items | map(.price) | add`
+   - `.items`: Selects the "items" array from the current order
+   - `map(.price)`: Transforms the array of item objects into an array of just prices
+   - `add`: Sums all values in the resulting array
+
+The data transformation at each step:
+- Input → `{"orders": [{"id": 1, ...}, {"id": 2, ...}]}`
+- After `.orders[]` → `{"id": 1, ...}` then `{"id": 2, ...}` (processed separately)
+- After the full filter → `{"order_id": 1, "total": 30}` then `{"order_id": 2, "total": 30}`
+
+This pipeline approach allows you to build complex transformations by combining simple, focused filters.
 
 ### Advanced Filter Techniques
 
