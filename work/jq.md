@@ -314,4 +314,6 @@ code organized.
 - [jq Primer: Munging JSON Data](https://earthly.dev/blog/jq-select/) - Comprehensive guide to jq filtering
 - [JSON at Work](https://www.oreilly.com/library/view/json-at-work/9781491982389/) - O'Reilly book with extensive jq coverage
 
-These resources range from beginner-friendly introductions to advanced techniques, making it easier to find help regardless of your experience level with jq.
+These resources range from beginner-friendly introductions to advanced
+techniques, making it easier to find help regardless of your experience level
+with jq.
