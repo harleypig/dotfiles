@@ -61,7 +61,7 @@ echo '{"name": "John", "age": 30}' | jq '.name'
 
 # Select elements from an array
 echo '[1, 2, 3, 4]' | jq '.[]'
-# Output (each on a new line):
+# Output:
 # 1
 # 2
 # 3
@@ -87,7 +87,7 @@ These filters pull out specific pieces of data:
 echo '{"a": 1}' | jq '.'
 # Output:
 # {
-#    "a": 1
+#   "a": 1
 # }
 
 # Object Identifier (.field)
@@ -100,7 +100,7 @@ echo '[10, 20, 30]' | jq '.[1]'
 
 # Array/Object Value Iterator (.[] or .[])
 echo '{"a": 1, "b": 2}' | jq '.[]'
-# Output (each on a new line):
+# Output:
 # 1
 # 2
 ```
