@@ -194,3 +194,93 @@ combining simple, focused filters.
 Remember that jq's filter-based approach makes complex JSON transformations
 both readable and maintainable, which is especially valuable in automation
 scripts and data processing pipelines.
+
+## Saving jq Programs in Files
+
+For complex or frequently used jq operations, you can save your jq programs in files rather than typing them on the command line each time.
+
+### Creating a jq Program File
+
+Create a text file with your jq program:
+
+```bash
+# File: calculate-totals.jq
+.orders[] | {
+  order_id: .id,
+  customer: .customer_name,
+  total: (.items | map(.price) | add),
+  item_count: (.items | length)
+}
+```
+
+### Running jq with Program Files
+
+There are two main ways to use jq program files:
+
+#### 1. Using the `-f` flag (file)
+
+```bash
+# Process orders.json using the program in calculate-totals.jq
+jq -f calculate-totals.jq orders.json
+
+# You can still pipe input
+cat orders.json | jq -f calculate-totals.jq
+```
+
+#### 2. Using the `@` syntax for inline file references
+
+```bash
+jq "@calculate-totals.jq" orders.json
+```
+
+### Passing Arguments to jq Programs
+
+You can make your jq programs more flexible by using variables:
+
+```bash
+# File: filter-by-status.jq
+.orders[] | select(.status == $STATUS)
+```
+
+Then pass values when invoking jq:
+
+```bash
+# Set the STATUS variable to "shipped"
+jq --arg STATUS "shipped" -f filter-by-status.jq orders.json
+```
+
+### Combining Program Files with Command-Line Filters
+
+You can further process the output of a jq program file:
+
+```bash
+# Use the program file and then process its output
+jq -f calculate-totals.jq orders.json | jq 'select(.total > 100)'
+```
+
+### Including Other jq Files
+
+For larger projects, you can split your jq code into modules and include them:
+
+```bash
+# File: common-functions.jq
+def total_price: map(.price) | add;
+def with_tax($rate): . * (1 + $rate);
+
+# File: process-orders.jq
+include "common-functions";
+.orders[] | {
+  id: .id,
+  subtotal: (.items | total_price),
+  total: (.items | total_price | with_tax(0.07))
+}
+```
+
+Run with:
+```bash
+jq -L . -f process-orders.jq orders.json
+```
+
+The `-L .` flag adds the current directory to the search path for includes.
+
+Saving jq programs in files makes them reusable, easier to maintain, and allows you to build more complex data processing pipelines while keeping your code organized.
