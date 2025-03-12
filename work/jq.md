@@ -130,7 +130,9 @@ echo '[1, 2, 3, 4]' | jq 'map(select(. % 2 == 0))'
 
 ### Combining Filters
 
-The real power of jq comes from combining filters with the pipe operator (`|`). Let's break down a complex example to see how data flows through each step:
+The real power of jq comes from combining filters with the pipe operator
+(`|`). Let's break down a complex example to see how data flows through each
+step:
 
 ```bash
 # Complex transformation
@@ -146,12 +148,12 @@ echo '{"orders": [
 
 Let's analyze how this filter works step by step:
 
-1. `.orders[]` 
+1. `.orders[]`
    - Takes the input JSON and selects the "orders" array
    - The `[]` iterates through each element in the array
    - Outputs each order object individually to the next filter
 
-2. `{order_id: .id, total: (...)}` 
+2. `{order_id: .id, total: (...)}`
    - For each order object, constructs a new object with two fields:
      - "order_id": copied from the input object's "id" field
      - "total": calculated by the sub-expression in parentheses
@@ -166,7 +168,8 @@ The data transformation at each step:
 - After `.orders[]` → `{"id": 1, ...}` then `{"id": 2, ...}` (processed separately)
 - After the full filter → `{"order_id": 1, "total": 30}` then `{"order_id": 2, "total": 30}`
 
-This pipeline approach allows you to build complex transformations by combining simple, focused filters.
+This pipeline approach allows you to build complex transformations by
+combining simple, focused filters.
 
 ### Advanced Filter Techniques
 
@@ -188,4 +191,6 @@ This pipeline approach allows you to build complex transformations by combining 
   # Output (each on a new line): 1 2
   ```
 
-Remember that jq's filter-based approach makes complex JSON transformations both readable and maintainable, which is especially valuable in automation scripts and data processing pipelines.
+Remember that jq's filter-based approach makes complex JSON transformations
+both readable and maintainable, which is especially valuable in automation
+scripts and data processing pipelines.
