@@ -244,13 +244,11 @@
   undo = reset --soft HEAD^         # Undo last commit keeping changes staged
 
   # --- History ---
-  last = log -1 HEAD                # Show last commit
-  graph = log --graph --oneline     # Compact graph view
-  search = log -p -S               # Search commit contents
-  since = log --since --pretty=format:'%Cred%h%Creset %s%C(yellow)%d%Creset'              # Show commits since date
-  until = log --until --pretty=format:'%Cred%h%Creset %s%C(yellow)%d%Creset'              # Show commits until date
-  l    = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
-  lc   = log ORIG_HEAD.. --no-merges --pretty=format:'%Cred%h%Creset %s%C(yellow)%d%Creset'  # Changes since branch point
-  lm = log --merges --decorate --date=short --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
-  ln = log --decorate --numstat --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]"
+  l     = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
+  since = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr' --since
+  until = log --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr' --until
+  last = log -1 HEAD --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
+  lc = log ORIG_HEAD.. --no-merges --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
+  lm = log --merges --graph --abbrev-commit --date='format:%Y%m%d %H:%M:%S' --pretty=format:'%Cred%h %C(blue)%cd %C(bold magenta)|%Creset %s%C(yellow)%d %Cgreen(%cn) %Cblue%cr'
+
   latest-tag = !"git tag --list 'v*' --sort=-v:refname | head -n 1"
