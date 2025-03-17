@@ -12,6 +12,7 @@ gtk-3.0/**
 ibus/**
 nvm/**
 packer/plugins/**
+pudb/**
 pulse/**
 rustup/**
 synergy/**
