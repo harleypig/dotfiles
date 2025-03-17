@@ -145,15 +145,11 @@ class VaultKeyManager:
         Args:
             root_paths: List of root paths to start discovery from
         """
-    # Ensure client is set
     self.set_vault_client()
 
     if root_paths is None:
       raise ValueError("root_paths cannot be None")
 
-    print("Discovering vault paths...")
-
-    # Initialize the structure
     vault_data = {}
 
     # Helper function to recursively discover paths
@@ -201,19 +197,16 @@ class VaultKeyManager:
       except Exception as e:
         raise VaultKeyError(f"Error listing {path}: {str(e)}")
 
-    # Start discovery from root paths
     for root_path in root_paths:
       vault_data[root_path] = {}
       discover_recursive(root_path, vault_data[root_path])
 
-    # Save to file
     vault_paths_file = os.path.join(self.cache_dir, self.vault_paths_filename)
     os.makedirs(os.path.dirname(vault_paths_file), exist_ok=True)
 
     with open(vault_paths_file, 'w') as f:
       json.dump(vault_data, f, indent=2)
 
-    # Print a newline first to move to a new line after the last status update
     print(f"\nVault paths saved to {vault_paths_file}")
 
   #-------------------------------------------------------------------------
