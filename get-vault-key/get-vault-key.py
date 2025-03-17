@@ -165,7 +165,7 @@ class VaultKeyManager:
           return
 
         keys = response['data']['keys']
-        
+
         # Track directories and keys separately
         directories = []
         secret_keys = []
@@ -176,32 +176,34 @@ class VaultKeyManager:
             directories.append(key[:-1])
           else:
             secret_keys.append(key)
-        
+
         # Add directories if any exist
         if directories:
           if "__directories__" not in structure:
             structure["__directories__"] = {}
-          
+
           for dir_name in directories:
             if dir_name not in structure["__directories__"]:
               structure["__directories__"][dir_name] = {}
-            
+
             # Recursively discover
             subpath = f"{path}/{dir_name}" if path else dir_name
             discover_recursive(subpath, structure["__directories__"][dir_name])
-        
+
         # Add keys if any exist
         if secret_keys:
-          # Get the key names for each secret
           key_names = []
+
           for secret_key in secret_keys:
             response = self._read_secret(path=f"{path}/{secret_key}")
+
             if response and 'data' in response:
               if isinstance(response['data'], dict):
                 key_names.extend(list(response['data'].keys()))
+
               else:
                 key_names.extend(response['data'])
-          
+
           if key_names:
             structure["__keys__"] = key_names
 
