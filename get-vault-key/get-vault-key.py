@@ -226,7 +226,8 @@ class VaultKeyManager:
     with open(vault_paths_file, 'w') as f:
       json.dump(vault_data, f, indent=2)
 
-    print(f"Vault paths saved to {vault_paths_file}")
+    # Print a newline first to move to a new line after the last status update
+    print("\nVault paths saved to {vault_paths_file}")
 
   #-------------------------------------------------------------------------
   def find_matching_paths(self, search_path, use_regex=False):
