@@ -561,12 +561,12 @@ def main():
 
   if args.command == 'discover':
     try:
-      # Get root paths if provided, otherwise use defaults
-      root_paths = args.root_paths if hasattr(
-        args, 'root_paths') and args.root_paths else ['dai', 'dao']
-
+      # Check if root_paths is provided
+      if not hasattr(args, 'root_paths') or not args.root_paths:
+        die("Error: --root-paths is required for the discover command")
+      
       # Set vault client with provided address
-      manager.discover_paths(root_paths)
+      manager.discover_paths(args.root_paths)
 
     except (VaultKeyError, ValueError) as e:
       die(str(e))
