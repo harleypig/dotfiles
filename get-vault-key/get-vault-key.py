@@ -171,11 +171,22 @@ class VaultKeyManager:
             discover_recursive(subpath, structure[key[:-1]])
 
           else:
-            # It's a secret
-            if 'secrets' not in structure:
-              structure['secrets'] = []
-
-            structure['secrets'].append(key)
+            # It's a secret - get its value and description
+            try:
+              secret_response = self.client.secrets.kv.v1.read_secret(
+                path=f"{path}/{key}" if path else key)
+              
+              if secret_response and 'data' in secret_response:
+                # Store the secret value and description (if available)
+                secret_value = secret_response['data'].get('value', '')
+                secret_description = secret_response['data'].get('description', '')
+                structure[key] = [secret_value, secret_description]
+              else:
+                # If we can't get details, just store empty values
+                structure[key] = ['', '']
+            except Exception:
+              # If reading the secret fails, just store empty values
+              structure[key] = ['', '']
 
       except Exception as e:
         raise VaultKeyError(f"Error listing {path}: {str(e)}")
@@ -266,12 +277,16 @@ class VaultKeyManager:
 
     def collect_paths(current_path, struct, prefix=""):
       full_path = prefix + current_path
-
-      if 'secrets' in struct:
+      
+      # Check if this node has any direct secret keys (not nested objects)
+      has_secrets = any(isinstance(value, list) for value in struct.values())
+      
+      if has_secrets:
         all_paths.append(full_path)
-
+      
+      # Process nested objects
       for key, value in struct.items():
-        if key != 'secrets':
+        if isinstance(value, dict):
           new_prefix = full_path + "/" if current_path else prefix
           collect_paths(key, value, new_prefix)
 
@@ -320,16 +335,30 @@ class VaultKeyManager:
 
     try:
       print(f"Listing secrets in {path}:")
-
-      response = self.client.secrets.kv.v1.read_secret(path=path)
-
-      if response and 'data' in response:
-        for key in response['data'].keys():
-          print(key)
-
+      
+      # For mock data, we'll extract from our vault_data structure
+      if self.vault_data is None:
+        self.vault_data = self.load_vault_paths()
+      
+      # Navigate to the path in the structure
+      current = self.vault_data
+      path_parts = path.split('/')
+      
+      for part in path_parts:
+        if part in current:
+          current = current[part]
+        else:
+          raise VaultKeyError(f"Path part '{part}' not found in '{path}'")
+      
+      # List all direct secret keys (not nested objects)
+      secrets = [key for key, value in current.items() if isinstance(value, list)]
+      
+      if secrets:
+        for secret in secrets:
+          print(secret)
       else:
-        print("No secrets found or unexpected data format.")
-
+        print("No secrets found at this path.")
+      
     except Exception as e:
       raise VaultKeyError(f"Error listing secrets at {path}: {str(e)}")
 
@@ -340,21 +369,35 @@ class VaultKeyManager:
     self.set_vault_client()
 
     try:
-      response = self.client.secrets.kv.v1.read_secret(path=path)
-
-      if response and 'data' in response:
-        if secret_name in response['data']:
-          # Create JSON response
-          result = {secret_name: response['data'][secret_name], "path": path}
-          print(json.dumps(result, indent=2))
-
+      # For mock data, we'll extract from our vault_data structure
+      if self.vault_data is None:
+        self.vault_data = self.load_vault_paths()
+      
+      # Navigate to the path in the structure
+      current = self.vault_data
+      path_parts = path.split('/')
+      
+      for part in path_parts:
+        if part in current:
+          current = current[part]
         else:
-          raise VaultSecretNotFoundError(
-            f"Secret '{secret_name}' not found in path '{path}'")
-
+          raise VaultKeyError(f"Path part '{part}' not found in '{path}'")
+      
+      # Check if the secret exists
+      if secret_name in current and isinstance(current[secret_name], list):
+        # Create JSON response with value and description
+        secret_value = current[secret_name][0] if len(current[secret_name]) > 0 else ""
+        secret_desc = current[secret_name][1] if len(current[secret_name]) > 1 else ""
+        
+        result = {
+          secret_name: secret_value,
+          "description": secret_desc,
+          "path": path
+        }
+        print(json.dumps(result, indent=2))
       else:
-        raise VaultKeyError(
-          f"No data found at path '{path}' or unexpected data format.")
+        raise VaultSecretNotFoundError(
+          f"Secret '{secret_name}' not found in path '{path}'")
 
     except VaultKeyError:
       raise

@@ -4,14 +4,31 @@ cache_dir="$PWD"
 paths_file='mock-vault-paths.json'
 
 # Default mode is null (just run the script)
-mode="$1"
+mode=${1:-null}
+
+cmd="./get-vault-key.py \
+  --cache-dir \"$cache_dir\" \
+  --paths-file \"$paths_file\" \
+  list root1/production"
 
 case "$mode" in
-  debug) mode='pudb' ;;
-  echo) mode='echo' ;;
+  debug)
+    # Start with pudb debugger
+    python3 -m pudb ./get-vault-key.py \
+      --cache-dir "$cache_dir" \
+      --paths-file "$paths_file" \
+      list root1/production
+    ;;
+  echo)
+    # Just echo the command
+    echo "$cmd"
+    ;;
+  null|"")
+    # Just run the command
+    eval "$cmd"
+    ;;
+  *)
+    echo "Error: Unknown mode '$mode'. Use one of: debug, echo, null"
+    exit 1
+    ;;
 esac
-
-$mode ./get-vault-key.py \
-  list secrets \
-  --cache-dir "$cache_dir" \
-  --paths-file "$paths_file"

@@ -2,127 +2,93 @@
   "root1": {
     "production": {
       "api": {
-        "secrets": [
-          "api_key",
-          "client_id",
-          "client_secret"
-        ]
+        "api_key": ["value", "description"],
+        "client_id": ["value", "description"],
+        "client_secret": ["value", "description"]
       },
       "database": {
         "primary": {
-          "secrets": [
-            "username",
-            "password",
-            "connection_string"
-          ]
+          "username": ["value", "description"],
+          "password": ["value", "description"],
+          "connection_string": ["value", "description"]
         },
         "replica": {
-          "secrets": [
-            "username",
-            "password",
-            "connection_string"
-          ]
+          "username": ["value", "description"],
+          "password": ["value", "description"],
+          "connection_string": ["value", "description"]
         }
       },
-      "secrets": [
-        "environment",
-        "region",
-        "deployment_key"
-      ]
+      "environment": ["value", "description"],
+      "region": ["value", "description"],
+      "deployment_key": ["value", "description"]
     },
     "staging": {
       "api": {
-        "secrets": [
-          "api_key",
-          "client_id",
-          "client_secret"
-        ]
+        "api_key": ["value", "description"],
+        "client_id": ["value", "description"],
+        "client_secret": ["value", "description"]
       },
       "database": {
-        "secrets": [
-          "username",
-          "password",
-          "connection_string"
-        ]
+        "username": ["value", "description"],
+        "password": ["value", "description"],
+        "connection_string": ["value", "description"]
       },
-      "secrets": [
-        "environment",
-        "region"
-      ]
+      "environment": ["value", "description"],
+      "region": ["value", "description"]
     },
     "development": {
       "api": {
-        "secrets": [
-          "api_key",
-          "client_id"
-        ]
+        "api_key": ["value", "description"],
+        "client_id": ["value", "description"]
       },
-      "secrets": [
-        "environment",
-        "debug_mode"
-      ]
+      "environment": ["value", "description"],
+      "debug_mode": ["value", "description"]
     }
   },
   "root2": {
     "test": {
       "auth": {
-        "secrets": [
-          "username",
-          "password",
-          "token"
-        ]
+        "username": ["value", "description"],
+        "password": ["value", "description"],
+        "token": ["value", "description"]
       },
-      "secrets": [
-        "environment",
-        "log_level"
-      ]
+      "environment": ["value", "description"],
+      "log_level": ["value", "description"]
     },
     "shared": {
       "certificates": {
-        "secrets": [
-          "ca_cert",
-          "server_cert",
-          "private_key"
-        ]
+        "ca_cert": ["value", "description"],
+        "server_cert": ["value", "description"],
+        "private_key": ["value", "description"]
       },
       "config": {
         "app": {
-          "secrets": [
-            "settings",
-            "feature_flags",
-            "maintenance_mode"
-          ]
+          "settings": ["value", "description"],
+          "feature_flags": ["value", "description"],
+          "maintenance_mode": ["value", "description"]
         },
-        "secrets": [
-          "global_timeout",
-          "retry_count"
-        ]
+        "global_timeout": ["value", "description"],
+        "retry_count": ["value", "description"]
       }
     }
   },
   "system": {
     "backup": {
-      "secrets": [
-        "schedule",
-        "retention_days",
-        "storage_path"
-      ]
+      "schedule": ["value", "description"],
+      "retention_days": ["value", "description"],
+      "storage_path": ["value", "description"]
     },
     "monitoring": {
       "alerts": {
-        "secrets": [
-          "email_recipients",
-          "sms_recipients",
-          "threshold"
-        ]
+        "email_recipients": ["value", "description"],
+        "sms_recipients": ["value", "description"],
+        "threshold": ["value", "description"]
       },
       "metrics": {
         "collection": {
-          "secrets": [
-            "interval",
-            "batch_size",
-            "endpoint"
-          ]
+          "interval": ["value", "description"],
+          "batch_size": ["value", "description"],
+          "endpoint": ["value", "description"]
         }
       }
     }
