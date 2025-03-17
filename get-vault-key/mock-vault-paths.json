@@ -1,5 +1,5 @@
 {
-  "dai": {
+  "root1": {
     "production": {
       "api": {
         "secrets": [
@@ -63,7 +63,7 @@
       ]
     }
   },
-  "dao": {
+  "root2": {
     "test": {
       "auth": {
         "secrets": [
