@@ -227,7 +227,7 @@ class VaultKeyManager:
       json.dump(vault_data, f, indent=2)
 
     # Print a newline first to move to a new line after the last status update
-    print("\nVault paths saved to {vault_paths_file}")
+    print(f"\nVault paths saved to {vault_paths_file}")
 
   #-------------------------------------------------------------------------
   def find_matching_paths(self, search_path, use_regex=False):
@@ -302,10 +302,6 @@ class VaultKeyManager:
 
     def collect_paths(current_path, struct, prefix=""):
       full_path = prefix + current_path
-
-      # Check if this node has any direct keys
-      if "__keys__" in struct:
-        all_paths.append(full_path)
 
       # Process nested directories
       if "__directories__" in struct:
