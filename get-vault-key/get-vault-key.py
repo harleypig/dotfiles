@@ -165,23 +165,45 @@ class VaultKeyManager:
           return
 
         keys = response['data']['keys']
+        
+        # Track directories and keys separately
+        directories = []
+        secret_keys = []
 
         for key in keys:
           # If key ends with /, it's a directory
           if key.endswith('/'):
-            subpath = f"{path}/{key[:-1]}" if path else key[:-1]
-
-            # Create nested structure
-            if key[:-1] not in structure:
-              structure[key[:-1]] = {}
-
-            # Recursively discover
-            discover_recursive(subpath, structure[key[:-1]])
-
+            directories.append(key[:-1])
           else:
-            response = self._read_secret(path=f"{path}/{key}")
-            structure[key] = list(response['data'].keys())
-            print('test')
+            secret_keys.append(key)
+        
+        # Add directories if any exist
+        if directories:
+          if "__directories__" not in structure:
+            structure["__directories__"] = {}
+          
+          for dir_name in directories:
+            if dir_name not in structure["__directories__"]:
+              structure["__directories__"][dir_name] = {}
+            
+            # Recursively discover
+            subpath = f"{path}/{dir_name}" if path else dir_name
+            discover_recursive(subpath, structure["__directories__"][dir_name])
+        
+        # Add keys if any exist
+        if secret_keys:
+          # Get the key names for each secret
+          key_names = []
+          for secret_key in secret_keys:
+            response = self._read_secret(path=f"{path}/{secret_key}")
+            if response and 'data' in response:
+              if isinstance(response['data'], dict):
+                key_names.extend(list(response['data'].keys()))
+              else:
+                key_names.extend(response['data'])
+          
+          if key_names:
+            structure["__keys__"] = key_names
 
       except Exception as e:
         raise VaultKeyError(f"Error listing {path}: {str(e)}")
@@ -274,17 +296,15 @@ class VaultKeyManager:
     def collect_paths(current_path, struct, prefix=""):
       full_path = prefix + current_path
 
-      # Check if this node has any direct secret keys (not nested objects)
-      has_secrets = any(isinstance(value, list) for value in struct.values())
-
-      if has_secrets:
+      # Check if this node has any direct keys
+      if "__keys__" in struct:
         all_paths.append(full_path)
 
-      # Process nested objects
-      for key, value in struct.items():
-        if isinstance(value, dict):
+      # Process nested directories
+      if "__directories__" in struct:
+        for dir_name, dir_value in struct["__directories__"].items():
           new_prefix = full_path + "/" if current_path else prefix
-          collect_paths(key, value, new_prefix)
+          collect_paths(dir_name, dir_value, new_prefix)
 
     for root_key, root_value in structure.items():
       collect_paths(root_key, root_value)
@@ -345,19 +365,23 @@ class VaultKeyManager:
       for part in path_parts:
         if part in current:
           current = current[part]
+        elif "__directories__" in current and part in current["__directories__"]:
+          current = current["__directories__"][part]
         else:
           raise VaultKeyError(f"Path part '{part}' not found in '{path}'")
 
-      # List all direct secret keys (not nested objects)
-      secrets = [
-        key for key, value in current.items() if isinstance(value, list)
-      ]
-
-      if secrets:
-        for secret in secrets:
-          print(secret)
+      # List all keys at this path
+      if "__keys__" in current:
+        for key in current["__keys__"]:
+          print(key)
       else:
         print("No secrets found at this path.")
+
+      # If there are directories, list them too
+      if "__directories__" in current and current["__directories__"]:
+        print("\nSubdirectories:")
+        for dir_name in current["__directories__"].keys():
+          print(f"{dir_name}/")
 
     except Exception as e:
       raise VaultKeyError(f"Error listing secrets at {path}: {str(e)}")
@@ -380,20 +404,18 @@ class VaultKeyManager:
       for part in path_parts:
         if part in current:
           current = current[part]
+        elif "__directories__" in current and part in current["__directories__"]:
+          current = current["__directories__"][part]
         else:
           raise VaultKeyError(f"Path part '{part}' not found in '{path}'")
 
-      # Check if the secret exists
-      if secret_name in current and isinstance(current[secret_name], list):
-        # Create JSON response with value and description
-        secret_value = current[secret_name][0] if len(
-          current[secret_name]) > 0 else ""
-        secret_desc = current[secret_name][1] if len(
-          current[secret_name]) > 1 else ""
-
+      # Check if the secret exists in the keys list
+      if "__keys__" in current and secret_name in current["__keys__"]:
+        # In a real implementation, we would fetch the actual secret value here
+        # For mock data, we'll just return a placeholder
         result = {
-          secret_name: secret_value,
-          "description": secret_desc,
+          secret_name: "mock_value",
+          "description": "mock_description",
           "path": path
         }
         print(json.dumps(result, indent=2))

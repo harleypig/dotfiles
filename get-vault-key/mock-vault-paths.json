@@ -1,94 +1,152 @@
 {
   "root1": {
-    "production": {
-      "api": {
-        "api_key": ["value", "description"],
-        "client_id": ["value", "description"],
-        "client_secret": ["value", "description"]
-      },
-      "database": {
-        "primary": {
-          "username": ["value", "description"],
-          "password": ["value", "description"],
-          "connection_string": ["value", "description"]
+    "__directories__": {
+      "production": {
+        "__directories__": {
+          "api": {
+            "__keys__": [
+              "api_key",
+              "client_id",
+              "client_secret"
+            ]
+          },
+          "database": {
+            "__directories__": {
+              "primary": {
+                "__keys__": [
+                  "username",
+                  "password",
+                  "connection_string"
+                ]
+              },
+              "replica": {
+                "__keys__": [
+                  "username",
+                  "password",
+                  "connection_string"
+                ]
+              }
+            }
+          }
         },
-        "replica": {
-          "username": ["value", "description"],
-          "password": ["value", "description"],
-          "connection_string": ["value", "description"]
-        }
+        "__keys__": [
+          "environment",
+          "region",
+          "deployment_key"
+        ]
       },
-      "environment": ["value", "description"],
-      "region": ["value", "description"],
-      "deployment_key": ["value", "description"]
-    },
-    "staging": {
-      "api": {
-        "api_key": ["value", "description"],
-        "client_id": ["value", "description"],
-        "client_secret": ["value", "description"]
+      "staging": {
+        "__directories__": {
+          "api": {
+            "__keys__": [
+              "api_key",
+              "client_id",
+              "client_secret"
+            ]
+          },
+          "database": {
+            "__keys__": [
+              "username",
+              "password",
+              "connection_string"
+            ]
+          }
+        },
+        "__keys__": [
+          "environment",
+          "region"
+        ]
       },
-      "database": {
-        "username": ["value", "description"],
-        "password": ["value", "description"],
-        "connection_string": ["value", "description"]
-      },
-      "environment": ["value", "description"],
-      "region": ["value", "description"]
-    },
-    "development": {
-      "api": {
-        "api_key": ["value", "description"],
-        "client_id": ["value", "description"]
-      },
-      "environment": ["value", "description"],
-      "debug_mode": ["value", "description"]
+      "development": {
+        "__directories__": {
+          "api": {
+            "__keys__": [
+              "api_key",
+              "client_id"
+            ]
+          }
+        },
+        "__keys__": [
+          "environment",
+          "debug_mode"
+        ]
+      }
     }
   },
   "root2": {
-    "test": {
-      "auth": {
-        "username": ["value", "description"],
-        "password": ["value", "description"],
-        "token": ["value", "description"]
-      },
-      "environment": ["value", "description"],
-      "log_level": ["value", "description"]
-    },
-    "shared": {
-      "certificates": {
-        "ca_cert": ["value", "description"],
-        "server_cert": ["value", "description"],
-        "private_key": ["value", "description"]
-      },
-      "config": {
-        "app": {
-          "settings": ["value", "description"],
-          "feature_flags": ["value", "description"],
-          "maintenance_mode": ["value", "description"]
+    "__directories__": {
+      "test": {
+        "__directories__": {
+          "auth": {
+            "__keys__": [
+              "username",
+              "password",
+              "token"
+            ]
+          }
         },
-        "global_timeout": ["value", "description"],
-        "retry_count": ["value", "description"]
+        "__keys__": [
+          "environment",
+          "log_level"
+        ]
+      },
+      "shared": {
+        "__directories__": {
+          "certificates": {
+            "__keys__": [
+              "ca_cert",
+              "server_cert",
+              "private_key"
+            ]
+          },
+          "config": {
+            "__directories__": {
+              "app": {
+                "__keys__": [
+                  "settings",
+                  "feature_flags",
+                  "maintenance_mode"
+                ]
+              }
+            },
+            "__keys__": [
+              "global_timeout",
+              "retry_count"
+            ]
+          }
+        }
       }
     }
   },
   "system": {
-    "backup": {
-      "schedule": ["value", "description"],
-      "retention_days": ["value", "description"],
-      "storage_path": ["value", "description"]
-    },
-    "monitoring": {
-      "alerts": {
-        "email_recipients": ["value", "description"],
-        "sms_recipients": ["value", "description"],
-        "threshold": ["value", "description"]
+    "__directories__": {
+      "backup": {
+        "__keys__": [
+          "schedule",
+          "retention_days",
+          "storage_path"
+        ]
       },
-      "metrics": {
-        "collection": {
-          "interval": ["value", "description"],
-          "batch_size": ["value", "description"],
-          "endpoint": ["value", "description"]
+      "monitoring": {
+        "__directories__": {
+          "alerts": {
+            "__keys__": [
+              "email_recipients",
+              "sms_recipients",
+              "threshold"
+            ]
+          },
+          "metrics": {
+            "__directories__": {
+              "collection": {
+                "__keys__": [
+                  "interval",
+                  "batch_size",
+                  "endpoint"
+                ]
+              }
+            }
+          }
         }
       }
     }
