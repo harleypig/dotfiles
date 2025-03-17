@@ -188,6 +188,7 @@ class VaultKeyManager:
     # Save to file
     vault_paths_file = os.path.join(self.cache_dir, self.vault_paths_filename)
     os.makedirs(os.path.dirname(vault_paths_file), exist_ok=True)
+
     with open(vault_paths_file, 'w') as f:
       json.dump(vault_data, f, indent=2)
 
@@ -197,81 +198,88 @@ class VaultKeyManager:
   def find_matching_paths(self, search_path, use_regex=False):
     """
     Find all paths that match the search pattern.
-    
+
     Args:
         search_path: The path pattern to search for
         use_regex: If True, treat search_path as a regex pattern
-    
+
     Returns:
         List of matching paths
     """
     if self.vault_data is None:
       self.vault_data = self.load_vault_paths()
-      
+
     matches = []
-    
+
     # Compile regex pattern if using regex
     pattern = None
+
     if use_regex:
       try:
         pattern = re.compile(search_path, re.IGNORECASE)
+
       except re.error as e:
         raise VaultKeyError(f"Invalid regex pattern: {str(e)}")
+
     else:
       # For non-regex searches, convert to lowercase once
       search_lower = search_path.lower()
-    
+
     # Lazily initialize the all_paths cache
     if not hasattr(self, '_all_paths_cache') or self._all_paths_cache is None:
       self._all_paths_cache = self._get_all_paths(self.vault_data)
-    
+
     # Filter paths that could potentially match
     candidate_paths = []
+
     for path in self._all_paths_cache:
       if use_regex:
         # For regex, we can do a quick substring check if the pattern contains literal text
         literals = self._extract_literals_from_regex(search_path)
+
         if literals and not any(lit.lower() in path.lower() for lit in literals):
           continue  # Skip if none of the literal parts are in the path
+
       else:
         # For non-regex, simple substring check
         if search_lower not in path.lower():
           continue
-      
+
       candidate_paths.append(path)
-    
+
     # Now do the actual matching on the filtered candidates
     for path in candidate_paths:
       if use_regex:
         if pattern.search(path):
           matches.append(path)
+
       else:
         # Already know it contains the substring
         matches.append(path)
-    
+
     return matches
-    
+
   #-------------------------------------------------------------------------
   def _get_all_paths(self, structure):
     """Get a flat list of all paths in the structure."""
     all_paths = []
-    
+
     def collect_paths(current_path, struct, prefix=""):
       full_path = prefix + current_path
-      
+
       if 'secrets' in struct:
         all_paths.append(full_path)
-      
+
       for key, value in struct.items():
         if key != 'secrets':
           new_prefix = full_path + "/" if current_path else prefix
           collect_paths(key, value, new_prefix)
-    
+
     for root_key, root_value in structure.items():
       collect_paths(root_key, root_value)
-    
+
     return all_paths
-    
+
   #-------------------------------------------------------------------------
   def _extract_literals_from_regex(self, regex_pattern):
     """Extract literal substrings from a regex pattern."""
@@ -279,26 +287,29 @@ class VaultKeyManager:
     # A more robust version would handle more regex features
     literals = []
     current = ""
-    
+
     for char in regex_pattern:
       if char in "\\^$.|?*+()[{":
         if current:
           literals.append(current)
           current = ""
+
       else:
         current += char
-    
+
     if current:
       literals.append(current)
-    
+
     return [lit for lit in literals if len(lit) > 2]  # Only return substantial literals
 
   #-------------------------------------------------------------------------
   def select_path(self, matches):
     """Let the user select a path if multiple matches are found."""
     selected = select_from_list(matches, prompt="Select a path")
+
     if selected is None:
       die("Operation cancelled by user")
+
     return selected
 
   #-------------------------------------------------------------------------
@@ -327,6 +338,7 @@ class VaultKeyManager:
     """Get the value of a specific secret."""
     # Ensure client is set
     self.set_vault_client()
+
     try:
       response = self.client.secrets.kv.v1.read_secret(path=path)
 
@@ -335,6 +347,7 @@ class VaultKeyManager:
           # Create JSON response
           result = {secret_name: response['data'][secret_name], "path": path}
           print(json.dumps(result, indent=2))
+
         else:
           raise VaultSecretNotFoundError(
             f"Secret '{secret_name}' not found in path '{path}'")
@@ -361,6 +374,7 @@ def die(message=None, exit_code=1):
   """Print an error message and exit with the specified code (default 1)."""
   if message is not None:
     warn(message)
+
   sys.exit(exit_code)
 
 
@@ -448,10 +462,12 @@ def parseargs(showhelp=False):
     '--cache-dir',
     default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
     help=f'Directory to store vault paths file (default: {CACHE_DIR})')
+
   parser.add_argument(
     '--paths-file',
     default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
     help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
+
   parser.add_argument(
     '--vault-addr',
     default=os.environ.get('VAULT_ADDR'),
@@ -522,14 +538,12 @@ def main():
 
   elif args.command == 'list' or args.command == 'get':
     try:
-      # Find matching paths
       matches = manager.find_matching_paths(
         args.path, use_regex=args.regex if hasattr(args, 'regex') else False)
 
       if not matches:
         die(f"No matching paths found for '{args.path}'")
 
-      # Select path if multiple matches
       selected_path = manager.select_path(matches)
 
       # Execute command
