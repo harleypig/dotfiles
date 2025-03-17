@@ -152,8 +152,7 @@ class VaultKeyManager:
         response = self.client.secrets.kv.v1.list_secrets(
           path=path, mount_point='')
 
-        if not response or 'data' not in response or
-           'keys' not in response['data']:
+        if not response or 'data' not in response or 'keys' not in response['data']:
           return
 
         keys = response['data']['keys']
@@ -171,24 +170,8 @@ class VaultKeyManager:
             discover_recursive(subpath, structure[key[:-1]])
 
           else:
-            # A secret has an array of key/value pairs. We only want the
-            # keynames, AI!
-            try:
-              secret_response = self.client.secrets.kv.v1.read_secret(
-                path=f"{path}/{key}" if path else key)
-
-              if secret_response and 'data' in secret_response:
-                # Store the secret value and description (if available)
-                secret_value = secret_response['data'].get('value', '')
-                secret_description = secret_response['data'].get(
-                  'description', '')
-                structure[key] = [secret_value, secret_description]
-              else:
-                # If we can't get details, just store empty values
-                structure[key] = ['', '']
-            except Exception:
-              # If reading the secret fails, just store empty values
-              structure[key] = ['', '']
+            # Store just the key name in the structure
+            structure[key] = []
 
       except Exception as e:
         raise VaultKeyError(f"Error listing {path}: {str(e)}")
