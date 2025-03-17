@@ -170,46 +170,44 @@ class VaultKeyManager:
         print(f"\r\033[K", end="")  # ANSI escape code to clear the line
         print(f"Discovering: {path}", end="", flush=True)
 
-        # Track directories and keys separately
-        directories = []
-        secret_keys = []
-
+        # Process each key from list_secrets
         for key in keys:
           # If key ends with /, it's a directory
           if key.endswith('/'):
-            directories.append(key[:-1])
-          else:
-            secret_keys.append(key)
-
-        # Add directories if any exist
-        if directories:
-          if "__directories__" not in structure:
-            structure["__directories__"] = {}
-
-          for dir_name in directories:
+            dir_name = key[:-1]
+            
+            # Ensure __directories__ exists
+            if "__directories__" not in structure:
+              structure["__directories__"] = {}
+              
+            # Create directory entry if it doesn't exist
             if dir_name not in structure["__directories__"]:
               structure["__directories__"][dir_name] = {}
-
+              
             # Recursively discover
             subpath = f"{path}/{dir_name}" if path else dir_name
             discover_recursive(subpath, structure["__directories__"][dir_name])
-
-        # Add keys if any exist
-        if secret_keys:
-          key_names = []
-
-          for secret_key in secret_keys:
-            response = self._read_secret(path=f"{path}/{secret_key}")
-
+          else:
+            # It's a secret key - get its contents with read_secret
+            secret_path = f"{path}/{key}" if path else key
+            response = self._read_secret(path=secret_path)
+            
             if response and 'data' in response:
+              # Extract key names from the secret
               if isinstance(response['data'], dict):
-                key_names.extend(list(response['data'].keys()))
-
+                key_names = list(response['data'].keys())
               else:
-                key_names.extend(response['data'])
-
-          if key_names:
-            structure["__keys__"] = key_names
+                key_names = response['data']
+                
+              # Add to __keys__ if we found any
+              if key_names:
+                if "__keys__" not in structure:
+                  structure["__keys__"] = []
+                  
+                # Add any new keys that aren't already in the list
+                for key_name in key_names:
+                  if key_name not in structure["__keys__"]:
+                    structure["__keys__"].append(key_name)
 
       except Exception as e:
         raise VaultKeyError(f"Error listing {path}: {str(e)}")
