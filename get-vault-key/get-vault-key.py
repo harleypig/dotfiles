@@ -166,8 +166,9 @@ class VaultKeyManager:
 
         keys = response['data']['keys']
 
-        # Print on the same line with carriage return
-        print(f"\rDiscovering: {path}", end="", flush=True)
+        # Clear the line and print the current path
+        print(f"\r\033[K", end="")  # ANSI escape code to clear the line
+        print(f"Discovering: {path}", end="", flush=True)
 
         # Track directories and keys separately
         directories = []
