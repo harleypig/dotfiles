@@ -166,7 +166,8 @@ class VaultKeyManager:
 
         keys = response['data']['keys']
 
-        print(f"{path}")
+        # Print on the same line with carriage return
+        print(f"\rDiscovering: {path}", end="", flush=True)
 
         # Track directories and keys separately
         directories = []
