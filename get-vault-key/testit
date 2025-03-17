@@ -10,7 +10,7 @@ case "$1" in
 esac
 
 $mode ./get-vault-key.py \
-  list "root1/production" \
+  list "production" \
   --cache-dir \"$cache_dir\" \
   --paths-file \"$paths_file\"
 
