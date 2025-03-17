@@ -161,9 +161,7 @@ class VaultKeyManager:
       try:
         response = self.list_secrets(path=path)
 
-        if not response
-           or 'data' not in response
-           or 'keys' not in response['data']:
+        if not response or 'data' not in response or 'keys' not in response['data']:
           return
 
         keys = response['data']['keys']
