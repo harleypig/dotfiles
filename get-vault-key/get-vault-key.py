@@ -433,6 +433,7 @@ def parseargs(showhelp=False):
     Args:
         showhelp: If True, print help and exit instead of parsing arguments
     """
+  #-------------------------------------------------------------------------
   # Create a parent parser for common options
   parent_parser = argparse.ArgumentParser(add_help=False)
 
@@ -455,29 +456,13 @@ def parseargs(showhelp=False):
 
   #-------------------------------------------------------------------------
   # Create the main parser that will display in the top-level help
-  parser = argparse.ArgumentParser(description="Vault key management utility")
+  parser = argparse.ArgumentParser(description="Get Vault key value utility")
 
-  # Add the global options to the main parser too
-  parser.add_argument(
-    '--cache-dir',
-    default=os.environ.get('VAULT_CACHE_DIR', CACHE_DIR),
-    help=f'Directory to store vault paths file (default: {CACHE_DIR})')
-
-  parser.add_argument(
-    '--paths-file',
-    default=os.environ.get('VAULT_PATHS_FILENAME', VAULT_PATHS_FILENAME),
-    help=f'Name of the vault paths file (default: {VAULT_PATHS_FILENAME})')
-
-  parser.add_argument(
-    '--vault-addr',
-    default=os.environ.get('VAULT_ADDR'),
-    help='Vault server address (default: from VAULT_ADDR environment variable)'
-  )
-
-  subparsers = parser.add_subparsers(dest='command', help='Command to execute')
+  subparsers = parser.add_subparsers(dest='command', title='Possible commands',
+                                     help='Command to execute')
 
   #-------------------------------------------------------------------------
-  # Create subparsers with the parent parser
+  # discover command
   discover_parser = subparsers.add_parser(
     'discover',
     parents=[parent_parser],
@@ -487,9 +472,10 @@ def parseargs(showhelp=False):
     '--root-paths',
     nargs='+',
     metavar='<root path>',
-    help='Root paths to start discovery from (default: dai dao)')
+    help='Root paths to start discovery from')
 
   #-------------------------------------------------------------------------
+  # list command
   list_parser = subparsers.add_parser(
     'list', parents=[parent_parser], help='List secrets at a path')
 
@@ -498,6 +484,7 @@ def parseargs(showhelp=False):
                           help='Treat path as a regex pattern')
 
   #-------------------------------------------------------------------------
+  # get command
   get_parser = subparsers.add_parser(
     'get', parents=[parent_parser], help='Get a specific secret value')
 
@@ -517,11 +504,12 @@ def parseargs(showhelp=False):
 #-----------------------------------------------------------------------------
 def main():
   args = parseargs(showhelp=len(sys.argv) <= 1)
-  
-  # Debug code to dump args and exit
-  print("DEBUG: Command line arguments:")
-  print(json.dumps(vars(args), indent=2))
-  
+
+#  # Debug code to dump args and exit
+#  print("DEBUG: Command line arguments:")
+#  print(json.dumps(vars(args), indent=2))
+#  sys.exit(0)
+
   # Create manager instance
   manager = VaultKeyManager(
     cache_dir=args.cache_dir,

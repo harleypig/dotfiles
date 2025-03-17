@@ -12,6 +12,6 @@ case "$mode" in
 esac
 
 $mode ./get-vault-key.py \
+  list secrets \
   --cache-dir "$cache_dir" \
-  --paths-file "$paths_file" \
-  list 'username'
+  --paths-file "$paths_file"
