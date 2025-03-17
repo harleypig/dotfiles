@@ -1,9 +1,35 @@
 #!/bin/bash
 
+# Default mode is null (just run the script)
+mode=${1:-null}
+
 cache_dir="$PWD"
 paths_file="mock-vault-paths.json"
 
-./get-vault-key.py \
-  --cache-dir "$cache_dir" \
-  --paths-file "$paths_file" \
-  list 'username'
+cmd="./get-vault-key.py \
+  --cache-dir \"$cache_dir\" \
+  --paths-file \"$paths_file\" \
+  list 'username'"
+
+case "$mode" in
+  debug)
+    # Start with pudb debugger
+    cmd="python3 -m pudb ./get-vault-key.py \
+      --cache-dir \"$cache_dir\" \
+      --paths-file \"$paths_file\" \
+      list 'username'"
+    eval "$cmd"
+    ;;
+  echo)
+    # Just echo the command
+    echo "$cmd"
+    ;;
+  null|"")
+    # Just run the command
+    eval "$cmd"
+    ;;
+  *)
+    echo "Error: Unknown mode '$mode'. Use one of: debug, echo, null"
+    exit 1
+    ;;
+esac
