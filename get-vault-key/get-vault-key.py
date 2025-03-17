@@ -189,7 +189,7 @@ class VaultKeyManager:
                 key_names = list(response['data'].keys())
 
                 if key_names:
-                  structure[key] = { "__keys__": key_names }
+                  structure["__directories__"] = { key: { "__keys__": key_names }}
 
               else:
                 raise VaultKeyError(f"Didn't understand {secret_path} response: {response}")
