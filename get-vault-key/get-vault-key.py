@@ -303,6 +303,10 @@ class VaultKeyManager:
     def collect_paths(current_path, struct, prefix=""):
       full_path = prefix + current_path
 
+      # Check if this node has any direct keys
+      if "__keys__" in struct:
+        all_paths.append(full_path)
+
       # Process nested directories
       if "__directories__" in struct:
         for dir_name, dir_value in struct["__directories__"].items():
