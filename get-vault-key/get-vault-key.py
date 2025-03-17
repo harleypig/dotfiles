@@ -180,7 +180,7 @@ class VaultKeyManager:
 
           else:
             response = self.read_secret(f"{subpath}/{key}")
-            structure[key] = [response['data']
+            structure[key] = [response['data']]
 
       except Exception as e:
         raise VaultKeyError(f"Error listing {path}: {str(e)}")
