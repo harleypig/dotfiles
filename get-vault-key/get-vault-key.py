@@ -192,12 +192,11 @@ class VaultKeyManager:
               if isinstance(response['data'], dict):
                 key_names = list(response['data'].keys())
               else:
-                key_names = response['data']
+                raise VaultKeyError(f"Didn't understand {secret_path} response: {response}")
 
               # Add to __keys__ if we found any
               if key_names:
-                if "__keys__" not in structure:
-                  structure[key]["__keys__"] = []
+                structure[key] = { "__keys__": [] }
 
                 for key_name in key_names:
                   if key_name not in structure["__keys__"]:
