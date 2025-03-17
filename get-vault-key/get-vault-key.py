@@ -128,12 +128,12 @@ class VaultKeyManager:
       raise VaultKeyError(f"Error connecting to Vault: {str(e)}")
 
   #-------------------------------------------------------------------------
-  def list_secrets(self, path, mount_point=''):
+  def _list_secrets(self, path, mount_point=''):
         return self.client.secrets.kv.v1.list_secrets(
           path=path, mount_point='')
 
   #-------------------------------------------------------------------------
-  def read_secret(self, path, mount_point=''):
+  def _read_secret(self, path, mount_point=''):
         return self.client.secrets.kv.v1.read_secret(
           path=path, mount_point='')
 
@@ -159,7 +159,7 @@ class VaultKeyManager:
     # Helper function to recursively discover paths
     def discover_recursive(path, structure):
       try:
-        response = self.list_secrets(path=path)
+        response = self._list_secrets(path=path)
 
         if not response or 'data' not in response or 'keys' not in response['data']:
           return
@@ -179,7 +179,7 @@ class VaultKeyManager:
             discover_recursive(subpath, structure[key[:-1]])
 
           else:
-            response = self.read_secret(f"{subpath}/{key}")
+            response = self._read_secret(f"{subpath}/{key}")
             structure[key] = [response['data']]
 
       except Exception as e:
