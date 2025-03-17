@@ -521,8 +521,6 @@ def main():
   # Debug code to dump args and exit
   print("DEBUG: Command line arguments:")
   print(json.dumps(vars(args), indent=2))
-  print("Exiting after args dump")
-  sys.exit(0)
   
   # Create manager instance
   manager = VaultKeyManager(
