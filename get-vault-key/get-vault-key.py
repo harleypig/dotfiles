@@ -152,8 +152,8 @@ class VaultKeyManager:
         response = self.client.secrets.kv.v1.list_secrets(
           path=path, mount_point='')
 
-        if not response or 'data' not in response or 'keys' not in response[
-            'data']:
+        if not response or 'data' not in response or
+           'keys' not in response['data']:
           return
 
         keys = response['data']['keys']
@@ -171,15 +171,17 @@ class VaultKeyManager:
             discover_recursive(subpath, structure[key[:-1]])
 
           else:
-            # It's a secret - get its value and description
+            # A secret has an array of key/value pairs. We only want the
+            # keynames, AI!
             try:
               secret_response = self.client.secrets.kv.v1.read_secret(
                 path=f"{path}/{key}" if path else key)
-              
+
               if secret_response and 'data' in secret_response:
                 # Store the secret value and description (if available)
                 secret_value = secret_response['data'].get('value', '')
-                secret_description = secret_response['data'].get('description', '')
+                secret_description = secret_response['data'].get(
+                  'description', '')
                 structure[key] = [secret_value, secret_description]
               else:
                 # If we can't get details, just store empty values
@@ -248,7 +250,8 @@ class VaultKeyManager:
         # For regex, we can do a quick substring check if the pattern contains literal text
         literals = self._extract_literals_from_regex(search_path)
 
-        if literals and not any(lit.lower() in path.lower() for lit in literals):
+        if literals and not any(lit.lower() in path.lower()
+                                for lit in literals):
           continue  # Skip if none of the literal parts are in the path
 
       else:
@@ -277,13 +280,13 @@ class VaultKeyManager:
 
     def collect_paths(current_path, struct, prefix=""):
       full_path = prefix + current_path
-      
+
       # Check if this node has any direct secret keys (not nested objects)
       has_secrets = any(isinstance(value, list) for value in struct.values())
-      
+
       if has_secrets:
         all_paths.append(full_path)
-      
+
       # Process nested objects
       for key, value in struct.items():
         if isinstance(value, dict):
@@ -315,7 +318,9 @@ class VaultKeyManager:
     if current:
       literals.append(current)
 
-    return [lit for lit in literals if len(lit) > 2]  # Only return substantial literals
+    return [
+      lit for lit in literals if len(lit) > 2
+    ]  # Only return substantial literals
 
   #-------------------------------------------------------------------------
   def select_path(self, matches):
@@ -335,30 +340,32 @@ class VaultKeyManager:
 
     try:
       print(f"Listing secrets in {path}:")
-      
+
       # For mock data, we'll extract from our vault_data structure
       if self.vault_data is None:
         self.vault_data = self.load_vault_paths()
-      
+
       # Navigate to the path in the structure
       current = self.vault_data
       path_parts = path.split('/')
-      
+
       for part in path_parts:
         if part in current:
           current = current[part]
         else:
           raise VaultKeyError(f"Path part '{part}' not found in '{path}'")
-      
+
       # List all direct secret keys (not nested objects)
-      secrets = [key for key, value in current.items() if isinstance(value, list)]
-      
+      secrets = [
+        key for key, value in current.items() if isinstance(value, list)
+      ]
+
       if secrets:
         for secret in secrets:
           print(secret)
       else:
         print("No secrets found at this path.")
-      
+
     except Exception as e:
       raise VaultKeyError(f"Error listing secrets at {path}: {str(e)}")
 
@@ -372,23 +379,25 @@ class VaultKeyManager:
       # For mock data, we'll extract from our vault_data structure
       if self.vault_data is None:
         self.vault_data = self.load_vault_paths()
-      
+
       # Navigate to the path in the structure
       current = self.vault_data
       path_parts = path.split('/')
-      
+
       for part in path_parts:
         if part in current:
           current = current[part]
         else:
           raise VaultKeyError(f"Path part '{part}' not found in '{path}'")
-      
+
       # Check if the secret exists
       if secret_name in current and isinstance(current[secret_name], list):
         # Create JSON response with value and description
-        secret_value = current[secret_name][0] if len(current[secret_name]) > 0 else ""
-        secret_desc = current[secret_name][1] if len(current[secret_name]) > 1 else ""
-        
+        secret_value = current[secret_name][0] if len(
+          current[secret_name]) > 0 else ""
+        secret_desc = current[secret_name][1] if len(
+          current[secret_name]) > 1 else ""
+
         result = {
           secret_name: secret_value,
           "description": secret_desc,
@@ -501,8 +510,8 @@ def parseargs(showhelp=False):
   # Create the main parser that will display in the top-level help
   parser = argparse.ArgumentParser(description="Get Vault key value utility")
 
-  subparsers = parser.add_subparsers(dest='command', title='Possible commands',
-                                     help='Command to execute')
+  subparsers = parser.add_subparsers(
+    dest='command', title='Possible commands', help='Command to execute')
 
   #-------------------------------------------------------------------------
   # discover command
@@ -523,8 +532,8 @@ def parseargs(showhelp=False):
     'list', parents=[parent_parser], help='List secrets at a path')
 
   list_parser.add_argument('path', help='Path to list secrets from')
-  list_parser.add_argument('--regex', '-r', action='store_true',
-                          help='Treat path as a regex pattern')
+  list_parser.add_argument(
+    '--regex', '-r', action='store_true', help='Treat path as a regex pattern')
 
   #-------------------------------------------------------------------------
   # get command
@@ -533,8 +542,8 @@ def parseargs(showhelp=False):
 
   get_parser.add_argument('path', help='Path to the secret')
   get_parser.add_argument('secret', help='Name of the secret to retrieve')
-  get_parser.add_argument('--regex', '-r', action='store_true',
-                         help='Treat path as a regex pattern')
+  get_parser.add_argument(
+    '--regex', '-r', action='store_true', help='Treat path as a regex pattern')
 
   #-------------------------------------------------------------------------
   if showhelp:
@@ -548,10 +557,10 @@ def parseargs(showhelp=False):
 def main():
   args = parseargs(showhelp=len(sys.argv) <= 1)
 
-#  # Debug code to dump args and exit
-#  print("DEBUG: Command line arguments:")
-#  print(json.dumps(vars(args), indent=2))
-#  sys.exit(0)
+  #  # Debug code to dump args and exit
+  #  print("DEBUG: Command line arguments:")
+  #  print(json.dumps(vars(args), indent=2))
+  #  sys.exit(0)
 
   # Create manager instance
   manager = VaultKeyManager(
@@ -564,7 +573,7 @@ def main():
       # Check if root_paths is provided
       if not hasattr(args, 'root_paths') or not args.root_paths:
         die("Error: --root-paths is required for the discover command")
-      
+
       # Set vault client with provided address
       manager.discover_paths(args.root_paths)
 
