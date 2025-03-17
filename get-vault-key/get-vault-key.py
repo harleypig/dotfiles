@@ -179,7 +179,7 @@ class VaultKeyManager:
             discover_recursive(subpath, structure[key[:-1]])
 
           else:
-            response = self._read_secret(f"{subpath}/{key}")
+            response = self._read_secret(f"{path}/{key}")
             structure[key] = [response['data']]
 
       except Exception as e:
