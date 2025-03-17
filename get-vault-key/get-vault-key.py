@@ -517,7 +517,13 @@ def parseargs(showhelp=False):
 #-----------------------------------------------------------------------------
 def main():
   args = parseargs(showhelp=len(sys.argv) <= 1)
-
+  
+  # Debug code to dump args and exit
+  print("DEBUG: Command line arguments:")
+  print(json.dumps(vars(args), indent=2))
+  print("Exiting after args dump")
+  sys.exit(0)
+  
   # Create manager instance
   manager = VaultKeyManager(
     cache_dir=args.cache_dir,
