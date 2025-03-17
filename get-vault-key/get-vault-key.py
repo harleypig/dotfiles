@@ -130,12 +130,12 @@ class VaultKeyManager:
   #-------------------------------------------------------------------------
   def _list_secrets(self, path, mount_point=''):
         return self.client.secrets.kv.v1.list_secrets(
-          path=path, mount_point='')
+          path=path, mount_point=mount_point)
 
   #-------------------------------------------------------------------------
   def _read_secret(self, path, mount_point=''):
         return self.client.secrets.kv.v1.read_secret(
-          path=path, mount_point='')
+          path=path, mount_point=mount_point)
 
   #-------------------------------------------------------------------------
   def discover_paths(self, root_paths):
