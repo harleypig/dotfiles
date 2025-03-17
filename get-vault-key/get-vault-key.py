@@ -166,6 +166,8 @@ class VaultKeyManager:
 
         keys = response['data']['keys']
 
+        print(f"{path}")
+
         # Track directories and keys separately
         directories = []
         secret_keys = []
