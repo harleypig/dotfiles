@@ -208,7 +208,7 @@ class VaultKeyManager:
     os.makedirs(os.path.dirname(vault_paths_file), exist_ok=True)
 
     with open(vault_paths_file, 'w') as f:
-      json.dump(vault_data, f, indent=2)
+      json.dump(vault_data, f)
 
     print(f"\nVault paths saved to {vault_paths_file}")
 
