@@ -210,7 +210,9 @@ class VaultKeyManager:
     with open(vault_paths_file, 'w') as f:
       json.dump(vault_data, f)
 
-    print(f"\nVault paths saved to {vault_paths_file}")
+    # Clear the line and print the location of the save file
+    print(f"\r\033[K", end="")  # ANSI escape code to clear the line
+    print(f"Vault paths saved to {vault_paths_file}")
 
   #-------------------------------------------------------------------------
   def find_matching_paths(self, search_path, use_regex=False):
