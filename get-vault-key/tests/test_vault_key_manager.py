@@ -16,7 +16,7 @@ class TestVaultKeyManager:
                 vault_paths_filename="test-paths.json",
                 vault_addr="http://localhost:8200"
             )
-            
+
             assert manager.cache_dir == "/tmp/cache"
             assert manager.vault_paths_filename == "test-paths.json"
             assert manager.vault_addr == "http://localhost:8200"
@@ -41,19 +41,19 @@ class TestVaultKeyManager:
     def test_init_with_missing_paths_file(self):
         """Test initialization when paths file doesn't exist."""
         # Mock load_vault_paths to raise VaultPathNotFoundError
-        with patch.object(VaultKeyManager, 'load_vault_paths', 
+        with patch.object(VaultKeyManager, 'load_vault_paths',
                          side_effect=VaultPathNotFoundError("File not found")):
             manager = VaultKeyManager(
                 cache_dir="/tmp/cache",
                 vault_paths_filename="nonexistent.json"
             )
-            
+
             assert manager.vault_data is None
 
     def test_init_with_corrupted_paths_file(self):
         """Test initialization when paths file is corrupted."""
         # Mock load_vault_paths to raise VaultKeyError
-        with patch.object(VaultKeyManager, 'load_vault_paths', 
+        with patch.object(VaultKeyManager, 'load_vault_paths',
                          side_effect=VaultKeyError("Corrupted file")):
             with pytest.raises(VaultKeyError, match="Corrupted file"):
                 VaultKeyManager(
@@ -65,14 +65,14 @@ class TestVaultKeyManager:
         """Test successful loading of vault paths."""
         test_data = {"root1": {"__directories__": {}}}
         mock_file = mock_open(read_data=json.dumps(test_data))
-        
+
         with patch("builtins.open", mock_file):
             manager = VaultKeyManager(
                 cache_dir="/tmp/cache",
                 vault_paths_filename="test-paths.json"
             )
             result = manager.load_vault_paths()
-            
+
             assert result == test_data
 
     def test_load_vault_paths_file_not_found(self):
@@ -82,20 +82,20 @@ class TestVaultKeyManager:
                 cache_dir="/tmp/cache",
                 vault_paths_filename="test-paths.json"
             )
-            
+
             with pytest.raises(VaultPathNotFoundError):
                 manager.load_vault_paths()
 
     def test_load_vault_paths_json_error(self):
         """Test load_vault_paths with invalid JSON."""
         mock_file = mock_open(read_data="invalid json")
-        
+
         with patch("builtins.open", mock_file):
             manager = VaultKeyManager(
                 cache_dir="/tmp/cache",
                 vault_paths_filename="test-paths.json"
             )
-            
+
             with pytest.raises(VaultKeyError, match="Error parsing vault paths file"):
                 manager.load_vault_paths()
 
@@ -106,6 +106,6 @@ class TestVaultKeyManager:
                 cache_dir="/tmp/cache",
                 vault_paths_filename="test-paths.json"
             )
-            
+
             with pytest.raises(VaultKeyError, match="Error loading vault paths"):
                 manager.load_vault_paths()

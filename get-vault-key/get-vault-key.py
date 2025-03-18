@@ -129,13 +129,13 @@ class VaultKeyManager:
 
   #-------------------------------------------------------------------------
   def _list_secrets(self, path, mount_point=''):
-        return self.client.secrets.kv.v1.list_secrets(
-          path=path, mount_point=mount_point)
+    return self.client.secrets.kv.v1.list_secrets(
+      path=path, mount_point=mount_point)
 
   #-------------------------------------------------------------------------
   def _read_secret(self, path, mount_point=''):
-        return self.client.secrets.kv.v1.read_secret(
-          path=path, mount_point=mount_point)
+    return self.client.secrets.kv.v1.read_secret(
+      path=path, mount_point=mount_point)
 
   #-------------------------------------------------------------------------
   def discover_paths(self, root_paths):
@@ -157,7 +157,8 @@ class VaultKeyManager:
       try:
         response = self._list_secrets(path=path)
 
-        if not response or 'data' not in response or 'keys' not in response['data']:
+        if not response or 'data' not in response or 'keys' not in response[
+            'data']:
           return
 
         keys = response['data']['keys']
@@ -192,10 +193,11 @@ class VaultKeyManager:
                   if "__directories__" not in structure:
                     structure["__directories__"] = {}
 
-                  structure["__directories__"][key] = { "__keys__": key_names }
+                  structure["__directories__"][key] = {"__keys__": key_names}
 
               else:
-                raise VaultKeyError(f"Didn't understand {secret_path} response: {response}")
+                raise VaultKeyError(
+                  f"Didn't understand {secret_path} response: {response}")
 
       except Exception as e:
         raise VaultKeyError(f"Error listing {path}: {str(e)}")
@@ -357,7 +359,8 @@ class VaultKeyManager:
       for part in path_parts:
         if part in current:
           current = current[part]
-        elif "__directories__" in current and part in current["__directories__"]:
+        elif "__directories__" in current and part in current[
+            "__directories__"]:
           current = current["__directories__"][part]
         else:
           raise VaultKeyError(f"Path part '{part}' not found in '{path}'")
@@ -396,7 +399,8 @@ class VaultKeyManager:
       for part in path_parts:
         if part in current:
           current = current[part]
-        elif "__directories__" in current and part in current["__directories__"]:
+        elif "__directories__" in current and part in current[
+            "__directories__"]:
           current = current["__directories__"][part]
         else:
           raise VaultKeyError(f"Path part '{part}' not found in '{path}'")
