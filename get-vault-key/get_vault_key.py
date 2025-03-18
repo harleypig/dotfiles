@@ -3,7 +3,7 @@
 import os
 import sys
 import argparse
-from get_vault_key import (
+from get_vault_key.get_vault_key import (
     VaultKeyManager, 
     VaultKeyError, 
     warn, 

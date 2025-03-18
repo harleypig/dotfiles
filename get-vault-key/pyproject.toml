@@ -14,4 +14,4 @@ dependencies = [
 ]
 
 [project.scripts]
-get-vault-key = "get_vault_key.get_vault_key:main"
+get-vault-key = "get_vault_key:main"
