@@ -189,7 +189,10 @@ class VaultKeyManager:
                 key_names = list(response['data'].keys())
 
                 if key_names:
-                  structure["__directories__"] = { key: { "__keys__": key_names }}
+                  if "__directories__" not in structure:
+                    structure["__directories__"] = {}
+
+                  structure["__directories__"][key] = { "__keys__": key_names }
 
               else:
                 raise VaultKeyError(f"Didn't understand {secret_path} response: {response}")
