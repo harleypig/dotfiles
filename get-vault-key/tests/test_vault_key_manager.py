@@ -2,7 +2,7 @@ import os
 import pytest
 import json
 from unittest.mock import patch, mock_open
-from get_vault_key import VaultKeyManager, VaultPathNotFoundError, VaultKeyError
+from get_vault_key.get_vault_key import VaultKeyManager, VaultPathNotFoundError, VaultKeyError
 
 
 class TestVaultKeyManager:

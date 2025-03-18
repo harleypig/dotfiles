@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "get-vault-key"
+version = "0.1.0"
+description = "Utility for managing Vault keys"
+readme = "README.md"
+requires-python = ">=3.6"
+license = {text = "MIT"}
+dependencies = [
+    "hvac",
+]
+
+[project.scripts]
+get-vault-key = "get_vault_key.get_vault_key:main"
