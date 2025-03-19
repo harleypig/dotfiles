@@ -21,7 +21,9 @@ prompt_color="$(ansi -n fg cyan)"
 color_off="$(ansi -n off)"
 
 # Array of Unicode characters to rotate through for non-root prompt
-PROMPT_CHARS=("$" "❯" "➤" "▶" "→" "⟩" "⟫" "⟹" "⟾")
+# Use show-unicode to see what symbols are available on your current terminal.
+PROMPT_CHARS=("$" "●" "★" "➤" "❯" "❔" "⚡" "✸" "♠" "♦" "✱" "⚓" "⛳" "☿" ">"
+"⇨" "✷" "⚫" "→" "✶" "♣" "❓" "❱")
 PROMPT_CHAR_INDEX=0
 
 #----------------------------------------------------------------------------
