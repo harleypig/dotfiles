@@ -20,6 +20,10 @@ export prompt_color color_off
 prompt_color="$(ansi -n fg cyan)"
 color_off="$(ansi -n off)"
 
+# Array of Unicode characters to rotate through for non-root prompt
+PROMPT_CHARS=("$" "❯" "➤" "▶" "→" "⟩" "⟫" "⟹" "⟾")
+PROMPT_CHAR_INDEX=0
+
 #----------------------------------------------------------------------------
 function join_array() {
   (($# != 2)) && die "must pass delimiter and array name"
@@ -136,6 +140,14 @@ _venv() {
 }
 
 #----------------------------------------------------------------------------
+# Get the next character in the rotation
+_get_next_prompt_char() {
+  local char="${PROMPT_CHARS[$PROMPT_CHAR_INDEX]}"
+  PROMPT_CHAR_INDEX=$(( (PROMPT_CHAR_INDEX + 1) % ${#PROMPT_CHARS[@]} ))
+  echo "$char"
+}
+
+#----------------------------------------------------------------------------
 _update_prompt() {
   # don't use 'local exit_status' here because it wipes out PIPESTATUS.
   exit_status=$(_exit_status "${PIPESTATUS[@]}")
@@ -154,7 +166,7 @@ _update_prompt() {
 
   else
     user_color="$(ansi -n fg bright_cyan)"
-    finalchr='\$'
+    finalchr="$(_get_next_prompt_char)"
   fi
 
   hostname_color="$(ansi -n fg yellow)"
