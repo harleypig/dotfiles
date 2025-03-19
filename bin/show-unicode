@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Print a table of Unicode characters to test terminal support
+echo "Testing Unicode character support in your terminal:"
+echo "======================================================"
+
+# Function to print a range of Unicode characters
+print_unicode_range() {
+  local start=$1
+  local end=$2
+  local description=$3
+  
+  echo -e "\n$description (U+${start}-U+${end}):"
+  echo "----------------------------------------------------"
+  
+  for i in $(seq "0x$start" "0x$end"); do
+    # Convert to Unicode character
+    printf "U+%04X: %b   " "$i" "\\U$(printf %08x "$i")"
+    
+    # Print 8 characters per line
+    if (( (i - 0x$start + 1) % 8 == 0 )); then
+      echo ""
+    fi
+  done
+  echo ""
+}
+
+# Print common prompt symbols
+echo -e "\nCommon Prompt Symbols:"
+echo "----------------------------------------------------"
+symbols=(
+  "$ (Dollar Sign): \$"
+  "% (Percent Sign): %"
+  "> (Greater Than): >"
+  "# (Hash/Root): #"
+  "❯ (Heavy Right-Pointing Angle Quotation Mark): ❯"
+  "➤ (Black Right-Pointing Pointer): ➤"
+  "▶ (Black Right-Pointing Triangle): ▶"
+  "→ (Rightwards Arrow): →"
+  "⟩ (Mathematical Right Angle Bracket): ⟩"
+  "⟫ (Mathematical Double Right Angle Bracket): ⟫"
+  "⟹ (Long Rightwards Double Arrow): ⟹"
+  "⟾ (Long Rightwards Arrow From Bar): ⟾"
+  "λ (Lambda): λ"
+  "Ψ (Psi): Ψ"
+  "⚡ (High Voltage): ⚡"
+  "★ (Star): ★"
+  "♦ (Diamond): ♦"
+)
+
+for symbol in "${symbols[@]}"; do
+  echo -e "$symbol"
+done
+
+# Print some useful Unicode ranges
+print_unicode_range "2190" "21FF" "Arrows"
+print_unicode_range "25A0" "25FF" "Geometric Shapes"
+print_unicode_range "2600" "26FF" "Miscellaneous Symbols"
+print_unicode_range "2700" "27BF" "Dingbats"
+print_unicode_range "1F600" "1F64F" "Emoticons"
+
+echo -e "\nNote: If you see empty boxes or question marks, your terminal or font doesn't support those characters."
+echo "Try using a font with good Unicode support like 'DejaVu Sans Mono', 'Fira Code', 'Hack', or 'Noto'."
