@@ -140,11 +140,10 @@ _venv() {
 }
 
 #----------------------------------------------------------------------------
-# Get the next character in the rotation
+# Get a random character from the array
 _get_next_prompt_char() {
-  local char="${PROMPT_CHARS[$PROMPT_CHAR_INDEX]}"
-  PROMPT_CHAR_INDEX=$(( (PROMPT_CHAR_INDEX + 1) % ${#PROMPT_CHARS[@]} ))
-  echo "$char"
+  local random_index=$(( RANDOM % ${#PROMPT_CHARS[@]} ))
+  echo "${PROMPT_CHARS[$random_index]}"
 }
 
 #----------------------------------------------------------------------------
