@@ -159,7 +159,7 @@ local_repos() {
     if echo "$merge_output" | grep -q "^<<<<<<< "; then
       warn "$repo_name has potential merge conflicts, skipping merge"
     else
-      git merge --ff-only "origin/$current_branch" || warn "Could not merge $repo_name"
+      git merge --quiet --ff-only "origin/$current_branch" || warn "Could not merge $repo_name"
     fi
 
   done < <(find "$projects_path" -type d -name '.git' -print0)
