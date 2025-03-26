@@ -11,7 +11,9 @@ no_clone=0
 project=
 
 declare -A local_repos clone_repos
-declare -a exclude_repos include_repos
+# Default to excluding 'dotfiles' repository
+declare -a exclude_repos=("dotfiles")
+declare -a include_repos
 
 ##############################################################################
 # Functions
@@ -77,7 +79,8 @@ parse_params() {
         [[ -r "$1" ]] \
           || die "The file specified with --exclude does not exist: $1"
 
-        mapfile -t exclude_repos < "$1"
+        # Append to existing exclude_repos array rather than replacing it
+        mapfile -t -O "${#exclude_repos[@]}" exclude_repos < "$1"
         ;;
       --include)
         shift
