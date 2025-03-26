@@ -150,6 +150,17 @@ local_repos() {
 
     git fetch --quiet --tags 2> /dev/null \
       || warn "Could not fetch tags for $repo_name ($repo_path)"
+      
+    # Check for and perform merge if no conflicts
+    current_branch=$(git branch --show-current)
+    merge_base=$(git merge-base HEAD "origin/$current_branch")
+    merge_output=$(git merge-tree "$merge_base" HEAD "origin/$current_branch")
+
+    if echo "$merge_output" | grep -q "^<<<<<<< "; then
+      warn "$repo_name has potential merge conflicts, skipping merge"
+    else
+      git merge --ff-only "origin/$current_branch" || warn "Could not merge $repo_name"
+    fi
 
   done < <(find "$projects_path" -type d -name '.git' -print0)
 }
