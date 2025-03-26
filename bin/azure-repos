@@ -123,6 +123,13 @@ local_repos() {
       continue
     }
 
+    # Skip excluded repositories
+    if [[ " ${exclude_repos[@]} " =~ " ${repo_name} " ]]; then
+      continue
+    elif [[ -n "${include_repos[*]}" && ! " ${include_repos[@]} " =~ " ${repo_name} " ]]; then
+      continue
+    fi
+
     local_repos[$repo_name]="$repo_path"
 
     ((no_pull)) && continue
