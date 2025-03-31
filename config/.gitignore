@@ -6,6 +6,7 @@ Code/**
 dlv/**
 docker/buildx/**
 evolution/**
+gh/**
 github-copilot/**
 go/telemetry/**
 gtk-3.0/**
@@ -25,7 +26,6 @@ dconf/user
 docker/config.json
 docker/.token_seed
 docker/.token_seed.lock
-gh/hosts.yml
 .gsd-keyboard.settings-ported
 linode-cli
 mimeapps.list
