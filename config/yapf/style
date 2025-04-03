@@ -1,18 +1,40 @@
 [style]
-based_on_style=pep8
-allow_multiline_dictionary_keys=True
-allow_multiline_lambdas=True
-arithmetic_precedence_indication=True
-blank_line_before_class_docstring=True
-blank_line_before_module_docstring=True
-blank_lines_around_top_level_definition=1
-coalesce_brackets=True
-column_limit=80
-dedent_closing_brackets=True
-indent_dictionary_value=True
-indent_width=2
-join_multiple_lines=True
-spaces_before_comment=5,10,15,20,25,30,35,40,45,50,55,60,65,70,75
-split_before_arithmetic_operator=True
-split_before_dot=True
-split_complex_comprehension=True
+# Use PEP8 style as the base
+based_on_style = pep8
+
+# Basic formatting
+indent_width = 2
+column_limit = 79
+use_tabs = false
+continuation_indent_width = 2
+
+# Whitespace and docstring settings
+allow_multiline_dictionary_keys = True
+allow_multiline_lambdas = True
+blank_line_before_class_docstring = True
+blank_line_before_module_docstring = True
+blank_lines_around_top_level_definition = 1
+indent_dictionary_value = True
+spaces_before_comment = 5,10,15,20,25,30,35,40,45,50,55,60,65,70,75
+
+# Bracket handling
+# NOTE: Potential conflict between these settings and split penalties
+coalesce_brackets = True
+dedent_closing_brackets = True
+
+# Line splitting behavior
+split_before_arithmetic_operator = True
+split_before_dot = True
+split_complex_comprehension = True
+split_before_dict_set_generator = True
+split_before_first_argument = True
+split_before_named_assigns = True
+
+# NOTE: Potential conflict with bracket handling and line joining
+split_penalty_after_opening_bracket = 0
+split_penalty_for_added_line_split = 30
+split_penalty_after_unary_operator = 10000
+
+# NOTE: Potential conflict with line splitting settings
+arithmetic_precedence_indication = True
+join_multiple_lines = True
