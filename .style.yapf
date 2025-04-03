@@ -5,8 +5,6 @@ based_on_style = pep8
 # Basic formatting
 indent_width = 2
 column_limit = 79
-# Note: use_tabs is already False in PEP8
-# Note: continuation_indent_width is already 4 in PEP8, but we override to 2
 continuation_indent_width = 2
 
 # Whitespace and docstring settings
@@ -19,23 +17,18 @@ indent_dictionary_value = True
 spaces_before_comment = 5,10,15,20,25,30,35,40,45,50,55,60,65,70,75
 
 # Bracket handling
-# NOTE: Potential conflict between these settings and split penalties
 coalesce_brackets = True
 dedent_closing_brackets = True
 
 # Line splitting behavior
-split_before_arithmetic_operator = True
-split_before_dot = True
-split_complex_comprehension = True
-split_before_dict_set_generator = True
-split_before_first_argument = True
-split_before_named_assigns = True
-
-# NOTE: Potential conflict with bracket handling and line joining
-split_penalty_after_opening_bracket = 0
-split_penalty_for_added_line_split = 30
-split_penalty_after_unary_operator = 10000
-
-# NOTE: Potential conflict with line splitting settings
 arithmetic_precedence_indication = True
 join_multiple_lines = True
+split_before_arithmetic_operator = True
+split_before_dict_set_generator = True
+split_before_dot = True
+split_before_first_argument = True
+split_before_named_assigns = True
+split_complex_comprehension = True
+split_penalty_after_opening_bracket = 10
+split_penalty_after_unary_operator = 10000
+split_penalty_for_added_line_split = 30
