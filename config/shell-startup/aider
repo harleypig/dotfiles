@@ -24,5 +24,5 @@ if command -v aider &> /dev/null; then
   commit_prompt="$DOTFILES/aider.commit_prompt"
   [[ -r $commit_prompt ]] && AIDER_COMMIT_PROMPT="$(<$commit_prompt)"
 
-  unset config_file line varName varValue commit_prompt
+  unset config_file config_lines line varName varValue commit_prompt
 fi
