@@ -71,6 +71,7 @@ function _parent() {
   parents=${parents//su/}
   parents=${parents//tilix/}
   parents=${parents//tmux/}
+  parents=${parents//Relay\([0-9][0-9]*\)/}
 
   [[ -n $parents ]] \
     && printf '\[%s\](%s)\[%s\] ' \

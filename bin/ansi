@@ -101,6 +101,12 @@ function _ansi() {
   if ! command -v tput &> /dev/null || ! tput cols &> /dev/null; then
     return 0
   fi
+  # If not interactive, don't colorize
+  [[ ! -t 0 || $- != *i* ]] && return 0
+  # XXX: Consider removing these if the above works
+  # [[ -z $TERM ]] && return 0
+  # [[ $TERM == 'unknown ' ]] && return 0
+  # [[ $TERM == 'dumb' ]] && return 0
 
   # convert convenience values to what tput understands
   local -A color
