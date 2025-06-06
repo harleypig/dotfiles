@@ -35,7 +35,7 @@ unsetfuncs() { _unset_funcs+=("$@"); }
 
 #-----------------------------------------------------------------------------
 # Assume that this file is in the dotfiles directory, then check if we are
-# linnked to the dotfiles directory.  If we are, then use the real directory
+# linked to the dotfiles directory.  If we are, then use the real directory
 # as the dotfiles directory.
 
 declare -x DOTFILES="$HOME"
