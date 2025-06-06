@@ -43,7 +43,7 @@ and can be used in any bash based script.
 
 This file will run various checks, detailed below.
 
-=head2 Enviroment Check
+=head2 Environment Check
 
 If this file is not being called in a bash environment, or as a bash script,
 it will exit with an error message.
