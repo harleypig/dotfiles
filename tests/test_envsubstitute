@@ -1,0 +1,52 @@
+#!/bin/bash
+
+NAME=John envsubstitute '\$NAME: $NAME
+'
+hr -c -
+NAME=John envsubstitute '\${NAME}: ${NAME}
+'
+hr -c -
+SUBST_DELIM='%' NAME=John envsubstitute '\%NAME%: %NAME%
+'
+hr -c -
+SUBST_DELIM='!' NAME=John envsubstitute '\!NAME!: !NAME!
+'
+hr -c -
+
+NO_WARN=1 NAME=John envsubstitute '\$NAME: $NAME (no warn)
+'
+hr -c -
+NO_WARN=1 NAME=John envsubstitute '\${NAME}: ${NAME} (no warn)
+'
+hr -c -
+NO_WARN=1 SUBST_DELIM='%' NAME=John envsubstitute '\%NAME%: %NAME% (no warn)
+'
+hr -c -
+NO_WARN=1 SUBST_DELIM='!' NAME=John envsubstitute '\!NAME!: !NAME! (no warn)
+'
+hr -c -
+
+NAME=John envsubstitute '\$BADVAR: $BADVAR
+'
+hr -c -
+NAME=John envsubstitute '\${BADVAR}: ${BADVAR}
+'
+hr -c -
+SUBST_DELIM='%' NAME=John envsubstitute '\%BADVAR%: %BADVAR%
+'
+hr -c -
+SUBST_DELIM='!' NAME=John envsubstitute '\!BADVAR!: !BADVAR!
+'
+hr -c -
+
+NO_WARN=1 NAME=John envsubstitute '\$BADVAR: $BADVAR (no warn)
+'
+hr -c -
+NO_WARN=1 NAME=John envsubstitute '\${BADVAR}: ${BADVAR} (no warn)
+'
+hr -c -
+NO_WARN=1 SUBST_DELIM='%' NAME=John envsubstitute '\%BADVAR%: %BADVAR% (no warn)
+'
+hr -c -
+NO_WARN=1 SUBST_DELIM='!' NAME=John envsubstitute '\!BADVAR!: !BADVAR! (no warn)
+'
