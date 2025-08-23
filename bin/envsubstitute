@@ -21,6 +21,9 @@
 #   format
 # - When NO_WARN is set, unknown variables are temporarily replaced with
 #   --SKIP-- markers to avoid regex re-matching, then restored after processing
+# - Uses --SKIPSLASH-- markers to handle escaped variables (e.g., \$WORD)
+#   which are temporarily replaced during processing and restored as literal
+#   text with backslash prefix
 # - Error messages convert $WORD to ${WORD} format for consistency
 
 ##############################################################################
