@@ -98,7 +98,10 @@ for arg in "$@"; do
 done
 
 _envsubst() {
-  local s
+  local s match regex skiptext skipvar value varname
+  local -i rc
+
+  skiptext='--SKIP--'
 
   # Check for help in the function too, in case it's called directly
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -114,55 +117,60 @@ _envsubst() {
   fi
 
   #---------------------------------------------------------------------------
-  local regex
-
   if [[ -n $SUBST_DELIM ]]; then
     regex="${SUBST_DELIM}([^\\$SUBST_DELIM]*)$SUBST_DELIM"
   else
-    regex='\$({)?([a-zA-Z_]+)(?(1)})'
+    regex='\$\{([a-zA-Z_]+)\}|\$([a-zA-Z_]+)'
   fi
 
   #---------------------------------------------------------------------------
-  set -x
-
   [[ $s =~ $regex ]] || {
-    local -i rc=$?
-
-    ((rc > 2)) && die 'Unknown error from =~ in fill_template.'
-    ((rc == 2)) && die "Syntax error in fill_template's regex."
+    rc=$?
 
     ((rc == 1)) && {
       warn "No %WORD%'s found in string '%s'."
       printf '%s' "$s"
       return $rc
     }
+
+    # Force warning on real problems.
+    ((rc => 2)) && unset NO_WARN
+    ((rc == 2)) && die "Syntax error in $selfname's regex."
+    ((rc > 2)) && die "Unknown error from =~ in $selfname."
   }
 
   #---------------------------------------------------------------------------
   while [[ $s =~ $regex ]]; do
-    local value
+    match="${BASH_REMATCH[0]}"
 
-    if [[ -v ${BASH_REMATCH[1]} ]]; then
-      value="${!BASH_REMATCH[1]}"
+    if [[ -n ${BASH_REMATCH[1]} ]]; then
+      # Match '${WORD}' or '%WORD%'
+      varname="${BASH_REMATCH[1]}"
+      value="$match"
 
     else
-      if [[ -z $NO_WARN ]]; then
-        warn "Variable '${BASH_REMATCH[1]}' does not exist in the environment"
-
-        if [[ -n $SUBST_DELIM ]]; then
-          value="${SUBST_DELIM}${BASH_REMATCH[2]}: NOT FOUND${SUBST_DELIM}"
-
-        else
-          value="\${${BASH_REMATCH[2]}: NOT FOUND}"
-        fi
-
-      else
-        value="${BASH_REMATCH[0]}"
-      fi
+      # Match '$WORD'
+      varname="${BASH_REMATCH[2]}"
+      value="\${$varname}"
     fi
 
-    s=${s//${BASH_REMATCH[0]}/$value}
+    if [[ -v $varname ]]; then
+      value="${!varname}"
+
+    elif [[ -z $NO_WARN ]]; then
+      warn "Variable '$varname' does not exist in the environment"
+      value="${value%?}: NOT FOUND${value: -1}"
+
+    else
+      value="${skiptext}${match:1}"
+    fi
+
+    s=${s//$match/$value}
   done
+
+  skipvar='$'
+  [[ -n $SUBST_DELIM ]] && skipvar="$SUBST_DELIM"
+  s="${s//$skiptext/$skipvar}"
 
   printf '%s' "$s"
 }
