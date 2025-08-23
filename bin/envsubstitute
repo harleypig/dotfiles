@@ -71,16 +71,21 @@ Supported formats:
   \$WORD or \${WORD}    (default, like envsubst)
   %WORD%              (when SUBST_DELIM=%)
 
+Escaping:
+  Use backslash to prevent substitution: \\\$WORD, \\\${WORD}, or \\%WORD%
+
 Environment variables:
   SUBST_DELIM    Set delimiter character (e.g., '%' for %WORD% format)
   NO_WARN        If set, leave unknown variables unchanged instead of showing
-                 errors
+                 errors. Without NO_WARN, unknown variables show error messages.
 
 Examples:
-  NAME=John $selfname 'Hello \$NAME'
-  NAME=John $selfname 'Hello \${NAME}'
-  SUBST_DELIM=% NAME=John $selfname 'Hello %NAME%'
-  NO_WARN=1 $selfname 'Hello \$UNKNOWN'    # Leaves \$UNKNOWN unchanged
+  NAME=John $selfname 'Hello \$NAME'                    # Output: Hello John
+  NAME=John $selfname 'Hello \${NAME}'                  # Output: Hello John
+  SUBST_DELIM=% NAME=John $selfname 'Hello %NAME%'      # Output: Hello John
+  $selfname 'Hello \\\$NAME'                            # Output: Hello \$NAME (escaped)
+  NO_WARN=1 $selfname 'Hello \$UNKNOWN'                 # Output: Hello \$UNKNOWN (preserved)
+  $selfname 'Hello \$UNKNOWN'                           # Shows error, outputs with error message
 
 " "$@"
 }
