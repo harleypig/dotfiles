@@ -87,8 +87,24 @@ Example:
 ##############################################################################
 #-----------------------------------------------------------------------------
 
+# Check for help flags first, before processing input
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)
+      usage
+      $RETURN 0
+      ;;
+  esac
+done
+
 _envsubst() {
   local s
+
+  # Check for help in the function too, in case it's called directly
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    usage
+    return 0
+  fi
 
   if [[ -z $1 ]]; then
     # Read from STDIN.
