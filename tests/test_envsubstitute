@@ -50,3 +50,15 @@ NO_WARN=1 SUBST_DELIM='%' NAME=John envsubstitute '\%BADVAR%: %BADVAR% (no warn)
 hr -c -
 NO_WARN=1 SUBST_DELIM='!' NAME=John envsubstitute '\!BADVAR!: !BADVAR! (no warn)
 '
+hr -c -
+NAME=John envsubstitute '
+'
+hr -c -
+NAME=John envsubstitute '
+'
+hr -c -
+SUBST_DELIM='%' NAME=John envsubstitute '
+'
+hr -c -
+SUBST_DELIM='!' NAME=John envsubstitute '
+'

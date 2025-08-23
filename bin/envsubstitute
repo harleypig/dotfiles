@@ -85,8 +85,8 @@ Environment variables:
 Examples:
   NAME=John $selfname 'Hello \$NAME'                    # Output: Hello John
   NAME=John $selfname 'Hello \${NAME}'                  # Output: Hello John
-  SUBST_DELIM=% NAME=John $selfname 'Hello %NAME%'      # Output: Hello John
-  $selfname 'Hello \\\$NAME'                            # Output: Hello \$NAME (escaped)
+  SUBST_DELIM=% NAME=John $selfname 'Hello %NAME%'     # Output: Hello John
+  $selfname 'Hello \\\$NAME'                             # Output: Hello \$NAME (escaped)
   NO_WARN=1 $selfname 'Hello \$UNKNOWN'                 # Output: Hello \$UNKNOWN (preserved)
   $selfname 'Hello \$UNKNOWN'                           # Shows error, outputs with error message
 
