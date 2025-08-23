@@ -1,28 +1,20 @@
 #!/bin/bash
 
-# This script is a custom implementation of the envsubst utility, designed to
-# replace placeholders in a given string with the corresponding environment
-# variable values. It takes a string as input and searches for occurrences of
-# placeholders in the format $WORD, ${WORD}, or %WORD%. The script then
-# replaces these placeholders with the respective environment variable values
-# if they exist. If a variable is not found in the environment and NO_WARN is
-# not set, the script replaces the placeholder with a warning message,
-# indicating that the variable does not exist. If NO_WARN is set, the script
-# leaves the unknown variable placeholders untouched.
+# Internal implementation notes for envsubstitute
 #
-# The key difference between this custom implementation and the standard
-# envsubst utility is the support for an additional placeholder format,
-# %WORD%. By default, this script uses the $WORD or ${WORD} format for
-# placeholders, but if the SUBST_DELIM variable is set, the script switches to
-# using the %WORD% format. This flexibility allows the user to choose their
-# preferred placeholder format, making it more adaptable to different use
-# cases.
+# This script implements a custom envsubst-like utility with additional features:
+# - Supports %WORD% format via SUBST_DELIM in addition to standard $WORD/${WORD}
+# - Uses alternation regex to handle both $WORD and ${WORD} formats separately
+# - Implements NO_WARN mode that preserves unknown variables instead of erroring
+# - Uses --SKIP-- marker technique to prevent infinite loops when preserving variables
 #
-# There is no support for envsubst's SHELL-FORMATS option. If you want unknown
-# variables to be replaced with an empty string, you can set the NO_WARN
-# variable to a non-empty value before calling this script. When NO_WARN is
-# set, it leaves unknown variable placeholders in the string, instead of
-# replacing them with a warning message.
+# Key implementation details:
+# - Regex: '\$\{([a-zA-Z_]+)\}|\$([a-zA-Z_]+)' for default mode
+# - Regex: "${SUBST_DELIM}([^\\$SUBST_DELIM]*)$SUBST_DELIM" for SUBST_DELIM mode
+# - BASH_REMATCH[1] captures ${WORD} format, BASH_REMATCH[2] captures $WORD format
+# - When NO_WARN is set, unknown variables are temporarily replaced with --SKIP--
+#   markers to avoid regex re-matching, then restored after processing
+# - Error messages convert $WORD to ${WORD} format for consistency
 
 ##############################################################################
 #-----------------------------------------------------------------------------
@@ -63,23 +55,23 @@ usage() {
 Usage: $selfname 'input_string'
        echo 'input_string' | $selfname
 
-$selfname processes the given input string, replacing variable placeholders
-with their corresponding environment variable values, and prints the result to
-STDOUT.
+A custom implementation of envsubst that replaces variable placeholders with 
+environment variable values. Unlike standard envsubst, this version supports
+additional placeholder formats and provides better control over error handling.
 
-Placeholders can be in one of the following formats:
-  - \$WORD or \${WORD} (default)
-  - %WORD% (if SUBST_DELIM is set)
+Supported formats:
+  \$WORD or \${WORD}    (default, like envsubst)
+  %WORD%               (when SUBST_DELIM=%)
 
-Options:
-  - SUBST_DELIM: Set a single character to change the delimiter, e.g., '%'.
-  - NO_WARN: Set this variable to disable warnings and leave unknown variables untouched.
+Environment variables:
+  SUBST_DELIM    Set delimiter character (e.g., '%' for %WORD% format)
+  NO_WARN        If set, leave unknown variables unchanged instead of showing errors
 
-Example:
-  PRJNAME=test123 $selfname '/path/to/\$PRJNAME/'
-  PRJNAME=test123 echo '/path/to/\$PRJNAME/' | $selfname
-
-  In both cases the output would be '/path/to/test123'.
+Examples:
+  NAME=John $selfname 'Hello \$NAME'
+  NAME=John $selfname 'Hello \${NAME}'
+  SUBST_DELIM=% NAME=John $selfname 'Hello %NAME%'
+  NO_WARN=1 $selfname 'Hello \$UNKNOWN'    # Leaves \$UNKNOWN unchanged
 
 " "$@"
 }
