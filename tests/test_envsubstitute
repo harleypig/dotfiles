@@ -62,3 +62,8 @@ SUBST_DELIM='%' NAME=John envsubstitute '
 hr -c -
 SUBST_DELIM='!' NAME=John envsubstitute '
 '
+hr -c -
+#TEST_NAME_1='testing.com' envsubstitute '\${TEST_NAME_1}: ${TEST_NAME_1}
+#TEST_NAME='testing.com' envsubstitute '\${TEST_NAME}: ${TEST_NAME}
+SUBST_DELIM='%' TEST_NAME_1='testing.com' envsubstitute '\%TEST_NAME_1%: %TEST_NAME_1%
+'
