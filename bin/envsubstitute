@@ -129,12 +129,12 @@ _envsubst() {
 
   #---------------------------------------------------------------------------
   if [[ -n $SUBST_DELIM ]]; then
-    regex="\\\\?$SUBST_DELIM([a-zA-Z_]+)$SUBST_DELIM"
+    regex="\\\\?$SUBST_DELIM([a-zA-Z_][a-zA-Z0-9_]*)$SUBST_DELIM"
     skipvar="$SUBST_DELIM"
     words="${SUBST_DELIM}WORD${SUBST_DELIM}s"
 
   else
-    regex='\\?\$\{([a-zA-Z_]+)\}|\\?\$([a-zA-Z_]+)'
+    regex='\\?\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}|\\?\$([a-zA-Z_][a-zA-Z0-9_]*)'
     skipvar='$'
     words="\$WORDs or \${WORD}s"
   fi
