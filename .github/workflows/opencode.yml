@@ -11,16 +11,15 @@ concurrency:
 jobs:
   opencode:
     if: >-
-      ${{
-        github.event.comment.user.type != 'Bot' &&
-        (github.event.comment.body matches '(?i)(^|\s)/(oc|opencode)\b')
-      }}
+      github.event.comment.user.type != 'Bot' && (
+      contains(github.event.comment.body, '/oc') ||
+      contains(github.event.comment.body, '/opencode')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      contents: read   # only read access to repo, no commits
-      issues: write    # allows commenting on issues
-      pull-requests: write # allows commenting on PRs
+      contents: read
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -44,8 +43,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
-          # Use plain OpenRouter model IDs (no "openrouter/" prefix)
           model: anthropic/claude-sonnet-4-20250514
           # Alternative direct provider if you switch later:
           # model: anthropic/claude-sonnet-4-20250514
-          # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}  # put this in env: if used
+          # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
