@@ -19,7 +19,8 @@ concurrency:
   # below will always be valid. However, if we add a different event above,
   # using run_id will help us fall back to a unique id.
   group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
-  cancel-in-progress: true
+  # cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   comment_on_issue:
@@ -59,7 +60,8 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
-          model: anthropic/claude-sonnet-4-20250514
+          model: openrouter/anthropic/claude-sonnet-4
+          token: ${{ secrets.GITHUB_TOKEN }}
           # Alternative direct provider if you switch later:
           # model: anthropic/claude-sonnet-4-20250514
           # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
