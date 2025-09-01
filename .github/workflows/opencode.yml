@@ -26,8 +26,7 @@ jobs:
     name: Comment on issue ${{ github.event.issue.number }}
 
     if: >-
-      contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'),
-        github.event.comment.author_association) &&
+      contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
       github.event.comment.user.type != 'Bot' &&
       ! github.even.issue.pull_request &&
       contains(fromJSON('["/oc","/opencode"]'), github.event.comment.body)
