@@ -28,8 +28,11 @@ jobs:
     if: >-
       contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
       github.event.comment.user.type != 'Bot' &&
-      ! github.even.issue.pull_request &&
-      contains(fromJSON('["/oc","/opencode"]'), github.event.comment.body)
+      github.event.issue.pull_request == null &&
+      ( contains(github.event.comment.body, '/oc') ||
+        contains(github.event.comment.body, '/opencode')
+      )
+
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -37,7 +40,7 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
+      # pull-requests: write
 
     steps:
       - name: Checkout repository
