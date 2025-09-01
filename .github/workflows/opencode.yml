@@ -38,8 +38,7 @@ jobs:
           rm -rf ~/.cache/opencode ~/.local/share/opencode || true
 
       - name: Run OpenCode
-        #uses: sst/opencode/github@latest
-        uses: sst/opencode/github@v0.2.30
+        uses: sst/opencode/github@latest
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
