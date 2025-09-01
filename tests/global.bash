@@ -3,6 +3,9 @@
 # Possible way to write a large number of similar tests:
 # https://stackoverflow.com/a/50064603/491894
 
+# bats libraries to look at:
+# - https://github.com/drevops/bats-helpers
+
 #----------------------------------------------------------------------------
 # Print something to output in such a way it doesn't break TAP.
 
