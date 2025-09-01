@@ -61,7 +61,6 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
           model: openrouter/anthropic/claude-sonnet-4
-          token: ${{ secrets.GITHUB_TOKEN }}
           # Alternative direct provider if you switch later:
           # model: anthropic/claude-sonnet-4-20250514
           # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
