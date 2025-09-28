@@ -7,15 +7,50 @@ various development tools and environments. It provides a centralized way to
 manage shell configurations, custom scripts, and application settings across
 different systems.
 
+## Why This Setup?
+
+This dotfiles configuration serves two primary purposes:
+
+1. **Quick Environment Setup** - Get a fully configured development
+   environment running quickly on any new machine
+
+2. **XDG Base Directory Compliance** - Follow the [XDG Base Directory
+   specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
+   to keep your home directory clean and organized
+
+The XDG Base Directory specification defines standard locations for
+configuration, cache, and data files, moving them out of your home directory's
+root. This setup implements XDG compliance for supported applications, making
+your environment more organized and portable.
+
+For information on which applications support XDG Base Directory, see the
+[Arch Linux wiki's XDG Base Directory support
+page](https://wiki.archlinux.org/title/XDG_Base_Directory).
+
 ## Overview
 
 This dotfiles repository includes:
 
 - **Shell configurations** - Bash startup scripts with modular organization
 - **Custom scripts** - Utility scripts in the `bin/` directory
-- **Application configs** - Configuration files for various tools (git, tmux, vim, etc.)
+- **Application configs** - Configuration files for various tools (git, tmux,
+  vim, etc.)
+- **XDG-compliant setup** - Environment variables and configurations that
+  follow XDG Base Directory standards
 - **PowerShell setup** - Windows PowerShell configuration (work in progress)
 - **Cross-platform support** - Linux, macOS, and Windows configurations
+
+### XDG Implementation
+
+This repository implements XDG Base Directory compliance by:
+
+- Setting `XDG_CONFIG_HOME="$DOTFILES/config"` to centralize configuration
+  files
+- Using `XDG_CACHE_HOME`, `XDG_DATA_HOME`, and `XDG_STATE_HOME` for
+  application data
+- Configuring applications to use XDG-compliant paths (see
+  `config/shell-startup/app_env_vars`)
+- Organizing configuration files in the `config/` directory structure
 
 For detailed documentation on specific components, see the `docs/` directory.
 
