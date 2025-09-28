@@ -1,0 +1,13 @@
+{
+  "name": "context7",
+  "version": "0.1.0",
+  "description": "Remote MCP server for Context7",
+  "servers": {
+    "context7": {
+      "url": "https://api.context7.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CONTEXT7_API_KEY}"
+      }
+    }
+  }
+}

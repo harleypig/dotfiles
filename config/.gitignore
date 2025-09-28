@@ -23,6 +23,7 @@ tree-sitter/**
 yelp/**
 
 ansible/galaxy_token
+cursor/auth.json
 cursor/prompt_history.json
 dconf/user
 docker/config.json
