@@ -140,8 +140,6 @@ unsetfuncs 'run_hook'
 #
 # This is not cumulative, either the defaults or the custom bin dirs are used.
 
-# XXX: Add documentation for deault bin dirs.
-
 set_bin_dirs() {
   bin_dirs_file="$DOTFILES/bin-dirs-defaults"
   [[ -r "$HOME/.bin-dirs" ]] && bin_dirs_file="$HOME/.bin-dirs"
@@ -191,8 +189,6 @@ if [[ -r $path_to_exports_script ]]; then
   # shellcheck disable=SC1090
   source "$path_to_exports_script"
 fi
-
-#[[ -r "$DOTFILES/app_env_vars" ]] && source "$DOTFILES/app_env_vars"
 
 # shellcheck disable=SC1091
 [[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \
