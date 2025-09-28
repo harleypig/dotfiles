@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# Wrapper script for running yq using Docker
-
-docker run --rm -v "${PWD}":/workdir mikefarah/yq yq "$@"

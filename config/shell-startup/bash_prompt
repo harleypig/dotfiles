@@ -174,12 +174,9 @@ _update_prompt() {
   hostname_color="$(ansi -n fg yellow)"
 
   # Build the prompt.
-  local prompt_color system_reboot pacman_status finalchr loadavg
+  local prompt_color pacman_status finalchr loadavg
 
   PS1="\n$color_off$prompt_color"
-
-  command -v system-needs-reboot &> /dev/null \
-    && PS1+="$(system-needs-reboot)"
 
   command -v pacman-status &> /dev/null \
     && PS1+="$(pacman-status)"

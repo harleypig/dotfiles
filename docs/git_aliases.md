@@ -3,6 +3,7 @@
 These aliases are accessible via `git aliasname`.
 
 ## Information
+
 - `aliases` - Show all defined git aliases
 - `root` - Show repository root directory
 - `remotes` - List remotes with URLs
@@ -12,12 +13,14 @@ These aliases are accessible via `git aliasname`.
 - `changes` - Show status of changes
 
 ## File Management
+
 - `find` - Search for file in git tree
 - `ignore` - Add file to .gitignore
 - `ignored` - Show ignored files
 - `new` - Show new files in incoming merge
 
 ## File Tracking
+
 - `assume` - Mark file as assumed unchanged
 - `assumed` - List assumed-unchanged files
 - `unassume` - Clear assume-unchanged for file
@@ -26,6 +29,7 @@ These aliases are accessible via `git aliasname`.
 - `wip` - Commit work in progress
 
 ## Staging Management
+
 - `a` - Add file contents to index
 - `aa` - Add all file contents to index
 - `ai` - Add files interactively
@@ -34,6 +38,7 @@ These aliases are accessible via `git aliasname`.
 - `unstage` - Undo last commit, specific or all files
 
 ## Diffing
+
 - `d` - Show changes with color and word diff
 - `dc` - Show staged changes with color
 - `dd` - Show directory statistics
@@ -42,6 +47,7 @@ These aliases are accessible via `git aliasname`.
 - `diffstat` - Show change statistics
 
 ## Committing
+
 - `amend` - Amend commit without editing message
 - `c` - Record changes to repository
 - `ca` - Modify the last commit
@@ -52,6 +58,7 @@ These aliases are accessible via `git aliasname`.
 - `undo` - Undo last commit keeping changes staged
 
 ## Branching
+
 - `b` - List branches
 - `ba` - List all branches including remote
 - `bc` - Show current branch name
@@ -62,14 +69,17 @@ These aliases are accessible via `git aliasname`.
 - `co` - Switch branches or restore files
 
 ## Remote Operations
+
 - `f` - Download objects and refs
 - `pl` - Fetch and integrate with another repo
 - `m` - Join development histories
 
 ## Conflict Resolution
+
 - `conflicted` - Show files with merge conflicts
 
 ## History
+
 - `l` - Show commit logs with graph
 - `last` - Show last commit with graph
 - `latest-tag` - Show most recent version tag
