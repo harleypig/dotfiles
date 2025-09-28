@@ -74,7 +74,7 @@ export LC_ALL=en_US.UTF-8
 # Set a default debug and, if set, check if debug is available and source it.
 
 debug() { true; }
-[[ -n $DEBUG ]] \
+[[ -n "${DEBUG:-}" ]] \
   && [[ -f "$DOTFILES/bin/debug" ]] \
   && source "$DOTFILES/bin/debug"
 
@@ -145,8 +145,10 @@ unsetfuncs 'run_hook'
 set_bin_dirs() {
   bin_dirs_file="$DOTFILES/bin-dirs-defaults"
   [[ -r "$HOME/.bin-dirs" ]] && bin_dirs_file="$HOME/.bin-dirs"
-  readarray -t bin_dirs < <(grep -v '^[[:space:]]*#' "$bin_dirs_file" | envsubst)
-  addpath "${bin_dirs[@]}"
+  [[ -r "$bin_dirs_file" ]] && {
+    readarray -t bin_dirs < <(grep -v '^[[:space:]]*#' "$bin_dirs_file" | envsubst)
+    addpath "${bin_dirs[@]}"
+  }
 }
 
 #-----------------------------------------------------------------------------
@@ -199,9 +201,6 @@ fi
 #-----------------------------------------------------------------------------
 # Check if various dotfiles are linked properly
 [[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
-
-set_bin_dirs
-load_files
 
 set_bin_dirs
 load_files
