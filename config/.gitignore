@@ -3,6 +3,7 @@ asciinema/**
 Bitwarden\ CLI/**
 coc/**
 Code/**
+cursor/chats/**
 dlv/**
 docker/buildx/**
 evolution/**
@@ -22,6 +23,7 @@ tree-sitter/**
 yelp/**
 
 ansible/galaxy_token
+cursor/prompt_history.json
 dconf/user
 docker/config.json
 docker/.token_seed
