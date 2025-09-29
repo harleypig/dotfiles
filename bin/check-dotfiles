@@ -9,7 +9,7 @@
 [[ -z $DOTFILES ]] && exit 0
 cd "$HOME" || return 0
 
-source debug
+source $DOTFILES/lib/debug
 
 #-----------------------------------------------------------------------------
 check_link() {
