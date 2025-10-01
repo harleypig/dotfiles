@@ -1,0 +1,8 @@
+#!/bin/bash
+
+exec docker run \
+  --rm \
+  --user "$(id -u):$(id -g)" \
+  --volume "$PWD:/mnt" \
+  --workdir "/mnt" \
+  mvdan/shfmt:v3 "$@"
