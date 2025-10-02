@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Set up Docker run command with basic options
+DOCKER_ARGS=(
+  --rm
+  --user "$(id -u):$(id -g)"
+  --volume "$PWD:/mnt"
+  --workdir "/mnt"
+)
+
+if [[ -d "${XDG_CONFIG_HOME:-$HOME/.config}/yamllint" ]]; then
+  # Mount the parent config directory to /config in the container
+  # so yamllint can find the config at /config/yamllint/config
+  DOCKER_ARGS+=(--volume "$XDG_CONFIG_HOME:/config")
+
+  # Set XDG_CONFIG_HOME to /config so yamllint can find the config
+  DOCKER_ARGS+=(--env "XDG_CONFIG_HOME=/config")
+fi
+
+exec docker run "${DOCKER_ARGS[@]}" cytopia/yamllint:latest "$@"

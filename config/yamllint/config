@@ -1,0 +1,48 @@
+---
+extends: default
+
+rules:
+  # Line length - allow longer lines for Ansible
+  line-length:
+    max: 120
+    level: warning
+
+  # Indentation - use 2 spaces for YAML
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Comments - disable comments-indentation for ansible-lint compatibility
+  comments-indentation: false
+
+  # Document start - require document start (good practice)
+  document-start:
+    level: warning
+
+  # Truthy - allow yes/no/true/false
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']
+    check-keys: false
+
+  # Quoted strings - be flexible with quotes
+  quoted-strings: disable
+
+  # Brackets - allow flow style
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Braces - allow flow style
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Commas - allow trailing commas
+  commas:
+    max-spaces-before: 0
+    min-spaces-after: 1
+
+  # Colons - require space after colon
+  colons:
+    max-spaces-before: 0
