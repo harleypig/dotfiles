@@ -1,0 +1,21 @@
+# shellcheck shell=bash
+
+#-----------------------------------------------------------------------------
+# binenv environment configuration
+# Binary environment manager for installing binaries
+
+if command -v binenv &> /dev/null; then
+  # Set binenv environment variables following XDG Base Directory specification
+  export BINENV_BINDIR="$HOME/.local/bin"
+  export BINENV_CACHEDIR="$XDG_CACHE_HOME/binenv"
+  export BINENV_CONFDIR="$XDG_CONFIG_HOME/binenv"
+  export BINENV_LINKDIR="$BINENV_BINDIR"
+
+  # Create directories if they don't exist
+  mkdir -p "$BINENV_BINDIR"
+  mkdir -p "$BINENV_CACHEDIR"
+  mkdir -p "$BINENV_CONFDIR"
+
+  # Enable bash completion for binenv
+  source <(binenv completion bash)
+fi

@@ -122,17 +122,6 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 # See inputrc for macros
 #run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
 
-#-----------------------------------------------------------------------------
-# binenv
-
-# shellcheck disable=SC2034,SC1090
-if command -v binenv &> /dev/null; then
-  BINENV_BINDIR="/home/harleypig/.local/bin"
-  BINENV_CACHEDIR="/home/harleypig/.cache/binenv"
-  BINENV_CONFDIR="/home/harleypig/projects/dotfiles/config/binenv"
-
-  source <(binenv completion bash)
-fi
 
 #-----------------------------------------------------------------------------
 # Vault
