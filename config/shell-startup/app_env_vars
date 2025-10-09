@@ -26,9 +26,3 @@ if command -v npm &>/dev/null; then
   export npm_config_cache="${XDG_CACHE_HOME}/npm"
   export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
 fi
-
-# Check if ANSIBLE is installed and set ANSIBLE related variables if it is
-if command -v ansible &>/dev/null; then
-  export ANSIBLE_HOME="${XDG_CONFIG_HOME}/ansible"
-  export ANSIBLE_GALAXY_CACHE_DIR="${XDG_CACHE_HOME}/ansible/galaxy_cache"
-fi

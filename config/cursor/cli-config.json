@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Shell(ls)"
+      "Shell(ls)",
+      "Shell(git status)",
+      "Shell(pre-commit)",
+      "Shell(git show)",
+      "Shell(ansible-doc)",
+      "Shell(cat)",
+      "Shell(sudo)"
     ],
     "deny": []
   },
@@ -22,7 +28,7 @@
   "privacyCache": {
     "ghostMode": true,
     "privacyMode": 1,
-    "updatedAt": 1759710004918
+    "updatedAt": 1759965287816
   },
   "network": {
     "useHttp1ForAgent": false

@@ -1,0 +1,9 @@
+# shellcheck shell=bash
+
+[[ -x "$(command -v ansible)" ]] || return 0
+
+export ANSIBLE_CONFIG="$XDG_CONFIG_HOME/ansible/ansible.cfg"
+
+mkdir -pm 0700 \
+  "$XDG_CACHE_HOME/ansible/{tmp,galaxy}" \
+  "$XDG_DATA_HOME/ansible/{collections,inventory,roles}"
