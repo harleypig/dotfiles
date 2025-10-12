@@ -15,10 +15,15 @@
 }
 
 #----------------------------------------------------------------------------
-export prompt_color color_off
+export color_off hostname_color nonroot_color prompt_color root_color white
 
-prompt_color="$(ansi -n fg cyan)"
 color_off="$(ansi -n off)"
+hostname_color="$(ansi -n fg yellow)"
+nonroot_color="$(ansi -n fg bright_cyan)"
+prompt_color="$(ansi -n fg cyan)"
+root_color="$(ansi -n fg bright_red)"
+white="$(ansi -n fg white)"
+
 
 # Array of Unicode characters to rotate through for non-root prompt
 # Use show-unicode to see what symbols are available on your current terminal.
@@ -160,21 +165,19 @@ _update_prompt() {
   history -c
   history -r
 
-  local user_color hostname_color finalchr loadavg
+  local finalchr loadavg
 
   if [[ $UID -eq 0 ]]; then
-    user_color="$(ansi -n fg bright_red)"
+    user_color="$root_color"
     finalchr='!!'
 
   else
-    user_color="$(ansi -n fg bright_cyan)"
+    user_color="$nonroot_color"
     finalchr="$(_get_next_prompt_char)"
   fi
 
-  hostname_color="$(ansi -n fg yellow)"
-
   # Build the prompt.
-  local prompt_color pacman_status finalchr loadavg
+  local pacman_status finalchr loadavg
 
   PS1="\n$color_off$prompt_color"
 
@@ -186,7 +189,7 @@ _update_prompt() {
     [[ -n $loadavg ]] && PS1+="$loadavg\n"
   }
 
-  PS1+="$parent$user_color\u@$hostname_color\h: "
+  PS1+="$parent$user_color\u$white@$hostname_color\H: "
 
   # We're assuming dir-readable and git-status are on the system; we want to
   # be notified in a glaring way if they're not.
