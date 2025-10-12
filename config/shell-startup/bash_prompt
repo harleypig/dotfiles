@@ -189,6 +189,8 @@ _update_prompt() {
     [[ -n $loadavg ]] && PS1+="$loadavg\n"
   }
 
+  # For tmux status line
+  PS1+='\[\e]0;\u@\H\a\]'
   PS1+="$parent$user_color\u$atsign_color@$hostname_color\H: "
 
   # We're assuming dir-readable and git-status are on the system; we want to
