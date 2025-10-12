@@ -15,15 +15,15 @@
 }
 
 #----------------------------------------------------------------------------
-export color_off hostname_color nonroot_color prompt_color root_color white
+export atsign_color color_off hostname_color nonroot_color prompt_color
+export root_color
 
+atsign_color="$(ansi -n fg bright_black)"
 color_off="$(ansi -n off)"
 hostname_color="$(ansi -n fg yellow)"
 nonroot_color="$(ansi -n fg bright_cyan)"
 prompt_color="$(ansi -n fg cyan)"
 root_color="$(ansi -n fg bright_red)"
-white="$(ansi -n fg white)"
-
 
 # Array of Unicode characters to rotate through for non-root prompt
 # Use show-unicode to see what symbols are available on your current terminal.
@@ -189,7 +189,7 @@ _update_prompt() {
     [[ -n $loadavg ]] && PS1+="$loadavg\n"
   }
 
-  PS1+="$parent$user_color\u$white@$hostname_color\H: "
+  PS1+="$parent$user_color\u$atsign_color@$hostname_color\H: "
 
   # We're assuming dir-readable and git-status are on the system; we want to
   # be notified in a glaring way if they're not.
