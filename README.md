@@ -2,170 +2,248 @@
 
 # Dotfiles Repository
 
-This repository contains my personal dotfiles and configuration files for
-various development tools and environments. It provides a centralized way to
-manage shell configurations, custom scripts, and application settings across
-different systems.
+This repository contains my personal dotfiles and shell configuration for
+Linux, Windows (PowerShell), and cross-platform development environments.
 
-## Why This Setup?
+## What This Repository Contains
 
-This dotfiles configuration serves two primary purposes:
+- **Shell Configuration**: Bash startup scripts, aliases, and environment
+  setup
+- **Tool Configurations**: Git, Vim, Tmux, Python, Node.js, Rust, and more
+- **Custom Scripts**: Utility scripts in the `bin/` directory
+- **Cross-Platform Support**: Linux bash and Windows PowerShell configurations
+- **Modular Design**: Organized by tool/functionality with conditional loading
 
-1. **Quick Environment Setup** - Get a fully configured development
-   environment running quickly on any new machine
+## Quick Setup
 
-2. **XDG Base Directory Compliance** - Follow the [XDG Base Directory
-   specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
-   to keep your home directory clean and organized
+### 1. Clone the Repository
 
-The XDG Base Directory specification defines standard locations for
-configuration, cache, and data files, moving them out of your home directory's
-root. This setup implements XDG compliance for supported applications, making
-your environment more organized and portable.
+```bash
+git clone https://github.com/harleypig/dotfiles.git ~/projects/dotfiles
+cd ~/projects/dotfiles
+```
 
-For information on which applications support XDG Base Directory, see the
-[Arch Linux wiki's XDG Base Directory support
-page](https://wiki.archlinux.org/title/XDG_Base_Directory).
+### 2. Create Symbolic Links
 
-## Overview
+The repository uses symbolic links to connect configuration files to your home
+directory:
 
-This dotfiles repository includes:
+```bash
+# Create the main shell startup link
+ln -sf ~/projects/dotfiles/shell-startup ~/.bash_profile
 
-- **Shell configurations** - Bash startup scripts with modular organization
-- **Custom scripts** - Utility scripts in the `bin/` directory
-- **Application configs** - Configuration files for various tools (git, tmux,
-  vim, etc.)
-- **XDG-compliant setup** - Environment variables and configurations that
-  follow XDG Base Directory standards
-- **PowerShell setup** - Windows PowerShell configuration (work in progress)
-- **Cross-platform support** - Linux, macOS, and Windows configurations
+# Optional: Link other shell files if needed
+ln -sf ~/projects/dotfiles/shell-startup ~/.bashrc
+ln -sf ~/projects/dotfiles/shell-startup ~/.profile
+```
 
-### XDG Implementation
+### 3. Configure Custom Files
 
-This repository implements XDG Base Directory compliance by:
+#### Dotlinks Files
 
-- Setting `XDG_CONFIG_HOME="$DOTFILES/config"` to centralize configuration
-  files
-- Using `XDG_CACHE_HOME`, `XDG_DATA_HOME`, and `XDG_STATE_HOME` for
-  application data
-- Configuring applications to use XDG-compliant paths (see
-  `config/shell-startup/app_env_vars`)
-- Organizing configuration files in the `config/` directory structure
+The repository supports multiple dotlinks configurations for different
+environments:
 
-For detailed documentation on specific components, see the `docs/` directory.
+- **`dotlinks-default`**: Default configuration for most users
+- **`dotlinks-harleypig.com`**: Specific configuration for harleypig.com
+  environment
+- **`dotlinks-sweetums`**: Configuration for sweetums environment
 
-## Installation
 
-### Prerequisites
+**When to use**: Choose the dotlinks file that matches your environment or
+create your own custom one.
 
-- Git
-- Bash (Linux/macOS) or Git Bash (Windows)
-- PowerShell 7+ (for Windows configuration)
+**How to set up**:
+```bash
+# Copy the appropriate dotlinks file
+cp dotlinks-default ~/.dotlinks
 
-### Basic Setup
+# Or create your own custom dotlinks file
+# Edit ~/.dotlinks to specify which configuration files to link
+```
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/harleypig/dotfiles.git ~/dotfiles
-   cd ~/dotfiles
-   ```
+#### Bin-Dirs Files
 
-2. **Configure environment variables:**
-   - Set `DOTFILES` to point to your dotfiles directory
-   - Set `PROJECTS_DIR` to your projects directory (defaults to `$HOME/projects`)
+The `bin-dirs-defaults` file specifies additional directories to add to your
+PATH:
 
-3. **Run the setup script:**
-   ```bash
-   ./setup-work  # Creates necessary directories and files
-   ```
+```bash
+# Default bin directories (in order of precedence)
+$HOME/bin
+$HOME/.local/bin
+$HOME/.vim/bin
+$HOME/.cabal/bin
+$HOME/.cargo/bin
+$HOME/.minecraft/bin
+$HOME/go/bin
+$HOME/.dotnet/tools
+$HOME/Dropbox/bin
+$HOME/videos/bin
+$PROJECTS_DIR/depot_tools
+$PROJECTS_DIR/android-sdk/tools
+$PROJECTS_DIR/android-sdk/platform-tools
+```
 
-4. **Configure bin-dirs and dotfile-links** (see sections below)
+**When to customize**: If you have additional tool directories or want to
+change the PATH order.
 
-## Bin-Dirs Configuration
+**How to set up**:
+```bash
+# Use defaults (no action needed)
+# The system will automatically use bin-dirs-defaults
 
-The `bin-dirs-defaults` file defines directories that should be added to your
-`PATH`. This ensures that custom scripts and tools are available system-wide.
+# Or create custom bin directories
+cp bin-dirs-defaults ~/.bin-dirs
+# Edit ~/.bin-dirs to customize your PATH
+```
 
-### How it works:
+### 4. Test the Setup
 
-- The file contains a list of directories (one per line)
-- Order matters - directories are added to PATH in the order listed
-- Variables like `$HOME`, `$PROJECTS_DIR` are expanded
-- These directories are automatically added to your PATH during shell startup
+```bash
+# Start a new login shell to test
+bash -l
 
-### Configuration:
+# Verify environment variables
+echo "DOTFILES: $DOTFILES"
+echo "XDG_CONFIG_HOME: $XDG_CONFIG_HOME"
 
-- **Default**: Uses `bin-dirs-defaults` for standard setup
-- **Custom**: Create your own `bin-dirs-<hostname>` file for machine-specific
-  paths
-- **Examples**: `bin-dirs-harleypig.com`, `bin-dirs-sweetums`
+# Check if completions are working
+complete -p | grep git
+```
 
-### When to configure:
+## Architecture Overview
 
-- After cloning the repository
-- When adding new tool directories to your system
-- When setting up a new machine with different directory structure
-
-## Dotfile-Links Configuration
-
-The `dotlinks-default` file defines symbolic links that should be created in
-your home directory, pointing to configuration files in the dotfiles
-repository.
-
-### How it works:
-
-- Each line specifies a link target and source
-- Links are created in your home directory (`$HOME`)
-- Source files are referenced from the dotfiles directory (`$DOTFILES`)
-- This allows you to version control your dotfiles while keeping them in the
-  standard locations
-
-### Configuration:
-
-- **Default**: Uses `dotlinks-default` for basic configuration files
-- **Custom**: Create your own `dotlinks-<hostname>` file for machine-specific links
-- **Examples**: `dotlinks-harleypig.com`, `dotlinks-sweetums`
-
-### When to configure:
-
-- During initial setup
-- When adding new configuration files to version control
-- When setting up a new machine with different configuration needs
-
-## Shell Startup Configuration
+### Shell Startup System
 
 The `.bash_profile`, `.bashrc`, and `.profile` files all link to the same
-`shell-startup` file. This setup provides several benefits:
+`shell-startup` file. This unified approach provides:
 
-- **Simplified debugging** - One central file to examine instead of tracing
-  through multiple files
-- **Modular organization** - Tasks are broken into discrete functions (e.g.,
-  `shell_startup.d/tmux`)
-- **Consistent behavior** - Ensures aliases and configurations work when
-  shelling from vim
-- **Cross-shell compatibility** - Works across different shell startup
-  scenarios
+- **Simplicity**: One central file to understand and modify
+- **Consistency**: Same configuration regardless of how bash is started
+- **Vim Integration**: Ensures aliases work when shelling from vim
+- **Modular Loading**: Individual tool configurations in
+  `config/shell-startup/`
 
-## PowerShell and Git for Windows
+### Directory Structure
 
-**Note**: PowerShell and Git for Windows configuration is currently a work in
-progress.
+```
+├── bin/                     # Custom utility scripts
+├── config/                  # Tool-specific configurations
+│   ├── completions/         # Bash completion files
+│   ├── shell-startup/       # Modular shell startup files
+│   ├── git/                 # Git configuration
+│   ├── vim/                 # Vim configuration
+│   └── ...                  # Other tool configs
+├── docs/                    # Documentation
+├── powershell/              # Windows PowerShell configuration
+├── shell-startup            # Main shell startup script
+├── dotlinks-default         # Default dotlinks configuration
+├── bin-dirs-defaults        # Default PATH directories
+└── README.md               # This file
+```
 
-The `powershell/` directory contains PowerShell scripts and configuration
-files, but the setup process is still being refined. See
-`powershell/README.md` for current instructions and limitations.
+### Modular Configuration
+
+Tool configurations are organized in `config/shell-startup/` with conditional
+loading:
+
+- **`000-loadtokens`**: Load authentication tokens
+- **`010-general`**: General environment setup
+- **`git`**: Git configuration and aliases
+- **`python`**: Python environment and poetry setup
+- **`nodejs`**: Node.js and NVM configuration
+- **`rust`**: Rust and Cargo setup
+- **`vim`**: Vim configuration
+- **`tmux`**: Tmux configuration
+- **`ssh-config-completion`**: SSH host completion
+
+## Cross-Platform Support
+
+### Linux/Unix (Primary)
+
+- **Shell**: Bash with comprehensive completion system
+- **Package Management**: Supports apt, pacman, and other package managers
+- **Development Tools**: Git, Vim, Tmux, Python, Node.js, Rust, Go
+- **System Integration**: XDG Base Directory specification
+
+### Windows (Work in Progress)
+
+The repository includes PowerShell configuration for Windows environments:
+
+- **PowerShell Profiles**: Located in `powershell/` directory
+- **Git for Windows**: Integration with Git Bash and PowerShell
+- **Cross-Platform Scripts**: Some utilities work in both environments
+
+**Note**: Windows support is actively being developed. Some features may be
+incomplete or require manual setup.
+
+### Git for Windows
+
+When using Git for Windows:
+
+- **Git Bash**: Uses the same bash configuration as Linux
+- **PowerShell**: Uses Windows-specific PowerShell profiles
+- **MSYS Integration**: Handles symlink creation appropriately
+
+**Setup for Git for Windows**:
+```bash
+# In Git Bash
+ln -sf ~/projects/dotfiles/shell-startup ~/.bash_profile
+
+# PowerShell setup (manual)
+# Copy powershell/ files to appropriate PowerShell profile location
+```
+
+## Customization
+
+### Adding New Tools
+
+1. **Create shell-startup file**: Add `config/shell-startup/newtool`
+2. **Add completion**: Place completion file in `config/completions/`
+3. **Update PATH**: Add to `bin-dirs-defaults` or `~/.bin-dirs`
+
+### Environment-Specific Configuration
+
+1. **Create custom dotlinks**: Copy and modify `dotlinks-default`
+2. **Custom bin directories**: Create `~/.bin-dirs` file
+3. **Tool-specific configs**: Add files to `config/` directory
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Symbolic links not working**: Ensure you're using absolute paths
+2. **Completions not loading**: Check file permissions and tool installation
+3. **PATH issues**: Verify `bin-dirs-defaults` or `~/.bin-dirs` configuration
+4. **Environment variables**: Use `bash -l` to test login shell behavior
+
+### Debug Mode
+
+```bash
+# Enable debug output
+DEBUG=1 bash -l
+
+# Check specific configurations
+bash -l -c 'echo "DOTFILES: $DOTFILES"'
+```
 
 ## Documentation
 
-For more detailed information, see the `docs/` directory:
-
-- `bash-completion.md` - Bash completion setup and configuration
-- `git-commit-comment.md` - Git commit message conventions
-- `todo.md` - Current development tasks and improvements
-- `windows-notes.md` - Windows-specific setup notes
+- **[Bash Completion](docs/bash-completion.md)**: Detailed explanation of the
+  completion system
+- **[Git Aliases](GIT_ALIASES.md)**: List of available git aliases
+- **[Conventions](CONVENTIONS.md)**: Coding and configuration conventions
 
 ## Contributing
 
 This is a personal dotfiles repository, but suggestions and improvements are
-welcome. Please check the `CONVENTIONS.md` file for coding standards and
-conventions used in this repository.
+welcome. Please:
+
+1. Test changes thoroughly
+2. Document new features
+3. Maintain backward compatibility
+4. Follow existing conventions
+
+## License
+
+See [LICENSE](LICENSE) file for details.
