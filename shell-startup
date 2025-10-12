@@ -149,6 +149,8 @@ set_bin_dirs() {
   }
 }
 
+unsetvars 'bin_dirs'
+
 #-----------------------------------------------------------------------------
 load_files() {
   declare -a load_dirs
@@ -169,6 +171,8 @@ load_files() {
     done
   done
 }
+
+unsetvars 'load_files'
 
 ##############################################################################
 # Setup environment
