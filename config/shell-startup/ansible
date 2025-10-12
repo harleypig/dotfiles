@@ -2,7 +2,8 @@
 
 [[ -x "$(command -v ansible)" ]] || return 0
 
-export ANSIBLE_CONFIG="$XDG_CONFIG_HOME/ansible/ansible.cfg"
+export ANSIBLE_HOME="$XDG_CONFIG_HOME/ansible"
+export ANSIBLE_CONFIG="$ANSIBLE_HOME/ansible.cfg"
 
 mkdir -pm 0700 \
   "$XDG_CACHE_HOME/ansible/{tmp,galaxy}" \
