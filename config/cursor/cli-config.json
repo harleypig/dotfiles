@@ -24,11 +24,11 @@
       "auto"
     ]
   },
-  "hasChangedDefaultModel": false,
+  "hasChangedDefaultModel": true,
   "privacyCache": {
     "ghostMode": true,
     "privacyMode": 1,
-    "updatedAt": 1759965287816
+    "updatedAt": 1760499205805
   },
   "network": {
     "useHttp1ForAgent": false

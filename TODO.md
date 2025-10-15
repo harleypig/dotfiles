@@ -2,3 +2,30 @@
 
 - [ ] get bash completion working for what is available but not setup
 - [ ] look into [pyscn](https://github.com/ludo-technologies/pyscn) (pipx install pyscn)
+- [ ] Update AGENTS.md to match $DOTFILES version (v1.1.0) and extract repository-specific needs to WORKFLOW.md file
+- [ ] Create more comprehensive tasks in this todo file.
+- [ ] **Create default pre-commit configuration templates**
+  - Create `.pre-commit-config.yaml` (checks only) and `.pre-commit-config-fix.yaml` (auto-fix)
+  - Include core hooks: shellcheck, shfmt, json-schema, yamllint, yamlfmt, typos, proselint, markdownlint
+  - Add security checks: gitleaks, trufflehog, bandit, safety
+  - Include pre-commit-hooks: trailing-whitespace, end-of-file-fixer, check-yaml, check-json, check-merge-conflict, check-added-large-files
+  - Add sync-pre-commit-deps for dependency management
+  - Research and add additional useful hooks: check-docstring-first, debug-statements, requirements-txt-fixer
+  - Create commented sections for specific languages:
+    - Python: pygrep-hooks, mypy, pyupgrade, black, isort, flake8, pydocstyle, bandit
+    - JavaScript/TypeScript: eslint, prettier, husky
+    - Go: gofmt, goimports, golangci-lint
+    - Rust: cargo fmt, clippy
+    - Docker: hadolint
+    - Terraform: terraform fmt, tflint
+  - Add configuration examples and documentation for each hook
+  - Include setup instructions and best practices
+  - Test configurations with sample projects
+  - **Research resources:**
+    - [pre-commit.com/hooks.html](https://pre-commit.com/hooks.html) - Official hook registry
+    - [Sourcegraph searches](https://sourcegraph.com/search) for real-world examples:
+      - `file:\.pre-commit-config\.yaml lang:yaml` - Find existing configs
+      - `repo:github.com/.*\.pre-commit-config\.yaml` - GitHub configs
+      - `gitleaks OR trufflehog OR bandit file:\.pre-commit-config\.yaml` - Security hooks
+      - `mypy OR flake8 OR black file:\.pre-commit-config\.yaml` - Python hooks
+      - `shellcheck OR shfmt file:\.pre-commit-config\.yaml` - Shell hooks
