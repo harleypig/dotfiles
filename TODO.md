@@ -29,3 +29,65 @@
       - `gitleaks OR trufflehog OR bandit file:\.pre-commit-config\.yaml` - Security hooks
       - `mypy OR flake8 OR black file:\.pre-commit-config\.yaml` - Python hooks
       - `shellcheck OR shfmt file:\.pre-commit-config\.yaml` - Shell hooks
+- [ ] **Create comprehensive configuration file templates**
+  - **Python tooling templates:**
+    - `pyproject.toml` templates with configurations for:
+      - Poetry, setuptools, pip-tools
+      - Black, isort, yapf (formatters)
+      - Flake8, pylint, mypy (linters)
+      - Pytest, coverage, tox (testing)
+      - Bandit, safety (security)
+      - Pydocstyle, sphinx (documentation)
+      - Pre-commit hooks configuration
+    - Individual config files:
+      - `.flake8` - Flake8 configuration
+      - `.isort.cfg` - Import sorting configuration
+      - `.pylintrc` - Pylint configuration
+      - `mypy.ini` - MyPy type checking
+      - `.bandit` - Security linting
+      - `pytest.ini` - Pytest configuration
+      - `tox.ini` - Tox testing configuration
+  - **General development templates:**
+    - `.editorconfig` - Editor configuration
+    - `.gitignore` templates for different languages
+    - `.gitattributes` - Git attributes
+    - `Dockerfile` templates
+    - `docker-compose.yml` templates
+  - **Documentation and markup:**
+    - `.markdownlintrc` - Markdown linting
+    - `.proselintrc` - Prose linting
+    - `mkdocs.yml` - MkDocs configuration
+    - `sphinx/` directory structure
+  - **Infrastructure and DevOps:**
+    - `.ansible-lint` - Ansible linting
+    - `.yamllint` - YAML linting
+    - `terraform/` configuration templates
+    - `packer/` configuration templates
+    - `docker/` configuration templates
+  - **Language-specific configurations:**
+    - JavaScript/TypeScript: `.eslintrc.json`, `.prettierrc`, `tsconfig.json`
+    - Go: `.golangci.yml`, `go.mod` templates
+    - Rust: `Cargo.toml` templates, `clippy.toml`
+    - Shell: `.shellcheckrc`, `shfmt` configuration
+  - **IDE and editor configurations:**
+    - VS Code: `settings.json`, `extensions.json`, `launch.json`
+    - Vim/Neovim: `.vimrc` sections, plugin configurations
+    - Cursor: `cursor.json` configuration
+  - **CI/CD templates:**
+    - GitHub Actions workflows
+    - GitLab CI configurations
+    - Jenkins pipeline templates
+  - **Based on analysis of existing repositories:**
+    - `bw-serve-client`: pyproject.toml, .flake8, .pre-commit-config.yaml, poetry.lock
+    - `ansible-stuff`: .ansible-lint, .yamllint, .gitignore
+    - `harleydev`: Various Terraform, Docker, and documentation configs
+    - `dotfiles`: Extensive configuration collection including markdownlint, proselint, yamllint
+  - **Template features:**
+    - Consistent line length (92 characters) across all tools
+    - Comprehensive comments explaining each setting
+    - Multiple profiles (development, production, minimal)
+    - Cross-tool compatibility (e.g., yapf + flake8 + isort)
+    - Security-focused configurations
+    - Documentation and examples for each template
+    - Version pinning and update strategies
+    - Integration with pre-commit hooks
