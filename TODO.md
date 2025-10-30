@@ -1,5 +1,6 @@
 # Things to do
 
+- [ ] look in to [serena](https://github.com/oraios/serena) for mcp server
 - [ ] get bash completion working for what is available but not setup
 - [ ] look into [pyscn](https://github.com/ludo-technologies/pyscn) (pipx install pyscn)
 - [ ] Update AGENTS.md to match $DOTFILES version (v1.1.0) and extract repository-specific needs to WORKFLOW.md file
