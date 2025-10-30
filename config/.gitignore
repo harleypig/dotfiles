@@ -1,8 +1,11 @@
 ansible/collections/**
 asciinema/**
+audacity/**
 Bitwarden\ CLI/**
+calibre/**
 coc/**
 Code/**
+Cursor/**
 cursor/chats/**
 dlv/**
 docker/buildx/**
