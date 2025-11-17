@@ -1,11 +1,12 @@
+Bitwarden\ CLI/**
+Code/**
+Cursor/**
+Synergy/**
 ansible/collections/**
 asciinema/**
 audacity/**
-Bitwarden\ CLI/**
 calibre/**
 coc/**
-Code/**
-Cursor/**
 cursor/chats/**
 dlv/**
 docker/buildx/**
@@ -13,15 +14,17 @@ evolution/**
 gh/**
 github-copilot/**
 go/telemetry/**
+google-chrome-for-testing/**
 gtk-3.0/**
 ibus/**
+mygnuhealth/**
 nvm/**
 packer/plugins/**
 pudb/**
 pulse/**
 rustup/**
 synergy/**
-Synergy/**
+tiling-assistant/**
 tree-sitter/**
 yelp/**
 
