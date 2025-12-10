@@ -40,6 +40,7 @@
       - Bandit, safety (security)
       - Pydocstyle, sphinx (documentation)
       - Pre-commit hooks configuration
+      - Bump2version (version management)
     - Individual config files:
       - `.flake8` - Flake8 configuration
       - `.isort.cfg` - Import sorting configuration
@@ -48,6 +49,7 @@
       - `.bandit` - Security linting
       - `pytest.ini` - Pytest configuration
       - `tox.ini` - Tox testing configuration
+      - `.bumpversion.cfg` - Version management configuration
   - **General development templates:**
     - `.editorconfig` - Editor configuration
     - `.gitignore` templates for different languages
