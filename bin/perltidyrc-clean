@@ -1,0 +1,396 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Getopt::Long qw(:config bundling);
+
+my @original_argv = @ARGV;
+my %cli = (
+    drop_defaults => 1,
+    condense      => 1,
+    quiet         => 0,
+);
+
+GetOptions(
+    'rc=s'          => \$cli{rc},
+    'no-rc'         => \$cli{no_rc},
+    'keep-defaults' => sub { $cli{drop_defaults} = 0 },
+    'condense!'     => \$cli{condense},
+    'quiet|q'       => \$cli{quiet},
+    'help|h'        => sub { usage(0) },
+) or usage(1);
+
+if ( $cli{rc} && $cli{no_rc} ) {
+    die "--rc and --no-rc are mutually exclusive\n";
+}
+
+my ( $rc_source, $rc_origin );
+if ( $cli{no_rc} ) {
+    my $empty = "";
+    $rc_source = \$empty;
+    $rc_origin = 'none (empty profile)';
+}
+elsif ( $cli{rc} ) {
+    $rc_source = $cli{rc};
+    $rc_origin = $cli{rc};
+}
+else {
+    $rc_source = undef;
+    $rc_origin = 'perltidy search path';
+}
+
+my (
+    $error_message,         $rOpts,               $rGetopt_flags,
+    $rsections,             $rabbreviations,      $rOpts_default,
+    $rabbreviations_default
+) = read_perltidyrc($rc_source);
+
+die $error_message if $error_message;
+
+my %equals_default = build_equals_default( $rOpts, $rOpts_default );
+
+my %clean_opts = %{$rOpts};
+if ( $cli{drop_defaults} ) {
+    foreach my $long_name ( keys %clean_opts ) {
+        delete $clean_opts{$long_name} if $equals_default{$long_name};
+    }
+}
+
+condense_options( \%clean_opts ) if $cli{condense};
+
+my @conflict_warnings = detect_conflicts( \%clean_opts );
+warn "$_\n" for @conflict_warnings;
+
+my %abbreviations_user =
+  user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
+
+if ( %clean_opts || %abbreviations_user ) {
+    dump_options(
+        quiet              => $cli{quiet},
+        cmdline            => join( ' ', $0, @original_argv ),
+        rc_origin          => $rc_origin,
+        opts               => \%clean_opts,
+        getopt_flags       => $rGetopt_flags,
+        sections           => $rsections,
+        abbreviations      => $rabbreviations,
+        equals_default     => \%equals_default,
+        abbreviations_user => \%abbreviations_user,
+    );
+}
+else {
+    print STDERR "No configuration parameters remain after filtering.\n";
+}
+
+exit 0;
+
+sub usage {
+    my ($exit_code) = @_;
+    $exit_code = 0 unless defined $exit_code;
+    print <<'USAGE';
+perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
+                 [--quiet] [--help]
+
+  --rc FILE         Load the specified perltidyrc instead of searching.
+  --no-rc           Do not load any perltidyrc (process from empty state).
+  --keep-defaults   Keep options which match perltidy defaults (normally
+                    removed).
+  --[no-]condense   Drop fine-grained options that duplicate broader settings
+                    (on by default).
+  --quiet, -q       Omit header comments in the output.
+  --help, -h        Show this message.
+
+The output is a cleaned perltidyrc grouped by the Formatting Options sections
+from the perltidy manual.
+USAGE
+    exit $exit_code;
+}
+
+sub build_equals_default {
+    my ( $opts, $defaults ) = @_;
+    my %equals_default;
+    foreach my $long_name ( keys %{$opts} ) {
+        my $val = $opts->{$long_name};
+        next unless defined $defaults->{$long_name};
+        my $default_val = $defaults->{$long_name};
+        $equals_default{$long_name} = defined($val)
+          && defined($default_val)
+          && $default_val eq $val;
+    }
+    return %equals_default;
+}
+
+sub condense_options {
+    my ($opts) = @_;
+
+    if ( exists $opts->{'brace-tightness'} ) {
+        my $general = $opts->{'brace-tightness'};
+        my @brace_specific = qw(
+          block-brace-tightness
+          brace-vertical-tightness
+          brace-vertical-tightness-closing
+          brace-follower-vertical-tightness
+          block-brace-vertical-tightness
+        );
+        foreach my $key (@brace_specific) {
+            delete $opts->{$key}
+              if exists $opts->{$key} && defined $opts->{$key}
+              && $opts->{$key} eq $general;
+        }
+    }
+
+    if ( exists $opts->{'indent-columns'}
+        && exists $opts->{'continuation-indentation'} )
+    {
+        if ( $opts->{'continuation-indentation'} eq $opts->{'indent-columns'} )
+        {
+            delete $opts->{'continuation-indentation'};
+        }
+    }
+}
+
+sub detect_conflicts {
+    my ($opts) = @_;
+    my @warnings;
+
+    if ( is_true( $opts->{'brace-left-and-indent'} )
+        && is_true( $opts->{'non-indenting-braces'} ) )
+    {
+        push @warnings,
+          "non-indenting-braces and brace-left-and-indent both set; brace "
+          . "indentation will be ambiguous";
+    }
+
+    if ( is_true( $opts->{tabs} )
+        && is_true( $opts->{'entab-leading-whitespace'} ) )
+    {
+        push @warnings,
+          "tabs together with entab-leading-whitespace may fight; verify the "
+          . "intended tab/space policy";
+    }
+
+    if ( defined $opts->{'brace-tightness'} ) {
+        my $general = $opts->{'brace-tightness'};
+        foreach my $specific (
+            qw(block-brace-tightness brace-vertical-tightness
+            brace-vertical-tightness-closing brace-follower-vertical-tightness
+            block-brace-vertical-tightness)
+          )
+        {
+            next unless defined $opts->{$specific};
+            if ( $opts->{$specific} ne $general ) {
+                push @warnings,
+                  "$specific differs from brace-tightness; the more specific "
+                  . "setting will override the general one";
+            }
+        }
+    }
+
+    if ( defined $opts->{'maximum-line-length'}
+        && defined $opts->{'fuzzy-line-length'} )
+    {
+        my $max   = $opts->{'maximum-line-length'};
+        my $fuzzy = $opts->{'fuzzy-line-length'};
+        if ( looks_like_number($max)
+            && looks_like_number($fuzzy)
+            && $fuzzy > $max )
+        {
+            push @warnings,
+              "fuzzy-line-length ($fuzzy) exceeds maximum-line-length ($max); "
+              . "long lines may still break late";
+        }
+    }
+
+    if ( exists $opts->{format}
+        && !is_true( $opts->{format} )
+        && ( is_true( $opts->{'format-skipping'} )
+        || is_true( $opts->{'detect-format-skipping-from-start'} ) ) )
+    {
+        push @warnings,
+          "format is disabled but format-skipping detection is enabled; "
+          . "skipping directives will be ignored";
+    }
+
+    return @warnings;
+}
+
+sub is_true {
+    my ($value) = @_;
+    return 0 unless defined $value;
+    return $value =~ /^[1-9]\d*$/ ? 1 : $value ? 1 : 0;
+}
+
+sub looks_like_number {
+    my ($value) = @_;
+    return defined($value) && $value =~ /^-?\d+(?:\.\d+)?$/;
+}
+
+sub user_defined_abbreviations {
+    my ( $abbrev, $abbrev_default ) = @_;
+    my %abbrev_user;
+    foreach my $key ( keys %{$abbrev} ) {
+        next if $abbrev_default->{$key};
+        $abbrev_user{$key} = $abbrev->{$key};
+    }
+    return %abbrev_user;
+}
+
+sub dump_options {
+    my (%args) = @_;
+    my $cmdline            = $args{cmdline};
+    my $rc_origin          = $args{rc_origin};
+    my $quiet              = $args{quiet};
+    my $rOpts              = $args{opts};
+    my $rGetopt_flags      = $args{getopt_flags};
+    my $rsections          = $args{sections};
+    my $rabbreviations     = $args{abbreviations};
+    my $requals_default    = $args{equals_default};
+    my $rabbreviations_user = $args{abbreviations_user};
+
+    my %section_and_name;
+    my %saw_section;
+    foreach my $long_name ( keys %{$rOpts} ) {
+        my $section = $rsections->{$long_name} // 'UNKNOWN';
+        $section_and_name{$section}{$long_name} = $rOpts->{$long_name};
+        $saw_section{$section}++;
+    }
+
+    my %short_name_for_long_name;
+    foreach my $abbrev ( sort keys %{$rabbreviations} ) {
+        my @list = @{ $rabbreviations->{$abbrev} };
+        next unless @list == 1;
+        my $long_name = $list[0];
+        $short_name_for_long_name{$long_name} = $abbrev;
+    }
+
+    unless ($quiet) {
+        my $date = localtime();
+        print "# perltidy configuration file created $date\n";
+        print "# using: $cmdline\n";
+        print "# source: $rc_origin\n";
+    }
+
+    foreach my $section (
+        sort {
+            section_order($a) <=> section_order($b) || $a cmp $b
+        } keys %saw_section
+      )
+    {
+        unless ($quiet) {
+            print "\n";
+            my $trimmed = $section;
+            $trimmed =~ s/^\d+\. //;
+            print "# $trimmed\n";
+        }
+
+        my $rname_value = $section_and_name{$section};
+        foreach my $long_name ( sort keys %{$rname_value} ) {
+            my $flag  = $rGetopt_flags->{$long_name};
+            my $value = $rname_value->{$long_name};
+            my ( $prefix, $short_prefix, $suffix ) = ( '--', '-', '' );
+            if ($flag) {
+                if ( $flag =~ /^=/ || $flag =~ /^:/ ) {
+                    if ( $value !~ /^\d+$/ ) {
+                        $value = '"' . $value . '"';
+                    }
+                    $suffix = '=' . $value;
+                }
+                elsif ( $flag =~ /^!/ ) {
+                    $prefix       .= 'no' unless $value;
+                    $short_prefix .= 'n'  unless $value;
+                }
+                else {
+                    print
+"# ERROR in dump_options: unrecognized flag $flag for $long_name\n";
+                }
+            }
+
+            my $short_name  = $short_name_for_long_name{$long_name};
+            my $long_option = $prefix . $long_name . $suffix;
+            my $short_option =
+              $short_name ? $short_prefix . $short_name . $suffix : $long_option;
+
+            my $note = $requals_default->{$long_name} ? "  [=default]" : "";
+            if ($quiet) {
+                print $long_option . "\n";
+            }
+            else {
+                my $spaces = 40 - length $long_option;
+                $spaces = 2 if $spaces < 2;
+                my $side_comment = ' ' x $spaces . '# ' . $short_option . $note;
+                print $long_option . $side_comment . "\n";
+            }
+        }
+    }
+
+    if ( %{$rabbreviations_user} ) {
+        unless ($quiet) {
+            print "\n";
+            print "# Abbreviations\n";
+        }
+        foreach my $key ( sort keys %{$rabbreviations_user} ) {
+            my @vals = @{ $rabbreviations_user->{$key} };
+            print $key . ' {' . join( ' ', @vals ) . '}' . "\n";
+        }
+    }
+}
+
+sub section_order {
+    my ($section) = @_;
+    return $1 if $section =~ /^(\d+(?:\.\d+)?)/;
+    return 999;
+}
+
+sub read_perltidyrc {
+    my ($config_file) = @_;
+    my $error_message = "";
+    my %Opts;
+
+    eval "use Perl::Tidy";
+    if ($@) {
+        $error_message = "Perl::Tidy not installed\n";
+        return ( $error_message, \%Opts );
+    }
+
+    my $version = $Perl::Tidy::VERSION;
+    if ( $version < 20060528 ) {
+        $error_message = "perltidy version $version cannot read options\n";
+        return ( $error_message, \%Opts );
+    }
+
+    my $stderr = "";
+    my $argv   = "";
+
+    my %Opts_default;
+    my %abbreviations_default;
+    my $empty_rc = "";
+    my $err = Perl::Tidy::perltidy(
+        perltidyrc         => \$empty_rc,
+        dump_options       => \%Opts_default,
+        dump_options_type  => 'full',
+        dump_abbreviations => \%abbreviations_default,
+        stderr             => \$stderr,
+        argv               => \$argv,
+    );
+    if ($err) {
+        die "Error calling perltidy for defaults\n";
+    }
+
+    my %Getopt_flags;
+    my %sections;
+    my %abbreviations;
+    Perl::Tidy::perltidy(
+        perltidyrc            => $config_file,
+        dump_options          => \%Opts,
+        dump_options_type     => 'perltidyrc',
+        dump_getopt_flags     => \%Getopt_flags,
+        dump_options_category => \%sections,
+        dump_abbreviations    => \%abbreviations,
+        stderr                => \$stderr,
+        argv                  => \$argv,
+    );
+
+    $error_message .= $stderr;
+
+    return ( $error_message, \%Opts, \%Getopt_flags, \%sections,
+        \%abbreviations, \%Opts_default, \%abbreviations_default );
+}
+
