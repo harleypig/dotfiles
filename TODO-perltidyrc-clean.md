@@ -45,11 +45,11 @@ with various RC files.
 - [x] Handles decimal section numbers (e.g., "1.2")
 
 ### `expand_abbrev($arg, $abbr)`
-- [ ] Expands short options to long names
-- [ ] Handles negated options (--no-*)
-- [ ] Preserves option values (=value)
-- [ ] Returns original arg if not in abbreviation hash
-- [ ] Handles single and double dashes
+- [x] Expands short options to long names
+- [x] Handles negated options (--no-*)
+- [x] Preserves option values (=value)
+- [x] Returns original arg if not in abbreviation hash
+- [x] Handles single and double dashes
 
 ### `build_equals_default($opts, $defaults)`
 - [ ] Identifies options that match defaults
