@@ -58,15 +58,15 @@ with various RC files.
 - [x] Returns hash with correct keys
 
 ### `extract_outfile($args)`
-- [ ] Extracts `-o filename` format
-- [ ] Extracts `--outfile filename` format
-- [ ] Extracts `-ofilename` format
-- [ ] Extracts `--outfile=filename` format
-- [ ] Extracts `--outfilefilename` format (undocumented)
-- [ ] Dies if `-o` or `--outfile` without filename
-- [ ] Doesn't consume next arg if it's an option (starts with `-`)
-- [ ] Removes outfile args from array
-- [ ] Returns undef if no outfile specified
+- [x] Extracts `-o filename` format
+- [x] Extracts `--outfile filename` format
+- [x] Extracts `-ofilename` format
+- [x] Extracts `--outfile=filename` format
+- [x] Extracts `--outfilefilename` format (undocumented)
+- [x] Dies if `-o` or `--outfile` without filename
+- [x] Doesn't consume next arg if it's an option (starts with `-`)
+- [x] Removes outfile args from array
+- [x] Returns undef if no outfile specified
 
 ### `user_defined_abbreviations($abbrev, $abbrev_default)`
 - [ ] Returns only abbreviations not in defaults
