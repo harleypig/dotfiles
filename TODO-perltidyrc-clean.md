@@ -52,10 +52,10 @@ with various RC files.
 - [x] Handles single and double dashes
 
 ### `build_equals_default($opts, $defaults)`
-- [ ] Identifies options that match defaults
-- [ ] Handles undefined values correctly
-- [ ] Compares string values correctly
-- [ ] Returns hash with correct keys
+- [x] Identifies options that match defaults
+- [x] Handles undefined values correctly
+- [x] Compares string values correctly
+- [x] Returns hash with correct keys
 
 ### `extract_outfile($args)`
 - [ ] Extracts `-o filename` format
