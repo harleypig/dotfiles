@@ -11,6 +11,7 @@ my %cli = (
     keep_defaults         => 0,
     add_missing_defaults  => 0,
     expand_options        => 1,
+    outfile               => undef,
 );
 
 GetOptions(
@@ -36,6 +37,7 @@ GetOptions(
 $cli{condense} = 0 if $cli{add_missing_defaults};
 
 my @perltidy_args = @ARGV;    # pass-through arguments for perltidy
+$cli{outfile} = extract_outfile( \@perltidy_args );
 
 if ( $cli{rc} && $cli{no_rc} ) {
     die "--rc and --no-rc are mutually exclusive\n";
@@ -97,19 +99,40 @@ my %abbreviations_user =
   user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
 
 if ( %clean_opts || %abbreviations_user ) {
-    dump_options(
-        quiet              => $cli{quiet},
-        cmdline            => join( ' ', $0, @original_argv ),
-        rc_origin          => $rc_origin,
-        opts               => \%clean_opts,
-        getopt_flags       => $rGetopt_flags,
-        sections           => $rsections,
-        abbreviations      => $rabbreviations,
-        equals_default     => \%equals_default,
-        abbreviations_user => \%abbreviations_user,
-        section_notes      => \%section_notes,
-        keep_defaults      => $cli{keep_defaults},
-    );
+    if ( $cli{outfile} ) {
+        open my $fh, '>', $cli{outfile}
+          or die "Cannot open $cli{outfile} for writing: $!\n";
+        local *STDOUT = $fh;
+        dump_options(
+            quiet              => $cli{quiet},
+            cmdline            => join( ' ', $0, @original_argv ),
+            rc_origin          => $rc_origin,
+            opts               => \%clean_opts,
+            getopt_flags       => $rGetopt_flags,
+            sections           => $rsections,
+            abbreviations      => $rabbreviations,
+            equals_default     => \%equals_default,
+            abbreviations_user => \%abbreviations_user,
+            section_notes      => \%section_notes,
+            keep_defaults      => $cli{keep_defaults},
+        );
+        close $fh;
+    }
+    else {
+        dump_options(
+            quiet              => $cli{quiet},
+            cmdline            => join( ' ', $0, @original_argv ),
+            rc_origin          => $rc_origin,
+            opts               => \%clean_opts,
+            getopt_flags       => $rGetopt_flags,
+            sections           => $rsections,
+            abbreviations      => $rabbreviations,
+            equals_default     => \%equals_default,
+            abbreviations_user => \%abbreviations_user,
+            section_notes      => \%section_notes,
+            keep_defaults      => $cli{keep_defaults},
+        );
+    }
 }
 else {
     print STDERR "No configuration parameters remain after filtering.\n";
@@ -136,6 +159,9 @@ perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
                     (on by default).
   --[no-]expand-options
                     Expand short options to their long names (default on).
+  --outfile FILE, -o FILE
+                    Write output to FILE instead of stdout. Recognized even
+                    though not used when parsing options.
   --quiet, -q       Omit header comments in the output.
   --help, -h        Show this message.
 
@@ -293,6 +319,30 @@ sub expand_abbrev {
     my $prefix = '--';
     my $neg    = $no ? 'no' : '';
     return $prefix . $neg . $long . ($suffix // '');
+}
+
+sub extract_outfile {
+    my ($args) = @_;
+    my $outfile;
+    my @filtered;
+    while (@$args) {
+        my $arg = shift @$args;
+        if ( $arg eq '-o' || $arg eq '--outfile' ) {
+            $outfile = shift @$args // '';
+            next;
+        }
+        if ( $arg =~ /^-o(.+)/ ) {
+            $outfile = $1;
+            next;
+        }
+        if ( $arg =~ /^--outfile=(.+)/ ) {
+            $outfile = $1;
+            next;
+        }
+        push @filtered, $arg;
+    }
+    @$args = @filtered;
+    return $outfile;
 }
 
 sub user_defined_abbreviations {
