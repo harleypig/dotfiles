@@ -146,5 +146,42 @@ load_perltidyrc_clean();
     is(scalar keys %equals, 2, 'Result hash only contains keys from opts');
 }
 
+# Test 9: Dies on empty string key in opts (developer error)
+{
+    my %opts = (
+        'valid_key' => 'value',
+    );
+    $opts{''} = 'value';    # Empty string key - developer error (Perl stringifies undef to "")
+    my %defaults = (
+        'valid_key' => 'value',
+    );
+    eval { build_equals_default(\%opts, \%defaults) };
+    like($@, qr/Internal error: undefined or empty key found in build_equals_default options/, 
+        'Dies on empty string key in opts');
+}
+
+# Test 10: Dies on empty string key in defaults (developer error)
+{
+    my %opts = (
+        'valid_key' => 'value',
+    );
+    my %defaults = (
+        'valid_key' => 'value',
+    );
+    $defaults{''} = 'value';    # Empty string key - developer error (Perl stringifies undef to "")
+    eval { build_equals_default(\%opts, \%defaults) };
+    like($@, qr/Internal error: undefined or empty key found in build_equals_default defaults/, 
+        'Dies on empty string key in defaults');
+}
+
+# Test 11: Handles undef defaults hash reference
+{
+    my %opts = (
+        'valid_key' => 'value',
+    );
+    eval { build_equals_default(\%opts, undef) };
+    is($@, '', 'Handles undef defaults hash reference');
+}
+
 done_testing();
 

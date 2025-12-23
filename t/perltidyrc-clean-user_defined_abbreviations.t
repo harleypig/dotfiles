@@ -164,5 +164,42 @@ load_perltidyrc_clean();
     ok(!exists $result{'key100'}, 'Excludes last default abbreviation');
 }
 
+# Test 11: Dies on empty string key in abbrev (developer error)
+{
+    my %abbrev = (
+        'valid_key' => 'value',
+    );
+    $abbrev{''} = 'value';    # Empty string key - developer error (Perl stringifies undef to "")
+    my %abbrev_default = (
+        'valid_key' => 'value',
+    );
+    eval { user_defined_abbreviations(\%abbrev, \%abbrev_default) };
+    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations abbreviations/, 
+        'Dies on empty string key in abbrev');
+}
+
+# Test 12: Dies on empty string key in abbrev_default (developer error)
+{
+    my %abbrev = (
+        'valid_key' => 'value',
+    );
+    my %abbrev_default = (
+        'valid_key' => 'value',
+    );
+    $abbrev_default{''} = 'value';    # Empty string key - developer error (Perl stringifies undef to "")
+    eval { user_defined_abbreviations(\%abbrev, \%abbrev_default) };
+    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations defaults/, 
+        'Dies on empty string key in abbrev_default');
+}
+
+# Test 13: Handles undef abbrev_default hash reference
+{
+    my %abbrev = (
+        'valid_key' => 'value',
+    );
+    eval { user_defined_abbreviations(\%abbrev, undef) };
+    is($@, '', 'Handles undef abbrev_default hash reference');
+}
+
 done_testing();
 

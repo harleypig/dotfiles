@@ -100,6 +100,20 @@ sub add_section_note {
     push @{ $section_notes->{$section} }, $text;
 }
 
+# Checks for undefined or empty string keys in a hash reference and dies with a helpful error message.
+# This is a developer error - hash keys should never be undefined or empty strings.
+# Note: Perl stringifies undef to "" when used as a hash key, so we check for both.
+sub check_undefined_keys {
+    my ( $hash_ref, $context ) = @_;
+    return unless $hash_ref;    # Handle undef hash reference
+    $context //= 'hash';
+    foreach my $key ( keys %{$hash_ref} ) {
+        unless ( defined $key && $key ne '' ) {
+            die "Internal error: undefined or empty key found in $context\n";
+        }
+    }
+}
+
 # Extracts numeric prefix from section name for sorting (e.g., "1.2" from "1.2. Subsection").
 # Sections without numeric prefix return 999 to sort them at the end.
 sub section_order {
@@ -124,6 +138,8 @@ sub expand_abbrev {
 # when --drop-defaults is enabled.
 sub build_equals_default {
     my ( $opts, $defaults ) = @_;
+    check_undefined_keys( $opts, 'build_equals_default options' );
+    check_undefined_keys( $defaults, 'build_equals_default defaults' ) if $defaults;
     my %equals_default;
     foreach my $long_name ( keys %{$opts} ) {
         my $val = $opts->{$long_name};
@@ -165,6 +181,8 @@ sub extract_outfile {
 # Short options in users rc file
 sub user_defined_abbreviations {
     my ( $abbrev, $abbrev_default ) = @_;
+    check_undefined_keys( $abbrev, 'user_defined_abbreviations abbreviations' );
+    check_undefined_keys( $abbrev_default, 'user_defined_abbreviations defaults' ) if $abbrev_default;
     my %abbrev_user;
     foreach my $key ( keys %{$abbrev} ) {
         next if $abbrev_default->{$key};
@@ -293,6 +311,9 @@ sub dump_options {
     my $keep_defaults      = $args{keep_defaults} // 0;
     my $destination        = $args{destination};    # scalar ref or undef
 
+    check_undefined_keys( $rOpts, 'dump_options opts' ) if $rOpts;
+    check_undefined_keys( $rsections, 'dump_options sections' ) if $rsections;
+    check_undefined_keys( $rabbreviations_user, 'dump_options abbreviations_user' ) if $rabbreviations_user;
     my %section_and_name;
     my %saw_section;
     foreach my $long_name ( keys %{$rOpts} ) {
@@ -337,6 +358,7 @@ sub dump_options {
         }
 
         my $rname_value = $section_and_name{$section};
+        check_undefined_keys( $rname_value, "dump_options section '$section'" ) if $rname_value;
         foreach my $long_name ( sort keys %{$rname_value} ) {
             my $flag  = $rGetopt_flags->{$long_name};
             my $value = $rname_value->{$long_name};
