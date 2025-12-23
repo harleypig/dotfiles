@@ -302,13 +302,11 @@ sub dump_options {
 
             my $long_option = $prefix . $long_name . $suffix;
 
-            my $note = $requals_default->{$long_name} ? "  [=default]" : "";
             if ($quiet) {
                 print $long_option . "\n";
             }
             else {
-                my $tail = $note ? " #$note" : "";
-                print $long_option . $tail . "\n";
+                print $long_option . "\n";
             }
         }
     }
