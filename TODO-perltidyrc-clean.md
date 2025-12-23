@@ -25,12 +25,14 @@ with various RC files.
 - [x] Returns 0 for false values
 - [x] Returns 0 for zero
 
-### `looks_like_number($value)`
-- [ ] Returns true for positive integers
-- [ ] Returns true for negative integers
-- [ ] Returns true for decimal numbers
-- [ ] Returns false for undefined values
-- [ ] Returns false for non-numeric strings
+### `looks_like_integer($value)` (replaces `looks_like_number`)
+- [x] Returns true for positive integers
+- [x] Returns true for negative integers
+- [x] Returns false for decimal numbers
+- [x] Returns false for undefined values
+- [x] Returns false for non-numeric strings
+- [x] Returns false for scientific notation (even if it represents an integer)
+- [x] Uses Scalar::Util::looks_like_number internally
 
 ### `add_section_note($sections, $section_notes, $opt, $text)`
 - [ ] Adds note to correct section

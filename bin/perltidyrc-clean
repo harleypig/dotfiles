@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Getopt::Long qw(:config bundling pass_through);
+use Scalar::Util qw(looks_like_number);
 
 # ------------------------------------------------------------------------------
 
@@ -76,9 +77,18 @@ sub is_true {
     return $value =~ /^[1-9]\d*$/ ? 1 : $value ? 1 : 0;
 }
 
-sub looks_like_number {
+# Checks if a value looks like an integer (not a decimal or scientific notation).
+# Uses Scalar::Util::looks_like_number to check if it's numeric, then verifies
+# it's an integer by checking the string doesn't contain '.' or 'e'/'E', and
+# that the numeric value equals its integer conversion.
+sub looks_like_integer {
     my ($value) = @_;
-    return defined($value) && $value =~ /^-?\d+(?:\.\d+)?$/;
+    return 0 unless defined $value;
+    return 0 unless looks_like_number($value);
+    # Reject if string contains decimal point or scientific notation
+    my $str = "$value";
+    return 0 if $str =~ /[.eE]/;
+    return $value == int($value) ? 1 : 0;
 }
 
 sub add_section_note {
@@ -240,8 +250,8 @@ sub detect_conflicts {
     {
         my $max   = $opts->{'maximum-line-length'};
         my $fuzzy = $opts->{'fuzzy-line-length'};
-        if ( looks_like_number($max)
-            && looks_like_number($fuzzy)
+        if ( looks_like_integer($max)
+            && looks_like_integer($fuzzy)
             && $fuzzy > $max )
         {
             add_section_note(
