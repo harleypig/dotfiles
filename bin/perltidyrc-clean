@@ -49,6 +49,7 @@ my (
 die $error_message if $error_message;
 
 my %equals_default = build_equals_default( $rOpts, $rOpts_default );
+my %section_notes;
 
 my %clean_opts;
 if ( $cli{no_rc} ) {
@@ -66,10 +67,9 @@ else {
     }
 }
 
-condense_options( \%clean_opts ) if $cli{condense};
+condense_options( \%clean_opts, $rsections, \%section_notes ) if $cli{condense};
 
-my @conflict_warnings = detect_conflicts( \%clean_opts );
-warn "$_\n" for @conflict_warnings;
+detect_conflicts( \%clean_opts, $rsections, \%section_notes );
 
 my %abbreviations_user =
   user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
@@ -85,6 +85,7 @@ if ( %clean_opts || %abbreviations_user ) {
         abbreviations      => $rabbreviations,
         equals_default     => \%equals_default,
         abbreviations_user => \%abbreviations_user,
+        section_notes      => \%section_notes,
     );
 }
 else {
@@ -133,7 +134,7 @@ sub build_equals_default {
 }
 
 sub condense_options {
-    my ($opts) = @_;
+    my ( $opts, $sections, $section_notes ) = @_;
 
     if ( exists $opts->{'brace-tightness'} ) {
         my $general = $opts->{'brace-tightness'};
@@ -145,9 +146,13 @@ sub condense_options {
           block-brace-vertical-tightness
         );
         foreach my $key (@brace_specific) {
-            delete $opts->{$key}
-              if exists $opts->{$key} && defined $opts->{$key}
-              && $opts->{$key} eq $general;
+            if ( exists $opts->{$key} && defined $opts->{$key}
+                && $opts->{$key} eq $general )
+            {
+                add_section_note( $sections, $section_notes, $key,
+                    "$key removed; equals brace-tightness" );
+                delete $opts->{$key};
+            }
         }
     }
 
@@ -156,29 +161,35 @@ sub condense_options {
     {
         if ( $opts->{'continuation-indentation'} eq $opts->{'indent-columns'} )
         {
+            add_section_note(
+                $sections, $section_notes, 'continuation-indentation',
+                "continuation-indentation removed; equals indent-columns"
+            );
             delete $opts->{'continuation-indentation'};
         }
     }
 }
 
 sub detect_conflicts {
-    my ($opts) = @_;
-    my @warnings;
+    my ( $opts, $sections, $section_notes ) = @_;
+    $section_notes ||= {};
 
     if ( is_true( $opts->{'brace-left-and-indent'} )
         && is_true( $opts->{'non-indenting-braces'} ) )
     {
-        push @warnings,
-          "non-indenting-braces and brace-left-and-indent both set; brace "
-          . "indentation will be ambiguous";
+        add_section_note(
+            $sections, $section_notes, 'brace-left-and-indent',
+            "brace-left-and-indent conflicts with non-indenting-braces"
+        );
     }
 
     if ( is_true( $opts->{tabs} )
         && is_true( $opts->{'entab-leading-whitespace'} ) )
     {
-        push @warnings,
-          "tabs together with entab-leading-whitespace may fight; verify the "
-          . "intended tab/space policy";
+        add_section_note(
+            $sections, $section_notes, 'tabs',
+            "tabs together with entab-leading-whitespace may conflict"
+        );
     }
 
     if ( defined $opts->{'brace-tightness'} ) {
@@ -191,9 +202,10 @@ sub detect_conflicts {
         {
             next unless defined $opts->{$specific};
             if ( $opts->{$specific} ne $general ) {
-                push @warnings,
-                  "$specific differs from brace-tightness; the more specific "
-                  . "setting will override the general one";
+                add_section_note(
+                    $sections, $section_notes, $specific,
+                    "$specific differs from brace-tightness; specific wins"
+                );
             }
         }
     }
@@ -207,9 +219,10 @@ sub detect_conflicts {
             && looks_like_number($fuzzy)
             && $fuzzy > $max )
         {
-            push @warnings,
-              "fuzzy-line-length ($fuzzy) exceeds maximum-line-length ($max); "
-              . "long lines may still break late";
+            add_section_note(
+                $sections, $section_notes, 'fuzzy-line-length',
+                "fuzzy-line-length ($fuzzy) exceeds maximum-line-length ($max)"
+            );
         }
     }
 
@@ -218,12 +231,11 @@ sub detect_conflicts {
         && ( is_true( $opts->{'format-skipping'} )
         || is_true( $opts->{'detect-format-skipping-from-start'} ) ) )
     {
-        push @warnings,
-          "format is disabled but format-skipping detection is enabled; "
-          . "skipping directives will be ignored";
+        add_section_note(
+            $sections, $section_notes, 'format',
+            "format is disabled but format-skipping detection is enabled"
+        );
     }
-
-    return @warnings;
 }
 
 sub is_true {
@@ -235,6 +247,12 @@ sub is_true {
 sub looks_like_number {
     my ($value) = @_;
     return defined($value) && $value =~ /^-?\d+(?:\.\d+)?$/;
+}
+
+sub add_section_note {
+    my ( $sections, $section_notes, $opt, $text ) = @_;
+    my $section = $sections->{$opt} // 'UNKNOWN';
+    push @{ $section_notes->{$section} }, $text;
 }
 
 sub user_defined_abbreviations {
@@ -258,6 +276,7 @@ sub dump_options {
     my $rabbreviations     = $args{abbreviations};
     my $requals_default    = $args{equals_default};
     my $rabbreviations_user = $args{abbreviations_user};
+    my $section_notes      = $args{section_notes} // {};
 
     my %section_and_name;
     my %saw_section;
@@ -285,6 +304,11 @@ sub dump_options {
             my $trimmed = $section;
             $trimmed =~ s/^\d+\. //;
             print "# $trimmed\n";
+            if ( my $notes = $section_notes->{$section} ) {
+                foreach my $note (@{$notes}) {
+                    print "# NOTE: $note\n";
+                }
+            }
         }
 
         my $rname_value = $section_and_name{$section};
