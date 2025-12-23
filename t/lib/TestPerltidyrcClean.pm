@@ -20,7 +20,14 @@ sub load_perltidyrc_clean {
     # Ensure we're in main package when loading (do executes in current package)
     package main;
     local @ARGV = ('--help');
-    do './bin/perltidyrc-clean';
+    # Suppress STDERR to avoid "No configuration parameters remain" message during tests
+    # Restore STDERR after loading so errors are still visible
+    {
+        local *STDERR;
+        open STDERR, '>', '/dev/null' or die "Cannot redirect STDERR: $!";
+        do './bin/perltidyrc-clean';
+        close STDERR;
+    }
     if ($@) {
         die "Failed to load script: $@";
     }
