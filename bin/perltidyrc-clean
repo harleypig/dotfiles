@@ -93,7 +93,10 @@ sub looks_like_integer {
 
 sub add_section_note {
     my ( $sections, $section_notes, $opt, $text ) = @_;
-    my $section = $sections->{$opt} // 'UNKNOWN';
+    # Handle undefined option or missing/undef section to avoid warnings
+    my $section = (defined $opt && exists $sections->{$opt} && defined $sections->{$opt})
+        ? $sections->{$opt}
+        : 'UNKNOWN';
     push @{ $section_notes->{$section} }, $text;
 }
 

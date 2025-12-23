@@ -35,9 +35,9 @@ with various RC files.
 - [x] Uses Scalar::Util::looks_like_number internally
 
 ### `add_section_note($sections, $section_notes, $opt, $text)`
-- [ ] Adds note to correct section
-- [ ] Handles unknown options (uses 'UNKNOWN' section)
-- [ ] Appends multiple notes to same section
+- [x] Adds note to correct section
+- [x] Handles unknown options (uses 'UNKNOWN' section)
+- [x] Appends multiple notes to same section
 
 ### `section_order($section)`
 - [ ] Extracts numeric prefix from section name
