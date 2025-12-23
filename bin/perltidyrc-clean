@@ -14,36 +14,42 @@ my %cli = (
     outfile               => undef,
 );
 
+# Handle multi-line option setters with named subs.
+sub set_keep_defaults {
+    $cli{drop_defaults} = 0;
+    $cli{keep_defaults} = 1;
+}
+
+sub set_add_missing_defaults {
+    $cli{add_missing_defaults} = 1;
+    $cli{drop_defaults}        = 0;
+    $cli{keep_defaults}        = 1;
+}
+
 GetOptions(
     'rc=s'          => \$cli{rc},
     'no-rc'         => \$cli{no_rc},
-    'keep-defaults' => sub {
-        $cli{drop_defaults} = 0;
-        $cli{keep_defaults} = 1;
-    },
-    'add-missing-defaults' => sub {
-        $cli{add_missing_defaults} = 1;
-        $cli{drop_defaults}        = 0;
-        $cli{keep_defaults}        = 1;
-        $cli{condense}             = 0;    # implies --no-condense
-    },
+    'keep-defaults' => \&set_keep_defaults,
+    'add-missing-defaults' => \&set_add_missing_defaults,
     'expand-options!'  => \$cli{expand_options},
     'condense!'     => \$cli{condense},
     'quiet|q'       => \$cli{quiet},
     'help|h'        => sub { usage(0) },
 ) or usage(1);
 
-# Enforce implications after parsing
+# Enforce implications after parsing (add-missing-defaults wins over condense)
 $cli{condense} = 0 if $cli{add_missing_defaults};
 
+# Extract outfile before any perltidy handling; remaining args pass through.
 my @perltidy_args = @ARGV;    # pass-through arguments for perltidy
 $cli{outfile} = extract_outfile( \@perltidy_args );
 
+# Fail fast on mutually exclusive flags.
 if ( $cli{rc} && $cli{no_rc} ) {
     die "--rc and --no-rc are mutually exclusive\n";
 }
 
-my ( $rc_source, $rc_origin );
+my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
 if ( $cli{no_rc} ) {
     my $empty = "";
     $rc_source = \$empty;
@@ -52,10 +58,6 @@ if ( $cli{no_rc} ) {
 elsif ( $cli{rc} ) {
     $rc_source = $cli{rc};
     $rc_origin = $cli{rc};
-}
-else {
-    $rc_source = undef;
-    $rc_origin = 'perltidy search path';
 }
 
 my (
@@ -99,40 +101,21 @@ my %abbreviations_user =
   user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
 
 if ( %clean_opts || %abbreviations_user ) {
-    if ( $cli{outfile} ) {
-        open my $fh, '>', $cli{outfile}
-          or die "Cannot open $cli{outfile} for writing: $!\n";
-        local *STDOUT = $fh;
-        dump_options(
-            quiet              => $cli{quiet},
-            cmdline            => join( ' ', $0, @original_argv ),
-            rc_origin          => $rc_origin,
-            opts               => \%clean_opts,
-            getopt_flags       => $rGetopt_flags,
-            sections           => $rsections,
-            abbreviations      => $rabbreviations,
-            equals_default     => \%equals_default,
-            abbreviations_user => \%abbreviations_user,
-            section_notes      => \%section_notes,
-            keep_defaults      => $cli{keep_defaults},
-        );
-        close $fh;
-    }
-    else {
-        dump_options(
-            quiet              => $cli{quiet},
-            cmdline            => join( ' ', $0, @original_argv ),
-            rc_origin          => $rc_origin,
-            opts               => \%clean_opts,
-            getopt_flags       => $rGetopt_flags,
-            sections           => $rsections,
-            abbreviations      => $rabbreviations,
-            equals_default     => \%equals_default,
-            abbreviations_user => \%abbreviations_user,
-            section_notes      => \%section_notes,
-            keep_defaults      => $cli{keep_defaults},
-        );
-    }
+    my $out_fh = output_handle( $cli{outfile} );
+    local *STDOUT = $out_fh;
+    dump_options(
+        quiet              => $cli{quiet},
+        cmdline            => join( ' ', $0, @original_argv ),
+        rc_origin          => $rc_origin,
+        opts               => \%clean_opts,
+        getopt_flags       => $rGetopt_flags,
+        sections           => $rsections,
+        abbreviations      => $rabbreviations,
+        equals_default     => \%equals_default,
+        abbreviations_user => \%abbreviations_user,
+        section_notes      => \%section_notes,
+        keep_defaults      => $cli{keep_defaults},
+    );
 }
 else {
     print STDERR "No configuration parameters remain after filtering.\n";
@@ -343,6 +326,13 @@ sub extract_outfile {
     }
     @$args = @filtered;
     return $outfile;
+}
+
+sub output_handle {
+    my ($path) = @_;
+    return *STDOUT unless $path;
+    open my $fh, '>', $path or die "Cannot open $path for writing: $!\n";
+    return $fh;
 }
 
 sub user_defined_abbreviations {
