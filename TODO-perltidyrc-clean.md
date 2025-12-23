@@ -69,9 +69,9 @@ with various RC files.
 - [x] Returns undef if no outfile specified
 
 ### `user_defined_abbreviations($abbrev, $abbrev_default)`
-- [ ] Returns only abbreviations not in defaults
-- [ ] Handles empty abbreviation hash
-- [ ] Handles all abbreviations being defaults (returns empty)
+- [x] Returns only abbreviations not in defaults
+- [x] Handles empty abbreviation hash
+- [x] Handles all abbreviations being defaults (returns empty)
 
 ## Processing Functions
 
