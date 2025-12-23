@@ -3,6 +3,21 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config bundling pass_through);
 
+# ------------------------------------------------------------------------------
+
+# Check for Perl::Tidy dependency early
+eval "use Perl::Tidy";
+if ($@) {
+    die "Perl::Tidy not installed\n";
+}
+
+my $version = $Perl::Tidy::VERSION;
+if ( $version < 20060528 ) {
+    die "perltidy version $version cannot read options\n";
+}
+
+# ------------------------------------------------------------------------------
+
 my @original_argv = @ARGV;
 my %cli = (
     drop_defaults         => 1,
@@ -14,127 +29,9 @@ my %cli = (
     outfile               => undef,
 );
 
-# Handle multi-line option setters with named subs.
-sub set_keep_defaults {
-    $cli{drop_defaults} = 0;
-    $cli{keep_defaults} = 1;
-}
+my $empty = "";    # Declared here to remain valid for reference
 
-sub set_add_missing_defaults {
-    $cli{add_missing_defaults} = 1;
-    $cli{drop_defaults}        = 0;
-    $cli{keep_defaults}        = 1;
-    $cli{condense}             = 0;    # implies --no-condense
-}
-
-GetOptions(
-    'rc=s'          => \$cli{rc},
-    'no-rc'         => \$cli{no_rc},
-    'keep-defaults' => \&set_keep_defaults,
-    'add-missing-defaults' => \&set_add_missing_defaults,
-    'expand-options!'  => \$cli{expand_options},
-    'condense!'     => \$cli{condense},
-    'quiet|q'       => \$cli{quiet},
-    'help|h'        => sub { usage(0) },
-) or usage(1);
-
-# Fail fast on mutually exclusive flags.
-if ( $cli{rc} && $cli{no_rc} ) {
-    die "--rc and --no-rc are mutually exclusive\n";
-}
-
-# Extract outfile before any perltidy handling; remaining args pass through.
-# Extract from @ARGV since we'll pass @ARGV to Perl::Tidy
-$cli{outfile} = extract_outfile( \@ARGV );
-
-# Clean @ARGV: filter out file arguments since we're only dumping options,
-# not processing source files. Keep only option-like arguments for Perl::Tidy.
-# GetOptions already removed our CLI options, so @ARGV contains pass-through args.
-@ARGV = grep { /^-/ } @ARGV;    # Keep only option-like arguments
-
-my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
-my $empty = "";    # Declared outside block to remain valid for reference
-if ( $cli{no_rc} ) {
-    $rc_source = \$empty;
-    $rc_origin = 'none (empty profile)';
-}
-elsif ( $cli{rc} ) {
-    $rc_source = $cli{rc};
-    $rc_origin = $cli{rc};
-}
-
-my (
-    $error_message,         $rOpts,               $rGetopt_flags,
-    $rsections,             $rabbreviations,      $rOpts_default,
-    $rabbreviations_default
-) = read_perltidyrc( $rc_source, \@ARGV, $cli{expand_options} );
-
-die $error_message if $error_message;
-
-my %equals_default = build_equals_default( $rOpts, $rOpts_default );
-my %section_notes;
-
-my %clean_opts;
-if ( $cli{no_rc} ) {
-    # Start from defaults and overlay any explicit options passed through.
-    %clean_opts = ( %{$rOpts_default}, %{$rOpts} );
-}
-else {
-    if ( $cli{add_missing_defaults} ) {
-        %clean_opts = ( %{$rOpts_default}, %{$rOpts} );
-    }
-    else {
-        %clean_opts = %{$rOpts};
-        if ( $cli{drop_defaults} ) {
-            foreach my $long_name ( keys %clean_opts ) {
-                delete $clean_opts{$long_name} if $equals_default{$long_name};
-            }
-        }
-    }
-}
-
-%equals_default = build_equals_default( \%clean_opts, $rOpts_default );
-
-condense_options( \%clean_opts, $rsections, \%section_notes )
-  if $cli{condense};
-
-detect_conflicts( \%clean_opts, $rsections, \%section_notes );
-
-my %abbreviations_user =
-  user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
-
-if ( %clean_opts || %abbreviations_user ) {
-    my $output = "";
-    dump_options(
-        quiet              => $cli{quiet},
-        cmdline            => join( ' ', $0, @original_argv ),
-        rc_origin          => $rc_origin,
-        opts               => \%clean_opts,
-        getopt_flags       => $rGetopt_flags,
-        sections           => $rsections,
-        abbreviations      => $rabbreviations,
-        equals_default     => \%equals_default,
-        abbreviations_user => \%abbreviations_user,
-        section_notes      => \%section_notes,
-        keep_defaults      => $cli{keep_defaults},
-        destination        => \$output,
-    );
-    
-    if ( $cli{outfile} ) {
-        open my $fh, '>', $cli{outfile}
-          or die "Cannot open $cli{outfile} for writing: $!\n";
-        print $fh $output;
-        close $fh;
-    }
-    else {
-        print $output;
-    }
-}
-else {
-    print STDERR "No configuration parameters remain after filtering.\n";
-}
-
-exit 0;
+# ------------------------------------------------------------------------------
 
 sub usage {
     my ($exit_code) = @_;
@@ -170,6 +67,43 @@ USAGE
     exit $exit_code;
 }
 
+sub is_true {
+    my ($value) = @_;
+    return 0 unless defined $value;
+    return $value =~ /^[1-9]\d*$/ ? 1 : $value ? 1 : 0;
+}
+
+sub looks_like_number {
+    my ($value) = @_;
+    return defined($value) && $value =~ /^-?\d+(?:\.\d+)?$/;
+}
+
+sub add_section_note {
+    my ( $sections, $section_notes, $opt, $text ) = @_;
+    my $section = $sections->{$opt} // 'UNKNOWN';
+    push @{ $section_notes->{$section} }, $text;
+}
+
+sub section_order {
+    my ($section) = @_;
+    return $1 if $section =~ /^(\d+(?:\.\d+)?)/;
+    return 999;
+}
+
+sub expand_abbrev {
+    my ( $arg, $abbr ) = @_;
+    return $arg unless $arg =~ /^-{1,2}(no)?([A-Za-z0-9_-]+)(=.*)?$/;
+    my ( $no, $name, $suffix ) = ( $1 // '', $2, $3 // '' );
+    my $long = $abbr->{$name};
+    return $arg unless $long;
+    my $prefix = '--';
+    my $neg    = $no ? 'no' : '';
+    return $prefix . $neg . $long . ($suffix // '');
+}
+
+# Compare options against defaults and return a hash indicating which options
+# equal their default values. Used to identify options that can be removed
+# when --drop-defaults is enabled.
 sub build_equals_default {
     my ( $opts, $defaults ) = @_;
     my %equals_default;
@@ -182,6 +116,43 @@ sub build_equals_default {
           && $default_val eq $val;
     }
     return %equals_default;
+}
+
+sub extract_outfile {
+    my ($args) = @_;
+    my $outfile;
+    my @filtered;
+    while (@$args) {
+        my $arg = shift @$args;
+        # Combined regex: matches -o, --outfile, -ofilename,
+        # --outfile=filename, or --outfilefilename (but we're not going to
+        #document that last one)
+        if ( $arg =~ /^(?:-o|--outfile=?)(\S*)$/ ) {
+            $outfile = $1;
+            # If no filename attached, check next arg (if it's not an option)
+            if ( !$outfile && @$args && $args->[0] !~ /^-/ ) {
+                $outfile = shift @$args;
+            }
+            elsif ( !$outfile ) {
+                die "Error: --outfile or -o requires a filename\n";
+            }
+            next;
+        }
+        push @filtered, $arg;
+    }
+    @$args = @filtered;
+    return $outfile;
+}
+
+# Short options in users rc file
+sub user_defined_abbreviations {
+    my ( $abbrev, $abbrev_default ) = @_;
+    my %abbrev_user;
+    foreach my $key ( keys %{$abbrev} ) {
+        next if $abbrev_default->{$key};
+        $abbrev_user{$key} = $abbrev->{$key};
+    }
+    return %abbrev_user;
 }
 
 sub condense_options {
@@ -289,68 +260,6 @@ sub detect_conflicts {
     }
 }
 
-sub is_true {
-    my ($value) = @_;
-    return 0 unless defined $value;
-    return $value =~ /^[1-9]\d*$/ ? 1 : $value ? 1 : 0;
-}
-
-sub looks_like_number {
-    my ($value) = @_;
-    return defined($value) && $value =~ /^-?\d+(?:\.\d+)?$/;
-}
-
-sub add_section_note {
-    my ( $sections, $section_notes, $opt, $text ) = @_;
-    my $section = $sections->{$opt} // 'UNKNOWN';
-    push @{ $section_notes->{$section} }, $text;
-}
-
-sub expand_abbrev {
-    my ( $arg, $abbr ) = @_;
-    return $arg unless $arg =~ /^-{1,2}(no)?([A-Za-z0-9_-]+)(=.*)?$/;
-    my ( $no, $name, $suffix ) = ( $1 // '', $2, $3 // '' );
-    my $long = $abbr->{$name};
-    return $arg unless $long;
-    my $prefix = '--';
-    my $neg    = $no ? 'no' : '';
-    return $prefix . $neg . $long . ($suffix // '');
-}
-
-sub extract_outfile {
-    my ($args) = @_;
-    my $outfile;
-    my @filtered;
-    while (@$args) {
-        my $arg = shift @$args;
-        if ( $arg eq '-o' || $arg eq '--outfile' ) {
-            $outfile = shift @$args // '';
-            next;
-        }
-        if ( $arg =~ /^-o(.+)/ ) {
-            $outfile = $1;
-            next;
-        }
-        if ( $arg =~ /^--outfile=(.+)/ ) {
-            $outfile = $1;
-            next;
-        }
-        push @filtered, $arg;
-    }
-    @$args = @filtered;
-    return $outfile;
-}
-
-sub user_defined_abbreviations {
-    my ( $abbrev, $abbrev_default ) = @_;
-    my %abbrev_user;
-    foreach my $key ( keys %{$abbrev} ) {
-        next if $abbrev_default->{$key};
-        $abbrev_user{$key} = $abbrev->{$key};
-    }
-    return %abbrev_user;
-}
-
 sub dump_options {
     my (%args) = @_;
     my $cmdline            = $args{cmdline};
@@ -451,29 +360,11 @@ sub dump_options {
     }
 }
 
-sub section_order {
-    my ($section) = @_;
-    return $1 if $section =~ /^(\d+(?:\.\d+)?)/;
-    return 999;
-}
-
 sub read_perltidyrc {
     my ( $config_file, $perltidy_args, $expand_options ) = @_;
     $perltidy_args ||= [];
     my $error_message = "";
     my %Opts;
-
-    eval "use Perl::Tidy";
-    if ($@) {
-        $error_message = "Perl::Tidy not installed\n";
-        return ( $error_message, \%Opts );
-    }
-
-    my $version = $Perl::Tidy::VERSION;
-    if ( $version < 20060528 ) {
-        $error_message = "perltidy version $version cannot read options\n";
-        return ( $error_message, \%Opts );
-    }
 
     my $stderr = "";
     my @argv_empty = ();
@@ -521,8 +412,8 @@ sub read_perltidyrc {
     }
 
     # Build parameter hash explicitly for config dump
+    # Only include perltidyrc if --rc or --no-rc was used (not undef)
     my %params_config = (
-        perltidyrc            => $config_file,    # undef, filename, or scalar ref
         dump_options          => \%Opts,
         dump_options_type     => 'perltidyrc',
         dump_getopt_flags     => \%Getopt_flags,
@@ -531,6 +422,11 @@ sub read_perltidyrc {
         stderr                => \$stderr,
         argv                  => $perltidy_args,    # array ref, even if empty
     );
+    # Only add perltidyrc if explicitly specified (--rc or --no-rc)
+    # If undef, Perl::Tidy will use its default search behavior
+    if ( defined $config_file ) {
+        $params_config{perltidyrc} = $config_file;    # filename string or scalar ref
+    }
 
     # Validate parameter hash (hashes always have even number of elements)
     die "Internal error: invalid parameter hash for config dump"
@@ -551,3 +447,124 @@ sub read_perltidyrc {
         \%abbreviations, \%Opts_default, \%abbreviations_default );
 }
 
+sub set_keep_defaults {
+    $cli{drop_defaults} = 0;
+    $cli{keep_defaults} = 1;
+}
+
+sub set_add_missing_defaults {
+    $cli{add_missing_defaults} = 1;
+    $cli{drop_defaults}        = 0;
+    $cli{keep_defaults}        = 1;
+    $cli{condense}             = 0;    # implies --no-condense
+}
+
+# ------------------------------------------------------------------------------
+
+GetOptions(
+    'rc=s'          => \$cli{rc},
+    'no-rc'         => \$cli{no_rc},
+    'keep-defaults' => \&set_keep_defaults,
+    'add-missing-defaults' => \&set_add_missing_defaults,
+    'expand-options!'  => \$cli{expand_options},
+    'condense!'     => \$cli{condense},
+    'quiet|q'       => \$cli{quiet},
+    'help|h'        => sub { usage(0) },
+) or usage(1);
+
+# Fail fast on mutually exclusive flags.
+if ( $cli{rc} && $cli{no_rc} ) {
+    die "--rc and --no-rc are mutually exclusive\n";
+}
+
+# Extract outfile before any perltidy handling; remaining args pass through.
+# Extract from @ARGV since we'll pass @ARGV to Perl::Tidy
+$cli{outfile} = extract_outfile( \@ARGV );
+
+# Clean @ARGV: filter out file arguments since we're only dumping options,
+# not processing source files. Keep only option-like arguments for Perl::Tidy.
+# GetOptions already removed our CLI options, so @ARGV contains pass-through args.
+@ARGV = grep { /^-/ } @ARGV;    # Keep only option-like arguments
+
+my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
+if ( $cli{no_rc} ) {
+    $rc_source = \$empty;
+    $rc_origin = 'none (empty profile)';
+}
+elsif ( $cli{rc} ) {
+    $rc_source = $cli{rc};
+    $rc_origin = $cli{rc};
+}
+
+my (
+    $error_message,         $rOpts,               $rGetopt_flags,
+    $rsections,             $rabbreviations,      $rOpts_default,
+    $rabbreviations_default
+) = read_perltidyrc( $rc_source, \@ARGV, $cli{expand_options} );
+
+die $error_message if $error_message;
+
+my %equals_default = build_equals_default( $rOpts, $rOpts_default );
+my %section_notes;
+
+my %clean_opts;
+if ( $cli{no_rc} ) {
+    # Start from defaults and overlay any explicit options passed through.
+    %clean_opts = ( %{$rOpts_default}, %{$rOpts} );
+}
+else {
+    if ( $cli{add_missing_defaults} ) {
+        %clean_opts = ( %{$rOpts_default}, %{$rOpts} );
+    }
+    else {
+        %clean_opts = %{$rOpts};
+        if ( $cli{drop_defaults} ) {
+            foreach my $long_name ( keys %clean_opts ) {
+                delete $clean_opts{$long_name} if $equals_default{$long_name};
+            }
+        }
+    }
+}
+
+%equals_default = build_equals_default( \%clean_opts, $rOpts_default );
+
+condense_options( \%clean_opts, $rsections, \%section_notes )
+  if $cli{condense};
+
+detect_conflicts( \%clean_opts, $rsections, \%section_notes );
+
+my %abbreviations_user =
+  user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
+
+if ( %clean_opts || %abbreviations_user ) {
+    my $output = "";
+    dump_options(
+        quiet              => $cli{quiet},
+        cmdline            => join( ' ', $0, @original_argv ),
+        rc_origin          => $rc_origin,
+        opts               => \%clean_opts,
+        getopt_flags       => $rGetopt_flags,
+        sections           => $rsections,
+        abbreviations      => $rabbreviations,
+        equals_default     => \%equals_default,
+        abbreviations_user => \%abbreviations_user,
+        section_notes      => \%section_notes,
+        keep_defaults      => $cli{keep_defaults},
+        destination        => \$output,
+    );
+    
+    if ( $cli{outfile} ) {
+        open my $fh, '>', $cli{outfile}
+          or die "Cannot open $cli{outfile} for writing: $!\n";
+        print $fh $output;
+        close $fh;
+    }
+    else {
+        print $output;
+    }
+}
+else {
+    print STDERR "No configuration parameters remain after filtering.\n";
+}
+
+exit 0;
