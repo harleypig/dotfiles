@@ -5,15 +5,25 @@ use Getopt::Long qw(:config bundling pass_through);
 
 my @original_argv = @ARGV;
 my %cli = (
-    drop_defaults => 1,
-    condense      => 1,
-    quiet         => 0,
+    drop_defaults         => 1,
+    condense              => 1,
+    quiet                 => 0,
+    keep_defaults         => 0,
+    add_missing_defaults  => 0,
 );
 
 GetOptions(
     'rc=s'          => \$cli{rc},
     'no-rc'         => \$cli{no_rc},
-    'keep-defaults' => sub { $cli{drop_defaults} = 0 },
+    'keep-defaults' => sub {
+        $cli{drop_defaults} = 0;
+        $cli{keep_defaults} = 1;
+    },
+    'add-missing-defaults' => sub {
+        $cli{add_missing_defaults} = 1;
+        $cli{drop_defaults}        = 0;
+        $cli{keep_defaults}        = 1;
+    },
     'condense!'     => \$cli{condense},
     'quiet|q'       => \$cli{quiet},
     'help|h'        => sub { usage(0) },
@@ -55,19 +65,25 @@ my %clean_opts;
 if ( $cli{no_rc} ) {
     # Start from defaults and overlay any explicit options passed through.
     %clean_opts = ( %{$rOpts_default}, %{$rOpts} );
-    %equals_default =
-      build_equals_default( \%clean_opts, $rOpts_default );
 }
 else {
-    %clean_opts = %{$rOpts};
-    if ( $cli{drop_defaults} ) {
-        foreach my $long_name ( keys %clean_opts ) {
-            delete $clean_opts{$long_name} if $equals_default{$long_name};
+    if ( $cli{add_missing_defaults} ) {
+        %clean_opts = ( %{$rOpts_default}, %{$rOpts} );
+    }
+    else {
+        %clean_opts = %{$rOpts};
+        if ( $cli{drop_defaults} ) {
+            foreach my $long_name ( keys %clean_opts ) {
+                delete $clean_opts{$long_name} if $equals_default{$long_name};
+            }
         }
     }
 }
 
-condense_options( \%clean_opts, $rsections, \%section_notes ) if $cli{condense};
+%equals_default = build_equals_default( \%clean_opts, $rOpts_default );
+
+condense_options( \%clean_opts, $rsections, \%section_notes )
+  if $cli{condense};
 
 detect_conflicts( \%clean_opts, $rsections, \%section_notes );
 
@@ -86,6 +102,7 @@ if ( %clean_opts || %abbreviations_user ) {
         equals_default     => \%equals_default,
         abbreviations_user => \%abbreviations_user,
         section_notes      => \%section_notes,
+        keep_defaults      => $cli{keep_defaults},
     );
 }
 else {
@@ -104,7 +121,11 @@ perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
   --rc FILE         Load the specified perltidyrc instead of searching.
   --no-rc           Do not load any perltidyrc (process from empty state).
   --keep-defaults   Keep options which match perltidy defaults (normally
-                    removed).
+                    removed). Does NOT add missing defaults; use
+                    --add-missing-defaults for that.
+  --add-missing-defaults
+                    Add any missing default options (also implies
+                    --keep-defaults).
   --[no-]condense   Drop fine-grained options that duplicate broader settings
                     (on by default).
   --quiet, -q       Omit header comments in the output.
@@ -277,6 +298,7 @@ sub dump_options {
     my $requals_default    = $args{equals_default};
     my $rabbreviations_user = $args{abbreviations_user};
     my $section_notes      = $args{section_notes} // {};
+    my $keep_defaults      = $args{keep_defaults} // 0;
 
     my %section_and_name;
     my %saw_section;
@@ -334,12 +356,10 @@ sub dump_options {
 
             my $long_option = $prefix . $long_name . $suffix;
 
-            if ($quiet) {
-                print $long_option . "\n";
+            if ( $keep_defaults && $requals_default->{$long_name} ) {
+                $long_option .= " #  default";
             }
-            else {
-                print $long_option . "\n";
-            }
+            print $long_option . "\n";
         }
     }
 
