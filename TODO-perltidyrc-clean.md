@@ -84,13 +84,13 @@ with various RC files.
 - [x] Handles missing general options gracefully
 
 ### `detect_conflicts($opts, $sections, $section_notes)`
-- [ ] Detects conflict between brace-left-and-indent and non-indenting-braces
-- [ ] Detects conflict between tabs and entab-leading-whitespace
-- [ ] Detects when specific brace options differ from brace-tightness
-- [ ] Detects when fuzzy-line-length exceeds maximum-line-length
-- [ ] Detects format disabled but format-skipping enabled
-- [ ] Adds section notes for all conflicts
-- [ ] Handles missing section_notes hash (creates empty)
+- [x] Detects conflict between brace-left-and-indent and non-indenting-braces
+- [x] Detects conflict between tabs and entab-leading-whitespace
+- [x] Detects when specific brace options differ from brace-tightness
+- [x] Detects when fuzzy-line-length exceeds maximum-line-length
+- [x] Detects format disabled but format-skipping enabled
+- [x] Adds section notes for all conflicts
+- [x] Handles missing section_notes hash (creates empty)
 
 ### `dump_options(%args)`
 - [ ] Groups options by section
