@@ -40,9 +40,9 @@ with various RC files.
 - [x] Appends multiple notes to same section
 
 ### `section_order($section)`
-- [ ] Extracts numeric prefix from section name
-- [ ] Returns 999 for sections without numeric prefix
-- [ ] Handles decimal section numbers (e.g., "1.2")
+- [x] Extracts numeric prefix from section name
+- [x] Returns 999 for sections without numeric prefix
+- [x] Handles decimal section numbers (e.g., "1.2")
 
 ### `expand_abbrev($arg, $abbr)`
 - [ ] Expands short options to long names

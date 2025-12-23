@@ -100,6 +100,8 @@ sub add_section_note {
     push @{ $section_notes->{$section} }, $text;
 }
 
+# Extracts numeric prefix from section name for sorting (e.g., "1.2" from "1.2. Subsection").
+# Sections without numeric prefix return 999 to sort them at the end.
 sub section_order {
     my ($section) = @_;
     return $1 if $section =~ /^(\d+(?:\.\d+)?)/;
