@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Getopt::Long qw(:config bundling);
+use Getopt::Long qw(:config bundling pass_through);
 
 my @original_argv = @ARGV;
 my %cli = (
@@ -18,6 +18,8 @@ GetOptions(
     'quiet|q'       => \$cli{quiet},
     'help|h'        => sub { usage(0) },
 ) or usage(1);
+
+my @perltidy_args = @ARGV;    # pass-through arguments for perltidy
 
 if ( $cli{rc} && $cli{no_rc} ) {
     die "--rc and --no-rc are mutually exclusive\n";
@@ -42,7 +44,7 @@ my (
     $error_message,         $rOpts,               $rGetopt_flags,
     $rsections,             $rabbreviations,      $rOpts_default,
     $rabbreviations_default
-) = read_perltidyrc($rc_source);
+) = read_perltidyrc( $rc_source, \@perltidy_args );
 
 die $error_message if $error_message;
 
@@ -103,6 +105,9 @@ perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
                     (on by default).
   --quiet, -q       Omit header comments in the output.
   --help, -h        Show this message.
+
+Any additional arguments are passed directly to perltidy; perltidy will report
+an error if it does not recognize them.
 
 The output is a cleaned perltidyrc grouped by the Formatting Options sections
 from the perltidy manual.
@@ -330,7 +335,8 @@ sub section_order {
 }
 
 sub read_perltidyrc {
-    my ($config_file) = @_;
+    my ( $config_file, $perltidy_args ) = @_;
+    $perltidy_args ||= [];
     my $error_message = "";
     my %Opts;
 
@@ -347,7 +353,7 @@ sub read_perltidyrc {
     }
 
     my $stderr = "";
-    my $argv   = "";
+    my @argv_empty;
 
     my %Opts_default;
     my %abbreviations_default;
@@ -358,7 +364,7 @@ sub read_perltidyrc {
         dump_options_type  => 'full',
         dump_abbreviations => \%abbreviations_default,
         stderr             => \$stderr,
-        argv               => \$argv,
+        argv               => \@argv_empty,
     );
     if ($err) {
         die "Error calling perltidy for defaults\n";
@@ -367,7 +373,8 @@ sub read_perltidyrc {
     my %Getopt_flags;
     my %sections;
     my %abbreviations;
-    Perl::Tidy::perltidy(
+    $stderr = "";
+    my $err2 = Perl::Tidy::perltidy(
         perltidyrc            => $config_file,
         dump_options          => \%Opts,
         dump_options_type     => 'perltidyrc',
@@ -375,10 +382,14 @@ sub read_perltidyrc {
         dump_options_category => \%sections,
         dump_abbreviations    => \%abbreviations,
         stderr                => \$stderr,
-        argv                  => \$argv,
+        argv                  => $perltidy_args,
     );
 
     $error_message .= $stderr;
+    if ($err2) {
+        $error_message ||= "";
+        $error_message .= "perltidy reported an error while parsing options\n";
+    }
 
     return ( $error_message, \%Opts, \%Getopt_flags, \%sections,
         \%abbreviations, \%Opts_default, \%abbreviations_default );
