@@ -259,14 +259,6 @@ sub dump_options {
         $saw_section{$section}++;
     }
 
-    my %short_name_for_long_name;
-    foreach my $abbrev ( sort keys %{$rabbreviations} ) {
-        my @list = @{ $rabbreviations->{$abbrev} };
-        next unless @list == 1;
-        my $long_name = $list[0];
-        $short_name_for_long_name{$long_name} = $abbrev;
-    }
-
     unless ($quiet) {
         my $date = localtime();
         print "# perltidy configuration file created $date\n";
@@ -291,7 +283,7 @@ sub dump_options {
         foreach my $long_name ( sort keys %{$rname_value} ) {
             my $flag  = $rGetopt_flags->{$long_name};
             my $value = $rname_value->{$long_name};
-            my ( $prefix, $short_prefix, $suffix ) = ( '--', '-', '' );
+            my ( $prefix, $suffix ) = ( '--', '' );
             if ($flag) {
                 if ( $flag =~ /^=/ || $flag =~ /^:/ ) {
                     if ( $value !~ /^\d+$/ ) {
@@ -301,7 +293,6 @@ sub dump_options {
                 }
                 elsif ( $flag =~ /^!/ ) {
                     $prefix       .= 'no' unless $value;
-                    $short_prefix .= 'n'  unless $value;
                 }
                 else {
                     print
@@ -309,20 +300,15 @@ sub dump_options {
                 }
             }
 
-            my $short_name  = $short_name_for_long_name{$long_name};
             my $long_option = $prefix . $long_name . $suffix;
-            my $short_option =
-              $short_name ? $short_prefix . $short_name . $suffix : $long_option;
 
             my $note = $requals_default->{$long_name} ? "  [=default]" : "";
             if ($quiet) {
                 print $long_option . "\n";
             }
             else {
-                my $spaces = 40 - length $long_option;
-                $spaces = 2 if $spaces < 2;
-                my $side_comment = ' ' x $spaces . '# ' . $short_option . $note;
-                print $long_option . $side_comment . "\n";
+                my $tail = $note ? " #$note" : "";
+                print $long_option . $tail . "\n";
             }
         }
     }
