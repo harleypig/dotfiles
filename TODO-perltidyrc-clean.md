@@ -76,12 +76,12 @@ with various RC files.
 ## Processing Functions
 
 ### `condense_options($opts, $sections, $section_notes)`
-- [ ] Removes brace-specific options that equal brace-tightness
-- [ ] Adds section notes for removed options
-- [ ] Removes continuation-indentation if equals indent-columns
-- [ ] Adds section note for removed continuation-indentation
-- [ ] Doesn't remove options that differ from general setting
-- [ ] Handles missing general options gracefully
+- [x] Removes brace-specific options that equal brace-tightness
+- [x] Adds section notes for removed options
+- [x] Removes continuation-indentation if equals indent-columns
+- [x] Adds section note for removed continuation-indentation
+- [x] Doesn't remove options that differ from general setting
+- [x] Handles missing general options gracefully
 
 ### `detect_conflicts($opts, $sections, $section_notes)`
 - [ ] Detects conflict between brace-left-and-indent and non-indenting-braces
