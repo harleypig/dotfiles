@@ -342,7 +342,9 @@ sub dump_options {
             my $long_option = $prefix . $long_name . $suffix;
 
             if ( $keep_defaults && $requals_default->{$long_name} ) {
-                $long_option .= " #  default";
+                my $padding = 40 - length($long_option);
+                $padding = 2 if $padding < 2;    # Minimum 2 spaces
+                $long_option .= ' ' x $padding . "#  default";
             }
             $append->($long_option . "\n");
         }
