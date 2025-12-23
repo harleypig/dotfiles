@@ -11,8 +11,6 @@ use TestPerltidyrcClean;
 # makes the function available for testing. This approach tests the actual
 # function from the working code.
 
-plan tests => 10;
-
 # Load the script - it will execute but exit quickly with --help
 load_perltidyrc_clean();
 

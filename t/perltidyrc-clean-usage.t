@@ -9,7 +9,6 @@ use Cwd;
 # Test the usage function behavior through script execution
 
 my $script = File::Spec->catfile('bin', 'perltidyrc-clean');
-plan tests => 8;
 
 # Create Test::Cmd object for file management (we'll use it for RC files later)
 my $cmd = Test::Cmd->new(
