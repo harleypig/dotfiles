@@ -10,6 +10,7 @@ my %cli = (
     quiet                 => 0,
     keep_defaults         => 0,
     add_missing_defaults  => 0,
+    expand_options        => 1,
 );
 
 GetOptions(
@@ -24,6 +25,7 @@ GetOptions(
         $cli{drop_defaults}        = 0;
         $cli{keep_defaults}        = 1;
     },
+    'expand-options!'  => \$cli{expand_options},
     'condense!'     => \$cli{condense},
     'quiet|q'       => \$cli{quiet},
     'help|h'        => sub { usage(0) },
@@ -54,7 +56,7 @@ my (
     $error_message,         $rOpts,               $rGetopt_flags,
     $rsections,             $rabbreviations,      $rOpts_default,
     $rabbreviations_default
-) = read_perltidyrc( $rc_source, \@perltidy_args );
+) = read_perltidyrc( $rc_source, \@perltidy_args, $cli{expand_options} );
 
 die $error_message if $error_message;
 
@@ -128,6 +130,8 @@ perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
                     --keep-defaults).
   --[no-]condense   Drop fine-grained options that duplicate broader settings
                     (on by default).
+  --[no-]expand-options
+                    Expand short options to their long names (default on).
   --quiet, -q       Omit header comments in the output.
   --help, -h        Show this message.
 
@@ -276,6 +280,17 @@ sub add_section_note {
     push @{ $section_notes->{$section} }, $text;
 }
 
+sub expand_abbrev {
+    my ( $arg, $abbr ) = @_;
+    return $arg unless $arg =~ /^-{1,2}(no)?([A-Za-z0-9_-]+)(=.*)?$/;
+    my ( $no, $name, $suffix ) = ( $1 // '', $2, $3 // '' );
+    my $long = $abbr->{$name};
+    return $arg unless $long;
+    my $prefix = '--';
+    my $neg    = $no ? 'no' : '';
+    return $prefix . $neg . $long . ($suffix // '');
+}
+
 sub user_defined_abbreviations {
     my ( $abbrev, $abbrev_default ) = @_;
     my %abbrev_user;
@@ -382,7 +397,7 @@ sub section_order {
 }
 
 sub read_perltidyrc {
-    my ( $config_file, $perltidy_args ) = @_;
+    my ( $config_file, $perltidy_args, $expand_options ) = @_;
     $perltidy_args ||= [];
     my $error_message = "";
     my %Opts;
@@ -421,6 +436,17 @@ sub read_perltidyrc {
     my %sections;
     my %abbreviations;
     $stderr = "";
+    if ($expand_options) {
+        my %abbr_single;
+        foreach my $k ( keys %abbreviations_default ) {
+            my @vals = @{ $abbreviations_default{$k} };
+            next unless @vals == 1;
+            $abbr_single{$k} = $vals[0];
+        }
+        @$perltidy_args =
+          map { expand_abbrev( $_, \%abbr_single ) } @$perltidy_args;
+    }
+
     my $err2 = Perl::Tidy::perltidy(
         perltidyrc            => $config_file,
         dump_options          => \%Opts,
