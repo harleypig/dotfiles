@@ -24,6 +24,7 @@ sub set_add_missing_defaults {
     $cli{add_missing_defaults} = 1;
     $cli{drop_defaults}        = 0;
     $cli{keep_defaults}        = 1;
+    $cli{condense}             = 0;    # implies --no-condense
 }
 
 GetOptions(
@@ -37,21 +38,23 @@ GetOptions(
     'help|h'        => sub { usage(0) },
 ) or usage(1);
 
-# Enforce implications after parsing (add-missing-defaults wins over condense)
-$cli{condense} = 0 if $cli{add_missing_defaults};
-
-# Extract outfile before any perltidy handling; remaining args pass through.
-my @perltidy_args = @ARGV;    # pass-through arguments for perltidy
-$cli{outfile} = extract_outfile( \@perltidy_args );
-
 # Fail fast on mutually exclusive flags.
 if ( $cli{rc} && $cli{no_rc} ) {
     die "--rc and --no-rc are mutually exclusive\n";
 }
 
+# Extract outfile before any perltidy handling; remaining args pass through.
+# Extract from @ARGV since we'll pass @ARGV to Perl::Tidy
+$cli{outfile} = extract_outfile( \@ARGV );
+
+# Clean @ARGV: filter out file arguments since we're only dumping options,
+# not processing source files. Keep only option-like arguments for Perl::Tidy.
+# GetOptions already removed our CLI options, so @ARGV contains pass-through args.
+@ARGV = grep { /^-/ } @ARGV;    # Keep only option-like arguments
+
 my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
+my $empty = "";    # Declared outside block to remain valid for reference
 if ( $cli{no_rc} ) {
-    my $empty = "";
     $rc_source = \$empty;
     $rc_origin = 'none (empty profile)';
 }
@@ -64,7 +67,7 @@ my (
     $error_message,         $rOpts,               $rGetopt_flags,
     $rsections,             $rabbreviations,      $rOpts_default,
     $rabbreviations_default
-) = read_perltidyrc( $rc_source, \@perltidy_args, $cli{expand_options} );
+) = read_perltidyrc( $rc_source, \@ARGV, $cli{expand_options} );
 
 die $error_message if $error_message;
 
@@ -101,8 +104,7 @@ my %abbreviations_user =
   user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
 
 if ( %clean_opts || %abbreviations_user ) {
-    my $out_fh = output_handle( $cli{outfile} );
-    local *STDOUT = $out_fh;
+    my $output = "";
     dump_options(
         quiet              => $cli{quiet},
         cmdline            => join( ' ', $0, @original_argv ),
@@ -115,7 +117,18 @@ if ( %clean_opts || %abbreviations_user ) {
         abbreviations_user => \%abbreviations_user,
         section_notes      => \%section_notes,
         keep_defaults      => $cli{keep_defaults},
+        destination        => \$output,
     );
+    
+    if ( $cli{outfile} ) {
+        open my $fh, '>', $cli{outfile}
+          or die "Cannot open $cli{outfile} for writing: $!\n";
+        print $fh $output;
+        close $fh;
+    }
+    else {
+        print $output;
+    }
 }
 else {
     print STDERR "No configuration parameters remain after filtering.\n";
@@ -328,13 +341,6 @@ sub extract_outfile {
     return $outfile;
 }
 
-sub output_handle {
-    my ($path) = @_;
-    return *STDOUT unless $path;
-    open my $fh, '>', $path or die "Cannot open $path for writing: $!\n";
-    return $fh;
-}
-
 sub user_defined_abbreviations {
     my ( $abbrev, $abbrev_default ) = @_;
     my %abbrev_user;
@@ -358,6 +364,7 @@ sub dump_options {
     my $rabbreviations_user = $args{abbreviations_user};
     my $section_notes      = $args{section_notes} // {};
     my $keep_defaults      = $args{keep_defaults} // 0;
+    my $destination        = $args{destination};    # scalar ref or undef
 
     my %section_and_name;
     my %saw_section;
@@ -367,11 +374,21 @@ sub dump_options {
         $saw_section{$section}++;
     }
 
+    my $append = sub {
+        my ($text) = @_;
+        if ($destination) {
+            $$destination .= $text;
+        }
+        else {
+            print $text;
+        }
+    };
+
     unless ($quiet) {
         my $date = localtime();
-        print "# perltidy configuration file created $date\n";
-        print "# using: $cmdline\n";
-        print "# source: $rc_origin\n";
+        $append->("# perltidy configuration file created $date\n");
+        $append->("# using: $cmdline\n");
+        $append->("# source: $rc_origin\n");
     }
 
     foreach my $section (
@@ -381,13 +398,13 @@ sub dump_options {
       )
     {
         unless ($quiet) {
-            print "\n";
+            $append->("\n");
             my $trimmed = $section;
             $trimmed =~ s/^\d+\. //;
-            print "# $trimmed\n";
+            $append->("# $trimmed\n");
             if ( my $notes = $section_notes->{$section} ) {
                 foreach my $note (@{$notes}) {
-                    print "# NOTE: $note\n";
+                    $append->("# NOTE: $note\n");
                 }
             }
         }
@@ -408,8 +425,8 @@ sub dump_options {
                     $prefix       .= 'no' unless $value;
                 }
                 else {
-                    print
-"# ERROR in dump_options: unrecognized flag $flag for $long_name\n";
+                    $append->(
+"# ERROR in dump_options: unrecognized flag $flag for $long_name\n");
                 }
             }
 
@@ -418,18 +435,18 @@ sub dump_options {
             if ( $keep_defaults && $requals_default->{$long_name} ) {
                 $long_option .= " #  default";
             }
-            print $long_option . "\n";
+            $append->($long_option . "\n");
         }
     }
 
     if ( %{$rabbreviations_user} ) {
         unless ($quiet) {
-            print "\n";
-            print "# Abbreviations\n";
+            $append->("\n");
+            $append->("# Abbreviations\n");
         }
         foreach my $key ( sort keys %{$rabbreviations_user} ) {
             my @vals = @{ $rabbreviations_user->{$key} };
-            print $key . ' {' . join( ' ', @vals ) . '}' . "\n";
+            $append->($key . ' {' . join( ' ', @vals ) . '}' . "\n");
         }
     }
 }
@@ -459,27 +476,39 @@ sub read_perltidyrc {
     }
 
     my $stderr = "";
-    my @argv_empty;
+    my @argv_empty = ();
 
+    # Declare hashes before building parameter hash
     my %Opts_default;
     my %abbreviations_default;
-    my $empty_rc = "";
-    my $err = Perl::Tidy::perltidy(
-        perltidyrc         => \$empty_rc,
+
+    # Build parameter hash explicitly for defaults dump
+    my %params_default = (
+        perltidyrc         => \"",    # empty scalar ref for empty config
         dump_options       => \%Opts_default,
         dump_options_type  => 'full',
         dump_abbreviations => \%abbreviations_default,
         stderr             => \$stderr,
         argv               => \@argv_empty,
     );
-    if ($err) {
-        die "Error calling perltidy for defaults\n";
+
+    # Validate parameter hash (hashes always have even number of elements)
+    die "Internal error: invalid parameter hash for defaults dump"
+      unless keys(%params_default) > 0;
+    my $err = Perl::Tidy::perltidy(%params_default);
+    if ($err == 1) {
+        die "Error calling perltidy for defaults: $stderr\n";
+    }
+    elsif ($err == 2) {
+        warn "Warnings from perltidy defaults: $stderr\n";
     }
 
     my %Getopt_flags;
     my %sections;
     my %abbreviations;
     $stderr = "";
+    
+    # Expand short options if requested
     if ($expand_options) {
         my %abbr_single;
         foreach my $k ( keys %abbreviations_default ) {
@@ -491,21 +520,31 @@ sub read_perltidyrc {
           map { expand_abbrev( $_, \%abbr_single ) } @$perltidy_args;
     }
 
-    my $err2 = Perl::Tidy::perltidy(
-        perltidyrc            => $config_file,
+    # Build parameter hash explicitly for config dump
+    my %params_config = (
+        perltidyrc            => $config_file,    # undef, filename, or scalar ref
         dump_options          => \%Opts,
         dump_options_type     => 'perltidyrc',
         dump_getopt_flags     => \%Getopt_flags,
         dump_options_category => \%sections,
         dump_abbreviations    => \%abbreviations,
         stderr                => \$stderr,
-        argv                  => $perltidy_args,
+        argv                  => $perltidy_args,    # array ref, even if empty
     );
 
+    # Validate parameter hash (hashes always have even number of elements)
+    die "Internal error: invalid parameter hash for config dump"
+      unless keys(%params_config) > 0;
+
+    my $err2 = Perl::Tidy::perltidy(%params_config);
+
     $error_message .= $stderr;
-    if ($err2) {
+    if ($err2 == 1) {
         $error_message ||= "";
         $error_message .= "perltidy reported an error while parsing options\n";
+    }
+    elsif ($err2 == 2) {
+        # Warnings are already in $stderr, just note them
     }
 
     return ( $error_message, \%Opts, \%Getopt_flags, \%sections,
