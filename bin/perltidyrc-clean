@@ -67,6 +67,9 @@ USAGE
     exit $exit_code;
 }
 
+# Normalizes Perl::Tidy boolean option values to a consistent true/false.
+# Handles values that may be strings ("1", "0"), actual booleans, or undefined.
+# Returns 1 for positive integers and truthy values, 0 otherwise.
 sub is_true {
     my ($value) = @_;
     return 0 unless defined $value;

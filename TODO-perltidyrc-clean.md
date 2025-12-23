@@ -19,11 +19,11 @@ with various RC files.
 - [x] Handles undefined exit_code (defaults to 0)
 
 ### `is_true($value)`
-- [ ] Returns 1 for positive integers (1-9 followed by digits)
-- [ ] Returns 1 for truthy values
-- [ ] Returns 0 for undefined values
-- [ ] Returns 0 for false values
-- [ ] Returns 0 for zero
+- [x] Returns 1 for positive integers (1-9 followed by digits)
+- [x] Returns 1 for truthy values
+- [x] Returns 0 for undefined values
+- [x] Returns 0 for false values
+- [x] Returns 0 for zero
 
 ### `looks_like_number($value)`
 - [ ] Returns true for positive integers
