@@ -6,17 +6,17 @@ with various RC files.
 
 ## Test Framework Setup
 
-- Use `Test::More` for test framework
-- Use `Test::Cmd` for script execution and file management
-- Create test RC files in `t/data/` directory
-- Test files should be named `t/perltidyrc-clean-*.t`
+- [x] Use `Test::More` for test framework
+- [x] Use `Test::Cmd` for script execution and file management
+- [x] Create test RC files in `t/data/` directory
+- [x] Test files should be named `t/perltidyrc-clean-*.t`
 
 ## Helper/Utility Functions
 
 ### `usage($exit_code)`
-- [ ] Prints usage message to stdout
-- [ ] Exits with correct exit code (0 for help, 1 for error)
-- [ ] Handles undefined exit_code (defaults to 0)
+- [x] Prints usage message to stdout
+- [x] Exits with correct exit code (0 for help, 1 for error)
+- [x] Handles undefined exit_code (defaults to 0)
 
 ### `is_true($value)`
 - [ ] Returns 1 for positive integers (1-9 followed by digits)
