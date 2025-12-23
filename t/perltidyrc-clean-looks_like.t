@@ -3,25 +3,20 @@ use strict;
 use warnings;
 use Test::More;
 use Scalar::Util qw(looks_like_number);
+use lib 't/lib';
+use TestPerltidyrcClean;
 
 # Test the looks_like_integer function from bin/perltidyrc-clean
 # and verify Scalar::Util::looks_like_number behavior
 #
-# We use 'do' to load the script, which executes it but makes the function
-# available for testing. We pass --help to make the script exit quickly.
-# This approach tests the actual function from the working code.
+# We use load_perltidyrc_clean() to load the script, which executes it but
+# makes the function available for testing. This approach tests the actual
+# function from the working code.
 
 plan tests => 23;
 
 # Load the script - it will execute but exit quickly with --help
-# We override exit to prevent the test from exiting when the script calls it
-BEGIN {
-    no warnings 'redefine';
-    *CORE::GLOBAL::exit = sub { return; };
-}
-local @ARGV = ('--help');
-do './bin/perltidyrc-clean';
-die "Failed to load script: $@" if $@;
+load_perltidyrc_clean();
 
 # Test looks_like_integer: Returns true for positive integers
 is(looks_like_integer("1"), 1, 'looks_like_integer: Returns 1 for "1"');

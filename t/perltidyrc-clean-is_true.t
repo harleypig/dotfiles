@@ -2,29 +2,19 @@
 use strict;
 use warnings;
 use Test::More;
+use lib 't/lib';
+use TestPerltidyrcClean;
 
 # Test the is_true function from bin/perltidyrc-clean
 #
-# We use 'do' to load the script, which executes it but makes the function
-# available for testing. We pass --help to make the script exit quickly.
-# This approach tests the actual function from the working code.
-#
-# Alternative (Option 1): If the script's execution path becomes problematic
-# (e.g., adds early checks that interfere with testing), we could switch to
-# extracting the function definition from the file using regex and eval'ing
-# it, which would test the function in isolation without executing the script.
+# We use load_perltidyrc_clean() to load the script, which executes it but
+# makes the function available for testing. This approach tests the actual
+# function from the working code.
 
 plan tests => 10;
 
 # Load the script - it will execute but exit quickly with --help
-# We override exit to prevent the test from exiting when the script calls it
-BEGIN {
-    no warnings 'redefine';
-    *CORE::GLOBAL::exit = sub { return; };
-}
-local @ARGV = ('--help');
-do './bin/perltidyrc-clean';
-die "Failed to load script: $@" if $@;
+load_perltidyrc_clean();
 
 # Test 1: Returns 1 for positive integers (1-9 followed by digits)
 is(is_true("1"), 1, 'Returns 1 for "1"');
