@@ -24,12 +24,16 @@ GetOptions(
         $cli{add_missing_defaults} = 1;
         $cli{drop_defaults}        = 0;
         $cli{keep_defaults}        = 1;
+        $cli{condense}             = 0;    # implies --no-condense
     },
     'expand-options!'  => \$cli{expand_options},
     'condense!'     => \$cli{condense},
     'quiet|q'       => \$cli{quiet},
     'help|h'        => sub { usage(0) },
 ) or usage(1);
+
+# Enforce implications after parsing
+$cli{condense} = 0 if $cli{add_missing_defaults};
 
 my @perltidy_args = @ARGV;    # pass-through arguments for perltidy
 
@@ -126,8 +130,8 @@ perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
                     removed). Does NOT add missing defaults; use
                     --add-missing-defaults for that.
   --add-missing-defaults
-                    Add any missing default options (also implies
-                    --keep-defaults).
+                    Add any missing default options (implies --keep-defaults
+                    and --no-condense).
   --[no-]condense   Drop fine-grained options that duplicate broader settings
                     (on by default).
   --[no-]expand-options
