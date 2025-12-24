@@ -298,27 +298,23 @@ sub detect_conflicts {
 
 sub dump_options {
     my (%args) = @_;
-    my $cmdline            = $args{cmdline};
-    my $rc_origin          = $args{rc_origin};
-    my $quiet              = $args{quiet};
-    my $rOpts              = $args{opts};
-    my $rGetopt_flags      = $args{getopt_flags};
-    my $rsections          = $args{sections};
-    my $rabbreviations     = $args{abbreviations};
-    my $requals_default    = $args{equals_default};
-    my $rabbreviations_user = $args{abbreviations_user};
-    my $section_notes      = $args{section_notes} // {};
-    my $keep_defaults      = $args{keep_defaults} // 0;
-    my $destination        = $args{destination};    # scalar ref or undef
+    # Extract variables needed for closure capture (used inside $append closure)
+    my $destination = $args{destination};    # scalar ref or undef
+    my $cmdline     = $args{cmdline};
+    my $rc_origin   = $args{rc_origin};
+    
+    # Extract variables that need default values
+    my $section_notes = $args{section_notes} // {};
+    my $keep_defaults = $args{keep_defaults} // 0;
 
-    check_undefined_keys( $rOpts, 'dump_options opts' ) if $rOpts;
-    check_undefined_keys( $rsections, 'dump_options sections' ) if $rsections;
-    check_undefined_keys( $rabbreviations_user, 'dump_options abbreviations_user' ) if $rabbreviations_user;
+    check_undefined_keys( $args{opts}, 'dump_options opts' ) if $args{opts};
+    check_undefined_keys( $args{sections}, 'dump_options sections' ) if $args{sections};
+    check_undefined_keys( $args{abbreviations_user}, 'dump_options abbreviations_user' ) if $args{abbreviations_user};
     my %section_and_name;
     my %saw_section;
-    foreach my $long_name ( keys %{$rOpts} ) {
-        my $section = $rsections->{$long_name} // 'UNKNOWN';
-        $section_and_name{$section}{$long_name} = $rOpts->{$long_name};
+    foreach my $long_name ( keys %{$args{opts}} ) {
+        my $section = $args{sections}->{$long_name} // 'UNKNOWN';
+        $section_and_name{$section}{$long_name} = $args{opts}->{$long_name};
         $saw_section{$section}++;
     }
 
@@ -332,7 +328,7 @@ sub dump_options {
         }
     };
 
-    unless ($quiet) {
+    unless ($args{quiet}) {
         my $date = localtime();
         $append->("# perltidy configuration file created $date\n");
         $append->("# using: $cmdline\n");
@@ -345,7 +341,7 @@ sub dump_options {
         } keys %saw_section
       )
     {
-        unless ($quiet) {
+        unless ($args{quiet}) {
             $append->("\n");
             my $trimmed = $section;
             $trimmed =~ s/^\d+\. //;
@@ -360,7 +356,7 @@ sub dump_options {
         my $rname_value = $section_and_name{$section};
         check_undefined_keys( $rname_value, "dump_options section '$section'" ) if $rname_value;
         foreach my $long_name ( sort keys %{$rname_value} ) {
-            my $flag  = $rGetopt_flags->{$long_name};
+            my $flag  = $args{getopt_flags}->{$long_name};
             my $value = $rname_value->{$long_name};
             my ( $prefix, $suffix ) = ( '--', '' );
             if ($flag) {
@@ -381,7 +377,7 @@ sub dump_options {
 
             my $long_option = $prefix . $long_name . $suffix;
 
-            if ( $keep_defaults && $requals_default->{$long_name} ) {
+            if ( $keep_defaults && $args{equals_default}->{$long_name} ) {
                 my $padding = 40 - length($long_option);
                 $padding = 2 if $padding < 2;    # Minimum 2 spaces
                 $long_option .= ' ' x $padding . "#  default";
@@ -390,13 +386,13 @@ sub dump_options {
         }
     }
 
-    if ( %{$rabbreviations_user} ) {
-        unless ($quiet) {
+    if ( %{$args{abbreviations_user}} ) {
+        unless ($args{quiet}) {
             $append->("\n");
             $append->("# Abbreviations\n");
         }
-        foreach my $key ( sort keys %{$rabbreviations_user} ) {
-            my @vals = @{ $rabbreviations_user->{$key} };
+        foreach my $key ( sort keys %{$args{abbreviations_user}} ) {
+            my @vals = @{ $args{abbreviations_user}->{$key} };
             $append->($key . ' {' . join( ' ', @vals ) . '}' . "\n");
         }
     }
