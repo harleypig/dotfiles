@@ -1,6 +1,6 @@
 #!/bin/bash
 
-command -v /usr/bin/calibre 2> /dev/null || return 0
+command -v /usr/bin/calibre &> /dev/null || return 0
 
 # Turn on dark mode.
 # https://calibre-ebook.com/new-in/fourteen
