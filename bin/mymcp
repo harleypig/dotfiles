@@ -60,8 +60,8 @@ known_cmd['snyk']=1
 
 #------------------------------------------------------------------------------
 (( $# )) || die 2 "Usage: $selfname <${!known_cmd[*]}>"
+
 cmd="$1"
 [[ -v "known_cmd[$cmd]" ]] || die 2 "Unknown option: $1"
 
 "$cmd"
-
