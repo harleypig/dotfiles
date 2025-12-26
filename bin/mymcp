@@ -31,7 +31,7 @@ docker_run() {
 }
 
 npx_run() {
-  local opts=('npx' '-y' "$@")
+  local opts=('-y' "$@")
   warn "npx ${opts[*]}"
   exec npx "${opts[@]}"
 }
@@ -46,6 +46,7 @@ github() {
   docker_run \
     '-e' 'GITHUB_PERSONAL_ACCESS_TOKEN' \
     'ghcr.io/github/github-mcp-server' \
+    'stdio' \
     '--dynamic-toolsets' \
     '--tools=get_me,search_code'
 }
@@ -53,7 +54,7 @@ github() {
 known_cmd['github']=1
 
 snyk() {
-  exec npx_run -snyk@latest mcp -t stdio
+  npx_run 'snyk@latest' 'mcp' '-t' 'stdio'
 }
 
 known_cmd['snyk']=1
