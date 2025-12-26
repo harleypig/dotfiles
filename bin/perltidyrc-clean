@@ -28,6 +28,7 @@ my %cli = (
     add_missing_defaults  => 0,
     expand_options        => 1,
     outfile               => undef,
+    showconfig            => 0,
 );
 
 my $empty = "";    # Declared here to remain valid for reference
@@ -39,7 +40,7 @@ sub usage {
     $exit_code = 0 unless defined $exit_code;
     print <<'USAGE';
 perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
-                 [--quiet] [--help]
+                 [--quiet] [--showconfig] [--help]
 
   --rc FILE         Load the specified perltidyrc instead of searching.
   --no-rc           Do not load any perltidyrc (process from empty state).
@@ -57,6 +58,9 @@ perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
                     Write output to FILE instead of stdout. Recognized even
                     though not used when parsing options.
   --quiet, -q       Omit header comments in the output.
+  --showconfig      Print the location of the perltidyrc file as Perl::Tidy
+                    sees it and exit. If --rc is specified, reports that file.
+                    All other options are ignored (except --help).
   --help, -h        Show this message.
 
 Any additional arguments are passed directly to perltidy; perltidy will report
@@ -64,6 +68,11 @@ an error if it does not recognize them.
 
 The output is a cleaned perltidyrc grouped by the Formatting Options sections
 from the perltidy manual.
+
+Note: --no-rc explicitly starts from Perl::Tidy defaults and overlays any
+explicit options passed through. If no config file is found (and neither --rc
+nor --no-rc is specified), the output will be empty unless --add-missing-defaults
+is used.
 USAGE
     exit $exit_code;
 }
@@ -497,6 +506,106 @@ sub set_add_missing_defaults {
     $cli{condense}             = 0;    # implies --no-condense
 }
 
+# Find the perltidyrc file that Perl::Tidy would use when no --rc is specified.
+# Uses Perl::Tidy's own find_config_file function to ensure we get the exact same
+# result that Perl::Tidy would use, including proper handling of PERLTIDY env var
+# and system-wide config files.
+# Returns the path if found, or undef if not found.
+sub find_perltidyrc {
+    # Check if Perl::Tidy::find_config_file is available
+    unless (defined &Perl::Tidy::find_config_file) {
+        die "Perl::Tidy::find_config_file is not available\n";
+    }
+    
+    # Call Perl::Tidy's find_config_file function
+    # This script only runs on Linux, so pass 0 for is_Windows and undef for Windows_type
+    my $config_file_chatter = "";
+    my $pending_complaint = "";
+    my $rconfig_file_chatter = \$config_file_chatter;
+    my $rpending_complaint = \$pending_complaint;
+    my $config_file = Perl::Tidy::find_config_file(
+        0,              # is_Windows = false (Linux only)
+        undef,          # Windows_type = undef (not Windows)
+        $rconfig_file_chatter,
+        $rpending_complaint
+    );
+    
+    return $config_file;
+}
+
+# Show the config file location as Perl::Tidy sees it.
+# If --rc is specified, use that value.
+# If --no-rc is specified, report "none".
+# Otherwise, find what Perl::Tidy would use.
+sub show_config_location {
+    my ($rc_file, $perltidy_args) = @_;
+    $perltidy_args ||= [];
+    
+    use Cwd;
+    use File::Spec;
+    
+    if (defined $rc_file) {
+        # If it's a scalar ref, it means --no-rc was used
+        if (ref $rc_file eq 'SCALAR') {
+            print "none\n";
+            return;
+        }
+        # Otherwise, it's the --rc value
+        # Validate it exists and is readable
+        unless (-f $rc_file && -r $rc_file) {
+            die "Error: config file '$rc_file' not found or not readable\n";
+        }
+        # Use absolute path for clarity
+        my $abs_path = File::Spec->file_name_is_absolute($rc_file)
+            ? $rc_file
+            : File::Spec->rel2abs($rc_file);
+        print "$abs_path\n";
+        return;
+    }
+    
+    # No --rc specified, find what Perl::Tidy would use
+    # Check if --rc or --no-rc is in perltidy_args (pass-through args)
+    my $has_rc_in_args = 0;
+    my $rc_from_args;
+    for (my $i = 0; $i < @$perltidy_args; $i++) {
+        if ($perltidy_args->[$i] =~ /^--rc=(.+)$/) {
+            $rc_from_args = $1;
+            $has_rc_in_args = 1;
+            last;
+        } elsif ($perltidy_args->[$i] eq '--rc' && $i + 1 < @$perltidy_args) {
+            $rc_from_args = $perltidy_args->[$i + 1];
+            $has_rc_in_args = 1;
+            last;
+        } elsif ($perltidy_args->[$i] eq '--no-rc') {
+            print "none\n";
+            return;
+        }
+    }
+    
+    if ($has_rc_in_args) {
+        # Use the --rc from perltidy_args
+        unless (-f $rc_from_args && -r $rc_from_args) {
+            die "Error: config file '$rc_from_args' not found or not readable\n";
+        }
+        my $abs_path = File::Spec->file_name_is_absolute($rc_from_args)
+            ? $rc_from_args
+            : File::Spec->rel2abs($rc_from_args);
+        print "$abs_path\n";
+        return;
+    }
+    
+    # No --rc in args, find what Perl::Tidy would use
+    my $found = find_perltidyrc();
+    if ($found) {
+        my $abs_path = File::Spec->file_name_is_absolute($found)
+            ? $found
+            : File::Spec->rel2abs($found);
+        print "$abs_path\n";
+    } else {
+        print "none\n";
+    }
+}
+
 # ------------------------------------------------------------------------------
 
 GetOptions(
@@ -507,6 +616,7 @@ GetOptions(
     'expand-options!'  => \$cli{expand_options},
     'condense!'     => \$cli{condense},
     'quiet|q'       => \$cli{quiet},
+    'showconfig'    => \$cli{showconfig},
     'help|h'        => sub { usage(0) },
 ) or usage(1);
 
@@ -523,6 +633,24 @@ $cli{outfile} = extract_outfile( \@ARGV );
 # not processing source files. Keep only option-like arguments for Perl::Tidy.
 # GetOptions already removed our CLI options, so @ARGV contains pass-through args.
 @ARGV = grep { /^-/ } @ARGV;    # Keep only option-like arguments
+
+# Handle --showconfig early (after --help check, before other processing)
+if ( $cli{showconfig} ) {
+    # Determine config file location
+    my $rc_source;
+    if ( $cli{no_rc} ) {
+        $rc_source = \$empty;
+    }
+    elsif ( $cli{rc} ) {
+        $rc_source = $cli{rc};
+    }
+    else {
+        $rc_source = undef;
+    }
+    
+    show_config_location( $rc_source, \@ARGV );
+    exit 0;
+}
 
 my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
 if ( $cli{no_rc} ) {
