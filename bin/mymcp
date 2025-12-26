@@ -1,0 +1,67 @@
+#!/usr/bin/bash
+
+# Run docker, npx, or whatever command is needed to start a local mcp server.
+
+#------------------------------------------------------------------------------
+# Setup and sanity
+
+# I don't normally use this, but we want cursor to handle this gracefully
+# (ish).
+set -euo pipefail
+
+selfname="${0##*/}"
+
+declare -A known_cmd
+
+#------------------------------------------------------------------------------
+# Utility Functions
+
+warn() { printf "[$selfname] %s\n" "$@" >&2 ; }
+die() {
+  local -i ec="${1:-0}"
+  shift
+  (($#)) && warn "$@"
+  exit $ec
+}
+
+docker_run() {
+  local opts=('run' '--rm' '-i' "$@")
+  warn "docker ${opts[*]}"
+  exec docker "${opts[@]}"
+}
+
+npx_run() {
+  local opts=('npx' '-y' "$@")
+  warn "npx ${opts[*]}"
+  exec npx "${opts[@]}"
+}
+
+#------------------------------------------------------------------------------
+# MCP Servers
+
+# https://github.com/github/github-mcp-server/blob/main/docs/server-configuration.md
+github() {
+  : "${GITHUB_TOKEN:?GITHUB_TOKEN not set}"
+  export GITHUB_PERSONAL_ACCESS_TOKEN="$GITHUB_TOKEN"
+  docker_run \
+    '-e' 'GITHUB_PERSONAL_ACCESS_TOKEN' \
+    'ghcr.io/github/github-mcp-server' \
+    '--dynamic-toolsets' \
+    '--tools=get_me,search_code'
+}
+
+known_cmd['github']=1
+
+snyk() {
+  exec npx_run -snyk@latest mcp -t stdio
+}
+
+known_cmd['snyk']=1
+
+#------------------------------------------------------------------------------
+(( $# )) || die 2 "Usage: $selfname <${!known_cmd[*]}>"
+cmd="$1"
+[[ -v "known_cmd[$cmd]" ]] || die 2 "Unknown option: $1"
+
+"$cmd"
+
