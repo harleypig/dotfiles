@@ -379,7 +379,7 @@ sub dump_options {
                     $suffix = '=' . $value;
                 }
                 elsif ( $flag =~ /^!/ ) {
-                    $prefix       .= 'no' unless $value;
+                    $prefix       .= 'no-' unless $value;
                 }
                 else {
                     $append->(

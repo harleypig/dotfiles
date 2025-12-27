@@ -17,6 +17,9 @@ with various RC files.
 - [x] Prints usage message to stdout
 - [x] Exits with correct exit code (0 for help, 1 for error)
 - [x] Handles undefined exit_code (defaults to 0)
+- [x] Includes `--showconfig` option in usage message
+- [x] Includes `--overwrite` option in usage message
+- [x] Documents difference between `--no-rc` and no config file found
 
 ### `is_true($value)`
 - [x] Returns 1 for positive integers (1-9 followed by digits)
@@ -93,18 +96,24 @@ with various RC files.
 - [x] Handles missing section_notes hash (creates empty)
 
 ### `dump_options(%args)`
-- [ ] Groups options by section
-- [ ] Sorts sections by numeric order
-- [ ] Outputs header comments when not quiet
-- [ ] Outputs section headers when not quiet
-- [ ] Outputs section notes within sections
-- [ ] Formats options with correct prefixes (--, --no)
-- [ ] Quotes non-numeric option values
-- [ ] Pads default comments to column 40
-- [ ] Outputs user-defined abbreviations section
-- [ ] Writes to destination scalar ref when provided
-- [ ] Writes to stdout when destination not provided
-- [ ] Handles quiet mode (no headers)
+- [x] Groups options by section
+- [x] Sorts sections by numeric order
+- [x] Outputs header comments when not quiet
+- [x] Outputs section headers when not quiet
+- [x] Outputs section notes within sections
+- [x] Formats options with correct prefixes (--, --no-)
+- [x] Quotes non-numeric option values
+- [x] Pads default comments to column 40
+- [x] Outputs user-defined abbreviations section
+- [x] Writes to destination scalar ref when provided
+- [x] Writes to stdout when destination not provided
+- [x] Handles quiet mode (no headers)
+- [x] Sorts options within sections alphabetically
+- [x] Handles empty opts hash
+- [x] Handles options without sections (uses UNKNOWN)
+- [x] Handles multiple section notes
+- [x] Handles empty string values
+- [x] Handles special characters in values
 
 ### `read_perltidyrc($config_file, $perltidy_args, $expand_options)`
 - [ ] Reads default options when config_file is empty scalar ref
@@ -139,8 +148,13 @@ with various RC files.
 - [ ] `--expand-options` expands short options (default)
 - [ ] `--no-expand-options` disables expansion
 - [ ] `--quiet` omits header comments
+- [x] `--showconfig` prints config file location and exits
+- [x] `--overwrite` overwrites --rc file with cleaned output
 - [ ] `--help` shows usage and exits
 - [ ] `--rc` and `--no-rc` are mutually exclusive (dies)
+- [x] `--overwrite` requires `--rc` to be specified (dies)
+- [x] `--overwrite` and `--outfile` are mutually exclusive (dies)
+- [x] `--showconfig` takes precedence over other options (exits early)
 - [ ] Unknown options are passed to Perl::Tidy
 - [ ] Perl::Tidy errors are reported correctly
 
@@ -149,9 +163,37 @@ with various RC files.
 - [ ] Searches for RC file when no `--rc` specified
 - [ ] Writes output to file with `-o FILE`
 - [ ] Writes output to file with `--outfile FILE`
+- [x] Writes output to `--rc` file with `--overwrite`
 - [ ] Writes output to stdout when no outfile
+- [x] `--overwrite` overwrites existing RC file
 - [ ] Handles file write errors gracefully
+- [x] Handles read-only file errors with `--overwrite`
 - [ ] Creates output file if it doesn't exist
+
+### `--showconfig` Option Behavior
+- [x] Prints "none" when no config file found
+- [x] Prints "none" when `--no-rc` specified
+- [x] Prints absolute path when `--rc FILE` specified
+- [x] Converts relative paths to absolute
+- [x] Handles PERLTIDY environment variable (file)
+- [x] Handles PERLTIDY environment variable (directory)
+- [x] Finds config in current directory
+- [x] Finds config in home directory
+- [x] Uses Perl::Tidy::find_config_file for accuracy
+- [x] Exits with code 0
+- [x] Ignores all other options (except --help)
+- [x] `--help` takes precedence over `--showconfig`
+
+### `--overwrite` Option Behavior
+- [x] Overwrites `--rc` file with cleaned output
+- [x] Works with `--keep-defaults`
+- [x] Works with `--quiet` (omits headers)
+- [x] Works with `--condense` and `--no-condense`
+- [x] Works with relative paths for `--rc`
+- [x] Preserves file permissions (or handles appropriately)
+- [x] Does not overwrite when no options remain (prints to STDERR)
+- [x] Produces no stdout output (writes to file only)
+- [x] Sets `$cli{outfile}` internally for efficiency
 
 ### Option Processing Logic
 - [ ] Default behavior: removes options matching defaults
@@ -185,10 +227,14 @@ with various RC files.
 - [ ] Dies if Perl::Tidy not installed
 - [ ] Dies if Perl::Tidy version too old
 - [ ] Dies if `--rc` and `--no-rc` both specified
+- [x] Dies if `--overwrite` without `--rc`
+- [x] Dies if `--overwrite` and `--outfile` both specified
 - [ ] Dies if `-o` without filename
 - [ ] Dies if cannot write output file
+- [x] Dies if cannot write to read-only file with `--overwrite`
 - [ ] Reports Perl::Tidy errors correctly
 - [ ] Reports "No configuration parameters remain" when appropriate
+- [x] Reports "No configuration parameters remain" when using `--overwrite` with only defaults
 
 ## Test Data Files Needed
 
