@@ -435,38 +435,122 @@ sub user_defined_abbreviations {
 }
 
 sub condense_options {
-    my ( $opts, $sections, $section_notes ) = @_;
+    my ( $opts, $sections, $section_notes, $abbreviations, $abbreviations_default ) = @_;
 
-    if ( exists $opts->{'brace-tightness'} ) {
-        my $general = $opts->{'brace-tightness'};
-        my @brace_specific = qw(
-          block-brace-tightness
-          brace-vertical-tightness
-          brace-vertical-tightness-closing
-          brace-follower-vertical-tightness
-          block-brace-vertical-tightness
-        );
-        foreach my $key (@brace_specific) {
-            if ( exists $opts->{$key} && defined $opts->{$key}
-                && $opts->{$key} eq $general )
-            {
-                add_section_note( $sections, $section_notes, $key,
-                    "$key removed; equals brace-tightness" );
-                delete $opts->{$key};
+    # Condense options using abbreviations (e.g., pt=0, sbt=0, bt=0, bbt=0 -> act=0)
+    if ( $abbreviations && $abbreviations_default ) {
+        # Build reverse mapping: short name -> long name
+        my %short_to_long;
+        foreach my $short ( keys %{$abbreviations_default} ) {
+            my @longs = @{ $abbreviations_default->{$short} };
+            # Only map single-option abbreviations (not multi-option ones)
+            if ( @longs == 1 ) {
+                $short_to_long{$short} = $longs[0];
             }
         }
-    }
 
-    if ( exists $opts->{'indent-columns'}
-        && exists $opts->{'continuation-indentation'} )
-    {
-        if ( $opts->{'continuation-indentation'} eq $opts->{'indent-columns'} )
-        {
-            add_section_note(
-                $sections, $section_notes, 'continuation-indentation',
-                "continuation-indentation removed; equals indent-columns"
-            );
-            delete $opts->{'continuation-indentation'};
+        # Build mapping of expansion patterns to preferred (longest) abbreviation name
+        # This handles recursive expansion: if act=0 and all-containers-tightness=0 expand
+        # to the same options, prefer the longer name
+        my %expansion_to_preferred;
+        foreach my $abbr_key ( keys %{$abbreviations} ) {
+            my @mapped_opts = @{ $abbreviations->{$abbr_key} };
+            next unless @mapped_opts >= 2;    # Only consider multi-option abbreviations
+            # Create a key from the expansion pattern (sorted for consistency)
+            my $expansion_key = join( '|', sort @mapped_opts );
+            # Prefer longer abbreviation names for the same expansion
+            if ( !exists $expansion_to_preferred{$expansion_key}
+                || length($abbr_key) > length( $expansion_to_preferred{$expansion_key} ) )
+            {
+                $expansion_to_preferred{$expansion_key} = $abbr_key;
+            }
+        }
+
+        # Iterate through preferred abbreviations only to find condensing opportunities
+        foreach my $expansion_key ( keys %expansion_to_preferred ) {
+            my $abbr_key    = $expansion_to_preferred{$expansion_key};
+            my @mapped_opts = @{ $abbreviations->{$abbr_key} };
+
+            # Extract value from abbreviation key if present (e.g., 'act=0' -> value='0')
+            my ( $abbr_name, $abbr_value );
+            if ( $abbr_key =~ /^(.+)=(.+)$/ ) {
+                $abbr_name  = $1;
+                $abbr_value = $2;
+            }
+            else {
+                $abbr_name  = $abbr_key;
+                $abbr_value = undef;
+            }
+
+            # Extract short names and values from mapped options
+            my @short_names;
+            my $expected_value;
+            my $all_have_values = 1;
+            foreach my $mapped_opt (@mapped_opts) {
+                if ( $mapped_opt =~ /^(.+)=(.+)$/ ) {
+                    my $short = $1;
+                    my $val   = $2;
+                    push @short_names, $short;
+                    if ( defined $expected_value ) {
+                        $all_have_values = 0 unless $val eq $expected_value;
+                    }
+                    else {
+                        $expected_value = $val;
+                    }
+                }
+                else {
+                    $all_have_values = 0;
+                    last;
+                }
+            }
+
+            # Skip if values don't match or if abbreviation value doesn't match
+            next unless $all_have_values;
+            if ( defined $abbr_value && $abbr_value ne $expected_value ) {
+                next;
+            }
+
+            # Map short names to long names
+            my @long_names;
+            my $all_found = 1;
+            foreach my $short (@short_names) {
+                if ( exists $short_to_long{$short} ) {
+                    push @long_names, $short_to_long{$short};
+                }
+                else {
+                    $all_found = 0;
+                    last;
+                }
+            }
+            next unless $all_found;
+
+            # Check if all long names exist in $opts with matching values
+            my $all_match = 1;
+            foreach my $long_name (@long_names) {
+                unless ( exists $opts->{$long_name}
+                    && defined $opts->{$long_name}
+                    && $opts->{$long_name} eq $expected_value )
+                {
+                    $all_match = 0;
+                    last;
+                }
+            }
+            next unless $all_match;
+
+            # $abbr_key is already the preferred (longest) abbreviation name for this expansion
+            my $preferred_abbr = $abbr_key;
+
+            # Remove the individual options and add notes
+            # Note: We don't add the abbreviation itself to $opts since abbreviations
+            # are not valid option names - they expand to multiple options.
+            # The user can use the abbreviation when writing the config file if desired.
+            foreach my $long_name (@long_names) {
+                add_section_note(
+                    $sections, $section_notes, $long_name,
+                    "$long_name removed; can be condensed to $preferred_abbr"
+                );
+                delete $opts->{$long_name};
+            }
         }
     }
 }
@@ -777,7 +861,7 @@ else {
 
 %equals_default = build_equals_default( \%clean_opts, $rOpts_default );
 
-condense_options( \%clean_opts, $rsections, \%section_notes )
+condense_options( \%clean_opts, $rsections, \%section_notes, $rabbreviations, $rabbreviations_default )
   if $cli{condense};
 
 detect_conflicts( \%clean_opts, $rsections, \%section_notes );
