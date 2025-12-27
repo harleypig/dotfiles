@@ -257,11 +257,12 @@ sub find_perltidyrc {
     return $config_file;
 }
 
-# Show the config file location as Perl::Tidy sees it.
+# Get the config file location as Perl::Tidy sees it.
+# Returns: absolute path to config file, or 'none' if no config file.
 # If --rc is specified, use that value.
-# If --no-rc is specified, report "none".
+# If --no-rc is specified, return 'none'.
 # Otherwise, find what Perl::Tidy would use.
-sub show_config_location {
+sub get_config_location {
     my ($rc_file, $perltidy_args) = @_;
     $perltidy_args ||= [];
     
@@ -271,8 +272,7 @@ sub show_config_location {
     if (defined $rc_file) {
         # If it's a scalar ref, it means --no-rc was used
         if (ref $rc_file eq 'SCALAR') {
-            print "none\n";
-            return;
+            return 'none';
         }
         # Otherwise, it's the --rc value
         # Validate it exists and is readable
@@ -283,8 +283,7 @@ sub show_config_location {
         my $abs_path = File::Spec->file_name_is_absolute($rc_file)
             ? $rc_file
             : File::Spec->rel2abs($rc_file);
-        print "$abs_path\n";
-        return;
+        return $abs_path;
     }
     
     # No --rc specified, find what Perl::Tidy would use
@@ -301,8 +300,7 @@ sub show_config_location {
             $has_rc_in_args = 1;
             last;
         } elsif ($perltidy_args->[$i] eq '--no-rc') {
-            print "none\n";
-            return;
+            return 'none';
         }
     }
     
@@ -314,8 +312,7 @@ sub show_config_location {
         my $abs_path = File::Spec->file_name_is_absolute($rc_from_args)
             ? $rc_from_args
             : File::Spec->rel2abs($rc_from_args);
-        print "$abs_path\n";
-        return;
+        return $abs_path;
     }
     
     # No --rc in args, find what Perl::Tidy would use
@@ -324,10 +321,18 @@ sub show_config_location {
         my $abs_path = File::Spec->file_name_is_absolute($found)
             ? $found
             : File::Spec->rel2abs($found);
-        print "$abs_path\n";
+        return $abs_path;
     } else {
-        print "none\n";
+        return 'none';
     }
+}
+
+# Show the config file location as Perl::Tidy sees it.
+# Prints the result to stdout.
+sub show_config_location {
+    my ($rc_file, $perltidy_args) = @_;
+    my $location = get_config_location($rc_file, $perltidy_args);
+    print "$location\n";
 }
 
 # Get Perl::Tidy default options and abbreviations.
@@ -655,15 +660,22 @@ if ( $cli{rc} && $cli{no_rc} ) {
     die "--rc and --no-rc are mutually exclusive\n";
 }
 
-# Determine config file source and origin (used by both --showconfig and main processing)
-my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
+# Determine config file source (used by both --showconfig and main processing)
+my $rc_source;
 if ( $cli{no_rc} ) {
     $rc_source = \$empty;
-    $rc_origin = 'none (empty profile)';
 }
 elsif ( $cli{rc} ) {
     $rc_source = $cli{rc};
-    $rc_origin = $cli{rc};
+}
+# else $rc_source is undef (use Perl::Tidy search)
+
+# Get the actual config file location for $rc_origin
+my $rc_origin;
+if ( $cli{no_rc} ) {
+    $rc_origin = 'none (empty profile)';
+} else {
+    $rc_origin = get_config_location( $rc_source, \@ARGV );
 }
 
 # Handle --showconfig early (after --help check, before other processing)
