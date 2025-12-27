@@ -29,6 +29,7 @@ my %cli = (
     expand_options        => 1,
     outfile               => undef,
     showconfig            => 0,
+    overwrite             => 0,
 );
 
 my $empty = "";    # Declared here to remain valid for reference
@@ -57,6 +58,8 @@ perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
   --outfile FILE, -o FILE
                     Write output to FILE instead of stdout. Recognized even
                     though not used when parsing options.
+  --overwrite       Overwrite the --rc file with the cleaned output. Requires
+                    --rc to be specified. Mutually exclusive with --outfile.
   --quiet, -q       Omit header comments in the output.
   --showconfig      Print the location of the perltidyrc file as Perl::Tidy
                     sees it and exit. If --rc is specified, reports that file.
@@ -617,6 +620,7 @@ GetOptions(
     'condense!'     => \$cli{condense},
     'quiet|q'       => \$cli{quiet},
     'showconfig'    => \$cli{showconfig},
+    'overwrite'     => \$cli{overwrite},
     'help|h'        => sub { usage(0) },
 ) or usage(1);
 
@@ -628,6 +632,18 @@ if ( $cli{rc} && $cli{no_rc} ) {
 # Extract outfile before any perltidy handling; remaining args pass through.
 # Extract from @ARGV since we'll pass @ARGV to Perl::Tidy
 $cli{outfile} = extract_outfile( \@ARGV );
+
+# Validate --overwrite requirements and conflicts
+if ( $cli{overwrite} ) {
+    unless ( $cli{rc} ) {
+        die "--overwrite requires --rc to be specified\n";
+    }
+    if ( $cli{outfile} ) {
+        die "--overwrite and --outfile are mutually exclusive\n";
+    }
+    # Set outfile to rc file after validation passes
+    $cli{outfile} = $cli{rc};
+}
 
 # Clean @ARGV: filter out file arguments since we're only dumping options,
 # not processing source files. Keep only option-like arguments for Perl::Tidy.
