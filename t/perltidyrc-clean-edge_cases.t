@@ -19,11 +19,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 
 # Test 1: Empty RC file
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # File is empty (nothing written)
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'empty.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Empty RC file exits with code 0');
@@ -39,12 +37,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 
 # Test 2: RC file with only defaults (all removed)
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # Use default values (if indent-columns=4 is default)
-    print $fh "--indent-columns=4\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'defaults-only.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'RC file with only defaults exits with code 0');
@@ -81,13 +76,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 
 # Test 4: RC file with conflicts
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # Add conflicting options
-    print $fh "--brace-left-and-indent\n";
-    print $fh "--non-indenting-braces\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'conflicts.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'RC file with conflicts exits with code 0');
@@ -101,12 +92,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 
 # Test 5: RC file with user abbreviations
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";
-    print $fh "myindent {indent-columns}\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'abbreviations.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'RC file with user abbreviations exits with code 0');
@@ -138,13 +126,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 
 # Test 7: RC file with invalid syntax (Perl::Tidy error)
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # Add invalid syntax
-    print $fh "--invalid-option-name-with-spaces=value\n";
-    print $fh "--unclosed-quote=\"value\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'invalid.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     # Should report error
@@ -159,13 +143,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 
 # Test 8: Very long option names (padding still works)
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # Use a valid but long option name
-    # maximum-line-length is a long option name
-    print $fh "--maximum-line-length=120\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'long-names.rc' );
     
-    my $stdout = `$script --rc $tmpfile --keep-defaults 2>&1`;
+    my $stdout = `$script --rc $rc_file --keep-defaults 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Long option names exit with code 0');
@@ -176,12 +156,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 
 # Test 9: Options with special characters in values
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # Options with special characters (hyphens in option names)
-    print $fh "--maximum-line-length=120\n";  # Valid option with hyphens
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'special-chars.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Options with special characters exit with code 0');

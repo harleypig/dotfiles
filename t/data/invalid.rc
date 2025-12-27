@@ -1,0 +1,4 @@
+--invalid-option-name-with-spaces=value
+--unclosed-quote="value
+--indent-columns=8
+

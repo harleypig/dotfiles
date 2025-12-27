@@ -245,8 +245,8 @@ with various RC files.
 - [x] Handles empty string values
 
 ### Error Handling
-- [ ] Dies if Perl::Tidy not installed (cannot test - requires Perl::Tidy)
-- [ ] Dies if Perl::Tidy version too old (cannot test - requires version check)
+- [-] Dies if Perl::Tidy not installed (cannot test - requires Perl::Tidy)
+- [-] Dies if Perl::Tidy version too old (cannot test - requires version check)
 - [x] Dies if `--rc` and `--no-rc` both specified
 - [x] Dies if `--overwrite` without `--rc`
 - [x] Dies if `--overwrite` and `--outfile` both specified
@@ -261,13 +261,13 @@ with various RC files.
 
 Create test RC files in `t/data/`:
 
-- [ ] `empty.rc` - Empty RC file
-- [ ] `defaults-only.rc` - Only default options
-- [ ] `custom.rc` - Custom non-default options
-- [ ] `conflicts.rc` - Options with conflicts
-- [ ] `abbreviations.rc` - User-defined abbreviations
-- [ ] `condense.rc` - Options that can be condensed
-- [ ] `long-names.rc` - Options with very long names
-- [ ] `special-chars.rc` - Options with special characters
-- [ ] `invalid.rc` - Invalid RC syntax (for error testing)
+- [x] `empty.rc` - Empty RC file
+- [x] `defaults-only.rc` - Only default options
+- [x] `custom.rc` - Custom non-default options
+- [x] `conflicts.rc` - Options with conflicts
+- [x] `abbreviations.rc` - User-defined abbreviations
+- [x] `condense.rc` - Options that can be condensed
+- [x] `long-names.rc` - Options with very long names
+- [x] `special-chars.rc` - Options with special characters
+- [x] `invalid.rc` - Invalid RC syntax (for error testing)
 

@@ -27,12 +27,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 1: --rc FILE loads specified RC file
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    print $fh "--maximum-line-length=120\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, '--rc FILE exits with code 0');
@@ -53,22 +50,19 @@ my $cmd = Test::Cmd->new(
 
 # Test 3: --keep-defaults keeps default options
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value  # This might be a default value
-    print $fh "--maximum-line-length=120\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
     # Without --keep-defaults, default options are removed
-    my $stdout_no_keep = `$script --rc $tmpfile 2>&1`;
+    my $stdout_no_keep = `$script --rc $rc_file 2>&1`;
     # Default options should be removed, non-default kept
     like($stdout_no_keep, qr/--maximum-line-length=120/, 
         'Without --keep-defaults, non-default options are kept');
     
     # With --keep-defaults, default options are kept
-    my $stdout_keep = `$script --rc $tmpfile --keep-defaults 2>&1`;
+    my $stdout_keep = `$script --rc $rc_file --keep-defaults 2>&1`;
     like($stdout_keep, qr/--maximum-line-length=120/, 
         'With --keep-defaults, non-default options are kept');
-    # If indent-columns=4 is default, it should appear with --keep-defaults
+    # If indent-columns=8 is default, it should appear with --keep-defaults
     if ($stdout_keep =~ /--indent-columns=8/) {
         pass('With --keep-defaults, options are kept');
     } else {
@@ -78,11 +72,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 4: --add-missing-defaults adds missing defaults
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--maximum-line-length=120\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
-    my $stdout = `$script --rc $tmpfile --add-missing-defaults 2>&1`;
+    my $stdout = `$script --rc $rc_file --add-missing-defaults 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, '--add-missing-defaults exits with code 0');
@@ -93,14 +85,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 5: --condense condenses options (default)
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # Add options that can be condensed
-    # Use continuation-indentation which can be condensed if it equals indent-columns
-    print $fh "--indent-columns=8\n";  # Non-default value
-    print $fh "--continuation-indentation=4\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'condense.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, '--condense (default) exits with code 0');
@@ -112,28 +99,22 @@ my $cmd = Test::Cmd->new(
 
 # Test 6: --no-condense disables condensing
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    print $fh "--continuation-indentation=4\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'condense.rc' );
     
-    my $stdout = `$script --rc $tmpfile --no-condense 2>&1`;
+    my $stdout = `$script --rc $rc_file --no-condense 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, '--no-condense exits with code 0');
     # Without condensing, all options should be present
     like($stdout, qr/--indent-columns=8/, 'General option is kept');
-    like($stdout, qr/--continuation-indentation=4/, 'Specific option is kept with --no-condense');
+    like($stdout, qr/--continuation-indentation=8/, 'Specific option is kept with --no-condense');
 }
 
 # Test 7: --expand-options expands short options (default)
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "-i=8\n";  # Short option with value (non-default value)
-    print $fh "-l=120\n";  # Short option with value (non-default value)
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'short-options.rc' );
     
-    my $stdout = `$script --rc $tmpfile --expand-options 2>&1`;
+    my $stdout = `$script --rc $rc_file --expand-options 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, '--expand-options exits with code 0');
@@ -159,12 +140,10 @@ my $cmd = Test::Cmd->new(
 
 # Test 9: --quiet omits header comments
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
-    my $stdout_quiet = `$script --rc $tmpfile --quiet 2>&1`;
-    my $stdout_normal = `$script --rc $tmpfile 2>&1`;
+    my $stdout_quiet = `$script --rc $rc_file --quiet 2>&1`;
+    my $stdout_normal = `$script --rc $rc_file 2>&1`;
     
     unlike($stdout_quiet, qr/perltidy configuration file created/, 
         '--quiet omits header comments');
@@ -174,12 +153,10 @@ my $cmd = Test::Cmd->new(
 
 # Test 10: Unknown options are passed to Perl::Tidy
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
     # Pass an unknown option that Perl::Tidy will recognize
-    my $stdout = `$script --rc $tmpfile --unknown-option 2>&1`;
+    my $stdout = `$script --rc $rc_file --unknown-option 2>&1`;
     my $exit_code = $? >> 8;
     
     # Perl::Tidy should report an error for unknown options
@@ -194,11 +171,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 11: Perl::Tidy errors are reported correctly
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--invalid-option=value\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'invalid.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     # Should report Perl::Tidy error
@@ -216,12 +191,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 12: Reads RC file from --rc FILE
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    print $fh "--maximum-line-length=80\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Reads RC file successfully');
@@ -256,14 +228,12 @@ my $cmd = Test::Cmd->new(
 
 # Test 14: Writes output to file with -o FILE
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
     my ($out_fh, $outfile) = tempfile(SUFFIX => '.out', UNLINK => 1);
     close $out_fh;
     
-    my $stdout = `$script --rc $tmpfile -o $outfile 2>&1`;
+    my $stdout = `$script --rc $rc_file -o $outfile 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Writes to file with -o exits with code 0');
@@ -281,14 +251,12 @@ my $cmd = Test::Cmd->new(
 
 # Test 15: Writes output to file with --outfile FILE
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
     my ($out_fh, $outfile) = tempfile(SUFFIX => '.out', UNLINK => 1);
     close $out_fh;
     
-    my $stdout = `$script --rc $tmpfile --outfile $outfile 2>&1`;
+    my $stdout = `$script --rc $rc_file --outfile $outfile 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Writes to file with --outfile exits with code 0');
@@ -305,11 +273,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 16: Writes output to stdout when no outfile
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Writes to stdout exits with code 0');
@@ -318,14 +284,12 @@ my $cmd = Test::Cmd->new(
 
 # Test 17: Handles file write errors gracefully
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
     # Try to write to a non-existent directory
     my $bad_outfile = '/nonexistent/directory/file.out';
     
-    my $stdout = `$script --rc $tmpfile --outfile $bad_outfile 2>&1`;
+    my $stdout = `$script --rc $rc_file --outfile $bad_outfile 2>&1`;
     my $exit_code = $? >> 8;
     
     # Should handle error gracefully (either die with message or report error)
@@ -339,14 +303,12 @@ my $cmd = Test::Cmd->new(
 
 # Test 18: Creates output file if it doesn't exist
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
     my $tmpdir = tempdir(CLEANUP => 1);
     my $outfile = File::Spec->catfile($tmpdir, 'newfile.out');
     
-    my $stdout = `$script --rc $tmpfile --outfile $outfile 2>&1`;
+    my $stdout = `$script --rc $rc_file --outfile $outfile 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Creates output file exits with code 0');
@@ -359,19 +321,13 @@ my $cmd = Test::Cmd->new(
 
 # Test 19: Default behavior: removes options matching defaults
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # Use a value that might be default (4) and a non-default value
-    print $fh "--indent-columns=4\n";  # Might be default
-    print $fh "--maximum-line-length=120\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'defaults-only.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Default behavior exits with code 0');
-    # Non-default options should be kept
-    like($stdout, qr/--maximum-line-length=120/, 
-        'Default behavior keeps non-default options');
+    # Default options should be removed (output may be empty or minimal)
     # If indent-columns=4 is default, it should be removed
     if ($stdout !~ /--indent-columns=4/) {
         pass('Default behavior removes options matching defaults');
@@ -382,12 +338,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 20: --keep-defaults: keeps all options including defaults
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    print $fh "--maximum-line-length=120\n";  # Non-default value
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
     
-    my $stdout = `$script --rc $tmpfile --keep-defaults 2>&1`;
+    my $stdout = `$script --rc $rc_file --keep-defaults 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, '--keep-defaults exits with code 0');
@@ -425,12 +378,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 23: Condensing removes duplicate fine-grained options
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    print $fh "--continuation-indentation=8\n";  # Matches indent-columns, should be removed
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'condense.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Condensing exits with code 0');
@@ -443,13 +393,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 24: Conflict detection adds section notes
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    # Add conflicting options (brace-left-and-indent conflicts with non-indenting-braces)
-    print $fh "--brace-left-and-indent\n";
-    print $fh "--non-indenting-braces\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'conflicts.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Conflict detection exits with code 0');
@@ -464,12 +410,9 @@ my $cmd = Test::Cmd->new(
 
 # Test 25: User-defined abbreviations are preserved
 {
-    my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Non-default value
-    print $fh "myindent {indent-columns}\n";
-    close $fh;
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'abbreviations.rc' );
     
-    my $stdout = `$script --rc $tmpfile 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'User abbreviations exit with code 0');

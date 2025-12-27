@@ -1,0 +1,4 @@
+--indent-columns=8
+myindent {indent-columns}
+shortmax {maximum-line-length}
+
