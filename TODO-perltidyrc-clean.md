@@ -216,12 +216,16 @@ with various RC files.
 - [x] User-defined abbreviations are preserved
 
 ### Output Formatting
-- [ ] Options grouped by section
-- [ ] Sections sorted numerically
-- [ ] Default comments padded to column 40
-- [ ] Section notes appear in correct sections
-- [ ] Header includes date, cmdline, and source
-- [ ] Quiet mode omits headers
+- [x] Options grouped by section
+- [x] Sections sorted numerically
+- [x] Default comments padded to column 40
+- [x] Section notes appear in correct sections
+- [x] Header includes date, cmdline, and source
+- [x] Quiet mode omits headers
+- [x] Options within sections sorted alphabetically
+- [x] Output format consistency (no duplicate sections)
+- [x] Empty lines between sections
+- [x] Abbreviations section appears after options
 
 ### Edge Cases
 - [ ] Empty RC file
