@@ -150,36 +150,36 @@ with various RC files.
 ## Main Script Behavior (Integration Tests)
 
 ### Command-Line Argument Parsing
-- [ ] `--rc FILE` loads specified RC file
-- [ ] `--no-rc` uses empty config
-- [ ] `--keep-defaults` keeps default options
-- [ ] `--add-missing-defaults` adds missing defaults
-- [ ] `--condense` condenses options (default)
-- [ ] `--no-condense` disables condensing
-- [ ] `--expand-options` expands short options (default)
-- [ ] `--no-expand-options` disables expansion
-- [ ] `--quiet` omits header comments
+- [x] `--rc FILE` loads specified RC file
+- [x] `--no-rc` uses empty config
+- [x] `--keep-defaults` keeps default options
+- [x] `--add-missing-defaults` adds missing defaults
+- [x] `--condense` condenses options (default)
+- [x] `--no-condense` disables condensing
+- [x] `--expand-options` expands short options (default)
+- [x] `--no-expand-options` disables expansion
+- [x] `--quiet` omits header comments
 - [x] `--showconfig` prints config file location and exits
 - [x] `--overwrite` overwrites --rc file with cleaned output
-- [ ] `--help` shows usage and exits
-- [ ] `--rc` and `--no-rc` are mutually exclusive (dies)
+- [x] `--help` shows usage and exits
+- [x] `--rc` and `--no-rc` are mutually exclusive (dies)
 - [x] `--overwrite` requires `--rc` to be specified (dies)
 - [x] `--overwrite` and `--outfile` are mutually exclusive (dies)
 - [x] `--showconfig` takes precedence over other options (exits early)
-- [ ] Unknown options are passed to Perl::Tidy
-- [ ] Perl::Tidy errors are reported correctly
+- [x] Unknown options are passed to Perl::Tidy
+- [x] Perl::Tidy errors are reported correctly
 
 ### File I/O
-- [ ] Reads RC file from `--rc FILE`
-- [ ] Searches for RC file when no `--rc` specified
-- [ ] Writes output to file with `-o FILE`
-- [ ] Writes output to file with `--outfile FILE`
+- [x] Reads RC file from `--rc FILE`
+- [x] Searches for RC file when no `--rc` specified
+- [x] Writes output to file with `-o FILE`
+- [x] Writes output to file with `--outfile FILE`
 - [x] Writes output to `--rc` file with `--overwrite`
-- [ ] Writes output to stdout when no outfile
+- [x] Writes output to stdout when no outfile
 - [x] `--overwrite` overwrites existing RC file
-- [ ] Handles file write errors gracefully
+- [x] Handles file write errors gracefully
 - [x] Handles read-only file errors with `--overwrite`
-- [ ] Creates output file if it doesn't exist
+- [x] Creates output file if it doesn't exist
 
 ### `--showconfig` Option Behavior
 - [x] Prints "none" when no config file found
@@ -207,13 +207,13 @@ with various RC files.
 - [x] Sets `$cli{outfile}` internally for efficiency
 
 ### Option Processing Logic
-- [ ] Default behavior: removes options matching defaults
-- [ ] `--keep-defaults`: keeps all options including defaults
-- [ ] `--add-missing-defaults`: adds missing defaults, keeps existing
-- [ ] `--no-rc`: starts from defaults, overlays passed options
-- [ ] Condensing removes duplicate fine-grained options
-- [ ] Conflict detection adds section notes
-- [ ] User-defined abbreviations are preserved
+- [x] Default behavior: removes options matching defaults
+- [x] `--keep-defaults`: keeps all options including defaults
+- [x] `--add-missing-defaults`: adds missing defaults, keeps existing
+- [x] `--no-rc`: starts from defaults, overlays passed options
+- [x] Condensing removes duplicate fine-grained options
+- [x] Conflict detection adds section notes
+- [x] User-defined abbreviations are preserved
 
 ### Output Formatting
 - [ ] Options grouped by section
