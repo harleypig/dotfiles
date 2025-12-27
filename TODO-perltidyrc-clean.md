@@ -228,27 +228,33 @@ with various RC files.
 - [x] Abbreviations section appears after options
 
 ### Edge Cases
-- [ ] Empty RC file
-- [ ] RC file with only defaults (all removed)
-- [ ] RC file with no valid options
-- [ ] RC file with conflicts
-- [ ] RC file with user abbreviations
-- [ ] No RC file found (uses defaults)
-- [ ] RC file with invalid syntax (Perl::Tidy error)
-- [ ] Very long option names (padding still works)
-- [ ] Options with special characters in values
+- [x] Empty RC file
+- [x] RC file with only defaults (all removed)
+- [x] RC file with no valid options
+- [x] RC file with conflicts
+- [x] RC file with user abbreviations
+- [x] No RC file found (uses defaults)
+- [x] RC file with invalid syntax (Perl::Tidy error)
+- [x] Very long option names (padding still works)
+- [x] Options with special characters in values
+- [x] RC file with mixed valid and invalid options
+- [x] RC file with only comments and whitespace
+- [x] RC file path with spaces
+- [x] Very large RC file
+- [x] RC file with duplicate options (last one wins)
+- [x] Handles empty string values
 
 ### Error Handling
-- [ ] Dies if Perl::Tidy not installed
-- [ ] Dies if Perl::Tidy version too old
-- [ ] Dies if `--rc` and `--no-rc` both specified
+- [ ] Dies if Perl::Tidy not installed (cannot test - requires Perl::Tidy)
+- [ ] Dies if Perl::Tidy version too old (cannot test - requires version check)
+- [x] Dies if `--rc` and `--no-rc` both specified
 - [x] Dies if `--overwrite` without `--rc`
 - [x] Dies if `--overwrite` and `--outfile` both specified
-- [ ] Dies if `-o` without filename
-- [ ] Dies if cannot write output file
+- [x] Dies if `-o` without filename
+- [x] Dies if cannot write output file
 - [x] Dies if cannot write to read-only file with `--overwrite`
-- [ ] Reports Perl::Tidy errors correctly
-- [ ] Reports "No configuration parameters remain" when appropriate
+- [x] Reports Perl::Tidy errors correctly
+- [x] Reports "No configuration parameters remain" when appropriate
 - [x] Reports "No configuration parameters remain" when using `--overwrite` with only defaults
 
 ## Test Data Files Needed
