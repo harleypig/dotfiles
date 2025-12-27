@@ -16,12 +16,26 @@ load_perltidyrc_clean();
 # Get absolute path to test data directory
 my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 
+# Helper function to mimic read_perltidyrc behavior for tests
+sub read_perltidyrc {
+    my ( $config_file, $perltidy_args ) = @_;
+    $perltidy_args ||= [];
+    
+    my ( $rOpts_default, $rabbreviations_default ) = get_perltidy_defaults();
+    
+    my ( $error_message, $rOpts, $rGetopt_flags, $rsections, $rabbreviations ) =
+        get_perltidy_config( $config_file, $perltidy_args );
+    
+    return ( $error_message, $rOpts, $rGetopt_flags, $rsections,
+        $rabbreviations, $rOpts_default, $rabbreviations_default );
+}
+
 # Test 1: Reads default options when config_file is empty scalar ref
 {
     my $empty_ref = \"";
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $empty_ref, [], 0 );
+      = read_perltidyrc( $empty_ref, [] );
 
     is( $error, "", 'No error when reading defaults' );
     ok( ref($opts) eq 'HASH', 'Returns opts hash ref' );
@@ -41,7 +55,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my $rc_file = File::Spec->catfile( $test_data_dir, 'simple.rc' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, [], 0 );
+      = read_perltidyrc( $rc_file, [] );
 
     is( $error, "", 'No error when reading RC file' );
     ok( ref($opts) eq 'HASH', 'Returns opts hash ref' );
@@ -57,7 +71,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
 {
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( undef, [], 0 );
+      = read_perltidyrc( undef, [] );
 
     # Should not die, but may or may not find a config file
     ok( ref($opts) eq 'HASH', 'Returns opts hash ref when config_file is undef' );
@@ -68,32 +82,35 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
         'Returns abbreviations hash ref when config_file is undef' );
 }
 
-# Test 4: Expands short options when expand_options is true
+# Test 4: Perl::Tidy automatically expands short options in command-line args
 {
     my $rc_file = File::Spec->catfile( $test_data_dir, 'simple.rc' );
-    # expand_abbrev handles -i=value format
+    # Perl::Tidy expands -i=value format automatically
     my @perltidy_args = ( '-i=4', '-l=80' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, \@perltidy_args, 1 );
+      = read_perltidyrc( $rc_file, \@perltidy_args );
 
-    is( $error, "", 'No error when expanding options' );
-    # The args should be expanded, but we can't easily verify this without
-    # checking internal state. However, we can verify the function completes.
-    ok( ref($opts) eq 'HASH', 'Returns opts hash ref with expansion enabled' );
+    is( $error, "", 'No error when using short options' );
+    # Perl::Tidy expands short options automatically, so these should work
+    ok( ref($opts) eq 'HASH', 'Returns opts hash ref with short options' );
+    # Verify the short options were expanded and override RC file
+    is( $opts->{'indent-columns'}, '4',
+        'Short option -i=4 expanded and overrides RC file' );
+    is( $opts->{'maximum-line-length'}, '80',
+        'Short option -l=80 expanded and overrides RC file' );
 }
 
-# Test 5: Does not expand short options when expand_options is false
+# Test 5: Long options work the same as short options
 {
     my $rc_file = File::Spec->catfile( $test_data_dir, 'simple.rc' );
-    # Use long format when not expanding
     my @perltidy_args = ( '--indent-columns=4', '--maximum-line-length=80' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, \@perltidy_args, 0 );
+      = read_perltidyrc( $rc_file, \@perltidy_args );
 
-    is( $error, "", 'No error when not expanding options' );
-    ok( ref($opts) eq 'HASH', 'Returns opts hash ref with expansion disabled' );
+    is( $error, "", 'No error when using long options' );
+    ok( ref($opts) eq 'HASH', 'Returns opts hash ref with long options' );
 }
 
 # Test 6: Passes perltidy_args to Perl::Tidy
@@ -102,7 +119,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my @perltidy_args = ( '--indent-columns=2' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, \@perltidy_args, 0 );
+      = read_perltidyrc( $rc_file, \@perltidy_args );
 
     is( $error, "", 'No error when passing perltidy_args' );
     # The perltidy_args should override RC file options
@@ -116,7 +133,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my $non_existent = File::Spec->catfile( $test_data_dir, 'nonexistent.rc' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $non_existent, [], 0 );
+      = read_perltidyrc( $non_existent, [] );
 
     # Should have an error message
     ok( length($error) > 0, 'Returns error message for non-existent file' );
@@ -128,7 +145,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my $empty_ref = \"";
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $empty_ref, [], 0 );
+      = read_perltidyrc( $empty_ref, [] );
 
     ok( defined $error, 'Returns error message (even if empty)' );
     ok( ref($opts) eq 'HASH', 'Returns opts hash ref' );
@@ -145,7 +162,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my $rc_file = File::Spec->catfile( $test_data_dir, 'simple.rc' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, [], 0 );
+      = read_perltidyrc( $rc_file, [] );
 
     is( $error, "", 'No error with empty perltidy_args' );
     ok( ref($opts) eq 'HASH', 'Returns opts hash ref with empty args' );
@@ -156,7 +173,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my $rc_file = File::Spec->catfile( $test_data_dir, 'simple.rc' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, undef, 0 );
+      = read_perltidyrc( $rc_file, undef );
 
     is( $error, "", 'No error with undef perltidy_args' );
     ok( ref($opts) eq 'HASH', 'Returns opts hash ref with undef args' );
@@ -188,7 +205,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my $rc_file = File::Spec->catfile( $test_data_dir, 'with-abbrev.rc' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, [], 0 );
+      = read_perltidyrc( $rc_file, [] );
 
     # Perl::Tidy may output alias list to stderr (warnings), but should not error
     unlike( $error, qr/error.*parsing options/i,
@@ -208,7 +225,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my $rc_file = File::Spec->catfile( $test_data_dir, 'empty.rc' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, [], 0 );
+      = read_perltidyrc( $rc_file, [] );
 
     is( $error, "", 'No error with empty RC file' );
     ok( ref($opts) eq 'HASH', 'Returns opts hash ref' );
@@ -222,7 +239,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
     my @perltidy_args = ( '--indent-columns=8', '--maximum-line-length=120' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, \@perltidy_args, 0 );
+      = read_perltidyrc( $rc_file, \@perltidy_args );
 
     is( $error, "", 'No error when args override RC file' );
     is( $opts->{'indent-columns'}, '8',
@@ -231,21 +248,21 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
         'perltidy_args override RC file maximum-line-length' );
 }
 
-# Test 15: Expansion works with short options in perltidy_args
+# Test 15: Short options in perltidy_args work (Perl::Tidy expands automatically)
 {
     my $rc_file = File::Spec->catfile( $test_data_dir, 'simple.rc' );
-    # expand_abbrev handles -i=value format, not -i8 combined format
+    # Perl::Tidy expands -i=value format automatically
     my @perltidy_args = ( '-i=8', '-l=120' );
     my ( $error, $opts, $getopt_flags, $sections, $abbreviations,
         $opts_default, $abbreviations_default )
-      = read_perltidyrc( $rc_file, \@perltidy_args, 1 );
+      = read_perltidyrc( $rc_file, \@perltidy_args );
 
-    is( $error, "", 'No error when expanding short options' );
-    # Expanded options should override RC file
+    is( $error, "", 'No error when using short options' );
+    # Perl::Tidy expands short options automatically, so these should override RC file
     is( $opts->{'indent-columns'}, '8',
-        'Expanded short option overrides RC file' );
+        'Short option -i=8 expanded and overrides RC file' );
     is( $opts->{'maximum-line-length'}, '120',
-        'Expanded short option overrides RC file' );
+        'Short option -l=120 expanded and overrides RC file' );
 }
 
 done_testing();

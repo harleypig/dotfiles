@@ -110,32 +110,32 @@ my $cmd = Test::Cmd->new(
     like($stdout, qr/--continuation-indentation=8/, 'Specific option is kept with --no-condense');
 }
 
-# Test 7: --expand-options expands short options (default)
+# Test 7: Short options in RC file are automatically expanded by Perl::Tidy
 {
     my $rc_file = File::Spec->catfile( $test_data_dir, 'short-options.rc' );
     
-    my $stdout = `$script --rc $rc_file --expand-options 2>&1`;
+    my $stdout = `$script --rc $rc_file 2>&1`;
     my $exit_code = $? >> 8;
     
-    is($exit_code, 0, '--expand-options exits with code 0');
-    # Short options should be expanded to long names
-    like($stdout, qr/--indent-columns=8/, 'Short option -i=8 expanded to --indent-columns=8');
-    like($stdout, qr/--maximum-line-length=120/, 'Short option -l=120 expanded to --maximum-line-length=120');
+    is($exit_code, 0, 'Short options in RC file work');
+    # Perl::Tidy expands short options automatically, so they appear as long names
+    like($stdout, qr/--indent-columns=8/, 'Short option -i=8 in RC file expanded to --indent-columns=8');
+    like($stdout, qr/--maximum-line-length=120/, 'Short option -l=120 in RC file expanded to --maximum-line-length=120');
 }
 
-# Test 8: --no-expand-options disables expansion
+# Test 8: Short options in command-line args are automatically expanded by Perl::Tidy
 {
     my ($fh, $tmpfile) = tempfile(SUFFIX => '.rc', UNLINK => 1);
-    print $fh "--indent-columns=8\n";  # Use long option in RC file
+    print $fh "--indent-columns=4\n";  # Use long option in RC file
     close $fh;
     
-    # Pass short option via command line (not in RC file)
-    my $stdout = `$script --rc $tmpfile --no-expand-options -i=8 2>&1`;
+    # Pass short option via command line - Perl::Tidy expands it automatically
+    my $stdout = `$script --rc $tmpfile -i=8 2>&1`;
     my $exit_code = $? >> 8;
     
-    # The option should be accepted (may or may not expand depending on implementation)
-    # This test verifies the option is accepted
-    pass('--no-expand-options option is accepted');
+    is($exit_code, 0, 'Short options in command-line args work');
+    # Command-line args override RC file, and Perl::Tidy expands short options automatically
+    like($stdout, qr/--indent-columns=8/, 'Short option -i=8 in command-line expanded and overrides RC file');
 }
 
 # Test 9: --quiet omits header comments
