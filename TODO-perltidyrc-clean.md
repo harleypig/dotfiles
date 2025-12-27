@@ -132,14 +132,20 @@ with various RC files.
 - [x] Expansion works with short options in perltidy_args
 
 ### `set_keep_defaults()`
-- [ ] Sets drop_defaults to 0
-- [ ] Sets keep_defaults to 1
+- [x] Function exists and is callable
+- [x] Can be called multiple times without error
+- [x] Sets drop_defaults to 0 (verified through --keep-defaults integration tests)
+- [x] Sets keep_defaults to 1 (verified through --keep-defaults integration tests)
+- [x] Does not modify other cli values (verified through integration tests)
 
 ### `set_add_missing_defaults()`
-- [ ] Sets add_missing_defaults to 1
-- [ ] Sets drop_defaults to 0
-- [ ] Sets keep_defaults to 1
-- [ ] Sets condense to 0
+- [x] Function exists and is callable
+- [x] Can be called multiple times without error
+- [x] Sets add_missing_defaults to 1 (verified through --add-missing-defaults integration tests)
+- [x] Sets drop_defaults to 0 (verified through --add-missing-defaults integration tests)
+- [x] Sets keep_defaults to 1 (verified through --add-missing-defaults integration tests)
+- [x] Sets condense to 0 (verified through --add-missing-defaults integration tests)
+- [x] Does not modify other cli values (verified through integration tests)
 
 ## Main Script Behavior (Integration Tests)
 
