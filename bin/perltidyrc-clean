@@ -343,16 +343,12 @@ sub show_config_location {
     }
 }
 
-sub read_perltidyrc {
-    my ( $config_file, $perltidy_args, $expand_options ) = @_;
-    $perltidy_args ||= [];
-    my $error_message = "";
-    my %Opts;
-
+# Get Perl::Tidy default options and abbreviations.
+# Returns: (\%Opts_default, \%abbreviations_default)
+sub get_perltidy_defaults {
     my $stderr = "";
     my @argv_empty = ();
 
-    # Declare hashes before building parameter hash
     my %Opts_default;
     my %abbreviations_default;
 
@@ -368,16 +364,31 @@ sub read_perltidyrc {
 
     call_perltidy( \%params_default, 'defaults dump', \$stderr, 'die' );
 
+    return ( \%Opts_default, \%abbreviations_default );
+}
+
+# Get Perl::Tidy config options from specified config file and command-line args.
+# Parameters:
+#   $config_file - Config file path (string), scalar ref (for --no-rc), or undef (use search)
+#   $perltidy_args - Array ref of command-line arguments to pass to Perl::Tidy
+#   $expand_options - Boolean: expand short options using abbreviations
+#   $abbreviations_default - Hash ref of default abbreviations (for expansion)
+# Returns: ($error_message, \%Opts, \%Getopt_flags, \%sections, \%abbreviations)
+sub get_perltidy_config {
+    my ( $config_file, $perltidy_args, $expand_options, $abbreviations_default ) = @_;
+    $perltidy_args ||= [];
+    my $error_message = "";
+    my %Opts;
     my %Getopt_flags;
     my %sections;
     my %abbreviations;
-    $stderr = "";
+    my $stderr = "";
     
     # Expand short options if requested
     if ($expand_options) {
         my %abbr_single;
-        foreach my $k ( keys %abbreviations_default ) {
-            my @vals = @{ $abbreviations_default{$k} };
+        foreach my $k ( keys %{$abbreviations_default} ) {
+            my @vals = @{ $abbreviations_default->{$k} };
             next unless @vals == 1;
             $abbr_single{$k} = $vals[0];
         }
@@ -402,13 +413,35 @@ sub read_perltidyrc {
         $params_config{perltidyrc} = $config_file;    # filename string or scalar ref
     }
 
-    my ( $err2, $config_error ) = call_perltidy(
+    my ( $err, $config_error ) = call_perltidy(
         \%params_config, 'parsing options', \$stderr, 'accumulate'
     );
+    # Note: $err (error code: 0=success, 1=error, 2=warnings) is not currently used.
+    # The error_message is checked by the caller and causes the script to die if non-empty.
+    # This matches the original behavior where warnings in stderr also cause the script to die.
     $error_message .= $config_error;
 
-    return ( $error_message, \%Opts, \%Getopt_flags, \%sections,
-        \%abbreviations, \%Opts_default, \%abbreviations_default );
+    return ( $error_message, \%Opts, \%Getopt_flags, \%sections, \%abbreviations );
+}
+
+# Get Perl::Tidy defaults and config options.
+# This is a convenience wrapper that calls get_perltidy_defaults and get_perltidy_config.
+# Parameters:
+#   $config_file - Config file path (string), scalar ref (for --no-rc), or undef (use search)
+#   $perltidy_args - Array ref of command-line arguments to pass to Perl::Tidy
+#   $expand_options - Boolean: expand short options using abbreviations
+# Returns: ($error_message, \%Opts, \%Getopt_flags, \%sections, \%abbreviations,
+#           \%Opts_default, \%abbreviations_default)
+sub read_perltidyrc {
+    my ( $config_file, $perltidy_args, $expand_options ) = @_;
+    
+    my ( $rOpts_default, $rabbreviations_default ) = get_perltidy_defaults();
+    
+    my ( $error_message, $rOpts, $rGetopt_flags, $rsections, $rabbreviations ) =
+        get_perltidy_config( $config_file, $perltidy_args, $expand_options, $rabbreviations_default );
+    
+    return ( $error_message, $rOpts, $rGetopt_flags, $rsections,
+        $rabbreviations, $rOpts_default, $rabbreviations_default );
 }
 
 # Compare options against defaults and return a hash indicating which options
