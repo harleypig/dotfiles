@@ -669,20 +669,19 @@ if ( $cli{rc} && $cli{no_rc} ) {
     die "--rc and --no-rc are mutually exclusive\n";
 }
 
+# Determine config file source and origin (used by both --showconfig and main processing)
+my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
+if ( $cli{no_rc} ) {
+    $rc_source = \$empty;
+    $rc_origin = 'none (empty profile)';
+}
+elsif ( $cli{rc} ) {
+    $rc_source = $cli{rc};
+    $rc_origin = $cli{rc};
+}
+
 # Handle --showconfig early (after --help check, before other processing)
 if ( $cli{showconfig} ) {
-    # Determine config file location
-    my $rc_source;
-    if ( $cli{no_rc} ) {
-        $rc_source = \$empty;
-    }
-    elsif ( $cli{rc} ) {
-        $rc_source = $cli{rc};
-    }
-    else {
-        $rc_source = undef;
-    }
-    
     show_config_location( $rc_source, \@ARGV );
     exit 0;
 }
@@ -707,16 +706,6 @@ if ( $cli{overwrite} ) {
 # not processing source files. Keep only option-like arguments for Perl::Tidy.
 # GetOptions already removed our CLI options, so @ARGV contains pass-through args.
 @ARGV = grep { /^-/ } @ARGV;    # Keep only option-like arguments
-
-my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
-if ( $cli{no_rc} ) {
-    $rc_source = \$empty;
-    $rc_origin = 'none (empty profile)';
-}
-elsif ( $cli{rc} ) {
-    $rc_source = $cli{rc};
-    $rc_origin = $cli{rc};
-}
 
 my (
     $error_message,         $rOpts,               $rGetopt_flags,
