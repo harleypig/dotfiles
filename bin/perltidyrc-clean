@@ -145,6 +145,60 @@ sub expand_abbrev {
     return $prefix . $neg . $long . ($suffix // '');
 }
 
+# Calls Perl::Tidy::perltidy with parameter validation and error handling.
+# Parameters:
+#   $params_ref - Reference to hash of parameters to pass to Perl::Tidy::perltidy
+#   $context    - String describing the context (for error messages)
+#   $stderr_ref - Reference to scalar to capture stderr output
+#   $error_mode - 'die' to die on errors, 'accumulate' to return error message
+# Returns:
+#   In 'die' mode: Returns error code (0, 1, or 2)
+#   In 'accumulate' mode: Returns (error_code, error_message)
+#                         error_message is appended to if error_code == 1
+sub call_perltidy {
+    my ( $params_ref, $context, $stderr_ref, $error_mode ) = @_;
+    
+    # Validate parameter hash (hashes always have even number of elements)
+    die "Internal error: invalid parameter hash for $context"
+      unless $params_ref && ref($params_ref) eq 'HASH' && keys(%{$params_ref}) > 0;
+    
+    # Validate stderr reference
+    die "Internal error: stderr_ref must be a scalar reference for $context"
+      unless $stderr_ref && ref($stderr_ref) eq 'SCALAR';
+    
+    # Call Perl::Tidy::perltidy
+    my $err = Perl::Tidy::perltidy(%{$params_ref});
+    
+    # Handle errors based on mode
+    if ($error_mode eq 'die') {
+        if ($err == 1) {
+            die "Error calling perltidy for $context: $$stderr_ref\n";
+        }
+        elsif ($err == 2) {
+            warn "Warnings from perltidy $context: $$stderr_ref\n";
+        }
+        return $err;
+    }
+    elsif ($error_mode eq 'accumulate') {
+        # Always include stderr in error message (matches original behavior)
+        # The caller will append this to their error_message accumulator
+        my $error_message = $$stderr_ref;
+        if ($err == 1) {
+            # Always add error message when there's an error (matches original behavior)
+            # The original code had: $error_message ||= ""; followed by unconditional append
+            $error_message ||= "";
+            $error_message .= "perltidy reported an error while $context\n";
+        }
+        elsif ($err == 2) {
+            # Warnings are already in stderr, just note them
+        }
+        return ($err, $error_message);
+    }
+    else {
+        die "Internal error: invalid error_mode '$error_mode' for call_perltidy\n";
+    }
+}
+
 # Compare options against defaults and return a hash indicating which options
 # equal their default values. Used to identify options that can be removed
 # when --drop-defaults is enabled.
@@ -433,16 +487,7 @@ sub read_perltidyrc {
         argv               => \@argv_empty,
     );
 
-    # Validate parameter hash (hashes always have even number of elements)
-    die "Internal error: invalid parameter hash for defaults dump"
-      unless keys(%params_default) > 0;
-    my $err = Perl::Tidy::perltidy(%params_default);
-    if ($err == 1) {
-        die "Error calling perltidy for defaults: $stderr\n";
-    }
-    elsif ($err == 2) {
-        warn "Warnings from perltidy defaults: $stderr\n";
-    }
+    call_perltidy( \%params_default, 'defaults dump', \$stderr, 'die' );
 
     my %Getopt_flags;
     my %sections;
@@ -478,20 +523,10 @@ sub read_perltidyrc {
         $params_config{perltidyrc} = $config_file;    # filename string or scalar ref
     }
 
-    # Validate parameter hash (hashes always have even number of elements)
-    die "Internal error: invalid parameter hash for config dump"
-      unless keys(%params_config) > 0;
-
-    my $err2 = Perl::Tidy::perltidy(%params_config);
-
-    $error_message .= $stderr;
-    if ($err2 == 1) {
-        $error_message ||= "";
-        $error_message .= "perltidy reported an error while parsing options\n";
-    }
-    elsif ($err2 == 2) {
-        # Warnings are already in $stderr, just note them
-    }
+    my ( $err2, $config_error ) = call_perltidy(
+        \%params_config, 'parsing options', \$stderr, 'accumulate'
+    );
+    $error_message .= $config_error;
 
     return ( $error_message, \%Opts, \%Getopt_flags, \%sections,
         \%abbreviations, \%Opts_default, \%abbreviations_default );
