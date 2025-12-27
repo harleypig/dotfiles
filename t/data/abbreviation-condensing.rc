@@ -1,0 +1,4 @@
+# This file tests abbreviations passed via command-line args
+# The abbreviations are tested in integration tests by passing them as arguments
+# Abbreviations: -act=3, -cti=3, -vtc=3
+

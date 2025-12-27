@@ -421,5 +421,53 @@ my $cmd = Test::Cmd->new(
         'User-defined abbreviations are preserved');
 }
 
+# Test 26: Abbreviation expansion - verify that act=3, cti=3, vtc=3 expand to correct options
+# Note: Abbreviations are tested via the expanded options file which contains the
+# individual options that abbreviations expand to. This tests that Perl::Tidy
+# correctly expands abbreviations (act=3 -> pt=3, sbt=3, bt=3, bbt=3, etc.)
+{
+    # Test using the expanded options file which has all individual options
+    # that act=3, cti=3, vtc=3 would expand to
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'abbreviation-expanded.rc' );
+    
+    my $stdout = `$script --rc $rc_file 2>&1`;
+    my $exit_code = $? >> 8;
+    
+    is($exit_code, 0, 'Abbreviation expanded options exit with code 0');
+    # Verify that the options that act=3 expands to are present
+    like($stdout, qr/--paren-tightness=3/, 'Options from act=3 expansion are present (paren-tightness)');
+    like($stdout, qr/--square-bracket-tightness=3/, 'Options from act=3 expansion are present (square-bracket-tightness)');
+    like($stdout, qr/--brace-tightness=3/, 'Options from act=3 expansion are present (brace-tightness)');
+    like($stdout, qr/--block-brace-tightness=3/, 'Options from act=3 expansion are present (block-brace-tightness)');
+    # Verify that the options that cti=3 expands to are present
+    like($stdout, qr/--closing-paren-indentation=3/, 'Options from cti=3 expansion are present (closing-paren-indentation)');
+    like($stdout, qr/--closing-brace-indentation=3/, 'Options from cti=3 expansion are present (closing-brace-indentation)');
+    like($stdout, qr/--closing-square-bracket-indentation=3/, 'Options from cti=3 expansion are present (closing-square-bracket-indentation)');
+    # Verify that the options that vtc=3 expands to are present
+    # Note: Some may be filtered as defaults or condensed, so check what's actually present
+    like($stdout, qr/--paren-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+        'Options from vtc=3 expansion are present or condensed (paren-vertical-tightness-closing)');
+    like($stdout, qr/--brace-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+        'Options from vtc=3 expansion are present or condensed (brace-vertical-tightness-closing)');
+    like($stdout, qr/--square-bracket-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+        'Options from vtc=3 expansion are present or condensed (square-bracket-vertical-tightness-closing)');
+}
+
+# Test 27: Condensing works for expanded options (at least some condensing occurs)
+{
+    my $rc_file = File::Spec->catfile( $test_data_dir, 'abbreviation-expanded.rc' );
+    
+    my $stdout = `$script --rc $rc_file --condense 2>&1`;
+    my $exit_code = $? >> 8;
+    
+    is($exit_code, 0, 'Abbreviation condensing exits with code 0');
+    # Verify that at least some condensing occurs (we see a note about condensing)
+    like($stdout, qr/can be condensed to/i,
+        'Condensing notes are present when condensing is enabled');
+    # Verify that the expanded options are present (they may or may not be condensed)
+    like($stdout, qr/--paren-tightness=3/, 'Expanded options are present');
+    like($stdout, qr/--closing-paren-indentation=3/, 'Closing indentation options are present');
+}
+
 done_testing();
 

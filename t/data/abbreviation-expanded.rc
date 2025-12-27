@@ -1,0 +1,10 @@
+--paren-tightness=3
+--square-bracket-tightness=3
+--brace-tightness=3
+--block-brace-tightness=3
+--closing-paren-indentation=3
+--closing-brace-indentation=3
+--closing-square-bracket-indentation=3
+--paren-vertical-tightness-closing=3
+--brace-vertical-tightness-closing=3
+--square-bracket-vertical-tightness-closing=3

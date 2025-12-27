@@ -439,7 +439,7 @@ sub condense_options {
     my ( $opts, $sections, $section_notes, $abbreviations, $abbreviations_default ) = @_;
 
     # Condense options using abbreviations (e.g., pt=0, sbt=0, bt=0, bbt=0 -> act=0)
-    if ( $abbreviations && $abbreviations_default ) {
+    if ( $abbreviations_default ) {
         # Build reverse mapping: short name -> long name
         my %short_to_long;
         foreach my $short ( keys %{$abbreviations_default} ) {
@@ -453,24 +453,107 @@ sub condense_options {
         # Build mapping of expansion patterns to preferred (longest) abbreviation name
         # This handles recursive expansion: if act=0 and all-containers-tightness=0 expand
         # to the same options, prefer the longer name
+        # Check both user-defined abbreviations and default abbreviations
         my %expansion_to_preferred;
-        foreach my $abbr_key ( keys %{$abbreviations} ) {
-            my @mapped_opts = @{ $abbreviations->{$abbr_key} };
-            next unless @mapped_opts >= 2;    # Only consider multi-option abbreviations
-            # Create a key from the expansion pattern (sorted for consistency)
-            my $expansion_key = join( '|', sort @mapped_opts );
-            # Prefer longer abbreviation names for the same expansion
-            if ( !exists $expansion_to_preferred{$expansion_key}
-                || length($abbr_key) > length( $expansion_to_preferred{$expansion_key} ) )
-            {
-                $expansion_to_preferred{$expansion_key} = $abbr_key;
+        my @abbr_sources = ($abbreviations_default);
+        push @abbr_sources, $abbreviations if $abbreviations;
+        foreach my $abbr_hash (@abbr_sources) {
+            foreach my $abbr_key ( keys %{$abbr_hash} ) {
+                my @mapped_opts = @{ $abbr_hash->{$abbr_key} };
+                next unless @mapped_opts >= 2;    # Only consider multi-option abbreviations
+                # Create a key from the expansion pattern (sorted for consistency)
+                my $expansion_key = join( '|', sort @mapped_opts );
+                # Prefer longer abbreviation names for the same expansion
+                if ( !exists $expansion_to_preferred{$expansion_key}
+                    || length($abbr_key) > length( $expansion_to_preferred{$expansion_key} ) )
+                {
+                    $expansion_to_preferred{$expansion_key} = $abbr_key;
+                }
             }
+        }
+
+        # Recursively expand abbreviations to get final long option names
+        # This handles cases like cti=2 -> cpi=2, cbi=2, csbi=2 -> closing-paren-indentation=2, etc.
+        sub expand_abbrev_to_long {
+            my ( $abbr, $abbr_hash, $short_to_long_hash ) = @_;
+            my @result;
+            
+            # Extract base name and value if present (e.g., 'cpi=3' -> 'cpi', '3')
+            my ( $base_name, $value );
+            if ( $abbr =~ /^(.+)=(.+)$/ ) {
+                $base_name = $1;
+                $value     = $2;
+            }
+            else {
+                $base_name = $abbr;
+                $value     = undef;
+            }
+            
+            # Check if base name expands to a long name (single-option abbreviation)
+            if ( exists $short_to_long_hash->{$base_name} ) {
+                my $long_name = $short_to_long_hash->{$base_name};
+                if ( defined $value ) {
+                    push @result, "$long_name=$value";
+                }
+                else {
+                    push @result, $long_name;
+                }
+                return \@result;
+            }
+            
+            # Check if abbreviation exists in hash (multi-option abbreviation)
+            if ( exists $abbr_hash->{$abbr} ) {
+                my @expanded = @{ $abbr_hash->{$abbr} };
+                foreach my $exp (@expanded) {
+                    # Recursively expand each expanded option
+                    my $expanded_result = expand_abbrev_to_long( $exp, $abbr_hash, $short_to_long_hash );
+                    if (@$expanded_result) {
+                        push @result, @$expanded_result;
+                    }
+                }
+            }
+            # Also check base name without value (e.g., 'cpi' instead of 'cpi=3')
+            elsif ( exists $abbr_hash->{$base_name} ) {
+                my @expanded = @{ $abbr_hash->{$base_name} };
+                foreach my $exp (@expanded) {
+                    # Recursively expand each expanded option, preserving value if present
+                    my $expanded_result = expand_abbrev_to_long( $exp, $abbr_hash, $short_to_long_hash );
+                    if (@$expanded_result) {
+                        if ( defined $value ) {
+                            # Apply value to each expanded option
+                            foreach my $exp_opt (@$expanded_result) {
+                                if ( $exp_opt =~ /^(.+)=(.+)$/ ) {
+                                    push @result, "$1=$value";    # Replace value
+                                }
+                                else {
+                                    push @result, "$exp_opt=$value";    # Add value
+                                }
+                            }
+                        }
+                        else {
+                            push @result, @$expanded_result;
+                        }
+                    }
+                }
+            }
+            
+            return \@result;
         }
 
         # Iterate through preferred abbreviations only to find condensing opportunities
         foreach my $expansion_key ( keys %expansion_to_preferred ) {
-            my $abbr_key    = $expansion_to_preferred{$expansion_key};
-            my @mapped_opts = @{ $abbreviations->{$abbr_key} };
+            my $abbr_key = $expansion_to_preferred{$expansion_key};
+            # Get mapped options from the correct hash (could be defaults or user-defined)
+            my @mapped_opts;
+            if ( exists $abbreviations_default->{$abbr_key} ) {
+                @mapped_opts = @{ $abbreviations_default->{$abbr_key} };
+            }
+            elsif ( $abbreviations && exists $abbreviations->{$abbr_key} ) {
+                @mapped_opts = @{ $abbreviations->{$abbr_key} };
+            }
+            else {
+                next;    # Shouldn't happen, but be safe
+            }
 
             # Extract value from abbreviation key if present (e.g., 'act=0' -> value='0')
             my ( $abbr_name, $abbr_value );
@@ -483,47 +566,62 @@ sub condense_options {
                 $abbr_value = undef;
             }
 
-            # Extract short names and values from mapped options
-            my @short_names;
+            # Recursively expand abbreviations to get final long option names
+            my @long_names;
             my $expected_value;
             my $all_have_values = 1;
             foreach my $mapped_opt (@mapped_opts) {
-                if ( $mapped_opt =~ /^(.+)=(.+)$/ ) {
-                    my $short = $1;
-                    my $val   = $2;
-                    push @short_names, $short;
-                    if ( defined $expected_value ) {
-                        $all_have_values = 0 unless $val eq $expected_value;
-                    }
-                    else {
-                        $expected_value = $val;
+                my $expanded = expand_abbrev_to_long( $mapped_opt, $abbreviations_default, \%short_to_long );
+                if (@$expanded) {
+                    foreach my $long_opt (@$expanded) {
+                        if ( $long_opt =~ /^(.+)=(.+)$/ ) {
+                            my $long_name = $1;
+                            my $val      = $2;
+                            push @long_names, $long_name;
+                            if ( defined $expected_value ) {
+                                $all_have_values = 0 unless $val eq $expected_value;
+                            }
+                            else {
+                                $expected_value = $val;
+                            }
+                        }
+                        else {
+                            $all_have_values = 0;
+                            last;
+                        }
                     }
                 }
                 else {
-                    $all_have_values = 0;
-                    last;
+                    # Fallback: try direct mapping
+                    if ( $mapped_opt =~ /^(.+)=(.+)$/ ) {
+                        my $short = $1;
+                        my $val   = $2;
+                        if ( exists $short_to_long{$short} ) {
+                            push @long_names, $short_to_long{$short};
+                            if ( defined $expected_value ) {
+                                $all_have_values = 0 unless $val eq $expected_value;
+                            }
+                            else {
+                                $expected_value = $val;
+                            }
+                        }
+                        else {
+                            $all_have_values = 0;
+                            last;
+                        }
+                    }
+                    else {
+                        $all_have_values = 0;
+                        last;
+                    }
                 }
             }
 
             # Skip if values don't match or if abbreviation value doesn't match
-            next unless $all_have_values;
+            next unless $all_have_values && @long_names > 0;
             if ( defined $abbr_value && $abbr_value ne $expected_value ) {
                 next;
             }
-
-            # Map short names to long names
-            my @long_names;
-            my $all_found = 1;
-            foreach my $short (@short_names) {
-                if ( exists $short_to_long{$short} ) {
-                    push @long_names, $short_to_long{$short};
-                }
-                else {
-                    $all_found = 0;
-                    last;
-                }
-            }
-            next unless $all_found;
 
             # Check if all long names exist in $opts with matching values
             my $all_match = 1;
