@@ -652,6 +652,8 @@ GetOptions(
     'quiet|q'       => \$cli{quiet},
     'showconfig'    => \$cli{showconfig},
     'overwrite'     => \$cli{overwrite},
+    'dump-perltidy-defaults' => \$cli{dump_perltidy_defaults},
+    'dump-perltidy-config'  => \$cli{dump_perltidy_config},
     'help|h'        => sub { usage(0) },
 ) or usage(1);
 
@@ -708,9 +710,46 @@ if ( $cli{overwrite} ) {
 # Get Perl::Tidy defaults
 my ( $rOpts_default, $rabbreviations_default ) = get_perltidy_defaults();
 
+# Dump defaults if requested
+if ( $cli{dump_perltidy_defaults} ) {
+    eval "use Data::Dumper";
+    if ($@) {
+        die "Data::Dumper not installed\n";
+    }
+    local $Data::Dumper::Indent   = 1;
+    local $Data::Dumper::Sortkeys = 1;
+    local $Data::Dumper::Terse     = 1;
+    print "Opts_default:\n";
+    print Dumper($rOpts_default);
+    print "\nabbreviations_default:\n";
+    print Dumper($rabbreviations_default);
+    exit 0;
+}
+
 # Get Perl::Tidy config options
 my ( $error_message, $rOpts, $rGetopt_flags, $rsections, $rabbreviations ) =
     get_perltidy_config( $rc_source, \@ARGV );
+
+# Dump config if requested
+if ( $cli{dump_perltidy_config} ) {
+    eval "use Data::Dumper";
+    if ($@) {
+        die "Data::Dumper not installed\n";
+    }
+    local $Data::Dumper::Indent   = 1;
+    local $Data::Dumper::Sortkeys = 1;
+    local $Data::Dumper::Terse     = 1;
+    print "error_message: " . ($error_message || '(empty)') . "\n\n";
+    print "Opts:\n";
+    print Dumper($rOpts);
+    print "\nGetopt_flags:\n";
+    print Dumper($rGetopt_flags);
+    print "\nsections:\n";
+    print Dumper($rsections);
+    print "\nabbreviations:\n";
+    print Dumper($rabbreviations);
+    exit 0;
+}
 
 die $error_message if $error_message;
 
