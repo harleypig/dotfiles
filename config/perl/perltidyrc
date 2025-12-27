@@ -1,1 +1,76 @@
-# test config
+# perltidy configuration file created Sat Dec 27 00:07:01 2025
+# using: perltidyrc-clean --keep-defaults --add-missing-defaults --overwrite --rc .perltidyrc -cti=1
+# source: /home/harleypig/work/.perltidyrc
+
+# I/O control
+--iterations=4
+
+# Basic formatting options
+--check-syntax                       #  default
+--default-tabsize=2
+--indent-columns=2
+--maximum-line-length=132
+--variable-maximum-line-length
+--whitespace-cycle=4
+
+# Code indentation control
+--extended-continuation-indentation  #  default
+--no-indent-closing-brace
+--no-line-up-parentheses
+--no-outdent-keywords
+--no-outdent-labels
+--no-outdent-long-quotes
+
+# Whitespace control
+--delete-old-whitespace
+--no-space-function-paren
+--no-space-keyword-paren
+--no-space-terminal-semicolon
+--square-bracket-vertical-tightness=1
+--tight-secret-operators
+--trim-pod
+
+# Comment controls
+--closing-side-comment-interval=18
+--closing-side-comment-prefix="## end"
+--closing-side-comments
+--fixed-position-side-comment=40
+--format-skipping-begin="## BEGIN UNTIDY"
+--format-skipping-end="## END UNTIDY"
+--no-ignore-side-comment-lengths
+--indent-spaced-block-comments
+--minimum-space-to-comment=2
+--no-outdent-long-comments
+--no-outdent-static-block-comments
+--static-side-comment-prefix="##"
+--static-side-comments
+
+# Linebreak controls
+--brace-vertical-tightness=1
+--cuddled-else
+--keep-interior-semicolons
+--no-opening-anonymous-sub-brace-on-new-line
+--opening-brace-always-on-right
+--no-opening-brace-on-new-line
+--opening-hash-brace-right
+--opening-paren-right
+--opening-square-bracket-right
+--no-opening-sub-brace-on-new-line
+--paren-vertical-tightness=1
+--stack-closing-hash-brace
+--stack-closing-paren
+--stack-closing-square-bracket
+--stack-opening-hash-brace
+--stack-opening-paren
+--stack-opening-square-bracket
+
+# Controlling list formatting
+--break-at-old-comma-breakpoints
+--comma-arrow-breakpoints=2
+--maximum-fields-per-table=40
+
+# Retaining or ignoring existing line breaks
+--no-ignore-old-breakpoints
+
+# Blank line control
+--long-block-line-count=0
