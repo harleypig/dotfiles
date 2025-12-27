@@ -19,7 +19,7 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 
 # Since %cli is lexical to bin/perltidyrc-clean, we test these functions
 # indirectly by verifying their effects through the script's behavior.
-# We'll use read_perltidyrc and build_equals_default to verify the effects.
+# We'll use get_perltidy_config and build_equals_default to verify the effects.
 
 # Test 1: set_keep_defaults sets drop_defaults to 0
 # Verified by checking that defaults are kept when --keep-defaults is used
