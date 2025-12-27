@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config bundling pass_through);
 use Scalar::Util qw(looks_like_number);
+use File::Basename;
 
 # ------------------------------------------------------------------------------
 
@@ -873,7 +874,7 @@ if ( %clean_opts || %abbreviations_user ) {
     my $output = "";
     dump_options(
         quiet              => $cli{quiet},
-        cmdline            => join( ' ', $0, @original_argv ),
+        cmdline            => join( ' ', basename($0), @original_argv ),
         rc_origin          => $rc_origin,
         opts               => \%clean_opts,
         getopt_flags       => $rGetopt_flags,
