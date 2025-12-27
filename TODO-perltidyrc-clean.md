@@ -116,15 +116,20 @@ with various RC files.
 - [x] Handles special characters in values
 
 ### `read_perltidyrc($config_file, $perltidy_args, $expand_options)`
-- [ ] Reads default options when config_file is empty scalar ref
-- [ ] Reads options from specified RC file
-- [ ] Uses Perl::Tidy search when config_file is undef
-- [ ] Expands short options when expand_options is true
-- [ ] Passes perltidy_args to Perl::Tidy
-- [ ] Returns error message on Perl::Tidy errors
-- [ ] Returns all required data structures
-- [ ] Handles empty perltidy_args array
-- [ ] Only includes perltidyrc parameter when config_file is defined
+- [x] Reads default options when config_file is empty scalar ref
+- [x] Reads options from specified RC file
+- [x] Uses Perl::Tidy search when config_file is undef
+- [x] Expands short options when expand_options is true
+- [x] Passes perltidy_args to Perl::Tidy
+- [x] Returns error message on Perl::Tidy errors
+- [x] Returns all required data structures
+- [x] Handles empty perltidy_args array
+- [x] Only includes perltidyrc parameter when config_file is defined
+- [x] Handles undef perltidy_args (defaults to empty array)
+- [x] Reads abbreviations from RC file
+- [x] Empty RC file returns empty opts
+- [x] perltidy_args override RC file options
+- [x] Expansion works with short options in perltidy_args
 
 ### `set_keep_defaults()`
 - [ ] Sets drop_defaults to 0
