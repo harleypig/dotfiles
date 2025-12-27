@@ -35,50 +35,8 @@ my %cli = (
 my $empty = "";    # Declared here to remain valid for reference
 
 # ------------------------------------------------------------------------------
-
-sub usage {
-    my ($exit_code) = @_;
-    $exit_code = 0 unless defined $exit_code;
-    print <<'USAGE';
-perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
-                 [--quiet] [--showconfig] [--help]
-
-  --rc FILE         Load the specified perltidyrc instead of searching.
-  --no-rc           Do not load any perltidyrc (process from empty state).
-  --keep-defaults   Keep options which match perltidy defaults (normally
-                    removed). Does NOT add missing defaults; use
-                    --add-missing-defaults for that.
-  --add-missing-defaults
-                    Add any missing default options (implies --keep-defaults
-                    and --no-condense).
-  --[no-]condense   Drop fine-grained options that duplicate broader settings
-                    (on by default).
-  --[no-]expand-options
-                    Expand short options to their long names (default on).
-  --outfile FILE, -o FILE
-                    Write output to FILE instead of stdout. Recognized even
-                    though not used when parsing options.
-  --overwrite       Overwrite the --rc file with the cleaned output. Requires
-                    --rc to be specified. Mutually exclusive with --outfile.
-  --quiet, -q       Omit header comments in the output.
-  --showconfig      Print the location of the perltidyrc file as Perl::Tidy
-                    sees it and exit. If --rc is specified, reports that file.
-                    All other options are ignored (except --help).
-  --help, -h        Show this message.
-
-Any additional arguments are passed directly to perltidy; perltidy will report
-an error if it does not recognize them.
-
-The output is a cleaned perltidyrc grouped by the Formatting Options sections
-from the perltidy manual.
-
-Note: --no-rc explicitly starts from Perl::Tidy defaults and overlays any
-explicit options passed through. If no config file is found (and neither --rc
-nor --no-rc is specified), the output will be empty unless --add-missing-defaults
-is used.
-USAGE
-    exit $exit_code;
-}
+# Utility Subroutines
+# ------------------------------------------------------------------------------
 
 # Normalizes Perl::Tidy boolean option values to a consistent true/false.
 # Handles values that may be strings ("1", "0"), actual booleans, or undefined.
@@ -101,15 +59,6 @@ sub looks_like_integer {
     my $str = "$value";
     return 0 if $str =~ /[.eE]/;
     return $value == int($value) ? 1 : 0;
-}
-
-sub add_section_note {
-    my ( $sections, $section_notes, $opt, $text ) = @_;
-    # Handle undefined option or missing/undef section to avoid warnings
-    my $section = (defined $opt && exists $sections->{$opt} && defined $sections->{$opt})
-        ? $sections->{$opt}
-        : 'UNKNOWN';
-    push @{ $section_notes->{$section} }, $text;
 }
 
 # Checks for undefined or empty string keys in a hash reference and dies with a helpful error message.
@@ -199,23 +148,73 @@ sub call_perltidy {
     }
 }
 
-# Compare options against defaults and return a hash indicating which options
-# equal their default values. Used to identify options that can be removed
-# when --drop-defaults is enabled.
-sub build_equals_default {
-    my ( $opts, $defaults ) = @_;
-    check_undefined_keys( $opts, 'build_equals_default options' );
-    check_undefined_keys( $defaults, 'build_equals_default defaults' ) if $defaults;
-    my %equals_default;
-    foreach my $long_name ( keys %{$opts} ) {
-        my $val = $opts->{$long_name};
-        next unless defined $defaults->{$long_name};
-        my $default_val = $defaults->{$long_name};
-        $equals_default{$long_name} = defined($val)
-          && defined($default_val)
-          && $default_val eq $val;
-    }
-    return %equals_default;
+sub add_section_note {
+    my ( $sections, $section_notes, $opt, $text ) = @_;
+    # Handle undefined option or missing/undef section to avoid warnings
+    my $section = (defined $opt && exists $sections->{$opt} && defined $sections->{$opt})
+        ? $sections->{$opt}
+        : 'UNKNOWN';
+    push @{ $section_notes->{$section} }, $text;
+}
+
+# ------------------------------------------------------------------------------
+# Main Section Subroutines
+# ------------------------------------------------------------------------------
+
+sub usage {
+    my ($exit_code) = @_;
+    $exit_code = 0 unless defined $exit_code;
+    print <<'USAGE';
+perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
+                 [--quiet] [--showconfig] [--help]
+
+  --rc FILE         Load the specified perltidyrc instead of searching.
+  --no-rc           Do not load any perltidyrc (process from empty state).
+  --keep-defaults   Keep options which match perltidy defaults (normally
+                    removed). Does NOT add missing defaults; use
+                    --add-missing-defaults for that.
+  --add-missing-defaults
+                    Add any missing default options (implies --keep-defaults
+                    and --no-condense).
+  --[no-]condense   Drop fine-grained options that duplicate broader settings
+                    (on by default).
+  --[no-]expand-options
+                    Expand short options to their long names (default on).
+  --outfile FILE, -o FILE
+                    Write output to FILE instead of stdout. Recognized even
+                    though not used when parsing options.
+  --overwrite       Overwrite the --rc file with the cleaned output. Requires
+                    --rc to be specified. Mutually exclusive with --outfile.
+  --quiet, -q       Omit header comments in the output.
+  --showconfig      Print the location of the perltidyrc file as Perl::Tidy
+                    sees it and exit. If --rc is specified, reports that file.
+                    All other options are ignored (except --help).
+  --help, -h        Show this message.
+
+Any additional arguments are passed directly to perltidy; perltidy will report
+an error if it does not recognize them.
+
+The output is a cleaned perltidyrc grouped by the Formatting Options sections
+from the perltidy manual.
+
+Note: --no-rc explicitly starts from Perl::Tidy defaults and overlays any
+explicit options passed through. If no config file is found (and neither --rc
+nor --no-rc is specified), the output will be empty unless --add-missing-defaults
+is used.
+USAGE
+    exit $exit_code;
+}
+
+sub set_keep_defaults {
+    $cli{drop_defaults} = 0;
+    $cli{keep_defaults} = 1;
+}
+
+sub set_add_missing_defaults {
+    $cli{add_missing_defaults} = 1;
+    $cli{drop_defaults}        = 0;
+    $cli{keep_defaults}        = 1;
+    $cli{condense}             = 0;    # implies --no-condense
 }
 
 sub extract_outfile {
@@ -244,7 +243,193 @@ sub extract_outfile {
     return $outfile;
 }
 
-# Short options in users rc file
+# Find the perltidyrc file that Perl::Tidy would use when no --rc is specified.
+# Uses Perl::Tidy's own find_config_file function to ensure we get the exact same
+# result that Perl::Tidy would use, including proper handling of PERLTIDY env var
+# and system-wide config files.
+# Returns the path if found, or undef if not found.
+sub find_perltidyrc {
+    # Check if Perl::Tidy::find_config_file is available
+    unless (defined &Perl::Tidy::find_config_file) {
+        die "Perl::Tidy::find_config_file is not available\n";
+    }
+    
+    # Call Perl::Tidy's find_config_file function
+    # This script only runs on Linux, so pass 0 for is_Windows and undef for Windows_type
+    my $config_file_chatter = "";
+    my $pending_complaint = "";
+    my $rconfig_file_chatter = \$config_file_chatter;
+    my $rpending_complaint = \$pending_complaint;
+    my $config_file = Perl::Tidy::find_config_file(
+        0,              # is_Windows = false (Linux only)
+        undef,          # Windows_type = undef (not Windows)
+        $rconfig_file_chatter,
+        $rpending_complaint
+    );
+    
+    return $config_file;
+}
+
+# Show the config file location as Perl::Tidy sees it.
+# If --rc is specified, use that value.
+# If --no-rc is specified, report "none".
+# Otherwise, find what Perl::Tidy would use.
+sub show_config_location {
+    my ($rc_file, $perltidy_args) = @_;
+    $perltidy_args ||= [];
+    
+    use Cwd;
+    use File::Spec;
+    
+    if (defined $rc_file) {
+        # If it's a scalar ref, it means --no-rc was used
+        if (ref $rc_file eq 'SCALAR') {
+            print "none\n";
+            return;
+        }
+        # Otherwise, it's the --rc value
+        # Validate it exists and is readable
+        unless (-f $rc_file && -r $rc_file) {
+            die "Error: config file '$rc_file' not found or not readable\n";
+        }
+        # Use absolute path for clarity
+        my $abs_path = File::Spec->file_name_is_absolute($rc_file)
+            ? $rc_file
+            : File::Spec->rel2abs($rc_file);
+        print "$abs_path\n";
+        return;
+    }
+    
+    # No --rc specified, find what Perl::Tidy would use
+    # Check if --rc or --no-rc is in perltidy_args (pass-through args)
+    my $has_rc_in_args = 0;
+    my $rc_from_args;
+    for (my $i = 0; $i < @$perltidy_args; $i++) {
+        if ($perltidy_args->[$i] =~ /^--rc=(.+)$/) {
+            $rc_from_args = $1;
+            $has_rc_in_args = 1;
+            last;
+        } elsif ($perltidy_args->[$i] eq '--rc' && $i + 1 < @$perltidy_args) {
+            $rc_from_args = $perltidy_args->[$i + 1];
+            $has_rc_in_args = 1;
+            last;
+        } elsif ($perltidy_args->[$i] eq '--no-rc') {
+            print "none\n";
+            return;
+        }
+    }
+    
+    if ($has_rc_in_args) {
+        # Use the --rc from perltidy_args
+        unless (-f $rc_from_args && -r $rc_from_args) {
+            die "Error: config file '$rc_from_args' not found or not readable\n";
+        }
+        my $abs_path = File::Spec->file_name_is_absolute($rc_from_args)
+            ? $rc_from_args
+            : File::Spec->rel2abs($rc_from_args);
+        print "$abs_path\n";
+        return;
+    }
+    
+    # No --rc in args, find what Perl::Tidy would use
+    my $found = find_perltidyrc();
+    if ($found) {
+        my $abs_path = File::Spec->file_name_is_absolute($found)
+            ? $found
+            : File::Spec->rel2abs($found);
+        print "$abs_path\n";
+    } else {
+        print "none\n";
+    }
+}
+
+sub read_perltidyrc {
+    my ( $config_file, $perltidy_args, $expand_options ) = @_;
+    $perltidy_args ||= [];
+    my $error_message = "";
+    my %Opts;
+
+    my $stderr = "";
+    my @argv_empty = ();
+
+    # Declare hashes before building parameter hash
+    my %Opts_default;
+    my %abbreviations_default;
+
+    # Build parameter hash explicitly for defaults dump
+    my %params_default = (
+        perltidyrc         => \"",    # empty scalar ref for empty config
+        dump_options       => \%Opts_default,
+        dump_options_type  => 'full',
+        dump_abbreviations => \%abbreviations_default,
+        stderr             => \$stderr,
+        argv               => \@argv_empty,
+    );
+
+    call_perltidy( \%params_default, 'defaults dump', \$stderr, 'die' );
+
+    my %Getopt_flags;
+    my %sections;
+    my %abbreviations;
+    $stderr = "";
+    
+    # Expand short options if requested
+    if ($expand_options) {
+        my %abbr_single;
+        foreach my $k ( keys %abbreviations_default ) {
+            my @vals = @{ $abbreviations_default{$k} };
+            next unless @vals == 1;
+            $abbr_single{$k} = $vals[0];
+        }
+        @$perltidy_args =
+          map { expand_abbrev( $_, \%abbr_single ) } @$perltidy_args;
+    }
+
+    # Build parameter hash explicitly for config dump
+    # Only include perltidyrc if --rc or --no-rc was used (not undef)
+    my %params_config = (
+        dump_options          => \%Opts,
+        dump_options_type     => 'perltidyrc',
+        dump_getopt_flags     => \%Getopt_flags,
+        dump_options_category => \%sections,
+        dump_abbreviations    => \%abbreviations,
+        stderr                => \$stderr,
+        argv                  => $perltidy_args,    # array ref, even if empty
+    );
+    # Only add perltidyrc if explicitly specified (--rc or --no-rc)
+    # If undef, Perl::Tidy will use its default search behavior
+    if ( defined $config_file ) {
+        $params_config{perltidyrc} = $config_file;    # filename string or scalar ref
+    }
+
+    my ( $err2, $config_error ) = call_perltidy(
+        \%params_config, 'parsing options', \$stderr, 'accumulate'
+    );
+    $error_message .= $config_error;
+
+    return ( $error_message, \%Opts, \%Getopt_flags, \%sections,
+        \%abbreviations, \%Opts_default, \%abbreviations_default );
+}
+
+# Compare options against defaults and return a hash indicating which options
+# equal their default values. Used to identify options that can be removed
+# when --drop-defaults is enabled.
+sub build_equals_default {
+    my ( $opts, $defaults ) = @_;
+    check_undefined_keys( $opts, 'build_equals_default options' );
+    check_undefined_keys( $defaults, 'build_equals_default defaults' ) if $defaults;
+    my %equals_default;
+    foreach my $long_name ( keys %{$opts} ) {
+        my $val = $opts->{$long_name};
+        next unless defined $defaults->{$long_name};
+        my $default_val = $defaults->{$long_name};
+        $equals_default{$long_name} = defined($val)
+          && defined($default_val)
+          && $default_val eq $val;
+    }
+    return %equals_default;
+}
+
 sub user_defined_abbreviations {
     my ( $abbrev, $abbrev_default ) = @_;
     check_undefined_keys( $abbrev, 'user_defined_abbreviations abbreviations' );
@@ -464,186 +649,6 @@ sub dump_options {
     }
 }
 
-sub read_perltidyrc {
-    my ( $config_file, $perltidy_args, $expand_options ) = @_;
-    $perltidy_args ||= [];
-    my $error_message = "";
-    my %Opts;
-
-    my $stderr = "";
-    my @argv_empty = ();
-
-    # Declare hashes before building parameter hash
-    my %Opts_default;
-    my %abbreviations_default;
-
-    # Build parameter hash explicitly for defaults dump
-    my %params_default = (
-        perltidyrc         => \"",    # empty scalar ref for empty config
-        dump_options       => \%Opts_default,
-        dump_options_type  => 'full',
-        dump_abbreviations => \%abbreviations_default,
-        stderr             => \$stderr,
-        argv               => \@argv_empty,
-    );
-
-    call_perltidy( \%params_default, 'defaults dump', \$stderr, 'die' );
-
-    my %Getopt_flags;
-    my %sections;
-    my %abbreviations;
-    $stderr = "";
-    
-    # Expand short options if requested
-    if ($expand_options) {
-        my %abbr_single;
-        foreach my $k ( keys %abbreviations_default ) {
-            my @vals = @{ $abbreviations_default{$k} };
-            next unless @vals == 1;
-            $abbr_single{$k} = $vals[0];
-        }
-        @$perltidy_args =
-          map { expand_abbrev( $_, \%abbr_single ) } @$perltidy_args;
-    }
-
-    # Build parameter hash explicitly for config dump
-    # Only include perltidyrc if --rc or --no-rc was used (not undef)
-    my %params_config = (
-        dump_options          => \%Opts,
-        dump_options_type     => 'perltidyrc',
-        dump_getopt_flags     => \%Getopt_flags,
-        dump_options_category => \%sections,
-        dump_abbreviations    => \%abbreviations,
-        stderr                => \$stderr,
-        argv                  => $perltidy_args,    # array ref, even if empty
-    );
-    # Only add perltidyrc if explicitly specified (--rc or --no-rc)
-    # If undef, Perl::Tidy will use its default search behavior
-    if ( defined $config_file ) {
-        $params_config{perltidyrc} = $config_file;    # filename string or scalar ref
-    }
-
-    my ( $err2, $config_error ) = call_perltidy(
-        \%params_config, 'parsing options', \$stderr, 'accumulate'
-    );
-    $error_message .= $config_error;
-
-    return ( $error_message, \%Opts, \%Getopt_flags, \%sections,
-        \%abbreviations, \%Opts_default, \%abbreviations_default );
-}
-
-sub set_keep_defaults {
-    $cli{drop_defaults} = 0;
-    $cli{keep_defaults} = 1;
-}
-
-sub set_add_missing_defaults {
-    $cli{add_missing_defaults} = 1;
-    $cli{drop_defaults}        = 0;
-    $cli{keep_defaults}        = 1;
-    $cli{condense}             = 0;    # implies --no-condense
-}
-
-# Find the perltidyrc file that Perl::Tidy would use when no --rc is specified.
-# Uses Perl::Tidy's own find_config_file function to ensure we get the exact same
-# result that Perl::Tidy would use, including proper handling of PERLTIDY env var
-# and system-wide config files.
-# Returns the path if found, or undef if not found.
-sub find_perltidyrc {
-    # Check if Perl::Tidy::find_config_file is available
-    unless (defined &Perl::Tidy::find_config_file) {
-        die "Perl::Tidy::find_config_file is not available\n";
-    }
-    
-    # Call Perl::Tidy's find_config_file function
-    # This script only runs on Linux, so pass 0 for is_Windows and undef for Windows_type
-    my $config_file_chatter = "";
-    my $pending_complaint = "";
-    my $rconfig_file_chatter = \$config_file_chatter;
-    my $rpending_complaint = \$pending_complaint;
-    my $config_file = Perl::Tidy::find_config_file(
-        0,              # is_Windows = false (Linux only)
-        undef,          # Windows_type = undef (not Windows)
-        $rconfig_file_chatter,
-        $rpending_complaint
-    );
-    
-    return $config_file;
-}
-
-# Show the config file location as Perl::Tidy sees it.
-# If --rc is specified, use that value.
-# If --no-rc is specified, report "none".
-# Otherwise, find what Perl::Tidy would use.
-sub show_config_location {
-    my ($rc_file, $perltidy_args) = @_;
-    $perltidy_args ||= [];
-    
-    use Cwd;
-    use File::Spec;
-    
-    if (defined $rc_file) {
-        # If it's a scalar ref, it means --no-rc was used
-        if (ref $rc_file eq 'SCALAR') {
-            print "none\n";
-            return;
-        }
-        # Otherwise, it's the --rc value
-        # Validate it exists and is readable
-        unless (-f $rc_file && -r $rc_file) {
-            die "Error: config file '$rc_file' not found or not readable\n";
-        }
-        # Use absolute path for clarity
-        my $abs_path = File::Spec->file_name_is_absolute($rc_file)
-            ? $rc_file
-            : File::Spec->rel2abs($rc_file);
-        print "$abs_path\n";
-        return;
-    }
-    
-    # No --rc specified, find what Perl::Tidy would use
-    # Check if --rc or --no-rc is in perltidy_args (pass-through args)
-    my $has_rc_in_args = 0;
-    my $rc_from_args;
-    for (my $i = 0; $i < @$perltidy_args; $i++) {
-        if ($perltidy_args->[$i] =~ /^--rc=(.+)$/) {
-            $rc_from_args = $1;
-            $has_rc_in_args = 1;
-            last;
-        } elsif ($perltidy_args->[$i] eq '--rc' && $i + 1 < @$perltidy_args) {
-            $rc_from_args = $perltidy_args->[$i + 1];
-            $has_rc_in_args = 1;
-            last;
-        } elsif ($perltidy_args->[$i] eq '--no-rc') {
-            print "none\n";
-            return;
-        }
-    }
-    
-    if ($has_rc_in_args) {
-        # Use the --rc from perltidy_args
-        unless (-f $rc_from_args && -r $rc_from_args) {
-            die "Error: config file '$rc_from_args' not found or not readable\n";
-        }
-        my $abs_path = File::Spec->file_name_is_absolute($rc_from_args)
-            ? $rc_from_args
-            : File::Spec->rel2abs($rc_from_args);
-        print "$abs_path\n";
-        return;
-    }
-    
-    # No --rc in args, find what Perl::Tidy would use
-    my $found = find_perltidyrc();
-    if ($found) {
-        my $abs_path = File::Spec->file_name_is_absolute($found)
-            ? $found
-            : File::Spec->rel2abs($found);
-        print "$abs_path\n";
-    } else {
-        print "none\n";
-    }
-}
-
 # ------------------------------------------------------------------------------
 
 GetOptions(
@@ -662,6 +667,24 @@ GetOptions(
 # Fail fast on mutually exclusive flags.
 if ( $cli{rc} && $cli{no_rc} ) {
     die "--rc and --no-rc are mutually exclusive\n";
+}
+
+# Handle --showconfig early (after --help check, before other processing)
+if ( $cli{showconfig} ) {
+    # Determine config file location
+    my $rc_source;
+    if ( $cli{no_rc} ) {
+        $rc_source = \$empty;
+    }
+    elsif ( $cli{rc} ) {
+        $rc_source = $cli{rc};
+    }
+    else {
+        $rc_source = undef;
+    }
+    
+    show_config_location( $rc_source, \@ARGV );
+    exit 0;
 }
 
 # Extract outfile before any perltidy handling; remaining args pass through.
@@ -684,24 +707,6 @@ if ( $cli{overwrite} ) {
 # not processing source files. Keep only option-like arguments for Perl::Tidy.
 # GetOptions already removed our CLI options, so @ARGV contains pass-through args.
 @ARGV = grep { /^-/ } @ARGV;    # Keep only option-like arguments
-
-# Handle --showconfig early (after --help check, before other processing)
-if ( $cli{showconfig} ) {
-    # Determine config file location
-    my $rc_source;
-    if ( $cli{no_rc} ) {
-        $rc_source = \$empty;
-    }
-    elsif ( $cli{rc} ) {
-        $rc_source = $cli{rc};
-    }
-    else {
-        $rc_source = undef;
-    }
-    
-    show_config_location( $rc_source, \@ARGV );
-    exit 0;
-}
 
 my ( $rc_source, $rc_origin ) = ( undef, 'perltidy search path' );
 if ( $cli{no_rc} ) {
