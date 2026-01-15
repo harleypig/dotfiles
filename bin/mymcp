@@ -2,7 +2,7 @@
 
 # Run docker, npx, or whatever command is needed to start a local mcp server.
 
-#------------------------------------------------------------------------------
+###############################################################################
 # Setup and sanity
 
 # I don't normally use this, but we want cursor to handle this gracefully
@@ -13,7 +13,7 @@ selfname="${0##*/}"
 
 declare -A known_cmd
 
-#------------------------------------------------------------------------------
+###############################################################################
 # Utility Functions
 
 warn() { printf "[$selfname] %s\n" "$@" >&2 ; }
@@ -24,19 +24,21 @@ die() {
   exit $ec
 }
 
+#------------------------------------------------------------------------------
 docker_run() {
   local opts=('run' '--rm' '-i' "$@")
   warn "docker ${opts[*]}"
   exec docker "${opts[@]}"
 }
 
+#------------------------------------------------------------------------------
 npx_run() {
   local opts=('-y' "$@")
   warn "npx ${opts[*]}"
   exec npx "${opts[@]}"
 }
 
-#------------------------------------------------------------------------------
+###############################################################################
 # MCP Servers
 
 # https://github.com/github/github-mcp-server/blob/main/docs/server-configuration.md
@@ -53,11 +55,24 @@ github() {
 
 known_cmd['github']=1
 
+#------------------------------------------------------------------------------
 snyk() {
   npx_run 'snyk@latest' 'mcp' '-t' 'stdio'
 }
 
 known_cmd['snyk']=1
+
+#------------------------------------------------------------------------------
+# https://github.com/Pimzino/spec-workflow-mcp
+spec_workflow() {
+  npx_run "@pimzino/spec-workflow-mcp@latest" "$@"
+}
+
+spec_dashboard() { spec_workflow --dashboard; }
+spec_client() { spec_workflow "$workspaceFolder"; }
+
+known_cmd['spec_dashboard']=1
+known_cmd['spec_client']=1
 
 #------------------------------------------------------------------------------
 (( $# )) || die 2 "Usage: $selfname <${!known_cmd[*]}>"
