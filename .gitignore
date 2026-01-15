@@ -6,6 +6,8 @@ coverage
 .env
 !.aider.conf.yml
 
+.mymcp/
+
 *.swp
 *~
 

@@ -11,12 +11,27 @@ set -euo pipefail
 
 selfname="${0##*/}"
 
+echo "0: $0 ::: $PWD ::: $* <<<" >&2
+
+# Use $DOTFILES for log directory
+: "${DOTFILES:?DOTFILES environment variable is not set}"
+log_dir="$DOTFILES/.mymcp"
+
+# Create log directory if it doesn't exist
+mkdir -p "$log_dir"
+
+# Initialize log file (will be updated with command name once cmd is determined)
+# Use first argument as fallback for early warnings
+log_timestamp="$(date +%y%m%d-%H%M%S)"
+cmd_fallback="${1:-unknown}"
+log_file="$log_dir/mymcp-$cmd_fallback-$log_timestamp.log"
+
 declare -A known_cmd
 
 ###############################################################################
 # Utility Functions
 
-warn() { printf "[$selfname] %s\n" "$@" >&2 ; }
+warn() { printf "[$selfname] %s\n" "$@" >> "$log_file" ; }
 die() {
   local -i ec="${1:-0}"
   shift
@@ -69,7 +84,7 @@ spec_workflow() {
 }
 
 spec_dashboard() { spec_workflow --dashboard; }
-spec_client() { spec_workflow "$workspaceFolder"; }
+spec_client() { spec_workflow "$@"; }
 
 known_cmd['spec_dashboard']=1
 known_cmd['spec_client']=1
@@ -79,5 +94,9 @@ known_cmd['spec_client']=1
 
 cmd="$1"
 [[ -v "known_cmd[$cmd]" ]] || die 2 "Unknown option: $1"
+shift
 
-"$cmd"
+# Update log file with actual command name
+log_file="$log_dir/mymcp-$cmd-$log_timestamp.log"
+
+"$cmd" "$@"
