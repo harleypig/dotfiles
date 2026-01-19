@@ -145,17 +145,79 @@ The `.bash_profile`, `.bashrc`, and `.profile` files all link to the same
 ### Modular Configuration
 
 Tool configurations are organized in `config/shell-startup/` with conditional
-loading:
+loading. Each module sets up environment variables, aliases, and completions
+for specific tools:
 
+**Core Configuration:**
 - **`000-loadtokens`**: Load authentication tokens
 - **`010-general`**: General environment setup
+- **`app_env_vars`**: Application-specific environment variables
+- **`bash_prompt`**: Custom bash prompt configuration
+
+**Development Tools:**
+- **`aider`**: Aider AI coding assistant
+- **`ansible`**: Ansible automation configuration
+- **`binenv`**: Binary environment manager
 - **`git`**: Git configuration and aliases
-- **`python`**: Python environment and poetry setup
+- **`go`**: Go language environment
 - **`nodejs`**: Node.js and NVM configuration
+- **`perl`**: Perl environment and configuration
+- **`python`**: Python environment and poetry setup
+- **`ruby`**: Ruby environment and configuration
 - **`rust`**: Rust and Cargo setup
-- **`vim`**: Vim configuration
+- **`terraform`**: Terraform infrastructure tools
+
+**Applications:**
+- **`calibre`**: Calibre ebook management
+- **`cuda`**: NVIDIA CUDA configuration
+- **`less`**: Less pager configuration
+- **`taskwarrior`**: Task management configuration
 - **`tmux`**: Tmux configuration
+- **`vim`**: Vim configuration
+
+**Completion:**
 - **`ssh-config-completion`**: SSH host completion
+
+### Configuration Directories
+
+The `config/` directory contains tool-specific configurations organized by
+application. Each tool may have its own subdirectory with configuration files
+and documentation:
+
+- **Development**: ansible, binenv, docker, gh, git, go, npm, perl, python,
+  pypoetry, rustup
+- **CLI Tools**: act, glow, htop, linode-cli, opencode, pgcli, snyk, yamllint
+- **Applications**: audacity, calibre, Cursor, cursor, gnome-initial-setup-done
+- **Configuration**: completions, configstore, readline, shell-startup, subdir
+- **Task Management**: task (taskwarrior)
+- **Other**: Bitwarden CLI, burn-my-windows, coc, pudb, test, user-dirs.dirs,
+  yapf
+
+Most tools follow the XDG Base Directory specification (see below). For
+tool-specific documentation, check for README files within each subdirectory.
+
+### XDG Base Directory Specification
+
+This repository follows the [XDG Base Directory
+Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
+for organizing configuration, data, and cache files:
+
+**Environment Variables:**
+- **`$XDG_CONFIG_HOME`** (default: `~/.config`) - Configuration files
+- **`$XDG_DATA_HOME`** (default: `~/.local/share`) - Data files
+- **`$XDG_CACHE_HOME`** (default: `~/.cache`) - Cache files
+- **`$XDG_STATE_HOME`** (default: `~/.local/state`) - State files
+
+**Benefits:**
+- Clean home directory (no dot-file clutter)
+- Organized configuration structure
+- Easy backup and synchronization
+- Standard across modern Linux applications
+
+**Tool Support:**
+Most modern tools respect XDG variables. For tools that don't natively support
+XDG, configurations in this repository use XDG paths where possible through
+aliases, wrapper scripts, or tool-specific configuration options.
 
 ## Cross-Platform Support
 
@@ -229,9 +291,16 @@ bash -l -c 'echo "DOTFILES: $DOTFILES"'
 
 ## Documentation
 
+**Core Documentation:**
+- **[WORKFLOW.md](WORKFLOW.md)**: Repository workflow, development guidelines,
+  and tool setup procedures
+- **[TESTS.md](TESTS.md)**: Testing framework, strategy, and how to write tests
+- **[AGENTS.md](AGENTS.md)**: AI agent behavior specification and requirements
+
+**Additional Documentation:**
 - **[Bash Completion](docs/bash-completion.md)**: Detailed explanation of the
   completion system
-- **[Git Aliases](GIT_ALIASES.md)**: List of available git aliases
+- **[Git Aliases](docs/git_aliases.md)**: List of available git aliases
 - **[Conventions](CONVENTIONS.md)**: Coding and configuration conventions
 
 ## Contributing
