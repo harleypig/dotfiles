@@ -6,6 +6,8 @@ pneumonia and atrial fibrillation--for laymen, a very gentle heart attack.
 This is the best way to get information on my current status, as inconsistent
 as it my be.
 
+I am still really tired and am sleeping a lot.
+
 ## Recent past
 
 Pneumonia/Afib and the beginnings of sepsis put me in the ICU for a few days.
