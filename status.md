@@ -1,5 +1,7 @@
 # Status
 
+[Link to this page](https://harleypig.github.io/dotfiles/status)
+
 It's been a doozy of a day. What brought me here was a combination of
 pneumonia and atrial fibrillation--for laymen, a very gentle heart attack.
 
