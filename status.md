@@ -29,3 +29,10 @@ know by end of day. They have said this the last three days.
 I'll either be scheduled for surgery today or tomorrow, or I'll be at
 Stonehenge of Springville by Saturday. I don't have any further information at
 this point.
+
+## Updates
+
+### 02-05-26
+
+I'm scheduled to go in to surgery tomorrow sometime (tbd) but there is still
+some question, so I won't know for sure until the last moment.
