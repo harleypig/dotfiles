@@ -36,3 +36,7 @@ this point.
 
 I'm scheduled to go in to surgery tomorrow sometime (tbd) but there is still
 some question, so I won't know for sure until the last moment.
+
+### 02-06-26
+
+Yay. I passed all my tests. Wahoo. The surgery is tentaively this morning.
