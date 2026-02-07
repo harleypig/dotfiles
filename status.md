@@ -44,3 +44,15 @@ Yay. I passed all my tests. Wahoo. The surgery is tentaively this morning.
 * Post Surgery
 
 I'm fine. Surgery went well. Typing with left hand only sucks. Need to sleep.
+
+### 02-07-26
+
+I started to write this morning, but got sidelined by tests and followups,
+then needed a nap.
+
+The surgery removed a lump and two lymph nodes from my right chest and armpit.
+
+I am awake and coherent (as coherent as I ever am). I have been moved to
+a non-ICU room and they think they will transfer me to a long term care
+facility in Springville tomorrow or the next day.
+
