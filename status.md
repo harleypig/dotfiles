@@ -40,3 +40,7 @@ some question, so I won't know for sure until the last moment.
 ### 02-06-26
 
 Yay. I passed all my tests. Wahoo. The surgery is tentaively this morning.
+
+* Post Surgery
+
+I'm fine. Surgery went well. Typing with left hand only sucks. Need to sleep.
