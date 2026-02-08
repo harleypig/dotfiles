@@ -56,3 +56,9 @@ I am awake and coherent (as coherent as I ever am). I have been moved to
 a non-ICU room and they think they will transfer me to a long term care
 facility in Springville tomorrow or the next day.
 
+### 02-08-26
+
+Sorry ... I keep sleeping and fuzzing out.
+
+I'm much more coherent today. For relative values of coherent. No update info
+for my next steps.
