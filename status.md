@@ -62,3 +62,9 @@ Sorry ... I keep sleeping and fuzzing out.
 
 I'm much more coherent today. For relative values of coherent. No update info
 for my next steps.
+
+### 02-09-26
+
+I've been waiting to find out what my status is in regards to going home or to
+a long term care facility. Unfortunately, it's still "maybe today, maybe
+a couple of days" :| So I continue to languish in limbo.
