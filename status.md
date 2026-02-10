@@ -68,3 +68,11 @@ for my next steps.
 I've been waiting to find out what my status is in regards to going home or to
 a long term care facility. Unfortunately, it's still "maybe today, maybe
 a couple of days" :| So I continue to languish in limbo.
+
+* Later
+
+The tech comes in and 4:10pm and says the transport for Stonehenge of
+Springville will be here in 15 minutes. Then the nurse walks in and says the
+transport will be here at 4:15pm. Whee. 5 minutes to pack me up for the trip
+to the long term care facility.
+
