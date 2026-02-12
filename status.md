@@ -76,3 +76,19 @@ Springville will be here in 15 minutes. Then the nurse walks in and says the
 transport will be here at 4:15pm. Whee. 5 minutes to pack me up for the trip
 to the long term care facility.
 
+### 02-12-26
+
+Oof ... sorry. I have nothing real to report for the last two days. It's been
+a lot of boring administrative paper work. How come we still can't share
+information between the various groups giving care?
+
+Occupatonal Therapy. Physical Therapy. Speech Therapy. Wound Care. Nurses.
+Social Services. The facility itself. A couple of others I can remember at the
+moment. They all have the same 100 question checklist--literally, it's the
+same damn form. And I had to answer them separately for each of those groups.
+:|
+
+On the actual physical issue; the incisions are healing nicely, the drains are
+drying up and, overall, I'm getting better. I actually feel a little better
+than I have in a few months. I don't know if that's just in my head or not.
+We'll see.
