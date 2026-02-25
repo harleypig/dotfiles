@@ -92,3 +92,18 @@ On the actual physical issue; the incisions are healing nicely, the drains are
 drying up and, overall, I'm getting better. I actually feel a little better
 than I have in a few months. I don't know if that's just in my head or not.
 We'll see.
+
+### 02-25-26
+
+I'm sorry it's been so long since the last update (two and half weeks ...
+tempis fugit!). It's just been a boring one day after the other. However,
+I have good news today.
+
+The doctor's believe they got all the cancer, but I'll still need the hormone
+therapy, the drains are out with no complications, and I'm scheduled to go
+home next Wednesday, assuming nothing happens between now and then. W00t.
+
+One note of possible concern though; my pulse has been around 35-45 bpm and
+they frequently can't find my blood pressure. Since I'm still breathing,
+getting up and moving around, and not a marathon runner--and not sucking
+peoples blood--they just want me to keep an eye on it.
