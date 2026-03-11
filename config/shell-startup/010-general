@@ -98,7 +98,7 @@ HISTFILE="$XDG_CACHE_HOME/bash/history"
 HISTCONTROL="erasedups:ignoreboth"
 HISTFILESIZE=100000
 HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
-HISTSIZE=500000
+HISTSIZE=100000
 HISTTIMEFORMAT='%F %T '
 
 shopt -s cmdhist histappend histreedit histverify
