@@ -145,55 +145,6 @@ in the pre-commit configuration.
 * Tests must pass
 * At least one review for significant changes
 
-### Code Style
-
-**Shell scripts:**
-
-* Use `shellcheck` for linting (no errors allowed)
-* Format with `shfmt -i 2 -ci` (2-space indent, indent switch cases)
-* Bash shebang: `#!/usr/bin/env bash`
-* POSIX sh shebang: `#!/bin/sh`
-
-**Documentation:**
-
-* Wrap at 78 columns for Markdown files
-* Wrap at 72 columns for commit messages and code comments
-* Use GitHub-flavored Markdown
-* Use reference-style links for readability
-
-**Python:**
-
-* Format with `black`
-* Sort imports with `isort`
-* Lint with `flake8`
-* Type hints where appropriate, check with `mypy`
-
-**Perl:**
-
-* Format with `perltidy`
-* Lint with `perlcritic` (level 4 or above)
-
-**PowerShell:**
-
-* Follow PowerShell best practices
-* Use approved verbs
-* Comment-based help for functions
-
-### Error Handling
-
-**Shell scripts:**
-
-* Use `set -euo pipefail` for strict error handling in executables
-* Do NOT use `set -e` in libraries (sourced files)
-* Return meaningful exit codes (0=success, 1=general error, 2=usage error, etc.)
-* Provide clear error messages to stderr
-
-**Libraries:**
-
-* Surface errors by returning non-zero exit codes
-* Do NOT call `exit` in sourced libraries
-* Document error conditions and return codes
-
 ## Tool Setup Procedures
 
 ### Prerequisites

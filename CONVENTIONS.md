@@ -1,34 +1,85 @@
-# Aider and AI Coding Conventions
+# Coding Conventions
 
-This document outlines coding conventions for projects using Aider and AI,
-inspired by Pragmatic Programming principles.
+**Version:** v1.0.0
 
-- Security: Consider security implications and implement best practices to protect against vulnerabilities and attacks.
+This document defines coding standards, style rules, and development
+principles for this repository. It is repository-specific and overrides
+the generic principles in `CLAUDE.md`.
 
-- DRY: Avoid duplication; use functions/modules.
-- KISS: Code should be simple, clear, and easy to understand.
-- YAGNI: Implement features only when needed.
-- SOLID: Follow SOLID design principles.
+**Precedence:** This file > `CLAUDE.md`
 
-- Naming: Use clear, consistent names. Names should show intent.
-- Functions: Should be small and do one thing well.
-- Modularity: Write small, reusable modules.
-- Error Handling: Implement robust error handling. Where possible, use exceptions.
+## General Development Principles
 
-- Comments: Only when necessary. Explain complex logic; avoid obvious comments. Keep comments current.
-- README/DOCS: Keep setup/use instructions current.
-- API Docs: Document public APIs clearly.
+- Keep modules small and focused on a single responsibility.
+- Follow DRY (Don't Repeat Yourself).
+- Follow the Unix philosophy: do one thing, do it well.
+- Use clear, descriptive, intent-revealing names throughout.
+- Document complex logic inline; avoid obvious or redundant comments.
+- Validate and test all AI-generated code before recommending it.
+- **Executables:** fail fast. **Libraries:** surface errors by
+  returning/raising, never by calling `exit`.
+- Design for graceful degradation; report errors clearly to stderr.
+- Optimize based on measurements; avoid premature optimization.
 
-- Automated Tests: Ensure reliability with tests.
-- Coverage: Aim for meaningful test coverage.
-- CI: Use CI tools for automatic testing.
+## Resource Validity
 
-- Commits: Write clear, imperative commit messages, following the Conventional Commits specification.
-- Branching: Use a consistent branching strategy.
+- Before recommending a tool, library, or pattern, verify it is actively
+  maintained and reflects current security practices.
+- Treat patterns from the pre-2010 era as presumed obsolete unless
+  explicitly justified for historical or educational reasons.
 
-- Style:
-  - Use spaces, not tabs.
-  - Indent with 2 spaces.
-  - Use paragraph-style spacing between code chunks.
-  - Line Length: 80 characters for comments, for code where possible.
-  - Braces and Brackets: Use cuddled braces and brackets where feasible.
+## Code Style
+
+### Shell Scripts
+
+- Lint with `shellcheck` (no errors or warnings permitted).
+- Format with `shfmt -i 2 -ci` (2-space indent, indent switch cases).
+- Bash shebang: `#!/usr/bin/env bash`
+- POSIX sh shebang: `#!/bin/sh`
+
+### Documentation
+
+- Wrap Markdown at 78 columns.
+- Wrap code comments at 72 columns.
+- Use GitHub-flavored Markdown.
+- Use reference-style links for readability.
+
+### Python
+
+- Format with `black`.
+- Sort imports with `isort`.
+- Lint with `flake8`.
+- Type hints where appropriate; check with `mypy`.
+
+### Perl
+
+- Format with `perltidy`.
+- Lint with `perlcritic` (level 4 or above).
+
+### PowerShell
+
+- Follow PowerShell best practices.
+- Use approved verbs for function names.
+- Add comment-based help to all functions.
+
+## Error Handling
+
+### Shell Scripts (Executables)
+
+- Use `set -euo pipefail` for strict error handling.
+- Return meaningful exit codes: 0=success, 1=general error,
+  2=usage error.
+- Provide clear error messages to stderr.
+
+### Shell Libraries (Sourced Files)
+
+- Do NOT use `set -e`; it affects the sourcing shell.
+- Surface errors by returning non-zero exit codes.
+- Do NOT call `exit`; document error conditions and return codes.
+
+## Commit Conventions
+
+- Use Conventional Commits format for all commit messages.
+- Keep the subject line under 72 characters.
+- Wrap body at 72 columns.
+- Reference issues where applicable: `Fixes #123`, `Relates to #456`.

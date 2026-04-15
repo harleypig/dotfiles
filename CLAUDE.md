@@ -40,26 +40,6 @@ If neither exists, do not invent behavior for the tool.
 
 Additional tool detection signals and rules are defined in `WORKFLOW.md`.
 
-## General Development Principles
-
-- Keep modules small and focused on a single responsibility.
-- Follow DRY (Don't Repeat Yourself).
-- Follow the Unix philosophy: do one thing, do it well.
-- Use clear, descriptive, intent-revealing names throughout.
-- Document complex logic inline; avoid obvious or redundant comments.
-- Validate and test all AI-generated code before recommending it.
-- **Executables:** fail fast. **Libraries:** surface errors by
-  returning/raising, never by calling `exit`.
-- Design for graceful degradation; report errors clearly to stderr.
-- Optimize based on measurements; avoid premature optimization.
-
-## Resource Validity
-
-- Before recommending a tool, library, or pattern, verify it is actively
-  maintained and reflects current security practices.
-- Treat patterns from the pre-2010 era as presumed obsolete unless explicitly
-  justified for historical or educational reasons.
-
 ## Responsibilities by Task Type
 
 ### Code Generation
@@ -75,7 +55,6 @@ Additional tool detection signals and rules are defined in `WORKFLOW.md`.
 
 - Prefer inline documentation over separate doc files.
 - Create separate files only when explicitly requested.
-- Wrap Markdown at 78 columns; wrap code comments at 72 columns.
 - Clearly distinguish current best practices from historical examples.
 
 ### Testing
@@ -86,9 +65,6 @@ Additional tool detection signals and rules are defined in `WORKFLOW.md`.
 
 ### Git Workflow
 
-- Use Conventional Commits format for commit messages.
-- Keep the subject line under 72 characters; wrap body at 72 columns.
-- Reference issues where applicable (`Fixes #123`, `Relates to #456`).
 - Do not force-push, amend published commits, or skip hooks without explicit
   user approval.
 
