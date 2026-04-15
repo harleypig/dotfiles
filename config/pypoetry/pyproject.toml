@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "poetry-instance"
-version = "2.2.1"
+version = "2.3.3"
 description = ""
 authors = []
 license = ""
@@ -8,4 +8,4 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "3.12.3"
-poetry = "2.2.1"
+poetry = "2.3.3"
