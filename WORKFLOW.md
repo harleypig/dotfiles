@@ -1,22 +1,20 @@
-# Dotfiles Repository Workflow
+# Repository Workflow
 
 **Version:** v1.0.0
 
 ## Purpose
 
 This document defines repository-specific workflow rules, development
-guidelines, and tool setup procedures for the dotfiles repository. It provides
-concrete operational guidance that extends and, where necessary, overrides the
-general principles defined in `AGENTS.md`.
+guidelines, and tool setup procedures. It provides concrete operational
+guidance that extends and, where necessary, overrides `CLAUDE.md`.
 
-This document conforms to the agent-consumed document schema defined in
-`AGENTS.md`. For testing procedures and framework details, see `TESTS.md`.
+For testing procedures and framework details, see `TESTS.md`.
 
-**Precedence hierarchy:** `WORKFLOW.md` > `TESTS.md` > `AGENTS.md`
+**Precedence hierarchy:** `WORKFLOW.md` > `TESTS.md` > `CLAUDE.md`
 
 Repository-specific rules in this document override general principles in
-`AGENTS.md`. Testing-specific rules in `TESTS.md` override both `WORKFLOW.md`
-and `AGENTS.md` for test-related operations.
+`CLAUDE.md`. Testing-specific rules in `TESTS.md` override both `WORKFLOW.md`
+and `CLAUDE.md` for test-related operations.
 
 ## Repository Structure
 
@@ -34,7 +32,7 @@ and `AGENTS.md` for test-related operations.
 
 * **`shell-startup`** - Main shell initialization orchestrator
 * **`ps-startup.ps1`** - PowerShell initialization for Windows
-* **`AGENTS.md`** - Normative agent behavior specification
+* **`CLAUDE.md`** - AI agent behavior specification
 * **`WORKFLOW.md`** - This file
 * **`TESTS.md`** - Testing framework and strategy
 * **`TODO.md`** - Consolidated task tracking
@@ -62,11 +60,6 @@ and `AGENTS.md` for test-related operations.
    * Keep only overviews or cross-cutting concerns
    * Avoid duplicating information available elsewhere
 
-4. **Agents creating documentation MUST:**
-   * Prefer inline documentation over separate files
-   * Create separate docs files only when explicitly requested
-   * Place new docs WITH the code they document
-
 ### XDG Base Directory Compliance
 
 This repository follows XDG Base Directory specifications:
@@ -84,7 +77,7 @@ When creating new configurations or modifying existing ones, agents MUST:
 
 ### Pre-commit Workflow
 
-**Policy:** See `docs/agents/pre-commit.md` (v1.0.0) for complete rules.
+**Policy:** See `.claude/rules/pre-commit.md` for complete rules.
 
 **Quick reference:**
 
@@ -130,13 +123,6 @@ in the pre-commit configuration.
 * Feature branches: `feature/<name>`
 * Bugfix branches: `bugfix/<name>`
 * Documentation: `docs/<name>`
-
-**Commit messages:**
-
-* Use conventional commits format when appropriate
-* Reference issues: `Fixes #123`, `Relates to #456`
-* Keep first line under 72 characters
-* Wrap body at 72 characters
 
 **Pull requests:**
 
@@ -190,62 +176,14 @@ Optional but recommended:
 
 5. Follow setup instructions in root `README.md`
 
-### Tool Detection and Policy
-
-**Pre-commit:**
-
-* **Detection signal:** `.pre-commit-config.yaml` exists
-* **Policy document:** `docs/agents/pre-commit.md`
-* **Status:** Configured (as of v1.0.0)
-
-Additional tools will be documented here as they are added to the repository.
-
 ## Agent-Specific Overrides
 
-### Code Generation Agent
+### Pre-commit
 
-**Additional requirements:**
-
-* MUST check for existing similar code before generating new files
-* MUST use repository's existing patterns and conventions
-* MUST add inline documentation for all generated code
-* When generating shell scripts:
-  * Include proper shebang
-  * Use `set -euo pipefail` for executables
-  * Add usage/help function
-  * Include error handling
-
-### Documentation Agent
-
-**Additional requirements:**
-
-* MUST wrap at 78 columns in Markdown
-* MUST wrap at 72 columns in code comments
-* MUST prefer inline documentation over separate files
-* MUST NOT create `docs/*.md` files without explicit request
-* When updating `README.md`:
-  * Keep setup instructions minimal
-  * Focus on navigation and "where to find" information
-  * Avoid duplicating details available in code/inline docs
-
-### Testing Agent
-
-**Additional requirements:**
-
-* MUST use BATS framework
-* MUST follow test organization in `TESTS.md`
-* MUST test both success and failure paths
-* MUST mock external dependencies
-* Test files MUST use `.bats` extension
-
-### Pre-commit Agent
-
-**Additional requirements:**
-
-* MUST follow phased implementation strategy
-* MUST ensure CI workflows match pre-commit configuration
-* MUST NOT advance to next phase until current phase is complete
-* MUST document any new hooks in `docs/agents/pre-commit.md`
+* MUST follow phased implementation strategy.
+* MUST ensure CI workflows match pre-commit configuration.
+* MUST NOT advance to next phase until current phase is complete.
+* MUST document any new hooks in `.claude/rules/pre-commit.md`.
 
 ## Integration Points
 
@@ -280,16 +218,16 @@ See individual tool configurations for additional variables.
 
 ### Versioning
 
-* `AGENTS.md` - Versioned (currently v2.0.0)
+* `CLAUDE.md` - Versioned (see that file)
 * `WORKFLOW.md` - Versioned (this file, v1.0.0)
 * `TESTS.md` - Versioned (see that file)
-* `docs/agents/*.md` - Individual versions
+* `.claude/rules/*.md` - Individual versions
 
 Update version numbers when making significant changes to these files.
 
 ## Questions and Issues
 
 * For general usage questions, see root `README.md`
-* For agent behavior questions, see `AGENTS.md`
+* For agent behavior questions, see `CLAUDE.md`
 * For testing questions, see `TESTS.md`
 * For bug reports or feature requests, open a GitHub issue

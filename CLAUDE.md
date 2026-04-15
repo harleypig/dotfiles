@@ -40,6 +40,13 @@ If neither exists, do not invent behavior for the tool.
 
 Additional tool detection signals and rules are defined in `WORKFLOW.md`.
 
+## Resource Validity
+
+- Before recommending a tool, library, or pattern, verify it is actively
+  maintained and reflects current security practices.
+- Treat patterns from the pre-2010 era as presumed obsolete unless explicitly
+  justified for historical or educational reasons.
+
 ## Responsibilities by Task Type
 
 ### Code Generation
@@ -47,6 +54,7 @@ Additional tool detection signals and rules are defined in `WORKFLOW.md`.
 - Check for similar existing code before generating new files.
 - Follow existing repository structure and naming conventions.
 - Include inline comments for non-trivial logic.
+- Validate and test all AI-generated code before recommending it.
 - Suggest validation or testing steps for generated code.
 - When replacing legacy patterns, prefer modern equivalents and briefly note
   the substitution.

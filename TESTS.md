@@ -8,14 +8,12 @@ This document defines the testing framework, strategy, and requirements for
 the dotfiles repository. It specifies how to write, organize, run, and
 maintain tests for shell scripts, libraries, and configurations.
 
-This document conforms to the agent-consumed document schema defined in
-`AGENTS.md`. For general workflow and development guidelines, see
-`WORKFLOW.md`.
+For general workflow and development guidelines, see `WORKFLOW.md`.
 
-**Precedence hierarchy:** `TESTS.md` > `WORKFLOW.md` > `AGENTS.md`
+**Precedence hierarchy:** `TESTS.md` > `WORKFLOW.md` > `CLAUDE.md`
 
 Testing-specific rules in this document override general principles in both
-`WORKFLOW.md` and `AGENTS.md` for test-related operations.
+`WORKFLOW.md` and `CLAUDE.md` for test-related operations.
 
 ## Testing Framework
 
@@ -400,6 +398,9 @@ Tests MUST run on:
 
 ### Pre-commit Integration
 
+**Policy:** See `.claude/rules/pre-commit.md` for agent rules on running
+hooks.
+
 **Meta-tests MAY run as pre-commit hooks** for fast feedback:
 
 * Bash syntax validation
@@ -517,6 +518,6 @@ git commit -m "Regenerate meta-tests"
 ## Questions and Issues
 
 * For general development workflow, see `WORKFLOW.md`
-* For agent behavior, see `AGENTS.md`
+* For agent behavior, see `CLAUDE.md`
 * For test examples, examine existing tests in `tests/`
 * For bugs or suggestions, open a GitHub issue
