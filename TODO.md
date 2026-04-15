@@ -7,6 +7,59 @@ This TODO file tracks the modernization effort for the dotfiles repository,
 organized by work area with phase markers. See `WORKFLOW.md` for development
 guidelines and `TESTS.md` for testing strategy.
 
+## 🤖 Claude Code Migration (HIGH PRIORITY)
+
+### Create `config/shell-startup/claude`
+
+Claude Code does not natively support XDG Base Directory spec — it defaults
+to `~/.claude`. However, it respects the `CLAUDE_CONFIG_DIR` environment
+variable, so we can redirect it to an XDG-compliant path.
+
+The module should:
+
+- Follow the existing shell-startup module pattern: guard with a check for
+  the `claude` command before doing anything
+- Set `CLAUDE_CONFIG_DIR` to point to the XDG location:
+
+  ```bash
+  export CLAUDE_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/claude"
+  ```
+
+- **Migration note:** On first use, manually move or symlink the existing
+  `~/.claude` to `~/.config/claude` (or wherever `$XDG_CONFIG_HOME` points).
+  Auto-memory lives under `$CLAUDE_CONFIG_DIR/projects/` so it moves with
+  the directory — history from before the move will be inaccessible unless
+  migrated. Check `~/.claude/projects/` for anything worth keeping before
+  removing the old location.
+- Consider what other Claude Code environment variables belong here. At
+  minimum `CLAUDE_CONFIG_DIR`; check `https://code.claude.com/docs/en/env-vars.md`
+  for the full list when implementing.
+- Move existing relevant files from `.claude/` in the dotfiles repo root to
+  `config/claude/` so they follow the same pattern as other tool configs
+  (e.g., `config/git/`, `config/vim/`). Currently `.claude/` only contains
+  `settings.local.json` (which is personal/gitignored and should stay local),
+  but as rules files and other Claude Code config are added they belong under
+  `config/claude/` with symlinks or dotlinks entries pointing `.claude/` at
+  the right places.
+
+### Files to evaluate — each needs a decision: remove, archive, rewrite for
+Claude Code, or convert to a standalone doc.
+
+- [ ] `AGENTS.md` — superseded by `CLAUDE.md`; archive or remove
+- [ ] `CONVENTIONS.md` — valid content but framed for Aider (`AIDER_READ`);
+  rewrite as a Claude Code conventions file or keep as a standalone doc
+  referenced from `WORKFLOW.md`
+- [ ] `aider.commit_prompt` — commit message format partially absorbed into
+  `CLAUDE.md`; evaluate for removal
+- [ ] `aider.env` — Aider-specific configuration; evaluate for removal once
+  Aider is no longer in use
+- [ ] `claude-code-notes.md` — personal learning scratchpad; convert to a
+  proper doc or remove
+- [ ] `.aider.chat.history.md` — Aider session history; remove or add to
+  `.gitignore`
+- [ ] `docs/agents/pre-commit.md` — pre-commit agent contract; move to
+  `.claude/rules/pre-commit.md` and remove original
+
 ## ✅ Completed Documentation Tasks
 
 - [x] Create WORKFLOW.md (foundation document)
