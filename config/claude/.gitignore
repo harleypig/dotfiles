@@ -1,0 +1,8 @@
+# Ignore everything Claude Code auto-generates into CLAUDE_CONFIG_DIR,
+# tracking only explicit config files.
+*
+
+!.gitignore
+!settings.json
+!rules/
+!rules/**

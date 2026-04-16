@@ -11,36 +11,33 @@ guidelines and `TESTS.md` for testing strategy.
 
 ### Create `config/shell-startup/claude`
 
-Claude Code does not natively support XDG Base Directory spec — it defaults
-to `~/.claude`. However, it respects the `CLAUDE_CONFIG_DIR` environment
-variable, so we can redirect it to an XDG-compliant path.
+`config/claude/` is now established as the canonical location for tracked
+Claude Code config (settings.json, rules/). Set `CLAUDE_CONFIG_DIR` to point
+there so Claude Code reads directly from the dotfiles repo — no symlinks needed.
+Auto-generated files (projects/, history, etc.) will be written there too but
+are gitignored via `config/claude/.gitignore`.
 
 The module should:
 
 - Follow the existing shell-startup module pattern: guard with a check for
   the `claude` command before doing anything
-- Set `CLAUDE_CONFIG_DIR` to point to the XDG location:
+- Set `CLAUDE_CONFIG_DIR` to point directly at the dotfiles config dir:
 
   ```bash
   export CLAUDE_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/claude"
   ```
 
-- **Migration note:** On first use, manually move or symlink the existing
-  `~/.claude` to `~/.config/claude` (or wherever `$XDG_CONFIG_HOME` points).
-  Auto-memory lives under `$CLAUDE_CONFIG_DIR/projects/` so it moves with
-  the directory — history from before the move will be inaccessible unless
-  migrated. Check `~/.claude/projects/` for anything worth keeping before
-  removing the old location.
-- Consider what other Claude Code environment variables belong here. At
-  minimum `CLAUDE_CONFIG_DIR`; check `https://code.claude.com/docs/en/env-vars.md`
-  for the full list when implementing.
-- Move existing relevant files from `.claude/` in the dotfiles repo root to
-  `config/claude/` so they follow the same pattern as other tool configs
-  (e.g., `config/git/`, `config/vim/`). Currently `.claude/` only contains
-  `settings.local.json` (which is personal/gitignored and should stay local),
-  but as rules files and other Claude Code config are added they belong under
-  `config/claude/` with symlinks or dotlinks entries pointing `.claude/` at
-  the right places.
+- Consider what other Claude Code environment variables belong here; check
+  the Claude Code docs for the full list when implementing.
+- **Install step:** Create `~/.config/claude` (or `$XDG_CONFIG_HOME/claude`)
+  as a symlink to `$DOTFILES/config/claude` so Claude Code reads from the
+  dotfiles repo. Auto-generated files (projects/, history, etc.) will be
+  written there but are gitignored via `config/claude/.gitignore`.
+- **After verifying Claude Code works with the new CLAUDE_CONFIG_DIR:**
+  - `~/.claude/` is no longer used and can be removed (it will contain only
+    stale auto-generated data — projects/, history, etc.)
+  - Confirm auto-memory in `config/claude/projects/` is gitignored before
+    removing `~/.claude/`
 
 ### Files to evaluate — each needs a decision: remove, archive, rewrite for
 Claude Code, or convert to a standalone doc.
@@ -76,6 +73,23 @@ Claude Code, or convert to a standalone doc.
 ### Code Comment Cleanup
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
   - See "Code Improvements (LOW PRIORITY)" section for detailed list
+
+## 🗂️ .gitignore Audit (MEDIUM PRIORITY)
+
+Reorganize .gitignore files to be as directory-specific as possible.
+Some `config/<app>` dirs need only certain files ignored; others can
+ignore the entire directory. Having rules close to the relevant files
+is cleaner than a monolithic root .gitignore.
+
+- [ ] Audit root `.gitignore` — identify entries that belong in a
+  subdirectory `.gitignore` instead
+- [ ] Audit `config/claude/.gitignore` (new) — verify coverage is correct
+- [ ] Check other `config/` subdirs that may benefit from local `.gitignore`
+  files (e.g., dirs where only some files are tracked)
+- [ ] Check if any other `.gitignore` files exist in subdirectories and
+  ensure they're consistent with the root
+- [ ] Document the convention: prefer directory-local `.gitignore` over
+  path-prefixed rules in root
 
 ## 🧪 Testing (HIGH PRIORITY)
 
