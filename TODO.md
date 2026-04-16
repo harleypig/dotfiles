@@ -45,18 +45,12 @@ The module should:
 ### Files to evaluate — each needs a decision: remove, archive, rewrite for
 Claude Code, or convert to a standalone doc.
 
-- [ ] `AGENTS.md` — superseded by `CLAUDE.md`; archive or remove
-- [ ] `CONVENTIONS.md` — valid content but framed for Aider (`AIDER_READ`);
-  rewrite as a Claude Code conventions file or keep as a standalone doc
-  referenced from `WORKFLOW.md`
-- [ ] `aider.commit_prompt` — commit message format partially absorbed into
-  `CLAUDE.md`; evaluate for removal
-- [ ] `aider.env` — Aider-specific configuration; evaluate for removal once
-  Aider is no longer in use
-- [ ] `claude-code-notes.md` — personal learning scratchpad; convert to a
-  proper doc or remove
-- [ ] `.aider.chat.history.md` — Aider session history; remove or add to
-  `.gitignore`
+- [x] `AGENTS.md` — removed (superseded by `CLAUDE.md`)
+- [x] `CONVENTIONS.md` — rewritten for Claude Code
+- [x] `aider.commit_prompt` — removed
+- [x] `aider.env` — removed
+- [x] `claude-code-notes.md` — removed
+- [x] `.aider.chat.history.md` — removed; aider entries cleaned from `.gitignore`
 - [x] `docs/agents/pre-commit.md` — pre-commit agent contract; moved to
   `.claude/rules/pre-commit.md` and original removed
 
@@ -366,7 +360,7 @@ in the future.
 
 - **[WORKFLOW.md](WORKFLOW.md)**: Development guidelines and conventions
 - **[TESTS.md](TESTS.md)**: Testing framework and strategy
-- **[AGENTS.md](AGENTS.md)**: AI agent behavior specification
+- **[CLAUDE.md](CLAUDE.md)**: AI agent behavior specification
 - **[.claude/rules/pre-commit.md](.claude/rules/pre-commit.md)**: Pre-commit
   agent policy
 - **Modernization Plan**: Full plan available in conversation transcript
