@@ -57,8 +57,8 @@ Claude Code, or convert to a standalone doc.
   proper doc or remove
 - [ ] `.aider.chat.history.md` — Aider session history; remove or add to
   `.gitignore`
-- [ ] `docs/agents/pre-commit.md` — pre-commit agent contract; move to
-  `.claude/rules/pre-commit.md` and remove original
+- [x] `docs/agents/pre-commit.md` — pre-commit agent contract; moved to
+  `.claude/rules/pre-commit.md` and original removed
 
 ## ✅ Completed Documentation Tasks
 
@@ -367,6 +367,6 @@ in the future.
 - **[WORKFLOW.md](WORKFLOW.md)**: Development guidelines and conventions
 - **[TESTS.md](TESTS.md)**: Testing framework and strategy
 - **[AGENTS.md](AGENTS.md)**: AI agent behavior specification
-- **[docs/agents/pre-commit.md](docs/agents/pre-commit.md)**: Pre-commit agent
-  policy
+- **[.claude/rules/pre-commit.md](.claude/rules/pre-commit.md)**: Pre-commit
+  agent policy
 - **Modernization Plan**: Full plan available in conversation transcript

@@ -1,3 +1,9 @@
+---
+paths:
+  - ".pre-commit-config.yaml"
+  - ".pre-commit-config-fix.yaml"
+---
+
 # pre-commit Agent Contract
 
 **Version:** v1.0.0
@@ -5,12 +11,7 @@
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
 
-This document is subordinate to, and governed by, `AGENTS.md`. Repository-
-specific workflow rules may further refine behavior via `WORKFLOW.md`.
-
-Precedence is resolved as follows:
-
-`this document` > `WORKFLOW.md` (if it exists) > `AGENTS.md`
+Precedence: `this document` > `WORKFLOW.md` > `CLAUDE.md`
 
 ## Purpose
 
