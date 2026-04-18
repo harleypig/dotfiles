@@ -89,6 +89,25 @@ Review all files in `config/shell-startup/` for correctness and security:
   — standardize to `|| return 0` pattern per `000-loadtokens` fix
 - [ ] Any other shellcheck warnings not already suppressed with justification
 
+## 🏠 $HOME Dotfile Audit (MEDIUM PRIORITY)
+
+Reduce $HOME clutter by moving dotfiles to XDG directories where supported
+and removing unused ones.
+
+Reference: https://wiki.archlinux.org/title/XDG_Base_Directory
+(comprehensive list of which apps support XDG and how to configure them)
+
+- [ ] Inventory all dotfiles/dotdirs in $HOME (`ls -la ~ | grep '^\.'`)
+- [ ] For each, check the Arch wiki XDG page:
+  - If XDG is supported: move file/dir to appropriate XDG location and
+    configure the app (env var, config option, symlink, etc.)
+  - If XDG is not supported: determine if the app is still in use; remove
+    the dotfile if not
+- [ ] Update `config/shell-startup/` modules to set any required env vars
+  for apps migrated to XDG paths
+- [ ] Update dotlinks if any of these were previously managed there
+- [ ] After migration, verify apps still work correctly
+
 ## 🗂️ .gitignore Audit (MEDIUM PRIORITY)
 
 Reorganize .gitignore files to be as directory-specific as possible.
