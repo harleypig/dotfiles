@@ -163,6 +163,25 @@ is cleaner than a monolithic root .gitignore.
 - [ ] Integration tests for tool configurations
 - [ ] Performance tests for PATH building
 
+### Comprehensive BATS Test Coverage Audit (MEDIUM PRIORITY)
+
+Phase 3 covers a handful of critical scripts. This task is a full pass to
+ensure everything that should have tests does.
+
+- [ ] Inventory all scripts in `bin/` and classify each:
+  - Already tested (Phase 3 covers cleanpath, yesno, git-status, check-dotfiles)
+  - Needs unit tests (pure logic, no external deps)
+  - Needs integration tests (calls external tools, modifies state)
+  - Wrapper/trivial — document why tests aren't needed
+- [ ] Write `test_<script>.bats` for each untested bin/ script
+- [ ] Evaluate what else needs BATS tests beyond bin/:
+  - [ ] `lib/` libraries (surface area for reuse bugs)
+  - [ ] `config/shell-startup/` modules (sourcing, conditional logic)
+  - [ ] `bin/check-dotfiles` and dotlinks behavior
+  - [ ] Any scripts in other locations (setup-work, etc.)
+- [ ] Ensure `tests/build-meta-tests` generates tests for all new scripts
+- [ ] Update Phase 3 checklist once items are covered here
+
 ## 🔒 Pre-commit Configuration (HIGH PRIORITY)
 
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
