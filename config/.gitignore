@@ -1,3 +1,7 @@
+# Convention: rules here cover entire config/ subdirectories or files with no
+# local .gitignore. For directories with tracked files, use a local .gitignore
+# instead (e.g. config/pudb/.gitignore).
+
 ansible/collections/**
 asciinema/**
 audacity/**
@@ -6,8 +10,6 @@ calibre/**
 coc/**
 Code/**
 configstore/**
-Cursor/**
-cursor/chats/**
 dlv/**
 docker/buildx/**
 evolution/**
@@ -21,7 +23,6 @@ koreader/**
 mygnuhealth/**
 nvm/**
 packer/plugins/**
-pudb/**
 pulse/**
 rustup/**
 synergy/**
@@ -31,8 +32,6 @@ tree-sitter/**
 yelp/**
 
 ansible/galaxy_token
-cursor/auth.json
-cursor/prompt_history.json
 dconf/user
 docker/config.json
 docker/.token_seed

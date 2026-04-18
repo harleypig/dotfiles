@@ -1,3 +1,7 @@
+# Convention: prefer directory-local .gitignore over path-prefixed rules here.
+# Rules in this file should be either truly global (apply anywhere in the repo)
+# or specific to the repo root itself.
+
 # coverage?
 coverage
 
