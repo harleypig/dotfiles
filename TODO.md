@@ -280,6 +280,62 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 - [ ] shell-startup:180 - Clarify environment setup section (XXX: WTF am I
   trying doing here?)
 
+### shell-startup: Shell Context Detection (HIGH PRIORITY)
+
+`shell-startup` is symlinked from `.bashrc`, `.bash_profile`, and `.profile`,
+but currently runs identically regardless of context. Shells have four main
+contexts that need different behavior:
+
+- **interactive login** — full environment, aliases, functions, prompts
+- **interactive non-login** — already has login env; needs aliases, prompts
+- **non-interactive login** — rare; env vars only, no aliases
+- **non-interactive non-login** — scripts/subshells; env vars only, no
+  aliases, no prompts (e.g., shell spawned from vim, cron, ssh command)
+
+Problems to solve:
+
+- [ ] Guard against double-sourcing — detect if shell-startup has already
+  run and skip (or only run the parts appropriate to context)
+- [ ] Detect shell context (`$-` contains `i` for interactive; login shells
+  set by checking `shopt login_shell` or `$0` prefix `-`)
+- [ ] Skip alias/function/prompt setup for non-interactive shells
+- [ ] Handle incomplete terminal environments gracefully (e.g., vim shell,
+  docker exec, ssh command) — these may lack `TERM`, `COLUMNS`, etc.
+- [ ] Audit `config/shell-startup/` modules: tag or split each module by
+  required context (env-only vs interactive-only)
+- [ ] Write integration tests using Docker to cover each context:
+  - Use a minimal Docker image with bash and the dotfiles mounted/installed
+  - [ ] Interactive login: `docker run -it` with login shell (`bash -l`)
+    — verify aliases, functions, prompt, and full env are set
+  - [ ] Interactive non-login: `docker run -it` without `-l`
+    — verify aliases/prompt present, env inherited correctly, no double-init
+  - [ ] Non-interactive login: `docker run` with `bash -lc 'command'`
+    — verify env vars set, aliases/prompt NOT defined
+  - [ ] Non-interactive non-login: `docker run` with `bash -c 'command'`
+    — verify minimal env only, no aliases, no prompt, no errors
+  - [ ] Incomplete terminal (vim-style): simulate missing `TERM`/`COLUMNS`
+    — verify shell-startup degrades gracefully without errors
+  - [ ] Double-source guard: source shell-startup twice in same session
+    — verify idempotent (no duplicate PATH entries, no re-run of setup)
+  - [ ] Research: can/should BATS drive Docker-based tests? Options include
+    running BATS inside the container, or using BATS on the host to `docker
+    run` and assert on exit codes and output. Determine which approach fits
+    the existing test framework and document the decision in TESTS.md
+  - [ ] Update TESTS.md to document Docker-based integration test approach
+
+### bin/cleanpath: Fix and Integrate (HIGH PRIORITY)
+
+`bin/cleanpath` deduplicates PATH-style colon-separated variables but is
+currently broken. `bin/CleanPath.tmp` appears to be a duplicate/scratch copy.
+
+- [ ] Audit `bin/cleanpath` vs `bin/CleanPath.tmp` — determine which is
+  canonical, remove the other
+- [ ] Fix `bin/cleanpath` so it works correctly (diagnose current failure)
+- [ ] Add unit tests (`tests/test_cleanpath.bats`)
+- [ ] Integrate into `shell-startup` — run cleanpath on PATH (and possibly
+  other path vars like `LD_LIBRARY_PATH`, `MANPATH`) after `load_files`
+  to eliminate duplicates accumulated during module loading
+
 ### PowerShell Improvements
 - [ ] ps-startup.ps1:49 - Move Python path to dedicated setup file (XXX)
 - [ ] 010-general.ps1:27,42,54,59 - Port remaining bash features marked with XXX
