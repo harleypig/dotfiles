@@ -49,7 +49,6 @@ environments:
   environment
 - **`dotlinks-sweetums`**: Configuration for sweetums environment
 
-
 **When to use**: Choose the dotlinks file that matches your environment or
 create your own custom one.
 
@@ -61,6 +60,21 @@ cp dotlinks-default ~/.dotlinks
 # Or create your own custom dotlinks file
 # Edit ~/.dotlinks to specify which configuration files to link
 ```
+
+**File format** — one entry per line, environment variables expanded:
+
+```
+# Single-column: symlink name derived from basename of source
+$DOTFILES/dot-general/.bashrc
+
+# Two-column: explicit symlink name (required when basename doesn't match)
+$CLAUDE_CONFIG_DIR .claude
+```
+
+Single-column entries create `~/.<name>` where `<name>` is the basename of
+the source path. Two-column entries use the second field as the symlink name,
+allowing sources whose basename differs from the desired `~/<name>` (e.g.,
+`config/claude` → `.claude`). Comments (`#`) and blank lines are ignored.
 
 #### Bin-Dirs Files
 
