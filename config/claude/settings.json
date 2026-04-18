@@ -1,4 +1,9 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/bin/statusline.sh",
+    "refreshInterval": 5
+  },
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
     "github@claude-plugins-official": true,
@@ -18,9 +23,6 @@
     "terraform@claude-plugins-official": true,
     "pydantic-ai@claude-plugins-official": true
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/bin/statusline.sh",
-    "refreshInterval": 5
-  }
+  "effortLevel": "xhigh",
+  "model": "opus"
 }
