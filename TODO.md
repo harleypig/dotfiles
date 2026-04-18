@@ -1,62 +1,11 @@
 # TODO - Dotfiles Repository Modernization
 
-**Last Updated:** 2026-01-18
+**Last Updated:** 2026-04-18
 **Plan Version:** Based on Dotfiles Repository Modernization Plan
 
 This TODO file tracks the modernization effort for the dotfiles repository,
 organized by work area with phase markers. See `WORKFLOW.md` for development
 guidelines and `TESTS.md` for testing strategy.
-
-## 🤖 Claude Code Migration (HIGH PRIORITY)
-
-### Create `config/shell-startup/claude`
-
-`config/claude/` is now established as the canonical location for tracked
-Claude Code config (settings.json, rules/). `CLAUDE_CONFIG_DIR` points
-there via `$XDG_CONFIG_HOME/claude` (which resolves to `$DOTFILES/config/claude`
-since `XDG_CONFIG_HOME=$DOTFILES/config`). Auto-generated files (projects/,
-history, etc.) are written there but gitignored via `config/claude/.gitignore`.
-
-**Caveat:** `CLAUDE_CONFIG_DIR` is not fully honored by all Claude Code
-components — plugins still hardcode `~/.claude`. A symlink is required:
-
-```bash
-ln -s "$CLAUDE_CONFIG_DIR" "$HOME/.claude"
-```
-
-**Migration steps (✅ complete):**
-
-- [x] `rsync -av ~/.claude/ $DOTFILES/config/claude/` — preserve existing data
-- [x] `mv ~/.claude ~/.claude.bak` — back up original
-- [x] `ln -s "$CLAUDE_CONFIG_DIR" "$HOME/.claude"` — symlink for plugins
-- [x] Relogin and verify plugins load, `~/.claude` not recreated as a real dir
-
-**Cleanup (✅ complete):**
-
-- [x] Remove `~/.claude.bak` once confident everything works
-
-### Files to evaluate — each needs a decision: remove, archive, rewrite for
-Claude Code, or convert to a standalone doc.
-
-- [x] `AGENTS.md` — removed (superseded by `CLAUDE.md`)
-- [x] `CONVENTIONS.md` — rewritten for Claude Code
-- [x] `aider.commit_prompt` — removed
-- [x] `aider.env` — removed
-- [x] `claude-code-notes.md` — removed
-- [x] `.aider.chat.history.md` — removed; aider entries cleaned from `.gitignore`
-- [x] `docs/agents/pre-commit.md` — pre-commit agent contract; moved to
-  `.claude/rules/pre-commit.md` and original removed
-
-## ✅ Completed Documentation Tasks
-
-- [x] Create WORKFLOW.md (foundation document)
-- [x] Create TESTS.md (foundation document)
-- [x] Fix README.md broken link (GIT_ALIASES.md → docs/git_aliases.md)
-- [x] Add missing 13 shell-startup tools to README.md documentation
-- [x] Add XDG Base Directory section to README.md
-- [x] Document all 37+ config directories in README.md
-- [x] Update docs/bin.md with descriptions for all 35 bin scripts
-- [x] Add core documentation references to README.md
 
 ## 📝 Documentation (HIGH PRIORITY)
 
@@ -126,11 +75,6 @@ is cleaner than a monolithic root .gitignore.
   path-prefixed rules in root
 
 ## 🧪 Testing (HIGH PRIORITY)
-
-### Phase 1: Framework Definition ✅
-- [x] Define testing framework in TESTS.md
-- [x] Document test types and organization
-- [x] Define test requirements and standards
 
 ### Phase 2: Test Infrastructure
 - [ ] Review and enhance existing BATS tests
@@ -484,6 +428,6 @@ in the future.
 - **[WORKFLOW.md](WORKFLOW.md)**: Development guidelines and conventions
 - **[TESTS.md](TESTS.md)**: Testing framework and strategy
 - **[CLAUDE.md](CLAUDE.md)**: AI agent behavior specification
-- **[.claude/rules/pre-commit.md](.claude/rules/pre-commit.md)**: Pre-commit
-  agent policy
+- **[config/claude/rules/pre-commit.md](config/claude/rules/pre-commit.md)**:
+  Pre-commit agent policy
 - **Modernization Plan**: Full plan available in conversation transcript
