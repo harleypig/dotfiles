@@ -82,8 +82,7 @@ export LESS_TERMCAP_mr
 # konsole and gnome-terminal require this
 export GROFF_NO_SGR=1
 
-# XXX: http://www-zeuthen.desy.de/~friebel/unix/lesspipe.html
-# XXX: figure out how to make syntax hilighting work for source
+# lesspipe.sh provides syntax highlighting when source-highlight or pygments is installed
 
 # Try to use a more current lesspipe
 if command -v lesspipe.sh &> /dev/null; then

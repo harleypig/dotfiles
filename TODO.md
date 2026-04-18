@@ -12,7 +12,7 @@ guidelines and `TESTS.md` for testing strategy.
 ### Immediate Tasks
 - [ ] Review and consolidate docs/ directory
   - [x] Evaluate docs/bash-completion.md - moved to config/completions/README.md
-  - [ ] Consider moving docs/git_aliases.md to config/git/ or config/shell-startup/git
+  - [x] docs/git_aliases.md - leave in docs/; user-facing reference, not config
   - [ ] Ensure all remaining docs follow WORKFLOW.md philosophy
 
 ### Code Comment Cleanup
@@ -348,9 +348,9 @@ PowerShell 5.1.
 ### Configuration File Issues
 - [ ] config/perl:12,54 - Check for completion capability, test if bakeini is
   installed (XXX)
-- [ ] config/less:85,86 - Figure out lesspipe.html and syntax highlighting (XXX)
+- [x] config/less:85,86 - lesspipe.sh handles syntax highlighting; removed XXX
 - [x] config/tmux:37 - Detect multiple sessions (XXX)
-- [ ] config/terraform:9 - Compare with gist (XXX)
+- [x] config/terraform:9 - Comparison done; cleaned up XXX and dead code
 - [ ] config/taskwarrior:8,9,10 - Add sourcing check, version check, look at
   scripts (XXX)
 - [ ] config/bash_prompt:57,131,137 - Fix poetry/venv detection and colors (XXX)
@@ -375,7 +375,6 @@ PowerShell 5.1.
 
 ### Tool Configurations
 - [ ] Look into lesshst/lesskey configuration
-- [ ] Review terraform completion gist comparison
 - [ ] Look into taskwarrior scripts from /usr/share/doc/task/scripts/
 - [ ] Look into colorized columns tool:
   https://github.com/LukeSavefrogs/column_ansi.git
