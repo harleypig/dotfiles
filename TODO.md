@@ -132,15 +132,15 @@ pre-commit.md, python.md.
     `.editorconfig` when present, which would replace `-i 2` on the command line
     and benefit any editor that also respects `.editorconfig`. See:
     https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd#examples
-  - [ ] yamllint — config file location, common relaxations
-  - [ ] markdownlint — line length, allowed HTML, rules to disable
-  - [ ] yapf — already have config/yapf; document how agent should invoke it
-  - [ ] git — commit conventions, branch naming, force-push policy
-  - [ ] bats — test structure expectations, helper usage
+  - [x] yamllint — config file location, common relaxations
+  - [x] markdownlint — line length, allowed HTML, rules to disable
+  - [x] yapf — already have config/yapf; document how agent should invoke it
+  - [x] git — commit conventions, branch naming, worktree workflow reference
+  - [x] bats — test structure expectations, helper usage
   - [ ] docker — image pinning policy, layer hygiene
-  - [ ] gh — PR/issue conventions for this repo
+  - [x] gh — PR/issue conventions; fork-mode PR target; worktree skill ref
   - [ ] Any other tools discovered during pre-commit or CI work
-- [ ] Consider a template for new rules files so they stay consistent
+- [x] Consider a template for new rules files so they stay consistent
 
 ## 🪝 Claude Code PostToolUse Hooks (MEDIUM PRIORITY)
 
