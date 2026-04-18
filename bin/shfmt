@@ -1,5 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
+# Docker wrapper for shfmt.
+
+#------------------------------------------------------------------------------
+# Fail fast: all file arguments must be under $PWD (the container mount point).
+# The -w (write) flag modifies files in place via the $PWD:/mnt mount.
+for arg in "$@"; do
+  [[ $arg == -* ]] && continue # flags, and '-' (stdin marker) both start with -
+  abs=$(realpath -- "$arg" 2> /dev/null) || continue
+  if [[ $abs != "$PWD"/* ]]; then
+    printf 'shfmt: %s is not under the current directory; cd to its parent or modify bin/shfmt\n' "$arg" >&2
+    exit 1
+  fi
+done
+
+#------------------------------------------------------------------------------
 exec docker run \
   --rm \
   --user "$(id -u):$(id -g)" \

@@ -57,6 +57,12 @@ Reference: https://wiki.archlinux.org/title/XDG_Base_Directory
 - [ ] Update dotlinks if any of these were previously managed there
 - [ ] After migration, verify apps still work correctly
 
+**Note:** Consider symlinking `~/.config -> $DOTFILES/config` to handle apps
+that hardcode `$HOME/.config` rather than respecting `$XDG_CONFIG_HOME`. This
+would make both paths resolve to the same location without needing per-app
+symlinks. Risk: `~/.config` becomes the canonical store for all XDG config,
+so anything the OS or other tools write there lands directly in the repo
+working tree — evaluate carefully before implementing.
 
 ## 🧪 Testing (HIGH PRIORITY)
 
@@ -122,6 +128,10 @@ pre-commit.md, python.md.
   - [x] shellcheck — inline disable conventions; .shellcheckrc location is an
     open question (global vs repo-local vs both) documented in the rules file
   - [x] shfmt — flags `-i 2 -s -bn -ci -sr` from dotvim ALE config
+  - [ ] Consider `.editorconfig` for shfmt: shfmt reads indent style/width from
+    `.editorconfig` when present, which would replace `-i 2` on the command line
+    and benefit any editor that also respects `.editorconfig`. See:
+    https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd#examples
   - [ ] yamllint — config file location, common relaxations
   - [ ] markdownlint — line length, allowed HTML, rules to disable
   - [ ] yapf — already have config/yapf; document how agent should invoke it

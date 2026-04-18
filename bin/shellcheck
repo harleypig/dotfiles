@@ -1,10 +1,45 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Compare with https://github.com/koalaman/shellcheck/wiki/Contrib#docker-wrapper-script
+# Docker wrapper for shellcheck.
+# Reference: https://github.com/koalaman/shellcheck/wiki/Contrib#docker-wrapper-script
 
-exec docker run \
-  --rm \
-  --user "$(id -u):$(id -g)" \
-  --volume "$PWD:/mnt" \
-  --workdir "/mnt" \
-  koalaman/shellcheck:stable "$@"
+# The referenced script mounts the directory of the *last* argument instead of
+# $PWD: `for last; do true; done` walks all args so `last` ends up as the
+# final one, then `dirname "$last"` is mounted. This lets you check files by
+# absolute path from any working directory. We don't support that approach —
+# we always mount $PWD — so all file arguments must be relative to $PWD.
+
+#------------------------------------------------------------------------------
+# Fail fast: all file arguments must be under $PWD (the container mount point).
+for arg in "$@"; do
+  [[ $arg == -* ]] && continue
+  abs=$(realpath -- "$arg" 2> /dev/null) || continue
+  if [[ $abs != "$PWD"/* ]]; then
+    printf 'shellcheck: %s is not under the current directory; cd to its parent or modify bin/shellcheck\n' "$arg" >&2
+    exit 1
+  fi
+done
+
+#------------------------------------------------------------------------------
+declare -a args=(
+  --rm
+  --user "$(id -u):$(id -g)"
+  --volume "$PWD:/mnt"
+  --workdir "/mnt"
+)
+
+# Pass SHELLCHECK_OPTS if set; shellcheck honours it inside the container.
+[[ -n ${SHELLCHECK_OPTS-} ]] && args+=(--env "SHELLCHECK_OPTS=$SHELLCHECK_OPTS")
+
+# Mount XDG shellcheck config as ~/.shellcheckrc inside the container.
+# We set HOME explicitly because --user with a non-container UID leaves it unset.
+xdg_cfg="${XDG_CONFIG_HOME:-$HOME/.config}"
+if [[ -f "$xdg_cfg/shellcheckrc" ]]; then
+  args+=(
+    --env HOME=/home/shellcheck
+    --volume "$xdg_cfg/shellcheckrc:/home/shellcheck/.shellcheckrc:ro"
+  )
+fi
+
+#------------------------------------------------------------------------------
+exec docker run "${args[@]}" koalaman/shellcheck:stable "$@"

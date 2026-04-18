@@ -39,25 +39,35 @@ Never suppress a code without a reason comment.
 
 ## Configuration File
 
-shellcheck resolves config by walking from the checked file's directory up to
-the filesystem root, then falls back to `$XDG_CONFIG_HOME/shellcheck/shellcheckrc`
-and `~/.shellcheckrc`.
+shellcheck walks from the checked file's directory up to the filesystem root,
+then falls back to `$XDG_CONFIG_HOME/shellcheckrc` (a file directly in XDG
+config home, not in a `shellcheck/` subdir), then `~/.shellcheckrc`.
 
-**Open question:** whether to use `~/.shellcheckrc` for personal global defaults
-or rely solely on per-repo `.shellcheckrc` files.
+Global config lives at `config/shellcheckrc` in this repo, which resolves to
+`$XDG_CONFIG_HOME/shellcheckrc` since `$DOTFILES/config/` is `$XDG_CONFIG_HOME`.
+No dotlinks entry is needed.
 
-Tradeoffs:
+`bin/shellcheck` is a Docker wrapper and cannot access `$XDG_CONFIG_HOME`
+directly inside the container. It mounts the config as `~/.shellcheckrc` with
+`HOME=/home/shellcheck` set explicitly (`--user $(id -u):$(id -g)` with a
+non-container UID leaves HOME undefined). `SHELLCHECK_OPTS` is also forwarded
+to the container if set in the environment.
 
-- **`~/.shellcheckrc` (global):** one place for personal preferences; applies to
-  all repos including ones without their own config. If used, must be managed via
-  dotlinks. Risk: may impose preferences on repos that don't want them.
-- **`.shellcheckrc` at repo root:** repo-specific, overrides global fallback for
-  all files in the repo. Explicit and portable. Preferred when repo has known
-  conventions.
-- **Both:** global sets safe personal defaults; repo-local overrides where needed.
+For per-repo overrides, add a `.shellcheckrc` at the repo root — it takes
+precedence over the global config for all files in that repo.
 
-**Current state:** no `.shellcheckrc` exists in this repo or globally. Until a
-decision is made, pass any needed options directly on the command line.
+## Docker Wrapper
 
-When the decision is made, update this file and create `.shellcheckrc` and/or
-manage `~/.shellcheckrc` via dotlinks accordingly.
+`bin/shellcheck` mounts `$PWD` as `/mnt` in the container. All file arguments
+must be relative to the current directory; passing a file outside `$PWD` exits
+with an error before docker runs. Run shellcheck from the repo root or the
+directory containing the files.
+
+## Agent Behavior
+
+- After creating or modifying any shell file matched by the paths above:
+  1. Run `shfmt -i 2 -s -bn -ci -sr -w <file>` to apply formatting.
+  2. Run `shellcheck <file>` to catch any remaining issues.
+  3. Fix all reported issues before continuing. Inline disables require a
+     reason comment.
+- In pre-commit context: `.pre-commit-config.yaml` checks only; `.pre-commit-config-fix.yaml` applies fixes.

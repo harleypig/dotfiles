@@ -1,0 +1,6 @@
+# shellcheck global configuration
+# Managed via dotlinks: $DOTFILES/config/shellcheckrc -> $XDG_CONFIG_HOME/shellcheckrc
+# Reference: https://www.shellcheck.net/wiki/Directive
+
+# Use bash as the default shell dialect
+shell=bash

@@ -5,14 +5,20 @@
 # XXX: Does tput support OSC 8 escape codes for clickable links? If so,
 # consider modifying bin/ansi to support that for more global support.
 
-command -v jq &>/dev/null || { printf 'claude | jq not found\n'; exit 0; }
+command -v jq &> /dev/null || {
+  printf 'claude | jq not found\n'
+  exit 0
+}
 
 #------------------------------------------------------------------------------
 # Copied from config/shell-startup/bash_prompt. Takes a delimiter string and
 # an array name (by reference), prints elements joined by the delimiter.
 
 join_array() {
-  (($# != 2)) && { printf 'join_array: must pass delimiter and array name\n' >&2; return 1; }
+  (($# != 2)) && {
+    printf 'join_array: must pass delimiter and array name\n' >&2
+    return 1
+  }
 
   local delim="$1"
   local -n _array_="$2"
@@ -57,30 +63,36 @@ for v in "${vars[@]}"; do
 done
 
 IFS=$'\t' read -r "${vars[@]}" < <(
-  printf '%s' "$data" | jq -r "[ $(IFS=','; printf '%s' "${jq_parts[*]}") ] | @tsv" 2>/dev/null
+  printf '%s' "$data" | jq -r "[ $(
+    IFS=','
+    printf '%s' "${jq_parts[*]}"
+  ) ] | @tsv" 2> /dev/null
 ) || true
 
 #------------------------------------------------------------------------------
 # Post-process typed fields
 
-ctx=$(( ${ctx%%.*} + 0 ))
-cost=$(printf '%.2f' "$cost" 2>/dev/null || printf '?.??')
+ctx=$((${ctx%%.*} + 0))
+cost=$(printf '%.2f' "$cost" 2> /dev/null || printf '?.??')
 
 #------------------------------------------------------------------------------
 # Set colors
 
 declare red yellow cyan reset
 
-if command -v ansi &>/dev/null; then
+if command -v ansi &> /dev/null; then
   red=$(ansi fg red)
   yellow=$(ansi fg yellow)
   cyan=$(ansi fg cyan)
   reset=$(ansi off)
 fi
 
-if   (( ctx >= 75 )); then ctx_color=$red
-elif (( ctx >= 50 )); then ctx_color=$yellow
-else                       ctx_color=$cyan
+if ((ctx >= 75)); then
+  ctx_color=$red
+elif ((ctx >= 50)); then
+  ctx_color=$yellow
+else
+  ctx_color=$cyan
 fi
 
 #------------------------------------------------------------------------------
