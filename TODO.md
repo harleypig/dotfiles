@@ -366,9 +366,72 @@ PowerShell 5.1.
 ### Prompt Enhancements
 - [ ] bash_prompt:131 - Fix poetry venv detection
 - [ ] bash_prompt:137 - Fix manual venv color issue
-- [ ] Consider adding git-status to tmux status line
-  - [ ] If in tmux, disable git-status in bash prompt
-- [ ] Consider adding git-status to vim status line (except when in tmux)
+
+## 🖥️ Statusline Coordination (MEDIUM PRIORITY)
+
+Goal: avoid repeating the same information across the four statusline surfaces
+(bash prompt, tmux status bar, vim statusline, Claude statusline). Each surface
+should own a distinct slice of context.
+
+Proposed ownership split (to be refined during implementation):
+
+- **bash prompt** — exit code, venv/conda name, git branch+dirty state (when
+  not in tmux or vim)
+- **tmux status bar** — host, session name (multi-session only), clock, weather
+- **vim statusline** — filename, filetype, linting errors, vim mode; git branch
+  only when not in tmux
+- **Claude statusline** — model name, context window %, session cost, worktree
+  name; suppress anything already shown by tmux (e.g. git branch) when $TMUX
+  is set
+
+Context detection: use `$TMUX`, `$VIM`/`$VIMRUNTIME`, and
+`$CLAUDE_SESSION_ID` (if available) to suppress duplicate info at each layer.
+
+### Task 1: Claude Statusline Script (MEDIUM PRIORITY)
+
+Docs: https://code.claude.com/docs/en/statusline
+
+- [ ] Decide script location before writing it:
+  - Option A: `config/claude/statusline.sh` → symlinks to `~/.config/claude/`
+  - Option B: `config/claude/bin/statusline.sh` → symlinks to `~/.claude/bin/`
+    (preferred if we want to keep `.claude/` clean of scripts; mirrors how
+    `bin/` works in the dotfiles repo itself)
+  - Check whether Claude Code's `statusLine.command` accepts an arbitrary path
+    or requires it to live under `~/.claude/` specifically
+- [ ] Create the script at the chosen location:
+  - Receives JSON session data on stdin; outputs plain text to stdout
+  - Key fields: `model.display_name`, `context_window.used_percentage`,
+    `cost.total_cost_usd`, `session_name`, git worktree info
+  - Suppress fields already visible in tmux bar when `$TMUX` is set
+  - Keep output concise — one line is ideal; two max
+  - Use `jq` for JSON parsing with `// fallback` on every field (may be null)
+- [ ] Wire up in `config/claude/settings.json` (or equivalent):
+  ```json
+  "statusLine": {
+    "type": "command",
+    "command": "~/.config/claude/statusline.sh",
+    "refreshInterval": 5
+  }
+  ```
+- [ ] Test: ensure script is executable and fast (slow scripts block updates)
+- [ ] Symlink / dotlink so `config/claude/statusline.sh` lands at the right path
+
+### Task 2: Unified Statusline Strategy (LOW PRIORITY — do after Task 1)
+
+Once the Claude statusline exists, audit all four surfaces together:
+
+- [ ] Inventory what each surface currently shows:
+  - bash prompt (`config/bash_prompt`, `bin/git-status`)
+  - tmux (`config/tmux/tmux.conf` status-left/right)
+  - vim (vimrc / airline / lightline config in `../dotvim`)
+  - claude (`config/claude/statusline.sh` — built in Task 1)
+- [ ] Identify duplicates and decide canonical owner for each piece of info
+- [ ] Implement suppression logic using context env vars (`$TMUX`, `$VIM`, etc.)
+  - This subsumes the existing "if in tmux, disable git-status in bash prompt"
+    and "consider adding git-status to vim status line (except when in tmux)"
+    items from the old Prompt Enhancements list
+- [ ] Update `bin/git-status` to respect context flags
+- [ ] Document the ownership split in a comment block or inline README
 
 ### Tool Configurations
 - [ ] Look into lesshst/lesskey configuration
