@@ -31,9 +31,9 @@ ln -s "$CLAUDE_CONFIG_DIR" "$HOME/.claude"
 - [x] `ln -s "$CLAUDE_CONFIG_DIR" "$HOME/.claude"` — symlink for plugins
 - [x] Relogin and verify plugins load, `~/.claude` not recreated as a real dir
 
-**Cleanup (deferred — verify stability first):**
+**Cleanup (✅ complete):**
 
-- [ ] Remove `~/.claude.bak` once confident everything works
+- [x] Remove `~/.claude.bak` once confident everything works
 
 ### Files to evaluate — each needs a decision: remove, archive, rewrite for
 Claude Code, or convert to a standalone doc.
