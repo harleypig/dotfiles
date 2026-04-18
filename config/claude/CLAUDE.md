@@ -1,14 +1,12 @@
 <!-- CLAUDE.md v1.0.0 -->
-<!-- Source of truth: harleypig/dotfiles -->
-<!-- Do not modify in other repositories. Copy updates from dotfiles. -->
 
 # AI Agent Instructions
 
 **Version:** v1.0.0
 
 This file defines normative agent behavior across repositories. It is generic
-and versioned. Repository-specific rules live in the imported files at the
-bottom of this file and override anything stated here.
+and versioned. Repository-specific rules live in each project's `.claude/`
+directory and override anything stated here.
 
 **Precedence:** `WORKFLOW.md` > `CONVENTIONS.md` > `TESTS.md` > this file
 
@@ -80,9 +78,3 @@ Additional tool detection signals and rules are defined in `WORKFLOW.md`.
 
 - Maintain consistent formatting as defined in `CONVENTIONS.md`.
 - Enforce syntax validity and consistent naming across all resources.
-
----
-
-@WORKFLOW.md
-@CONVENTIONS.md
-@TESTS.md
