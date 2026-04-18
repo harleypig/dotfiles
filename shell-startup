@@ -198,12 +198,13 @@ fi
 [[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \
   && source "$DOTFILES/shell_startup.d/pre-setup"
 
-#-----------------------------------------------------------------------------
-# Check if various dotfiles are linked properly
-[[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
-
 set_bin_dirs
 load_files
+
+#-----------------------------------------------------------------------------
+# Check if various dotfiles are linked properly (runs after load_files so
+# env vars set by shell-startup modules are available for dotlinks entries)
+[[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
 
 ##############################################################################
 # Cleanup

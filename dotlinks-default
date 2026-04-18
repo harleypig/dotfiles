@@ -1,3 +1,4 @@
 $DOTFILES/dot-general/.bash_logout
 $DOTFILES/dot-general/.markdownlintrc
 $DOTFILES/dot-general/.proselintrc
+$CLAUDE_CONFIG_DIR .claude

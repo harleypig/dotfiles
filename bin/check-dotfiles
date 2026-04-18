@@ -41,10 +41,12 @@ check_links() {
   debug "loading links from $links_file"
   readarray -t link_files < <(grep -v '^[[:space:]]*#' "$links_file" | envsubst)
 
-  for link_file in "${link_files[@]}"; do
-    [[ -z $link_file ]] && continue
-    debug "checking $link_file"
-    check_link "$link_file" "${link_file##*/}"
+  for link_entry in "${link_files[@]}"; do
+    [[ -z $link_entry ]] && continue
+    read -r link_file link_name <<< "$link_entry"
+    link_name="${link_name:-${link_file##*/}}"
+    debug "checking $link_file -> $link_name"
+    check_link "$link_file" "$link_name"
   done
 }
 
