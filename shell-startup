@@ -198,6 +198,7 @@ fi
 [[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \
   && source "$DOTFILES/shell_startup.d/pre-setup"
 
+#-----------------------------------------------------------------------------
 set_bin_dirs
 load_files
 
