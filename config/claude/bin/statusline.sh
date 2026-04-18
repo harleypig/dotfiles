@@ -37,6 +37,10 @@ join_array() {
 declare -a vars
 declare -A jq_filter sl_label
 
+vars+=('mode')
+jq_filter['mode']='.vim.mode'
+sl_label['mode']=
+
 vars+=('model')
 jq_filter['model']='.model.display_name // "unknown"'
 sl_label['model']=''
@@ -48,6 +52,10 @@ sl_label['ctx']='Ctx: '
 vars+=('cost')
 jq_filter['cost']='.cost.total_cost_usd // 0 | tostring'
 sl_label['cost']='$'
+
+vars+=('version')
+jq_filter['version']='.version'
+sl_label['version']='code '
 
 #------------------------------------------------------------------------------
 # Gather data — single jq call via @tsv, one read
@@ -99,8 +107,12 @@ fi
 # Build output parts and join with ' | '
 
 declare -a parts
-parts+=("${sl_label[model]}${model}")
-parts+=("${sl_label[ctx]}${ctx_color}${ctx}%${reset}")
-parts+=("${sl_label[cost]}${cost}")
+
+parts+=("${sl_label['mode']}")
+parts+=("$(git-status)")
+parts+=("${sl_label['model']}${model}")
+parts+=("${sl_label['ctx']}${ctx_color}${ctx}%${reset}")
+parts+=("${sl_label['cost']}${cost}")
+parts+=("${sl_label['version']}${version}")
 
 printf '%s\n' "$(join_array ' | ' 'parts')"
