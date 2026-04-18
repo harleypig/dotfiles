@@ -9,23 +9,54 @@ This skill manages development across git worktrees for forked repos and
 personal repos. It covers issue setup, syncing, PR prep, cross-branch
 integration, and cleanup.
 
+## Prerequisites
+
+- `git` 2.5+ (worktree support)
+- `gh` CLI, authenticated (`gh auth status`)
+
 ## Directory convention
 
-The user's projects follow this layout:
+All worktrees are **siblings** of (or subdirectories relative to) the base
+clone. The base is at `$BASE_DIR`; its parent is `$PARENT_DIR`. The skill
+never needs to know the absolute prefix — all paths are derived from
+`git rev-parse --show-toplevel`.
+
+Example layout (default naming):
 
 ```
 ~/projects/PROJECT/
-    PROJECT/        base clone (origin + optional upstream remotes)
-    issue321/       worktree for issue 321
-    issue456/       worktree for issue 456
-    mine/           optional personal base branch worktree (fork mode only)
+    PROJECT/            base clone (origin + optional upstream remotes)
+    issue321/           worktree for issue branch issue/321
+    pr/feature-name/    worktree for branch pr/feature-name
+    mine/               optional personal base branch worktree (fork mode only)
 ```
 
-All worktrees are **siblings** of the base clone. From inside any of them, the
-base is `../PROJECT` and other worktrees are `../issueN`.
+### Deriving a worktree path
 
-The skill never needs to know the `~/projects` prefix. Paths are always
-derived from `git rev-parse --show-toplevel` and its parent directory.
+When creating a new worktree, resolve the path in this order:
+
+1. **User supplied an explicit path** — use it as-is.
+2. **Existing worktrees present** — infer the pattern by comparing each
+   worktree's path to its checked-out branch:
+   ```bash
+   git worktree list --porcelain | awk '/^worktree/{wt=$2} /^branch/{print wt, $2}'
+   ```
+   If a consistent mapping is visible (e.g., all worktrees are
+   `$PARENT_DIR/<branch-without-prefix>`), apply the same pattern.
+3. **No pattern found / first worktree** — default: strip the remote-tracking
+   prefix and preserve any remaining slashes as path separators under
+   `$PARENT_DIR`. Examples:
+   - branch `issue/321`  → `$PARENT_DIR/issue/321`
+   - branch `pr/feature` → `$PARENT_DIR/pr/feature`
+   - branch `hotfix`     → `$PARENT_DIR/hotfix`
+
+**Always show the derived path and ask for confirmation before creating.**
+The user can supply a different path at that prompt.
+
+**Naming note:** Branch names may contain slashes (`issue/321`); the
+corresponding worktree directory preserves those slashes as subdirectory
+separators. This means `$PARENT_DIR/issue/321` is a directory nested under
+`$PARENT_DIR/issue/`, not a flat sibling.
 
 ## Detecting repo mode
 
@@ -45,6 +76,26 @@ live in either fork or upstream.
 **Own-repo mode:** no `upstream`. All issues and PRs live on origin. Simpler
 lifecycle.
 
+## Detecting worktree usage
+
+Check once per session whether this repo is already using worktrees:
+
+```bash
+WORKTREE_COUNT=$(git worktree list --porcelain | grep -c "^worktree ")
+WORKTREES_IN_USE=$([ "$WORKTREE_COUNT" -gt 1 ] && echo true || echo false)
+```
+
+If `WORKTREES_IN_USE=false` and the user triggers a worktree-style operation
+(issue setup, sync, prep-for-PR, cleanup), ask before proceeding:
+
+> "This repo doesn't currently use worktrees. Set one up (recommended for
+> parallel issue work), or work on a plain branch in the current clone?"
+
+- **Worktree path:** proceed with the full skill as documented.
+- **Plain-branch path:** create/checkout the branch in the main clone; skip
+  all `git worktree add/remove` commands. Sync, prep-for-PR, and cleanup
+  steps still apply — just without the worktree layer.
+
 ## Detecting the default branch
 
 Never hardcode `main` or `master`. Derive it:
@@ -60,8 +111,12 @@ DEFAULT_BRANCH=$(git symbolic-ref "refs/remotes/${DEFAULT_REMOTE}/HEAD" 2>/dev/n
 
 # If unset, query via gh and then set it locally for next time
 if [ -z "$DEFAULT_BRANCH" ]; then
-    REPO_SLUG=$(gh repo view --json nameWithOwner -q .nameWithOwner)  # adjust for remote
-    DEFAULT_BRANCH=$(gh repo view "$REPO_SLUG" --json defaultBranchRef -q .defaultBranchRef.name)
+    # In fork mode query upstream's repo; in own-repo mode query origin
+    if [ "$REPO_MODE" = "fork" ]; then
+        DEFAULT_BRANCH=$(gh repo view --json parent -q .parent.defaultBranchRef.name)
+    else
+        DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
+    fi
     git remote set-head "$DEFAULT_REMOTE" "$DEFAULT_BRANCH"
 fi
 ```
@@ -78,9 +133,8 @@ PROJECT_NAME=$(basename "$BASE_DIR")
 PARENT_DIR=$(dirname "$BASE_DIR")
 
 ORIGIN_SLUG=$(gh repo view --json nameWithOwner -q .nameWithOwner)
-# Fork mode only:
-UPSTREAM_URL=$(git remote get-url upstream 2>/dev/null)
-UPSTREAM_SLUG=$(echo "$UPSTREAM_URL" | sed -E 's#.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')
+# Fork mode only — use gh to avoid parsing SSH/HTTPS URL variants:
+UPSTREAM_SLUG=$(gh repo view --json parent -q .parent.nameWithOwner 2>/dev/null)
 ```
 
 ---
@@ -107,8 +161,12 @@ default later.
 ### Step 2: Check worktree state
 
 ```bash
-WORKTREE_PATH="${PARENT_DIR}/issue${N}"
 BRANCH_NAME="issue/${N}"
+
+# Derive WORKTREE_PATH using the "Deriving a worktree path" rules above.
+# For a plain issue branch with no existing pattern the default is:
+WORKTREE_PATH="${PARENT_DIR}/issue/${N}"
+# Always confirm the derived path with the user before creating.
 
 # Does the worktree already exist?
 if git worktree list --porcelain | grep -q "^worktree ${WORKTREE_PATH}$"; then
@@ -134,8 +192,10 @@ Fresh setup:
 
 ```bash
 git fetch "$DEFAULT_REMOTE"
-git branch "$BRANCH_NAME" "${DEFAULT_REMOTE}/${DEFAULT_BRANCH}"
-git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
+# -b creates the branch and worktree atomically; avoids orphaned branch on failure
+git worktree add -b "$BRANCH_NAME" "$WORKTREE_PATH" "${DEFAULT_REMOTE}/${DEFAULT_BRANCH}"
+# Set tracking so git status shows ahead/behind
+git -C "$WORKTREE_PATH" branch --set-upstream-to="${DEFAULT_REMOTE}/${DEFAULT_BRANCH}" "$BRANCH_NAME"
 ```
 
 ### Step 4: Report and hand off
@@ -160,9 +220,18 @@ branch", "rebase on main", "pull from upstream", etc.
 
 ### Parse source and target
 
-- No args, inside a worktree → target = current branch, source = its natural base (see below)
-- "from X" or bare branch name → source specified
-- "X into Y" → both specified; cd to Y's worktree first
+```
+if user says "X into Y":
+    SOURCE = X; TARGET = Y
+    cd to Y's worktree (resolve via git worktree list --porcelain)
+elif user says "from X" or "sync from X" or names a bare branch:
+    SOURCE = X; TARGET = current branch (git rev-parse --abbrev-ref HEAD)
+else:  # no args
+    TARGET = current branch (git rev-parse --abbrev-ref HEAD)
+    SOURCE = natural base (see table below)
+```
+
+If TARGET's worktree can't be located, stop and ask.
 
 ### Natural base by branch type
 
@@ -252,7 +321,16 @@ etc.
 1. Verify current worktree is clean
 2. Sync with the correct base (Operation 2 logic)
 3. Run any project-standard checks if obvious from the repo (tests, linters) — but do not guess; if unclear, ask the user whether to run them
-4. Push to origin: `git push -u origin "$BRANCH_NAME"` (use `--force-with-lease` if rebase just happened)
+4. Push to origin:
+   ```bash
+   # Detect whether branch has been pushed before
+   if git rev-parse --verify "refs/remotes/origin/${BRANCH_NAME}" >/dev/null 2>&1; then
+       PREVIOUSLY_PUSHED=true
+   fi
+   ```
+   - If rebase just ran OR `PREVIOUSLY_PUSHED=true` with diverged history:
+     warn user, then `git push --force-with-lease -u origin "$BRANCH_NAME"`
+   - Otherwise: `git push -u origin "$BRANCH_NAME"`
 5. Determine target: in fork mode with upstream issue, PR targets `${UPSTREAM_SLUG}:${DEFAULT_BRANCH}`. In own-repo mode, PR targets `${ORIGIN_SLUG}:${DEFAULT_BRANCH}`.
 6. Offer to run `gh pr create` — but only after confirming PR title and body with the user
 
@@ -267,7 +345,11 @@ X", etc.
 
 ### Preconditions
 
-1. User is NOT currently inside the worktree being removed (check `pwd` vs worktree path)
+1. User is NOT currently inside the worktree being removed:
+   ```bash
+   # Use git rather than pwd — pwd can differ from toplevel due to symlinks or subdirectory CWD
+   [[ "$(git rev-parse --show-toplevel 2>/dev/null)" != "$WORKTREE_PATH" ]]
+   ```
 2. Worktree has a clean tree
 3. Branch's PR status — use `gh pr list --head "$BRANCH_NAME"` to check if there's an open/merged PR; warn if no merged PR is found but don't block
 
@@ -276,12 +358,26 @@ X", etc.
 ```bash
 git worktree remove "$WORKTREE_PATH"
 git branch -d "$BRANCH_NAME"   # -d refuses unmerged; upgrade to -D only with user confirmation
+git worktree prune              # remove stale metadata for any manually deleted worktree dirs
 ```
 
 If `git branch -d` fails because commits aren't merged, report clearly and ask
 whether to force-delete. Never force-delete silently.
 
-After removal, optionally `git worktree prune` to clean up any stale metadata.
+After local cleanup, check for a remote branch and offer to delete it:
+
+```bash
+if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+    REMOTE_BRANCH_EXISTS=true
+fi
+```
+
+If the remote branch exists:
+- Note whether GitHub auto-deleted it already (check if the ref just
+  disappeared since `git fetch` earlier in this operation).
+- Ask the user: "Remote branch `origin/$BRANCH_NAME` still exists. Delete
+  it?" — never delete silently.
+- If confirmed: `git push origin --delete "$BRANCH_NAME"`
 
 ---
 
