@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# XXX: Add STASHed info (check logs/refs/stash for count and other info)
-
 # Most of this git functionality came from
 # https://gist.github.com/623142
 
