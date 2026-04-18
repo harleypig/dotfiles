@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Compare with https://github.com/koalaman/shellcheck/wiki/Contrib#docker-wrapper-script
+
 exec docker run \
   --rm \
   --user "$(id -u):$(id -g)" \
