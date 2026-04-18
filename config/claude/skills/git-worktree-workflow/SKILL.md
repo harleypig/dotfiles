@@ -5,6 +5,8 @@ description: Manage git worktree-based development for forked and personal repos
 
 # Git Worktree Workflow
 
+**Version:** v1.0.0
+
 This skill manages development across git worktrees for forked repos and
 personal repos. It covers issue setup, syncing, PR prep, cross-branch
 integration, and cleanup.
