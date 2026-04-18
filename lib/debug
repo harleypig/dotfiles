@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# XXX: Document me!
-# XXX: Test me!
+# Shell library: sourced() and debug() utilities. Must be sourced, not executed.
+# sourced() — true if current file is being sourced rather than executed
+# debug()   — writes call-stack-prefixed message to stderr when $DEBUG is set
 
 #----------------------------------------------------------------------------
 : << POD
@@ -94,7 +95,7 @@ debug() {
   local trace_start=$((${#el[@]}-${DBG_TRACE_LEN:-3}))
 
   #for ((ix = ${#el[@]} - 1; ix >= 0; ix--)); do
-  for ((ix = $trace_start; ix < "${#el[@]}"; ix++)); do
+  for ((ix = trace_start; ix < ${#el[@]}; ix++)); do
     trace+="${el[ix]}"
   done
 

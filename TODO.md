@@ -11,7 +11,7 @@ guidelines and `TESTS.md` for testing strategy.
 
 ### Immediate Tasks
 - [ ] Review and consolidate docs/ directory
-  - [ ] Evaluate docs/bash-completion.md - move inline or keep as overview?
+  - [x] Evaluate docs/bash-completion.md - moved to config/completions/README.md
   - [ ] Consider moving docs/git_aliases.md to config/git/ or config/shell-startup/git
   - [ ] Ensure all remaining docs follow WORKFLOW.md philosophy
 
@@ -109,6 +109,28 @@ ensure everything that should have tests does.
   - [ ] Any scripts in other locations (setup-work, etc.)
 - [ ] Ensure `tests/build-meta-tests` generates tests for all new scripts
 - [ ] Update Phase 3 checklist once items are covered here
+
+## 🧠 Claude Rules Files (MEDIUM PRIORITY)
+
+Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the
+agent how to use each tool. Already have: bash.md, perl.md, powershell.md,
+pre-commit.md, python.md.
+
+- [ ] Check `../dotvim` for existing tool parameters before writing rules
+  (shellcheck and shfmt configs are known to be there via ALE)
+- [ ] Audit all tools in use across the repo and create missing rules files:
+  - [ ] shellcheck — severity thresholds, disable conventions, SC codes to
+    always suppress or always enforce
+  - [ ] shfmt — indent style, switch-case indent, space-redirects flags
+  - [ ] yamllint — config file location, common relaxations
+  - [ ] markdownlint — line length, allowed HTML, rules to disable
+  - [ ] yapf — already have config/yapf; document how agent should invoke it
+  - [ ] git — commit conventions, branch naming, force-push policy
+  - [ ] bats — test structure expectations, helper usage
+  - [ ] docker — image pinning policy, layer hygiene
+  - [ ] gh — PR/issue conventions for this repo
+  - [ ] Any other tools discovered during pre-commit or CI work
+- [ ] Consider a template for new rules files so they stay consistent
 
 ## 🔒 Pre-commit Configuration (HIGH PRIORITY)
 
@@ -312,11 +334,11 @@ PowerShell 5.1.
 ### Bin Scripts
 - [ ] git-all:3 - Refactor to current standards or remove (TODO: Finish updating
   or scrap)
-- [ ] git-status:3 - Add STASH information (XXX)
+- [x] git-status:3 - Add STASH information (XXX)
 - [x] yesno:33 - Add option to suppress warnings (XXX)
 
 ### Library Documentation and Testing
-- [ ] lib/debug:3,4 - Document and test (XXX)
+- [ ] lib/debug:3,4 - Test (documented)
 - [ ] lib/strings:7,8,9 - Document, test, enforce sourcing only (XXX)
 - [ ] lib/Arrays:7,8,9,38 - Document, test, enforce sourcing, consider moving to
   tools/bin (XXX)
@@ -327,7 +349,7 @@ PowerShell 5.1.
 - [ ] config/perl:12,54 - Check for completion capability, test if bakeini is
   installed (XXX)
 - [ ] config/less:85,86 - Figure out lesspipe.html and syntax highlighting (XXX)
-- [ ] config/tmux:37 - Detect multiple sessions (XXX)
+- [x] config/tmux:37 - Detect multiple sessions (XXX)
 - [ ] config/terraform:9 - Compare with gist (XXX)
 - [ ] config/taskwarrior:8,9,10 - Add sourcing check, version check, look at
   scripts (XXX)

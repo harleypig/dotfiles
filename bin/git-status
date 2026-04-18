@@ -70,10 +70,13 @@ if [ -n "$info" ]; then
   branch=$(echo "$info" | perl -ane '$F[0]=~s/[<>=]$//;print $F[0]')
   unstaged=$(echo "$info" | perl -ane 'print $F[1]=~/\*/')
   staged=$(echo "$info" | perl -ane 'print $F[1]=~/\+/')
-  #stashed=$(echo "$info" | perl -ane 'print $F[1]=~/\$/')
   #untracked=$(echo "$info" | perl -ane 'print $F[1]=~/\%/')
   behind=$(echo "$info" | perl -ane 'print $F[1]=~/\</ || $F[0]=~/\<$/')
   ahead=$(echo "$info" | perl -ane 'print $F[1]=~/\>/ || $F[0]=~/\>$/')
+
+  stash_count=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
+  stash_info=
+  ((stash_count > 0)) && stash_info=" {${stash_count}}"
 
   status_color="$git_normal_color"
   if [ -n "$unstaged" ]; then status_color="$git_unstaged_color"; fi
@@ -85,5 +88,5 @@ if [ -n "$info" ]; then
 
   repo="$(basename "$(git rev-parse --show-toplevel)"): "
 
-  printf ' %s(%s%s%s)%s' "$status_color" "$repo" "$branch" "$upstream" "$color_off"
+  printf ' %s(%s%s%s%s)%s' "$status_color" "$repo" "$branch" "$upstream" "$stash_info" "$color_off"
 fi
