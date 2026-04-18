@@ -8,6 +8,23 @@
 command -v jq &>/dev/null || { printf 'claude | jq not found\n'; exit 0; }
 
 #------------------------------------------------------------------------------
+# Copied from config/shell-startup/bash_prompt. Takes a delimiter string and
+# an array name (by reference), prints elements joined by the delimiter.
+
+join_array() {
+  (($# != 2)) && { printf 'join_array: must pass delimiter and array name\n' >&2; return 1; }
+
+  local delim="$1"
+  local -n _array_="$2"
+
+  first="${_array_[0]}"
+  rest=("${_array_[@]:1}")
+
+  printf '%s' "$first"
+  printf '%s' "${rest[@]/#/$delim}"
+}
+
+#------------------------------------------------------------------------------
 # Field definitions — add/remove fields here; vars order sets display order.
 # jq expressions receive the full session JSON object.
 
@@ -20,7 +37,7 @@ sl_label['model']=''
 
 vars+=('ctx')
 jq_filter['ctx']='(.context_window.used_percentage // 0) | floor | tostring'
-sl_label['ctx']='ctx '
+sl_label['ctx']='Ctx: '
 
 vars+=('cost')
 jq_filter['cost']='.cost.total_cost_usd // 0 | tostring'
@@ -28,6 +45,9 @@ sl_label['cost']='$'
 
 #------------------------------------------------------------------------------
 # Gather data — single jq call via @tsv, one read
+#
+# @tsv formats the jq array as tab-separated values so that a single
+# IFS=$'\t' read can split all fields into their named variables in one pass.
 
 data=$(cat)
 
@@ -50,6 +70,7 @@ cost=$(printf '%.2f' "$cost" 2>/dev/null || printf '?.??')
 # Set colors
 
 declare red yellow cyan reset
+
 if command -v ansi &>/dev/null; then
   red=$(ansi fg red)
   yellow=$(ansi fg yellow)
@@ -70,10 +91,4 @@ parts+=("${sl_label[model]}${model}")
 parts+=("${sl_label[ctx]}${ctx_color}${ctx}%${reset}")
 parts+=("${sl_label[cost]}${cost}")
 
-result=''
-for part in "${parts[@]}"; do
-  [[ -n $result ]] && result+=' | '
-  result+="$part"
-done
-
-printf '%s\n' "$result"
+printf '%s\n' "$(join_array ' | ' 'parts')"
