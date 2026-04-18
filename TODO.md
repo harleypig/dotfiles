@@ -303,6 +303,28 @@ currently broken. `bin/CleanPath.tmp` appears to be a duplicate/scratch copy.
 - [ ] ps-startup.ps1:49 - Move Python path to dedicated setup file (XXX)
 - [ ] 010-general.ps1:27,42,54,59 - Port remaining bash features marked with XXX
 
+### PowerShell: Linux Dev/Test Environment (RESEARCH FIRST)
+
+Before doing PowerShell work, research whether Linux PowerShell Core (`pwsh`)
+is a viable dev/test environment for scripts intended to run on Windows
+PowerShell 5.1.
+
+- [ ] Research compatibility between `pwsh` (Core) and Windows PowerShell 5.1:
+  - Known gaps: COM objects, Windows-only modules (`ActiveDirectory`, etc.),
+    `$PSVersionTable.PSEdition` differences, some .NET APIs
+  - Determine if `ps-startup.ps1` and `config/powershell/` scripts use any
+    Windows-only features that would break under `pwsh` on Linux
+  - Check if Pester (PowerShell test framework) runs identically on both
+- [ ] Research using Docker for PowerShell testing:
+  - Microsoft publishes official `mcr.microsoft.com/powershell` images
+    (Linux-based `pwsh`) — suitable for CI and local testing
+  - Investigate whether a Windows container (`mcr.microsoft.com/windows/...`)
+    would be needed to test true Windows PowerShell 5.1 behavior, and
+    whether that's practical (requires Windows host for Windows containers)
+  - Document the recommended approach and its limitations in TESTS.md
+- [ ] If Linux `pwsh` + Docker is viable: set up a test harness (likely
+  Pester inside the container) before tackling the improvement tasks above
+
 ### Bin Scripts
 - [ ] CleanPath.tmp:3,4 - Document or remove temp file (XXX: Document me, Test
   me)
