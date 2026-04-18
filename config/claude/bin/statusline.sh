@@ -14,10 +14,14 @@ cost_raw=$( printf '%s' "$data" | jq -r '.cost.total_cost_usd // 0'             
 ctx=$(( ${ctx%%.*} + 0 ))
 cost=$(printf '%.2f' "$cost_raw" 2>/dev/null || printf '?.??')
 
-red=$'\033[31m'
-yellow=$'\033[33m'
-cyan=$'\033[36m'
-reset=$'\033[0m'
+if command -v ansi &>/dev/null; then
+  red=$(ansi fg red)
+  yellow=$(ansi fg yellow)
+  cyan=$(ansi fg cyan)
+  reset=$(ansi off)
+else
+  red='' yellow='' cyan='' reset=''
+fi
 
 if   (( ctx >= 75 )); then ctx_color=$red
 elif (( ctx >= 50 )); then ctx_color=$yellow
