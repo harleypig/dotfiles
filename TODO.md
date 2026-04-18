@@ -57,26 +57,6 @@ Reference: https://wiki.archlinux.org/title/XDG_Base_Directory
 - [ ] Update dotlinks if any of these were previously managed there
 - [ ] After migration, verify apps still work correctly
 
-## 🗂️ .gitignore Audit (MEDIUM PRIORITY)
-
-Reorganize .gitignore files to be as directory-specific as possible.
-Some `config/<app>` dirs need only certain files ignored; others can
-ignore the entire directory. Having rules close to the relevant files
-is cleaner than a monolithic root .gitignore.
-
-- [x] Audit root `.gitignore` — identify entries that belong in a
-  subdirectory `.gitignore` instead
-- [x] Audit `config/claude/.gitignore` (new) — verify coverage is correct
-- [x] Check other `config/` subdirs that may benefit from local `.gitignore`
-  files (e.g., dirs where only some files are tracked)
-- [x] Check if any other `.gitignore` files exist in subdirectories and
-  ensure they're consistent with the root
-- [x] Document the convention: prefer directory-local `.gitignore` over
-  path-prefixed rules in root
-- [ ] Consider moving `gitconfig.user` and `gitconfig.user.template` from
-  repo root to `config/git/` and updating the `[include] path` in
-  `config/git/config` (currently `../../gitconfig.user`) — would allow
-  `gitconfig.user*` rule to move from root `.gitignore` to `config/git/.gitignore`
 
 ## 🧪 Testing (HIGH PRIORITY)
 

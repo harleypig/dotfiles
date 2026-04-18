@@ -7,14 +7,10 @@ coverage
 
 .env
 
-.mymcp/
-
 *.swp
 *~
 
 venv
-gitconfig.user*
-!gitconfig.user.template
 
 node_modules/**
 cygdrive/**
