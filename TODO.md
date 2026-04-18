@@ -116,12 +116,12 @@ Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the
 agent how to use each tool. Already have: bash.md, perl.md, powershell.md,
 pre-commit.md, python.md.
 
-- [ ] Check `../dotvim` for existing tool parameters before writing rules
+- [x] Check `../dotvim` for existing tool parameters before writing rules
   (shellcheck and shfmt configs are known to be there via ALE)
 - [ ] Audit all tools in use across the repo and create missing rules files:
-  - [ ] shellcheck — severity thresholds, disable conventions, SC codes to
-    always suppress or always enforce
-  - [ ] shfmt — indent style, switch-case indent, space-redirects flags
+  - [x] shellcheck — inline disable conventions; .shellcheckrc location is an
+    open question (global vs repo-local vs both) documented in the rules file
+  - [x] shfmt — flags `-i 2 -s -bn -ci -sr` from dotvim ALE config
   - [ ] yamllint — config file location, common relaxations
   - [ ] markdownlint — line length, allowed HTML, rules to disable
   - [ ] yapf — already have config/yapf; document how agent should invoke it
@@ -131,6 +131,26 @@ pre-commit.md, python.md.
   - [ ] gh — PR/issue conventions for this repo
   - [ ] Any other tools discovered during pre-commit or CI work
 - [ ] Consider a template for new rules files so they stay consistent
+
+## 🪝 Claude Code PostToolUse Hooks (MEDIUM PRIORITY)
+
+Rules files instruct the agent to run shellcheck/shfmt, but only if the agent
+remembers. `PostToolUse` hooks in `settings.json` enforce this automatically
+after every `Edit` or `Write` on a shell file.
+
+- [ ] Decide hook approach:
+  - Option A: inline command in `settings.json` (simple, but not version-controlled
+    separately from settings)
+  - Option B: `config/claude/bin/post-edit-shell.sh` script invoked by the hook
+    (keeps logic in a file, easier to maintain)
+- [ ] Implement hook in `config/claude/settings.json`:
+  - Match on `Edit` and `Write` tool use
+  - Detect if the modified file is a shell file (by path pattern or shebang)
+  - Run `shfmt -i 2 -s -bn -ci -sr -w <file>` then `shellcheck <file>`
+  - Output failures so Claude sees them and can fix before continuing
+- [ ] Research Claude Code hook input format: what env vars / stdin does a
+  `PostToolUse` hook receive? (need file path of edited file)
+- [ ] Document hook setup in this repo's WORKFLOW.md once stable
 
 ## 🔒 Pre-commit Configuration (HIGH PRIORITY)
 
