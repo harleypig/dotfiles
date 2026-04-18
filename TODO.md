@@ -74,6 +74,25 @@ Claude Code, or convert to a standalone doc.
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
   - See "Code Improvements (LOW PRIORITY)" section for detailed list
 
+## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
+
+Review all files in `config/shell-startup/` for correctness and security:
+
+- [ ] Variables set at module scope but never unset (temporary/setup vars
+  that pollute the shell environment)
+- [ ] Sensitive values (tokens, keys, paths to secrets) that should be
+  handled more carefully or not exported at all
+- [ ] Variables exported unnecessarily (does the child process actually
+  need it, or should it be local?)
+- [ ] Patterns like `source`/`.` that execute arbitrary files without
+  checking ownership or permissions
+- [ ] Files read without checking they're not world-writable
+- [ ] Missing `command -v ... || return 0` guards where a tool may not
+  be installed
+- [ ] Inconsistent guard style (`if command -v` vs `command -v || return 0`)
+  — standardize to `|| return 0` pattern per `000-loadtokens` fix
+- [ ] Any other shellcheck warnings not already suppressed with justification
+
 ## 🗂️ .gitignore Audit (MEDIUM PRIORITY)
 
 Reorganize .gitignore files to be as directory-specific as possible.
