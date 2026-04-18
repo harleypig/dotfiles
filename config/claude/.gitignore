@@ -9,3 +9,5 @@
 !rules/**
 !skills/
 !skills/**
+!bin/
+!bin/**

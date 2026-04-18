@@ -391,39 +391,19 @@ Context detection: use `$TMUX`, `$VIM`/`$VIMRUNTIME`, and
 
 Docs: https://code.claude.com/docs/en/statusline
 
-- [ ] Decide script location before writing it:
-  - Option A: `config/claude/statusline.sh` → symlinks to `~/.config/claude/`
-  - Option B: `config/claude/bin/statusline.sh` → symlinks to `~/.claude/bin/`
-    (preferred if we want to keep `.claude/` clean of scripts; mirrors how
-    `bin/` works in the dotfiles repo itself)
-  - Option C: `bin/claude-statusline` → already on `$PATH` via `$DOTFILES/bin`;
-    `statusLine.command` just references it by name — no symlink needed.
-    Downside: mixes a Claude-specific script into the general-purpose bin/;
-    may be confusing to someone browsing bin/ without Claude context.
-  - **Key question:** does `statusLine.command` accept an arbitrary path / name
-    on `$PATH`, or must the script live somewhere under `~/.claude/`?
-    Answer determines whether Option C is viable at all.
-  - General principle to decide between B and C: if the script is only ever
-    useful inside a Claude session, keep it claude-adjacent (Option B); if it
-    could be useful standalone (e.g. piped into something else, called from
-    other tools), bin/ makes more sense (Option C).
-- [ ] Create the script at the chosen location:
-  - Receives JSON session data on stdin; outputs plain text to stdout
-  - Key fields: `model.display_name`, `context_window.used_percentage`,
-    `cost.total_cost_usd`, `session_name`, git worktree info
-  - Suppress fields already visible in tmux bar when `$TMUX` is set
-  - Keep output concise — one line is ideal; two max
-  - Use `jq` for JSON parsing with `// fallback` on every field (may be null)
-- [ ] Wire up in `config/claude/settings.json` (or equivalent):
-  ```json
-  "statusLine": {
-    "type": "command",
-    "command": "~/.config/claude/statusline.sh",
-    "refreshInterval": 5
-  }
-  ```
-- [ ] Test: ensure script is executable and fast (slow scripts block updates)
-- [ ] Symlink / dotlink so `config/claude/statusline.sh` lands at the right path
+- [x] Decided location: Option B — `config/claude/bin/statusline.sh` (`~/.claude/bin/`)
+  - `~/.claude/` IS `config/claude/` in this setup (no symlink needed)
+  - Script is Claude-session-only → keep it claude-adjacent, not in general bin/
+  - `statusLine.command` accepts any path; no requirement to be under `~/.claude/`
+- [x] Created `config/claude/bin/statusline.sh`:
+  - Shows: `model.display_name | ctx N% | $cost`
+  - Context % colored cyan < 50%, yellow 50–74%, red ≥ 75%
+  - All jq fields use `// fallback`; graceful exit if jq missing
+- [x] Wired up in `config/claude/settings.json`:
+  `"statusLine": { "type": "command", "command": "~/.claude/bin/statusline.sh", "refreshInterval": 5 }`
+- [ ] Observe in a live session and tune (model name length, field order, colors)
+- [ ] Consider adding worktree name when inside a git worktree
+- [ ] Consider suppressing model name when $TMUX is set (if tmux bar shows it)
 
 ### Task 2: Unified Statusline Strategy (LOW PRIORITY — do after Task 1)
 
