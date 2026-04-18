@@ -21,9 +21,9 @@ paths:
 ## Invocation
 
 ```bash
-bats tests/                          # all tests
-bats tests/test_<component>.bats     # single file
-bats tests/ --filter "pattern"       # matching tests only
+bats tests/                                          # all tests
+bats tests/test_<component>.bats                     # single file
+bats --filter "pattern" tests/test_<component>.bats  # matching tests only
 ```
 
 ## Test Structure
@@ -58,8 +58,10 @@ teardown_file() { }                     # runs once for the file
 - Every new script in `bin/` and every function in `lib/` MUST have a
   corresponding `test_<name>.bats` file covering success and failure paths.
 - Bug fixes MUST include a regression test that fails before the fix.
-- After writing or modifying `.bats` files, run `bats tests/` and confirm
-  all tests pass before considering the task complete.
+- After writing or modifying `.bats` files, run the specific test file
+  (`bats tests/test_<component>.bats`) first. Run the full suite
+  (`bats tests/`) only before committing or when cross-component impact
+  is plausible. The full suite is reserved for CI in general use.
 - Regenerate meta-tests after adding or removing files:
   ```bash
   cd tests && ./build-meta-tests

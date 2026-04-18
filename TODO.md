@@ -186,6 +186,12 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
   - [ ] trailing-whitespace (fix mode)
 - [ ] Test pre-commit configuration with sample files
 - [ ] Document pre-commit usage in README.md
+- [ ] Update all `config/claude/rules/*.md` Agent Behavior sections to
+  prioritize pre-commit over direct tool invocation:
+  - Normal ops: `pre-commit run --files <file>` instead of `shfmt`/`shellcheck`/etc.
+  - Fix ops: `pre-commit run --config .pre-commit-config-fix.yaml --files <file>`
+  - Direct tool invocation becomes the fallback when pre-commit is not
+    configured or the file is not covered by any hook
 
 ### Phase 2: Security Hooks
 - [ ] Add security checks to `.pre-commit-config.yaml`:

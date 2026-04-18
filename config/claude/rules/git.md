@@ -29,6 +29,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `bugfix/<name>` — bug fixes
 - `docs/<name>` — documentation only
 - `issue/<N>` — issue branches (managed by git-worktree-workflow skill)
+- `pr/<name>` — PR-prep branches (managed by git-worktree-workflow skill)
 
 ## Default Branch
 
@@ -56,7 +57,9 @@ Key defaults from that skill:
 ## Agent Rules
 
 - NEVER hardcode `main` or `master` — always derive the default branch.
-- NEVER force-push without `--force-with-lease`; warn before doing so.
+- NEVER force-push without `--force-with-lease --force-if-includes`; warn
+  before doing so. (`--force-with-lease` alone can still lose commits that
+  were fetched but not integrated; `--force-if-includes` closes that gap.)
 - NEVER force-delete a branch silently — always confirm with the user.
 - NEVER amend published commits or skip hooks without explicit user approval.
 - NEVER push to the default branch without user confirmation.

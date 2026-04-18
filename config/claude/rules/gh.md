@@ -8,7 +8,7 @@
 
 ## Pull Requests
 
-**Title:** under 70 characters; describe the change, not the implementation.
+**Title:** under 72 characters; describe the change, not the implementation.
 
 **Body format:**
 

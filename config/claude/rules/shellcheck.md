@@ -65,9 +65,11 @@ directory containing the files.
 
 ## Agent Behavior
 
-- After creating or modifying any shell file matched by the paths above:
-  1. Run `shfmt -i 2 -s -bn -ci -sr -w <file>` to apply formatting.
-  2. Run `shellcheck <file>` to catch any remaining issues.
-  3. Fix all reported issues before continuing. Inline disables require a
-     reason comment.
-- In pre-commit context: `.pre-commit-config.yaml` checks only; `.pre-commit-config-fix.yaml` applies fixes.
+The full pipeline (format then lint) is owned by `shfmt.md`. shellcheck is
+always the final step:
+
+- Run `shellcheck <file>` after any shell file change.
+- Fix all reported issues before continuing. Inline disables require a
+  reason comment.
+- In pre-commit context: `.pre-commit-config.yaml` checks only;
+  `.pre-commit-config-fix.yaml` applies fixes.

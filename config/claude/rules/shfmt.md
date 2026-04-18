@@ -47,8 +47,9 @@ so it modifies files on the host as expected.
 
 ## Agent Behavior
 
-- After creating or modifying any shell file matched by the paths above:
+- After creating or modifying any shell file matched by the paths above
+  (outside of pre-commit context):
   1. Run `shfmt -i 2 -s -bn -ci -sr -w <file>` to apply formatting.
   2. Run `shellcheck <file>` to catch any remaining issues.
-- In pre-commit context: `.pre-commit-config.yaml` uses `-d` (check only);
-  `.pre-commit-config-fix.yaml` uses `-w` (auto-fix).
+- In pre-commit context: `.pre-commit-config.yaml` uses `-d` (check only,
+  never `-w`); `.pre-commit-config-fix.yaml` uses `-w` (auto-fix).

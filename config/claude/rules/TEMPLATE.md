@@ -3,7 +3,7 @@
 # Omit the paths key entirely for tools that are not file-type-specific
 # (e.g. git, gh).
 paths:
-  - "**/*.ext"
+  - "**/*.ext"  # replace .ext with actual extension(s)
 ---
 
 # <Tool> Rules

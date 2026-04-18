@@ -15,9 +15,11 @@ yapf --style="$XDG_CONFIG_HOME/yapf/style" -i <file>   # fix in place
 yapf --style="$XDG_CONFIG_HOME/yapf/style" -d <file>   # diff (check only)
 ```
 
-yapf also discovers `$XDG_CONFIG_HOME/yapf/style` automatically when
-`YAPF_STYLE` is unset and no `[style]` section exists in `setup.cfg` or
-`.style.yapf` in the file's directory tree.
+yapf's style lookup order: `--style` flag → `.style.yapf` in the directory
+tree → `[yapf]` section in `setup.cfg` → `~/.config/yapf/style` (hardcoded,
+not `$XDG_CONFIG_HOME`). Auto-discovery of the repo config only works when
+`$XDG_CONFIG_HOME` is the default `~/.config`; otherwise pass `--style`
+explicitly.
 
 ## Configuration File
 

@@ -14,7 +14,9 @@ paths:
 yamllint <file>
 ```
 
-No errors or warnings are permitted (warnings are reported; fix them).
+No errors are permitted. Fix all warnings unless they come from a rule
+explicitly set to `level: warning` in the config (e.g. `line-length`,
+`document-start`) — those are intentional relaxations, not oversights.
 
 ## Configuration File
 
