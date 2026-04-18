@@ -1,13 +1,4 @@
-#!/bin/bash
-
-# TODO: Finish updating to current standards. Or just scrap it and start over.
-#       Need to find repositories
-#         with uncommitted changes
-#         with unpushed branches
-#         with unpulled changes
-#
-#       Future, if possible, fix these conditions.
-
+#!/usr/bin/env bash
 
 # git-all - Run git commands on all repositories under REPOHOME
 #
@@ -25,17 +16,14 @@
 
 set -euo pipefail
 
-# Configuration
 REPOHOME=${REPOHOME:-$HOME}
 VERBOSE=0
 
-# Tracking variables
 count=0
 declare -a fail
 declare -a pass
 declare -A output
 
-# Output formatting functions
 print_error() {
   local msg=$1; shift
   printf "$(ansi fg red)::$(ansi off) ${msg}\n" "$@" >&2
@@ -59,78 +47,73 @@ print_failure() {
   printf " $(ansi fg blue)[$(ansi fg red)FAIL$(ansi fg blue)] $(ansi fg cyan)%s$(ansi off)\n" "$1" >&2
 }
 
-breadlink() {
-  local path="$1";
+die() { print_error "%s" "$*"; exit 1; }
 
+breadlink() {
+  local path="$1"
   if [[ -d $path ]]; then
-    (
-      cd "$path"
-      pwd -P
-    )
+    (cd "$path" && pwd -P)
   else
     printf "%s\n" "$path"
   fi
 }
+
 do_all_action() {
+  local repo resolved
   IFS=$'\n' read -r -d $'\0' -a repos < <(find "$REPOHOME" -type d -name '.git' 2>/dev/null)
 
   for repo in "${repos[@]}"; do
     (( ++count ))
-    local repo=$(breadlink ${repo%.git})
-
-    cd "$repo"
-    output[$repo]=$(git "$@" 2>&1) && pass=(${pass[@]} "$repo") || fail=(${fail[@]} "$repo")
+    resolved=$(breadlink "${repo%.git}")
+    cd "$resolved"
+    output[$resolved]=$(git "$@" 2>&1) && pass+=("$resolved") || fail+=("$resolved")
   done
 }
 
 stat_repos() {
+  local repo resolved
   IFS=$'\n' read -r -d $'\0' -a repos < <(find "$REPOHOME" -type d -name '.git' 2>/dev/null)
 
   for repo in "${repos[@]}"; do
-    local repo=$(breadlink ${repo%.git})
-
-    cd "$repo"
-    [[ -n $(git status -s | grep -v "^??") ]] && printf "%s\n" "$repo"
+    resolved=$(breadlink "${repo%.git}")
+    cd "$resolved"
+    [[ -n $(git status -s | grep -v "^??") ]] && printf "%s\n" "$resolved"
   done
 }
 
 job_summary() {
   printf "\n"
-  msg "Job Summary For $count Repos: git $*"
+  print_header "Job Summary For $count Repos: git %s" "$*"
 
   if [[ ${#fail[@]} -eq 0 ]]; then
-    msg2 "No errors were reported"
+    print_subheader "No errors were reported"
   else
     for repo in "${fail[@]}"; do
-      repofail "$repo"
+      print_failure "$repo"
       (( VERBOSE )) && { sed 's/^/   /' <<< "${output[$repo]}"; printf "\n"; } >&2
     done
   fi
   printf "\n"
 
   for repo in "${pass[@]}"; do
-    repopass "$repo"
+    print_success "$repo"
   done
   printf "\n"
 }
 
-# sanity check
-[[ ! -r "$REPOHOME" ]] && die "Invalid \$REPOHOME: $REPOHOME" exit 1
+[[ -r "$REPOHOME" ]] || die "Invalid \$REPOHOME: $REPOHOME"
 
-#while getopts :Sfv flag; do
 while getopts :Sv flag; do
   case $flag in
     S) stat_repos; exit 0 ;;
     v) VERBOSE=1 ;;
     \?) die "invalid option -- '$OPTARG'" ;;
-  esac >&2
+  esac
 done
 
-shift $(( OPTIND-1 ))
+shift $(( OPTIND - 1 ))
 
-# check command line usage
-[[ $1 ]] || { sed -n '2,/^$/s/^# \?//p' "$0"; exit 1; }
+[[ $# -gt 0 ]] || { sed -n '2,/^$/s/^# \?//p' "$0"; exit 1; }
 
-# main loop
 do_all_action "$@"
 job_summary "$@"

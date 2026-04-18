@@ -22,14 +22,6 @@ declare -a _unset_vars _unset_funcs
 unsetvars() { _unset_vars+=("$@"); }
 unsetfuncs() { _unset_funcs+=("$@"); }
 
-#-----------------------------------------------------------------------------
-# XXX: FIXME
-# Setup for git bash on windows.
-# o If MSYS is not set, then link is just a copy of stuff.
-# o If MSYS is winsymlinks, it creates a Windows shortcut.
-# o If MSYS is winsymlinks:nativestrict, it creates a more real type of symlink
-#export MSYS="winsymlinks:nativestrict"
-
 ##############################################################################
 # Base Global variable and path
 
@@ -81,20 +73,25 @@ debug() { true; }
 unsetfuncs 'debug'
 
 #-----------------------------------------------------------------------------
-# Add a path to the PATH variable.  This is a function so that we can
-# easily add paths to the PATH variable.
+# Add a path to the PATH variable.
 #
 # Usage:
-#   addpath PATH /path/to/add
-#   addpath LD_LIBRARY_PATH /path/to/add
-#   addpath /path/to/add
+#   addpath [--first|-f] [--last|-l] [VARNAME] /path/to/add ...
 #
-#   The last one defaults to PATH
-
-# XXX: Add options for first and last place
+#   VARNAME defaults to PATH; supported values: PATH, LD_LIBRARY_PATH
+#   --first prepends; --last (default) appends
 
 addpath() {
   local target="PATH"
+  local position="last"
+
+  while [[ ${1-} == -* ]]; do
+    case $1 in
+      --first | -f) position="first"; shift ;;
+      --last  | -l) position="last";  shift ;;
+      *) break ;;
+    esac
+  done
 
   if [[ $1 == "PATH" ]] || [[ $1 == "LD_LIBRARY_PATH" ]]; then
     target="$1"
@@ -103,15 +100,19 @@ addpath() {
 
   for p in "$@"; do
     [[ -z $p ]] && continue
-    debug "adding $p to $target"
-    printf -v "$target" "%s:%s" "${!target}" "$p"
+    debug "adding $p to $target ($position)"
+    if [[ $position == "first" ]]; then
+      printf -v "$target" "%s:%s" "$p" "${!target}"
+    else
+      printf -v "$target" "%s:%s" "${!target}" "$p"
+    fi
   done
 }
 
 unsetfuncs 'addpath'
 
 #-----------------------------------------------------------------------------
-# XXX: Does this actually work?
+# Source an optional hook file from $dfdir if it exists and is readable.
 
 run_hook() {
   # shellcheck disable=SC2154
@@ -173,26 +174,6 @@ load_files() {
 }
 
 unsetvars 'load_files'
-
-##############################################################################
-# Setup environment
-
-# XXX: WTF am I trying doing here?
-
-path_to_generate_exports_script="/path/to/generate_exports.sh"
-path_to_exports_script="/path/to/exports.sh"
-
-# Generate export commands if needed
-if [[ -x $path_to_generate_exports_script ]]; then
-  # shellcheck disable=SC1090
-  source "$path_to_generate_exports_script"
-fi
-
-# Source the export commands
-if [[ -r $path_to_exports_script ]]; then
-  # shellcheck disable=SC1090
-  source "$path_to_exports_script"
-fi
 
 # shellcheck disable=SC1091
 [[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \

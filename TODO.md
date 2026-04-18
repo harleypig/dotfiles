@@ -10,10 +10,10 @@ guidelines and `TESTS.md` for testing strategy.
 ## 📝 Documentation (HIGH PRIORITY)
 
 ### Immediate Tasks
-- [ ] Review and consolidate docs/ directory
+- [x] Review and consolidate docs/ directory
   - [x] Evaluate docs/bash-completion.md - moved to config/completions/README.md
   - [x] docs/git_aliases.md - leave in docs/; user-facing reference, not config
-  - [ ] Ensure all remaining docs follow WORKFLOW.md philosophy
+  - [x] docs/bin.md and docs/windows-notes.md - both user-facing reference, stay in docs/
 
 ### Code Comment Cleanup
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
@@ -241,13 +241,10 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 ## 💻 Code Improvements (LOW PRIORITY)
 
 ### Shell-startup Issues
-- [ ] shell-startup:26 - Clarify or fix Windows git bash setup (XXX: FIXME)
-- [ ] shell-startup:94 - Add options for first and last place to addpath function
-  (XXX)
-- [ ] shell-startup:114 - Document or fix run_hook function behavior (XXX: Does
-  this actually work?)
-- [ ] shell-startup:180 - Clarify environment setup section (XXX: WTF am I
-  trying doing here?)
+- [x] shell-startup:26 - Removed dead Windows MSYS block (see docs/windows-notes.md)
+- [x] shell-startup:94 - Added --first/-f and --last/-l options to addpath
+- [x] shell-startup:114 - Replaced XXX with description comment; run_hook is valid
+- [x] shell-startup:180 - Removed dead placeholder export-script block
 
 ### shell-startup: Shell Context Detection (HIGH PRIORITY)
 
@@ -332,8 +329,8 @@ PowerShell 5.1.
   Pester inside the container) before tackling the improvement tasks above
 
 ### Bin Scripts
-- [ ] git-all:3 - Refactor to current standards or remove (TODO: Finish updating
-  or scrap)
+- [x] git-all:3 - Refactored: replaced missing utility functions inline, fixed
+  shellcheck issues (SC2155, unquoted vars, array appends)
 - [x] git-status:3 - Add STASH information (XXX)
 - [x] yesno:33 - Add option to suppress warnings (XXX)
 
