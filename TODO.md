@@ -12,32 +12,28 @@ guidelines and `TESTS.md` for testing strategy.
 ### Create `config/shell-startup/claude`
 
 `config/claude/` is now established as the canonical location for tracked
-Claude Code config (settings.json, rules/). Set `CLAUDE_CONFIG_DIR` to point
-there so Claude Code reads directly from the dotfiles repo — no symlinks needed.
-Auto-generated files (projects/, history, etc.) will be written there too but
-are gitignored via `config/claude/.gitignore`.
+Claude Code config (settings.json, rules/). `CLAUDE_CONFIG_DIR` points
+there via `$XDG_CONFIG_HOME/claude` (which resolves to `$DOTFILES/config/claude`
+since `XDG_CONFIG_HOME=$DOTFILES/config`). Auto-generated files (projects/,
+history, etc.) are written there but gitignored via `config/claude/.gitignore`.
 
-The module should:
+**Caveat:** `CLAUDE_CONFIG_DIR` is not fully honored by all Claude Code
+components — plugins still hardcode `~/.claude`. A symlink is required:
 
-- Follow the existing shell-startup module pattern: guard with a check for
-  the `claude` command before doing anything
-- Set `CLAUDE_CONFIG_DIR` to point directly at the dotfiles config dir:
+```bash
+ln -s "$CLAUDE_CONFIG_DIR" "$HOME/.claude"
+```
 
-  ```bash
-  export CLAUDE_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/claude"
-  ```
+**Migration steps (✅ complete):**
 
-- Consider what other Claude Code environment variables belong here; check
-  the Claude Code docs for the full list when implementing.
-- **Install step:** Create `~/.config/claude` (or `$XDG_CONFIG_HOME/claude`)
-  as a symlink to `$DOTFILES/config/claude` so Claude Code reads from the
-  dotfiles repo. Auto-generated files (projects/, history, etc.) will be
-  written there but are gitignored via `config/claude/.gitignore`.
-- **After verifying Claude Code works with the new CLAUDE_CONFIG_DIR:**
-  - `~/.claude/` is no longer used and can be removed (it will contain only
-    stale auto-generated data — projects/, history, etc.)
-  - Confirm auto-memory in `config/claude/projects/` is gitignored before
-    removing `~/.claude/`
+- [x] `rsync -av ~/.claude/ $DOTFILES/config/claude/` — preserve existing data
+- [x] `mv ~/.claude ~/.claude.bak` — back up original
+- [x] `ln -s "$CLAUDE_CONFIG_DIR" "$HOME/.claude"` — symlink for plugins
+- [x] Relogin and verify plugins load, `~/.claude` not recreated as a real dir
+
+**Cleanup (deferred — verify stability first):**
+
+- [ ] Remove `~/.claude.bak` once confident everything works
 
 ### Files to evaluate — each needs a decision: remove, archive, rewrite for
 Claude Code, or convert to a standalone doc.
