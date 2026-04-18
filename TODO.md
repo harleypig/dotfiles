@@ -292,7 +292,7 @@ Problems to solve:
 currently broken. `bin/CleanPath.tmp` appears to be a duplicate/scratch copy.
 
 - [ ] Audit `bin/cleanpath` vs `bin/CleanPath.tmp` — determine which is
-  canonical, remove the other
+  canonical, remove the other (CleanPath.tmp has XXX: Document me, Test me)
 - [ ] Fix `bin/cleanpath` so it works correctly (diagnose current failure)
 - [ ] Add unit tests (`tests/test_cleanpath.bats`)
 - [ ] Integrate into `shell-startup` — run cleanpath on PATH (and possibly
@@ -326,12 +326,10 @@ PowerShell 5.1.
   Pester inside the container) before tackling the improvement tasks above
 
 ### Bin Scripts
-- [ ] CleanPath.tmp:3,4 - Document or remove temp file (XXX: Document me, Test
-  me)
 - [ ] git-all:3 - Refactor to current standards or remove (TODO: Finish updating
   or scrap)
 - [ ] git-status:3 - Add STASH information (XXX)
-- [ ] yesno:33 - Add option to suppress warnings (XXX)
+- [x] yesno:33 - Add option to suppress warnings (XXX)
 
 ### Library Documentation and Testing
 - [ ] lib/debug:3,4 - Document and test (XXX)
@@ -447,9 +445,9 @@ in the future.
 
 ## References
 
-- **[WORKFLOW.md](WORKFLOW.md)**: Development guidelines and conventions
-- **[TESTS.md](TESTS.md)**: Testing framework and strategy
-- **[CLAUDE.md](CLAUDE.md)**: AI agent behavior specification
+- **[WORKFLOW.md](.claude/WORKFLOW.md)**: Development guidelines and conventions
+- **[TESTS.md](.claude/TESTS.md)**: Testing framework and strategy
+- **[CLAUDE.md](config/claude/CLAUDE.md)**: AI agent behavior specification
 - **[config/claude/rules/pre-commit.md](config/claude/rules/pre-commit.md)**:
   Pre-commit agent policy
 - **Modernization Plan**: Full plan available in conversation transcript

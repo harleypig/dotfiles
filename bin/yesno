@@ -1,16 +1,33 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-source utility
+warn() { printf '%s\n' "$@" >&2; }
+
+usage() {
+  cat >&2 << 'EOF'
+Usage: answer=$(yesno [-q] ['prompt'])
+
+Prompt for a Y or N response. Reprompts on invalid input.
+
+Options:
+  -q, --quiet   Suppress warning on invalid input
+  -h, --help    Show this help
+EOF
+  exit "${1:-0}"
+}
 
 #-----------------------------------------------------------------------------
 : << POD
 =head2 yesno
 
-Usage: answer=E<36>(yesno ['prompt'])
+Usage: answer=E<36>(yesno [-q] ['prompt'])
 
 C<yesno> will prompt and wait for either a 'Y' or an 'N' as input. Anything
-else will be ignored, the user will be warned and prompted again. The input is
-case-insensitive.
+else will be ignored and the user will be reprompted. Without C<-q>, an
+invalid input also prints a warning to stderr.
+
+Options:
+  -q, --quiet   Suppress the "Please enter a Y or a N" warning on invalid input
+  -h, --help    Show this help
 
 C<yesno> accepts an optional value that will be used as the prompt. If nothing
 is passed in, the default prompt is 'Yes or no?'.
@@ -19,6 +36,16 @@ is passed in, the default prompt is 'Yes or no?'.
 POD
 
 #-----------------------------------------------------------------------------
+quiet=0
+
+while [[ ${1-} == -* ]]; do
+  case $1 in
+    -q | --quiet) quiet=1 ; shift ;;
+    -h | --help) usage ;;
+    *) warn "Unknown option: $1" ; exit 2 ;;
+  esac
+done
+
 declare -u yn
 
 while true; do
@@ -30,8 +57,7 @@ while true; do
       exit 0
       ;;
     *)
-      # XXX: Add option to suppress this
-      warn 'Please enter a Y or a N'
+      ((quiet)) || warn 'Please enter a Y or a N'
       ;;
   esac
 done
