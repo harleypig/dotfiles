@@ -6,3 +6,5 @@
 !settings.json
 !rules/
 !rules/**
+!skills/
+!skills/**
