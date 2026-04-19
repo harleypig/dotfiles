@@ -97,6 +97,10 @@ working tree — evaluate carefully before implementing.
 - [ ] Integration tests for tool configurations
 - [ ] Performance tests for PATH building
 
+### Test Infrastructure
+- [ ] tests/build-meta-tests:5,6,71 - Add tests for sh compilation, improve
+  shebang check, handle symbolic links (XXX)
+
 ### Comprehensive BATS Test Coverage Audit (MEDIUM PRIORITY)
 
 Phase 3 covers a handful of critical scripts. This task is a full pass to
@@ -128,16 +132,16 @@ pre-commit.md, python.md.
   - [x] shellcheck — inline disable conventions; .shellcheckrc location is an
     open question (global vs repo-local vs both) documented in the rules file
   - [x] shfmt — flags `-i 2 -s -bn -ci -sr` from dotvim ALE config
-  - [ ] Consider `.editorconfig` for shfmt: shfmt reads indent style/width from
-    `.editorconfig` when present, which would replace `-i 2` on the command line
-    and benefit any editor that also respects `.editorconfig`. See:
-    https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd#examples
+  - [x] `.editorconfig` for shfmt: repo-root `.editorconfig` encodes
+    `indent_size`, `binary_next_line`, `switch_case_indent`,
+    `space_redirects`. Only `-s` remains CLI-only (no editorconfig
+    equivalent). Rules doc covers both forms (with/without editorconfig).
   - [x] yamllint — config file location, common relaxations
   - [x] markdownlint — line length, allowed HTML, rules to disable
   - [x] yapf — already have config/yapf; document how agent should invoke it
   - [x] git — commit conventions, branch naming, worktree workflow reference
   - [x] bats — test structure expectations, helper usage
-  - [ ] docker — image pinning policy, layer hygiene
+  - [x] docker — image pinning, layer hygiene, security, compose rules
   - [x] gh — PR/issue conventions; fork-mode PR target; worktree skill ref
   - [ ] Any other tools discovered during pre-commit or CI work
 - [x] Consider a template for new rules files so they stay consistent
@@ -379,18 +383,15 @@ PowerShell 5.1.
 - [ ] lib/parse_params:3 - Test (XXX)
 
 ### Configuration File Issues
-- [ ] config/perl:12,54 - Check for completion capability, test if bakeini is
-  installed (XXX)
+- [x] config/perl:12,54 - Existing checks are adequate; removed stale XXX
+  markers and commented-out alternative
 - [x] config/less:85,86 - lesspipe.sh handles syntax highlighting; removed XXX
 - [x] config/tmux:37 - Detect multiple sessions (XXX)
 - [x] config/terraform:9 - Comparison done; cleaned up XXX and dead code
-- [ ] config/taskwarrior:8,9,10 - Add sourcing check, version check, look at
-  scripts (XXX)
-- [ ] config/bash_prompt:57,131,137 - Fix poetry/venv detection and colors (XXX)
-
-### Test Infrastructure
-- [ ] tests/build-meta-tests:5,6,71 - Add tests for sh compilation, improve
-  shebang check, handle symbolic links (XXX)
+- [x] config/taskwarrior:8,9,10 - Removed aspirational XXX markers (sourcing
+  check unnecessary for shell-startup module; taskwarrior scripts item
+  tracked below under Tool Configurations)
+- [ ] config/bash_prompt:131,137 - Fix poetry/venv detection and colors (XXX)
 
 ## ⚙️ Configuration Enhancements (LOW PRIORITY)
 
@@ -438,7 +439,9 @@ Docs: https://code.claude.com/docs/en/statusline
 - [x] Wired up in `config/claude/settings.json`:
   `"statusLine": { "type": "command", "command": "~/.claude/bin/statusline.sh", "refreshInterval": 5 }`
 - [ ] Observe in a live session and tune (model name length, field order, colors)
-- [ ] Consider adding worktree name when inside a git worktree
+- [x] Worktree marker: added to `bin/git-status` (shows `[wt:<main-repo>]`
+  when in a linked worktree); surfaces automatically via the `git-status`
+  segment in the Claude statusline
 - [ ] Consider suppressing model name when $TMUX is set (if tmux bar shows it)
 
 ### Task 2: Unified Statusline Strategy (LOW PRIORITY — do after Task 1)
