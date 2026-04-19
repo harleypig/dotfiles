@@ -28,7 +28,7 @@ root_color="$(ansi -n fg bright_red)"
 # Array of Unicode characters to rotate through for non-root prompt
 # Use show-unicode to see what symbols are available on your current terminal.
 PROMPT_CHARS=("$" "●" "★" "➤" "❯" "❔" "⚡" "✸" "♠" "♦" "✱" "⚓" "⛳" "☿" ">"
-"⇨" "✷" "⚫" "→" "✶" "♣" "❓" "❱")
+  "⇨" "✷" "⚫" "→" "✶" "♣" "❓" "❱")
 PROMPT_CHAR_INDEX=0
 
 #----------------------------------------------------------------------------
@@ -53,8 +53,6 @@ function join_array() {
 # stored in the 'parent_output' variable and used in every prompt update. This
 # implementation is based on the understanding that the pstree value doesn't
 # change during a single shell session.
-#
-# XXX: This assumption is currently being tested for correctness.
 
 function _parent() {
 
@@ -150,7 +148,7 @@ _venv() {
 #----------------------------------------------------------------------------
 # Get a random character from the array
 _get_next_prompt_char() {
-  local random_index=$(( RANDOM % ${#PROMPT_CHARS[@]} ))
+  local random_index=$((RANDOM % ${#PROMPT_CHARS[@]}))
   echo "${PROMPT_CHARS[$random_index]}"
 }
 

@@ -8,8 +8,6 @@ command -v perl &> /dev/null || return 0
 setup_perlbrew() {
   command -v perlbrew &> /dev/null || return 0
 
-  ### completion
-  # XXX: Check for completion capability
   [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] \
     && source "$PERLBREW_ROOT/etc/perlbrew-completion.bash"
 
@@ -51,10 +49,7 @@ setup_dzil() {
   alias authordeps="dzil authordeps"
   alias listdeps="dzil listdeps"
 
-  # XXX: test if bakeini is installed
-  #if (perldoc -l Dist::Zilla::App::Command::bakeini >/dev/null 2>&1); then
   perl -MDist::Zilla::App::Command::bakeini -e '' &> /dev/null && alias bakeini="dzil bakeini"
-  #fi
 }
 
 #-----------------------------------------------------------------------------
