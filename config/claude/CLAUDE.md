@@ -1,8 +1,6 @@
-<!-- CLAUDE.md v1.0.0 -->
+<!-- CLAUDE.md v1.1.0 -->
 
 # AI Agent Instructions
-
-**Version:** v1.0.0
 
 This file defines normative agent behavior across repositories. It is generic
 and versioned. Repository-specific rules live in each project's `.claude/`
@@ -20,6 +18,37 @@ directory and override anything stated here.
    do not create it automatically.
 4. **Operate autonomously within defined boundaries.** Act without confirmation
    unless a rule explicitly requires it.
+
+## Pre-Implementation
+
+- State assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them; do not silently choose.
+- If a simpler approach exists, say so before implementing the requested one.
+- If the task is unclear, stop and name what is confusing before proceeding.
+
+## Scope Discipline
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that was not requested.
+- No error handling for scenarios that cannot occur.
+- When editing existing code: do not improve adjacent code, comments, or
+  formatting; do not refactor code that is not broken.
+- If unrelated dead code is noticed, mention it; do not delete it without
+  permission.
+- Clean up only orphans your own changes created (unused imports, variables,
+  functions). Leave pre-existing dead code alone.
+- Every changed line must trace directly to the user's request.
+
+## Verification
+
+- Define verifiable success criteria before implementing.
+- For multi-step tasks, state the plan and the verification check for each
+  step before beginning.
+- Prefer criteria that can be checked automatically (tests, types, build
+  success) over criteria that require manual review.
+- Weak criteria ("make it work") force clarification cycles; strong criteria
+  enable autonomous execution.
 
 ## Tool Detection and Policy
 
