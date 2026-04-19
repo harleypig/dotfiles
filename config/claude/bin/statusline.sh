@@ -55,7 +55,7 @@ sl_label['cost']='$'
 
 vars+=('version')
 jq_filter['version']='.version'
-sl_label['version']='code '
+sl_label['version']='code v'
 
 #------------------------------------------------------------------------------
 # Gather data — single jq call via @tsv, one read
