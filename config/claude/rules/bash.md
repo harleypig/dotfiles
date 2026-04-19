@@ -17,7 +17,7 @@ paths:
 - Use `set -euo pipefail` near the top (fail fast on errors, unset
   variables, and pipe failures).
 - Lint with `shellcheck` (no errors or warnings permitted).
-- Format with `shfmt -i 2 -s -bn -ci -sr` (see `shfmt.md` for full flags).
+- Format with `shfmt` (see `shfmt.md` for flags and invocation).
 - Return meaningful exit codes: 0=success, 1=general error, 2=usage error.
 - Provide clear error messages to stderr.
 - Include a usage/help function.
