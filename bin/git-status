@@ -72,7 +72,7 @@ if [ -n "$info" ]; then
   behind=$(echo "$info" | perl -ane 'print $F[1]=~/\</ || $F[0]=~/\<$/')
   ahead=$(echo "$info" | perl -ane 'print $F[1]=~/\>/ || $F[0]=~/\>$/')
 
-  stash_count=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
+  stash_count=$(git stash list 2> /dev/null | wc -l | tr -d ' ')
   stash_info=
   ((stash_count > 0)) && stash_info=" {${stash_count}}"
 
@@ -86,5 +86,15 @@ if [ -n "$info" ]; then
 
   repo="$(basename "$(git rev-parse --show-toplevel)"): "
 
-  printf ' %s(%s%s%s%s)%s' "$status_color" "$repo" "$branch" "$upstream" "$stash_info" "$color_off"
+  # Mark linked worktrees so they don't look like regular repos. The main
+  # worktree has git-dir == git-common-dir; linked worktrees differ.
+  wt_info=
+  git_dir=$(git rev-parse --git-dir)
+  git_common_dir=$(git rev-parse --git-common-dir)
+  if [[ $git_dir != "$git_common_dir" ]]; then
+    main_repo=$(basename "$(dirname "$(cd "$git_common_dir" && pwd)")")
+    wt_info=" [wt:${main_repo}]"
+  fi
+
+  printf ' %s(%s%s%s%s%s)%s' "$status_color" "$repo" "$branch" "$wt_info" "$upstream" "$stash_info" "$color_off"
 fi
