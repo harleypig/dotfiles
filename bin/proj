@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+warn() { printf '%s\n' "$@" >&2; }
+
+usage() {
+  cat >&2 << 'EOF'
+Usage: proj [name]
+
+Output the path to cd into: $PROJECTS_DIR or $PROJECTS_DIR/<name>.
+
+With no argument, outputs $PROJECTS_DIR.
+With one argument, outputs $PROJECTS_DIR/<name> if it exists. If not,
+prompts to create it, output $PROJECTS_DIR, or cancel.
+
+Intended to be called via the proj() shell wrapper function.
+EOF
+  exit "${1:-0}"
+}
+
+while [[ ${1-} == -* ]]; do
+  case $1 in
+    -h | --help) usage ;;
+    *)
+      warn "Unknown option: $1"
+      exit 2
+      ;;
+  esac
+done
+
+if [[ $# -gt 1 ]]; then
+  warn "Usage: proj [name]"
+  exit 2
+fi
+
+if [[ -z ${PROJECTS_DIR:-} ]]; then
+  warn "proj: PROJECTS_DIR is not set"
+  exit 1
+fi
+
+if [[ $# -eq 0 ]]; then
+  printf '%s\n' "$PROJECTS_DIR"
+  exit 0
+fi
+
+target="$PROJECTS_DIR/$1"
+
+if [[ -d $target ]]; then
+  printf '%s\n' "$target"
+  exit 0
+fi
+
+create="Create $target"
+goto="Go to $PROJECTS_DIR"
+cancel="Cancel"
+
+PS3="'$1' not found. Choose: "
+select choice in "$create" "$goto" "$cancel"; do
+  case $choice in
+    "$create")
+      mkdir -p "$target"
+      printf '%s\n' "$target"
+      exit 0
+      ;;
+    "$goto")
+      printf '%s\n' "$PROJECTS_DIR"
+      exit 0
+      ;;
+    "$cancel") exit 1 ;;
+  esac
+done
+
+exit 1
