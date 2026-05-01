@@ -55,6 +55,7 @@ create="Create $target"
 goto="Go to $PROJECTS_DIR"
 cancel="Cancel"
 
+COLUMNS=1
 PS3="'$1' not found. Choose: "
 select choice in "$create" "$goto" "$cancel"; do
   case $choice in
