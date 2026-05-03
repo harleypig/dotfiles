@@ -1,4 +1,5 @@
 ---
+# yamllint disable rule:line-length
 sources:
   age:
     description: >
@@ -249,7 +250,7 @@ sources:
     install:
       type: tgz
       binaries:
-        - bat
+        - "^bat$"
 
   batect:
     description: Build And Testing Environments as Code Tool
@@ -623,6 +624,26 @@ sources:
       binaries:
         - consul
 
+  cosign:
+    description: Code signing and transparency for containers and binaries
+    url: https://github.com/sigstore/cosign/
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/sigstore/cosign/releases
+    fetch:
+      url: https://github.com/sigstore/cosign/releases/download/v{{ .Version }}/cosign-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
+
   crabz:
     description: Like pigz, but rust
     url: https://github.com/sstadick/crabz
@@ -866,6 +887,85 @@ sources:
       binaries:
         - doctl
 
+  doggo:
+    description: 🐶 Command-line DNS Client for Humans. Written in Golang.
+    url: https://github.com/mr-karan/doggo
+    map:
+      amd64: x86_64
+      linux: Linux
+      darwin: Darwin
+      netbsd: Netbas
+      freebasd: Freebsd
+      openbsd: Openbsd
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/mr-karan/doggo/releases
+    fetch:
+      url: https://github.com/mr-karan/doggo/releases/download/v{{ .Version }}/doggo_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - doggo
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: i386
+      - os: linux
+        arch: arm
+      - os: netbsd
+        arch: amd64
+      - os: netbsd
+        arch: arm64
+      - os: netbsd
+        arch: i386
+      - os: netbsd
+        arch: arm
+      - os: freebsd
+        arch: amd64
+      - os: freebsd
+        arch: arm64
+      - os: freebsd
+        arch: i386
+      - os: freebsd
+        arch: arm
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      - os: openbsd
+        arch: amd64
+      - os: openbsd
+        arch: arm64
+      - os: openbsd
+        arch: i386
+      - os: openbsd
+        arch: arm
+
+  dolt:
+    description: Dolt – Git for Data
+    url: https://github.com/dolthub/dolt
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/dolthub/dolt/releases
+    fetch:
+      url: https://github.com/dolthub/dolt/releases/download/v{{ .Version }}/dolt-{{ .OS }}-{{.Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - dolt
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+
   driftctl:
     description: Detect, track and alert on infrastructure drift
     url: https://github.com/cloudskiff/driftctl/
@@ -1038,7 +1138,7 @@ sources:
     install:
       type: tgz
       binaries:
-        - fd
+        - ^fd$
 
   ffsend:
     description: Easily and securely share files from the command line. A fully featured Firefox Send client.
@@ -1111,7 +1211,8 @@ sources:
       type: github-releases
       url: https://api.github.com/repos/junegunn/fzf/releases
     fetch:
-      url: https://github.com/junegunn/fzf/releases/download/{{ .Version }}/fzf-{{ .Version }}-{{ .OS }}_{{ .Arch }}.tar.gz
+      #url: https://github.com/junegunn/fzf/releases/download/{{ .Version }}/fzf-{{ .Version }}-{{ .OS }}_{{ .Arch }}.tar.gz
+      url: https://github.com/junegunn/fzf/releases/download/v{{ .Version }}/fzf-{{ .Version }}-{{ .OS }}_{{ .Arch }}.tar.gz
     install:
       type: tgz
       binaries:
@@ -1168,6 +1269,31 @@ sources:
       type: tgz
       binaries:
         - gh
+
+  git-bug:
+    description: Distributed, offline-first bug tracker embedded in git, with bridges
+    url: https://github.com/MichaelMure/git-bug/
+    map:
+      amd64: x86_64
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/MichaelMure/git-bug/releases
+    fetch:
+      url: https://github.com/MichaelMure/git-bug/releases/download/{{ .Version }}/git-bug_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - git-bug
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: windows
+        arch: amd64
+      - os: darwin
+        arch: amd64
 
   github-release-notes:
     description: Generate release notes content from GitHub Pull Request history.
@@ -1263,7 +1389,7 @@ sources:
       type: github-releases
       url: https://api.github.com/repos/charmbracelet/glow/releases
     fetch:
-      url: https://github.com/charmbracelet/glow/releases/download/v{{ .Version }}/glow_{{ .OS }}_{{ .Arch }}.tar.gz
+      url: https://github.com/charmbracelet/glow/releases/download/v{{ .Version }}/glow_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
     install:
       type: tgz
       binaries:
@@ -1403,6 +1529,21 @@ sources:
       type: tgz
       binaries:
         - gotty
+
+  gowrap:
+    description: GoWrap is a command line tool for generating decorators for Go interfaces
+    url: https://github.com/hexdigest/gowrap/
+    map:
+      i386: 386
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/hexdigest/gowrap/releases
+    fetch:
+      url: https://github.com/hexdigest/gowrap/releases/download/v{{ .Version }}/gowrap_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - gowrap
 
   gping:
     description: Ping, but with a graph
@@ -1655,6 +1796,28 @@ sources:
       type: tgz
       binaries:
         - hetty
+
+  hetzner-k3s:
+    description: The easiest and fastest way to create production grade Kubernetes clusters in Hetzner Cloud
+    url: https://github.com/vitobotta/hetzner-k3s
+    map:
+      darwin: macos
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/vitobotta/hetzner-k3s/releases
+    fetch:
+      url: https://github.com/vitobotta/hetzner-k3s/releases/download/v{{ .Version }}/hetzner-k3s-{{ .OS }}-{{ .Arch }}
+    install:
+      type: direct
 
   himalaya:
     description: 📫 CLI email client
@@ -2189,6 +2352,20 @@ sources:
       binaries:
         - kubecolor
 
+  kubeconform:
+    description: >
+      Kubeconform is a Kubernetes manifest validation tool. Incorporate it into your CI, or use it locally to validate your Kubernetes configuration!
+    url: https://github.com/yannh/kubeconform/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/yannh/kubeconform/releases
+    fetch:
+      url: https://github.com/yannh/kubeconform/releases/download/v{{ .Version }}/kubeconform-{{ .OS }}-{{ .Arch }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - kubeconform
+
   kubectl:
     description: Production-Grade Container Scheduling and Management (cli)
     url: https://github.com/kubernetes/kubernetes/
@@ -2196,7 +2373,7 @@ sources:
       type: github-releases
       url: https://api.github.com/repos/kubernetes/kubernetes/releases
     fetch:
-      url: https://storage.googleapis.com/kubernetes-release/release/v{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl
+      url: https://dl.k8s.io/release/v{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl
     install:
       type: direct
 
@@ -2563,6 +2740,70 @@ sources:
   #     binaries:
   #       - linkerd
 
+  lego:
+    description: Let's Encrypt/ACME client and library written in Go
+    url: https://github.com/go-acme/lego/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/go-acme/lego/releases
+    fetch:
+      url: https://github.com/go-acme/lego/releases/download/v{{ .Version }}/lego_v{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
+    supported_platforms:
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      - os: freebsd
+        arch: 386
+      - os: freebsd
+        arch: amd64
+      - os: freebsd
+        arch: arm64
+      - os: freebsd
+        arch: armv5
+      - os: freebsd
+        arch: armv6
+      - os: freebsd
+        arch: armv7
+      - os: linux
+        arch: 386
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: linux
+        arch: armv5
+      - os: linux
+        arch: armv6
+      - os: linux
+        arch: armv7
+      - os: linux
+        arch: mips64_hardfloat
+      - os: linux
+        arch: mips64_softfloat
+      - os: linux
+        arch: mips64le_hardfloat
+      - os: linux
+        arch: mips64le_softfloat
+      - os: linux
+        arch: mips_hardfloat
+      - os: linux
+        arch: mips_softfloat
+      - os: linux
+        arch: mipsle_hardfloat
+      - os: linux
+        arch: mipsle_softfloat
+      - os: openbsd
+        arch: 386
+      - os: openbsd
+        arch: amd64
+      - os: openbsd
+        arch: arm64
+    install:
+      type: tgz
+      binaries:
+        - lego
+
   local-php-security-checker:
     description: PHP security vulnerabilities checker
     url: https://github.com/fabpot/local-php-security-checker/
@@ -2586,6 +2827,19 @@ sources:
       type: zip
       binaries:
         - "logcli-{{ .OS }}-{{ .Arch }}"
+
+  logdy:
+    description: >
+      Web based real-time log viewer. Stream ANY content to a web UI with
+      autogenerated filters. Parse any format with TypeScript.
+    url: https://github.com/logdyhq/logdy-core/
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/logdyhq/logdy-core/releases
+    fetch:
+      url: https://github.com/logdyhq/logdy-core/releases/download/v{{ .Version }}/logdy_{{ .OS }}_{{ .Arch }}
+    install:
+      type: direct
 
   loki:
     description: Like Prometheus, but for logs.
@@ -2727,7 +2981,7 @@ sources:
     install:
       type: tgz
       binaries:
-        - micro
+        - ^micro$
 
   migrate:
     description: CLI database migrations tool.
@@ -2740,7 +2994,7 @@ sources:
     install:
       type: tgz
       binaries:
-        - migrate # v4.15 started naming files without OS / Arch
+        - migrate  # v4.15 started naming files without OS / Arch
 
   miller:
     description: >
@@ -2873,6 +3127,33 @@ sources:
       type: zip
       binaries:
         - nomad
+
+  notes:
+    description: >
+      Small markdown note taking CLI app playing nicely with your favorite editor and other CLI tools
+    url: https://github.com/rhysd/notes-cli
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/rhysd/notes-cli/releases
+    fetch:
+      url: https://github.com/rhysd/notes-cli/releases/download/v{{ .Version }}/notes_{{ .OS }}_{{ .Arch }}.zip
+    install:
+      type: zip
+      binaries:
+        - notes
+    supported_platforms:
+      - os: freebsd
+        arch: amd64
+      - os: netbsd
+        arch: amd64
+      - os: openbsd
+        arch: amd64
+      - os: linux
+        arch: amd64
+      - os: darwin
+        arch: arm64
+      # - os: windows
+      #   arch: amd64
 
   noti:
     description: Monitor a process and trigger a notification
@@ -3349,7 +3630,7 @@ sources:
     install:
       type: tgz
       binaries:
-        - "^rg$" # ripgrep binary is named rg
+        - "^rg$"  # ripgrep binary is named rg
 
   ruflood:
     description: Helping Ukraine by flooding russian state-controlled media/bureau/bank websites.
@@ -4074,20 +4355,37 @@ sources:
       binaries:
         - terrascan
 
-  tf2pulumi:
-    description: A tool to convert Terraform projects to Pulumi TypeScript programs
-    url: https://github.com/pulumi/tf2pulumi/
-    map:
-      amd64: x64
+  tetrigo:
+    description: Play Tetris in your terminal.
+    url: https://github.com/Broderick-Westrope/tetrigo/
+    # map:
+    #   amd64: x86_64
     list:
       type: github-releases
-      url: https://api.github.com/repos/pulumi/tf2pulumi/releases
+      url: https://api.github.com/repos/Broderick-Westrope/tetrigo/releases
     fetch:
-      url: https://github.com/pulumi/tf2pulumi/releases/download/v{{ .Version }}/tf2pulumi-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+      url: https://github.com/Broderick-Westrope/tetrigo/releases/download/v{{ .Version }}/tetrigo_{{ .Version }}_{{ .OS }}_{{ .Arch }}.tar.gz
     install:
       type: tgz
       binaries:
-        - tf2pulumi
+        - tetrigo
+
+  # disappeared from GH
+  # superceded by https://github.com/pulumi/pulumi-converter-terraform ?
+  # tf2pulumi:
+  #   description: A tool to convert Terraform projects to Pulumi TypeScript programs
+  #   url: https://github.com/pulumi/tf2pulumi/
+  #   map:
+  #     amd64: x64
+  #   list:
+  #     type: github-releases
+  #     url: https://api.github.com/repos/pulumi/tf2pulumi/releases
+  #   fetch:
+  #     url: https://github.com/pulumi/tf2pulumi/releases/download/v{{ .Version }}/tf2pulumi-v{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+  #   install:
+  #     type: tgz
+  #     binaries:
+  #       - tf2pulumi
 
   tflint:
     description: >
@@ -4316,7 +4614,7 @@ sources:
     install:
       type: tarxz
       binaries:
-        - upx
+        - "^upx$"
 
   vagrant:
     description: A toolfor building and distributing development environments.
@@ -4331,6 +4629,9 @@ sources:
       type: zip
       binaries:
         - vagrant
+    post_install_message: >
+        Warning: Vagrant might fail when running as a binary.
+        See https://github.com/hashicorp/vagrant/issues/13318#issuecomment-2200731628 for more information
 
   vault:
     description: >
@@ -4373,6 +4674,8 @@ sources:
         arch: arm64
       - os: darwin
         arch: amd64
+      - os: darwin
+        arch: arm64
 
   vmctl:
     description: Victoria Metrics command line tool
@@ -4601,3 +4904,30 @@ sources:
       type: tgz
       binaries:
         - ksd
+
+  zellij:
+    description: A terminal workspace with batteries included
+    url: https://github.com/zellij-org/zellij/
+    map:
+      amd64: x86_64
+      darwin: apple-darwin
+      linux: unknown-linux-musl
+      arm64: aarch64
+    supported_platforms:
+      - os: linux
+        arch: amd64
+      - os: linux
+        arch: arm64
+      - os: darwin
+        arch: amd64
+      - os: darwin
+        arch: arm64
+    list:
+      type: github-releases
+      url: https://api.github.com/repos/zellij-org/zellij/releases
+    fetch:
+      url: https://github.com/zellij-org/zellij/releases/download/v{{ .Version }}/zellij-{{ .Arch }}-{{ .OS }}.tar.gz
+    install:
+      type: tgz
+      binaries:
+        - zellij

@@ -1,4 +1,5 @@
 {
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/bin/statusline.sh",
@@ -25,4 +26,12 @@
   },
   "effortLevel": "high",
   "editorMode": "vim"
+  "extraKnownMarketplaces": {
+    "claude-code-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-code"
+      }
+    }
+  }
 }
