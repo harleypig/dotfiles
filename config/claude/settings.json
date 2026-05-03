@@ -25,7 +25,7 @@
     "pydantic-ai@claude-plugins-official": true
   },
   "effortLevel": "high",
-  "editorMode": "vim"
+  "editorMode": "vim",
   "extraKnownMarketplaces": {
     "claude-code-plugins": {
       "source": {
