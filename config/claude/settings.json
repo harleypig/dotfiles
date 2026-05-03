@@ -23,6 +23,6 @@
     "terraform@claude-plugins-official": true,
     "pydantic-ai@claude-plugins-official": true
   },
-  "effortLevel": "xhigh",
-  "model": "opus"
+  "effortLevel": "high",
+  "editorMode": "vim"
 }

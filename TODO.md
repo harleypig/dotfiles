@@ -404,6 +404,18 @@ PowerShell 5.1.
 - [ ] bash_prompt:131 - Fix poetry venv detection
 - [ ] bash_prompt:137 - Fix manual venv color issue
 
+### Shell Helpers
+- [ ] Evaluate creating a reusable `select`/menu helper (sibling to
+  `yesno`) for enumerated-option prompts
+  - Survey existing callers in `bin/` and `config/shell-startup/` that
+    roll their own selection logic or use bare `select`
+  - Decide: dedicated `bin/` script (like `yesno`, `anykey`) vs. shell
+    function in `config/shell-startup/`
+  - Required behavior: numbered options, re-prompt on invalid input,
+    optional default, quiet mode, return selected value on stdout
+  - If justified, implement it first and have the `proj` task above
+    use it
+
 ## 🖥️ Statusline Coordination (MEDIUM PRIORITY)
 
 Goal: avoid repeating the same information across the four statusline surfaces
