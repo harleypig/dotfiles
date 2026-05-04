@@ -11,6 +11,7 @@ if has ansi; then
   c_alert=$(ansi fg red)
   c_ok=$(ansi fg green)
   c_off=$(ansi off)
+
 else
   c_label=$'\033[0;36m'
   c_warn=$'\033[0;33m'
@@ -21,20 +22,38 @@ fi
 
 lbl() { printf '%s%-22s%s' "$c_label" "$1" "$c_off"; }
 
-printf '\n'
+#-----------------------------------------------------------------------------
+
+show_welcome() {
+  printf '\nWelcome to %s%s%s, %s.\n\n' "$c_warn" "${HOSTNAME}" "$c_off" "${USER}"
+}
 
 #-----------------------------------------------------------------------------
-# System load
-if [[ -r /proc/loadavg ]]; then
+
+show_uptime() {
+  printf '%s %s\n' "$(lbl 'Uptime:')" "$(uptime -p)"
+}
+
+#-----------------------------------------------------------------------------
+
+show_load() {
+  [[ -r /proc/loadavg ]] || return 0
+
   read -r l1 l5 l15 _ < /proc/loadavg
-  ncpu=$(nproc 2> /dev/null || grep -c '^processor' /proc/cpuinfo 2> /dev/null || echo 1)
+
+  ncpu=$(
+    nproc 2> /dev/null \
+      || grep -c '^processor' /proc/cpuinfo 2> /dev/null \
+      || echo 1
+  )
 
   load_color=$c_ok
-  if awk -v l="$l15" -v n="$ncpu" 'BEGIN{exit !(l+0 > n+0)}'; then
-    load_color=$c_warn
-  fi
+
   if awk -v l="$l15" -v n="$ncpu" 'BEGIN{exit !(l+0 > n*2)}'; then
     load_color=$c_alert
+
+  elif awk -v l="$l15" -v n="$ncpu" 'BEGIN{exit !(l+0 > n+0)}'; then
+    load_color=$c_warn
   fi
 
   printf '%s %s%s%s (1m)  %s%s%s (5m)  %s%s%s (15m)\n' \
@@ -42,108 +61,293 @@ if [[ -r /proc/loadavg ]]; then
     "$load_color" "$l1" "$c_off" \
     "$load_color" "$l5" "$c_off" \
     "$load_color" "$l15" "$c_off"
-fi
+}
 
 #-----------------------------------------------------------------------------
-# Disk usage (real filesystems only)
-printf '%s\n' "$(lbl 'Disk usage:')"
-df -h --output=target,size,used,avail,pcent 2> /dev/null \
-  | awk 'NR>1 && $1!~/^(tmpfs|devtmpfs|udev|\/dev\/loop|\/snap\/)/' \
-  | while IFS= read -r line; do
+
+show_disk() {
+  printf '\n%s\n' "$(lbl 'Disk usage:')"
+
+  # XXX: Too much information ... need to trim it to minimal pertinent
+  # information. I'm just not sure how this should done. Revisit this later.
+
+  mapfile -t disk_lines < <(
+    df -h --output=target,size,used,avail,pcent 2> /dev/null \
+      | awk 'NR>1 && $1!~/^(tmpfs|devtmpfs|udev|\/dev\/loop|\/snap\/)/'
+  )
+
+  ((${#disk_lines[@]} > 0)) || return 0
+
+  for line in "${disk_lines[@]}"; do
     pct=$(awk '{print $5}' <<< "$line" | tr -d '%')
+
     color=$c_ok
+
     if [[ -n $pct ]] && ((pct >= 90)); then
       color=$c_alert
+
     elif [[ -n $pct ]] && ((pct >= 80)); then
       color=$c_warn
     fi
+
     printf '  %s%s%s\n' "$color" "$line" "$c_off"
   done
+}
 
 #-----------------------------------------------------------------------------
-# IP addresses
-mapfile -t ips < <(ip -o addr show scope global 2> /dev/null | awk '{print $2": "$4}')
-if ((${#ips[@]} > 0)); then
-  printf '%s\n' "$(lbl 'IP addresses:')"
+
+show_ips() {
+  # XXX: On some systems (like linode) this reporting a lot of spurious ip's.
+  # Need to revisit.
+
+  mapfile -t ips < <(
+    ip -o addr show scope global 2> /dev/null \
+      | awk '{split($4,a,"/"); print $2": "a[1]}'
+  )
+
+  ((${#ips[@]} > 0)) || return 0
+
+  printf '\n%s\n' "$(lbl 'IP addresses:')"
+
   for ip in "${ips[@]}"; do
     printf '  %s\n' "$ip"
   done
-fi
+}
 
 #-----------------------------------------------------------------------------
-# Zombie processes
-zombie_count=$(awk '$3 == "Z" {c++} END {print c+0}' /proc/[0-9]*/stat 2> /dev/null)
-if ((zombie_count > 0)); then
+
+show_zombies() {
+  zombie_count=$(awk '$3 == "Z" {c++} END {print c+0}' /proc/[0-9]*/stat 2> /dev/null)
+
+  ((zombie_count > 0)) || return 0
+
   plural='es'
   ((zombie_count == 1)) && plural=''
+
   printf '%s %s%d zombie process%s%s\n' \
     "$(lbl 'Zombies:')" \
     "$c_alert" "$zombie_count" "$plural" "$c_off"
-fi
+}
 
 #-----------------------------------------------------------------------------
-# Available updates
-# Prefer the pre-computed Ubuntu update-notifier data (fast); fall back to apt
-updates_msg=''
-if [[ -x /usr/lib/update-notifier/apt-check ]]; then
-  pkg_updates=0
-  security_updates=0
-  read -r pkg_updates security_updates < <(
-    /usr/lib/update-notifier/apt-check 2>&1 | tr ';' ' '
-  ) || true
-  if ((pkg_updates > 0)); then
-    updates_msg="${pkg_updates} update(s) available"
-    if ((security_updates > 0)); then
-      updates_msg+=" (${security_updates} security)"
+
+show_updates() {
+  # Prefer the pre-computed Ubuntu update-notifier data (fast); fall back to apt
+
+  updates_msg=''
+
+  if [[ -x /usr/lib/update-notifier/apt-check ]]; then
+    pkg_updates=0
+    security_updates=0
+
+    read -r pkg_updates security_updates < <(
+      /usr/lib/update-notifier/apt-check 2>&1 | tr ';' ' '
+    ) || true
+
+    if ((pkg_updates > 0)); then
+      updates_msg="${pkg_updates} update(s) available"
+
+      if ((security_updates > 0)); then
+        updates_msg+=" (${security_updates} security)"
+      fi
+    fi
+
+  elif has apt; then
+    pkg_updates=$(
+      apt list --upgradable 2> /dev/null \
+        | grep -c '/' \
+        || true
+    )
+
+    if ((pkg_updates > 0)); then
+      updates_msg="${pkg_updates} update(s) available"
     fi
   fi
-elif has apt; then
-  pkg_updates=$(apt list --upgradable 2> /dev/null | grep -c '/' || true)
-  if ((pkg_updates > 0)); then
-    updates_msg="${pkg_updates} update(s) available"
-  fi
-fi
 
-if [[ -n $updates_msg ]]; then
+  [[ -n $updates_msg ]] || return 0
+
   printf '%s %s%s%s\n' "$(lbl 'Updates:')" "$c_warn" "$updates_msg" "$c_off"
-fi
+}
 
 #-----------------------------------------------------------------------------
-# Linode VPS — detect and check kernel
-is_linode=false
-for _f in /sys/class/dmi/id/sys_vendor /sys/class/dmi/id/board_vendor \
-  /sys/class/dmi/id/chassis_vendor; do
-  if [[ -r $_f ]]; then
-    _v=$(< "$_f")
-    if [[ ${_v,,} == *linode* ]]; then
-      is_linode=true
-      break
-    fi
-  fi
-done
 
-if $is_linode; then
+show_docker() {
+  has docker || return 0
+
+  mapfile -t containers < <(
+    docker ps -a --format '{{.Names}}\t{{.State}}' 2> /dev/null \
+      | sort -k1
+  )
+
+  ((${#containers[@]} > 0)) || return 0
+
+  printf '\n%s\n' "$(lbl 'Docker:')"
+
+  cols=2
+  out=''
+
+  for i in "${!containers[@]}"; do
+    IFS=$'\t' read -r name state <<< "${containers[i]}"
+
+    color=$c_alert
+    [[ $state == 'running' ]] && color=$c_ok
+
+    out+="${name}:,${color}${state}${c_off},"
+
+    if (((i + 1) % cols == 0)); then
+      out+='\n'
+    fi
+  done
+
+  out+='\n'
+
+  printf '%b' "$out" | column -t -s $',' | sed 's/^/  /'
+}
+
+#-----------------------------------------------------------------------------
+
+show_fail2ban() {
+  has fail2ban-client || return 0
+
+  mapfile -t jails < <(
+    fail2ban-client status 2> /dev/null \
+      | grep 'Jail list:' \
+      | sed 's/ //g' \
+      | awk '{split($2,a,","); for(i in a) print a[i]}'
+  )
+
+  ((${#jails[@]} > 0)) || return 0
+
+  printf '\n%s\n' "$(lbl 'Fail2ban:')"
+
+  # ~70ms per jail — fail2ban-client must be called once per jail
+  {
+    printf 'jail\tfailed\ttotal failed\tbanned\ttotal banned\n'
+
+    for jail in "${jails[@]}"; do
+      f2b_status=$(fail2ban-client status "$jail" 2> /dev/null || true)
+
+      failed=$(grep -ioP '(?<=Currently failed:\t)[[:digit:]]+' <<< "$f2b_status" || echo 0)
+      total_failed=$(grep -ioP '(?<=Total failed:\t)[[:digit:]]+' <<< "$f2b_status" || echo 0)
+      banned=$(grep -ioP '(?<=Currently banned:\t)[[:digit:]]+' <<< "$f2b_status" || echo 0)
+      total_banned=$(grep -ioP '(?<=Total banned:\t)[[:digit:]]+' <<< "$f2b_status" || echo 0)
+
+      printf '%s\t%s\t%s\t%s\t%s\n' \
+        "$jail" "$failed" "$total_failed" "$banned" "$total_banned"
+    done
+  } | column -t -s $'\t' | sed 's/^/  /'
+
+  # Historical stats parsed from log files
+  mapfile -t log_lines < <(
+    grep -hioP '(\[[a-z-]+\]) ?(?:restore)? (ban|unban)' /var/log/fail2ban.log* 2> /dev/null \
+      | sort \
+      | uniq -c \
+      || true
+  )
+
+  ((${#log_lines[@]} > 0)) || return 0
+
+  mapfile -t log_jails < <(
+    printf '%s\n' "${log_lines[@]}" \
+      | grep -oP '\[\K[^\]]+' \
+      | sort \
+      | uniq
+  )
+
+  printf '\n  Historical bans (from logs):\n'
+
+  {
+    for jail in "${log_jails[@]}"; do
+      bans=$(printf '%s\n' "${log_lines[@]}" \
+        | grep -iP "[[:digit:]]+ \[$jail\] ban" \
+        | awk '{print $1}' \
+        || echo 0)
+
+      restores=$(printf '%s\n' "${log_lines[@]}" \
+        | grep -iP "[[:digit:]]+ \[$jail\] restore ban" \
+        | awk '{print $1}' \
+        || echo 0)
+
+      unbans=$(printf '%s\n' "${log_lines[@]}" \
+        | grep -iP "[[:digit:]]+ \[$jail\] unban" \
+        | awk '{print $1}' \
+        || echo 0)
+
+      bans=${bans:-0}
+      restores=${restores:-0}
+      unbans=${unbans:-0}
+
+      total_bans=$((bans + restores))
+      active=$((total_bans - unbans))
+
+      printf '%s\t%+3d bans\t%+3d unbans\t%+3d active\n' \
+        "$jail" "$total_bans" "$unbans" "$active"
+    done
+  } | column -t -s $'\t' | sed 's/^/  /'
+}
+
+#-----------------------------------------------------------------------------
+
+show_linode() {
+  is_linode=false
+
+  for _f in /sys/class/dmi/id/sys_vendor /sys/class/dmi/id/board_vendor \
+    /sys/class/dmi/id/chassis_vendor; do
+    if [[ -r $_f ]]; then
+      _v=$(< "$_f")
+
+      if [[ ${_v,,} == *linode* ]]; then
+        is_linode=true
+
+        break
+      fi
+    fi
+  done
+
+  $is_linode || return 0
+
   running_kernel=$(uname -r)
+
   printf '%s %sLinode VPS%s  kernel: %s\n' \
     "$(lbl 'Platform:')" "$c_ok" "$c_off" "$running_kernel"
 
-  # Check if a newer kernel is installed but not yet running
-  latest_installed=$(find /boot -maxdepth 1 -name 'vmlinuz-*' 2> /dev/null \
-    | sort -V | tail -1 | sed 's|.*/vmlinuz-||')
+  latest_installed=$(
+    find /boot -maxdepth 1 -name 'vmlinuz-*' 2> /dev/null \
+      | sort -V \
+      | tail -1 \
+      | sed 's|.*/vmlinuz-||'
+  )
+
   if [[ -n $latest_installed && $latest_installed != "$running_kernel" ]]; then
     printf '  %sInstalled kernel %s is newer — reboot to apply%s\n' \
       "$c_warn" "$latest_installed" "$c_off"
   fi
 
-  # Check for kernel package updates available via apt
-  if has apt; then
-    kernel_pkg_updates=$(apt list --upgradable 2> /dev/null \
-      | grep -c 'linux-image' || true)
-    if ((kernel_pkg_updates > 0)); then
-      printf '  %s%d kernel package update(s) available%s\n' \
-        "$c_warn" "$kernel_pkg_updates" "$c_off"
-    fi
+  has apt || return 0
+
+  kernel_pkg_updates=$(
+    apt list --upgradable 2> /dev/null \
+      | grep -c 'linux-image' \
+      || true
+  )
+
+  if ((kernel_pkg_updates > 0)); then
+    printf '  %s%d kernel package update(s) available%s\n' \
+      "$c_warn" "$kernel_pkg_updates" "$c_off"
   fi
-fi
+}
+
+#-----------------------------------------------------------------------------
+
+show_welcome
+show_uptime
+show_load
+show_zombies
+show_disk
+show_ips
+show_updates
+show_docker
+show_fail2ban
+show_linode
 
 printf '\n'
