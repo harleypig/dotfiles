@@ -1,6 +1,45 @@
 # Code Style
 
-**Version:** v1.0.0
+**Version:** v1.1.0
+
+## General Style
+
+Language-agnostic guidance that applies to every repository. Paragraph
+spacing, naming, and documentation rules below; language-specific tooling
+details live in per-language rules files (see *Language-Specific Notes*
+at the bottom).
+
+### Naming
+
+- Use clear, descriptive, intent-revealing names throughout.
+- Match the casing convention of the language and surrounding code; do
+  not invent a new style for one identifier.
+- Private/internal members use the language's idiomatic marker
+  (`_prefix` in Python, lowercase package-private in Go, etc.).
+
+### Documentation and Wrapping
+
+- Wrap Markdown prose at **78 columns**.
+- Wrap code comments at **72 columns**. Comment wrap is independent of
+  the code-line wrap configured for the formatter — even when a repo
+  raises its formatter's `column_limit` / `line-length`, comments stay
+  at 72. Widen past 72 only when absolutely needed (an unbreakable URL,
+  a literal that would mislead if split).
+- Use GitHub-flavored Markdown.
+- Use reference-style links for readability in Markdown.
+- Document complex logic inline; do not write comments that merely
+  restate what well-named code already says.
+- Public APIs in any language MUST have a docstring / equivalent.
+
+### Error Handling Posture
+
+- **Executables:** fail fast. A binary or CLI may call `exit` / `panic`
+  on unrecoverable errors.
+- **Libraries:** surface errors by returning or raising; never call
+  `exit` / `panic` from library code.
+- Validate at the boundary (user input, external API responses); trust
+  validated values internally. Do not add error handling for cases that
+  cannot occur.
 
 ## Paragraph Style
 
@@ -121,3 +160,4 @@ details — whether auto-formatters enforce or fight this style, and how to
 handle it — live in each language's rules file:
 
 - Bash → `bash.md`
+- Python → `python.md`

@@ -67,6 +67,26 @@ If neither exists, do not invent behavior for the tool.
 
 Additional tool detection signals and rules are defined in `WORKFLOW.md`.
 
+## Configuration Migration
+
+When converting or consolidating repo-level configuration (e.g., extracting
+`AGENTS.md` / `WORKFLOW.md` content into `.claude/` files, or migrating one
+repo to match another's pattern), evaluate each item against three scopes
+before placing it:
+
+1. **Language- and repo-agnostic** (78-col Markdown wrap, intent-revealing
+   names, library-vs-executable error policy, git/gh conventions) → global
+   `CLAUDE.md` or `rules/code-style.md`.
+2. **Language-specific, repo-agnostic** (Python uses pydantic + type hints;
+   Bash uses shellcheck) → global `rules/<language>.md`.
+3. **Truly repo-specific** (this repo's API contract, this repo's module
+   layout, business rules) → repo's `.claude/CONVENTIONS.md` or
+   `.claude/WORKFLOW.md`.
+
+Do not assume content is repo-specific just because it currently lives in
+the repo. When in doubt, prefer promotion (tier 1 or 2) over duplication
+per repo. Surface candidates and ask before duplicating.
+
 ## Resource Validity
 
 - Before recommending a tool, library, or pattern, verify it is actively
