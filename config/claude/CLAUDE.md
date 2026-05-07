@@ -87,6 +87,51 @@ Do not assume content is repo-specific just because it currently lives in
 the repo. When in doubt, prefer promotion (tier 1 or 2) over duplication
 per repo. Surface candidates and ask before duplicating.
 
+## Missing or Conflicting Tool Rules
+
+When working with a tool or language and the global config has no
+corresponding rules file (no `rules/<tool>.md`), or the existing rule
+conflicts with how the repo actually uses the tool, or the rule has
+gone stale relative to current best practice:
+
+- Stop and surface the gap before silently working around it.
+- Propose creating or updating the rule, and decide its scope using the
+  three-tier model in *Configuration Migration*:
+  - Generally useful across repos → new or updated global
+    `rules/<tool>.md` (or `rules/<language>.md`).
+  - Only meaningful in this repo → an override in the repo's
+    `.claude/CONVENTIONS.md` or `.claude/WORKFLOW.md`.
+- For conflicts: do not edit the global rule unilaterally to satisfy a
+  single-repo need. The repo override belongs in `.claude/`; the global
+  rule changes only when the new behavior is genuinely better for all
+  consumers.
+
+## When to Propose a Skill
+
+Rules describe policy and reference; skills package multi-step
+procedures with branches and decisions (see *Tool Detection and Policy*
+for the rule home). Propose creating a new skill when, in the course of
+work, you find yourself:
+
+- Executing the same multi-step sequence (three or more steps with
+  decisions or branches) more than once.
+- Coordinating multiple tools to achieve a single user-visible outcome
+  (e.g., bump version → build → tag → push → release-create; or scaffold
+  a Poetry project → wire pre-commit → seed tox envs).
+- Repeatedly making the same judgment calls about which flag, group,
+  env, or branch to use based on repo state.
+
+When the pattern shows up, surface the candidate to the user with a
+proposed name, trigger conditions, and step outline. Decide its scope
+using the three-tier model in *Configuration Migration*:
+
+- Generally useful across repos → propose a global skill.
+- Repo-specific workflow → propose a repo-level skill (or a script).
+
+Do not invent skills for one-shot tool invocations — those belong in a
+rule. The threshold is "this is a procedure I would write up for a new
+contributor," not "this is how a flag works."
+
 ## Resource Validity
 
 - Before recommending a tool, library, or pattern, verify it is actively

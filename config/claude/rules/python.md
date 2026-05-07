@@ -6,7 +6,7 @@ paths:
 
 # Python Rules
 
-**Version:** v2.0.0
+**Version:** v2.2.0
 
 ## Detection
 
@@ -15,22 +15,62 @@ Active when the repository contains a `pyproject.toml` at root, or any
 
 ## Toolchain
 
-| Concern             | Tool                              |
-|---------------------|-----------------------------------|
-| Packaging / deps    | Poetry (`pyproject.toml`)         |
-| Linter              | flake8                            |
-| Type checker (dev)  | pyright                           |
-| Type checker (CI)   | mypy                              |
-| Runtime validation  | pydantic                          |
-| Test runner         | pytest                            |
-| Mocking             | pytest-mock                       |
-| Coverage            | pytest-cov                        |
-| Multi-version test  | tox                               |
+| Concern             | Tool                                          |
+|---------------------|-----------------------------------------------|
+| Packaging / deps    | Poetry (`pyproject.toml`) — see `poetry.md`   |
+| Linter              | flake8                                        |
+| Type checker (dev)  | pyright                                       |
+| Type checker (CI)   | mypy                                          |
+| Runtime validation  | pydantic                                      |
+| Test runner         | pytest                                        |
+| Mocking             | pytest-mock                                   |
+| Coverage            | pytest-cov                                    |
+| Multi-version test  | tox — see `tox.md`                            |
 
 **Formatter is repo-specific.** Each repo declares its choice (`black` +
 `isort`, or `yapf` + `isort`) in its `.claude/CONVENTIONS.md`. See
 `black.md`, `yapf.md`, `isort.md` for tool details. Both formatters are
 mutually exclusive within a single repo.
+
+## Environments
+
+Development MUST happen inside a virtual environment, never against
+the system Python. Defaults:
+
+- **Poetry-managed repos** (`[tool.poetry]` in `pyproject.toml`): use
+  Poetry. See `poetry.md`.
+- **Other repos:** use `python -m venv .venv` and activate before
+  installing.
+
+A repo opts out only by stating so explicitly in its
+`.claude/CONVENTIONS.md` with a reason.
+
+## Dependency Groups
+
+Separate user-facing dependencies from development tooling. Optional
+docs and CI dependencies go in their own groups.
+
+### Canonical mapping
+
+| Concern                                  | Poetry group                 | Non-Poetry equivalent     |
+|------------------------------------------|------------------------------|---------------------------|
+| Runtime / user-facing                    | (main)                       | `requirements.txt`        |
+| Development tools (lint, format, types)  | `dev`                        | `requirements-dev.txt`    |
+| Test runner and test helpers             | `test` (or fold into `dev`)  | `requirements-test.txt`   |
+| Documentation builders                   | `docs` (optional)            | `requirements-docs.txt`   |
+
+### Optional further splits
+
+Add only when there's a concrete reason; do not pre-split.
+
+| Concern                                  | Poetry group                 | Non-Poetry equivalent     |
+|------------------------------------------|------------------------------|---------------------------|
+| CI-only tooling (uploaders, gh-actions integrations) | `ci`             | `requirements-ci.txt`     |
+| Release / build tooling (version bump, scm, codegen) | `release` / `build` | `requirements-release.txt` |
+
+A package consumer MUST be able to install runtime deps alone, without
+pulling in lint/test/docs tooling. For when to split vs fold see
+`poetry.md` *Dependency Groups*; for tox env wiring see `tox.md`.
 
 ## Type Checking Strategy
 
