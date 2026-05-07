@@ -1,0 +1,23 @@
+# shellcheck shell=bash
+
+# Bash completion for the proj() shell wrapper.
+# Completes directory names under $PROJECTS_DIR, including nested
+# subdirectories (e.g. name1/subname2).
+
+_proj() {
+  local cur
+  cur="${COMP_WORDS[COMP_CWORD]}"
+
+  [[ -n ${PROJECTS_DIR:-} && -d $PROJECTS_DIR ]] || return
+
+  local matches=() d
+  while IFS= read -r d; do
+    matches+=("${d#"$PROJECTS_DIR"/}/")
+  done < <(compgen -d -- "$PROJECTS_DIR/$cur")
+
+  COMPREPLY=("${matches[@]}")
+
+  compopt -o nospace 2> /dev/null
+}
+
+complete -F _proj proj

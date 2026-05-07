@@ -19,6 +19,9 @@ proj() {
   cd "$dir" || return
 }
 
+[[ -r "$XDG_CONFIG_HOME/completions/proj" ]] \
+  && source "$XDG_CONFIG_HOME/completions/proj"
+
 #-----------------------------------------------------------------------------
 shopt -s autocd cdspell direxpand dirspell globstar cdable_vars checkhash \
   checkwinsize dotglob extglob nocaseglob 2> /dev/null
