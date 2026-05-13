@@ -73,6 +73,20 @@ next.
       added code paths from our open PRs. This is a prerequisite for
       the Go bump below — without a test suite, a version bump is
       unverifiable beyond "it still compiles."
+
+      In progress on `pr/testing` (started 2026-05-13). First
+      test: `core/urlutil_test.go` for `ReencodeURL`.
+
+      **CI runs zero tests today.** `.github/workflows/go.yml`
+      only builds via goreleaser. Plan: don't touch the upstream
+      CI workflow until we have meaningful coverage. As a
+      precursor, set up our own GitHub Actions workflow on
+      `harleypig/packwiz` that runs `go test ./...` on push — this
+      gives us a forcing function locally without proposing a
+      noisy upstream change while the suite is small. When
+      coverage is meaningful enough to be worth gating upstream
+      reviewers on, port the workflow into a PR against
+      `packwiz/packwiz`.
 - [ ] **Audit and improve error handling.** Depends on the test
       work above. PR #384 (*Exit on download failure during modrinth
       pack export* by @jackwilsdon, 2026-01-04) is a concrete
@@ -233,6 +247,32 @@ next.
 Notes parked under the topic that should re-surface them. When starting
 work in one of these areas, re-read the relevant subsection before
 designing the change.
+
+### When test code accumulates repetitive stdlib assertions
+
+We bootstrapped the test suite with stdlib `testing` only
+(2026-05-13, `pr/testing` branch), matching the existing
+`core/versionutil_test.go`'s style and upstream's dependency
+choices.
+
+If/when test code grows to the point that:
+
+- Stdlib's `if got != want { t.Errorf(...) }` chains are
+  cluttering tests and obscuring intent.
+- Deep struct/slice equality with `reflect.DeepEqual` becomes
+  verbose or hard to read.
+- Multiple tests would benefit from fail-fast helpers
+  (`require.NoError`, `require.Equal`).
+
+… revisit adopting **testify** (`require` / `assert`). Decision
+to factor in: upstream hasn't chosen testify either, so adoption
+would either stay `mine`-only or pair with a deliberate upstream
+proposal.
+
+Trigger when reading a test file (yours or being added): does
+"would testify make this clearer?" have an obvious yes answer?
+If so, surface as a suggestion — don't make the switch
+unilaterally.
 
 ### When implementing markdown output from `packwiz list`
 
