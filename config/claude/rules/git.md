@@ -54,6 +54,81 @@ Key defaults from that skill:
 - Resolve worktree path from existing patterns before defaulting to
   `$PARENT_DIR/<branch-without-prefix>`
 
+## Aliases and Configuration
+
+The user maintains git aliases and config tuned to their workflow. Read
+them; do not ignore them.
+
+### Discovering aliases
+
+At the start of any non-trivial git work in a repo (onboarding, the first
+git-heavy session of the day, or whenever the user invokes an unfamiliar
+alias), scan:
+
+```bash
+git config --get-regexp '^alias\.'
+```
+
+Skim the output, group by category:
+
+- **Trivial shortcuts** — single-letter or two-letter aliases that just
+  rename a command (`f`=`fetch`, `s`=`status`, `co`=`checkout`).
+- **Convenience** — aliases that bundle a few common flags
+  (`remotes`=`remote -v`, `unstage`=`reset HEAD --`).
+- **Formatting / complex** — aliases with non-obvious output formatting,
+  graph rendering, or multi-step pipelines (`l` for a custom log format,
+  `lg` for a graph view, `wip` for a flow that stashes + commits).
+
+### Using aliases
+
+| Category | Default policy |
+|----------|----------------|
+| Trivial shortcuts | Prefer the full command in agent output. Aliases save the user keystrokes; they cost the user a moment of decoding when reading agent commands. |
+| Convenience | Use when the alias's output exactly matches the task. |
+| Formatting / complex | **Strongly prefer.** The user designed these for readability; the output usually beats anything you'd assemble ad hoc. Example: `git l` instead of `git log --oneline --decorate --graph`. |
+
+When using a non-trivial alias for the first time in a session, briefly
+note what it expands to so the user sees you understand it: "Running
+`git l` (your `log --graph --decorate --oneline --all`)."
+
+### Suggesting new aliases
+
+If you find yourself typing the same multi-flag git invocation three or
+more times in a session — or notice the user doing the same — surface
+it as an alias candidate. Decide its scope via the tier model in
+`CLAUDE.md`:
+
+- Generally useful → propose a global `~/.gitconfig` alias.
+- Only meaningful in one repo's workflow → propose a repo-local alias
+  via `git config --local`.
+
+Don't add the alias unilaterally; propose with the expansion and let
+the user decide.
+
+### Reviewing config
+
+Beyond aliases, scan relevant config at onboarding or when the user
+asks for a review:
+
+```bash
+git config --list --show-origin | grep -vE '^(file:[^[:space:]]+)?\s*(alias\.|user\.email|user\.name)'
+```
+
+Categories worth surfacing when they're absent or set to defaults that
+fight the user's stated workflow:
+
+- `pull.rebase`, `pull.ff` — affects what `git pull` does silently.
+- `rebase.autoStash`, `rebase.autosquash` — quality-of-life during
+  rebase.
+- `rerere.enabled` — remembers conflict resolutions, huge win for
+  long-lived branches in fork-mode repos.
+- `branch.sort`, `column.ui` — display-only, but improve `git branch`
+  output noticeably.
+- `init.defaultBranch` — should match the user's convention.
+
+Suggest changes; don't make them silently. Config changes affect every
+repo on the machine.
+
 ## Agent Rules
 
 - NEVER hardcode `main` or `master` — always derive the default branch.
@@ -65,3 +140,6 @@ Key defaults from that skill:
 - NEVER push to the default branch without user confirmation.
 - Clean working tree is a precondition for sync, prep-for-PR, and cleanup.
   Report and stop on violations; do not auto-stash.
+- Scan `git config --get-regexp '^alias\.'` at the start of non-trivial
+  git work; prefer formatting/complex aliases over equivalent raw
+  commands. See *Aliases and Configuration* above.

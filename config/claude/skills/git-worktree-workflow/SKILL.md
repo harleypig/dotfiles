@@ -139,6 +139,124 @@ ORIGIN_SLUG=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 UPSTREAM_SLUG=$(gh repo view --json parent -q .parent.nameWithOwner 2>/dev/null)
 ```
 
+## Keeping per-clone tooling out of upstream PRs
+
+In fork-mode repos you don't control, anything tracked by git eventually
+risks leaking into a PR diff — especially when topic branches are rebased
+on a freshly-synced default branch that contains your local-only config.
+
+The clean solution is to keep per-clone tooling files **untracked
+entirely** via `.git/info/exclude`. This file is per-clone, never
+committed, and survives every rebase and worktree operation.
+
+### Pattern
+
+For each fork-mode repo where you want local Claude config (or other
+per-clone tooling — aider working files, editor metadata, MCP caches):
+
+1. Create the config in a stable out-of-tree location (e.g.,
+   `$DOTFILES/.local-claude/<repo>/`) so it's versioned with your
+   dotfiles, not the project.
+2. Symlink it into the repo at the conventional path:
+   ```bash
+   ln -s "$DOTFILES/.local-claude/<repo>" "$BASE_DIR/.claude"
+   ```
+3. Add the symlink's name to `.git/info/exclude` so git ignores it
+   everywhere — every branch, every worktree, every rebase:
+   ```bash
+   printf '\n# Per-clone Claude config (symlinked out-of-tree).\n.claude\n' \
+       >> "$BASE_DIR/.git/info/exclude"
+   ```
+
+Verify with `git status` — the symlink should not appear as untracked.
+
+### When to use this
+
+- **Fork-mode repos** where upstream's `.gitignore` doesn't (and may
+  never) list your tooling paths.
+- **Own-repo mode** where you'd rather not commit Claude config to a
+  public repo even though you control it.
+
+In own-repo mode where you're fine committing the config, just add it
+to `.gitignore` normally — no symlink needed.
+
+### Candidates for exclusion
+
+Add only what you actually use. Common per-clone tooling paths:
+
+- `.claude` — Claude Code per-repo config
+- `.aider*` — aider working files and history
+- `.serena/` — Serena MCP project cache
+- `.idea/`, `.vscode/` — editor metadata if not shared with the team
+
+Adding paths you don't use is harmless but adds noise. Prefer minimal
+and extend on demand.
+
+## Onboarding an existing repo: legacy branch names
+
+Conventions in `rules/git.md` (`issue/<N>`, `pr/<name>`, `feature/<name>`,
+etc.) are forward-looking. Repos that pre-date Claude integration almost
+always have branches that don't match — bare topic names (`add-metadata`),
+historical experiments, abandoned exploration branches.
+
+Do not rename branches mechanically. Each non-conforming branch needs a
+deliberate decision at onboarding.
+
+### Inventory
+
+```bash
+git branch -a
+gh pr list --state open --author "@me" \
+   --json number,title,headRefName,baseRefName,url
+```
+
+For fork-mode repos also check upstream:
+
+```bash
+gh pr list --repo "$UPSTREAM_SLUG" --author "@me" --state open \
+   --json number,title,headRefName,baseRefName,url
+```
+
+### Decision matrix
+
+| Branch state | Recommended action | Reason |
+|--------------|-------------------|--------|
+| Has an open PR (any remote) | **Grandfather** — leave as-is | Renaming breaks the PR's head ref; contributor would have to repush from a new branch and reviewers lose review-thread continuity. |
+| Personal integration branch (e.g., `mine`) | **Grandfather** | `mine` is conventional for personal base branches. |
+| Local-only, actively used, no PR | **Rename to convention** | Cheap; aligns history going forward. |
+| Local-only, stale / experimental | **Propose deletion separately** (Operation 5) | Don't rename then delete; just delete. |
+| Tracks an upstream branch you don't own | **Grandfather** | You can't rename someone else's branch. |
+
+### Record the decision
+
+Once decided, record the outcome in the repo's `.claude/WORKFLOW.md` so
+future sessions don't re-evaluate:
+
+```markdown
+## Branch naming
+
+Going forward: follow `rules/git.md` conventions (`pr/<name>` for
+upstream PRs, `feature/<name>` for own-repo features, etc.).
+
+Grandfathered (do not rename):
+- `add-metadata` — open upstream PR #306
+- `list-pinned` — open upstream PR #359
+- `mine` — personal integration branch
+```
+
+### Renaming, when chosen
+
+If the user does want to rename a branch that has no open PR:
+
+```bash
+git branch -m <old-name> <new-name>
+git push origin :<old-name> <new-name>          # delete old, push new
+git push origin -u <new-name>                    # set upstream
+```
+
+If the branch has been pushed but no PR opened yet, this is safe. Warn
+before deleting the remote side.
+
 ---
 
 ## Operation 1: Work on issue #N (setup or resume)
