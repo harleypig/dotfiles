@@ -87,18 +87,27 @@ next.
       coverage is meaningful enough to be worth gating upstream
       reviewers on, port the workflow into a PR against
       `packwiz/packwiz`.
-- [ ] **Fix `LengthHasher.Sum` to honor the `hash.Hash` contract.**
+- [ ] **Fix `Sum` to honor the `hash.Hash` contract in two impls.**
       Found while writing tests on `pr/testing` (2026-05-13).
-      `core/hash.go:82-86` overwrites the supplied prefix `b` via
-      `binary.BigEndian.PutUint64(ext, h.length)` (writes at
-      offset 0) instead of writing at `ext[len(b):]`. Latent —
-      all current callers pass `nil`, so the bug never manifests
-      today, but the `hash.Hash` interface contract is violated.
-      When fixing, un-defer the prefix-preservation case in
-      `core/hash_test.go:TestLengthHasher` (currently noted in a
-      comment pointing here). Upstream-suitable PR; small enough
-      to land as a focused `pr/fix-lengthhasher-sum` (or similar)
-      branch.
+      Two hash implementations share the same latent bug:
+      - `core/hash.go:82-86` (`LengthHasher.Sum`) overwrites the
+        supplied prefix `b` via
+        `binary.BigEndian.PutUint64(ext, h.length)` (writes at
+        offset 0) instead of writing at `ext[len(b):]`.
+      - `curseforge/murmur2/hash.go:32-38` (`Murmur2CF.Sum`) does
+        the same: `binary.BigEndian.PutUint32(b, …)` at offset
+        zero. When `b` is non-nil and has cap ≥ 4 the supplied
+        prefix gets stomped; when cap < 4 it allocates fresh and
+        the prefix is dropped silently.
+
+      Latent in both — all current callers pass `nil`, so neither
+      bug manifests today, but the `hash.Hash` interface contract
+      is violated. When fixing, also un-defer the
+      prefix-preservation cases in `core/hash_test.go:TestLengthHasher`
+      (already pointed at this entry) and add an analogous case
+      in `curseforge/murmur2/hash_test.go`. Upstream-suitable PR;
+      both fixes can live on a single focused
+      `pr/fix-hash-sum-contract` (or similar) branch.
 
 - [ ] **Audit and improve error handling.** Depends on the test
       work above. PR #384 (*Exit on download failure during modrinth
