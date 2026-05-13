@@ -450,6 +450,68 @@ the user to resolve. Do not invoke `--abort` automatically.
 After a successful rebase, if the branch has been pushed previously, warn the
 user that the next push will require `--force-with-lease`.
 
+### Post-sync upstream audit
+
+When the sync target is the default branch (or a personal base branch
+that tracks the default) AND the sync brought in new commits AND the
+repo uses the fork-local TODO pattern (`.claude/TODO.md`): audit the
+new commits against the TODO before continuing with downstream work
+(merging into a personal base, rebasing PR branches, etc.).
+
+The point: keep the TODO and the open PR branches honest about what
+upstream just established. A merged-upstream PR shouldn't still be in
+the "watched" list; a planned-work item conditional on an upstream
+merge may have just unblocked.
+
+Capture the previous tip of the target branch before the sync (or
+derive from `@{1}`), then list what came in:
+
+```bash
+git log @{1}..HEAD --oneline             # all new commits
+git log @{1}..HEAD --merges --oneline    # merges (carry PR refs)
+```
+
+For each new commit, especially merges referencing `(#NNN)`, walk
+`.claude/TODO.md` and reconcile:
+
+| TODO entry refers to PR #NNN as ... | Action when #NNN just merged |
+|---|---|
+| **Watched PR we own** | Close the entry. Local branch + worktree are cleanup candidates (Operation 5). |
+| **Watched PR we don't own** | Close the entry. The merged behavior is now in our base; verify it matches expectations. |
+| **Planned work waiting on #NNN** | Item just unblocked (or was completed by the merge). Update state. |
+| **Planned work to "extend #NNN"** | Re-evaluate scope — the base shifted. |
+| **PR branch of ours that overlaps** | Subsequent rebase may produce an empty branch (work subsumed). Close those PRs. |
+
+#### Watch for un-cited equivalent work
+
+PR-reference matching is necessary but **not sufficient**. Upstream
+maintainers sometimes implement a tracked PR's idea independently,
+or merge it with substantial modifications, without citing the
+original PR. A watched PR can remain `state: OPEN` in `gh` while its
+underlying ask has already shipped in a different commit.
+
+For each new non-merge commit (and each merge commit whose body
+doesn't cite a PR we're tracking), skim its diff and message
+against `.claude/TODO.md` entries by *topic*, not just PR number:
+
+- Same file(s) touched as a tracked PR's diff → check whether the
+  change overlaps that PR's intent.
+- Commit subject/body mentions a feature, fix, or function name
+  also named in a TODO entry → flag for human review.
+- An entry phrased as "we want feature X" where X just appears in
+  the commit log → likely just shipped, even if not by the PR
+  we'd been watching.
+
+When in doubt, surface the candidate to the user with both the
+commit and the TODO entry, and let them decide whether to close or
+keep watching. False positives are cheap (a quick "no, that's
+different"); a missed equivalent is expensive (we keep watching a
+PR whose ask has already shipped, or we duplicate work).
+
+This is one-time per sync, not an ongoing watch. Surface findings to
+the user as a short summary before continuing into rebase/merge work
+downstream.
+
 ---
 
 ## Operation 3: Cross-branch integration
