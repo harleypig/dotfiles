@@ -74,8 +74,8 @@ next.
       the Go bump below — without a test suite, a version bump is
       unverifiable beyond "it still compiles."
 
-      In progress on `pr/testing` (started 2026-05-13). First
-      test: `core/urlutil_test.go` for `ReencodeURL`.
+      Active on `pr/testing` (started 2026-05-13). See branch
+      for current coverage.
 
       **CI runs zero tests today.** `.github/workflows/go.yml`
       only builds via goreleaser. Plan: don't touch the upstream
@@ -87,6 +87,19 @@ next.
       coverage is meaningful enough to be worth gating upstream
       reviewers on, port the workflow into a PR against
       `packwiz/packwiz`.
+- [ ] **Fix `LengthHasher.Sum` to honor the `hash.Hash` contract.**
+      Found while writing tests on `pr/testing` (2026-05-13).
+      `core/hash.go:82-86` overwrites the supplied prefix `b` via
+      `binary.BigEndian.PutUint64(ext, h.length)` (writes at
+      offset 0) instead of writing at `ext[len(b):]`. Latent —
+      all current callers pass `nil`, so the bug never manifests
+      today, but the `hash.Hash` interface contract is violated.
+      When fixing, un-defer the prefix-preservation case in
+      `core/hash_test.go:TestLengthHasher` (currently noted in a
+      comment pointing here). Upstream-suitable PR; small enough
+      to land as a focused `pr/fix-lengthhasher-sum` (or similar)
+      branch.
+
 - [ ] **Audit and improve error handling.** Depends on the test
       work above. PR #384 (*Exit on download failure during modrinth
       pack export* by @jackwilsdon, 2026-01-04) is a concrete

@@ -140,6 +140,11 @@ repo on the machine.
 - NEVER push to the default branch without user confirmation.
 - Clean working tree is a precondition for sync, prep-for-PR, and cleanup.
   Report and stop on violations; do not auto-stash.
+- Keep `Co-Authored-By: Claude ...` footers on commits Claude
+  authored or co-authored, including commits destined for upstream
+  PRs in third-party repos. The user prefers transparency about AI
+  use; do not strip the footer preemptively. Remove it only if the
+  user explicitly asks for that specific commit.
 - Scan `git config --get-regexp '^alias\.'` at the start of non-trivial
   git work; prefer formatting/complex aliases over equivalent raw
   commands. See *Aliases and Configuration* above.
