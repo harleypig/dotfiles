@@ -392,6 +392,16 @@ PowerShell 5.1.
   check unnecessary for shell-startup module; taskwarrior scripts item
   tracked below under Tool Configurations)
 - [ ] config/bash_prompt:131,137 - Fix poetry/venv detection and colors (XXX)
+- [ ] config/git/config:239-240 - `bd` / `bD` aliases collide because git
+  config keys are case-insensitive. `bD` overwrites `bd`, so `git bd`
+  force-deletes instead of safe-deleting. Rename `bD` to a case-distinct
+  key (e.g. `bdf` for force-delete) so both intents are reachable. See
+  XXX comment in file.
+- [ ] config/git/config:199-200 - `unstage` / `unadd` have swapped
+  semantics relative to common terminology: `unstage` resets to HEAD^
+  (undoes last commit), `unadd` resets to HEAD (actual unstage). Either
+  rename for clarity or document the convention in docs/git_aliases.md.
+  See XXX comment in file.
 
 ## ⚙️ Configuration Enhancements (LOW PRIORITY)
 

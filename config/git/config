@@ -198,6 +198,10 @@
   au   = add -u
   unadd = reset HEAD --     # Undo git add for listed files or all files
   unstage = reset HEAD^ --  # Undo last commit, specific files or all
+  # XXX: `unstage` does NOT just unstage — it resets to HEAD^, which
+  # un-does the last commit. Most users expect `unstage` to mean
+  # `reset HEAD --` (what `unadd` does here). The names are swapped
+  # relative to common terminology. See TODO.md.
 
   # --- Diffing ---
   d    = diff --color --color-words --abbrev
@@ -238,6 +242,11 @@
   bnm = branch --no-merged          # Show unmerged branches
   bd = branch -d                    # Delete branch if merged
   bD = branch -D                    # Force delete branch
+  # XXX: git config keys are case-insensitive. `bD` silently overwrites
+  # `bd`, so `git bd` ACTUALLY runs `branch -D` (force-delete), not the
+  # safe delete the line above documents. Rename one of these to a
+  # case-distinct key (e.g. `bdf` for force) to make both reachable.
+  # See TODO.md.
 
   # --- Committing ---
   amend = commit --amend --no-edit  # Amend commit without editing message
