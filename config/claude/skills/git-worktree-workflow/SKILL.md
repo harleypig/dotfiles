@@ -192,6 +192,54 @@ Add only what you actually use. Common per-clone tooling paths:
 Adding paths you don't use is harmless but adds noise. Prefer minimal
 and extend on demand.
 
+### Fork-local TODO tracking
+
+Fork-mode repos accumulate work that doesn't belong upstream: PRs to
+watch, integration decisions, deferred personal-branch work, notes on
+third-party PRs the user is considering pulling into `mine`.
+
+**Pattern:** keep a `.claude/TODO.md` for fork-specific tasks. It
+lives inside the symlinked-out-of-tree `.claude/` directory and so
+inherits the same properties:
+
+- Excluded from git via `.git/info/exclude`.
+- Versioned in `$DOTFILES/.local-claude/<repo>/`.
+- Not auto-loaded into Claude context — reference it from
+  `.claude/WORKFLOW.md` so Claude reads it when the task makes it
+  relevant.
+
+#### Coexistence with an existing repo TODO
+
+Some repos already track work in a root-level `TODO.md` (or
+`ROADMAP.md`, `docs/TODO.md`, an issue tracker, etc.). The two purposes
+are different and the files should remain separate:
+
+| File | Purpose | Visibility |
+|------|---------|------------|
+| Root `TODO.md` (if upstream has one) | Shared roadmap / known issues | Tracked, upstream-visible |
+| `.claude/TODO.md` | Fork-specific tracking, watched PRs, integration decisions | Untracked, local only |
+
+At onboarding, check for an existing root TODO and decide:
+
+- **No upstream TODO exists** → `.claude/TODO.md` is the only TODO;
+  WORKFLOW.md notes this.
+- **Upstream TODO exists** → keep both. WORKFLOW.md should briefly
+  note what goes where so future sessions don't conflate them or
+  write fork-specific items into the tracked file.
+
+The general rule: anything that would be useful to other contributors
+goes in the tracked TODO; anything specific to this user's fork or
+personal deployment goes in `.claude/TODO.md`.
+
+#### Watched PRs
+
+A common use of `.claude/TODO.md` in fork mode is tracking PRs to
+monitor — both the user's own (waiting on review/merge) and
+third-party ones being evaluated for inclusion in `mine`. Structure
+the watchlist so a session can walk it and report status via
+`gh pr view <N>`. WORKFLOW.md should tell Claude how to interpret
+phrases like "check watched PRs".
+
 ## Onboarding an existing repo: legacy branch names
 
 Conventions in `rules/git.md` (`issue/<N>`, `pr/<name>`, `feature/<name>`,
