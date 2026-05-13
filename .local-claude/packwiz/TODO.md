@@ -264,6 +264,137 @@ next.
       time whether to land it on `mine` first and propose
       upstream, or open the upstream PR directly.
 
+- [ ] **Expand test types beyond unit tests.** Once the unit-test
+      baseline is stable, expand with:
+      - **`Benchmark*` funcs** for hot paths: hash computation
+        (sha256/md5/murmur2), `findLatestVersion` and
+        `findLatestFile` selection, `SlugifyName`, the snapshot
+        regex in `getCurseforgeVersion`.
+      - **`Example*` funcs** on public helpers (`SlugifyName`,
+        `ReencodeURL`, `GetHashImpl`, `Mod.GetDestFilePath`) —
+        doubles as godoc examples.
+      - **`Fuzz*` funcs** for the parsers: `parseSlugOrUrl`
+        (modrinth and curseforge variants), `SlugifyName`,
+        `getCurseforgeVersion`, `ReencodeURL`.
+      - **`t.Parallel()`** on independent table-driven tests for
+        a perf win.
+      - **`go test -race`** in CI to surface data-race bugs in
+        the goroutine-using download path.
+      - **`go test -shuffle on`** to catch order-dependent
+        leaks (currently a real concern given how much viper
+        state we mutate).
+      - **`go test -coverpkg=./...`** so cross-package coverage
+        from backend tests gets credited to core. The current
+        per-package number under-reports because tests in
+        `modrinth/` that walk into `core/` don't currently count
+        toward either total.
+
+- [ ] **Add static analysis to CI.** Beyond `go test`:
+      - **`gofmt -l .`** (or `gofumpt`) — fail CI when any
+        file isn't canonically formatted. The repo's existing
+        history shows ad-hoc `Run go fmt` commits (e.g.
+        upstream commit `c391e1c`), which suggests formatting
+        drift in PRs gets caught only by reviewers eyeballing
+        diffs. CI enforcement removes that friction.
+      - **goimports** — superset of gofmt that also normalizes
+        import grouping/ordering. Useful for the same reason.
+      - **golangci-lint** — meta-linter bundling staticcheck,
+        errcheck, gosimple, govet, ineffassign, unused, etc.
+        Standard for Go projects; catches a lot of low-grade
+        bugs that escape unit tests.
+      - **gosec** — security linter (subset of golangci-lint
+        but worth enabling explicitly; flags weak hash use,
+        unchecked errors on file ops, etc.).
+      - **`go vet -vet=all`** — run the full vet checks, not
+        the high-confidence subset `go test` runs by default.
+
+- [ ] **Module + supply-chain hygiene.** Standard Go tooling:
+      - **`govulncheck ./...`** — Go team's official
+        vulnerability scanner. Reads the deps tree against the
+        Go vulnerability database and flags any imports that
+        actually reach known-vulnerable code (call-graph aware,
+        not just version matching). Should run in CI on every
+        push and on a schedule.
+      - **`go mod tidy -diff`** (or `go mod tidy && git
+        diff --exit-code go.mod go.sum`) — fail CI when
+        go.mod / go.sum drift from what `go mod tidy` would
+        produce. Stops "I forgot to tidy" PRs.
+      - **`go mod verify`** — verifies module cache hasn't been
+        tampered with. Cheap; run in CI.
+      - **`go-licenses`** (or equivalent) — audit the
+        transitive license set. Important for a tool people
+        ship — surfaces GPL/AGPL-tainted deps that would
+        affect downstream distribution.
+
+- [ ] **Adopt pre-commit framework.** The user's global rules
+      detect pre-commit via `.pre-commit-config.yaml` at the
+      repo root (see `~/.claude/rules/pre-commit.md`). The
+      packwiz repo doesn't have one yet. Add a config that
+      runs the cheap checks locally before push: gofmt,
+      goimports, basic `go vet`, trailing whitespace, end-of-
+      file newline, large-file check. Keeps the CI matrix
+      green more often by catching the obvious stuff before
+      it lands.
+
+- [ ] **GitHub repo hygiene.** Standard "if a contributor lands
+      here cold, what helps them" surface:
+      - **`.github/ISSUE_TEMPLATE/`** — bug-report and
+        feature-request templates. Existing issues already
+        follow a rough convention; codifying it cuts back-and-
+        forth.
+      - **`.github/PULL_REQUEST_TEMPLATE.md`** — checklist for
+        PR authors (tests added / linter clean / changelog
+        entry where applicable).
+      - **`CODEOWNERS`** — file ownership for review routing.
+        Even with a small maintainer set, it makes the review
+        flow explicit.
+      - **Branch protection rules** for `main` upstream and
+        our `mine` on origin — require CI to pass before
+        merge, no force-push. GitHub-side config, not in-repo,
+        but worth noting.
+      - **SECURITY.md** — disclosure policy (where to report
+        vulnerabilities found in dependencies or in packwiz
+        itself).
+
+- [ ] **Documentation hygiene.** Generic QA for the prose
+      surface:
+      - **markdownlint** — catch broken Markdown in README,
+        docs/, CONTRIBUTING.md when those land.
+      - **Link checker** (lychee, markdown-link-check) — flag
+        rotted external links in docs.
+      - **EditorConfig** (`.editorconfig`) — standard cross-
+        editor file specifying indent, EOL, charset. Cheap to
+        add, prevents one whole class of "my editor reformatted
+        the file" PR diffs.
+
+- [ ] **Multi-platform CI.** The codebase has
+      `curseforge/cursedir_windows.go` plus
+      `curseforge/cursedir_other.go` for platform-specific path
+      lookup, and `storeutil.go` has a Linux-only XDG branch.
+      Tests should run on linux + darwin + windows. The
+      platform-skipping `t.Skip` calls in `storeutil_test.go`
+      already accommodate this — they just need the other
+      platforms to actually run somewhere.
+
+- [ ] **Multi-Go-version CI.** Currently the existing CI pins
+      Go 1.24.6 in `.github/workflows/go.yml`. The test matrix
+      should cover the currently-supported Go versions (at
+      minimum the one in `go.mod` and the latest stable). This
+      is also a forcing function for the Go-version-bump TODO
+      above.
+
+- [ ] **Dependency-update automation.** Renovate or Dependabot
+      config in `.github/`. Useful for catching CVE-driven
+      patches in `mapstructure`, `httpmock`, etc. Especially
+      relevant once we have a test suite to run against the
+      updates.
+
+- [ ] **godoc coverage enforcement.** Most exported symbols
+      already have docstrings, but a linter pass would catch
+      gaps and the convention drift between
+      `// Description...` and `// Name does...` patterns. Could
+      be enforced via a lint rule once golangci-lint lands.
+
 ## Future considerations
 
 Notes parked under the topic that should re-surface them. When starting
