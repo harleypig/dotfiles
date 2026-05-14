@@ -20,6 +20,14 @@ Watch for: review activity, merge events, mergeability changing to
       `packwiz list`. Branch: `list-pinned`. Addresses upstream issue
       #317 (`[feature] Add a way to list pinned mods` by
       @hatkidchan, 2024-08).
+- [ ] **PR #402** — *Add unit-test coverage for the existing
+      codebase* — initial unit-test round (opened 2026-05-13).
+      Branch: `pr/testing`. ~40% coverage; pinning the existing
+      behavior across `core/`, the three backends, `packinterop`,
+      `murmur2`, and a few utility packages. Watch for review
+      comments on testing conventions / naming / organization;
+      the caveat in the PR body sets expectations on
+      AI-authored tests + maintainer's Go conventions.
 
 ### Unsubmitted upstream candidates
 
@@ -64,18 +72,29 @@ Concrete work intended for `mine` (or to propose upstream), roughly
 sequenced. Order matters where one item is a prerequisite for the
 next.
 
-- [ ] **Add/enhance tests.** The repo currently has exactly one test
-      file (`core/versionutil_test.go`). Coverage is effectively nil
-      across `cmd/`, the curseforge and modrinth backends, and the
-      rest of `core/`. Start with unit tests for higher-traffic
-      packages (manifest read/write, version comparison already
-      partially covered, download URL handling) and the recently-
-      added code paths from our open PRs. This is a prerequisite for
-      the Go bump below — without a test suite, a version bump is
+- [ ] **Add/enhance tests.** Prerequisite for the Go-version
+      bump below — without a test suite, a version bump is
       unverifiable beyond "it still compiles."
 
-      Active on `pr/testing` (started 2026-05-13). See branch
-      for current coverage.
+      First round shipped as upstream PR #402 (`pr/testing`,
+      opened 2026-05-13) — see the Watched PRs section. That
+      round covers pure logic + API-mocked paths + TOML
+      round-trips against the vendored example pack; brings
+      total coverage to ~40%.
+
+      Still pending for follow-up rounds:
+      - `DoUpdate` methods on all three Updaters (download +
+        write).
+      - Install / import flows
+        (`modrinth/install.go::installVersion*` /
+        `installProject`, `curseforge/import.go`,
+        `curseforge/curseforge.go::createModFile`).
+      - `core/download.go`'s `DownloadSession` + `CacheIndex`
+        machinery. Likely needs architectural separation
+        between orchestration and raw I/O before tests are
+        clean — file separately when it comes up.
+      - Failure paths in cobra `Run` bodies — gated on the
+        error-handling refactor (next item below).
 
       **CI runs zero tests today.** `.github/workflows/go.yml`
       only builds via goreleaser. Plan: don't touch the upstream
