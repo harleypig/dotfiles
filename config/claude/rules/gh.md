@@ -33,6 +33,40 @@ EOF
 )"
 ```
 
+## Commit hygiene
+
+PRs go up as a small, logically-grouped commit set — not the raw
+development history. Reviewers shouldn't have to wade through 40
+fine-grained "add test for X", "fix typo", "respond to my own review"
+commits to follow what's actually being proposed.
+
+Before opening a PR (and before requesting re-review after substantive
+changes):
+
+- Squash development noise — typos, intermediate states, `wip` /
+  `fixup` commits, follow-ups to your own self-review — into the
+  related substantive commit.
+- **Single-theme PR** (e.g., one bug fix): aim for one commit.
+- **Multi-theme PR** (e.g., test coverage across several packages):
+  group by theme — one commit per logical area — so each area's diff
+  is independently reviewable.
+- Every surviving commit should compile, pass tests on its own, and
+  carry a meaningful message.
+
+Use `git rebase -i <base>` (typically `upstream/main`) to consolidate;
+mark non-substantive commits as `fixup` or `squash`. After squashing,
+push with `--force-with-lease --force-if-includes`. Warn the user
+before that push if anyone else may have pulled the branch.
+
+Don't squash blindly to a single commit when a PR genuinely covers
+multiple independent areas — that loses reviewability. The goal is a
+"tidy story," not "minimum commit count."
+
+Squashing applies equally to a first push and to follow-ups during
+review: when the author addresses review comments, the response
+should be integrated into the original commit set rather than appended
+as `fixup commit 1, fixup commit 2, ...` noise.
+
 ## Authentication
 
 This user maintains **two** credentials for `gh`, deliberately:

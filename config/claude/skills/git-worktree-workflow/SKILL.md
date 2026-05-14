@@ -550,21 +550,41 @@ etc.
 
 1. Verify current worktree is clean
 2. Sync with the correct base (Operation 2 logic)
-3. Run any project-standard checks if obvious from the repo (tests, linters) — but do not guess; if unclear, ask the user whether to run them
-4. Push to origin:
+3. **Squash development noise to a clean commit set.** Per
+   `rules/gh.md` — *Commit hygiene*: a PR goes up as a small,
+   logically-grouped commit set, not the raw development
+   history. Run `git rebase -i <base>` (typically
+   `upstream/$DEFAULT_BRANCH`) and consolidate. Skip this step
+   only if the branch already presents a tidy story.
+
+   Show the proposed squash plan to the user before executing
+   the rebase — the choice of how granular to keep things (one
+   total commit vs. one per logical area) is a judgement call
+   that benefits from explicit confirmation.
+
+4. Run any project-standard checks if obvious from the repo
+   (tests, linters) — but do not guess; if unclear, ask the
+   user whether to run them
+5. Push to origin:
    ```bash
    # Detect whether branch has been pushed before
    if git rev-parse --verify "refs/remotes/origin/${BRANCH_NAME}" >/dev/null 2>&1; then
        PREVIOUSLY_PUSHED=true
    fi
    ```
-   - If rebase just ran OR `PREVIOUSLY_PUSHED=true` with diverged history:
-     warn user, then `git push --force-with-lease -u origin "$BRANCH_NAME"`
+   - If rebase (or squash) just ran OR `PREVIOUSLY_PUSHED=true` with
+     diverged history: warn user, then
+     `git push --force-with-lease --force-if-includes -u origin "$BRANCH_NAME"`
    - Otherwise: `git push -u origin "$BRANCH_NAME"`
-5. Determine target: in fork mode with upstream issue, PR targets `${UPSTREAM_SLUG}:${DEFAULT_BRANCH}`. In own-repo mode, PR targets `${ORIGIN_SLUG}:${DEFAULT_BRANCH}`.
-6. Offer to run `gh pr create` — but only after confirming PR title and body with the user
+6. Determine target: in fork mode with upstream issue, PR targets `${UPSTREAM_SLUG}:${DEFAULT_BRANCH}`. In own-repo mode, PR targets `${ORIGIN_SLUG}:${DEFAULT_BRANCH}`.
+7. Offer to run `gh pr create` — but only after confirming PR title and body with the user
 
 Don't auto-create the PR without confirmation. Creating a PR is a user-facing action against a public repo and deserves an explicit nod.
+
+The same squash-then-push step applies for follow-up pushes during
+review — when the author addresses review comments, the response
+should be integrated into the original commit set rather than
+appended as "address review feedback" fix-up noise.
 
 ---
 
