@@ -36,9 +36,16 @@ not yet been opened as upstream PRs. Periodically review and
 decide whether each is ready to propose. See WORKFLOW.md
 "Tracking unsubmitted upstream candidates" for the convention.
 
-*Currently empty.* Both existing topic branches (`add-metadata`,
-`list-pinned`) are already open upstream as PRs #306 and #359, so
-they live in "Our own upstream PRs" above.
+- [ ] **`pr/pre-commit-setup`** — adds `.pre-commit-config.yaml`
+      (default check) and `.pre-commit-config-fix.yaml` (fix
+      variant). Both intentionally don't fail the existing
+      codebase: hooks that would (gofmt, goimports, go vet,
+      whitespace fixers, yamllint on existing workflows) live in
+      `stages: [manual]` and are promoted out as their
+      corresponding cleanups land. Merged into `mine` on
+      2026-05-13. Ready to propose upstream as a focused PR
+      whenever the maintainer signals interest — useful for any
+      contributor, not just our deployment.
 
 ### Upstream PRs we're tracking but don't own
 
@@ -345,15 +352,27 @@ next.
         ship — surfaces GPL/AGPL-tainted deps that would
         affect downstream distribution.
 
-- [ ] **Adopt pre-commit framework.** The user's global rules
-      detect pre-commit via `.pre-commit-config.yaml` at the
-      repo root (see `~/.claude/rules/pre-commit.md`). The
-      packwiz repo doesn't have one yet. Add a config that
-      runs the cheap checks locally before push: gofmt,
-      goimports, basic `go vet`, trailing whitespace, end-of-
-      file newline, large-file check. Keeps the CI matrix
-      green more often by catching the obvious stuff before
-      it lands.
+- [x] **Adopt pre-commit framework.** Initial setup landed on
+      `mine` via `pr/pre-commit-setup` (2026-05-13). Both
+      `.pre-commit-config.yaml` and `.pre-commit-config-fix.yaml`
+      exist with hooks gated to `stages: [manual]` so neither
+      currently fails the existing codebase.
+
+      Remaining work — one focused PR per cleanup area, each
+      promoting its hook out of the manual stage:
+      - Whitespace normalisation (end-of-file-fixer,
+        trailing-whitespace, mixed-line-ending). Probably the
+        easiest first cleanup; touches every file.
+      - `go fmt ./...` pass (gofmt + goimports). Pairs naturally
+        with the goimports install instruction landing in
+        CONTRIBUTING.md once that exists.
+      - `go vet ./...` cleanup if any warnings flag.
+      - yamllint cleanup of `.github/workflows/*.yml`.
+      - `go mod tidy` if any drift exists today.
+
+      Each of those is independent and can be done as soon as
+      the maintainer signals direction (or just done on `mine`
+      then proposed upstream individually).
 
 - [ ] **GitHub repo hygiene.** Standard "if a contributor lands
       here cold, what helps them" surface:
