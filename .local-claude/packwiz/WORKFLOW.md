@@ -61,6 +61,24 @@ upstream-shippable by default, `mine` doesn't drift into territory
 that can't be contributed back, and we preserve the option to
 upstream the work later without archaeology.
 
+### Squash to a clean commit set before opening / re-pushing
+
+Per `~/.claude/rules/gh.md` *Commit hygiene*, upstream PRs go up
+as a small, logically-grouped commit set — not the raw
+development history. For a single-theme PR: one commit. For a
+multi-theme PR (e.g., tests across several packages): one commit
+per logical area so each is independently reviewable.
+
+The merges into `mine` are unaffected by this — `mine` keeps the
+fine-grained development history. The squash happens on the
+`pr/<name>` branch before `gh pr create` runs (and again before
+force-pushing review-feedback updates).
+
+For branches that get merged into `mine` AND then later opened as
+an upstream PR: do the squash on the `pr/<name>` ref, then
+force-push. The earlier merge into `mine` retains the pre-squash
+history, which is fine — `mine` never goes upstream.
+
 ### Check upstream before starting
 
 Before starting any non-trivial change, look for prior art so we
