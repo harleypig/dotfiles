@@ -43,9 +43,23 @@ decide whether each is ready to propose. See WORKFLOW.md
       whitespace fixers, yamllint on existing workflows) live in
       `stages: [manual]` and are promoted out as their
       corresponding cleanups land. Merged into `mine` on
-      2026-05-13. Ready to propose upstream as a focused PR
-      whenever the maintainer signals interest — useful for any
-      contributor, not just our deployment.
+      2026-05-13.
+
+      **Do NOT open as an upstream PR yet.** A pre-commit config
+      that gates contributors on manual-stage hooks is just
+      noise upstream — the value only appears once each cleanup
+      area is active (no longer `stages: [manual]`), which in
+      turn requires the corresponding cleanup PRs to have
+      landed upstream first (whitespace normalization, `go fmt
+      ./...`, etc. — see the "Adopt pre-commit framework"
+      Planned-work item for the per-area list).
+
+      Sequence: each cleanup PR lands upstream → that hook is
+      promoted out of manual stage on `mine` → eventually, when
+      all the cleanups are upstream, propose the pre-commit
+      config upstream too. Upstream is slow with PRs, so this
+      may never happen; that's fine, the configs are useful on
+      `mine` regardless.
 
 ### Upstream PRs we're tracking but don't own
 
@@ -373,6 +387,13 @@ next.
       Each of those is independent and can be done as soon as
       the maintainer signals direction (or just done on `mine`
       then proposed upstream individually).
+
+      Note on sequencing: the pre-commit config itself is NOT
+      opened as an upstream PR until all the cleanup PRs above
+      have been merged upstream — see the
+      `pr/pre-commit-setup` entry under "Unsubmitted upstream
+      candidates". Upstream is slow, so this may never happen;
+      the config still serves us on `mine` regardless.
 
 - [ ] **GitHub repo hygiene.** Standard "if a contributor lands
       here cold, what helps them" surface:
