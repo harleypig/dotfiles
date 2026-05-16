@@ -165,6 +165,141 @@ The git-worktree-workflow skill's Operation 2 ("Sync a branch with
 its base") handles individual branch syncs. When more than one
 branch needs it, just repeat per branch.
 
+## Test companion branches for grandfathered PRs
+
+Some branches cannot be modified because they have open upstream PRs:
+changing them would break the PR head ref and destroy review-thread
+continuity. Currently: `add-metadata` (PR #306) and `list-pinned`
+(PR #359).
+
+We still want test coverage for the code those PRs introduce. The
+solution is a **test companion branch** for each: a branch that merges
+in the feature code, the test infrastructure, and the error-handling
+fixes so tests can be written and run locally without touching the
+grandfathered branch.
+
+Active test companion branches:
+
+- `pr/list-pinned-tests` — tests for `list-pinned` (PR #359)
+- `pr/add-meta-tests` — tests for `add-metadata` (PR #306)
+
+### Branch topology
+
+Each test companion branch is a **multi-way merge**, not a linear
+stack. For `pr/list-pinned-tests` the shape is:
+
+```
+upstream/main (dfd8b68)
+    ├─ list-pinned              (feature code)
+    ├─ pr/testing               (test infrastructure, PR #402)
+    └─ pr/error-handling-*      (library error-posture fixes)
+              ↓ merged in this order ↓
+         pr/list-pinned-tests   (new tests live here)
+```
+
+`pr/add-meta-tests` has the same shape with `add-metadata` as the
+feature branch.
+
+**Merge order:** feature branch → `pr/testing` →
+`pr/error-handling-library-exits`. Merging `pr/testing` before the
+error-handling branch means git recognises the test-infra commits as
+already present when the error-handling branch is merged, so they are
+not duplicated.
+
+### Why these branches cannot be rebased
+
+`git rebase` on a merge-topology branch silently drops merge commits
+and re-linearises history, erasing the record of where each set of
+changes came from. **All maintenance on these branches is done by
+merging, never rebasing.**
+
+### Maintenance
+
+#### When `upstream/main` advances
+
+```bash
+# After fast-forwarding main from upstream/main:
+git -C /path/to/test-branch merge --no-ff main
+```
+
+Resolve any conflicts, then push.
+
+#### When `pr/testing` is rebased (upstream review feedback)
+
+```bash
+git -C /path/to/test-branch merge --no-ff pr/testing
+```
+
+Git will bring in only the new/changed commits. If the rebase was
+purely a squash (same content, new hashes), the merge may fast-forward
+or produce a trivial merge commit. Resolve if needed.
+
+Also re-merge the error-handling branch(es) after they are rebased
+onto the new `pr/testing` tip:
+
+```bash
+git -C /path/to/test-branch merge --no-ff pr/error-handling-library-exits
+```
+
+#### When `pr/testing` AND the feature PR both merge upstream
+
+At this point `upstream/main` contains both the test infrastructure
+and the feature code. The test companion branch needs to be rebuilt
+so the eventual upstream PR shows only the new tests.
+
+Procedure (one-time, per branch):
+
+1. Fetch and fast-forward `main` from `upstream/main`.
+2. Create a new branch off the updated `main`:
+   ```bash
+   git checkout -b pr/list-pinned-tests-v2 main
+   ```
+3. Identify the test commits from the old test branch (the commits
+   that add actual test code, not the merge commits):
+   ```bash
+   git log --no-merges --oneline pr/list-pinned-tests ^upstream/main
+   ```
+4. Cherry-pick those commits onto the new branch:
+   ```bash
+   git cherry-pick <sha> [<sha> ...]
+   ```
+5. Merge any remaining error-handling branches (if they have not yet
+   merged upstream), after they have been rebased onto new `main`.
+6. Push the new branch and open the upstream test PR from it.
+7. The old `pr/list-pinned-tests` branch and worktree can be cleaned
+   up (git-worktree-workflow skill Operation 5) once the new branch
+   is confirmed good.
+
+### Upstream PR timing
+
+Do **not** open a test companion PR upstream until **both** conditions
+are met:
+
+1. The feature PR (e.g. `list-pinned` → PR #359) has merged upstream.
+2. `pr/testing` (PR #402) has merged upstream.
+
+Until then, upstream reviewers cannot evaluate the tests against code
+that exists in their `main`.
+
+### Merging test companion branches into `mine`
+
+Once the tests pass and the branch is ready, merge into `mine` with
+`--no-ff` in the main clone:
+
+```bash
+git merge --no-ff pr/list-pinned-tests
+```
+
+These branches **do** belong on `mine` even though they are
+merge-topology branches — `mine` is already a collection of
+`--no-ff` merges and the topology is expected there.
+
+When the upstream PR is eventually opened and merged, the test
+companion branch and its worktree become cleanup candidates. The
+content will have been absorbed into `upstream/main`, and the next
+`mine` sync (fast-forward `main` → merge `main` into `mine`) will
+pick it up naturally.
+
 ## Local-only tooling
 
 `.claude/` is a symlink to `$DOTFILES/.local-claude/packwiz/`,

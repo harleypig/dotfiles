@@ -29,6 +29,23 @@ Watch for: review activity, merge events, mergeability changing to
       the caveat in the PR body sets expectations on
       AI-authored tests + maintainer's Go conventions.
 
+### Test companion branches
+
+Branches that can only go upstream after their corresponding feature PR
+AND `pr/testing` (PR #402) both merge. See WORKFLOW.md "Test companion
+branches for grandfathered PRs" for topology and maintenance procedure.
+
+- [ ] **`pr/list-pinned-tests`** — tests for `list-pinned` (PR #359).
+      Extracts `filterByPin` helper from `listCmd.Run`; 7 subtests in
+      `cmd/list_test.go`. Merged into `mine` 2026-05-16.
+      **Hold until:** PR #359 AND PR #402 both merged upstream.
+
+- [ ] **`pr/add-meta-tests`** — tests for `add-metadata` (PR #306).
+      Adds TOML round-trip tests for `Metadata.Curseforge` fields in
+      `core/mod_test.go` (full-fields case + omitempty case). Merged
+      into `mine` 2026-05-16.
+      **Hold until:** PR #306 AND PR #402 both merged upstream.
+
 ### Unsubmitted upstream candidates
 
 `pr/<name>` branches that have been merged into `mine` but have
