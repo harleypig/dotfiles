@@ -73,6 +73,18 @@ Watch for: author response, new commits, readiness to merge into
       body). When/if author addresses concerns or pushes new commits,
       re-evaluate whether to merge into `mine`.
 
+## Pending decisions
+
+- [ ] **File upstream issue: `migrate/loader.go` exits 1 when
+      loader is already on requested version.** In the
+      Fabric/Quilt explicit-version path, `updatePackToVersion`
+      returns `false` (already on that version, prints "already
+      on version X") and the command exits 1. "Already at desired
+      state" is success, not failure — should exit 0. Deferred
+      until `pr/testing` (PR #402) merges upstream; file as an
+      issue then to get maintainer input before patching. See
+      `ERROR-HANDLING.md` "Other" section for full analysis.
+
 ## Routine maintenance reminders
 
 - After `main` advances from `upstream/main`: rebase each open PR
@@ -165,6 +177,42 @@ next.
       test becomes an error-handling decision. Use PR #384 as a
       starting reference for the export path specifically; merge
       it (or its equivalent) as part of this work.
+
+      **Branching and grouping.** Each group of related fixes
+      is its own `pr/<name>` branch. These branches stack on
+      `pr/testing`, not on `upstream/main` — the error-handling
+      changes depend on test infrastructure that doesn't exist
+      upstream yet. When `pr/testing` is rebased (upstream review
+      feedback, `upstream/main` advance), every stacked branch
+      needs a cascade rebase onto the new `pr/testing` tip.
+      Once `pr/testing` merges upstream, rebase each remaining
+      error-handling branch directly onto `upstream/main` and
+      resume normal sync from there. Candidate groups (decide
+      scope at implementation time):
+      - Export-pipeline silent failures (`modrinth export`,
+        `curseforge export`, `AddNonMetafileOverrides`) — also
+        covers PR #384 merge/equivalent. **Deferred** — blocked
+        on exit-code design (see item below).
+      - Library-code fatal exit (~~`cmdshared/mcversion.go`~~ done
+        2026-05-15, ~~`modrinth/export.go:126`~~ done 2026-05-16,
+        ~~`curseforge/request.go`~~ done 2026-05-16,
+        ~~`core/indexfiles.go`~~ left with invariant comment).
+      - Cobra `Run` error-posture normalisation (stdout →
+        stderr, `RunE` vs `Die` helper).
+      - Resource cleanup (`Close` on writers, partial-file
+        handling).
+      See `.claude/ERROR-HANDLING.md` for the full site
+      inventory and per-site decision fields.
+- [ ] **Design differentiated exit codes.** Today all failures
+      exit 1 and all successes exit 0. Ideal end-state: success
+      (0), partial failure — some items failed but output was
+      produced (e.g. 2), total failure — no useful output
+      produced (e.g. 1). Unblocks the "Export-pipeline silent
+      failures" error-handling group above. Design questions:
+      which commands benefit, what the code values should be,
+      and whether to introduce named constants or a helper.
+      Decide scope (mine-only or upstream proposal) at design
+      time.
 - [ ] **Bump Go version to latest.** `go.mod` currently pins
       `go 1.23.0`. Defer until the test work above is in place so
       regressions are catchable. When ready, also update:
