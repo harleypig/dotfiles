@@ -172,3 +172,28 @@ if command -v gcloud &> /dev/null; then
   [[ -f $completion_file ]] && source $completion_file
   unset gcpath completion_file
 fi
+
+#-----------------------------------------------------------------------------
+# Cheaty
+
+findword() {
+  local default='[[:alpha:]]{5}'
+  local regex="^${1:-$default}$"
+  grep -iE "^${regex}$" /usr/share/dict/words \
+  | grep -E '^[[:alpha:]]+$' \
+  | awk '{
+      word = tolower($0)
+      gsub(/[^aeiouy]/, "", word)      # keep only vowels
+      split(word, chars, "")
+      seen = ""
+      count = 0
+      for (i=1; i<=length(word); i++) {
+        if (index(seen, chars[i]) == 0) {
+          seen = seen chars[i]
+          count++
+        }
+      }
+    print count "\t" $0}' \
+  | sort -k1,1n -k2 \
+  | cut -f2-
+}
