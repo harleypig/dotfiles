@@ -1,5 +1,4 @@
 {
-  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/bin/statusline.sh",
@@ -24,8 +23,6 @@
     "terraform@claude-plugins-official": true,
     "pydantic-ai@claude-plugins-official": true
   },
-  "effortLevel": "high",
-  "editorMode": "vim",
   "extraKnownMarketplaces": {
     "claude-code-plugins": {
       "source": {
@@ -33,5 +30,7 @@
         "repo": "anthropics/claude-code"
       }
     }
-  }
+  },
+  "effortLevel": "high",
+  "editorMode": "vim"
 }
