@@ -21,7 +21,8 @@
     "claude-code-setup@claude-plugins-official": true,
     "hookify@claude-plugins-official": true,
     "terraform@claude-plugins-official": true,
-    "pydantic-ai@claude-plugins-official": true
+    "pydantic-ai@claude-plugins-official": true,
+    "jdtls-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-code-plugins": {
