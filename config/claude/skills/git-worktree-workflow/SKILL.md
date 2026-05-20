@@ -31,7 +31,30 @@ Example layout (default naming):
     issue321/           worktree for issue branch issue/321
     pr/feature-name/    worktree for branch pr/feature-name
     mine/               optional personal base branch worktree (fork mode only)
+    some-foreign-repo/  related repo cloned as a sibling (see below)
 ```
+
+### Related/foreign repositories
+
+Repositories that are related to the current project but are not forks of it
+— dependency sources, reference implementations, upstream API repos — are
+expected to be found as **siblings** of the base clone at:
+
+```
+$PARENT_DIR/<repo-name>/
+```
+
+When the skill needs to reference, locate, or clone such a repo, check
+`$PARENT_DIR` first before suggesting a location. If the repo is not already
+present as a sibling, default to cloning it there:
+
+```bash
+git clone <url> "$PARENT_DIR/<repo-name>"
+```
+
+Do not assume a specific prefix for the repo directory name — use the
+upstream repository's actual name (i.e., the last path component of its clone
+URL, without `.git`). Confirm the derived path with the user before cloning.
 
 ### Deriving a worktree path
 

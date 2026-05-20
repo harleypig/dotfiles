@@ -54,6 +54,14 @@ Key defaults from that skill:
 - Resolve worktree path from existing patterns before defaulting to
   `$PARENT_DIR/<branch-without-prefix>`
 
+## Related/Foreign Repositories
+
+Repositories related to the current project but not forks of it (dependency
+sources, upstream APIs, reference implementations) are expected at
+`$PARENT_DIR/<repo-name>/` — siblings of the current clone. Check there
+before suggesting a clone location. See the full convention in the
+git-worktree-workflow skill under *Related/foreign repositories*.
+
 ## Aliases and Configuration
 
 The user maintains git aliases and config tuned to their workflow. Read
