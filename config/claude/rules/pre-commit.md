@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -26,6 +26,40 @@ The repository is considered to be using **pre-commit** if:
 * `.pre-commit-config.yaml` exists at the repository root.
 
 No other signal is required.
+
+## Hook and Repo Verification
+
+Before adding or updating any hook entry in a pre-commit config file,
+verify that the repo and hook actually exist. Do not assume a repo URL
+or hook ID is correct based on training data — mirrors move, repos get
+renamed or deleted, and version numbers drift.
+
+**Verification order (use the first method that works):**
+
+1. `gh release list --repo <owner>/<repo> --limit 5` — confirms the repo
+   exists on GitHub and shows real release tags. Use this by default.
+2. `gh search repos "<tool name> pre-commit" --limit 5` — when you do
+   not know the owner/repo, search first.
+3. `pre-commit autoupdate` on a scratch config — if the above are
+   unavailable; this fetches tags live.
+
+**For the `rev` field:** always use a tag returned by one of the above
+methods. Never invent or guess a version string.
+
+**For local hooks** (`repo: local`): no remote verification is needed,
+but verify that the `entry` command is available (`which <command>`)
+before writing the hook.
+
+**Node/runtime compatibility:** for hooks that install via npm, check
+the engine requirement before pinning a rev:
+
+```bash
+node --version
+```
+
+If the latest release requires a newer runtime than is installed, use
+`gh release list` to find the most recent compatible release and pin
+that version instead.
 
 ## Agent Rules
 
