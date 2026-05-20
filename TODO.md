@@ -143,6 +143,46 @@ pre-commit.md, python.md.
   - [x] bats — test structure expectations, helper usage
   - [x] docker — image pinning, layer hygiene, security, compose rules
   - [x] gh — PR/issue conventions; fork-mode PR target; worktree skill ref
+  - [ ] new project setup — rule covering the general checklist for
+    initializing a project (git init, pre-commit, .claude/ scaffold,
+    DEVELOPER.md, TODO.md, etc.); evaluate splitting language-specific
+    bootstrapping steps (e.g. NeoForge MDK, Poetry, npm init) into the
+    relevant per-language rules file rather than bloating the general rule.
+    Points to consider from experience:
+    - Investigate actual storage/file formats before designing around them;
+      official docs may describe outdated formats (e.g. JourneyMap switched
+      from per-waypoint JSON to a binary DAT in 6.x without updating docs)
+    - Check whether related/foreign repos are already cloned as siblings
+      before suggesting clone locations (../reponame convention)
+    - Defer .claude/ scaffold until project-specific conventions emerge;
+      Phase 0 setup rarely produces enough repo-specific content to justify it
+    - Editor config belongs in the editor's own config repo, not the project;
+      DEVELOPER.md should note the maintainer's editor but not prescribe setup
+    - When adding language support to an editor config, verify that
+      indentation and formatting settings match the chosen formatter's output
+      rather than blindly following language community conventions (e.g.
+      google-java-format uses 2-space, not the traditional 4-space Java style)
+    - New project setup frequently exposes gaps in existing global config
+      (missing docs, redundant settings, stale paths); capture these as
+      follow-up items in the relevant repo's TODO rather than blocking setup
+    - DEVELOPER.md should cover the full build/test workflow including
+      platform-specific quirks (e.g. build in WSL2, test in Windows Minecraft)
+    - Pin pre-commit hook versions to current stable at time of setup;
+      note that versions need periodic review as hooks release updates
+    - Document the rationale for non-obvious decisions (e.g. why 2-space
+      Java indent) so future sessions don't relitigate them
+  - [ ] commitizen — rule and/or skill for conventional commit message
+    formatting; evaluate whether a rule (policy + invocation) is sufficient
+    or whether the multi-step workflow warrants a skill
+  - [ ] git tagging — rule and/or skill for version tag conventions (semver
+    vs calver, signed vs unsigned, when to tag vs branch, how tags relate
+    to release branches); likely a rule unless the tagging+push+release
+    sequence is complex enough to warrant a skill
+  - [ ] changelog generation — rule and/or skill for producing changelogs
+    from git history on version changes; evaluate tools (git-cliff,
+    conventional-changelog, keep-a-changelog manual pattern) and whether
+    changelog generation should be part of a broader release skill alongside
+    tagging and commitizen
   - [ ] Any other tools discovered during pre-commit or CI work
 - [x] Consider a template for new rules files so they stay consistent
 
