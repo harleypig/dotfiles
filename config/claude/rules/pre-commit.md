@@ -30,36 +30,77 @@ No other signal is required.
 ## Hook and Repo Verification
 
 Before adding or updating any hook entry in a pre-commit config file,
-verify that the repo and hook actually exist. Do not assume a repo URL
-or hook ID is correct based on training data — mirrors move, repos get
-renamed or deleted, and version numbers drift.
+verify that the repo and hook ID actually exist. Do not assume a repo
+URL or hook ID is correct based on training data — mirrors move, repos
+get renamed or deleted, hook IDs change, and version numbers drift.
 
-**Verification order (use the first method that works):**
+### Step 1 — Find the repo
 
-1. `gh release list --repo <owner>/<repo> --limit 5` — confirms the repo
-   exists on GitHub and shows real release tags. Use this by default.
-2. `gh search repos "<tool name> pre-commit" --limit 5` — when you do
-   not know the owner/repo, search first.
-3. `pre-commit autoupdate` on a scratch config — if the above are
-   unavailable; this fetches tags live.
+**When the owner/repo is unknown**, search GitHub code for repos that
+define the hook:
 
-**For the `rev` field:** always use a tag returned by one of the above
-methods. Never invent or guess a version string.
+```bash
+gh search code --filename .pre-commit-hooks.yaml '<hook-name>' --limit 10
+```
 
-**For local hooks** (`repo: local`): no remote verification is needed,
-but verify that the `entry` command is available (`which <command>`)
-before writing the hook.
+This searches repos whose `.pre-commit-hooks.yaml` file mentions the
+hook name. It is more targeted than `gh search repos` because it
+confirms the hook is actually declared in the repo.
 
-**Node/runtime compatibility:** for hooks that install via npm, check
-the engine requirement before pinning a rev:
+**Choosing from multiple results:** run these checks on each candidate:
+
+```bash
+# Activity and popularity
+gh repo view <owner>/<repo> --json stargazerCount,updatedAt,description
+
+# Verify the hook ID exists and does what you expect
+gh api repos/<owner>/<repo>/contents/.pre-commit-hooks.yaml \
+  --jq '.content' | base64 -d | grep -A6 '<hook-id>'
+```
+
+Prefer repos that are actively maintained (updated within ~1 year) and
+have meaningful star counts. When an official repo from the tool's own
+org appears in results, prefer that. For unmaintained or zero-star
+repos with no recent activity, keep looking.
+
+### Step 2 — Get the rev
+
+```bash
+# Try releases first
+gh release list --repo <owner>/<repo> --limit 5
+
+# Fall back to tags if releases returns empty
+gh api repos/<owner>/<repo>/tags --jq '.[].name' | head -5
+```
+
+Use the latest tag from whichever command returns results. Never
+invent or guess a version string.
+
+### Step 3 — Verify runtime compatibility
+
+For hooks that install via npm (`language: node`), check the Node
+version before pinning:
 
 ```bash
 node --version
 ```
 
 If the latest release requires a newer runtime than is installed, use
-`gh release list` to find the most recent compatible release and pin
-that version instead.
+the list from Step 2 to find and pin the most recent compatible
+release instead.
+
+### Local hooks (`repo: local`)
+
+No remote verification needed, but verify the `entry` command is
+available before writing the hook:
+
+```bash
+which <command>
+```
+
+If the command is not installed, note the missing dependency in a
+comment on the hook or add `stages: [manual]` so a missing binary
+does not break `git commit` for other contributors.
 
 ## Agent Rules
 
