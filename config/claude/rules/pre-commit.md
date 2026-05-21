@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -107,14 +107,29 @@ does not break `git commit` for other contributors.
 * Agents MUST treat `.pre-commit-config.yaml` as **non-modifying checks only**.
 * If `.pre-commit-config-fix.yaml` exists:
   * It defines optional, modifying hooks.
-* Agents MUST NOT apply auto-fixes without explicit user approval.
-* Default agent behavior:
+* Agents MUST NOT apply auto-fixes mid-session in response to hook
+  failures during development. Report the failure; do not silently fix
+  and re-run.
+* Default agent behavior during development:
   * Run non-modifying checks only.
-* When explicitly approved by the user:
-  * Agents MAY run modifying hooks.
 * In CI contexts:
   * Agents MUST run checks only.
   * Agents MUST NOT apply or commit fixes.
+
+## Pre-Commit Workflow When Ready to Commit
+
+When all changes are complete and the agent is preparing to commit and
+push, run in this order — no additional user approval needed:
+
+1. Run `.pre-commit-config-fix.yaml` (all modifying hooks) to apply
+   auto-fixes (formatting, etc.).
+2. Run `.pre-commit-config.yaml` (check-only) to confirm everything
+   passes cleanly.
+3. Proceed with `git commit` and `git push`.
+
+Do NOT run the fix config mid-session in response to individual hook
+failures. It is a final preparation step only, run once when the work
+is done.
 
 ## Branch Protection / Merge Policy Blocks
 
@@ -139,7 +154,14 @@ When this occurs:
 
 ## Commit-Blocking Hook Failures
 
-When a `git commit` is blocked by a failing pre-commit hook:
+This section applies when a `git commit` is blocked by a failing
+pre-commit hook during development (i.e., outside the final
+commit-preparation workflow described above). If the failure occurs
+during the fix → check → commit sequence, diagnose and fix the
+underlying issue before retrying that sequence.
+
+When a `git commit` is blocked mid-session by a failing pre-commit
+hook:
 
 * Report the full hook output to the user.
 * MUST NOT retry the commit automatically.
