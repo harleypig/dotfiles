@@ -138,6 +138,8 @@ without re-doing the full login.
 
 ## Agent Rules
 
+- After creating a PR, follow the CI monitoring workflow in
+  `github-actions.md` if Actions are configured in the repo.
 - Always return the PR URL after creating.
 - Use `gh` for all GitHub operations (issues, PRs, checks, releases).
 - Do not create, merge, or close PRs without explicit user approval.
