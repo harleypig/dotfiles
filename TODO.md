@@ -57,6 +57,28 @@ Reference: https://wiki.archlinux.org/title/XDG_Base_Directory
 - [ ] Update dotlinks if any of these were previously managed there
 - [ ] After migration, verify apps still work correctly
 
+Known offenders to investigate (as of 2026-05-20):
+
+| Path | Tool | Notes |
+| --- | --- | --- |
+| `~/.aider` | aider AI | check if `--config-dir` or `AIDER_CONFIG` supports XDG |
+| `~/.cpan` | CPAN | `CPAN::Config` supports custom dirs |
+| `~/.cpanm` | cpanm | `PERL_CPANM_HOME` env var |
+| `~/.docker` | Docker | `DOCKER_CONFIG` — already set in `010-general` but dir still in `$HOME` |
+| `~/.gradle` | Gradle | `GRADLE_USER_HOME` env var |
+| `~/.gradle-mcp` | gradle-mcp | likely follows `GRADLE_USER_HOME` or its own config |
+| `~/.java` | Java/JVM | `java.util.prefs.userRoot` system property |
+| `~/.jbang` | jbang | `JBANG_DIR` env var |
+| `~/.kivy` | Kivy | `KIVY_HOME` env var |
+| `~/.lesshst` | less | `LESSHISTFILE` env var — set to `$XDG_CACHE_HOME/less/history` |
+| `~/.m2` | Maven | `settings.xml` `<localRepository>` or `MAVEN_OPTS` |
+| `~/.npm` | npm | `NPM_CONFIG_CACHE` or `.npmrc` `cache=` |
+| `~/.redhat` | Red Hat tools | investigate; may not be movable |
+| `~/.serena` | Serena AI | check if config path is configurable |
+| `~/.sqlite_history` | SQLite | `SQLITE_HISTORY` env var |
+| `~/.wget-hsts` | wget | already handled via alias in `010-general` |
+| `~/.zshrc` | Zsh | not primary shell; remove if unused |
+
 **Note:** Consider symlinking `~/.config -> $DOTFILES/config` to handle apps
 that hardcode `$HOME/.config` rather than respecting `$XDG_CONFIG_HOME`. This
 would make both paths resolve to the same location without needing per-app
