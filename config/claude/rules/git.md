@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 ## Commit Messages
 
@@ -136,6 +136,28 @@ fight the user's stated workflow:
 
 Suggest changes; don't make them silently. Config changes affect every
 repo on the machine.
+
+## After Merging a PR
+
+After a PR is merged and the remote branch deleted, prune the local
+remote-tracking ref for that branch specifically:
+
+```bash
+git branch -dr origin/<branch-name>
+```
+
+Do NOT use `git fetch --prune` or `git fetch --all --prune` — those
+sweep all stale remote-tracking refs, which is broader than intended.
+The targeted form removes only the ref for the branch just deleted,
+leaving all other remote-tracking refs untouched.
+
+Verify the cleanup worked:
+
+```bash
+git branch -ra
+```
+
+The deleted branch should no longer appear in the output.
 
 ## Agent Rules
 
