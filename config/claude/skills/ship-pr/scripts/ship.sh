@@ -30,7 +30,13 @@ _gh() {
   rm -f "$errfile"
 
   if ((rc == 0)); then
-    printf '%s' "$out"
+    # Emit a trailing newline (like a normal command) so callers that pipe
+    # into `while read` or `mapfile` don't drop the last line. Command
+    # substitution `$(_gh ...)` strips it anyway, so this is safe there.
+    if [[ -n $out ]]; then
+      printf '%s\n' "$out"
+    fi
+
     return 0
   fi
 

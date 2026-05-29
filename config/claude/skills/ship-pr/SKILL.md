@@ -5,7 +5,7 @@ description: Commit a finished feature branch, push it, open a pull request, wat
 
 # Ship PR
 
-**Version:** v1.2.0
+**Version:** v1.3.0
 
 Take a finished branch through the standard landing sequence: commit →
 push → open PR → watch CI → (approval) merge → clean up.
@@ -127,13 +127,22 @@ ship.sh merge-methods
 | Single-theme PR, no restriction             | `--squash`  |
 | Multi-theme PR worth preserving as commits  | `--merge`   |
 
+`merge-methods` is **best-effort**: on a repo whose rulesets you can't read
+(a fork/upstream you don't control, or a misconfigured repo) it can only
+report the repo-level allowances, which may be looser than a ruleset
+actually enforces. The merge call is the real authority.
+
 ```bash
 ship.sh merge <number> --squash   # or --merge / --rebase
 ```
 
-If the merge is rejected for *missing required checks* (not a scope
-error), CI is not green or a required check name doesn't match a job
-`name:`. Fix that; do not bypass.
+Read the rejection, if any:
+
+- *Method not allowed* (e.g. "Merge commits are not allowed") — a ruleset
+  is stricter than `merge-methods` saw. Retry with an allowed method
+  (`--squash` is the safe default).
+- *Missing required checks* — CI is not green or a required check name
+  doesn't match a job `name:`. Fix that; do not bypass.
 
 ## Step 6 — Post-merge cleanup
 
