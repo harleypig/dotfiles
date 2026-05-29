@@ -122,7 +122,55 @@ cmd_ci_watch() {
   conclusion=$(_gh run view "$run_id" --json conclusion --jq '.conclusion')
   echo "run $run_id: $conclusion"
 
-  [[ $conclusion == success ]]
+  # A "success" conclusion can still carry warning/error annotations
+  # (deprecations, audit notices, lint warnings) that the conclusion hides.
+  # Surface them. Best-effort: if the token lacks annotation read scope this
+  # section is silently skipped.
+  local sha nwo id level message
+  local warnings=0 errors=0
+  local -a check_ids=()
+
+  sha=$(_gh run view "$run_id" --json headSha --jq '.headSha')
+  nwo=$(_nwo)
+
+  mapfile -t check_ids < <(
+    _gh api "repos/$nwo/commits/$sha/check-runs" \
+      --jq '.check_runs[] | select((.output.annotations_count // 0) > 0) | .id' \
+      2>/dev/null
+  )
+
+  if ((${#check_ids[@]} > 0)); then
+    echo "annotations:"
+
+    for id in "${check_ids[@]}"; do
+      while IFS=$'\t' read -r level message; do
+        case "$level" in
+          warning) warnings=$((warnings + 1)) ;;
+          failure) errors=$((errors + 1)) ;;
+        esac
+
+        echo "  [$level] $message"
+      done < <(
+        _gh api "repos/$nwo/check-runs/$id/annotations" \
+          --jq '.[] | "\(.annotation_level)\t\(.message | split("\n")[0])"' \
+          2>/dev/null
+      )
+    done
+
+    echo "  total: $errors error(s), $warnings warning(s)"
+  fi
+
+  # Exit codes: 1 = failed (or error annotations); 2 = passed with
+  # warnings; 0 = clean. The caller decides what to do with warnings.
+  if [[ $conclusion != success ]] || ((errors > 0)); then
+    return 1
+  fi
+
+  if ((warnings > 0)); then
+    return 2
+  fi
+
+  return 0
 }
 
 # Print the merge methods the repo allows, honoring any branch ruleset that

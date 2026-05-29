@@ -5,7 +5,7 @@ description: Commit a finished feature branch, push it, open a pull request, wat
 
 # Ship PR
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 Take a finished branch through the standard landing sequence: commit →
 push → open PR → watch CI → (approval) merge → clean up.
@@ -36,7 +36,7 @@ auto-retries with the env tokens cleared on a PAT scope error, so the
 |------------|------|
 | `default-branch` | Print the repo's default branch. |
 | `pr-create --title T --body B [--base BR]` | Open the PR from the current branch; prints the URL. |
-| `ci-watch [BRANCH]` | Poll the latest run to completion; print job results; exit non-zero if CI failed. |
+| `ci-watch [BRANCH]` | Poll the latest run to completion; print job results **and any warning/error annotations**. Exit `0` clean, `1` failed, `2` passed-with-warnings. |
 | `merge-methods` | Print the merge methods the repo/ruleset allows. |
 | `merge NUMBER --squash\|--merge\|--rebase` | Merge and delete the branch. |
 | `cleanup BRANCH` | Switch to default, pull, prune the merged branch. |
@@ -100,10 +100,17 @@ The script handles the PAT→OAuth fallback. Report the PR URL.
 ship.sh ci-watch "$CUR"
 ```
 
-On failure (non-zero exit): fetch `gh run view <id> --log-failed`,
-diagnose, and propose a fix before touching files — distinguish code
-failures (fix the source) from infra failures (`gh run rerun --failed`).
-Fix, push, re-watch until green. Report pass/fail. **Do not merge on red.**
+Act on the exit code — it checks **both** the run conclusion **and**
+warning/error annotations a green conclusion would otherwise hide:
+
+- **`0` (clean):** proceed.
+- **`1` (failed, or error-level annotations):** fetch `gh run view <id>
+  --log-failed`, diagnose, and propose a fix before touching files —
+  distinguish code failures (fix the source) from infra failures (`gh run
+  rerun --failed`). Fix, push, re-watch until green. **Do not merge on red.**
+- **`2` (passed, but warnings present):** the printed `annotations:` block
+  lists them. **Do not silently merge** — report the warnings to the user
+  and get acknowledgment (or fix them) before proceeding to merge.
 
 ## Step 5 — Merge (only with explicit approval)
 
