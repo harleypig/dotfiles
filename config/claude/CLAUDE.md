@@ -89,6 +89,18 @@ per repo. Surface candidates and ask before duplicating.
 
 ## Missing or Conflicting Tool Rules
 
+**Concrete trigger.** Treat these events as a checkpoint to verify rule
+coverage, and act *as they happen* — do not wait to be asked:
+
+- Adding a dependency to a manifest (`package.json`, `pyproject.toml`,
+  etc.) for a library that has no `rules/<name>.md`.
+- First authoring a file in a language/framework that has no
+  `rules/<language>.md`.
+
+A `PostToolUse` hook (`~/.claude/hooks/rule-coverage.py`) also flags these
+as a backstop, but the hook is a reminder — the responsibility to surface
+and propose the rule is the agent's regardless of whether it fires.
+
 When working with a tool or language and the global config has no
 corresponding rules file (no `rules/<tool>.md`), or the existing rule
 conflicts with how the repo actually uses the tool, or the rule has

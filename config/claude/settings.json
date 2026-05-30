@@ -33,5 +33,20 @@
     }
   },
   "effortLevel": "high",
-  "editorMode": "vim"
+  "editorMode": "vim",
+  "model": "opus",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/rule-coverage.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
 }
