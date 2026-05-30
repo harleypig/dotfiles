@@ -11,3 +11,5 @@
 !skills/**
 !bin/
 !bin/**
+!hooks/
+!hooks/**
