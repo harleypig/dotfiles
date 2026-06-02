@@ -207,6 +207,21 @@ pre-commit.md, python.md.
     tagging and commitizen
   - [ ] Any other tools discovered during pre-commit or CI work
 - [x] Consider a template for new rules files so they stay consistent
+- [ ] Add a "best practices" rules/skills layer. The current
+  `rules/code-style.md` may be better recast as a general best-practices
+  document with language-specific subdocuments — i.e. a shared core that
+  per-language rules files extend. Decide structure: one general
+  best-practices doc + per-language extensions, vs. keeping `code-style.md`
+  as the shared base that the language rules reference.
+- [ ] When creating/modifying a rule or skill, check known sources for an
+  existing implementation to adapt (vendor with a `SOURCE.md` and audit to
+  fit) rather than authoring from scratch:
+  - GitHub (search repos/topics)
+  - https://github.com/VoltAgent/awesome-agent-skills
+  - https://officialskills.sh/
+  - other locations as discovered
+  Ties into the vendored file/skill update checker (see Configuration
+  Enhancements → Dependency Management).
 
 ## 🪝 Claude Code PostToolUse Hooks (MEDIUM PRIORITY)
 
@@ -347,6 +362,11 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 - [x] shell-startup:94 - Added --first/-f and --last/-l options to addpath
 - [x] shell-startup:114 - Replaced XXX with description comment; run_hook is valid
 - [x] shell-startup:180 - Removed dead placeholder export-script block
+- [ ] Move the grok installer block out of the top-level `shell-startup`
+  file into a dedicated `config/shell-startup/` module (e.g. `0NN-grok`).
+  The grok installer appends directly to `shell-startup`, which is the
+  wrong location and risks duplicate blocks on re-install; relocate it and
+  guard against re-append.
 
 ### shell-startup: Shell Context Detection (HIGH PRIORITY)
 
