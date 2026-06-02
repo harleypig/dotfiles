@@ -557,6 +557,33 @@ Once the Claude statusline exists, audit all four surfaces together:
   - git-completion.bash
 - [ ] Set up automated or manual update process
 
+### Vendored file / skill update checker
+
+Some files are **vendored** (copied in from an upstream repo) rather than
+authored here — e.g. `config/claude/skills/frontend-design/` from
+`anthropics/skills`. Each vendored item carries a `SOURCE.md` recording its
+upstream repo, path, and pinned commit SHA (frontend-design has the first
+one). We need a way to check whether any vendored item is behind upstream so
+we can stay current.
+
+- [ ] Build a checker that finds every `SOURCE.md`, reads `Upstream repo` /
+  `Path` / `Vendored SHA`, queries
+  `gh api "repos/<repo>/commits?path=<path>&per_page=1"` for the latest SHA,
+  and reports which vendored items are BEHIND (optionally show the diff).
+- [ ] Decide placement (**leaning toward both**):
+  - Option A: `bin/check-vendored` — general, repo-wide; scans for any
+    `SOURCE.md` so it works for non-Claude vendored files too.
+  - Option B: `config/claude/bin/check-vendored-skills` — Claude-scoped;
+    limits to `config/claude/skills/*/SOURCE.md`.
+  - Likely both: a general `bin/` core that does the work, plus a thin
+    `config/claude/bin/` entry that scopes it to skills.
+- [ ] Generalize the `SOURCE.md` provenance convention (repo / path / SHA /
+  local-edits) and document it (WORKFLOW.md or a rules file).
+- [ ] Consider folding the git-completion `check4update` item above into
+  this same mechanism (give those files a `SOURCE.md` too).
+- [ ] Optional: wire it to a periodic nudge (Claude `/schedule` or a CI
+  `update-deps.yml` job — see CI/CD "Dependency Updates").
+
 ## 🔍 Research and Exploration (LOW PRIORITY)
 
 - [ ] Look into serena MCP server: https://github.com/oraios/serena
