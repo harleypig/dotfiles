@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+# Docker wrapper for trivy (vulnerability / misconfig / secret scanner).
+# Modelled on bin/shellcheck: mount $PWD as the container workdir and pass
+# all arguments through, so `trivy fs .` and `trivy config .` work against
+# the current repo. `trivy image <local-image>` additionally needs the
+# docker socket (mounted below).
+#
+# SUPPLY-CHAIN NOTE: trivy was compromised twice in March 2026 (malicious
+# binary v0.69.4; the aquasecurity/trivy-action and setup-trivy GitHub
+# Actions). The mitigation is to pin the image by digest and run it directly
+# rather than via the marketplace actions. See rules/trivy.md. Bump the tag +
+# digest together; resolve a new digest with:
+#   docker buildx imagetools inspect aquasec/trivy:<tag>
+TRIVY_IMAGE="aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95d7c0907a221d080a996f556500"
+
+#------------------------------------------------------------------------------
+# Fail fast: any path argument must be under $PWD (the container mount point).
+# Skip flags, and skip the next token after `image` (an image ref, not a path).
+prev=""
+for arg in "$@"; do
+  if [[ $arg == -* || $prev == image ]]; then
+    prev="$arg"
+    continue
+  fi
+  case "$arg" in
+    image | fs | config | repo | rootfs | sbom | filesystem) prev="$arg"; continue ;;
+  esac
+
+  abs=$(realpath -- "$arg" 2> /dev/null) || { prev="$arg"; continue; }
+  if [[ -e $arg && $abs != "$PWD"/* ]]; then
+    printf 'trivy: %s is not under the current directory; cd to its parent or modify bin/trivy\n' "$arg" >&2
+    exit 1
+  fi
+
+  prev="$arg"
+done
+
+#------------------------------------------------------------------------------
+# Persistent vuln-DB cache so the database is not re-downloaded every run.
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/trivy"
+mkdir -p "$cache_dir"
+
+declare -a args=(
+  --rm
+  --user "$(id -u):$(id -g)"
+  --volume "$PWD:/mnt"
+  --workdir "/mnt"
+  --env "TRIVY_CACHE_DIR=/cache"
+  --volume "$cache_dir:/cache"
+)
+
+# Mount the docker socket for `trivy image <local-image>`; add its group so
+# the non-root --user can read it. Harmless for fs/config scans.
+if [[ -S /var/run/docker.sock ]]; then
+  args+=(
+    --volume /var/run/docker.sock:/var/run/docker.sock
+    --group-add "$(stat -c %g /var/run/docker.sock)"
+  )
+fi
+
+#------------------------------------------------------------------------------
+exec docker run "${args[@]}" "$TRIVY_IMAGE" "$@"

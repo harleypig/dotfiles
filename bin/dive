@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# Docker wrapper for dive (image layer / efficiency analyzer).
+# Reads a local image through the docker socket. Two modes:
+#   dive <image>           interactive TUI (explore layers)
+#   dive <image> --ci      non-interactive; evaluate efficiency rules and
+#                          exit non-zero on failure (use in CI / scripts)
+#
+# Image is pinned by digest (see rules/docker.md). Bump the tag + digest
+# together; resolve a new digest with:
+#   docker buildx imagetools inspect wagoodman/dive:<tag>
+DIVE_IMAGE="wagoodman/dive:v0.13.1@sha256:f1886e6c32c094fc41a623c1989f5cb3e48aa766da5f0be233f911fc1d85ce10"
+
+#------------------------------------------------------------------------------
+declare -a args=(
+  --rm
+  --user "$(id -u):$(id -g)"
+)
+
+# dive reads the image via the docker daemon; add the socket's group so the
+# non-root --user can access it.
+if [[ -S /var/run/docker.sock ]]; then
+  args+=(
+    --volume /var/run/docker.sock:/var/run/docker.sock
+    --group-add "$(stat -c %g /var/run/docker.sock)"
+  )
+fi
+
+# Allocate a TTY only when attached to one, so the TUI works interactively
+# while --ci runs (and pipes) stay non-interactive.
+if [[ -t 0 && -t 1 ]]; then
+  args+=(--interactive --tty)
+fi
+
+# A repo-local .dive-ci in $PWD configures the --ci efficiency thresholds;
+# mount it where dive looks for it.
+if [[ -f "$PWD/.dive-ci" ]]; then
+  args+=(--volume "$PWD/.dive-ci:/.dive-ci:ro")
+fi
+
+#------------------------------------------------------------------------------
+exec docker run "${args[@]}" "$DIVE_IMAGE" "$@"

@@ -1,0 +1,14 @@
+# Global hadolint baseline.
+#
+# Resolves via XDG: bin/hadolint mounts this as the in-container
+# $HOME/.config/hadolint.yaml fallback. A repo-local .hadolint.yaml in the
+# working directory takes precedence. See config/claude/rules/hadolint.md.
+
+# Fail the lint on warnings and errors; let style/info findings through so
+# they inform without blocking. Repos wanting a stricter gate lower this.
+failure-threshold: warning
+
+# FROM images must come from one of these registries (enables DL3026).
+trustedRegistries:
+  - docker.io
+  - ghcr.io

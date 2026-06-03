@@ -11,7 +11,7 @@ paths:
 
 # Docker Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 ## Image Pinning
 
@@ -43,6 +43,19 @@ paths:
 - Prefer multi-stage builds to drop build-time tooling from the final
   image.
 
+## Image Size
+
+- Start from the smallest viable base (`-slim` / `-alpine` / distroless);
+  the base often dominates the final size.
+- Multi-stage: build in a fat stage, `COPY --from=build` only the artifacts
+  (compiled binary, `dist/`, installed venv) into a minimal runtime stage.
+  Do not carry compilers, dev headers, or package caches forward.
+- Each `RUN` that fetches something must clean up in the *same* layer — a
+  later `RUN rm` leaves the bytes in the earlier layer (see Layer Hygiene).
+- Measure, don't guess: compare `docker images` sizes across changes, and
+  use **dive** (`dive.md`) to find wasted space / a low efficiency score
+  when an image is unexpectedly large.
+
 ## Security
 
 - Run as a non-root user. Add `USER <name>` near the end of the
@@ -66,6 +79,11 @@ paths:
 
 ## Agent Behavior
 
+This rule is the *policy*; three tools enforce and measure it — lint with
+**hadolint** (`hadolint.md`), scan for CVEs/misconfig/secrets with **trivy**
+(`trivy.md`), and analyze image size with **dive** (`dive.md`). The
+**containerize** skill drives the full workflow and routes through all four.
+
 - When creating or editing Dockerfiles:
   - Verify base image tags are pinned (never `:latest`).
   - Check that `RUN` steps installing packages also clean up caches in
@@ -75,6 +93,9 @@ paths:
 - When creating or editing compose files:
   - Verify image pins.
   - Flag inline secrets or credentials.
+- After authoring/changing a Dockerfile run `hadolint` (`hadolint.md`); after
+  building/changing an image run `trivy image` + `trivy config` (`trivy.md`).
 - In pre-commit context: `.pre-commit-config.yaml` checks only;
-  `.pre-commit-config-fix.yaml` applies fixes (hadolint is check-only;
-  no auto-fix equivalent exists).
+  `.pre-commit-config-fix.yaml` applies fixes. hadolint is check-only (no
+  auto-fix equivalent); trivy/dive are not pre-commit hooks (they run in CI /
+  on demand).
