@@ -1,11 +1,11 @@
 ---
 name: qa-check
-description: Run the full quality-assurance pipeline on a change — format, lint, type-check, code-smell, security, tests, UI/UX, end-to-end, build, CI — using the current repo's own QA doc for the concrete commands and the global qa.md for the dimensions/discipline. Use whenever the user wants to validate quality or readiness: "run QA", "qa check", "quality check", "is this ready to merge/PR", "run the checks", "lint and test this", "verify this change", "check everything passes", or before opening/finishing a PR. Composes the containerize skill (images) and security-scan skill (SAST/deps).
+description: Run the full quality-assurance pipeline on a change (format, lint, type-check, tests, security, build, CI, and the rest of the qa.md dimensions) — using the current repo's own QA doc for the concrete commands and the global qa.md for the dimensions/discipline. Use whenever the user wants to validate quality or readiness: "run QA", "qa check", "quality check", "is this ready to merge/PR", "run the checks", "lint and test this", "verify this change", "check everything passes", or before opening/finishing a PR. Composes the containerize skill (images) and security-scan skill (SAST/deps).
 ---
 
 # QA Check
 
-**Version:** v2.0.0
+**Version:** v2.1.0
 
 Run the quality-assurance pipeline for **this** repo and route every stage
 through its rule. QA spans many tools that are individually easy to forget;
@@ -44,24 +44,21 @@ Detect what exists and run only the applicable dimensions; **name the gaps**:
 
 ## Run the pipeline (in order, fail-fast)
 
-Use the repo's own commands/scripts and pre-commit configs. Match each step
-to the change (docs-only skips build/tests; a backend change runs its cycle):
+Run the dimensions from **`qa.md`'s Pipeline**, in order, using the repo's own
+commands/scripts and pre-commit configs (that ordered list is the single
+source — not restated here). Match each step to the change: a docs-only change
+skips build/tests; a backend change runs its cycle.
 
-1. **Format** (auto-fix, once) → 2. **Lint** → 3. **Type-check** →
-4. **Code smell** → 5. **Security** (SAST/SCA/DAST/IaC/secrets — defer to
-**security-scan**) → 6. **Tests** (success + failure paths) →
-7. **UI/UX + a11y** (manual visual/keyboard check if no tooling) →
-8. **End-to-end** (run the suite if present; else check the critical flow
-   manually and flag the gap) → 9. **Compatibility** (the targets the product
-   claims; N/A if single-target) → 10. **Performance & load** (where it
-   matters) → 11. **Reliability & observability** (often runtime/out-of-gate —
-   status it) → 12. **Build** (compile/bundle; image build via
-   **containerize** when containers changed) → 13. **Code review** (human
-   gate) → 14. **CI** (after pushing, watch CI to green; honour required
-   checks and the fix→check discipline).
+Only the qa-check-specific operational notes (the rest is in `qa.md`):
 
-Periodically audit coverage against the **ISO/IEC 25010** characteristics
-(see `qa.md`) — a characteristic with no assuring activity is a candidate gap.
+- **Format** is the one auto-fix stage — run it once (the fix config), then
+  the check-only pass; never fix-and-recommit per failure.
+- **Security** → defer to the **security-scan** skill; **Build**'s image step
+  → the **containerize** skill.
+- **CI** is the post-push stage — watch it to green; honour required checks.
+- For a dimension with no tooling (UI/UX, e2e), do the manual pass and flag
+  the gap rather than skipping it.
+- Periodically audit coverage against **ISO/IEC 25010** (see `qa.md`).
 
 ## Report
 
