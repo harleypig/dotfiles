@@ -6,7 +6,7 @@ paths:
 
 # Python Rules
 
-**Version:** v2.2.0
+**Version:** v2.3.0
 
 ## Detection
 
@@ -18,7 +18,7 @@ Active when the repository contains a `pyproject.toml` at root, or any
 | Concern             | Tool                                          |
 |---------------------|-----------------------------------------------|
 | Packaging / deps    | Poetry (`pyproject.toml`) — see `poetry.md`   |
-| Linter              | flake8                                        |
+| Linter              | flake8, or `ruff check` (see *Lint/format*)   |
 | Type checker (dev)  | pyright                                       |
 | Type checker (CI)   | mypy                                          |
 | Runtime validation  | pydantic                                      |
@@ -27,10 +27,18 @@ Active when the repository contains a `pyproject.toml` at root, or any
 | Coverage            | pytest-cov                                    |
 | Multi-version test  | tox — see `tox.md`                            |
 
-**Formatter is repo-specific.** Each repo declares its choice (`black` +
-`isort`, or `yapf` + `isort`) in its `.claude/CONVENTIONS.md`. See
-`black.md`, `yapf.md`, `isort.md` for tool details. Both formatters are
-mutually exclusive within a single repo.
+**Lint/format is repo-specific.** Each repo declares its choice in its
+`.claude/CONVENTIONS.md`, picking **one** of:
+
+- **`ruff`** — one tool consolidating formatter + import-sort + linter
+  (replaces black/isort/flake8) plus code-smell rule sets. Preferred for new
+  repos. See `ruff.md`.
+- **`black` + `isort` + `flake8`** (or `yapf` + `isort`) — the classic split.
+  See `black.md`, `yapf.md`, `isort.md`.
+
+These are mutually exclusive within a single repo — never wire both ruff and
+black/isort/flake8 into the same pre-commit. Type-checking stays separate
+(`pyright`/`mypy`) under either choice.
 
 ## Environments
 
