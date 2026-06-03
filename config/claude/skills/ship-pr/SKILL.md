@@ -1,6 +1,6 @@
 ---
 name: ship-pr
-description: Commit a finished feature branch, push it, open a pull request, watch CI to green, and (with explicit approval) merge it and clean up — using this user's gh credential fallback and the repo's branch-protection merge policy. Use whenever the user wants to land work via a PR: "ship this", "ship it", "land this branch", "commit push and PR", "open a PR and merge", "put up a PR", "get this merged", "create the PR and merge after CI", or any request to take a ready branch through the PR-and-merge sequence. Starts where git-worktree-workflow's "prep for PR" ends; works for plain feature branches too (no worktree required).
+description: Commit a finished feature branch and push it, then — each only with explicit approval — open a pull request, watch CI to green, merge it, tag the release if it ships an artifact, and clean up — using this user's gh credential fallback and the repo's branch-protection merge policy. Use whenever the user wants to land work via a PR: "ship this", "ship it", "land this branch", "commit push and PR", "open a PR and merge", "put up a PR", "get this merged", "create the PR and merge after CI", or any request to take a ready branch through the PR-and-merge sequence. Starts where git-worktree-workflow's "prep for PR" ends; works for plain feature branches too (no worktree required).
 ---
 
 # Ship PR
