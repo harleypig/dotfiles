@@ -1,6 +1,6 @@
 # Code Style
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 ## General Style
 
@@ -40,6 +40,38 @@ at the bottom).
 - Validate at the boundary (user input, external API responses); trust
   validated values internally. Do not add error handling for cases that
   cannot occur.
+
+### Abstraction and the Rule of Three
+
+Keep efficiency in mind without optimizing too soon. The working heuristic:
+
+> **If the same code, process, or config appears more than twice, abstract
+> it.**
+
+One occurrence is fine. A second is a flag to watch. The **third** confirms a
+stable, repeating pattern — extract it into a single source of truth (a
+function, helper, module, loop, template, script, or — for a repeated
+multi-step procedure — a skill; see *When to Propose a Skill* in `CLAUDE.md`).
+The payoff is fewer places to change, fix, and let drift apart, and the intent
+named once.
+
+This is a **guideline, not a mandate** — the same caution that applies to
+premature optimization applies to premature abstraction:
+
+- **Wait for the third instance.** Abstracting on the first or second risks
+  the *wrong* abstraction, which couples things that later diverge and is
+  costlier to unwind than the duplication was. Duplication is cheaper than the
+  wrong abstraction.
+- **Abstract repetition of *meaning*, not just of *characters*.** Three
+  fragments that merely look alike but represent different concepts should
+  stay separate; merging them couples unrelated code.
+- **Don't force it, and don't over-engineer** the abstraction once you do
+  extract — the simplest form that removes the real repetition wins (no
+  configurability or generality that was not asked for).
+
+Removing genuine repetition is the cheap, high-value kind of efficiency: less
+to read and maintain. Reach for it when the pattern is demonstrated, not
+merely anticipated.
 
 ## Paragraph Style
 
