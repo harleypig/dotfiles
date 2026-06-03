@@ -1,6 +1,6 @@
 # Quality Assurance Rules
 
-**Version:** v2.0.0
+**Version:** v2.1.0
 
 QA is the full pipeline that takes a change from "written" to
 "release-ready." This rule is **language- and tool-agnostic**: it defines the
@@ -30,8 +30,10 @@ skip silently.
 4. **Code smell / complexity** — smell/complexity rules. Some linters include
    them; some stacks need a dedicated tool. If nothing covers it, **name the
    gap.**
-5. **Security** — SAST, dependency/supply-chain, and (if images) image CVE
-   scanning. Delegate to the **security-scan** skill.
+5. **Security** — the layered set: **SAST** (static), **SCA** (dependencies/
+   supply-chain — vulns *and* licenses), **DAST** (runtime scan of the
+   running app, for services/web apps), IaC/image scanning, and secrets.
+   Delegate to the **security-scan** skill.
 6. **Tests** — unit/integration; cover success **and** failure paths; track
    coverage. Per the repo's `TESTS.md`.
 7. **UI/UX & accessibility** *(repos with a UI)* — visual correctness,
@@ -41,9 +43,23 @@ skip silently.
 8. **End-to-end** *(apps)* — real user flows through the running system
    (e.g. a browser-driver). Distinct from unit tests. Exercise the critical
    flow even before an automated suite exists; flag the missing automation.
-9. **Build** — the artifact actually compiles/bundles, and images build
-   (the **containerize** skill) when containers change. Note size deltas.
-10. **CI** — the applicable stages above run in CI and gate merges via the
+9. **Compatibility** *(multi-target products)* — behaves across the targets
+   it claims to support (browsers, OSes, devices, runtime versions). Skip as
+   N/A when there is a single target.
+10. **Performance & load** *(where it matters)* — responsiveness, throughput,
+    and resource use under expected and peak load (load/stress/soak). Pairs
+    with the measure-first stance below — premature here is as wrong as
+    absent; document which it is.
+11. **Reliability & observability** — graceful failure/recovery, health
+    checks, and the monitoring/alerting that surfaces issues. Largely
+    runtime/post-deploy, so often **outside** the pre-merge gate —
+    acknowledge it (status it) rather than pretend it's covered.
+12. **Build** — the artifact actually compiles/bundles, and images build
+    (the **containerize** skill) when containers change. Note size deltas.
+13. **Code review** — human peer review of the change. A gate, not a tool;
+    state whether/how it is required (e.g. PR approvals) or, for a solo repo,
+    that it is informal.
+14. **CI** — the applicable stages above run in CI and gate merges via the
     repo's required checks; watch CI to green after pushing.
 
 ## Fix-then-check discipline
@@ -69,6 +85,19 @@ skip silently.
 - Premature optimization is itself a code smell QA should flag.
 - When you do optimize: measure before/after, keep it isolated and
   reviewable, prefer the simplest approach that hits the target.
+
+## Completeness lens: ISO/IEC 25010
+
+This pipeline is **activity-based** ("what checks we run"). Periodically audit
+it against **ISO/IEC 25010** (the product-quality standard), which is
+**attribute-based** ("what qualities the product has") — the two are
+complementary, since activities *assure* attributes. Its characteristics:
+functional suitability, performance efficiency, compatibility, usability
+(incl. accessibility), reliability, security, maintainability, portability,
+safety. A characteristic with **no assuring activity** is a candidate gap
+(e.g. performance efficiency with no perf test; reliability with only a
+health check). Use ISO 25010 as a checklist to confirm coverage — not as a
+reason to restructure this doc.
 
 ## Where the specifics live
 

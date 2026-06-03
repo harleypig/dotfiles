@@ -48,15 +48,20 @@ Use the repo's own commands/scripts and pre-commit configs. Match each step
 to the change (docs-only skips build/tests; a backend change runs its cycle):
 
 1. **Format** (auto-fix, once) → 2. **Lint** → 3. **Type-check** →
-4. **Code smell** → 5. **Security** (defer to **security-scan**) →
-6. **Tests** (success + failure paths) →
+4. **Code smell** → 5. **Security** (SAST/SCA/DAST/IaC/secrets — defer to
+**security-scan**) → 6. **Tests** (success + failure paths) →
 7. **UI/UX + a11y** (manual visual/keyboard check if no tooling) →
 8. **End-to-end** (run the suite if present; else check the critical flow
-   manually and flag the gap) →
-9. **Build** (compile/bundle; image build via **containerize** when
-   containers changed) →
-10. **CI** (after pushing, watch CI to green; honour required checks and the
-    fix→check discipline).
+   manually and flag the gap) → 9. **Compatibility** (the targets the product
+   claims; N/A if single-target) → 10. **Performance & load** (where it
+   matters) → 11. **Reliability & observability** (often runtime/out-of-gate —
+   status it) → 12. **Build** (compile/bundle; image build via
+   **containerize** when containers changed) → 13. **Code review** (human
+   gate) → 14. **CI** (after pushing, watch CI to green; honour required
+   checks and the fix→check discipline).
+
+Periodically audit coverage against the **ISO/IEC 25010** characteristics
+(see `qa.md`) — a characteristic with no assuring activity is a candidate gap.
 
 ## Report
 
