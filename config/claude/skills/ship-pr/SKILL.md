@@ -5,7 +5,7 @@ description: Commit a finished feature branch and push it, then — each only wi
 
 # Ship PR
 
-**Version:** v1.5.0
+**Version:** v1.6.0
 
 Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → (approval) open PR → watch CI → (approval) merge →
@@ -75,7 +75,10 @@ First run the **qa-check** skill — it executes this repo's local QA pipeline
 (format → lint → type-check → code-smell → security → tests → build, scoped
 to the change, per the repo's QA doc) and reports each dimension's status.
 **Resolve findings before continuing; do not commit on a failing gate.**
-(qa-check's CI stage is Step 4 here, not part of this local pass.)
+(qa-check's CI stage is Step 4 here, not part of this local pass.) This
+includes the **Documentation** dimension — update the docs, `TODO`/roadmap,
+and any rules/skills (global *and* local) this change touches before
+committing.
 
 qa-check's format/lint/test stages are the pre-commit sequence — run it ONCE
 (per `rules/pre-commit.md`): the fix config, then the check config.

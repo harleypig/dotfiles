@@ -1,6 +1,6 @@
 # Quality Assurance Rules
 
-**Version:** v2.2.0
+**Version:** v2.3.0
 
 QA is the full pipeline that takes a change from "written" to
 "release-ready." This rule is **language- and tool-agnostic**: it defines the
@@ -61,10 +61,16 @@ skip silently.
     acknowledge it (status it) rather than pretend it's covered.
 12. **Build** — the artifact actually compiles/bundles, and images build
     (the **containerize** skill) when containers change. Note size deltas.
-13. **Code review** — human peer review of the change. A gate, not a tool;
+13. **Documentation** — the change's docs are **current** and **accurate**:
+    user-facing docs (README/usage/API), in-repo planning (a `TODO` /
+    roadmap), and the governing rules/skills it affects (global *and* local)
+    are updated; prose is linted (e.g. a Markdown linter) with no stale or
+    broken references. A change that alters behaviour but not its docs is
+    incomplete.
+14. **Code review** — human peer review of the change. A gate, not a tool;
     state whether/how it is required (e.g. PR approvals) or, for a solo repo,
     that it is informal.
-14. **CI** — the applicable stages above run in CI and gate merges via the
+15. **CI** — the applicable stages above run in CI and gate merges via the
     repo's required checks; watch CI to green after pushing.
 
 ## Fix-then-check discipline
