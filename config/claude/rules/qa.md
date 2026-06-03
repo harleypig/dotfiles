@@ -1,6 +1,6 @@
 # Quality Assurance Rules
 
-**Version:** v2.1.0
+**Version:** v2.2.0
 
 QA is the full pipeline that takes a change from "written" to
 "release-ready." This rule is **language- and tool-agnostic**: it defines the
@@ -41,11 +41,16 @@ skip silently.
    order, contrast). Often manual; do the manual pass **even when no tooling
    exists yet.**
 8. **End-to-end** *(apps)* — real user flows through the running system
-   (e.g. a browser-driver). Distinct from unit tests. Exercise the critical
-   flow even before an automated suite exists; flag the missing automation.
-9. **Compatibility** *(multi-target products)* — behaves across the targets
-   it claims to support (browsers, OSes, devices, runtime versions). Skip as
-   N/A when there is a single target.
+   (e.g. a browser-driver), exercised **across the target browser/device
+   matrix**. Distinct from unit tests. Exercise the critical flow even before
+   an automated suite exists; flag the missing automation.
+9. **Compatibility** *(multi-target products)* — behaves across the targets it
+   claims to support. Its **device/browser/OS** facet is largely *verified
+   through* UI/UX (responsive layout across viewports) and End-to-end (flows
+   across the target matrix) — track it there, don't duplicate. What is
+   distinct here is **interoperability/coexistence**: APIs, data formats, and
+   shared resources working with other systems. N/A for a single-target
+   product with no external contracts.
 10. **Performance & load** *(where it matters)* — responsiveness, throughput,
     and resource use under expected and peak load (load/stress/soak). Pairs
     with the measure-first stance below — premature here is as wrong as
