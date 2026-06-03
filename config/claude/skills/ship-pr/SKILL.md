@@ -5,10 +5,11 @@ description: Commit a finished feature branch, push it, open a pull request, wat
 
 # Ship PR
 
-**Version:** v1.4.0
+**Version:** v1.5.0
 
 Take a finished branch through the standard landing sequence: **QA check** →
-commit → push → open PR → watch CI → (approval) merge → clean up.
+commit → push → (approval) open PR → watch CI → (approval) merge →
+(if it ships an artifact) tag → clean up.
 
 The deterministic mechanics live in the bundled **`scripts/ship.sh`** (in
 this skill's directory). The model owns the judgment: commit messages, PR
@@ -45,10 +46,13 @@ auto-retries with the env tokens cleared on a PAT scope error, so the
 
 ## Guardrails (do not violate)
 
-- **Never** open or merge a PR without the user's go-ahead. Invoking this
-  skill is consent to commit/push/open the PR; **merging requires an
-  explicit "merge" instruction** for this branch. If the user only said
-  "open a PR", stop after CI and ask.
+- **Never** open or merge a PR without explicit approval (per `rules/gh.md`).
+  Invoking this skill is consent to run qa-check, commit, and push the branch
+  only. **Opening the PR requires an explicit instruction** ("open the PR",
+  "ship it", "put up a PR", etc.), and **merging requires a separate explicit
+  "merge" instruction** for this branch. If the user only said "commit and
+  push", stop after the push and ask before opening. If they only said "open
+  a PR", stop after CI and ask before merging.
 - **Never** push to or merge directly into the default branch.
 - **Never** force-push without `--force-with-lease --force-if-includes`,
   and warn first.
@@ -152,19 +156,41 @@ Read the rejection, if any:
 - *Missing required checks* — CI is not green or a required check name
   doesn't match a job `name:`. Fix that; do not bypass.
 
-## Step 6 — Post-merge cleanup
+## Step 6 — Tag the release (if the repo tags releases)
+
+If the repo's versioning convention ties a release/deploy to a **tag at the
+merge commit** (not to every merge), create and push it now — but **only for
+a change that ships an artifact**; skip docs/CI/meta-only merges. Defer to the
+repo for the scheme, the bump type (patch/minor/major), and per-component
+streams (its `CONVENTIONS.md` "Versioning & tagging"; `rules/git.md` for tag
+hygiene). **Skip entirely** if the repo doesn't tag, or the change ships
+nothing.
+
+```bash
+git checkout "$DEF" && git pull --ff-only          # get the squash-merge commit
+git tag -a "<tag>" -m "<message>" "$(git rev-parse HEAD)"
+git push origin "<tag>"
+```
+
+Pushing the tag is usually what triggers the release/publish workflow — watch
+it (see Notes). Confirm the tag is what the user wants if the bump type or
+stream is ambiguous.
+
+## Step 7 — Post-merge cleanup
 
 ```bash
 ship.sh cleanup "$CUR"
 ```
 
-Report the merge commit and what landed.
+Report the merge commit, the tag (if any), and what landed.
 
 ## Notes
 
-- After a merge, a CI workflow that publishes artifacts (images, packages,
-  releases) on `push` to the default branch runs again — watch it with
-  `ship.sh ci-watch <default-branch>` if the user cares about the publish.
+- A workflow that publishes artifacts (images, packages, releases) may
+  trigger on the **default-branch push** (the merge) or on the **release tag**
+  pushed in Step 6 — watch whichever applies (`ship.sh ci-watch
+  <default-branch>` or `ship.sh ci-watch <tag>`) if the user cares about the
+  publish.
 - For upstream/fork PRs, target the upstream repo (`gh repo view --json
   parent`) and prefer rebase for upstream-bound branches (`rules/git.md`).
 - Invoke `ship.sh` by its path in this skill's `scripts/` directory.
