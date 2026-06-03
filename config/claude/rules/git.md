@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 ## Commit Messages
 
@@ -22,6 +22,19 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - Body: wrap at 72 columns; explain *why*, not *what*
 - Footer: `Fixes #123`, `Relates to #456` where applicable
 - Common types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `ci`
+
+## Staging
+
+Stage deliberately — never blanket-add untracked files into a commit.
+
+- **Tracked files:** use `git add -u` to stage all modifications and
+  deletions to already-tracked files, without picking up anything new.
+- **New files:** add them **explicitly** by path — `git add <file> <file>`.
+- **Avoid `git add -A` and `git add .`** — they sweep up *untracked* files
+  (scratch notes, local experiments, generated output), which is exactly how
+  stray files land in a commit. Use `-u` plus explicit paths instead.
+- Review `git status` / `git diff --staged` before committing to confirm
+  only the intended changes are staged.
 
 ## Branch Naming
 
@@ -168,6 +181,9 @@ The deleted branch should no longer appear in the output.
 - NEVER force-delete a branch silently — always confirm with the user.
 - NEVER amend published commits or skip hooks without explicit user approval.
 - NEVER push to the default branch without user confirmation.
+- Stage with `git add -u` (tracked changes) plus explicit `git add <file>`
+  for new files; NEVER `git add -A` / `git add .` (they sweep up untracked
+  scratch into the commit). See *Staging*.
 - Clean working tree is a precondition for sync, prep-for-PR, and cleanup.
   Report and stop on violations; do not auto-stash.
 - Keep `Co-Authored-By: Claude ...` footers on commits Claude
