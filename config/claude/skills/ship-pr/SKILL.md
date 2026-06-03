@@ -5,16 +5,17 @@ description: Commit a finished feature branch, push it, open a pull request, wat
 
 # Ship PR
 
-**Version:** v1.3.0
+**Version:** v1.4.0
 
-Take a finished branch through the standard landing sequence: commit →
-push → open PR → watch CI → (approval) merge → clean up.
+Take a finished branch through the standard landing sequence: **QA check** →
+commit → push → open PR → watch CI → (approval) merge → clean up.
 
 The deterministic mechanics live in the bundled **`scripts/ship.sh`** (in
 this skill's directory). The model owns the judgment: commit messages, PR
 copy, CI-failure diagnosis, and the merge decision. This skill orchestrates
 the existing rules rather than restating them:
 
+- Local QA pipeline: the **qa-check** skill (`rules/qa.md`).
 - Credential fallback and PR conventions: `rules/gh.md`.
 - CI monitoring: `rules/github-actions.md`.
 - Default-branch derivation, force-push, post-merge prune: `rules/git.md`.
@@ -23,7 +24,8 @@ the existing rules rather than restating them:
 ## Prerequisites
 
 - `git`, and `gh` authenticated (`gh auth status`).
-- Work is functionally complete and locally verified (tests/lint pass).
+- Work is functionally complete; **Step 1 runs qa-check** to verify it
+  locally before anything is pushed.
 - You are on a feature branch, not the default branch.
 
 ## Helper script
@@ -63,9 +65,15 @@ CUR=$(git branch --show-current)
 If `CUR` equals `DEF`, stop: create a `feature/<name>` branch first (or
 use the **git-worktree-workflow** skill), then resume.
 
-## Step 1 — Commit (model authors)
+## Step 1 — QA check, then commit (model authors)
 
-If `.pre-commit-config.yaml` exists, run the final prep sequence ONCE
+First run the **qa-check** skill — it executes this repo's local QA pipeline
+(format → lint → type-check → code-smell → security → tests → build, scoped
+to the change, per the repo's QA doc) and reports each dimension's status.
+**Resolve findings before continuing; do not commit on a failing gate.**
+(qa-check's CI stage is Step 4 here, not part of this local pass.)
+
+qa-check's format/lint/test stages are the pre-commit sequence — run it ONCE
 (per `rules/pre-commit.md`): the fix config, then the check config.
 
 ```bash
