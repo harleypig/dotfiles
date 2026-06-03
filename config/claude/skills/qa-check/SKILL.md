@@ -41,7 +41,7 @@ Python cycle):
 4. **Code smell** (linter smell rules + semgrep; note if no dedicated tool) →
 5. **Security** (defer to the **security-scan** skill) →
 6. **Tests** (success + failure paths) →
-7. **UI/UX + a11y** (manual visual/keyboard check if no tooling — still do it) →
+7. **UI/UX + a11y** (manual visual/keyboard check if no tooling) →
 8. **End-to-end** (run the suite if present; else check the critical flow
    manually and flag the gap) →
 9. **Build** (compile/bundle; image build via the **containerize** skill when
