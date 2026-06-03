@@ -1,58 +1,65 @@
 ---
 name: qa-check
-description: Run the full quality-assurance pipeline on a change — format, lint, type-check, code-smell, security scan, tests, UI/UX, end-to-end, build, CI — routing through the QA rules so they actually get consulted. Use whenever the user wants to validate quality or readiness: "run QA", "qa check", "quality check", "is this ready to merge/PR", "run the checks", "lint and test this", "verify this change", "check everything passes", or before opening/finishing a PR. Composes the containerize skill (images) and security-scan skill (SAST/deps) rather than duplicating them.
+description: Run the full quality-assurance pipeline on a change — format, lint, type-check, code-smell, security, tests, UI/UX, end-to-end, build, CI — using the current repo's own QA doc for the concrete commands and the global qa.md for the dimensions/discipline. Use whenever the user wants to validate quality or readiness: "run QA", "qa check", "quality check", "is this ready to merge/PR", "run the checks", "lint and test this", "verify this change", "check everything passes", or before opening/finishing a PR. Composes the containerize skill (images) and security-scan skill (SAST/deps).
 ---
 
 # QA Check
 
-**Version:** v1.0.0
+**Version:** v2.0.0
 
-Run the quality-assurance pipeline and route every stage through its rule.
-QA spans many tools that are individually easy to forget; this skill is the
-forcing function that runs them **in concert and in order**. It orchestrates;
-the rules are the source of truth.
+Run the quality-assurance pipeline for **this** repo and route every stage
+through its rule. QA spans many tools that are individually easy to forget;
+this skill is the forcing function that runs them in concert and in order. It
+orchestrates; the rules and the repo's QA doc are the source of truth.
+
+This skill is **tool-agnostic** — it does not assume any particular language
+or toolchain. It learns the concrete commands from the repo itself.
 
 ## Read first
 
-- **`rules/qa.md`** — the pipeline definition (stages, order, fix/check
-  discipline, the idioms + optimization stance, and the routing table).
-- The repo's **`CONVENTIONS.md` / `WORKFLOW.md` / `TESTS.md`** — the concrete
-  commands and required checks for *this* repo (these win over general
-  habits).
+1. **The repo's QA doc** — the concrete tools, commands, and required CI
+   checks for *this* repo. Look in `.claude/` (a "Quality assurance" section
+   in `CONVENTIONS.md`, or a dedicated QA doc), plus `WORKFLOW.md` /
+   `TESTS.md`. **This is where the actual commands come from.**
+2. **`rules/qa.md`** — the language-agnostic pipeline: the dimensions, their
+   order, the fix/check discipline, and the idioms + optimization stances.
+3. The detection-activated **per-tool rules** for whatever the repo uses
+   (e.g. `biome.md`, `semgrep.md`, `vitest.md`) — for each tool's details.
+
+If the repo has **no QA doc**, derive the pipeline from the detected tooling
+(manifests, configs, pre-commit, CI workflows) and the per-tool rules — and
+flag that the repo should document its QA setup.
 
 ## Scope to the repo
 
-Detect what exists, then run only those stages — and **name the gaps**:
+Detect what exists and run only the applicable dimensions; **name the gaps**:
 
-- Languages present (`*.py`, `*.ts/tsx`, `*.sh`, …) → their format/lint/type
-  tools.
-- Test runners (`pytest`, `vitest`), a security setup (semgrep/trivy/
-  dependabot), Dockerfiles, CI workflows.
-- **Absent dimensions are findings, not skips** — no e2e suite, no a11y
-  tooling, no complexity linter → report them.
+- Languages, manifests, test runners, security setup, Dockerfiles, CI
+  workflows present → the stages they imply.
+- Inapplicable dimensions are N/A (a library has no UI/e2e); **applicable
+  but missing** ones (no e2e suite, no a11y tooling, no complexity linter)
+  are findings, not silent skips.
 
 ## Run the pipeline (in order, fail-fast)
 
-Prefer the repo's own scripts / pre-commit configs. Match each step to the
-change (a docs-only change skips build/tests; a backend change runs the
-Python cycle):
+Use the repo's own commands/scripts and pre-commit configs. Match each step
+to the change (docs-only skips build/tests; a backend change runs its cycle):
 
 1. **Format** (auto-fix, once) → 2. **Lint** → 3. **Type-check** →
-4. **Code smell** (linter smell rules + semgrep; note if no dedicated tool) →
-5. **Security** (defer to the **security-scan** skill) →
+4. **Code smell** → 5. **Security** (defer to **security-scan**) →
 6. **Tests** (success + failure paths) →
 7. **UI/UX + a11y** (manual visual/keyboard check if no tooling) →
 8. **End-to-end** (run the suite if present; else check the critical flow
    manually and flag the gap) →
-9. **Build** (compile/bundle; image build via the **containerize** skill when
+9. **Build** (compile/bundle; image build via **containerize** when
    containers changed) →
-10. **CI** (after pushing, watch GitHub Actions to green; honour required
-    checks and the pre-commit fix→check discipline).
+10. **CI** (after pushing, watch CI to green; honour required checks and the
+    fix→check discipline).
 
 ## Report
 
-A per-stage summary: what ran, pass/fail, and — explicitly — which dimensions
-were **skipped because the repo lacks them** (e2e, a11y, complexity). Note any
-optimization claims must be backed by before/after measurement, and flag
-premature optimization or non-idiomatic code as QA findings. Never report
-"all green" for a stage you did not run.
+A per-stage summary: what ran (the actual commands), pass/fail, and —
+explicitly — which applicable dimensions were **skipped because the repo
+lacks them**. Back any optimization claim with before/after measurement, and
+flag premature optimization or non-idiomatic code. Never report "all green"
+for a stage you did not run.
