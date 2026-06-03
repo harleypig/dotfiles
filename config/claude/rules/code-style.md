@@ -1,6 +1,6 @@
 # Code Style
 
-**Version:** v1.2.0
+**Version:** v1.3.0
 
 ## General Style
 
@@ -68,6 +68,18 @@ premature optimization applies to premature abstraction:
 - **Don't force it, and don't over-engineer** the abstraction once you do
   extract — the simplest form that removes the real repetition wins (no
   configurability or generality that was not asked for).
+
+**Documentation falls under this too — but judge by the doc's purpose.**
+Repeated *reference content* — the same fact, value, command, or instruction
+copied across several docs — should live in **one** canonical place and be
+linked, because a stale copy is worse than a pointer. But *explanatory* prose
+is different: a paragraph whose job is to explain something **in its own
+context** is not duplication to eliminate even when it touches subjects
+covered elsewhere or synthesizes several into one place — that synthesis *is*
+its purpose. Deduplicate the canonical source of a fact; do **not**
+deduplicate understanding. (For example: a per-repo QA doc explaining QA in
+its own words rightly overlaps the global QA rule; but the literal list of QA
+dimensions belongs in one place and is referenced from the others.)
 
 Removing genuine repetition is the cheap, high-value kind of efficiency: less
 to read and maintain. Reach for it when the pattern is demonstrated, not
