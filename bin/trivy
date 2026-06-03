@@ -28,7 +28,7 @@ for arg in "$@"; do
   esac
 
   abs=$(realpath -- "$arg" 2> /dev/null) || { prev="$arg"; continue; }
-  if [[ -e $arg && $abs != "$PWD"/* ]]; then
+  if [[ -e $arg && $abs != "$PWD" && $abs != "$PWD"/* ]]; then
     printf 'trivy: %s is not under the current directory; cd to its parent or modify bin/trivy\n' "$arg" >&2
     exit 1
   fi
