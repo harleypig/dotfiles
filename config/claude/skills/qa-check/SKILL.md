@@ -17,10 +17,12 @@ or toolchain. It learns the concrete commands from the repo itself.
 
 ## Read first
 
-1. **The repo's QA doc** — the concrete tools, commands, and required CI
-   checks for *this* repo. Look in `.claude/` (a "Quality assurance" section
-   in `CONVENTIONS.md`, or a dedicated QA doc), plus `WORKFLOW.md` /
-   `TESTS.md`. **This is where the actual commands come from.**
+1. **The repo's QA doc** — the concrete tools, commands, required CI checks,
+   and a **per-dimension status** for *this* repo. Look in `.claude/` (a
+   "Quality assurance" section in `CONVENTIONS.md`, or a dedicated QA doc),
+   plus `WORKFLOW.md` / `TESTS.md`. **This is where the actual commands come
+   from.** Per `qa.md`, the doc should give every dimension a status —
+   **Active** / **Planned** (+TODO link) / **Off** (+reason) / **N/A**.
 2. **`rules/qa.md`** — the language-agnostic pipeline: the dimensions, their
    order, the fix/check discipline, and the idioms + optimization stances.
 3. The detection-activated **per-tool rules** for whatever the repo uses
@@ -58,8 +60,18 @@ to the change (docs-only skips build/tests; a backend change runs its cycle):
 
 ## Report
 
-A per-stage summary: what ran (the actual commands), pass/fail, and —
-explicitly — which applicable dimensions were **skipped because the repo
-lacks them**. Back any optimization claim with before/after measurement, and
-flag premature optimization or non-idiomatic code. Never report "all green"
-for a stage you did not run.
+Report **every** dimension with its **documented status** and this run's
+outcome:
+
+- **Active** → what ran (the actual command) and pass/fail.
+- **Planned** → note it's not built yet, cite the TODO/ROADMAP item, and —
+  when appropriate — **suggest concrete options for implementing it** (e.g.
+  "add Playwright for e2e", "add axe for a11y", "adopt ruff for code-smell").
+- **Off** → restate the documented reason (don't silently treat as pass).
+- **N/A** → note it doesn't apply.
+- **Undocumented** dimension → flag it as a QA-doc defect (per `qa.md`, every
+  dimension needs a status) and propose the entry.
+
+Back any optimization claim with before/after measurement, and flag premature
+optimization or non-idiomatic code. Never report "all green" for a stage you
+did not run, and never let a missing dimension pass unmentioned.

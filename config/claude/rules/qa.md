@@ -79,12 +79,32 @@ skip silently.
 | Per-tool rules (detection-activated) | each tool's invocation/config | `biome.md`, `semgrep.md`, … |
 | Skills | forcing functions that run it | **qa-check**, composing **security-scan** + **containerize** |
 
+## The repo QA doc covers every dimension, with a status
+
+A repo's QA doc must document **every** dimension above — including the ones
+it does **not** do — each with an explicit **status**, so the QA picture is
+complete and auditable (no silent absences). Status vocabulary:
+
+- **Active** — in place and enforced; document the command/gate.
+- **Planned** — intended but not built yet; **link** the `TODO.md` /
+  `docs/ROADMAP.md` item.
+- **Off** — deliberately not done; **state the reason** (e.g. "no linter for
+  this language yet", "format-only, no separate linter").
+- **N/A** — does not apply to this repo type (e.g. UI/UX and e2e for a
+  headless library or CLI).
+
+So "we don't lint X" is a documented decision, not a gap someone discovers
+later. A dimension with no entry at all is itself a QA defect.
+
 ## Agent Behavior
 
 - Run QA via the **qa-check** skill (or the stages manually) in order,
   fail-fast, before finishing a change or opening a PR.
 - Get the concrete commands from the **repo's QA doc**, not from this rule —
   tools named here are examples only.
-- Report each stage's outcome; never claim "clean" without running it.
-- Apply only the dimensions that fit the repo; surface applicable-but-missing
-  ones (no e2e suite, no a11y tooling, no complexity linter) as gaps.
+- Report each stage's outcome **and its documented status**; never claim
+  "clean" without running it.
+- When authoring/updating a repo QA doc, give **every** dimension a status
+  (Active / Planned+link / Off+reason / N/A) — never omit one.
+- For **Planned**/**Off**/undocumented dimensions, surface the status and,
+  when appropriate, suggest concrete options for implementing it.
