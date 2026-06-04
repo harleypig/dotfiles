@@ -4,7 +4,7 @@
 
 # gh (GitHub CLI) Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 ## Pull Requests
 
@@ -136,10 +136,30 @@ GH_TOKEN= GITHUB_TOKEN= gh auth status
 If scopes are insufficient, `gh auth refresh -s <scope>` adds them
 without re-doing the full login.
 
+## Issues & triage
+
+When a repo has **automation that opens issues** (e.g. a nightly security
+scan that files a findings issue), those issues are only useful if someone
+looks at them. So, **at the start of git/gh work in such a repo (and at least
+daily)**, check for open issues and surface them:
+
+```bash
+gh issue list --state open
+gh issue list --state open --label dast   # e.g. auto-filed scan findings
+```
+
+Fold actionable open issues into the repo's **triage queue** — a section in
+its `TODO.md` (or equivalent) — each with a priority, then resolve or close
+them. Don't let auto-created issues pile up unseen. A closed/empty queue is
+the goal; surface the list to the user when items appear.
+
 ## Agent Rules
 
 - After creating a PR, follow the CI monitoring workflow in
   `github-actions.md` if Actions are configured in the repo.
+- In a repo with issue-opening automation, check `gh issue list` at the start
+  of git/gh work (and daily) and add open items to the repo's TODO triage
+  queue (see *Issues & triage*).
 - Always return the PR URL after creating.
 - Use `gh` for all GitHub operations (issues, PRs, checks, releases).
 - Do not create, merge, or close PRs without explicit user approval.
