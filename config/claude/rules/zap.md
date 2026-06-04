@@ -1,6 +1,6 @@
 # OWASP ZAP (DAST) Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 OWASP ZAP is the **DAST** layer — Dynamic Application Security Testing: it
 scans the **running** app over HTTP for issues that static analysis can't see
@@ -17,6 +17,31 @@ directly** — no marketplace action, no SaaS (same posture as the others).
   endpoint/param. Slow and variable (~15 min to hours) — **time-box** it and
   run it **nightly/scheduled**, not per-PR. **API endpoints:** drive coverage
   from the OpenAPI spec with `zap-api-scan.py -f openapi`.
+
+## Time-boxing the active scan (it does NOT resume)
+
+A time-boxed active scan **does not pick up where it left off** — ZAP scans
+are stateless per run, so a hard kill at the budget means the next run starts
+over from the beginning. On a large app a hard cap can mean you *never* finish.
+For complete coverage despite a budget:
+
+- **Scope it, don't open-ended-spider.** Drive the API scan from the
+  **OpenAPI spec** (`zap-api-scan -f openapi`): coverage is bounded by and
+  complete for the declared endpoints, and it skips slow discovery. This alone
+  usually finishes well under an hour, so the cap is just a guardrail.
+- **Tune for speed:** lower attack strength, disable slow/low-value active
+  rules, raise thread count, set ZAP's own `maxScanDurationInMins` so it ends
+  gracefully (reporting what it covered) rather than being killed mid-rule.
+- **If it still exceeds the budget,** get completeness another way:
+  - **Weekly full + nightly quick** — a long/uncapped full scan weekly
+    (hours are fine on a schedule) plus a fast nightly baseline/targeted scan;
+    or
+  - **Partition & rotate** — split the app by path/context and scan a
+    different slice each night, covering everything over a cycle.
+- **Session persistence** (save/load ZAP's session as an artifact and scan
+  only un-scanned nodes) *can* approximate resuming, but it's fiddly and not a
+  first-class flow — avoid it until the app genuinely outgrows the options
+  above.
 
 ## Running it (needs the app up)
 
