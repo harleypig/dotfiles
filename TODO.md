@@ -54,6 +54,24 @@ file modes`):
   this repo need `git update-index --chmod=+x <file>` (the on-disk bit is
   ignored while local `filemode=false` stands).
 
+## 🔒 Dependabot Security Alerts (HIGH PRIORITY)
+
+Open Dependabot alerts on the default branch (triage queue — see `gh.md`
+*Issues & triage*). Both are the **same dependency**, both **high**, both
+fixed by one bump. List them with:
+`gh api repos/harleypig/dotfiles/dependabot/alerts -f state=open`.
+
+- [ ] Bump **dulwich** to **>= 1.2.5** in `config/pypoetry/pyproject.toml`
+  (currently resolves to a vulnerable version), then refresh the lockfile.
+  This closes both alerts:
+  - [ ] Alert #5 — GHSA-9277-mp7x-85jf: command injection via merge driver
+    path (affects `>= 0.24.0, < 1.2.5`).
+  - [ ] Alert #4 — GHSA-897w-fcg9-f6xj: arbitrary file write via
+    NTFS-hostile tree entries on Windows (affects `>= 0.10.0, < 1.2.5`).
+- [ ] After the bump lands on the default branch, confirm both alerts
+  auto-close (or dismiss with reason if dulwich is only a transitive dev
+  dependency that is not actually exercised).
+
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
 Review all files in `config/shell-startup/` for correctness and security:
