@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+
+# Multi-call dispatcher for dockerized CLI tools and the local AI/LLM
+# daemons. It is invoked through a symlink named for the tool; the
+# basename of $0 selects which function to run. For example
+#   bin/shellcheck -> docker_wrapper
+# runs the shellcheck() function, which execs the shellcheck image.
+#
+# Add a tool:
+#   1. write a <tool>() function below (build args, exec docker run)
+#   2. add its name to the known_tool list near the bottom
+#   3. ln -s docker_wrapper bin/<tool>
+#
+# Families (how each function is shaped):
+#   pwd-mounted linters  shellcheck shfmt yamllint prettier hadolint
+#   scanners             trivy (pwd + socket)  dive (socket only)
+#   daemons              ollama openwebui (host-gated, detached)
+#
+# IMAGE PINNING: trivy/hadolint/dive are pinned by digest per
+# rules/docker.md (trivy was supply-chain compromised twice in 03/2026 —
+# pin + run the image directly, never the marketplace actions). The
+# linter images below still use rolling tags; pinning them is queued in
+# TODO.md. Bump a tag + digest together with:
+#   docker buildx imagetools inspect <image>:<tag>
+
+set -uo pipefail
+
+# Resolve our real path through the invoking symlink to locate lib/.
+self=$(readlink -f "${BASH_SOURCE[0]}")
+libdir=$(dirname "$self")/../lib
+
+# shellcheck source=/dev/null
+source "$libdir/docker_helpers"
+
+tool=${0##*/}
+export DW_TAG="${tool}: "
+
+#------------------------------------------------------------------------------
+# Image references (see IMAGE PINNING note above).
+IMG_shellcheck="koalaman/shellcheck:stable"
+IMG_shfmt="mvdan/shfmt:v3"
+IMG_yamllint="cytopia/yamllint:latest"
+IMG_prettier="prettier:latest"
+IMG_hadolint="hadolint/hadolint:v2.14.0-alpine@sha256:7aba693c1442eb31c0b015c129697cb3b6cb7da589d85c7562f9deb435a6657c"
+IMG_trivy="aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95d7c0907a221d080a996f556500"
+IMG_dive="wagoodman/dive:v0.13.1@sha256:f1886e6c32c094fc41a623c1989f5cb3e48aa766da5f0be233f911fc1d85ce10"
+IMG_ollama="ollama/ollama:latest"
+IMG_openwebui="ghcr.io/open-webui/open-webui:main"
+
+#------------------------------------------------------------------------------
+# Tool functions. Each is invoked as `"$tool" "$@"`, so the function name
+# shadows the host binary of the same name — exactly what we want.
+
+shellcheck() {
+  dw_guard_pwd_paths shellcheck "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # Forward SHELLCHECK_OPTS if set; the tool honours it in-container.
+  [[ -n ${SHELLCHECK_OPTS-} ]] && args+=(--env "SHELLCHECK_OPTS=$SHELLCHECK_OPTS")
+
+  local cfg="${XDG_CONFIG_HOME:-$HOME/.config}/shellcheckrc"
+  if [[ -f $cfg ]]; then
+    dw_set_home args /home/shellcheck
+    dw_mount args "$cfg" /home/shellcheck/.shellcheckrc ro
+  fi
+
+  exec docker run "${args[@]}" "$IMG_shellcheck" "$@"
+}
+
+shfmt() {
+  dw_guard_pwd_paths shfmt "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  exec docker run "${args[@]}" "$IMG_shfmt" "$@"
+}
+
+yamllint() {
+  dw_guard_pwd_paths yamllint "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # Mount XDG config so yamllint finds /config/yamllint/config inside.
+  local xdg="${XDG_CONFIG_HOME:-$HOME/.config}"
+  if [[ -d $xdg/yamllint ]]; then
+    dw_mount args "$xdg" /config ro
+    args+=(--env "XDG_CONFIG_HOME=/config")
+  fi
+
+  exec docker run "${args[@]}" "$IMG_yamllint" "$@"
+}
+
+prettier() {
+  dw_guard_pwd_paths prettier "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  exec docker run "${args[@]}" "$IMG_prettier" "$@"
+}
+
+hadolint() {
+  dw_guard_pwd_paths hadolint "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # A repo-local .hadolint.yaml in $PWD wins (hadolint searches cwd
+  # first); the global config is the fallback under $HOME/.config.
+  local cfg="${XDG_CONFIG_HOME:-$HOME/.config}/hadolint.yaml"
+  if [[ -f $cfg ]]; then
+    dw_set_home args /home/hadolint
+    dw_mount args "$cfg" /home/hadolint/.config/hadolint.yaml ro
+  fi
+
+  # The -alpine image has no ENTRYPOINT (its CMD reads stdin), so name
+  # the binary explicitly to pass file arguments through.
+  exec docker run "${args[@]}" "$IMG_hadolint" hadolint "$@"
+}
+
+trivy() {
+  # Path guard, but skip the token after `image` (an image ref, not a
+  # path) and the subcommand keywords themselves.
+  local arg abs prev=""
+  for arg in "$@"; do
+    if [[ $arg == -* || $prev == image ]]; then
+      prev="$arg"
+      continue
+    fi
+
+    case $arg in
+      image | fs | config | repo | rootfs | sbom | filesystem)
+        prev="$arg"
+        continue
+        ;;
+    esac
+
+    abs=$(realpath -- "$arg" 2> /dev/null) || {
+      prev="$arg"
+      continue
+    }
+
+    if [[ -e $arg && $abs != "$PWD" && $abs != "$PWD"/* ]]; then
+      dw_die 1 "${arg} is not under the current directory; cd to its parent or edit bin/docker_wrapper"
+    fi
+
+    prev="$arg"
+  done
+
+  # Persistent vuln-DB cache so it is not re-downloaded every run.
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/trivy"
+  mkdir -p "$cache"
+
+  local -a args=(--rm)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt --env "TRIVY_CACHE_DIR=/cache")
+  dw_mount args "$cache" /cache
+  dw_docker_socket args
+
+  exec docker run "${args[@]}" "$IMG_trivy" "$@"
+}
+
+dive() {
+  local -a args=(--rm)
+  dw_user args
+  dw_docker_socket args
+  dw_tty_if_attached args
+
+  # A repo-local .dive-ci configures the --ci efficiency thresholds.
+  [[ -f $PWD/.dive-ci ]] && dw_mount args "$PWD/.dive-ci" /.dive-ci ro
+
+  exec docker run "${args[@]}" "$IMG_dive" "$@"
+}
+
+ollama() {
+  dw_require_host beaker
+
+  # --gpus=all needs the NVIDIA Container Toolkit + active proprietary
+  # driver on the host; verify with `docker run --rm --gpus=all ubuntu
+  # nvidia-smi`. --restart always brings it back after a reboot.
+  local -a args=(
+    -d
+    --gpus=all
+    -p 11434:11434
+    -v ollama:/root/.ollama
+    --name ollama
+    --restart always
+  )
+
+  exec docker run "${args[@]}" "$IMG_ollama"
+}
+
+openwebui() {
+  dw_require_host beaker
+
+  # Reaches host Ollama via host.docker.internal:11434.
+  local -a args=(
+    -d
+    -p 3000:8080
+    --add-host=host.docker.internal:host-gateway
+    -v open-webui:/app/backend/data
+    --name open-webui
+    --restart always
+  )
+
+  exec docker run "${args[@]}" "$IMG_openwebui"
+}
+
+#------------------------------------------------------------------------------
+# Dispatch: only names registered here may be invoked (a stray symlink
+# must not be able to call an arbitrary shell function).
+declare -A known_tool=(
+  [shellcheck]=1 [shfmt]=1 [yamllint]=1 [prettier]=1 [hadolint]=1
+  [trivy]=1 [dive]=1 [ollama]=1 [openwebui]=1
+)
+
+[[ -v known_tool[$tool] ]] \
+  || dw_die 2 "unknown tool '${tool}' — symlink bin/docker_wrapper as one of: ${!known_tool[*]}"
+
+"$tool" "$@"

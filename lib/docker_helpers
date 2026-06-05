@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+
+# Shared helpers for the dockerized-tool dispatcher (bin/docker_wrapper)
+# and bin/mymcp. This is a SOURCED library, not an executable.
+#
+# Per rules/bash.md a sourced library must not enable `set -e` or call
+# `exit` at the top level. The lone exception is `dw_die`, a convenience
+# for *executable* callers that deliberately terminates the process;
+# only call it from a script, never from library code.
+#
+# Several helpers append docker flags to an array passed BY NAME (bash
+# 4.3+ namerefs), e.g. `dw_user args`. They quote every value, so a
+# $PWD containing spaces is safe.
+#
+# Message prefix/sink are controlled by two optional environment knobs:
+#   DW_TAG  literal prefix prepended to every dw_warn line (include your
+#           own separator, e.g. "shellcheck: " or "[mymcp] ")
+#   DW_LOG  when set, dw_warn appends there instead of writing to stderr
+#           (mymcp logs to a file; the dispatcher leaves it unset)
+
+# The array helpers below take their target array by nameref (local -n);
+# SC2178 cannot model namerefs and misreads the `+=` as a string assign.
+# shellcheck disable=SC2178
+
+# Refuse to run if executed directly.
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  printf 'docker_helpers is a library; source it, do not execute it.\n' >&2
+  exit 1
+fi
+
+#-----------------------------------------------------------------------------
+# Report a message to $DW_LOG when set, otherwise to stderr.
+
+dw_warn() {
+  local msg="${DW_TAG-}$*"
+
+  if [[ -n ${DW_LOG-} ]]; then
+    printf '%s\n' "$msg" >> "$DW_LOG"
+
+  else
+    printf '%s\n' "$msg" >&2
+  fi
+}
+
+#-----------------------------------------------------------------------------
+# Warn (optional) and exit. First arg may be a numeric exit code; it
+# defaults to 1. For EXECUTABLE callers only — never call from a library.
+
+dw_die() {
+  local -i ec=1
+
+  [[ ${1-} =~ ^[0-9]+$ ]] && {
+    ec=$1
+    shift
+  }
+
+  (($#)) && dw_warn "$@"
+
+  exit "$ec"
+}
+
+#-----------------------------------------------------------------------------
+# Die unless the short hostname matches $1. Used by the daemon launchers
+# that must only run on the dedicated host.
+
+dw_require_host() {
+  local want=$1 have
+  have=$(hostname -s)
+
+  [[ $have == "$want" ]] && return 0
+
+  dw_die 1 "refusing to run on ${have}; this is only for ${want}"
+}
+
+#-----------------------------------------------------------------------------
+# Append `--user uid:gid` to the named array. Optional $2/$3 override the
+# uid/gid; an omitted or empty value falls back to the caller's own
+# `id -u` / `id -g`.
+
+dw_user() {
+  local -n _a=$1
+  local uid=${2:-$(id -u)} gid=${3:-$(id -g)}
+
+  _a+=(--user "${uid}:${gid}")
+}
+
+#-----------------------------------------------------------------------------
+# Append a bind mount: dw_mount <array> <src> <dst> [mode]. A non-empty
+# mode is appended to the spec (e.g. `ro` -> src:dst:ro); omit it for a
+# read-write mount.
+
+dw_mount() {
+  local -n _a=$1
+  local spec="${2}:${3}"
+
+  [[ -n ${4-} ]] && spec+=":${4}"
+
+  _a+=(--volume "$spec")
+}
+
+#-----------------------------------------------------------------------------
+# Set the container's HOME. Needed when --user uses a non-container UID,
+# which otherwise leaves HOME unset inside the image.
+
+dw_set_home() {
+  local -n _a=$1
+  _a+=(--env "HOME=$2")
+}
+
+#-----------------------------------------------------------------------------
+# Mount the docker socket and add its group, so a non-root --user can reach
+# the daemon (dive, `trivy image`). No-op when the socket is absent.
+
+dw_docker_socket() {
+  local -n _a=$1
+
+  [[ -S /var/run/docker.sock ]] || return 0
+
+  _a+=(
+    --volume /var/run/docker.sock:/var/run/docker.sock
+    --group-add "$(stat -c %g /var/run/docker.sock)"
+  )
+}
+
+#-----------------------------------------------------------------------------
+# Allocate a TTY only when attached to one, so interactive TUIs work while
+# piped / CI invocations stay non-interactive.
+
+dw_tty_if_attached() {
+  local -n _a=$1
+
+  [[ -t 0 && -t 1 ]] || return 0
+
+  _a+=(--interactive --tty)
+}
+
+#-----------------------------------------------------------------------------
+# Fail fast: every non-flag argument naming an EXISTING path must live under
+# $PWD (the only directory mounted into the container). $1 is the tool name
+# (for the message); the rest are the tool's argv. Flags are skipped.
+# Returns non-zero on the first offending path.
+
+dw_guard_pwd_paths() {
+  local tool=$1
+  shift
+  local arg abs
+
+  for arg in "$@"; do
+    [[ $arg == -* ]] && continue
+
+    abs=$(realpath -- "$arg" 2> /dev/null) || continue
+
+    if [[ -e $arg && $abs != "$PWD" && $abs != "$PWD"/* ]]; then
+      DW_TAG="${tool}: " dw_warn "${arg} is not under the current directory; cd to its parent or edit bin/docker_wrapper"
+      return 1
+    fi
+  done
+}
