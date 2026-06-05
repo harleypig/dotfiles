@@ -5,7 +5,7 @@ description: Run the full quality-assurance pipeline on a change (format, lint, 
 
 # QA Check
 
-**Version:** v2.1.0
+**Version:** v2.2.0
 
 Run the quality-assurance pipeline for **this** repo and route every stage
 through its rule. QA spans many tools that are individually easy to forget;
@@ -53,6 +53,11 @@ Only the qa-check-specific operational notes (the rest is in `qa.md`):
 
 - **Format** is the one auto-fix stage — run it once (the fix config), then
   the check-only pass; never fix-and-recommit per failure.
+- **Code style audit** — beyond what Format/Lint catch, audit the change
+  against `code-style.md` (plus any repo override in `.claude/`) for the
+  conventions no tool enforces: naming, paragraph spacing, section/function
+  separators, comment wrap/density, Rule of Three, efficiency by default.
+  Report deviations as findings (see *Code style audit* in `qa.md`).
 - **Security** → defer to the **security-scan** skill; **Build**'s image step
   → the **containerize** skill.
 - **CI** is the post-push stage — watch it to green; honour required checks.
@@ -75,5 +80,6 @@ outcome:
   dimension needs a status) and propose the entry.
 
 Back any optimization claim with before/after measurement, and flag premature
-optimization or non-idiomatic code. Never report "all green" for a stage you
-did not run, and never let a missing dimension pass unmentioned.
+optimization, needless pessimization, and any **Code style audit** deviations
+from `code-style.md`. Never report "all green" for a stage you did not run,
+and never let a missing dimension pass unmentioned.

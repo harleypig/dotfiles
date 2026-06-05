@@ -1,6 +1,6 @@
 # Quality Assurance Rules
 
-**Version:** v2.3.0
+**Version:** v2.4.0
 
 QA is the full pipeline that takes a change from "written" to
 "release-ready." This rule is **language- and tool-agnostic**: it defines the
@@ -24,7 +24,9 @@ skip silently.
 1. **Format** *(auto-fix)* — run the repo's formatter(s) (e.g. a JS/TS
    formatter, a Python formatter, `shfmt`).
 2. **Lint** — static analysis for correctness/style (e.g. an ES/TS linter,
-   `flake8`/`ruff`, `shellcheck`, doc/YAML linters).
+   `flake8`/`ruff`, `shellcheck`, doc/YAML linters). Linters enforce only the
+   mechanical slice of style; conventions they cannot enforce are covered by
+   the **Code style audit** (below).
 3. **Type-check** — where the language is typed (e.g. `tsc`, a Python type
    checker).
 4. **Code smell / complexity** — smell/complexity rules. Some linters include
@@ -80,13 +82,30 @@ skip silently.
   in response to individual failures.
 - Checks (lint, type, test, scan) never mutate — they gate.
 
-## Idioms — consistency is a QA property
+## Code style audit — consistency is a QA property
 
-- Match the surrounding code's idioms (`code-style.md`): naming, structure,
-  comment density, paragraph spacing. Correct-but-foreign code fails
-  QA-by-consistency.
-- The repo's own conventions win over general habits. Idioms serve
-  readability, not themselves — clarity first.
+Format and Lint (dimensions 1–2) enforce only the *mechanical* slice of
+style; the rest of `code-style.md` is a judgment audit no tool runs for you.
+Audit the change against `code-style.md` (plus any repo override in
+`.claude/`), checking the conventions tools cannot:
+
+- **Naming** — intent-revealing, matching the language's and the surrounding
+  code's casing.
+- **Paragraph spacing** — blank lines between distinct statements/blocks;
+  condense only tightly-related groups.
+- **Section & function separators** — thick for sections, thin for functions,
+  with any exception noted at the file/repo level.
+- **Comments** — wrapped (72 cols, or the repo's limit), explaining *why* not
+  restating code; public APIs documented.
+- **Abstraction (Rule of Three)** — genuine repetition extracted; no
+  premature or wrong abstraction.
+- **Efficiency by default** — prefer the efficient idiom when it is no less
+  clear; avoid needless pessimization (and premature optimization — see
+  below).
+
+Match the surrounding code's idioms; correct-but-foreign code fails
+QA-by-consistency. The repo's own conventions win over general habits —
+idioms serve readability, not themselves, so clarity comes first.
 
 ## Optimization — measure first; premature optimization is a smell
 
@@ -144,6 +163,10 @@ later. A dimension with no entry at all is itself a QA defect.
   tools named here are examples only.
 - Report each stage's outcome **and its documented status**; never claim
   "clean" without running it.
+- Run the **Code style audit** against `code-style.md` (plus any repo
+  override) for the conventions formatters/linters cannot enforce — naming,
+  paragraph spacing, section/function separators, comment wrap/density, Rule
+  of Three, efficiency by default — and report deviations.
 - When authoring/updating a repo QA doc, give **every** dimension a status
   (Active / Planned+link / Off+reason / N/A) — never omit one.
 - For **Planned**/**Off**/undocumented dimensions, surface the status and,
