@@ -72,6 +72,28 @@ fixed by one bump. List them with:
   auto-close (or dismiss with reason if dulwich is only a transitive dev
   dependency that is not actually exercised).
 
+## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
+
+`bin/docker_wrapper` is a multi-call dispatcher: each tool is a `bin/<tool>`
+symlink to it, and the tool list lives in the `known_tool` registrations
+inside the script. The symlinks are created by hand today, so a newly added
+tool — or a fresh checkout — can silently lack its symlink.
+
+- [ ] Add a check that every registered tool has a matching `bin/<tool>`
+  symlink pointing at `docker_wrapper`, and that no stray wrapper symlink
+  points at it without a registration. Drive it from the `known_tool` keys
+  (grep the `known_tool[...]=1` lines, or source the script in a guarded
+  mode).
+- [ ] Wire that check in as a meta-test (`tests/build-meta-tests` /
+  `meta_*.bats`, per `TESTS.md`'s symlink validation) so CI flags a missing
+  or stray symlink.
+- [ ] Add a create/repair mode (a `--fix` flag or a small maintenance
+  command) that creates any missing `bin/<tool>` symlinks and reports stale
+  ones, so adding a tool or setting up a fresh clone is one command.
+- [ ] Assert the link *target* (`docker_wrapper`), not file contents —
+  symlink mode is 120000 and unaffected by `core.filemode=false` (see Git
+  File-Mode Normalization above).
+
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
 Review all files in `config/shell-startup/` for correctness and security:
