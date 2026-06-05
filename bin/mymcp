@@ -20,36 +20,34 @@ log_dir="$DOTFILES/.mymcp"
 # Create log directory if it doesn't exist
 mkdir -p "$log_dir"
 
-# Initialize log file (will be updated with command name once cmd is determined)
-# Use first argument as fallback for early warnings
+# Shared error helpers (dw_warn / dw_die). DW_TAG prefixes each line;
+# DW_LOG routes output to our per-run log file instead of stderr.
+# shellcheck source=/dev/null
+source "$DOTFILES/lib/docker_helpers"
+export DW_TAG="[$selfname] "
+
+# Initialize the log file (updated with the command name once known).
+# Use the first argument as a fallback for early warnings.
 log_timestamp="$(date +%y%m%d-%H%M%S)"
 cmd_fallback="${1:-unknown}"
-log_file="$log_dir/mymcp-$cmd_fallback-$log_timestamp.log"
+export DW_LOG="$log_dir/mymcp-$cmd_fallback-$log_timestamp.log"
 
 declare -A known_cmd
 
 ###############################################################################
 # Utility Functions
 
-warn() { printf "[$selfname] %s\n" "$@" >> "$log_file" ; }
-die() {
-  local -i ec="${1:-0}"
-  shift
-  (($#)) && warn "$@"
-  exit $ec
-}
-
 #------------------------------------------------------------------------------
 docker_run() {
   local opts=('run' '--rm' '-i' "$@")
-  warn "docker ${opts[*]}"
+  dw_warn "docker ${opts[*]}"
   exec docker "${opts[@]}"
 }
 
 #------------------------------------------------------------------------------
 npx_run() {
   local opts=('-y' "$@")
-  warn "npx ${opts[*]}"
+  dw_warn "npx ${opts[*]}"
   exec npx "${opts[@]}"
 }
 
@@ -90,13 +88,13 @@ known_cmd['spec_dashboard']=1
 known_cmd['spec_client']=1
 
 #------------------------------------------------------------------------------
-(( $# )) || die 2 "Usage: $selfname <${!known_cmd[*]}>"
+(($#)) || dw_die 2 "Usage: $selfname <${!known_cmd[*]}>"
 
 cmd="$1"
-[[ -v "known_cmd[$cmd]" ]] || die 2 "Unknown option: $1"
+[[ -v "known_cmd[$cmd]" ]] || dw_die 2 "Unknown option: $1"
 shift
 
-# Update log file with actual command name
-log_file="$log_dir/mymcp-$cmd-$log_timestamp.log"
+# Update the log file with the actual command name.
+DW_LOG="$log_dir/mymcp-$cmd-$log_timestamp.log"
 
 "$cmd" "$@"
