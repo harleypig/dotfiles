@@ -37,7 +37,7 @@ if ((len == 0)); then
   [[ -t 1 ]] && len=$(tput cols)
 fi
 
-[[ $msg =~ ^*([[:space:]])$ ]] && msg=
+[[ $msg =~ ^[[:space:]]*$ ]] && msg=
 
 if [[ -n $msg ]]; then
   printf -v msg '%c%c %s' "$char" "$char" "$msg"
