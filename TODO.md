@@ -19,6 +19,41 @@ guidelines and `TESTS.md` for testing strategy.
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
   - See "Code Improvements (LOW PRIORITY)" section for detailed list
 
+## 🔧 Git File-Mode Normalization (HIGH PRIORITY)
+
+This repo's local `.git/config` has `core.filemode = false`, which
+overrides the global `config/git/config` setting of `true`. It was almost
+certainly auto-detected by `git init`/`clone` on a Windows path (where exec
+bits can't be confirmed) and rode along to this ext4 home, where exec bits
+work fine. The side effect: a batch of files were committed with the wrong
+mode, and git silently ignores exec-bit changes here.
+
+Flipping `core.filemode` to `true` surfaces ~61 files as "modified" (as of
+2026-06-05) — a two-directional mess that needs per-file judgment, NOT a
+blind `git add -u`:
+
+- **Should lose exec** (most): data/config files wrongly marked `755` —
+  `.json`, `.yaml`, `.toml`, `README.md`, `.gitkeep`, `config/*`.
+- **Should keep exec but may be `644` on disk**: real scripts —
+  `bin/mymcp`, `config/claude/bin/statusline.sh`,
+  `config/claude/skills/ship-pr/scripts/ship.sh`, `powershell/bin/*.ps1`.
+
+Tasks (do as its own focused branch/commit, e.g. `chore(git): normalize
+file modes`):
+
+- [ ] Set `core.filemode = true` locally to match the global setting (or
+  unset the local override so it inherits global)
+- [ ] Review the full mismatch list: `git -c core.fileMode=true status -s`
+- [ ] Per file, correct the index mode: `git update-index --chmod=-x` for
+  data/config, `--chmod=+x` for genuine executables (verify each script
+  actually needs the bit)
+- [ ] Commit the normalized modes; confirm `git status` is clean with
+  `filemode=true` in effect
+- [ ] Note: there is no `.gitattributes` mechanism for exec bits — this
+  must be done via `update-index`. Until normalized, new executables in
+  this repo need `git update-index --chmod=+x <file>` (the on-disk bit is
+  ignored while local `filemode=false` stands).
+
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
 Review all files in `config/shell-startup/` for correctness and security:
