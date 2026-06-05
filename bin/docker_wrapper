@@ -35,7 +35,7 @@ source "$libdir/docker_helpers"
 tool=${0##*/}
 export DW_TAG="${tool}: "
 
-#------------------------------------------------------------------------------
+###############################################################################
 # Image references (see IMAGE PINNING note above).
 IMG_shellcheck="koalaman/shellcheck:stable"
 IMG_shfmt="mvdan/shfmt:v3"
@@ -47,10 +47,11 @@ IMG_dive="wagoodman/dive:v0.13.1@sha256:f1886e6c32c094fc41a623c1989f5cb3e48aa766
 IMG_ollama="ollama/ollama:latest"
 IMG_openwebui="ghcr.io/open-webui/open-webui:main"
 
-#------------------------------------------------------------------------------
+###############################################################################
 # Tool functions. Each is invoked as `"$tool" "$@"`, so the function name
 # shadows the host binary of the same name — exactly what we want.
 
+#------------------------------------------------------------------------------
 shellcheck() {
   dw_guard_pwd_paths shellcheck "$@" || exit 1
 
@@ -71,6 +72,7 @@ shellcheck() {
   exec docker run "${args[@]}" "$IMG_shellcheck" "$@"
 }
 
+#------------------------------------------------------------------------------
 shfmt() {
   dw_guard_pwd_paths shfmt "$@" || exit 1
 
@@ -82,6 +84,7 @@ shfmt() {
   exec docker run "${args[@]}" "$IMG_shfmt" "$@"
 }
 
+#------------------------------------------------------------------------------
 yamllint() {
   dw_guard_pwd_paths yamllint "$@" || exit 1
 
@@ -100,6 +103,7 @@ yamllint() {
   exec docker run "${args[@]}" "$IMG_yamllint" "$@"
 }
 
+#------------------------------------------------------------------------------
 prettier() {
   dw_guard_pwd_paths prettier "$@" || exit 1
 
@@ -111,6 +115,7 @@ prettier() {
   exec docker run "${args[@]}" "$IMG_prettier" "$@"
 }
 
+#------------------------------------------------------------------------------
 hadolint() {
   dw_guard_pwd_paths hadolint "$@" || exit 1
 
@@ -132,6 +137,7 @@ hadolint() {
   exec docker run "${args[@]}" "$IMG_hadolint" hadolint "$@"
 }
 
+#------------------------------------------------------------------------------
 trivy() {
   # Path guard, but skip the token after `image` (an image ref, not a
   # path) and the subcommand keywords themselves.
@@ -175,6 +181,7 @@ trivy() {
   exec docker run "${args[@]}" "$IMG_trivy" "$@"
 }
 
+#------------------------------------------------------------------------------
 dive() {
   local -a args=(--rm)
   dw_user args
@@ -187,6 +194,7 @@ dive() {
   exec docker run "${args[@]}" "$IMG_dive" "$@"
 }
 
+#------------------------------------------------------------------------------
 ollama() {
   dw_require_host beaker
 
@@ -205,6 +213,13 @@ ollama() {
   exec docker run "${args[@]}" "$IMG_ollama"
 }
 
+#------------------------------------------------------------------------------
+# XXX: Since this depends on ollama, call ollama after the host check
+# Not trivial: ollama() ends in `exec docker run`, which replaces this
+# process and would never return to launch openwebui; and it uses
+# `--name ollama --restart always`, so a re-run errors on the duplicate
+# name. Needs an "ensure ollama is up (start if absent, no-op if already
+# running), then start openwebui" step, not a plain ollama call.
 openwebui() {
   dw_require_host beaker
 
@@ -221,9 +236,12 @@ openwebui() {
   exec docker run "${args[@]}" "$IMG_openwebui"
 }
 
-#------------------------------------------------------------------------------
+###############################################################################
 # Dispatch: only names registered here may be invoked (a stray symlink
 # must not be able to call an arbitrary shell function).
+# XXX: Declare the associative array at the top and add the known tool
+# immediately after each function. This will make it easier to comment out
+# a tool and keep the script from erroring out.
 declare -A known_tool=(
   [shellcheck]=1 [shfmt]=1 [yamllint]=1 [prettier]=1 [hadolint]=1
   [trivy]=1 [dive]=1 [ollama]=1 [openwebui]=1

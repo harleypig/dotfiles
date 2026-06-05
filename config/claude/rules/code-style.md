@@ -1,6 +1,6 @@
 # Code Style
 
-**Version:** v1.4.0
+**Version:** v1.5.0
 
 ## General Style
 
@@ -121,6 +121,27 @@ Typical free wins:
 This is the Rule of Three's spirit applied to runtime cost instead of
 duplication: don't pay for what you don't use — but don't distort the code
 chasing savings you can't measure, either.
+
+### Section and Function Separators
+
+Make a file's structure visible at a glance with comment-line separators in
+two weights:
+
+- **Thick separator** — a full line of the language's comment character
+  (`#####…` in shell, a `////…` / banner line in C-likes) — marks a major
+  **section**: setup/settings, utility functions, main functions, dispatch,
+  and the like.
+- **Thin separator** — a lighter line (`#----…` in shell) — precedes an
+  **individual function** (or other single, named unit).
+
+The scan reads as: thick = "new region of the file," thin = "next function."
+Keep each weight a consistent width within a file.
+
+Exceptions are expected — note them at the **file** level (a line in the file
+header) or, if repo-wide, in the repo's `.claude/` conventions, so a deviation
+reads as a decision, not an oversight. The common one: a file that is a single
+flat section (e.g. nothing but small helpers) uses the thin separator before
+each function and **no** thick separators at all.
 
 ## Paragraph Style
 

@@ -22,6 +22,10 @@
 #           own separator, e.g. "shellcheck: " or "[mymcp] ")
 #   DW_LOG  when set, dw_warn appends there instead of writing to stderr
 #           (mymcp logs to a file; the dispatcher leaves it unset)
+#
+# This file is a single section (helpers): each function gets a thin
+# `#---` separator and there are no thick section separators — the
+# documented "all one section" case in code-style.md.
 
 # The array helpers below take their target array by nameref (local -n);
 # SC2178 cannot model namerefs and misreads the `+=` as a string assign.
