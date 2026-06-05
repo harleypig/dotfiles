@@ -1,6 +1,6 @@
 # Code Style
 
-**Version:** v1.3.0
+**Version:** v1.4.0
 
 ## General Style
 
@@ -84,6 +84,43 @@ dimensions belongs in one place and is referenced from the others.)
 Removing genuine repetition is the cheap, high-value kind of efficiency: less
 to read and maintain. Reach for it when the pattern is demonstrated, not
 merely anticipated.
+
+### Efficiency by Default (Avoid Premature Pessimization)
+
+Premature *optimization* — contorting code or trading clarity for speed
+without measurements — is rightly discouraged (see the *measure first* stance
+in `qa.md`). Its opposite, **premature pessimization**, is not a virtue:
+reaching for a needlessly wasteful idiom when an equally clear, equally short
+one is right there. Avoiding that is plain hygiene, not optimization — you are
+not chasing speed, you are simply declining to waste resources by default.
+
+The test is narrow:
+
+> If the more efficient form is **no less clear** and **no more code**,
+> prefer it. If being more efficient would cost clarity or add complexity,
+> stop — that is the premature-optimization line, and it needs a measurement
+> to cross.
+
+The payoff compounds: leaner code leaves more headroom and less to worry about
+when it later has to fit into fixed or shrinking space, memory, or time. "We
+have plenty of RAM/disk/cycles" is not a license to be wasteful where being
+careful was free.
+
+Typical free wins:
+
+- **Don't allocate or copy what you won't use.** Stream/process items as you
+  go rather than buffering an entire intermediate collection first, when both
+  read equally well.
+- **Don't repeat per-iteration what can be done once outside the loop.** For
+  example, in Bash redirect the whole loop so the file opens a single time —
+  `done >> "$f"` (or wrap the block: `{ … } >> "$f"`) — instead of
+  `printf … >> "$f"` inside the loop, which reopens the file every pass.
+- **Pick the cheaper of two equivalent constructs** when the language offers
+  both at equal clarity.
+
+This is the Rule of Three's spirit applied to runtime cost instead of
+duplication: don't pay for what you don't use — but don't distort the code
+chasing savings you can't measure, either.
 
 ## Paragraph Style
 
