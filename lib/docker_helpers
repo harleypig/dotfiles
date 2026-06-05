@@ -4,9 +4,14 @@
 # and bin/mymcp. This is a SOURCED library, not an executable.
 #
 # Per rules/bash.md a sourced library must not enable `set -e` or call
-# `exit` at the top level. The lone exception is `dw_die`, a convenience
-# for *executable* callers that deliberately terminates the process;
-# only call it from a script, never from library code.
+# `exit` at the top level, and most helpers here honour that by
+# surfacing errors via return code. `dw_die` is the deliberate
+# exception: it exits, so it is meant for *executable* callers. A few
+# guard-style helpers (dw_require_host, and dw_user on a malformed flag)
+# call dw_die from within the library on purpose: when continuing would
+# be a misconfiguration or outright misuse, aborting the invoking
+# executable is the right behavior. This is a conscious, narrow
+# exception to the "libraries never exit" rule, not an oversight.
 #
 # Several helpers append docker flags to an array passed BY NAME (bash
 # 4.3+ namerefs), e.g. `dw_user args`. They quote every value, so a
@@ -29,17 +34,24 @@ if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
 fi
 
 #-----------------------------------------------------------------------------
-# Report a message to $DW_LOG when set, otherwise to stderr.
+# Report a message to $DW_LOG when set, otherwise to stderr. Each argument
+# is emitted as its own line, and newlines embedded within an argument are
+# split too; every resulting line is prefixed with $DW_TAG.
 
 dw_warn() {
-  local msg="${DW_TAG-}$*"
+  local arg line
 
-  if [[ -n ${DW_LOG-} ]]; then
-    printf '%s\n' "$msg" >> "$DW_LOG"
+  (($# == 0)) && return 0
 
-  else
-    printf '%s\n' "$msg" >&2
-  fi
+  # Redirect the whole loop once (the sink opens a single time) rather
+  # than per printf; stream one line at a time, no intermediate buffer.
+  {
+    for arg in "$@"; do
+      while IFS= read -r line; do
+        printf '%s\n' "${DW_TAG-}$line"
+      done <<< "$arg"
+    done
+  } >> "${DW_LOG:-/dev/stderr}"
 }
 
 #-----------------------------------------------------------------------------
@@ -73,15 +85,51 @@ dw_require_host() {
 }
 
 #-----------------------------------------------------------------------------
-# Append `--user uid:gid` to the named array. Optional $2/$3 override the
-# uid/gid; an omitted or empty value falls back to the caller's own
-# `id -u` / `id -g`.
+# Append `--user uid:gid` to the named array, defaulting either half to the
+# caller's own `id -u` / `id -g`. After the array name, the uid/gid may be
+# given positionally or by flag — flags let you set just one of them:
+#
+#   dw_user arr             # both default
+#   dw_user arr 999 888     # uid=999 gid=888
+#   dw_user arr 999         # uid=999, gid default
+#   dw_user arr -uid 999    # uid=999, gid default
+#   dw_user arr -gid 888    # gid=888, uid default
 
 dw_user() {
   local -n _a=$1
-  local uid=${2:-$(id -u)} gid=${3:-$(id -g)}
+  shift
 
-  _a+=(--user "${uid}:${gid}")
+  local uid="" gid=""
+
+  if [[ ${1-} == -* ]]; then
+    # Flag form: -uid / -gid, in any order.
+    while (($#)); do
+      case $1 in
+        -uid)
+          shift
+          uid=${1-}
+          ;;
+
+        -gid)
+          shift
+          gid=${1-}
+          ;;
+
+        *)
+          dw_die 2 "dw_user: unknown option '$1' (expected -uid / -gid)"
+          ;;
+      esac
+
+      shift
+    done
+
+  else
+    # Positional form: [uid [gid]].
+    uid=${1-}
+    gid=${2-}
+  fi
+
+  _a+=(--user "${uid:-$(id -u)}:${gid:-$(id -g)}")
 }
 
 #-----------------------------------------------------------------------------
@@ -129,6 +177,10 @@ dw_docker_socket() {
 dw_tty_if_attached() {
   local -n _a=$1
 
+  # True whenever the tool is run directly at an interactive prompt: the
+  # script inherits the terminal on both fd 0 (stdin) and fd 1 (stdout),
+  # so dive's TUI gets a real TTY. False when either end is a pipe or file
+  # (e.g. `dive img --ci > report`, or under CI) — then we must not `-t`.
   [[ -t 0 && -t 1 ]] || return 0
 
   _a+=(--interactive --tty)
