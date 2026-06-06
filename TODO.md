@@ -687,6 +687,35 @@ we can stay current.
 - [ ] Document bash changes resource:
   https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges
 
+## 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
+
+**Importance: high** (cost, privacy, and actually leveraging the dedicated
+AI box, `beaker`). **Priority: low** (exploratory; depends on beaker's GPU
+stack being finished and on finding the right integration point).
+
+Idea: route the simpler, high-volume Claude Code subtasks to a locally
+hosted model served from my own OpenWebUI/Ollama on `beaker` (see
+`bin/openwebui`, `bin/ollama`), keeping the heavy reasoning on Claude.
+Start with cheap, well-bounded work — qa-check triage, running and
+evaluating test output, summaries — then generalize.
+
+- [ ] Find the integration surface. Claude Code's main loop is
+  Anthropic-only, so investigate the realistic hook points:
+  - a **hook** (`PostToolUse`, etc.) that shells out to a local-LLM
+    script for a specific check;
+  - a **subagent** or **MCP server** that wraps the local endpoint;
+  - the **Claude Agent SDK** for a custom delegating agent.
+- [ ] Pick the API: OpenWebUI exposes an OpenAI-compatible endpoint;
+  Ollama serves its own API on `:11434`. Decide which to target.
+- [ ] Choose local model(s) sized for beaker's RTX 4080 (~12 GB VRAM) and
+  capable enough for the offloaded tier (code-aware small/mid models).
+- [ ] Define the task split: what is safe to delegate (triage, test-output
+  evaluation, summarization) vs. what stays on Claude.
+- [ ] Evaluate quality / cost / latency on real tasks before adopting; keep
+  a fallback to Claude when the local model is unsure.
+- [ ] Depends on: beaker GPU setup (driver + NVIDIA Container Toolkit) and
+  ollama/openwebui running.
+
 ## 📋 Template Creation (LOW PRIORITY - FUTURE WORK)
 
 **Note:** This is extensive future work and may warrant its own project/branch.
