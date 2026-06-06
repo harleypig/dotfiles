@@ -4,7 +4,7 @@
 # npx/docker PATH-stubs; DOTFILES is faked so logs land in a temp dir and the
 # shared lib resolves.
 
-load helpers/common
+load ../helpers/common
 
 setup() {
   load_bats_libs

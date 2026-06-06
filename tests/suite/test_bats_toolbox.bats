@@ -3,7 +3,7 @@
 # Tests for the bats-toolbox helper library — also proves it loads as a
 # first-class lib via bats_load_library (BATS_LIB_PATH includes lib/bats).
 
-load helpers/common
+load ../helpers/common
 
 setup() {
   load_bats_libs

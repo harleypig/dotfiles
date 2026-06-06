@@ -3,7 +3,7 @@
 # Unit tests for lib/docker_helpers (the dw_* helpers). Pure logic — no docker
 # daemon needed.
 
-load helpers/common
+load ../helpers/common
 
 setup() {
   load_bats_libs

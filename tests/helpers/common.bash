@@ -26,7 +26,9 @@ load_bats_libs() {
 # Absolute path to the repo root (tests/ sits one level below it).
 
 dotfiles_root() {
-  cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd
+  # Repo root = two levels up from this file (tests/helpers/common.bash), so
+  # it is independent of how deep the calling test sits under tests/.
+  cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd
 }
 
 #------------------------------------------------------------------------------

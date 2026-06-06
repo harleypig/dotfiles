@@ -3,7 +3,7 @@
 # Tests for bin/docker_wrapper dispatch. Tool runs are exercised against a
 # `docker` PATH-stub, so no docker daemon is required.
 
-load helpers/common
+load ../helpers/common
 
 setup() {
   load_bats_libs
