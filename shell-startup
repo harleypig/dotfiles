@@ -59,6 +59,11 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+# bats helper libraries: put this repo's first-class lib (lib/bats) ahead
+# of the system libs so any repo can `bats_load_library bats-toolbox`.
+# Honour an existing BATS_LIB_PATH (e.g. one set by bats-action in CI).
+export BATS_LIB_PATH="$DOTFILES/lib/bats:${BATS_LIB_PATH:-/usr/lib/bats}"
+
 ##############################################################################
 # Functions
 

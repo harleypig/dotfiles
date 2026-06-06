@@ -94,6 +94,27 @@ tool — or a fresh checkout — can silently lack its symlink.
   symlink mode is 120000 and unaffected by `core.filemode=false` (see Git
   File-Mode Normalization above).
 
+## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
+
+The generated meta tests (`tests/scaffold/build-meta-tests`) surface
+pre-existing shellcheck/shfmt failures — 26 across 21 legacy scripts (as of
+2026-06-06). These are deliberately **not** ignored and **not** auto-fixed
+yet; clean them up here, then they pass the meta suite and it can be wired
+into CI as a gate (today CI gates only the hand-written `tests/suite/test_*`).
+
+Run `tests/scaffold/build-meta-tests && bats tests/suite/*.meta.bats` to see
+current failures. Offenders:
+
+- [ ] **bin/**: ansi, anykey, bash-colors, check-dotfiles, CleanPath.tmp,
+  creds-helper, dir-readable, envsubstitute, git-all, git-branch-clean,
+  lwhich, run-help, show-unicode, tmux_edit_buffer, tmux_mode_indicator,
+  yesno
+- [ ] **lib/**: Arrays, debug, git-prompt, is, parse_params
+- [ ] `bin/CleanPath.tmp` looks like a stray scratch file — confirm and
+  remove rather than fix, if so.
+- [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
+  when all pass, add the meta suite to CI and run it in pre-commit.
+
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
 Review all files in `config/shell-startup/` for correctness and security:
