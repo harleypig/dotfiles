@@ -19,6 +19,102 @@ guidelines and `TESTS.md` for testing strategy.
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
   - See "Code Improvements (LOW PRIORITY)" section for detailed list
 
+## 🔧 Git File-Mode Normalization (HIGH PRIORITY)
+
+This repo's local `.git/config` has `core.filemode = false`, which
+overrides the global `config/git/config` setting of `true`. It was almost
+certainly auto-detected by `git init`/`clone` on a Windows path (where exec
+bits can't be confirmed) and rode along to this ext4 home, where exec bits
+work fine. The side effect: a batch of files were committed with the wrong
+mode, and git silently ignores exec-bit changes here.
+
+Flipping `core.filemode` to `true` surfaces ~61 files as "modified" (as of
+2026-06-05) — a two-directional mess that needs per-file judgment, NOT a
+blind `git add -u`:
+
+- **Should lose exec** (most): data/config files wrongly marked `755` —
+  `.json`, `.yaml`, `.toml`, `README.md`, `.gitkeep`, `config/*`.
+- **Should keep exec but may be `644` on disk**: real scripts —
+  `bin/mymcp`, `config/claude/bin/statusline.sh`,
+  `config/claude/skills/ship-pr/scripts/ship.sh`, `powershell/bin/*.ps1`.
+
+Tasks (do as its own focused branch/commit, e.g. `chore(git): normalize
+file modes`):
+
+- [ ] Set `core.filemode = true` locally to match the global setting (or
+  unset the local override so it inherits global)
+- [ ] Review the full mismatch list: `git -c core.fileMode=true status -s`
+- [ ] Per file, correct the index mode: `git update-index --chmod=-x` for
+  data/config, `--chmod=+x` for genuine executables (verify each script
+  actually needs the bit)
+- [ ] Commit the normalized modes; confirm `git status` is clean with
+  `filemode=true` in effect
+- [ ] Note: there is no `.gitattributes` mechanism for exec bits — this
+  must be done via `update-index`. Until normalized, new executables in
+  this repo need `git update-index --chmod=+x <file>` (the on-disk bit is
+  ignored while local `filemode=false` stands).
+
+## 🔒 Dependabot Security Alerts (HIGH PRIORITY)
+
+Open Dependabot alerts on the default branch (triage queue — see `gh.md`
+*Issues & triage*). Both are the **same dependency**, both **high**, both
+fixed by one bump. List them with:
+`gh api repos/harleypig/dotfiles/dependabot/alerts -f state=open`.
+
+- [ ] Bump **dulwich** to **>= 1.2.5** in `config/pypoetry/pyproject.toml`
+  (currently resolves to a vulnerable version), then refresh the lockfile.
+  This closes both alerts:
+  - [ ] Alert #5 — GHSA-9277-mp7x-85jf: command injection via merge driver
+    path (affects `>= 0.24.0, < 1.2.5`).
+  - [ ] Alert #4 — GHSA-897w-fcg9-f6xj: arbitrary file write via
+    NTFS-hostile tree entries on Windows (affects `>= 0.10.0, < 1.2.5`).
+- [ ] After the bump lands on the default branch, confirm both alerts
+  auto-close (or dismiss with reason if dulwich is only a transitive dev
+  dependency that is not actually exercised).
+
+## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
+
+`bin/docker_wrapper` is a multi-call dispatcher: each tool is a `bin/<tool>`
+symlink to it, and the tool list lives in the `known_tool` registrations
+inside the script. The symlinks are created by hand today, so a newly added
+tool — or a fresh checkout — can silently lack its symlink.
+
+- [ ] Add a check that every registered tool has a matching `bin/<tool>`
+  symlink pointing at `docker_wrapper`, and that no stray wrapper symlink
+  points at it without a registration. Drive it from the `known_tool` keys
+  (grep the `known_tool[...]=1` lines, or source the script in a guarded
+  mode).
+- [ ] Wire that check in as a meta-test (`tests/build-meta-tests` /
+  `meta_*.bats`, per `TESTS.md`'s symlink validation) so CI flags a missing
+  or stray symlink.
+- [ ] Add a create/repair mode (a `--fix` flag or a small maintenance
+  command) that creates any missing `bin/<tool>` symlinks and reports stale
+  ones, so adding a tool or setting up a fresh clone is one command.
+- [ ] Assert the link *target* (`docker_wrapper`), not file contents —
+  symlink mode is 120000 and unaffected by `core.filemode=false` (see Git
+  File-Mode Normalization above).
+
+## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
+
+The generated meta tests (`tests/scaffold/build-meta-tests`) surface
+pre-existing shellcheck/shfmt failures — 26 across 21 legacy scripts (as of
+2026-06-06). These are deliberately **not** ignored and **not** auto-fixed
+yet; clean them up here, then they pass the meta suite and it can be wired
+into CI as a gate (today CI gates only the hand-written `tests/suite/test_*`).
+
+Run `tests/scaffold/build-meta-tests && bats tests/suite/*.meta.bats` to see
+current failures. Offenders:
+
+- [ ] **bin/**: ansi, anykey, bash-colors, check-dotfiles, CleanPath.tmp,
+  creds-helper, dir-readable, envsubstitute, git-all, git-branch-clean,
+  lwhich, run-help, show-unicode, tmux_edit_buffer, tmux_mode_indicator,
+  yesno
+- [ ] **lib/**: Arrays, debug, git-prompt, is, parse_params
+- [ ] `bin/CleanPath.tmp` looks like a stray scratch file — confirm and
+  remove rather than fix, if so.
+- [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
+  when all pass, add the meta suite to CI and run it in pre-commit.
+
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
 Review all files in `config/shell-startup/` for correctness and security:
@@ -611,6 +707,35 @@ we can stay current.
   - [ ] Install via: `pipx install pyscn`
 - [ ] Document bash changes resource:
   https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges
+
+## 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
+
+**Importance: high** (cost, privacy, and actually leveraging the dedicated
+AI box, `beaker`). **Priority: low** (exploratory; depends on beaker's GPU
+stack being finished and on finding the right integration point).
+
+Idea: route the simpler, high-volume Claude Code subtasks to a locally
+hosted model served from my own OpenWebUI/Ollama on `beaker` (see
+`bin/openwebui`, `bin/ollama`), keeping the heavy reasoning on Claude.
+Start with cheap, well-bounded work — qa-check triage, running and
+evaluating test output, summaries — then generalize.
+
+- [ ] Find the integration surface. Claude Code's main loop is
+  Anthropic-only, so investigate the realistic hook points:
+  - a **hook** (`PostToolUse`, etc.) that shells out to a local-LLM
+    script for a specific check;
+  - a **subagent** or **MCP server** that wraps the local endpoint;
+  - the **Claude Agent SDK** for a custom delegating agent.
+- [ ] Pick the API: OpenWebUI exposes an OpenAI-compatible endpoint;
+  Ollama serves its own API on `:11434`. Decide which to target.
+- [ ] Choose local model(s) sized for beaker's RTX 4080 (~12 GB VRAM) and
+  capable enough for the offloaded tier (code-aware small/mid models).
+- [ ] Define the task split: what is safe to delegate (triage, test-output
+  evaluation, summarization) vs. what stays on Claude.
+- [ ] Evaluate quality / cost / latency on real tasks before adopting; keep
+  a fallback to Claude when the local model is unsure.
+- [ ] Depends on: beaker GPU setup (driver + NVIDIA Container Toolkit) and
+  ollama/openwebui running.
 
 ## 📋 Template Creation (LOW PRIORITY - FUTURE WORK)
 

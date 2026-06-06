@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+# Generate per-file "meta" tests — static checks (shebang, bash -n, shellcheck,
+# shfmt) for the shell scripts under the given roots. Self-contained: no
+# external library, no repo-specific assumptions beyond "scripts live under
+# <root>/<dir>". Portable to any repo that drops in tests/scaffold + the
+# helpers + bats-toolbox.
+#
+# Usage:
+#   tests/scaffold/build-meta-tests [DIR ...]
+#
+# DIR arguments are roots to scan, relative to the repo root (default: bin lib).
+# Output: one <dir>-<name>.meta.bats per script, written to tests/suite/ (which
+# gitignores *.meta.bats). Files listed in tests/scaffold/meta-ignore (one
+# repo-relative path per line, # comments allowed) are skipped.
+#
+# Symlinks are ignored (find -type f), so multi-call dispatchers like
+# bin/docker_wrapper are tested once and their tool symlinks are not.
+
+set -euo pipefail
+
+warn() { printf 'build-meta-tests: %s\n' "$*" >&2; }
+die() {
+  warn "$@"
+  exit 1
+}
+
+#------------------------------------------------------------------------------
+# Locate ourselves and the repo (tests/scaffold/build-meta-tests -> ../..).
+
+self=$(readlink -f "$0")
+scaffold_dir=$(dirname "$self")
+root=$(cd "$scaffold_dir/../.." && pwd)
+
+template_file="$scaffold_dir/templates/file.meta.bats.template"
+ignore_file="$scaffold_dir/meta-ignore"
+out_dir="$root/tests/suite"
+
+[[ -f $template_file ]] || die "template not found: $template_file"
+template=$(< "$template_file")
+
+mkdir -p "$out_dir"
+
+#------------------------------------------------------------------------------
+# Roots to scan (repo-relative); default to bin + lib.
+
+declare -a roots=("$@")
+((${#roots[@]})) || roots=(bin lib)
+
+#------------------------------------------------------------------------------
+# Load the ignore list (repo-relative paths) into a set.
+
+declare -A ignore=()
+if [[ -f $ignore_file ]]; then
+  while IFS= read -r line; do
+    line=${line%%#*}
+    line=${line//[[:space:]]/}
+    [[ -n $line ]] && ignore[$line]=1
+  done < "$ignore_file"
+fi
+
+#------------------------------------------------------------------------------
+# Collect candidate files (real files only — symlinks excluded).
+
+declare -a files=()
+for r in "${roots[@]}"; do
+  if [[ ! -d $root/$r ]]; then
+    warn "skipping missing root: $r"
+    continue
+  fi
+
+  while IFS= read -r -d '' f; do
+    files+=("$f")
+  done < <(find "$root/$r" -type f -print0)
+done
+
+((${#files[@]})) || die "no files found under: ${roots[*]}"
+
+#------------------------------------------------------------------------------
+# Generate a meta test per shell script.
+
+declare -i count=0
+for f in "${files[@]}"; do
+  rel=${f#"$root"/}
+
+  [[ -n ${ignore[$rel]-} ]] && continue
+
+  # Shell script? bash/sh shebang, or a .sh/.bash extension.
+  shebang=$(head -n 1 "$f")
+  if [[ $shebang != '#!'*sh* && $f != *.sh && $f != *.bash ]]; then
+    continue
+  fi
+
+  name=${rel//\//-}
+  out="$out_dir/${name}.meta.bats"
+
+  printf '%s\n' "${template//'{{REL_PATH}}'/$rel}" > "$out"
+  ((++count))
+done
+
+warn "generated $count meta test(s) into ${out_dir#"$root"/}"

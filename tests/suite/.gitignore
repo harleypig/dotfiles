@@ -1,0 +1,2 @@
+# Generated meta tests (produced by tests/scaffold/build-meta-tests).
+*.meta.bats

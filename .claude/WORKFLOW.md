@@ -106,12 +106,15 @@ in the pre-commit configuration.
 
 **Framework:** BATS (Bash Automated Testing System)
 
-**See `TESTS.md` for complete testing strategy and requirements.**
+**See `TESTS.md` for this repo's testing strategy, and the global
+`config/claude/rules/bats.md` for bats conventions.**
 
 **Quick reference:**
 
-* Run all tests: `bats tests/`
-* Run specific test: `bats tests/test_specific.bats`
+* Run the gating suite: `bats tests/suite/test_*.bats`
+* Run everything present: `bats tests/suite/`
+* Run a specific file: `bats tests/suite/test_<name>.bats`
+* Regenerate meta tests: `tests/scaffold/build-meta-tests`
 * Tests MUST pass before merging to master
 * New functionality MUST include tests
 
@@ -171,7 +174,7 @@ Optional but recommended:
 
 4. Run tests to verify:
    ```bash
-   bats tests/
+   bats tests/suite/
    ```
 
 5. Follow setup instructions in root `README.md`

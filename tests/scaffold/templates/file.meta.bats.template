@@ -1,0 +1,44 @@
+#!/usr/bin/env bats
+
+# !!! GENERATED FILE — DO NOT EDIT !!!
+#
+# Regenerate with:  tests/scaffold/build-meta-tests
+# For universal changes, edit the template instead:
+#   tests/scaffold/templates/file.meta.bats.template
+#
+# Static "meta" checks for {{REL_PATH}} — they validate the file without
+# executing it (shebang, syntax, lint, format).
+
+load ../helpers/common
+
+setup() {
+  load_bats_libs
+  # Run from the repo root so the relative path works with both the dockerized
+  # bin/ wrappers (which mount $PWD) and plain system shellcheck/shfmt.
+  cd "$(dotfiles_root)"
+}
+
+@test "{{REL_PATH}} exists" {
+  assert_file_exist "{{REL_PATH}}"
+}
+
+@test "{{REL_PATH}} has a bash/sh shebang" {
+  run head -n 1 "{{REL_PATH}}"
+  assert_output --regexp '^#!.*\b(ba)?sh\b'
+}
+
+@test "{{REL_PATH}} passes bash -n (syntax)" {
+  run bash -n "{{REL_PATH}}"
+  assert_success
+}
+
+@test "{{REL_PATH}} passes shellcheck" {
+  run shellcheck --external-sources --color=never "{{REL_PATH}}"
+  assert_success
+}
+
+@test "{{REL_PATH}} passes shfmt" {
+  run shfmt -d -s -i 2 -bn -ci -sr "{{REL_PATH}}"
+  assert_success
+  assert_output ''
+}
