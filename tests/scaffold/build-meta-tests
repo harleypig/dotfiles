@@ -1,130 +1,101 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Build meta tests for common code files
+# Generate per-file "meta" tests — static checks (shebang, bash -n, shellcheck,
+# shfmt) for the shell scripts under the given roots. Self-contained: no
+# external library, no repo-specific assumptions beyond "scripts live under
+# <root>/<dir>". Portable to any repo that drops in tests/scaffold + the
+# helpers + bats-toolbox.
+#
+# Usage:
+#   tests/scaffold/build-meta-tests [DIR ...]
+#
+# DIR arguments are roots to scan, relative to the repo root (default: bin lib).
+# Output: one <dir>-<name>.meta.bats per script, written to tests/suite/ (which
+# gitignores *.meta.bats). Files listed in tests/scaffold/meta-ignore (one
+# repo-relative path per line, # comments allowed) are skipped.
+#
+# Symlinks are ignored (find -type f), so multi-call dispatchers like
+# bin/docker_wrapper are tested once and their tool symlinks are not.
 
-# XXX: Add tests for compiling under sh
-# XXX: Add tests for symbolic links pointing to a script (e.g., tools/bin/psql)
+set -euo pipefail
 
-source utility
-sourced && die 'build-meta-test must not be sourced'
-
-declare -A IGNORE
-
-IGNORE["$GLOBAL_DIR/tools/bin/bash_colors"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/bats"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/git-dry-merge"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/git-logcsv"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/git-logrsync"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/git_status"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/gli"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/mkctags"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/mkman"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/prod2git"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/update_bats"]=1
-IGNORE["$GLOBAL_DIR/tools/bin/update_project"]=1
-
-IGNORE["$GLOBAL_DIR/scripts/shells/copy_files_fdr_bnkcrd.sh"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/copy_files_receive.sh"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/ctm_reorder"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/exec_ds"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/reset_cap_job_conditions"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/reset_dw_job_conditions"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/run_dsjob"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_create"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_debug"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_export"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_gen"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_import"]=1
-IGNORE["$GLOBAL_DIR/scripts/shells/skg_util_maint"]=1
-
-template_filename="$BATS_TEST/templates/file.meta.bats.template"
-template=$(< "$template_filename")
-
-#  find "$GLOBAL_SCRIPTS"/{shells,lib} "$GLOBAL_TOOLS" -type f -iregex '.*\(git-sync\|git-save\)' -printf '%p\n'
-
-declare -a fopts
-
-# Paths to check for files
-fopts+=("$GLOBAL_SCRIPTS"/{shells,lib})
-fopts+=("$GLOBAL_TOOLS")
-fopts+=("$DOTFILES/bin")
-fopts+=('-type' 'f')
-
-(($#)) && {
-  # shellcheck disable=SC2034
-  declare -a myarray=("$@")
-  fopts+=('-iregex' ".*/\($(join.array '\|' 'myarray')\)")
+warn() { printf 'build-meta-tests: %s\n' "$*" >&2; }
+die() {
+  warn "$@"
+  exit 1
 }
 
-debug "find ${fopts[*]} -printf '%p\n'"
-readarray -t files < <(find "${fopts[@]}" -printf '%p\n')
-debug "found ${#files[@]} files"
+#------------------------------------------------------------------------------
+# Locate ourselves and the repo (tests/scaffold/build-meta-tests -> ../..).
 
-for f in "${files[@]}"; do
-  [[ -n ${IGNORE[$f]} ]] && {
-    debug "Ignoring $f"
-    continue
-  }
+self=$(readlink -f "$0")
+scaffold_dir=$(dirname "$self")
+root=$(cd "$scaffold_dir/../.." && pwd)
 
-  shebang="$(head -n 1 "$f")"
+template_file="$scaffold_dir/templates/file.meta.bats.template"
+ignore_file="$scaffold_dir/meta-ignore"
+out_dir="$root/tests/suite"
 
-  # XXX: This check needs to look for '^#!.*bash.*'
-  if [[ $shebang != *'bash'* ]]; then
-    debug "$f does not have a bash shebang, not creating test"
+[[ -f $template_file ]] || die "template not found: $template_file"
+template=$(< "$template_file")
+
+mkdir -p "$out_dir"
+
+#------------------------------------------------------------------------------
+# Roots to scan (repo-relative); default to bin + lib.
+
+declare -a roots=("$@")
+((${#roots[@]})) || roots=(bin lib)
+
+#------------------------------------------------------------------------------
+# Load the ignore list (repo-relative paths) into a set.
+
+declare -A ignore=()
+if [[ -f $ignore_file ]]; then
+  while IFS= read -r line; do
+    line=${line%%#*}
+    line=${line//[[:space:]]/}
+    [[ -n $line ]] && ignore[$line]=1
+  done < "$ignore_file"
+fi
+
+#------------------------------------------------------------------------------
+# Collect candidate files (real files only — symlinks excluded).
+
+declare -a files=()
+for r in "${roots[@]}"; do
+  if [[ ! -d $root/$r ]]; then
+    warn "skipping missing root: $r"
     continue
   fi
 
-  warn "Creating meta tests for $(basename "$f")"
-
-  test_dir="${f/$GLOBAL_DIR/$BATS_TEST/checks}.t"
-  test_name="$test_dir/$(basename "$f").meta.bats"
-
-  debug "test_dir: $test_dir"
-  debug "test_name: $test_name"
-
-  mkdir -p "$test_dir"
-
-  # template is looking for the following variables:
-
-  # ^FILENAME^
-  # ^FILEMAN^  - path to man page
-  # ^FQFN^     - full path to file
-  # ^PERMS^    - permissions for file
-
-  # Also, use '^' as a delimiter instead of '%'.
-
-  {
-    DELIM='\^'
-    FILENAME="$(basename "$f")"
-    FILEMAN="\$GLOBAL_DIR/man/man1/${FILENAME}.1"
-    PERMS="$(stat --printf '%A' "$f")"
-
-    SKIP_IF_NOT_EXEC="skip '$FILENAME is not executable, it will not be in the path'"
-    [[ $PERMS =~ x ]] && SKIP_IF_NOT_EXEC=''
-
-    FQFN="$f"
-    FQFN="${FQFN/$GLOBAL_LIB/\$GLOBAL_LIB}"
-    FQFN="${FQFN/$GLOBAL_SHELLS/\$GLOBAL_SHELLS}"
-    FQFN="${FQFN/$GLOBAL_TOOLS/\$GLOBAL_TOOLS}"
-  }
-
-  debug "DELIM=$DELIM"
-  debug "FILENAME=$FILENAME"
-  debug "FILEMAN=$FILEMAN"
-  debug "PERMS=$PERMS"
-  debug "SKIP_IF_NOT_EXEC=$SKIP_IF_NOT_EXEC"
-  debug "FQFN=$FQFN"
-
-  # DEBUG causes issues for fill_template, turn it off
-
-  DEBUG_RESTORE=0
-
-  ((DEBUG)) && {
-    DEBUG_RESTORE=1
-    DEBUG=
-  }
-
-  fill_template "$template" > "$test_name"
-
-  ((DEBUG_RESTORE)) && DEBUG=1
+  while IFS= read -r -d '' f; do
+    files+=("$f")
+  done < <(find "$root/$r" -type f -print0)
 done
+
+((${#files[@]})) || die "no files found under: ${roots[*]}"
+
+#------------------------------------------------------------------------------
+# Generate a meta test per shell script.
+
+declare -i count=0
+for f in "${files[@]}"; do
+  rel=${f#"$root"/}
+
+  [[ -n ${ignore[$rel]-} ]] && continue
+
+  # Shell script? bash/sh shebang, or a .sh/.bash extension.
+  shebang=$(head -n 1 "$f")
+  if [[ $shebang != '#!'*sh* && $f != *.sh && $f != *.bash ]]; then
+    continue
+  fi
+
+  name=${rel//\//-}
+  out="$out_dir/${name}.meta.bats"
+
+  printf '%s\n' "${template//'{{REL_PATH}}'/$rel}" > "$out"
+  ((++count))
+done
+
+warn "generated $count meta test(s) into ${out_dir#"$root"/}"

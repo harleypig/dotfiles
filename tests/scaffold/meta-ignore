@@ -1,0 +1,2 @@
+# Repo-relative paths to skip when generating meta tests (one per line).
+# Use for files that intentionally fail shellcheck/shfmt or aren't scripts.
