@@ -1,0 +1,31 @@
+---
+name: tests
+
+# Run the bats test suite on pushes to master and on PRs. Only the
+# hand-written suite (tests/suite/test_*.bats) gates; the generated meta
+# suite is not run here yet (it surfaces pre-existing legacy lint/format
+# debt — see TODO.md "Lint/format Debt in Legacy Scripts").
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  bats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # bats + helper libs come from Debian/Ubuntu packages. bats_load_library
+      # resolves bats-support/assert/file from /usr/lib/bats by default; the
+      # tests add this checkout's lib/bats to BATS_LIB_PATH for bats-toolbox.
+      - name: Install bats and helper libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats bats-support bats-assert bats-file
+
+      - name: Run hand-written suite
+        run: bats tests/suite/test_*.bats
