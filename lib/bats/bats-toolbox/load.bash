@@ -56,7 +56,9 @@ random_string() {
     *) class='a-zA-Z0-9' ;;
   esac
 
-  LC_ALL=C tr -dc "$class" < /dev/urandom | head -c "$count"
+  # Suppress tr's "write error: Broken pipe" when head closes the pipe early;
+  # otherwise that warning can leak into captured output (run merges stderr).
+  LC_ALL=C tr -dc "$class" < /dev/urandom 2> /dev/null | head -c "$count"
 }
 
 #------------------------------------------------------------------------------
