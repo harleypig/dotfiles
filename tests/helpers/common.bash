@@ -9,9 +9,17 @@
 # holds bats-support / bats-assert / bats-file.
 
 load_bats_libs() {
+  # Make this repo's first-class helper lib (lib/bats) resolvable alongside the
+  # system libs, so `bats tests/` works without relying on shell-startup having
+  # exported BATS_LIB_PATH (e.g. in CI or a bare checkout).
+  local libdir
+  libdir="$(dotfiles_root)/lib/bats"
+  export BATS_LIB_PATH="${libdir}:${BATS_LIB_PATH:-/usr/lib/bats}"
+
   bats_load_library bats-support
   bats_load_library bats-assert
   bats_load_library bats-file
+  bats_load_library bats-toolbox
 }
 
 #------------------------------------------------------------------------------

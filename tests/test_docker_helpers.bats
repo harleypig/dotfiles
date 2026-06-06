@@ -8,9 +8,9 @@ load helpers/common
 setup() {
   load_bats_libs
   ROOT="$(dotfiles_root)"
+  # shellcheck source=/dev/null
   source "$ROOT/lib/docker_helpers"
-  DW_TAG=""
-  unset DW_LOG
+  unset DW_TAG DW_LOG
 }
 
 #------------------------------------------------------------------------------
@@ -77,18 +77,16 @@ setup() {
 # dw_warn
 
 @test "dw_warn writes one tagged line per argument to DW_LOG" {
-  DW_TAG="t: "
   DW_LOG="$BATS_TEST_TMPDIR/log"
-  dw_warn "one" "two"
+  DW_TAG="t: " dw_warn "one" "two"
   run cat "$DW_LOG"
   assert_line --index 0 "t: one"
   assert_line --index 1 "t: two"
 }
 
 @test "dw_warn splits embedded newlines into tagged lines" {
-  DW_TAG="t: "
   DW_LOG="$BATS_TEST_TMPDIR/log"
-  dw_warn "$(printf 'a\nb')"
+  DW_TAG="t: " dw_warn "$(printf 'a\nb')"
   run cat "$DW_LOG"
   assert_line --index 0 "t: a"
   assert_line --index 1 "t: b"
