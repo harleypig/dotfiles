@@ -147,6 +147,9 @@ advisory — the remote enforces it:
 * Deletion and force-push of `master` are blocked; unresolved review threads
   block merge; stale reviews are dismissed on push.
 * No bypass actors — even the owner goes through a PR.
+* A local `no-commit-to-branch` pre-commit hook also blocks a direct commit
+  to `master` at commit time (early guard; the server ruleset is what
+  actually enforces it). See `config/claude/rules/git.md`.
 
 To change the ruleset, edit the JSON and re-apply with the OAuth token (the
 narrow PAT lacks admin):
