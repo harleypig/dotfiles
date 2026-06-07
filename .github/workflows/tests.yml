@@ -2,7 +2,7 @@
 name: tests
 
 # Run the bats test suite on pushes to master and on PRs. Only the
-# hand-written suite (tests/suite/test_*.bats) gates; the generated meta
+# hand-written suite (tests/shell/test_*.bats) gates; the generated meta
 # suite is not run here yet (it surfaces pre-existing legacy lint/format
 # debt — see TODO.md "Lint/format Debt in Legacy Scripts").
 
@@ -28,4 +28,4 @@ jobs:
           sudo apt-get install -y bats bats-support bats-assert bats-file
 
       - name: Run hand-written suite
-        run: bats tests/suite/test_*.bats
+        run: bats tests/shell/test_*.bats
