@@ -78,11 +78,12 @@ pre-commit / CI.
 ## CI
 
 `.github/workflows/tests.yml` runs three jobs on pushes to `master` and on
-PRs: **bats** (`tests/shell/test_*.bats`), **perl** (`prove tests/perl/`,
-installing `libtest-cmd-perl`), and **python** (`pytest tests/python`, which
-self-activates once `tests/python/test_*.py` exist). The generated meta suite
-is **not** gated yet (see the debt note above); add it once its target
-scripts pass.
+PRs: **bats** (`tests/shell/test_*.bats`, the gate), **perl**
+(`prove tests/perl/`, installing `libtest-cmd-perl` + `perltidy`; **non-gating
+for now** via `continue-on-error`, pending a Perl::Tidy version-robustness fix
+— see `TODO.md`), and **python** (`pytest tests/python`, self-activating once
+`tests/python/test_*.py` exist). The generated meta suite is **not** gated yet
+(see the debt note above); add it once its target scripts pass.
 
 ## Test development
 

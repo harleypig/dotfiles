@@ -231,6 +231,22 @@ current failures. Offenders:
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
   when all pass, add the meta suite to CI and run it in pre-commit.
 
+## 🐪 perl CI: make perltidyrc-clean tests version-robust (MEDIUM PRIORITY)
+
+The `perl` CI job (`prove tests/perl/`) is **non-gating** for now
+(`continue-on-error` in `.github/workflows/tests.yml`). Several
+`perltidyrc-clean` tests assert *exact* Perl::Tidy error wording and break
+across Perl::Tidy versions (pass on local 20250912, fail on the runner's
+older package): `call_perltidy.t:129,207` and `get_perltidy_config.t:103`
+(4/24 and 1/52 subtests).
+
+- [ ] Make the assertions match *that an error was reported* (exit code /
+  non-empty error), not the upstream phrasing — the fix may also reach into
+  `bin/perltidyrc-clean`'s own error-wrapping path, so treat it as its own
+  task (cf. parse_params).
+- [ ] Once green across versions, drop `continue-on-error` and **promote
+  perl to a required check**.
+
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
 Review all files in `config/shell-startup/` for correctness and security:
