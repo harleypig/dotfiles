@@ -10,3 +10,4 @@ package-mode = false
 python = "3.12.3"
 poetry = "2.3.4"
 idna = ">=3.15"
+dulwich = ">=1.2.5"
