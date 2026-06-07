@@ -511,6 +511,18 @@ optional).
 
 =back
 
+=head1 ARGUMENT ORDER
+
+Options and positionals may be interleaved on the command line: recognized
+options (with their values) are permuted out wherever they appear, and the
+remaining arguments, in order, are the positionals — each fixed C<#> takes
+one, then a C<#@> slurp takes the rest. So C<#@> must be the last positional in
+the *definition*, but on the command line the options can come before, after,
+or among the positional words.
+
+A positional that begins with C<-> must come after C<--> (which ends option
+parsing); otherwise it is taken as an unknown option and rejected.
+
 =head1 TYPES AND BEHAVIOR
 
 =over 4
