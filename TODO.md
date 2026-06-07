@@ -248,6 +248,20 @@ to see status.
   when all pass, add the meta suite to CI and run it in pre-commit. (CI today
   gates only the hand-written `tests/shell/test_*`.)
 
+## 🔁 Audit shell scripts for arg-loop → parse_params (LOW PRIORITY)
+
+Now that `bin/parse_params` exists (replaces hand-written option loops; see
+`bash.md` *Argument Parsing*), audit this repo's shell scripts for `while`/
+`case`/`getopts` arg-parsing that could use it instead.
+
+- [ ] Grep for candidates (`while (($#))`, `case "$1" in`, `getopts`) across
+  `bin/`, `lib/`, `config/shell-startup/`.
+- [ ] Convert where it improves clarity, using the
+  `_pp=$(parse_params "$DEF" "$@") || show_usage; eval "$_pp"` pattern; add or
+  adjust tests for each converted script.
+- [ ] Skip portable/standalone scripts — `parse_params` is only on `PATH` in
+  the dotfiles setup (see the scope caveat in `bash.md`).
+
 ## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
 
 The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip
@@ -280,6 +294,79 @@ older package): `call_perltidy.t:129,207` and `get_perltidy_config.t:103`
   task (cf. parse_params).
 - [ ] Once green across versions, drop `continue-on-error` and **promote
   perl to a required check**.
+
+## 🐫 Perl quality tooling (MEDIUM PRIORITY)
+
+Build out perl QA across **both the test suite and the CLI scripts** (where
+CLIs exist — e.g. `bin/parse_params`, `bin/perltidyrc-clean`), and make it as
+strict as practical, in stages.
+
+### perlcritic
+
+`perlcritic` is currently unusable: this machine has many **non-core,
+third-party policy bundles** installed that bury real findings in noise. On
+`bin/parse_params`, `--severity 4` shows only
+`ValuesAndExpressions::ProhibitAccessOfPrivateData` (28× — false positive on
+plain `$hashref->{key}`); `--severity 3` adds `CodeLayout::TabIndentSpaceAlign`
+(217×, demands tabs — **rejected, this repo is spaces-only**),
+`ProhibitHashBarewords`, `Reneeb::*`, `logicLAB::*`, `Bangs::*`, UTF-8 and
+`RequireExtendedFormatting` opinions, etc. The current
+`config/perl/perlcriticrc` is worse than nothing — it references uninstalled
+bundles (OTRS, TryTiny).
+
+- [ ] Rebuild `config/perl/perlcriticrc` as a curated profile; drop the
+  uninstalled-bundle references.
+- [ ] **Review each installed external policy individually** — they are *not*
+  all bad; adopt the useful ones and exclude only what genuinely doesn't fit
+  (e.g. TabIndentSpaceAlign, ProhibitAccessOfPrivateData). Don't dismiss the
+  third-party bundles wholesale.
+- [ ] **Ratchet severity toward the strictest (1), in stages** — clean the
+  findings at each level before tightening; start from the `--severity 4`
+  baseline (`perl.md`) and work down.
+- [ ] **Test::Perl::Critic** — run perlcritic from the test suite (a
+  `tests/perl/*-critic.t` over `bin/` + `lib/`) so the curated profile is
+  *enforced*, not merely available.
+- [ ] **Docker angle** (ties into "run more linters via Docker"): a pinned
+  `perlcritic` image (`FROM perl` + `cpanm Perl::Critic` plus only the chosen
+  policy dists) gives a **controlled** policy set — no stray third-party
+  bundles — removing most noise by construction. No official image exists, so
+  it'd be a small custom pinned `docker_wrapper` entry.
+- [ ] Once perlcritic is clean + enforced, it **unblocks the deferred Perl
+  pre-commit hook** (Pre-commit → Phase 3).
+
+### Coverage and POD
+
+- [ ] **Devel::Cover** — measure coverage for the perl test suite (and the
+  CLIs it exercises); add a report and a coverage target to aim for.
+- [ ] **Pod::Coverage** / **Test::Pod::Coverage** — ensure every public sub
+  and CLI option is documented in POD; gate it in the suite. Pair with
+  **Test::Pod** for POD syntax.
+
+### Additional analysis
+
+- [ ] **B::Lint** — a second, lighter layer of basic checks (accepting some
+  overlap with perlcritic); decide where it adds signal perlcritic doesn't.
+- [ ] **B::Deparse** — use as an *aid* when making scripts idiomatic (compare
+  deparsed output to spot non-idiomatic constructs / hidden behavior); a
+  technique, not a gate.
+- [ ] **Perl::Analyzer** — investigate (call-graph / structure analysis);
+  evaluate whether it's worth adding for the larger perl.
+
+### Security scanning
+
+- [ ] Look into perl SAST: investigate **Checkmarx** (believed to support
+  perl) and open-source alternatives, and fold any perl SAST into the
+  `security-scan` skill / `qa.md` security dimension rather than a one-off.
+
+### Setup / documentation
+
+- [ ] Document installation + setup for **all of the above** (Perl::Critic +
+  the chosen policy dists, Test::Perl::Critic, Devel::Cover, Pod::Coverage /
+  Test::Pod::Coverage / Test::Pod, B::Lint, Perl::Analyzer, any perl SAST)
+  alongside the existing setup docs (WORKFLOW.md *Tool Setup Procedures* /
+  Prerequisites). Use the repo's standard install path — perlbrew + cpanm (see
+  *Tool/Version Manager Setup*) or pinned docker wrappers — so a fresh machine
+  reproduces the whole perl QA toolchain from one documented place.
 
 ## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
 
@@ -404,16 +491,20 @@ working tree — evaluate carefully before implementing.
         harness so its `ln -fs` into `$HOME` can't touch the host.
 - [ ] Add tests for lib/ libraries
   - [x] debug — `tests/shell/test_debug.bats`
-  - [ ] parse_params — complex (657 L); its own task. Evaluate rewriting
-        in perl (much simpler than the bash version); note it's currently a
-        sourced lib that sets caller variables, so a perl version would need
-        to emit eval-able shell (getopt-style) for the caller to `eval`.
-        Write tests for whichever form it ends up as. **Also consider
-        converting `bin/cleanpath` to perl** (same kind of text munging).
-        Constraint: a perl rewrite of either must use **only core modules
-        shipped with perl** — no CPAN dependencies (keeps them runnable
-        anywhere perl is, and avoids the Perl::Tidy/XML::LibXML kind of
-        install gap; see perl CI notes).
+  - [x] parse_params — **rewritten in core-only perl as `bin/parse_params`**
+        (the old bash `lib/parse_params` was broken — it `source`d a long-gone
+        `utility` lib + missing is_char/is_integer/verify_filename — and is
+        archived to `archive/lib/`). Emits `eval`-able shell assignments
+        (`_pp=$(parse_params "$DEF" "$@") || show_usage; eval "$_pp"`) so it
+        replaces hand-written `while` arg loops. Fixed the original's design
+        flaws: no code-gen/eval, no shell-killing `die` (it's a subprocess),
+        safe quoting, clear exit codes (0/1/2). New features: signed integers,
+        negatable booleans (`--no-x`, DEFAULT 0|1 for default-on), repeatable
+        `type@` → shell arrays, positionals, auto `--help` + `--usage`. Tests:
+        `tests/perl/parse_params-{options,types,boolean,errors}.t` (60 cases).
+  - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
+        munging). Constraint: core perl modules only — no CPAN (keeps it
+        runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
   - [ ] docker_helpers — currently untested.
   - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
     factored into `bin/git-status` — not tested.)
@@ -910,8 +1001,9 @@ in the future.
 ## 📊 Progress Tracking
 
 - **Documentation:** ~85% complete (foundation laid, XXX cleanup remaining)
-- **Testing:** ~55% complete (docker harness + context matrix + several
-  scripts/libs covered; `parse_params` and shell-startup-module tests remain)
+- **Testing:** ~60% complete (docker harness + context matrix + several
+  scripts/libs covered, incl. the new perl `parse_params`; shell-startup
+  module tests + `docker_helpers` remain)
 - **Pre-commit:** Phases 1–2 done (core + security, in CI + required); Phases
   3–4 (language, docs) remain
 - **CI/CD:** `tests.yml` (bats/perl/python) + `pre-commit` job live; phased
@@ -921,8 +1013,8 @@ in the future.
 
 ## 🎯 Next Actions (Priority Order)
 
-1. **Testing Phase 3** — `lib/parse_params` (+ evaluate the perl rewrite) and
-   `config/shell-startup/` module tests
+1. **Testing Phase 3** — `config/shell-startup/` module tests and
+   `lib/docker_helpers` (parse_params is done — see bin/parse_params)
 2. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
    a required check (also unblocks the deferred Perl pre-commit hooks)
 3. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
