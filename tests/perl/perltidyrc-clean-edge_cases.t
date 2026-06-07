@@ -11,7 +11,7 @@ use File::Path qw(make_path remove_tree);
 # Edge cases and error handling tests
 
 my $script = File::Spec->catfile('bin', 'perltidyrc-clean');
-my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
+my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' );
 
 # ============================================================================
 # Edge Cases

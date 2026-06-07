@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Test::More;
 use Scalar::Util qw(looks_like_number);
-use lib 't/lib';
+use lib 'tests/perl/lib';
 use TestPerltidyrcClean;
 
 # Test the looks_like_integer function from bin/perltidyrc-clean

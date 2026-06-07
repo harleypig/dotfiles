@@ -12,7 +12,7 @@ use File::Path qw(make_path remove_tree);
 # Integration tests for CLI argument parsing, file I/O, and option processing logic
 
 my $script = File::Spec->catfile('bin', 'perltidyrc-clean');
-my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
+my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' );
 my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 
 # Create Test::Cmd object

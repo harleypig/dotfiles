@@ -32,7 +32,7 @@ tests/
   scaffold/             # meta-test generator + templates (build-meta-tests)
   shell/                # bats: *.bats hand-written, *.meta.bats generated (gitignored)
   python/               # pytest: test_*.py
-  perl/                 # prove: *.t   (being moved here from t/ — follow-up PR)
+  perl/                 # prove: *.t
   powershell/           # Pester: *.Tests.ps1
 ```
 
