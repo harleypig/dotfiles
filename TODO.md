@@ -19,40 +19,29 @@ guidelines and `TESTS.md` for testing strategy.
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
   - See "Code Improvements (LOW PRIORITY)" section for detailed list
 
-## 🔧 Git File-Mode Normalization (HIGH PRIORITY)
+## ✅ Git File-Mode Normalization (DONE 2026-06-06)
 
-This repo's local `.git/config` has `core.filemode = false`, which
-overrides the global `config/git/config` setting of `true`. It was almost
-certainly auto-detected by `git init`/`clone` on a Windows path (where exec
-bits can't be confirmed) and rode along to this ext4 home, where exec bits
-work fine. The side effect: a batch of files were committed with the wrong
-mode, and git silently ignores exec-bit changes here.
+The local `.git/config` had `core.filemode = false` (from a Windows-path
+clone), which hid wrong modes in the index. Resolved on
+`bugfix/git-filemode-normalization`:
 
-Flipping `core.filemode` to `true` surfaces ~61 files as "modified" (as of
-2026-06-05) — a two-directional mess that needs per-file judgment, NOT a
-blind `git add -u`:
+- **Index modes corrected** (committed): commands made executable
+  (`bin/motd`, `bin/perltidyrc-clean`, `config/claude/bin/statusline.sh`,
+  `config/claude/hooks/rule-coverage.py`,
+  `config/claude/skills/ship-pr/scripts/ship.sh`, `archive/bin/*`); sourced
+  libs (`lib/is`, `lib/parse_params`, `lib/strings`) reset to 644 to match
+  the other `lib/*`. (`bin/mymcp` was fixed earlier.)
+- **`core.filemode` flipped to `true` locally** and all working-tree disk
+  modes aligned to the index, so `git status` is clean and future mode
+  drift is now tracked.
 
-- **Should lose exec** (most): data/config files wrongly marked `755` —
-  `.json`, `.yaml`, `.toml`, `README.md`, `.gitkeep`, `config/*`.
-- **Should keep exec but may be `644` on disk**: real scripts —
-  `bin/mymcp`, `config/claude/bin/statusline.sh`,
-  `config/claude/skills/ship-pr/scripts/ship.sh`, `powershell/bin/*.ps1`.
+Caveats (per-clone, not committable):
 
-Tasks (do as its own focused branch/commit, e.g. `chore(git): normalize
-file modes`):
-
-- [ ] Set `core.filemode = true` locally to match the global setting (or
-  unset the local override so it inherits global)
-- [ ] Review the full mismatch list: `git -c core.fileMode=true status -s`
-- [ ] Per file, correct the index mode: `git update-index --chmod=-x` for
-  data/config, `--chmod=+x` for genuine executables (verify each script
-  actually needs the bit)
-- [ ] Commit the normalized modes; confirm `git status` is clean with
-  `filemode=true` in effect
-- [ ] Note: there is no `.gitattributes` mechanism for exec bits — this
-  must be done via `update-index`. Until normalized, new executables in
-  this repo need `git update-index --chmod=+x <file>` (the on-disk bit is
-  ignored while local `filemode=false` stands).
+- `core.filemode` lives in each clone's `.git/config`. A fresh clone on a
+  filesystem where exec bits work picks up `true` automatically; one made
+  on a Windows path may need `git config --local core.filemode true` again.
+- There is no `.gitattributes` mechanism for exec bits; `.ps1` files are
+  left as-is (the exec bit is moot for PowerShell).
 
 ## 🔒 Dependabot Security Alerts (HIGH PRIORITY)
 
