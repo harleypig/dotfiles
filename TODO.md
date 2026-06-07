@@ -128,6 +128,23 @@ deploy/symlink (dotlinks) steps that never show on the dev machine.
   these gate in CI — they need docker available (bats-action + docker, or a
   dind/services setup).
 
+## 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
+
+Review every repo under `$PROJECTS_DIR` and decide, per the three-tier model
+in `CLAUDE.md`, whether anything repo-local in its `.claude/` should be
+promoted to the global config (`config/claude/rules/` or `.../skills/`).
+
+- [ ] Enumerate projects with a `.claude/`:
+  `find "$PROJECTS_DIR" -maxdepth 2 -name .claude -type d`.
+- [ ] For each, compare its `rules/`, `skills/`, and CONVENTIONS/WORKFLOW/
+  TESTS against the global set; flag anything language- or repo-agnostic
+  (tier 1/2) that's repo-local or duplicated.
+- [ ] Promote tier-1/2 items to global `config/claude/rules/<name>.md` or
+  `config/claude/skills/`; leave truly repo-specific bits in place.
+- [ ] Consolidate drift: the same rule copied (and diverging) across repos
+  should become one global source that repos reference.
+- [ ] Note any project that lacks a `.claude/` but should have one.
+
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
 `bin/docker_wrapper` is a multi-call dispatcher: each tool is a `bin/<tool>`
