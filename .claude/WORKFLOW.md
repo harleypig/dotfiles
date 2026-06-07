@@ -142,8 +142,8 @@ advisory — the remote enforces it:
 
 * **Direct pushes to `master` are rejected** — all changes land via PR.
 * **Squash is the only allowed merge method.**
-* **`bats` must be green** to merge (required status check). `perl` is
-  non-gating; add the pre-commit CI check to the required set when it lands.
+* **`bats` and `pre-commit` must be green** to merge (required status
+  checks). `perl` is non-gating.
 * Deletion and force-push of `master` are blocked; unresolved review threads
   block merge; stale reviews are dismissed on push.
 * No bypass actors — even the owner goes through a PR.

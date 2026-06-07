@@ -6,6 +6,8 @@ name: tests
 #   - perl:   prove over tests/perl/ — non-gating for now (Perl::Tidy version
 #             drift; see TODO), promote once version-robust
 #   - python: pytest over tests/python/ (activates once tests exist)
+#   - pre-commit: the check config (lint/format/secret hooks) via
+#                 `pre-commit run --all-files`
 # The generated meta suite is not run here yet (it surfaces pre-existing
 # legacy lint/format + dependency debt — see TODO.md "Lint/format Debt in
 # Legacy Scripts").
@@ -81,3 +83,24 @@ jobs:
           else
             echo "no python tests yet — skipping"
           fi
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      # no-commit-to-branch is a local-only guard; skip it in CI (the run on
+      # master would otherwise fail merely for being on master). The gitleaks
+      # hook is a no-op here (it scans staged content); full secret scanning
+      # is the security-scan skill's job.
+      - name: Run pre-commit (check config)
+        run: SKIP=no-commit-to-branch pre-commit run --all-files --show-diff-on-failure
