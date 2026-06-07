@@ -137,10 +137,12 @@ Deferred from the shell-startup trim (PR #16):
   make that obvious. Do this before the containerized startup tests are done
   so they target the final names. Update `load_files`, the pre-setup hook
   path, `run_hook`'s default `$dfdir`, and the directories themselves.
-- [ ] **Test `run_hook`, then comment it out.** It works now but is called
-  nowhere; with the containerized startup-test work, add a test covering the
-  default + a custom `$dfdir` and a missing hook (returns non-zero), then
-  comment `run_hook` out — leaving it in place for possible future use.
+- [x] **Test `run_hook`, then comment it out.** Added
+  `tests/shell/test_run_hook.bats` (custom `$dfdir`, default
+  `$DOTFILES/shell_startup.d` fallback, missing hook, failing hook) — verified
+  passing with `run_hook` active, then commented `run_hook` out in
+  `shell-startup` and set the tests to `skip` (preserved for future use;
+  remove the skip + uncomment to reactivate).
 
 ## 🐚 Test dotfiles Startup in Containers (MEDIUM PRIORITY)
 
