@@ -215,6 +215,23 @@ to see status.
   when all pass, add the meta suite to CI and run it in pre-commit. (CI today
   gates only the hand-written `tests/shell/test_*`.)
 
+## 🐍 Python lint/format debt in bin/ scripts (MEDIUM PRIORITY)
+
+The Phase-3 Python pre-commit hooks (yapf/isort/flake8) currently **exclude**
+two bin/ scripts that carry pre-existing debt (`exclude:
+'^bin/(available-subnets|poetry2setup)$'` in both configs):
+
+- [ ] `bin/available-subnets` (ours) — yapf/flake8 findings (long lines, E251,
+  and E265 on the repo's `#----` separator comments). Reformat with yapf,
+  hand-fix the rest, and decide the **separator-comment policy for Python**
+  (keep `#####`/`#----` and add `E265,E266` to `config/flake8`, or switch to
+  plain comments — `#` followed by a space). See `flake8.md`.
+- [ ] `bin/poetry2setup` — appears to be the upstream `poetry2setup` tool.
+  Decide: vendor it properly (add a `SOURCE.md`, leave it unformatted) or
+  adopt it as ours (then format it).
+- [ ] Once both are resolved, drop the `exclude` from the Python hooks in both
+  pre-commit configs so the whole repo's Python is gated.
+
 ## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
 
 The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip
@@ -542,20 +559,26 @@ scanning remains the **security-scan** skill's job (separate from this hook).
 
 ### Phase 3: Language-Specific Hooks
 
-- [ ] Add Python hooks (commented/conditional):
-  - [ ] black (formatting check)
-  - [ ] isort (import sorting check)
-  - [ ] flake8 (linting)
-  - [ ] mypy (type checking)
-- [ ] Add Perl hooks:
-  - [ ] perlcritic (linting)
-  - [ ] perltidy (formatting check)
-- [ ] Add Rust hooks (if applicable):
-  - [ ] cargo fmt (check mode)
-  - [ ] clippy (linting)
-- [ ] Update fix configuration with language-specific auto-fixes
-- [ ] Test with actual project files
-- [ ] Update documentation
+- [x] **Python** — wired the repo's actual toolchain (`yapf` + `isort` +
+  `flake8`, **not** black/mypy): `isort --check` + `yapf -d` + `flake8` in the
+  check config, `isort` + `yapf -i` in the fix config. Added `config/flake8`
+  (reconciles flake8 with yapf's 2-space style) and
+  `config/claude/rules/flake8.md`. `config/claude/hooks/rule-coverage.py` was
+  reformatted to pass; the legacy bin/ Python scripts are excluded pending the
+  debt cleanup below.
+  - [ ] mypy/pyright stay CI/on-demand (per `python.md`), not in pre-commit.
+- [ ] **Perl** — DEFERRED; staged commented in both configs. Blocked on:
+  existing `perlcritic --severity 4` debt; `config/perl/perlcriticrc`
+  referencing uninstalled policy bundles (OTRS, TryTiny); perltidy version
+  drift (the perl CI job is already non-gating for this — see "perl CI"); and
+  needing perl tools installed in the CI pre-commit job. Enable after perlbrew
+  pinning + perlcriticrc trim + debt cleanup.
+- [x] **Rust** — N/A (no Rust in this repo); noted in the config.
+- [x] Update fix configuration with language-specific auto-fixes (isort, yapf).
+- [x] Test with actual project files (rule-coverage.py passes; full check run
+  green).
+- [x] Update documentation (`flake8.md` added; `python.md`/`yapf.md`/`isort.md`
+  already cover the tools).
 
 ### Phase 4: Documentation Linting
 

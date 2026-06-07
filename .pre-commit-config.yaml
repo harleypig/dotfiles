@@ -62,6 +62,53 @@ repos:
       # Uses the repo-local .markdownlint.json (auto-discovered at the root).
       - id: markdownlint
 
+  # Phase 3 (Language) — Python: import order, format, lint. Scoped to skip the
+  # legacy bin/ Python scripts (pre-existing lint/format debt + a likely-
+  # vendored poetry2setup) until they're cleaned (see TODO.md). Tools match the
+  # repo's yapf + isort + flake8 choice (python.md), not black/ruff.
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        args: [--check, --diff]
+        exclude: '^bin/(available-subnets|poetry2setup)$'
+
+  - repo: https://github.com/google/yapf
+    rev: v0.43.0
+    hooks:
+      # 2-space style from config/yapf/style; -d = diff only (non-modifying).
+      - id: yapf
+        args: [-d, --style, config/yapf/style]
+        exclude: '^bin/(available-subnets|poetry2setup)$'
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.3.0
+    hooks:
+      # config/flake8 reconciles flake8 with yapf's 2-space style (flake8.md).
+      - id: flake8
+        args: [--config, config/flake8]
+        exclude: '^bin/(available-subnets|poetry2setup)$'
+
+  # Phase 3 (Language) — Perl: DEFERRED (intentionally not enabled). Enabling
+  # either tool in this *gating* config would currently break the gate:
+  #   - perlcritic --severity 4 reports substantial debt on existing code, and
+  #     config/perl/perlcriticrc references policy bundles (OTRS, TryTiny) that
+  #     are not installed;
+  #   - perltidy has the version-drift problem that already makes the perl CI
+  #     job non-gating (see TODO.md "perl CI" + perlbrew pinning).
+  # Re-enable once the debt is cleared, the perlcriticrc is trimmed to
+  # installed policies, perltidy is pinned via perlbrew, and the perl tools are
+  # installed in the CI pre-commit job:
+  # - repo: local
+  #   hooks:
+  #     - id: perlcritic
+  #       name: perlcritic --severity 4
+  #       entry: perlcritic --severity 4 --profile config/perl/perlcriticrc
+  #       language: system
+  #       types: [perl]
+  #
+  # Phase 3 (Language) — Rust: N/A (no Rust in this repo).
+
   # Secret detection (Phase 2). The gitleaks hook scans staged content at
   # commit time — an effective local guard, but a no-op in CI's --all-files
   # run (nothing is staged there). Full-repo/history secret scanning is the

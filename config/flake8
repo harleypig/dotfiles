@@ -1,0 +1,14 @@
+# flake8 configuration.
+#
+# Resolves to $XDG_CONFIG_HOME/flake8 (config/ is $XDG_CONFIG_HOME in this
+# repo), the same XDG pattern as config/yapf/style and config/yamllint/config.
+# In pre-commit the flake8 hook points at it explicitly (--config config/flake8)
+# since the repo isn't deployed to ~/.config there.
+#
+# Reconciled with the repo's yapf style (config/yapf/style: 2-space indent,
+# column_limit = 79): ignore the 4-space-indent assumptions (E111/E114) and the
+# continuation-line / line-break checks yapf owns, and match the line length to
+# yapf's column_limit.
+[flake8]
+max-line-length = 79
+extend-ignore = E111,E114,E121,E123,E126,E133,E226,E24,E704,W503,W504
