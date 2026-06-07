@@ -208,18 +208,21 @@ tool — or a fresh checkout — can silently lack its symlink.
 ## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
 
 The generated meta tests (`tests/scaffold/build-meta-tests`) surface
-pre-existing shellcheck/shfmt failures — 26 across 21 legacy scripts (as of
-2026-06-06). These are deliberately **not** ignored and **not** auto-fixed
-yet; clean them up here, then they pass the meta suite and it can be wired
-into CI as a gate (today CI gates only the hand-written `tests/suite/test_*`).
+pre-existing failures the static checks catch: 26 shellcheck/shfmt failures
+across 21 legacy bash scripts (as of 2026-06-06), plus one perl dependency
+gap. These are deliberately **not** ignored and **not** auto-fixed yet;
+clean them up here, then they pass the meta suite and it can be wired into
+CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
 
-Run `tests/scaffold/build-meta-tests && bats tests/suite/*.meta.bats` to see
+Run `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to see
 current failures. Offenders:
 
-- [ ] **bin/**: ansi, anykey, bash-colors, check-dotfiles, CleanPath.tmp,
-  creds-helper, dir-readable, envsubstitute, git-all, git-branch-clean,
-  lwhich, run-help, show-unicode, tmux_edit_buffer, tmux_mode_indicator,
-  yesno
+- [ ] **bin/** (shellcheck/shfmt): ansi, anykey, bash-colors, check-dotfiles,
+  CleanPath.tmp, creds-helper, dir-readable, envsubstitute, git-all,
+  git-branch-clean, lwhich, run-help, show-unicode, tmux_edit_buffer,
+  tmux_mode_indicator, yesno
+- [ ] **bin/** (perl -c): gmailfilter_toyaml — needs `XML::LibXML`; install
+  `libxml-libxml-perl` or accept the meta test failing where it is absent
 - [ ] **lib/**: debug, parse_params
       (`is`, `Arrays`, `strings` moved to `archive/lib/` — legacy/unused;
       `git-prompt` factored into `bin/git-status` and archived)
@@ -227,6 +230,42 @@ current failures. Offenders:
   remove rather than fix, if so.
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
   when all pass, add the meta suite to CI and run it in pre-commit.
+
+## 🐪 perl CI: make perltidyrc-clean tests version-robust (MEDIUM PRIORITY)
+
+The `perl` CI job (`prove tests/perl/`) is **non-gating** for now
+(`continue-on-error` in `.github/workflows/tests.yml`). Several
+`perltidyrc-clean` tests assert *exact* Perl::Tidy error wording and break
+across Perl::Tidy versions (pass on local 20250912, fail on the runner's
+older package): `call_perltidy.t:129,207` and `get_perltidy_config.t:103`
+(4/24 and 1/52 subtests).
+
+- [ ] Make the assertions match *that an error was reported* (exit code /
+  non-empty error), not the upstream phrasing — the fix may also reach into
+  `bin/perltidyrc-clean`'s own error-wrapping path, so treat it as its own
+  task (cf. parse_params).
+- [ ] Once green across versions, drop `continue-on-error` and **promote
+  perl to a required check**.
+
+## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
+
+Goal: dotfiles should install and configure per-language version/tool
+managers consistently, replacing the ad-hoc setup that's accreted over time.
+Cover at least **perlbrew** (Perl) and **nvm** (Node), and evaluate the
+equivalents for the other languages in play (pyenv/uv for Python, a Ruby
+manager; `rustup` is already used). One documented, idempotent install +
+shell-init path per manager — XDG-aware where possible, lazy-loaded in
+`config/shell-startup/<lang>` to keep shell startup fast.
+
+- [ ] perlbrew: install a pinned Perl + cpanm, then the toolchain the repo
+  needs (notably **Perl::Tidy**). A controlled Perl::Tidy that's identical
+  across machines **and CI** removes the version drift behind the non-gating
+  perl job (see "perl CI: make perltidyrc-clean tests version-robust" above —
+  pinning fixes the wording drift; the tests should still be hardened too).
+- [ ] nvm: install + lazy-load; pin a default Node.
+- [ ] Evaluate/standardize the rest (Python, Ruby; rustup already in use)
+  under one consistent pattern, documented in each
+  `config/shell-startup/<lang>` module.
 
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 

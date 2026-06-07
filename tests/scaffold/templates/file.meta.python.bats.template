@@ -1,0 +1,36 @@
+#!/usr/bin/env bats
+
+# !!! GENERATED FILE — DO NOT EDIT !!!
+#
+# Regenerate with:  tests/scaffold/build-meta-tests
+# For universal changes, edit the template instead:
+#   tests/scaffold/templates/file.meta.python.bats.template
+#
+# Static "meta" checks for {{REL_PATH}} — they validate the file without
+# executing it (shebang, compile syntax). The compile() builtin parses the
+# source into a code object in memory (it does not run or import it), so it
+# catches syntax errors without needing the script's runtime dependencies
+# and without writing any __pycache__ artifact.
+
+load ../helpers/common
+
+setup() {
+  load_bats_libs
+  # Run from the repo root so the relative path resolves regardless of where
+  # the suite is invoked from.
+  cd "$(dotfiles_root)"
+}
+
+@test "{{REL_PATH}} exists" {
+  assert_file_exist "{{REL_PATH}}"
+}
+
+@test "{{REL_PATH}} has a python shebang" {
+  run head -n 1 "{{REL_PATH}}"
+  assert_output --regexp '^#!.*\bpython[0-9.]*\b'
+}
+
+@test "{{REL_PATH}} compiles (syntax)" {
+  run python3 -c 'import sys; compile(open(sys.argv[1]).read(), sys.argv[1], "exec")' "{{REL_PATH}}"
+  assert_success
+}

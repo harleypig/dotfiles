@@ -8,7 +8,7 @@ paths:
 
 # bats (Bash Automated Testing System) Rules
 
-**Version:** v2.1.0
+**Version:** v2.2.0
 
 Conventions for testing shell code with **bats-core**. Pairs with `bash.md`,
 `shellcheck.md`, and `shfmt.md`; the QA pipeline lives in `qa.md`.
@@ -121,9 +121,13 @@ bats --filter "pattern" tests/shell/   # matching tests only
 
 ## Meta-test generator
 
-`tests/scaffold/build-meta-tests` generates one static-check test per shell
-script (exists, shebang, `bash -n`, shellcheck, shfmt) from
-`templates/file.meta.bats.template`:
+`tests/scaffold/build-meta-tests` generates one static-check test per script
+from a per-language template (`templates/file.meta.<lang>.bats.template`).
+The generator is **language-aware**: for shell it emits exists, shebang,
+`bash -n`, shellcheck, shfmt; it also covers other languages a repo holds
+(e.g. perl via `perl -c`, python via `compile()`). The cross-language detail
+belongs in `testing.md` / the repo's `TESTS.md`, not here. As bats output it
+all runs under one runner:
 
 - It scans configurable roots (default `bin lib`), skips symlinks (so a
   multi-call dispatcher is tested once, its tool symlinks are not), and writes
