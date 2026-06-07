@@ -55,11 +55,12 @@ eval "$(parse_params --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
 
 This replaces the boilerplate `while (($#)); do case $1 in …` loop and gives
 consistent type-checking, defaults, required-option enforcement, negatable
-booleans (`--no-x`), repeatable (`type@` → array) options, positionals, and an
-auto-generated `--help`. It also works **inside a function** — pass the
-function's `"$@"` (declare the target vars `local` first to scope them); a
-function with many parameters is usually better as its own script. Run
-`parse_params --help` for the full reference.
+booleans (`--no-x`), repeatable (`type@` → array) options, fixed and **slurp**
+(`#@` → array of the rest) positionals, and an auto-generated `--help`. It also
+works **inside a function** — pass the function's `"$@"` (declare the target
+vars `local` first to scope them); a function with many parameters is usually
+better as its own script. Run `parse_params --help` for the full reference, and
+see **`bin/hr`** for a worked example (options + `--auto` + a slurp positional).
 
 **Scope caveat:** `parse_params` ships in the dotfiles repo (`bin/parse_params`)
 and is only on `PATH` in that environment. Do **not** depend on it in a

@@ -128,18 +128,22 @@ sub parse_definition {
 
     def_err("missing OPTION in: $line") unless defined $opt && length $opt;
 
-    # Positional parameter.
-    if ( $opt eq '#' ) {
+    # Positional parameter. OPTION '#' is one fixed positional; '#@' is a
+    # slurp that collects ALL remaining args into a shell array. A slurp must
+    # be the last positional, and there can be only one.
+    if ( $opt eq '#' || $opt eq '#@' ) {
+      my $slurp = $opt eq '#@';
       def_err("positional needs a TYPE in: $line")
         unless defined $type && length $type;
-      ( my $ptype = $type ) =~ s/\@$//;
-      def_err("unknown type ($type) in: $line") unless $IS_TYPE{$ptype};
+      def_err("unknown type ($type) in: $line") unless $IS_TYPE{$type};
       def_err("positional needs a VARNAME in: $line")
         unless defined $var && length $var;
       def_err("invalid variable name ($var) in: $line")
         unless $var =~ /^[A-Za-z_]\w*$/;
+      def_err("a slurp positional (#\@) must be the last one in: $line")
+        if @positionals && $positionals[-1]{slurp};
 
-      push @positionals, { type => $ptype, var => $var };
+      push @positionals, { type => $type, var => $var, slurp => $slurp };
       next;
     }
 
@@ -223,8 +227,10 @@ sub parse_definition {
 sub build_usage {
   my ( $opts, $positionals ) = @_;
 
-  my $prog  = length $PROG_NAME ? "$PROG_NAME " : '';
-  my @lines = ( "Usage: ${prog}[options]" . ( @$positionals ? ' ' . join( ' ', map { $_->{var} } @$positionals ) : '' ) . "\n" );
+  my $prog = length $PROG_NAME ? "$PROG_NAME " : '';
+  my $args = join ' ',
+    map { $_->{slurp} ? "[$_->{var}...]" : $_->{var} } @$positionals;
+  my @lines = ( "Usage: ${prog}[options]" . ( length $args ? " $args" : '' ) . "\n" );
 
   if (@$opts) {
     push @lines, 'Options:';
@@ -247,7 +253,8 @@ sub build_usage {
 
   if (@$positionals) {
     push @lines, 'Positional:';
-    push @lines, "  $_->{var} <$_->{type}>" for @$positionals;
+    push @lines,
+      "  $_->{var} <$_->{type}>" . ( $_->{slurp} ? '...' : '' ) for @$positionals;
   }
 
   return join( "\n", @lines ) . "\n";
@@ -369,8 +376,22 @@ for my $o (@$OPTS) {
   push @out, "$var=" . shq($v);
 } ## end for my $o (@$OPTS)
 
-# Positionals: assign the leftover args in order.
+# Positionals: assign the leftover args in order. A slurp (#@) takes all that
+# remain, as a shell array.
 for my $p (@$POSITIONALS) {
+  if ( $p->{slurp} ) {
+    my @vals = @args;
+    @args = ();
+
+    for my $v (@vals) {
+      push @errors, "positional $p->{var} ($v) is not a $p->{type}"
+        unless valid_value( $p->{type}, $v );
+    }
+    @vals = map { File::Spec->rel2abs($_) } @vals if $p->{type} eq 'filename';
+    push @out, "$p->{var}=(" . join( ' ', map { shq($_) } @vals ) . ')';
+    next;
+  }
+
   my $v = shift @args;
   if ( defined $v && length $v && !valid_value( $p->{type}, $v ) ) {
     push @errors, "positional $p->{var} ($v) is not a $p->{type}";
@@ -378,7 +399,7 @@ for my $p (@$POSITIONALS) {
   $v = File::Spec->rel2abs($v)
     if $p->{type} eq 'filename' && defined $v && length $v;
   push @out, "$p->{var}=" . shq($v);
-}
+} ## end for my $p (@$POSITIONALS)
 
 bail_input(@errors) if @errors;
 
@@ -465,7 +486,9 @@ is trimmed):
 
 =item B<OPTION>
 
-Short (C<a>), long (C<app>), both (C<a|app>), or C<#> for a positional.
+Short (C<a>), long (C<app>), both (C<a|app>), C<#> for a fixed positional, or
+C<#@> for a slurp positional that collects all remaining args into a shell
+array. A slurp must be the last positional, and there can be only one.
 
 =item B<TYPE>
 
