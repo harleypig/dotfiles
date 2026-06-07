@@ -309,11 +309,9 @@ catches.
   `get_perltidy_config.t`, `integration.t`, `parse_params-modes.t`. The perl
   job is now green on the runner's older Perl::Tidy.
 - [x] Dropped `continue-on-error` from the perl job — it now gates the CI run.
-- [ ] Add `perl` to the master ruleset's required status checks (alongside
-  `bats` + `pre-commit`) so it also blocks merge. Needs the OAuth token (the
-  narrow PAT can't): edit
-  `../private_dotfiles/github-rulesets/protect-master-solo.json` and re-apply
-  (see WORKFLOW.md).
+- [x] Added `perl` to the master ruleset's required status checks (now
+  `bats` + `perl` + `pre-commit`); applied live to ruleset 17364459 and
+  recorded in `../private_dotfiles/github-rulesets/protect-master-solo.json`.
 
 ## 🐫 Perl quality tooling (MEDIUM PRIORITY)
 
@@ -1039,15 +1037,13 @@ in the future.
 
 ## 🎯 Next Actions (Priority Order)
 
-1. **perl CI** — version-robust + gating done; remaining: add `perl` to the
-   master ruleset's required checks (OAuth) so it blocks merge too
-2. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
+1. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
    `XML::LibXML` debt)
-3. **Perl quality tooling** — curated perlcritic + Test::Perl::Critic,
+2. **Perl quality tooling** — curated perlcritic + Test::Perl::Critic,
    Devel::Cover, Pod::Coverage, … (see that section)
-4. **Comprehensive BATS coverage audit** — full pass over the remaining bin/
+3. **Comprehensive BATS coverage audit** — full pass over the remaining bin/
    scripts (Phase 3 wrap-up)
-5. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
+4. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
 
 ## Notes
 
