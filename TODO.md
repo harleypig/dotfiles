@@ -250,17 +250,37 @@ to see status.
 
 ## 🔁 Audit shell scripts for arg-loop → parse_params (LOW PRIORITY)
 
-Now that `bin/parse_params` exists (replaces hand-written option loops; see
-`bash.md` *Argument Parsing*), audit this repo's shell scripts for `while`/
-`case`/`getopts` arg-parsing that could use it instead.
+Audit done (2026-06-07). `bin/parse_params` replaces hand-written option loops
+(see `bash.md` *Argument Parsing*), but it's a perl **subprocess** per call —
+a clear win for option-heavy scripts, marginal for tiny 2–4 flag helpers where
+`getopts` (a zero-cost builtin) already does the job. No urgent conversions
+found; parse_params's real value is for **new** option-heavy scripts. Revisit a
+script if it grows more options. Each conversion uses
+`_pp=$(parse_params "$DEF" "$@") || show_usage; eval "$_pp"` (or `--auto`) and
+updates that script's bats test.
 
-- [ ] Grep for candidates (`while (($#))`, `case "$1" in`, `getopts`) across
-  `bin/`, `lib/`, `config/shell-startup/`.
-- [ ] Convert where it improves clarity, using the
-  `_pp=$(parse_params "$DEF" "$@") || show_usage; eval "$_pp"` pattern; add or
-  adjust tests for each converted script.
-- [ ] Skip portable/standalone scripts — `parse_params` is only on `PATH` in
-  the dotfiles setup (see the scope caveat in `bash.md`).
+Conversion candidates (dotfiles `bin/`; opportunistic, low priority):
+
+- [ ] `bin/hr` — `while (($#))` parsing `-l`/`-c` + a message; **best fit**
+  (options + a positional).
+- [ ] `bin/git-branch-clean` — `getopts nfah`; flags fit, but the `-f`/`-n`
+  **mutual-exclusion** check stays manual.
+- [ ] `bin/git-all` — `getopts :Sv` (two bool flags + positional); small, low
+  payoff.
+- [ ] `bin/proj` — `case $1` with `-h|--help` plus subcommand dispatch; only
+  the option part maps, subcommands stay.
+- [ ] `bin/yesno` — small `case $1` (`-h` + warn-suppress); marginal.
+
+Not a fit (skip, with reason):
+
+- `bin/ansi` — its `while` consumes tput *commands* (fg/bg/off…), a variadic
+  command stream, not getopt options.
+- `bin/where` — variadic list of command names (positional stream), not fixed
+  options.
+- `lib/docker_helpers` — a sourced library; parse_params works in functions
+  but adds a subprocess per call to a hot helper.
+- `shell-startup` (`addpath`) — runs at shell init, before `bin/` is reliably
+  on `PATH`, and a per-call subprocess at startup is undesirable.
 
 ## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
 
