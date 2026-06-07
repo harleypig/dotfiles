@@ -72,6 +72,38 @@ fixed by one bump. List them with:
   auto-close (or dismiss with reason if dulwich is only a transitive dev
   dependency that is not actually exercised).
 
+## 🛡️ Protect the master Branch (HIGH PRIORITY)
+
+We've started behaving as if `master` is protected (changes land via PR with
+green checks — e.g. PRs #9–#11); now actually enforce it on GitHub.
+
+- [ ] Decide the required status checks. PRs currently run `bats` (the test
+  workflow), CodeFactor, and `security/snyk`; make at least `bats` required.
+- [ ] Enable branch protection on `master` (Settings → Branches, or
+  `gh api repos/harleypig/dotfiles/branches/master/protection`): require a PR
+  before merging, require status checks to pass and the branch to be up to
+  date, and block force-push / deletion. Needs an **admin** token — the narrow
+  PAT can't; use the OAuth credential (`GH_TOKEN= GITHUB_TOKEN= gh ...`) or the
+  web UI.
+- [ ] Decide the review policy for a solo repo (require 1 approval vs. allow
+  self-merge once checks pass).
+- [ ] Confirm Dependabot / auto-merge interplay once protection is on.
+- [ ] Document the enforced workflow in `WORKFLOW.md`.
+
+## 🌿 Evaluate / Clean Up Stale Branches (MEDIUM PRIORITY)
+
+Remote branches not from current work — evaluate, then remove. As of
+2026-06-06 both are **already merged into master** (their tips are ancestors,
+0 commits ahead), so they're safe to delete after a quick confirm:
+
+- [ ] `origin/codex/update-pod-heading-to--environment-check` — last commit
+  "docs: fix typo in util_lib" (2025-06-05).
+- [ ] `origin/codex/fix-typo-in-comment` — last commit "Fix typo in
+  shell-startup comment".
+
+Delete with `git push origin --delete <branch>` (no local copies exist). If a
+future stray branch is *not* merged, review its diff before deleting.
+
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
 `bin/docker_wrapper` is a multi-call dispatcher: each tool is a `bin/<tool>`
