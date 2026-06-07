@@ -589,8 +589,11 @@ git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
 
 **Integration (external tools / state) — to do:**
 
-- [ ] `git-all`, `git-branch-clean` — run git over repos/branches (use a temp
-  git repo, like the docker harness pattern).
+- [x] `git-branch-clean` — `tests/shell/test_git-branch-clean.bats` (guards +
+  gone-upstream dry-run/force/never-pushed, against a throwaway repo with a
+  local bare remote).
+- [ ] `git-all` — runs git over every repo under `$REPOHOME` (needs a temp
+  `REPOHOME` with a couple of repos).
 - [ ] `proj` — project switch (cd / filesystem).
 - [ ] `ansi` — tput wrapper (the TERM-unset path is already covered by
   `test_integration_context`); a focused unit test could assert sequence
