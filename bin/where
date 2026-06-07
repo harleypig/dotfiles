@@ -20,10 +20,11 @@ function where() {
     cmd="$1"
     shift
 
-    cmd_type=$(type -t "$cmd" 2>&1)
+    cmd_type=$(type -t "$cmd" 2> /dev/null)
 
-    [[ $cmd_type == *not\ found* ]] && {
-      printf '%s is not found' "$cmd"
+    # `type -t` prints nothing (and exits non-zero) for an unknown command.
+    [[ -z $cmd_type ]] && {
+      printf '%s is not found\n' "$cmd"
       continue
     }
 
@@ -84,6 +85,8 @@ function where() {
     shopt -u extglob
     TOGGLE_extglob=
   }
+
+  return 0
 }
 
 where "$@"
