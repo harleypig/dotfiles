@@ -104,22 +104,26 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
-## 🐚 Containerized shell-startup Tests (MEDIUM PRIORITY)
+## 🐚 Test dotfiles Startup in Containers (MEDIUM PRIORITY)
 
-Verify the shell entry points load cleanly in fresh, reproducible containers
-(catching missing-tool guards, host assumptions, and bashisms) — not just on
-the dev machine.
+Goal: confirm the **dotfiles startup actually functions** in a fresh,
+reproducible environment — deploy the dotfiles into a clean container and
+verify a login shell comes up *working*, not merely that the scripts parse.
+This catches missing-tool guards, host assumptions, bashisms, and broken
+deploy/symlink (dotlinks) steps that never show on the dev machine.
 
-- [ ] bash: source the startup chain (`.bash_profile` / `.bashrc` /
-  `.profile` → `shell-startup`) in a stock bash image (e.g. `bash:5` or
-  `debian:stable`) with a fresh `$HOME`; assert no errors and that key env
-  (`PATH`, `XDG_*`, `BATS_LIB_PATH`) is set as expected. Wire as a bats
-  integration test (`tests/suite/test_integration_*`) driving the container.
+- [ ] bash: in a stock image (e.g. `bash:5` / `debian:stable`) with a fresh
+  `$HOME`, deploy the dotfiles (the symlink/dotlinks step) and start a login
+  shell through the real chain (`.bash_profile` / `.bashrc` / `.profile` →
+  `shell-startup`). Assert: no errors, expected env (`PATH`, `XDG_*`,
+  `BATS_LIB_PATH`), and that key aliases/functions are actually available
+  (i.e. startup *functions*, not just sources). Wire as a bats integration
+  test (`tests/suite/test_integration_*`) driving the container.
 - [ ] Run in a minimal image (most tools absent) to exercise the `command -v`
-  guards and confirm startup still succeeds.
-- [ ] PowerShell: load `ps-startup.ps1` (+ `powershell/startup/*`) in a
-  PowerShell image (`mcr.microsoft.com/powershell`) and assert it loads with
-  no errors.
+  guards and confirm startup still yields a working shell.
+- [ ] PowerShell: deploy + load `ps-startup.ps1` (+ `powershell/startup/*`)
+  in a PowerShell image (`mcr.microsoft.com/powershell`) and verify the
+  profile comes up functioning, no errors.
 - [ ] Decide the runner (reuse the `docker_wrapper` pattern?) and whether
   these gate in CI — they need docker available (bats-action + docker, or a
   dind/services setup).
