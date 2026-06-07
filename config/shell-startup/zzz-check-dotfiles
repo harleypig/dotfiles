@@ -1,0 +1,7 @@
+# shellcheck shell=bash
+
+# Verify the dotfiles are linked properly. Named zzz-* so it loads last (the
+# loader sorts module names), ensuring every env var set by earlier modules is
+# available for the dotlinks entries check-dotfiles evaluates.
+
+[[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
