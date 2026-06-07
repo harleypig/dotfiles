@@ -261,8 +261,8 @@ updates that script's bats test.
 
 Conversion candidates (dotfiles `bin/`; opportunistic, low priority):
 
-- [ ] `bin/hr` — `while (($#))` parsing `-l`/`-c` + a message; **best fit**
-  (options + a positional).
+- [x] `bin/hr` — converted to parse_params (the worked example); its title is
+  a `#@` slurp positional. `tests/shell/test_hr.bats`.
 - [ ] `bin/git-branch-clean` — `getopts nfah`; flags fit, but the `-f`/`-n`
   **mutual-exclusion** check stays manual.
 - [ ] `bin/git-all` — `getopts :Sv` (two bool flags + positional); small, low
@@ -520,8 +520,9 @@ working tree — evaluate carefully before implementing.
         flaws: no code-gen/eval, no shell-killing `die` (it's a subprocess),
         safe quoting, clear exit codes (0/1/2). New features: signed integers,
         negatable booleans (`--no-x`, DEFAULT 0|1 for default-on), repeatable
-        `type@` → shell arrays, positionals, auto `--help` + `--usage`. Tests:
-        `tests/perl/parse_params-{options,types,boolean,errors}.t` (60 cases).
+        `type@` → shell arrays, fixed + `#@` slurp positionals, `--prog`,
+        turnkey `--auto`, POD-driven `--help` (Pod::Usage) + `--usage`. Tests:
+        `tests/perl/parse_params-{options,types,boolean,errors,modes}.t` (85).
   - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
         munging). Constraint: core perl modules only — no CPAN (keeps it
         runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
