@@ -1,6 +1,6 @@
 # TODO - Dotfiles Repository Modernization
 
-**Last Updated:** 2026-04-18
+**Last Updated:** 2026-06-07
 **Plan Version:** Based on Dotfiles Repository Modernization Plan
 
 This TODO file tracks the modernization effort for the dotfiles repository,
@@ -9,69 +9,19 @@ guidelines and `TESTS.md` for testing strategy.
 
 ## 📝 Documentation (HIGH PRIORITY)
 
-### Immediate Tasks
-
-- [x] Review and consolidate docs/ directory
-  - [x] Evaluate docs/bash-completion.md - moved to config/completions/README.md
-  - [x] docs/git_aliases.md - leave in docs/; user-facing reference, not config
-  - [x] docs/bin.md and docs/windows-notes.md - both user-facing reference, stay in docs/
-
 ### Code Comment Cleanup
 
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
   - See "Code Improvements (LOW PRIORITY)" section for detailed list
 
-## ✅ Git File-Mode Normalization (DONE 2026-06-06)
+## 🛡️ Protect the master Branch — follow-up
 
-The local `.git/config` had `core.filemode = false` (from a Windows-path
-clone), which hid wrong modes in the index. Resolved on
-`bugfix/git-filemode-normalization`:
+`master` is protected (ruleset 17364459: PR-only, squash-only, required
+`bats` + `pre-commit`, no bypass; local `no-commit-to-branch` guard). One
+follow-up remains:
 
-- **Index modes corrected** (committed): commands made executable
-  (`bin/motd`, `bin/perltidyrc-clean`, `config/claude/bin/statusline.sh`,
-  `config/claude/hooks/rule-coverage.py`,
-  `config/claude/skills/ship-pr/scripts/ship.sh`, `archive/bin/*`); sourced
-  libs (`lib/is`, `lib/parse_params`, `lib/strings`) reset to 644 to match
-  the other `lib/*`. (`bin/mymcp` was fixed earlier.)
-- **`core.filemode` flipped to `true` locally** and all working-tree disk
-  modes aligned to the index, so `git status` is clean and future mode
-  drift is now tracked.
-
-Caveats (per-clone, not committable):
-
-- `core.filemode` lives in each clone's `.git/config`. A fresh clone on a
-  filesystem where exec bits work picks up `true` automatically; one made
-  on a Windows path may need `git config --local core.filemode true` again.
-- There is no `.gitattributes` mechanism for exec bits; `.ps1` files are
-  left as-is (the exec bit is moot for PowerShell).
-
-## ✅ Dependabot Security Alerts (DONE 2026-06-07)
-
-Pinned `dulwich >= 1.2.5` (PR #10); both high-severity advisories
-(GHSA-9277-mp7x-85jf, GHSA-897w-fcg9-f6xj) auto-closed — 0 open alerts. Keep
-the triage habit: `gh api repos/harleypig/dotfiles/dependabot/alerts -f
-state=open` (see `gh.md` *Issues & triage*).
-
-## 🛡️ Protect the master Branch (DONE 2026-06-07)
-
-Enforced on GitHub via the `protect-master-solo.json` ruleset (id 17364459,
-enforcement active): PR required, squash-only merge, stale-review dismissal,
-required thread resolution, deletion + force-push blocked, `bats` required
-green; `current_user_can_bypass: never`.
-
-- [x] Applied `protect-master-solo.json` (solo: 0 reviews, squash-only,
-  stale-review dismissal, thread resolution, deletion + force-push blocked).
-  `protect-master-team.json` remains the variant if this becomes a team repo.
-- [x] Fixed the required-check context to the repo's real check (`bats`);
-  removed the `Build` / `Pre-commit checks` placeholders. Add the pre-commit
-  CI check to the required set once it lands (see Pre-commit → CI).
-- [x] Imported via the rulesets API with the OAuth token (the narrow PAT
-  can't).
-- [x] Verified: ruleset active on `master`; direct pushes are rejected and a
-  PR needs `bats` green to merge.
-- [x] Documented the enforced workflow in `WORKFLOW.md`.
 - [ ] Confirm Dependabot / auto-merge interplay once a Dependabot PR appears
-  (squash-only + required `bats` — ensure auto-merge still completes).
+  (squash-only + required checks — ensure auto-merge still completes).
 
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
@@ -86,12 +36,6 @@ offer and whether any help this repo:
 - [ ] Decide which add value here (likely candidates: a tag ruleset for
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
-
-## ✅ Evaluate / Clean Up Stale Branches (DONE 2026-06-07)
-
-The two `codex/*` branches (both already merged into master) were deleted on
-2026-06-07; no stale branches remain. Going forward, review any non-merged
-stray branch's diff before deleting it.
 
 ## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 
@@ -113,21 +57,6 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
-## 🔁 shell-startup: Double-load Guard + Interactive Guards (MEDIUM PRIORITY)
-
-- [x] **Idempotency guard.** Added a non-exported `_DOTFILES_STARTUP_DONE`
-  sentinel near the top of `shell-startup` that `return`s early on a second
-  source in the same shell (child shells, not inheriting it, still run their
-  own startup). Covered by `tests/shell/test_shell_startup_guard.bats`.
-  (To force a reload: `unset _DOTFILES_STARTUP_DONE` then re-source.)
-- [ ] **Interactive vs non-interactive guards.** Modules in
-  `config/shell-startup/` define things that only make sense in an interactive
-  shell (aliases, prompt, completions) — and aliases aren't even expanded in
-  non-interactive shells. Guard interactive-only content so a non-interactive
-  shell (scripts, scp, non-interactive ssh) skips it: e.g. `[[ $- == *i* ]]`
-  per-module, or split interactive-only modules out. Decide the convention and
-  apply it across the modules.
-
 ## 🧹 shell-startup Follow-ups (LOW PRIORITY)
 
 Deferred from the shell-startup trim (PR #16):
@@ -144,44 +73,6 @@ Deferred from the shell-startup trim (PR #16):
   make that obvious. Do this before the containerized startup tests are done
   so they target the final names. Update `load_files`, the pre-setup hook
   path, `run_hook`'s default `$dfdir`, and the directories themselves.
-- [x] **Test `run_hook`, then comment it out.** Added
-  `tests/shell/test_run_hook.bats` (custom `$dfdir`, default
-  `$DOTFILES/shell_startup.d` fallback, missing hook, failing hook) — verified
-  passing with `run_hook` active, then commented `run_hook` out in
-  `shell-startup` and set the tests to `skip` (preserved for future use;
-  remove the skip + uncomment to reactivate).
-
-## 🐚 Test dotfiles Startup in Containers (MEDIUM PRIORITY)
-
-Goal: confirm the **dotfiles startup actually functions** in a fresh,
-reproducible environment — deploy the dotfiles into a clean container and
-verify a login shell comes up *working*, not merely that the scripts parse.
-This catches missing-tool guards, host assumptions, bashisms, and broken
-deploy/symlink (dotlinks) steps that never show on the dev machine.
-
-- [x] bash: harness built (`tests/docker/`) — a slim Debian image; the repo
-  is mounted read-only at `/dotfiles`; `~/.bash_profile`/`~/.bashrc` →
-  `shell-startup`; a login shell is started through the real chain.
-  `tests/shell/test_integration_startup.bats` asserts the env comes up
-  (`DOTFILES`, `XDG_CONFIG_HOME`, bin on PATH), the double-source guard
-  holds, and cleanpath dedups PATH. Harness skips when docker is absent.
-- [x] Minimal image (most dev tools absent) — that's exactly what the slim
-  harness exercises; startup still yields a working shell (only `command -v`
-  guards / probes for absent tools, no fatal errors).
-- [ ] **Extend the context matrix** — the harness covers interactive-login
-  (`bash -lc`). Add the other contexts (interactive non-login, non-interactive
-  login/non-login, incomplete terminal) once the per-module interactive
-  guards land (see "shell-startup: Shell Context Detection").
-- [x] PowerShell: deploy + load `ps-startup.ps1` (+ `powershell/startup/*`)
-  in a PowerShell image (`mcr.microsoft.com/powershell`) and verify the
-  profile comes up functioning, no errors —
-  `tests/shell/test_integration_powershell.bats`. Surfaced + fixed two real
-  parser bugs (`$env:$var` is invalid PowerShell) in `000-loadtokens.ps1` and
-  `aider.ps1`, plus the `Test-Path … -and Test-Path …` paren bug.
-- [x] Decide the runner — driven from bats (like the bash harness): runs the
-  stock `mcr.microsoft.com/powershell` image directly (no custom Dockerfile),
-  deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`. Sits in the
-  gating suite and **skips** when docker is unavailable.
 
 ## 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
 
@@ -212,15 +103,14 @@ tool — or a fresh checkout — can silently lack its symlink.
   points at it without a registration. Drive it from the `known_tool` keys
   (grep the `known_tool[...]=1` lines, or source the script in a guarded
   mode).
-- [ ] Wire that check in as a meta-test (`tests/build-meta-tests` /
+- [ ] Wire that check in as a meta-test (`tests/scaffold/build-meta-tests` /
   `meta_*.bats`, per `TESTS.md`'s symlink validation) so CI flags a missing
   or stray symlink.
 - [ ] Add a create/repair mode (a `--fix` flag or a small maintenance
   command) that creates any missing `bin/<tool>` symlinks and reports stale
   ones, so adding a tool or setting up a fresh clone is one command.
 - [ ] Assert the link *target* (`docker_wrapper`), not file contents —
-  symlink mode is 120000 and unaffected by `core.filemode=false` (see Git
-  File-Mode Normalization above).
+  symlink mode is 120000 and unaffected by `core.filemode=false`.
 
 ## 📝 bin/markdownlint docker wrapper (MEDIUM PRIORITY)
 
@@ -311,29 +201,19 @@ config rather than depend on the global `dot-general/.markdownlintrc`
 - [ ] Update `config/claude/rules/markdownlint.md` to drop the global once
   it's gone.
 
-## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
+## 🧹 Meta-suite Gating Debt (MEDIUM PRIORITY)
 
-The shellcheck/shfmt debt across `bin/` and `lib/` has been **cleared** — the
-pre-commit check config now passes `--all-files`. What remains is a meta-suite
-perl dependency (below).
+The shellcheck/shfmt debt across `bin/` and `lib/` is cleared (the pre-commit
+check config passes `--all-files`). What remains is gating the generated meta
+suite. Run `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats`
+to see status.
 
-Run `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to see
-meta-suite status. Once the perl dep is resolved the meta suite can be wired
-into CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
-
-- [x] **bin/** (shellcheck/shfmt): cleared — ansi, check-dotfiles,
-  creds-helper, envsubstitute (real `=>`→`>=` bug fixed), git-all,
-  tmux_edit_buffer, tmux_mode_indicator hand-fixed; the rest auto-fixed by
-  `shfmt -w`.
-- [x] **lib/** (shellcheck/shfmt): cleared — debug, parse_params.
-      (`is`, `Arrays`, `strings` archived; `git-prompt` folded into git-status.)
-- [ ] **bin/** (perl -c): gmailfilter_toyaml — needs `XML::LibXML`. Resolves
+- [ ] **bin/** (perl -c): `gmailfilter_toyaml` needs `XML::LibXML`; resolves
   itself once the script moves to private_dotfiles (see "Move gmailctl
-  scripts to private_dotfiles" below); it leaves the public meta suite.
-- [x] `bin/CleanPath.tmp`: archived to `archive/bin/` as part of the cleanpath
-  fix (see "bin/cleanpath: Fix and Integrate").
+  scripts to private_dotfiles") — it leaves the public meta suite.
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
-  when all pass, add the meta suite to CI and run it in pre-commit.
+  when all pass, add the meta suite to CI and run it in pre-commit. (CI today
+  gates only the hand-written `tests/shell/test_*`.)
 
 ## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
 
@@ -417,10 +297,6 @@ Beyond correctness/security, audit each module for **improve / add / remove**:
 - [ ] **Remove / retire**: modules for tools no longer used; dead or
   commented-out blocks (e.g. perl's `wtf_am_i_doing_here` early-`return`
   function); stale host assumptions.
-- [ ] Finish the **interactive-context guards**: reorder the heavily-mixed
-  modules (`010-general`, `perl`) into env → `[[ $- == *i* ]] || return 0` →
-  interactive. (`python`, `ssh-config-completion`, `terraform`, `tmux`,
-  `bash_prompt`, `taskwarrior`, `git` are already guarded.)
 
 ## 🏠 $HOME Dotfile Audit (MEDIUM PRIORITY)
 
@@ -475,16 +351,16 @@ working tree — evaluate carefully before implementing.
 ### Phase 2: Test Infrastructure
 
 - [ ] Review and enhance existing BATS tests
-- [ ] Ensure meta-tests are up to date (`./tests/build-meta-tests`)
-- [ ] Create test fixtures in `tests/fixtures/`
-- [ ] Create helper functions in `tests/helpers/common.bash`
+- [ ] Ensure meta-tests are up to date (`tests/scaffold/build-meta-tests`)
+- [ ] Create test fixtures in `tests/fixtures/` if needed
+- [x] Helper functions in `tests/helpers/common.bash` (`load_bats_libs`,
+  `dotfiles_root`, `make_stub`, docker harness)
 
 ### Phase 3: Core Test Coverage
 
-- [ ] Add tests for shell-startup
-  - [ ] Test DOTFILES detection
-  - [ ] Test PATH building
-  - [ ] Test module loading without errors
+- [x] shell-startup (DOTFILES detection, PATH building, module loading) —
+  `tests/shell/test_integration_startup.bats` + `test_integration_context.bats`
+  (full context matrix) in the docker harness.
 - [ ] Add tests for critical bin/ scripts
   - [x] cleanpath (unit tests) — `tests/shell/test_cleanpath.bats`
   - [x] yesno (unit tests) — `tests/shell/test_yesno.bats`
@@ -492,13 +368,9 @@ working tree — evaluate carefully before implementing.
         (skips the prompt assertion if system `git-prompt.sh` is absent)
   - [x] check-dotfiles (integration tests) —
         `tests/shell/test_integration_check_dotfiles.bats`, run in the docker
-        harness so its `ln -fs` into `$HOME` can't touch the host. Fixed the
-        latent bug along the way (`check_dotfiles` linked
-        `$DOTFILES/shell_startup` (underscore) instead of `shell-startup`, so
-        the `.bash_profile`/`.bashrc`/`.profile` linking silently no-op'd).
+        harness so its `ln -fs` into `$HOME` can't touch the host.
 - [ ] Add tests for lib/ libraries
-  - [x] debug — `tests/shell/test_debug.bats` (refuses execution; debug()
-        silent unless $DEBUG; prefixes + prints args and stdin to stderr).
+  - [x] debug — `tests/shell/test_debug.bats`
   - [ ] parse_params — complex (657 L); its own task. Evaluate rewriting
         in perl (much simpler than the bash version); note it's currently a
         sourced lib that sets caller variables, so a perl version would need
@@ -509,8 +381,9 @@ working tree — evaluate carefully before implementing.
         shipped with perl** — no CPAN dependencies (keeps them runnable
         anywhere perl is, and avoids the Perl::Tidy/XML::LibXML kind of
         install gap; see perl CI notes).
-  - (`is`, `Arrays`, `strings` archived to `archive/lib/` — legacy/unused,
-    not tested; `git-prompt` factored into `bin/git-status`)
+  - [ ] docker_helpers — currently untested.
+  - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
+    factored into `bin/git-status` — not tested.)
 - [ ] Add tests for config/shell-startup/ modules
   - [ ] Test conditional loading
   - [ ] Test error handling
@@ -523,8 +396,8 @@ working tree — evaluate carefully before implementing.
 
 ### Test Infrastructure
 
-- [ ] tests/build-meta-tests:5,6,71 - Add tests for sh compilation, improve
-  shebang check, handle symbolic links (XXX)
+- [ ] tests/scaffold/build-meta-tests:5,6,71 - Add tests for sh compilation,
+  improve shebang check, handle symbolic links (XXX)
 
 ### Comprehensive BATS Test Coverage Audit (MEDIUM PRIORITY)
 
@@ -540,34 +413,19 @@ ensure everything that should have tests does.
 - [ ] Evaluate what else needs BATS tests beyond bin/:
   - [ ] `lib/` libraries (surface area for reuse bugs)
   - [ ] `config/shell-startup/` modules (sourcing, conditional logic)
-  - [ ] `bin/check-dotfiles` and dotlinks behavior
   - [ ] Any scripts in other locations (setup-work, etc.)
-- [ ] Ensure `tests/build-meta-tests` generates tests for all new scripts
+- [ ] Ensure `tests/scaffold/build-meta-tests` generates tests for all new
+  scripts
 - [ ] Update Phase 3 checklist once items are covered here
 
 ## 🧠 Claude Rules Files (MEDIUM PRIORITY)
 
 Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the
-agent how to use each tool. Already have: bash.md, perl.md, powershell.md,
-pre-commit.md, python.md.
+agent how to use each tool. Already have, among others: bash, perl,
+powershell, pre-commit, python, shellcheck, shfmt, yamllint, markdownlint,
+yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
 
-- [x] Check `../dotvim` for existing tool parameters before writing rules
-  (shellcheck and shfmt configs are known to be there via ALE)
-- [ ] Audit all tools in use across the repo and create missing rules files:
-  - [x] shellcheck — inline disable conventions; .shellcheckrc location is an
-    open question (global vs repo-local vs both) documented in the rules file
-  - [x] shfmt — flags `-i 2 -s -bn -ci -sr` from dotvim ALE config
-  - [x] `.editorconfig` for shfmt: repo-root `.editorconfig` encodes
-    `indent_size`, `binary_next_line`, `switch_case_indent`,
-    `space_redirects`. Only `-s` remains CLI-only (no editorconfig
-    equivalent). Rules doc covers both forms (with/without editorconfig).
-  - [x] yamllint — config file location, common relaxations
-  - [x] markdownlint — line length, allowed HTML, rules to disable
-  - [x] yapf — already have config/yapf; document how agent should invoke it
-  - [x] git — commit conventions, branch naming, worktree workflow reference
-  - [x] bats — test structure expectations, helper usage
-  - [x] docker — image pinning, layer hygiene, security, compose rules
-  - [x] gh — PR/issue conventions; fork-mode PR target; worktree skill ref
+- [ ] Remaining rules to author:
   - [ ] new project setup — rule covering the general checklist for
     initializing a project (git init, pre-commit, .claude/ scaffold,
     DEVELOPER.md, TODO.md, etc.); evaluate splitting language-specific
@@ -609,7 +467,6 @@ pre-commit.md, python.md.
     changelog generation should be part of a broader release skill alongside
     tagging and commitizen
   - [ ] Any other tools discovered during pre-commit or CI work
-- [x] Consider a template for new rules files so they stay consistent
 - [ ] Add a "best practices" rules/skills layer. The current
   `rules/code-style.md` may be better recast as a general best-practices
   document with language-specific subdocuments — i.e. a shared core that
@@ -651,38 +508,19 @@ after every `Edit` or `Write` on a shell file.
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
 Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 
-### Phase 1: Core Hooks (DONE — except the rule Agent-Behavior pass below)
+### Phase 1: Core Hooks (DONE)
 
-- [x] Create `.pre-commit-config.yaml` with core hooks (all remote, pinned):
-  - [x] shellcheck (`--external-sources`)
-  - [x] shfmt (`-d`, check-only; flags per shfmt.md/.editorconfig)
-  - [x] yamllint (`-c config/yamllint/config`)
-  - [x] markdownlint (`--config dot-general/.markdownlintrc`)
-  - [x] check-yaml, check-json, check-merge-conflict, check-added-large-files
-  - trailing-whitespace / end-of-file-fixer: **moved to the fix config** —
-    those hooks can only modify, which violates the check config's
-    non-modifying contract (`.claude/rules/pre-commit.md`).
-- [x] Create `.pre-commit-config-fix.yaml` with auto-fix hooks:
-  - [x] trailing-whitespace, end-of-file-fixer
-  - [x] shfmt `-w` (write mode)
-  - [x] prettier (excludes md/yaml — owned by markdownlint/yamllint)
-- [x] Test pre-commit configuration with sample files (check + fix; clean
-  files pass and are left unmodified; revs confirmed current via autoupdate)
-- [x] Document pre-commit usage in README.md (+ full command reference —
-  `install` variants, `autoupdate`, `validate-config`, `gc` — in
-  `.claude/rules/pre-commit.md`)
+Core (`.pre-commit-config.yaml`) + fix (`.pre-commit-config-fix.yaml`) configs
+are in place, tested, documented (README + `.claude/rules/pre-commit.md`),
+wired into CI (`pre-commit run --all-files`), and the CI `pre-commit` check is
+required in the master ruleset alongside `bats`. One follow-up remains:
+
 - [ ] Update all `config/claude/rules/*.md` Agent Behavior sections to
   prioritize pre-commit over direct tool invocation:
   - Normal ops: `pre-commit run --files <file>` instead of `shfmt`/`shellcheck`/etc.
   - Fix ops: `pre-commit run --config .pre-commit-config-fix.yaml --files <file>`
   - Direct tool invocation becomes the fallback when pre-commit is not
     configured or the file is not covered by any hook
-- [x] **Wire pre-commit into CI** — `tests.yml` has a `pre-commit` job running
-  `pre-commit run --all-files` (the legacy debt is cleared, so it's clean).
-  `no-commit-to-branch` is skipped in CI (`SKIP=...`) since it would fail on
-  the master-push run.
-- [x] Made the CI `pre-commit` check a **required status check** in the master
-  ruleset (ruleset 17364459 now requires `bats` + `pre-commit`).
 
 ### Proposed: pre-commit skill, used by qa-check
 
@@ -698,12 +536,9 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 
 ### Phase 2: Security Hooks (DONE)
 
-- [x] Add security checks to `.pre-commit-config.yaml`:
-  - [x] gitleaks (secret detection — scans staged content at commit time)
-  - [x] detect-private-key
-- [x] Test security hooks on repository (both pass `--all-files`)
-- Note: gitleaks here is a commit-time guard; full-repo/history secret
-  scanning remains the **security-scan** skill's job (separate from this hook).
+gitleaks + detect-private-key are in the check config and both pass
+`--all-files`. gitleaks here is a commit-time guard; full-repo/history secret
+scanning remains the **security-scan** skill's job (separate from this hook).
 
 ### Phase 3: Language-Specific Hooks
 
@@ -734,18 +569,17 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 ## 🚀 CI/CD Workflows (HIGH PRIORITY)
 
 **Dependency:** Each CI/CD phase requires corresponding Pre-commit phase.
+Current state: `tests.yml` runs bats (gating), perl (non-gating), and python
+(self-activating), plus a `pre-commit` job (`--all-files`). The phased plan
+below is the remaining buildout.
 
 ### Phase 1: Basic CI (requires Pre-commit Phase 1)
 
-- [ ] Create `.github/workflows/ci.yml`:
-  - [ ] Run on push to master
-  - [ ] Run on pull requests
-  - [ ] Execute BATS tests
-  - [ ] Run shellcheck
-  - [ ] Run yamllint
-  - [ ] Run markdownlint
-  - [ ] Report results as job status
-- [ ] Test workflow with sample PR
+- [ ] Consolidate/confirm the CI workflow:
+  - [x] Run on push to master and on pull requests (`tests.yml`)
+  - [x] Execute BATS tests; run shellcheck/yamllint/markdownlint via the
+        `pre-commit` job
+  - [ ] Report results as job status (confirm coverage matches the plan)
 - [ ] Document CI workflow
 
 ### Phase 2: Security Checks (requires Pre-commit Phase 2)
@@ -788,91 +622,11 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 
 ## 💻 Code Improvements (LOW PRIORITY)
 
-### Shell-startup Issues
+### bin/cleanpath: extend to other path vars (OPTIONAL)
 
-- [x] shell-startup:26 - Removed dead Windows MSYS block (see docs/windows-notes.md)
-- [x] shell-startup:94 - Added --first/-f and --last/-l options to addpath
-- [x] shell-startup:114 - Replaced XXX with description comment; run_hook is valid
-- [x] shell-startup:180 - Removed dead placeholder export-script block
-- [ ] Move the grok installer block out of the top-level `shell-startup`
-  file into a dedicated `config/shell-startup/` module (e.g. `0NN-grok`).
-  The grok installer appends directly to `shell-startup`, which is the
-  wrong location and risks duplicate blocks on re-install; relocate it and
-  guard against re-append.
+`bin/cleanpath` is fixed, tested (`tests/shell/test_cleanpath.bats`), and
+integrated into `shell-startup` (guarded so a failure can't blank PATH).
 
-### shell-startup: Shell Context Detection (HIGH PRIORITY)
-
-`shell-startup` is symlinked from `.bashrc`, `.bash_profile`, and `.profile`,
-but currently runs identically regardless of context. Shells have four main
-contexts that need different behavior:
-
-- **interactive login** — full environment, aliases, functions, prompts
-- **interactive non-login** — already has login env; needs aliases, prompts
-- **non-interactive login** — rare; env vars only, no aliases
-- **non-interactive non-login** — scripts/subshells; env vars only, no
-  aliases, no prompts (e.g., shell spawned from vim, cron, ssh command)
-
-Problems to solve:
-
-- [x] Guard against double-sourcing — done: non-exported
-  `_DOTFILES_STARTUP_DONE` sentinel returns early on a second source in the
-  same shell (`tests/shell/test_shell_startup_guard.bats`). The
-  context-appropriate partial-run is the remaining context work below.
-- [x] Detect shell context — modules use `[[ $- == *i* ]]` to gate
-  interactive-only content (convention; see the guarded modules below).
-- [x] Skip alias/function/prompt setup for non-interactive shells — all
-  interactive-content modules now guarded with `[[ $- == *i* ]] || return 0`:
-  `bash_prompt`, `taskwarrior`, `git` (pre-existing), `python`,
-  `ssh-config-completion`, `terraform`, `tmux`, and the heavily-mixed
-  `010-general` + `perl` reordered into env → guard → interactive. Verified
-  in the harness (`test_integration_context.bats`).
-- [x] Handle incomplete terminal environments gracefully (e.g., vim shell,
-  docker exec, ssh command) — `bin/ansi` falls back to `TERM=dumb` when TERM
-  is unset, so the prompt path (bash_prompt/git-status → ansi → tput) no
-  longer errors with "No value for $TERM". Covered by the TERM-unset case in
-  `test_integration_context.bats`.
-- [x] Audit `config/shell-startup/` modules: tag/split by context — done as
-  the guarding above (env-only content kept unguarded; interactive-only
-  content moved below the guard). Broader improve/add/remove audit tracked in
-  the config/shell-startup audit section above.
-- [ ] Write integration tests using Docker to cover each context:
-  - [x] Harness + interactive/non-interactive login covered
-    (`tests/shell/test_integration_context.bats`: env in both, prompt +
-    aliases interactive-only).
-  - [x] Interactive non-login (`bash -ic`, reads .bashrc): env + prompt +
-    aliases present.
-  - [x] Non-interactive login (`bash -lc`): env vars set, aliases/prompt NOT
-    defined (the "non-interactive login" case in the context test).
-  - [x] Non-interactive non-login (`bash -c`): shell-startup does not run
-    (DOTFILES empty) — scripts don't inherit the interactive setup.
-  - [x] Incomplete terminal: TERM unset → comes up, no tput errors.
-  - [x] Double-source guard: covered hermetically
-    (`test_shell_startup_guard`) and in the harness
-    (`test_integration_startup`) — second source leaves PATH unchanged.
-  - [x] Research: can/should BATS drive Docker-based tests? Decided: **BATS on
-    the host `docker run`s** the harness image and asserts on output/exit
-    (the `dotfiles_harness_image`/`dotfiles_login` helpers), skipping when
-    docker is absent. Documented in TESTS.md.
-  - [x] Update TESTS.md to document Docker-based integration test approach.
-
-### bin/cleanpath: Fix and Integrate (DONE 2026-06-07)
-
-`bin/cleanpath` deduplicates PATH-style colon-separated variables; it was
-broken (the `${ARR[$d]+isset} -ne 0` pattern treated scalar control vars as
-arrays — `syntax error: operand expected` on every entry).
-
-- [x] Audited `bin/cleanpath` (canonical) vs `bin/CleanPath.tmp` (stray WIP);
-  archived the latter to `archive/bin/` and dropped it from the pre-commit
-  exclude.
-- [x] Fixed `bin/cleanpath`: `build_path` now parses the colon-separated
-  control vars (`SHOULD_BE_FIRST/LAST/IGNORED/STRIPPED`) into real lookup
-  sets and uses `[[ -v set[key] ]]`; de-dupes by resolved path. shellcheck +
-  shfmt clean.
-- [x] Added `tests/shell/test_cleanpath.bats` (7 tests: dedup, FIRST/LAST,
-  STRIPPED, IGNORED-verbatim, blank/dot, error paths).
-- [x] Integrated into `shell-startup` after `load_files` — guarded
-  (`if _cleaned=$(cleanpath PATH) && [[ -n ... ]]`) so a failure can never
-  blank PATH. Verified: collapses the duplicate `…/dotfiles/bin` entry.
 - [ ] (Optional) Extend to other path vars (`LD_LIBRARY_PATH`, `MANPATH`) if
   duplicates show up there too.
 
@@ -913,55 +667,24 @@ should get an assertion there (or a Pester test under `tests/powershell/`).
 - [ ] ps-startup.ps1:49 - Move Python path to dedicated setup file (XXX)
 - [ ] 010-general.ps1:27,42,54,59 - Port remaining bash features marked with XXX
 
-### PowerShell: Linux Dev/Test Environment (RESEARCH FIRST)
+### PowerShell: Linux Dev/Test Environment
 
-Before doing PowerShell work, research whether Linux PowerShell Core (`pwsh`)
-is a viable dev/test environment for scripts intended to run on Windows
-PowerShell 5.1.
+Linux `pwsh` + Docker is proven viable — the integration test runs the
+profile cleanly in the stock `mcr.microsoft.com/powershell` image. Remaining
+research:
 
-- [ ] Research compatibility between `pwsh` (Core) and Windows PowerShell 5.1:
+- [ ] Compatibility between `pwsh` (Core) and Windows PowerShell 5.1:
   - Known gaps: COM objects, Windows-only modules (`ActiveDirectory`, etc.),
     `$PSVersionTable.PSEdition` differences, some .NET APIs
   - Determine if `ps-startup.ps1` and `config/powershell/` scripts use any
     Windows-only features that would break under `pwsh` on Linux
-  - Check if Pester (PowerShell test framework) runs identically on both
-- [x] Research using Docker for PowerShell testing — **viable and done**: the
-  stock `mcr.microsoft.com/powershell` image (Linux `pwsh`) runs the profile
-  cleanly. `tests/shell/test_integration_powershell.bats` drives it from bats
-  (skip-if-no-docker), documented in TESTS.md.
-  - [ ] (Still open) Whether a Windows container is needed to test true
-    Windows PowerShell 5.1 behavior, and whether that's practical (requires a
-    Windows host for Windows containers).
-- [x] Test harness set up — the bats-driven container harness above. (Pester
-  unit tests under `tests/powershell/` can layer on later for pure-logic
-  functions; the integration smoke test exists now.)
-
-### Bin Scripts
-
-- [x] git-all:3 - Refactored: replaced missing utility functions inline, fixed
-  shellcheck issues (SC2155, unquoted vars, array appends)
-- [x] git-status:3 - Add STASH information (XXX)
-- [x] yesno:33 - Add option to suppress warnings (XXX)
-
-### Library Documentation and Testing
-
-- [x] lib/debug:3,4 - Test (documented) — `tests/shell/test_debug.bats`
-- [ ] lib/strings:7,8,9 - Document, test, enforce sourcing only (XXX)
-- [ ] lib/Arrays:7,8,9,38 - Document, test, enforce sourcing, consider moving to
-  tools/bin (XXX)
-- [ ] lib/is:3,4,9 - Document, test, check for being sourced (XXX)
-- [ ] lib/parse_params:3 - Test (XXX)
+  - Check if Pester runs identically on both
+- [ ] Whether a Windows container is needed to test true Windows PowerShell
+  5.1 behavior, and whether that's practical (requires a Windows host for
+  Windows containers).
 
 ### Configuration File Issues
 
-- [x] config/perl:12,54 - Existing checks are adequate; removed stale XXX
-  markers and commented-out alternative
-- [x] config/less:85,86 - lesspipe.sh handles syntax highlighting; removed XXX
-- [x] config/tmux:37 - Detect multiple sessions (XXX)
-- [x] config/terraform:9 - Comparison done; cleaned up XXX and dead code
-- [x] config/taskwarrior:8,9,10 - Removed aspirational XXX markers (sourcing
-  check unnecessary for shell-startup module; taskwarrior scripts item
-  tracked below under Tool Configurations)
 - [ ] config/bash_prompt:131,137 - Fix poetry/venv detection and colors (XXX)
 - [ ] config/git/config:239-240 - `bd` / `bD` aliases collide because git
   config keys are case-insensitive. `bD` overwrites `bd`, so `git bd`
@@ -982,11 +705,6 @@ PowerShell 5.1.
 - [ ] Document completion setup in dedicated section or inline
 - [ ] Create completion tests
 
-### Prompt Enhancements
-
-- [ ] bash_prompt:131 - Fix poetry venv detection
-- [ ] bash_prompt:137 - Fix manual venv color issue
-
 ### Shell Helpers
 
 - [ ] Evaluate creating a reusable `select`/menu helper (sibling to
@@ -997,8 +715,6 @@ PowerShell 5.1.
     function in `config/shell-startup/`
   - Required behavior: numbered options, re-prompt on invalid input,
     optional default, quiet mode, return selected value on stdout
-  - If justified, implement it first and have the `proj` task above
-    use it
 
 ## 🖥️ Statusline Coordination (MEDIUM PRIORITY)
 
@@ -1024,20 +740,11 @@ Context detection: use `$TMUX`, `$VIM`/`$VIMRUNTIME`, and
 
 Docs: <https://code.claude.com/docs/en/statusline>
 
-- [x] Decided location: Option B — `config/claude/bin/statusline.sh` (`~/.claude/bin/`)
-  - `~/.claude/` IS `config/claude/` in this setup (no symlink needed)
-  - Script is Claude-session-only → keep it claude-adjacent, not in general bin/
-  - `statusLine.command` accepts any path; no requirement to be under `~/.claude/`
-- [x] Created `config/claude/bin/statusline.sh`:
-  - Shows: `model.display_name | ctx N% | $cost`
-  - Context % colored cyan < 50%, yellow 50–74%, red ≥ 75%
-  - All jq fields use `// fallback`; graceful exit if jq missing
-- [x] Wired up in `config/claude/settings.json`:
-  `"statusLine": { "type": "command", "command": "~/.claude/bin/statusline.sh", "refreshInterval": 5 }`
+Built: `config/claude/bin/statusline.sh` (`model | ctx N% | $cost`; context %
+colored by threshold; graceful jq-missing exit), wired in `settings.json`,
+worktree marker via `bin/git-status`. Remaining:
+
 - [ ] Observe in a live session and tune (model name length, field order, colors)
-- [x] Worktree marker: added to `bin/git-status` (shows `[wt:<main-repo>]`
-  when in a linked worktree); surfaces automatically via the `git-status`
-  segment in the Claude statusline
 - [ ] Consider suppressing model name when $TMUX is set (if tmux bar shows it)
 
 ### Task 2: Unified Statusline Strategy (LOW PRIORITY — do after Task 1)
@@ -1048,7 +755,7 @@ Once the Claude statusline exists, audit all four surfaces together:
   - bash prompt (`config/bash_prompt`, `bin/git-status`)
   - tmux (`config/tmux/tmux.conf` status-left/right)
   - vim (vimrc / airline / lightline config in `../dotvim`)
-  - claude (`config/claude/statusline.sh` — built in Task 1)
+  - claude (`config/claude/bin/statusline.sh` — built in Task 1)
 - [ ] Identify duplicates and decide canonical owner for each piece of info
 - [ ] Implement suppression logic using context env vars (`$TMUX`, `$VIM`, etc.)
   - This subsumes the existing "if in tmux, disable git-status in bash prompt"
@@ -1160,21 +867,26 @@ in the future.
 
 ## 📊 Progress Tracking
 
-**Documentation:** ~80% complete (foundation laid, cleanup remaining)
-**Testing:** ~20% complete (framework defined, implementation needed)
-**Pre-commit:** ~0% complete (ready to start Phase 1)
-**CI/CD:** ~10% complete (one workflow exists, needs expansion)
-**Code Improvements:** ~0% complete (cataloged, not addressed)
-**Config Enhancements:** ~0% complete (cataloged, not addressed)
+- **Documentation:** ~85% complete (foundation laid, XXX cleanup remaining)
+- **Testing:** ~55% complete (docker harness + context matrix + several
+  scripts/libs covered; `parse_params` and shell-startup-module tests remain)
+- **Pre-commit:** Phases 1–2 done (core + security, in CI + required); Phases
+  3–4 (language, docs) remain
+- **CI/CD:** `tests.yml` (bats/perl/python) + `pre-commit` job live; phased
+  expansion remains
+- **Code Improvements:** ongoing (XXX cleanup cataloged)
+- **Config Enhancements:** cataloged, addressed opportunistically
 
 ## 🎯 Next Actions (Priority Order)
 
-1. **Pre-commit Phase 1** - Create core pre-commit configuration
-2. **CI/CD Phase 1** - Expand GitHub Actions with basic CI
-3. **Testing Phase 2** - Review and enhance test infrastructure
-4. **Testing Phase 3** - Add core test coverage for critical components
-5. **Pre-commit Phase 2** - Add security hooks
-6. **CI/CD Phase 2** - Add security checks to CI
+1. **Testing Phase 3** — `lib/parse_params` (+ evaluate the perl rewrite) and
+   `config/shell-startup/` module tests
+2. **Pre-commit Phase 3** — language hooks (Python, Perl, Rust)
+3. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
+   a required check
+4. **Rules `*.md` Agent Behavior** — switch to preferring pre-commit invocation
+5. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
+   `XML::LibXML` debt)
 
 ## Notes
 
@@ -1188,6 +900,12 @@ in the future.
 
 ## Version History
 
+- **v1.1.0** (2026-06-07): Cleanup pass — removed completed sections (git
+  file-mode normalization, Dependabot alerts, stale-branch cleanup, the
+  container-harness build, shell context detection, and assorted done
+  sub-items), fixed stale/contradictory statuses, deduplicated entries
+  (grok block, bash_prompt venv, parse_params), dropped stale items for
+  archived libs, and refreshed Progress Tracking + Next Actions.
 - **v1.0.0** (2026-01-18): Initial consolidated TODO based on modernization
   plan. Documented completed tasks, organized remaining work by phase and
   priority.
