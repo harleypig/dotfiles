@@ -208,18 +208,21 @@ tool — or a fresh checkout — can silently lack its symlink.
 ## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
 
 The generated meta tests (`tests/scaffold/build-meta-tests`) surface
-pre-existing shellcheck/shfmt failures — 26 across 21 legacy scripts (as of
-2026-06-06). These are deliberately **not** ignored and **not** auto-fixed
-yet; clean them up here, then they pass the meta suite and it can be wired
-into CI as a gate (today CI gates only the hand-written `tests/suite/test_*`).
+pre-existing failures the static checks catch: 26 shellcheck/shfmt failures
+across 21 legacy bash scripts (as of 2026-06-06), plus one perl dependency
+gap. These are deliberately **not** ignored and **not** auto-fixed yet;
+clean them up here, then they pass the meta suite and it can be wired into
+CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
 
-Run `tests/scaffold/build-meta-tests && bats tests/suite/*.meta.bats` to see
+Run `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to see
 current failures. Offenders:
 
-- [ ] **bin/**: ansi, anykey, bash-colors, check-dotfiles, CleanPath.tmp,
-  creds-helper, dir-readable, envsubstitute, git-all, git-branch-clean,
-  lwhich, run-help, show-unicode, tmux_edit_buffer, tmux_mode_indicator,
-  yesno
+- [ ] **bin/** (shellcheck/shfmt): ansi, anykey, bash-colors, check-dotfiles,
+  CleanPath.tmp, creds-helper, dir-readable, envsubstitute, git-all,
+  git-branch-clean, lwhich, run-help, show-unicode, tmux_edit_buffer,
+  tmux_mode_indicator, yesno
+- [ ] **bin/** (perl -c): gmailfilter_toyaml — needs `XML::LibXML`; install
+  `libxml-libxml-perl` or accept the meta test failing where it is absent
 - [ ] **lib/**: debug, parse_params
       (`is`, `Arrays`, `strings` moved to `archive/lib/` — legacy/unused;
       `git-prompt` factored into `bin/git-status` and archived)

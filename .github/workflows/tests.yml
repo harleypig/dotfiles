@@ -1,10 +1,13 @@
 ---
 name: tests
 
-# Run the bats test suite on pushes to master and on PRs. Only the
-# hand-written suite (tests/shell/test_*.bats) gates; the generated meta
-# suite is not run here yet (it surfaces pre-existing legacy lint/format
-# debt — see TODO.md "Lint/format Debt in Legacy Scripts").
+# Run the test suites on pushes to master and on PRs:
+#   - bats:   the hand-written shell suite (tests/shell/test_*.bats)
+#   - perl:   prove over tests/perl/
+#   - python: pytest over tests/python/ (activates once tests exist)
+# Only the hand-written suites gate; the generated meta suite is not run
+# here yet (it surfaces pre-existing legacy lint/format + dependency debt —
+# see TODO.md "Lint/format Debt in Legacy Scripts").
 
 on:
   push:
@@ -29,3 +32,45 @@ jobs:
 
       - name: Run hand-written suite
         run: bats tests/shell/test_*.bats
+
+  perl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # perl is preinstalled on the runner; the suite's only non-core
+      # dependency is Test::Cmd (Debian package libtest-cmd-perl).
+      - name: Install perl test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libtest-cmd-perl
+
+      # Tests resolve `use lib 'tests/perl/lib'` and the data dir relative to
+      # the repo root, so prove must run from the checkout root.
+      - name: Run perl suite
+        run: prove tests/perl/
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install pytest
+        run: pip install pytest
+
+      # tests/python/ has no tests yet; run pytest only once some exist so
+      # this job is green-ready and self-activates with the first test.
+      - name: Run python suite
+        run: |
+          if ls tests/python/test_*.py > /dev/null 2>&1; then
+            pytest tests/python
+          else
+            echo "no python tests yet — skipping"
+          fi

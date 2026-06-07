@@ -1,0 +1,35 @@
+#!/usr/bin/env bats
+
+# !!! GENERATED FILE — DO NOT EDIT !!!
+#
+# Regenerate with:  tests/scaffold/build-meta-tests
+# For universal changes, edit the template instead:
+#   tests/scaffold/templates/file.meta.perl.bats.template
+#
+# Static "meta" checks for {{REL_PATH}} — they validate the file without
+# executing it (shebang, perl -c syntax). perl -c compiles the file,
+# including its `use`d modules, so a failure can mean a real syntax error
+# or a missing module dependency.
+
+load ../helpers/common
+
+setup() {
+  load_bats_libs
+  # Run from the repo root so the relative path resolves regardless of where
+  # the suite is invoked from.
+  cd "$(dotfiles_root)"
+}
+
+@test "{{REL_PATH}} exists" {
+  assert_file_exist "{{REL_PATH}}"
+}
+
+@test "{{REL_PATH}} has a perl shebang" {
+  run head -n 1 "{{REL_PATH}}"
+  assert_output --regexp '^#!.*\bperl\b'
+}
+
+@test "{{REL_PATH}} passes perl -c (syntax)" {
+  run perl -c "{{REL_PATH}}"
+  assert_success
+}

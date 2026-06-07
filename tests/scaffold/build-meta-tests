@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-# Generate per-file "meta" tests — static checks (shebang, bash -n, shellcheck,
-# shfmt) for the shell scripts under the given roots. Self-contained: no
-# external library, no repo-specific assumptions beyond "scripts live under
-# <root>/<dir>". Portable to any repo that drops in tests/scaffold + the
-# helpers + bats-toolbox.
+# Generate per-file "meta" tests — static checks that validate a script
+# without executing it — for the scripts under the given roots. The checks
+# are language-specific: bash/sh -> shebang + bash -n + shellcheck + shfmt;
+# perl -> shebang + perl -c; python -> shebang + compile(). Self-contained:
+# no external library, no repo-specific assumptions beyond "scripts live
+# under <root>/<dir>". Portable to any repo that drops in tests/scaffold +
+# the helpers + bats-toolbox.
 #
 # Usage:
 #   tests/scaffold/build-meta-tests [DIR ...]
@@ -32,12 +34,17 @@ self=$(readlink -f "$0")
 scaffold_dir=$(dirname "$self")
 root=$(cd "$scaffold_dir/../.." && pwd)
 
-template_file="$scaffold_dir/templates/file.meta.bats.template"
+template_dir="$scaffold_dir/templates"
 ignore_file="$scaffold_dir/meta-ignore"
 out_dir="$root/tests/shell"
 
-[[ -f $template_file ]] || die "template not found: $template_file"
-template=$(< "$template_file")
+# Preload one template per supported language (file.meta.<lang>.bats.template).
+declare -A templates=()
+for lang in bash perl python; do
+  tf="$template_dir/file.meta.$lang.bats.template"
+  [[ -f $tf ]] && templates[$lang]=$(< "$tf")
+done
+((${#templates[@]})) || die "no templates found in $template_dir"
 
 mkdir -p "$out_dir"
 
@@ -85,11 +92,27 @@ for f in "${files[@]}"; do
 
   [[ -n ${ignore[$rel]-} ]] && continue
 
-  # Shell script? bash/sh shebang, or a .sh/.bash extension.
+  # Classify by shebang, then by extension; skip anything we can't place.
   shebang=$(head -n 1 "$f")
-  if [[ $shebang != '#!'*sh* && $f != *.sh && $f != *.bash ]]; then
+  case $shebang in
+    '#!'*sh*) lang=bash ;;
+    '#!'*perl*) lang=perl ;;
+    '#!'*python*) lang=python ;;
+    *)
+      case $f in
+        *.sh | *.bash) lang=bash ;;
+        *.pl | *.pm) lang=perl ;;
+        *.py) lang=python ;;
+        *) continue ;;
+      esac
+      ;;
+  esac
+
+  template=${templates[$lang]-}
+  [[ -n $template ]] || {
+    warn "no template for lang=$lang, skipping: $rel"
     continue
-  fi
+  }
 
   name=${rel//\//-}
   out="$out_dir/${name}.meta.bats"

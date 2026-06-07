@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.1.0
+**Version:** v2.2.0
 
 ## Purpose
 
@@ -57,10 +57,12 @@ bats-assert bats-file`); `tests/helpers/common.bash` adds this repo's
 3. Complex logic (parsing, loops, conditionals, dispatch).
 4. Simple wrappers (lowest priority).
 
-The generated **meta suite** (static checks: shebang, `bash -n`, shellcheck,
-shfmt) currently surfaces pre-existing lint/format debt in legacy scripts —
-tracked in `TODO.md` ("Lint/format Debt in Legacy Scripts"), not ignored and
-not auto-fixed. Until those are clean, only the hand-written suite is gated.
+The generated **meta suite** runs language-specific static checks per file:
+bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
+`perl -c`; python → shebang + `compile()`. It currently surfaces pre-existing
+debt (legacy bash lint/format + one perl module dependency) — tracked in
+`TODO.md` ("Lint/format Debt in Legacy Scripts"), not ignored and not
+auto-fixed. Until those are clean, only the hand-written suite is gated.
 
 ## Running
 
@@ -75,9 +77,11 @@ pre-commit / CI.
 
 ## CI
 
-`.github/workflows/tests.yml` installs bats + the helper packages and runs
-`bats tests/shell/test_*.bats` on pushes to `master` and on PRs. The meta
-suite is **not** gated yet (see the debt note above); add it once its target
+`.github/workflows/tests.yml` runs three jobs on pushes to `master` and on
+PRs: **bats** (`tests/shell/test_*.bats`), **perl** (`prove tests/perl/`,
+installing `libtest-cmd-perl`), and **python** (`pytest tests/python`, which
+self-activates once `tests/python/test_*.py` exist). The generated meta suite
+is **not** gated yet (see the debt note above); add it once its target
 scripts pass.
 
 ## Test development

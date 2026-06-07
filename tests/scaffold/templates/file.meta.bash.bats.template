@@ -4,10 +4,10 @@
 #
 # Regenerate with:  tests/scaffold/build-meta-tests
 # For universal changes, edit the template instead:
-#   tests/scaffold/templates/file.meta.bats.template
+#   tests/scaffold/templates/file.meta.bash.bats.template
 #
 # Static "meta" checks for {{REL_PATH}} — they validate the file without
-# executing it (shebang, syntax, lint, format).
+# executing it (shebang, bash -n syntax, shellcheck lint, shfmt format).
 
 load ../helpers/common
 
