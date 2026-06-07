@@ -75,19 +75,29 @@ fixed by one bump. List them with:
 ## 🛡️ Protect the master Branch (HIGH PRIORITY)
 
 We've started behaving as if `master` is protected (changes land via PR with
-green checks — e.g. PRs #9–#11); now actually enforce it on GitHub.
+green checks — e.g. PRs #9–#11); now enforce it on GitHub using the prepared
+**rulesets** in `../private_dotfiles/github-rulesets/` (sibling repo), per its
+README.
 
-- [ ] Decide the required status checks. PRs currently run `bats` (the test
-  workflow), CodeFactor, and `security/snyk`; make at least `bats` required.
-- [ ] Enable branch protection on `master` (Settings → Branches, or
-  `gh api repos/harleypig/dotfiles/branches/master/protection`): require a PR
-  before merging, require status checks to pass and the branch to be up to
-  date, and block force-push / deletion. Needs an **admin** token — the narrow
-  PAT can't; use the OAuth credential (`GH_TOKEN= GITHUB_TOKEN= gh ...`) or
-  the web UI.
-- [ ] Decide the review policy for a solo repo (require 1 approval vs. allow
-  self-merge once checks pass).
-- [ ] Confirm Dependabot / auto-merge interplay once protection is on.
+- [ ] Use `protect-master-solo.json` (this is a solo repo: 0 required reviews,
+  squash-only merges, stale-review dismissal, required thread resolution,
+  deletion + force-push blocked, PR required, status checks required).
+  `protect-master-team.json` is the variant if this ever becomes a team repo.
+- [ ] Fix the required-check contexts before importing — the file ships
+  placeholders (`Build`, `Pre-commit checks`) that don't match this repo. Set
+  them to our real checks: `bats` at minimum, optionally `CodeFactor` and
+  `security/snyk`.
+- [ ] Import via the rulesets API with an admin/OAuth token (the narrow PAT
+  can't — `Resource not accessible by personal access token`):
+
+  ```bash
+  GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets \
+    --method POST --input protect-master-solo.json
+  ```
+
+- [ ] Verify: a direct push to `master` is rejected, and a PR needs green
+  checks to merge.
+- [ ] Confirm Dependabot / auto-merge interplay once the ruleset is active.
 - [ ] Document the enforced workflow in `WORKFLOW.md`.
 
 ## 🌿 Evaluate / Clean Up Stale Branches (MEDIUM PRIORITY)
