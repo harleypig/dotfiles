@@ -142,19 +142,25 @@ pre-commit's isolated envs are the only thing that runs them.
   isort, flake8, perltidy, perlcritic, …) — same pattern as the existing
   wrappers, mounting `$PWD` + the relevant `config/` files. Ties into the
   "bin/markdownlint docker wrapper" and docker_wrapper symlink-automation items.
-- [ ] **Evaluate Super-Linter** (`github/super-linter`) — one image bundling
-  many linters. The tension: it's built to scan a whole repo (CI), not to
-  expose each linter as an individual command, so it doesn't map cleanly onto
-  the per-tool `bin/<tool>` model or pre-commit's per-file hooks. Research
-  whether the bundled linters can be invoked individually
-  (`docker run … <linter> <args>`) and whether that's worth it vs. pinning each
-  tool's own image. Likely roles: a CI "lint everything" aggregate pass, or a
-  convenience wrapper — **not** a replacement for per-tool wrappers / pre-commit
-  hooks.
+- [ ] **Evaluate aggregate linter images — Super-Linter vs MegaLinter.** Both
+  bundle many linters in one image:
+  - `github/super-linter` — simplest; check-only.
+  - `oxsecurity/megalinter` — a more configurable fork: select linters via
+    `ENABLE_LINTERS`, language-specific "flavors" (smaller images), reporters/
+    SARIF, and it can **apply fixes** (`APPLY_FIXES`), unlike super-linter.
+  - The shared tension: both are built to scan a **whole repo** (CI), not to
+    expose each linter as an individual command, so neither maps cleanly onto
+    the per-tool `bin/<tool>` model or pre-commit's per-file hooks. Research
+    whether their bundled linters can be invoked individually
+    (`docker run … <linter> <args>`) and whether that's worth it vs. pinning
+    each tool's own image. Likely roles: a CI "lint everything" aggregate pass
+    (MegaLinter's configurability makes it the stronger candidate), or a
+    convenience wrapper — **not** a replacement for per-tool wrappers /
+    pre-commit hooks.
 - [ ] **Decide the boundary**: which tools are best as standalone pinned
-  images, which (if any) via Super-Linter, and how this interacts with
-  pre-commit (which already runs tools in isolated envs — a host wrapper is
-  mainly for ad-hoc CLI use outside a commit).
+  images, which (if any) via an aggregate (Super-Linter/MegaLinter), and how
+  this interacts with pre-commit (which already runs tools in isolated envs —
+  a host wrapper is mainly for ad-hoc CLI use outside a commit).
 
 ## 🪟 Break tmux config into its own repo (MEDIUM PRIORITY)
 
