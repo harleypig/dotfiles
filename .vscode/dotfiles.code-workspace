@@ -2,21 +2,21 @@
   "folders": [
     {
       "name": "dotfiles",
-      "path": ".."
+      "path": "..",
     },
     {
       "name": "private_dotfiles",
-      "path": "../../private_dotfiles"
+      "path": "../../private_dotfiles",
     },
     {
       "name": "dotvim",
-      "path": "../../dotvim"
-    }
+      "path": "../../dotvim",
+    },
   ],
   "settings": {
-    "powershell.cwd": "."
+    "powershell.cwd": ".",
   },
   "extensions": {
-    "recommendations": []
-  }
+    "recommendations": [],
+  },
 }

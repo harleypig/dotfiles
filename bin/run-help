@@ -6,4 +6,4 @@
 # https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
 # See inputrc for macros
 
-help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"
+help "$READLINE_LINE" 2> /dev/null || man "$READLINE_LINE"

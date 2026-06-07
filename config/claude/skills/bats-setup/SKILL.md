@@ -25,12 +25,14 @@ defer to it on any specifics.
    with no OS package, justify it and clone pinned into a `BATS_LIB_PATH` entry.
 
 2. **Create the layout** (actual tests separated from scaffolding):
-   ```
+
+   ```text
    tests/
      helpers/common.bash
      scaffold/{build-meta-tests,templates/file.meta.bats.template,meta-ignore}
      suite/{.gitignore,test_<first>.bats}
    ```
+
    `tests/suite/.gitignore` holds `*.meta.bats` (generated tests are not
    committed).
 

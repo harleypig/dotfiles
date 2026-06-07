@@ -91,7 +91,7 @@ my $script = File::Spec->catfile('bin', 'perltidyrc-clean');
     open my $fh, '>', $rc_file or die "Cannot create test file: $!";
     print $fh "# test config\n";
     close $fh;
-    
+
     local $ENV{PERLTIDY} = $tmpdir;
     my $stdout = `$script --showconfig 2>&1`;
     my $exit_code = $? >> 8;
@@ -105,23 +105,23 @@ my $script = File::Spec->catfile('bin', 'perltidyrc-clean');
 {
     my $tmpdir = tempdir(CLEANUP => 1);
     my $rc_file = File::Spec->catfile($tmpdir, '.perltidyrc');
-    
+
     # Create a temporary config file
     open my $fh, '>', $rc_file or die "Cannot create test file: $!";
     print $fh "# test config\n";
     close $fh;
-    
+
     # Change to temp directory for this test
     my $orig_cwd = getcwd();
     my $abs_script = File::Spec->rel2abs($script);
     chdir $tmpdir or die "Cannot chdir to $tmpdir: $!";
-    
+
     my $stdout = `$abs_script --showconfig 2>&1`;
     my $exit_code = $? >> 8;
-    
+
     # Restore original directory
     chdir $orig_cwd or die "Cannot chdir back to $orig_cwd: $!";
-    
+
     is($exit_code, 0, '--showconfig with config in current directory exits with code 0');
     my $abs_path = File::Spec->rel2abs($rc_file);
     is($stdout, "$abs_path\n", '--showconfig finds config in current directory');
@@ -189,4 +189,3 @@ my $script = File::Spec->catfile('bin', 'perltidyrc-clean');
 }
 
 done_testing();
-

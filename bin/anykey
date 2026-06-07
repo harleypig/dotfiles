@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    cat << EOF
+  cat << EOF
 Usage: anykey ['prompt']
 
 anykey will prompt and wait for a single keypress.
@@ -9,9 +9,9 @@ anykey accepts an optional value that will be used as the prompt. If
 nothing is passed in, the default prompt is 'Press any key to continue ...'
 EOF
 
-    exit 0
+  exit 0
 }
 
-[[ "$1" == "-h" || "$1" == "--help" ]] && usage
+[[ $1 == "-h" || $1 == "--help" ]] && usage
 
 read -n 1 -r -s -p "${1:-Press any key to continue ...}"

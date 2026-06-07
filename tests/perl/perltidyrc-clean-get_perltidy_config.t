@@ -232,4 +232,3 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 }
 
 done_testing();
-

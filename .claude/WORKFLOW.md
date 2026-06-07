@@ -41,7 +41,7 @@ and `CLAUDE.md` for test-related operations.
 
 ### Documentation Philosophy
 
-**Principle: Documentation lives WITH code**
+**Principle:** Documentation lives WITH code
 
 1. **Individual files document themselves**
    * Scripts in `bin/`: Usage documentation in comments or `--help` output
@@ -155,11 +155,13 @@ Optional but recommended:
 ### Initial Setup
 
 1. Clone repository:
+
    ```bash
    git clone <repo-url> ~/dotfiles
    ```
 
 2. Install pre-commit:
+
    ```bash
    pip install pre-commit
    # or
@@ -167,12 +169,14 @@ Optional but recommended:
    ```
 
 3. Install pre-commit hooks:
+
    ```bash
    cd ~/dotfiles
    pre-commit install
    ```
 
 4. Run tests to verify:
+
    ```bash
    bats tests/shell/
    ```

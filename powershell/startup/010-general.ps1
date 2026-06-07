@@ -3,7 +3,7 @@ function Global:Set-ParentDirectory {
   param (
     [int]$levels = 1
   )
-  
+
   for ($i = 0; $i -lt $levels; $i++) {
     Set-Location -Path ..
   }
@@ -26,12 +26,12 @@ Set-Alias -Scope Global -Name .... -Value Set-UpThreeLevels
 ##############################################################################
 # XXX: TBD
 #: alias diffdir='diff -qr'
-#: 
+#:
 #: if command -v colordiff &> /dev/null; then
 #:   alias diff='colordiff'
 #:   alias diffdir='colordiff -qr'
 #: fi
-#: 
+#:
 #: #-----------------------------------------------------------------------------
 #: # https://wiki.archlinux.org/index.php/Core_Utilities#grep
 #: export GREP_COLOR="1;33"
@@ -41,13 +41,13 @@ Set-Alias -Scope Global -Name .... -Value Set-UpThreeLevels
 #: #-----------------------------------------------------------------------------
 # XXX: Does powershell have similar history configuration options?
 #: HISTFILE="$XDG_CACHE_HOME/bash/history"
-#: 
+#:
 #: HISTCONTROL="erasedups:ignoreboth"
 #: HISTFILESIZE=100000
 #: HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
 #: HISTSIZE=500000
 #: HISTTIMEFORMAT='%F %T '
-#: 
+#:
 #: shopt -s cmdhist histappend histreedit histverify
 
 #: #-----------------------------------------------------------------------------

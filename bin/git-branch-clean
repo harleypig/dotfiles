@@ -27,7 +27,7 @@ all=0
 # Optional arg: Additional text to print after usage
 usage() {
   sed -n '/^# Usage:/,/^$/ s/^# \?//p' "$0" >&2
-  [[ -n "${1:-}" ]] && printf '\n%s\n' "$@" >&2
+  [[ -n ${1:-} ]] && printf '\n%s\n' "$@" >&2
   exit 1
 }
 
@@ -36,7 +36,7 @@ remove_branch() {
   local branch="$1"
   local reason="$2"
 
-  if [[ -n "$branch" ]]; then
+  if [[ -n $branch ]]; then
     if ((dry_run)); then
       echo "Would delete branch: $branch ($reason)"
 
@@ -78,13 +78,13 @@ git fetch --prune
 readarray -t branches < <(
   {
     # Get branches with gone upstreams
-    git for-each-ref --format '%(refname) %(upstream:track)' refs/heads |
-      awk '$2 == "[gone]" {sub("refs/heads/", "", $1); print $1 "\tremote branch gone"}'
+    git for-each-ref --format '%(refname) %(upstream:track)' refs/heads \
+      | awk '$2 == "[gone]" {sub("refs/heads/", "", $1); print $1 "\tremote branch gone"}'
 
     # If -a specified, get branches never pushed
     if ((all)); then
-      git branch -vv |
-        awk '/^[^*]/ && ! /\[.*\]/ {
+      git branch -vv \
+        | awk '/^[^*]/ && ! /\[.*\]/ {
           gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1)
           print $1 "\tnever pushed"
         }'

@@ -75,7 +75,7 @@ commands, refer to the tput documentation with 'man tput'.
 
 EOF
 
-exit 0
+  exit 0
 }
 
 #-----------------------------------------------------------------------------
@@ -83,16 +83,16 @@ exit 0
 
 hex_to_256() {
   hex_color="${1#\#}"
-  ((r=16#${hex_color:0:2}, g=16#${hex_color:2:2}, b=16#${hex_color:4:2}))
+  ((r = 16#${hex_color:0:2}, g = 16#${hex_color:2:2}, b = 16#${hex_color:4:2}))
 
-#  if [[ $TERM == *256color* ]] || [[ $(tput colors) -eq 256 ]]; then
-#    printf '%s' "$r;$g;$b"
+  #  if [[ $TERM == *256color* ]] || [[ $(tput colors) -eq 256 ]]; then
+  #    printf '%s' "$r;$g;$b"
 
-#  else
-    CF="6/256"
-    eight_bit="$(bc <<< "scale=0; 16 + ($r * $CF) * 36 + ($g * $CF) * 6 + ($b * $CF)")"
-    printf '%s' "$eight_bit"
-#  fi
+  #  else
+  CF="6/256"
+  eight_bit="$(bc <<< "scale=0; 16 + ($r * $CF) * 36 + ($g * $CF) * 6 + ($b * $CF)")"
+  printf '%s' "$eight_bit"
+  #  fi
 }
 
 #-----------------------------------------------------------------------------
@@ -173,12 +173,13 @@ function _ansi() {
         [[ $c =~ ^\# ]] && c="$(hex_to_256 "$c")"
         [[ -v color[$c] ]] && c=${color[$c]}
 
-        seq=$(tput "${!cmd}" $c)
+        seq=$(tput "${!cmd}" "$c")
         shift
         ;;
 
       *) # Handle any other tput commands
-        seq=$(tput $cmd) ;;
+        seq=$(tput "$cmd")
+        ;;
 
     esac
 
@@ -190,7 +191,7 @@ function _ansi() {
 }
 
 ##############################################################################
-[[ "$*" =~ (^|[[:space:]])--?h(elp)?($|[[:space:]]) ]] && usage
+[[ $* =~ (^|[[:space:]])--?h(elp)?($|[[:space:]]) ]] && usage
 (($#)) || usage
 
 _ansi "$@"

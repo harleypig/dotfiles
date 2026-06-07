@@ -30,6 +30,7 @@ No errors or warnings are permitted. Fix all reported issues before committing.
 - A brief comment on the same line explains why.
 
 Example:
+
 ```bash
 # shellcheck disable=SC1090  # path is dynamic, resolved at runtime
 source "$dynamic_path"

@@ -53,6 +53,7 @@ environments:
 create your own custom one.
 
 **How to set up**:
+
 ```bash
 # Copy the appropriate dotlinks file
 cp dotlinks-default ~/.dotlinks
@@ -63,7 +64,7 @@ cp dotlinks-default ~/.dotlinks
 
 **File format** — one entry per line, environment variables expanded:
 
-```
+```text
 # Single-column: symlink name derived from basename of source
 $DOTFILES/dot-general/.bashrc
 
@@ -102,6 +103,7 @@ $PROJECTS_DIR/android-sdk/platform-tools
 change the PATH order.
 
 **How to set up**:
+
 ```bash
 # Use defaults (no action needed)
 # The system will automatically use bin-dirs-defaults
@@ -164,7 +166,7 @@ The `.bash_profile`, `.bashrc`, and `.profile` files all link to the same
 
 ### Directory Structure
 
-```
+```text
 ├── bin/                     # Custom utility scripts
 ├── config/                  # Tool-specific configurations
 │   ├── completions/         # Bash completion files
@@ -187,12 +189,14 @@ loading. Each module sets up environment variables, aliases, and completions
 for specific tools:
 
 **Core Configuration:**
+
 - **`000-loadtokens`**: Load authentication tokens
 - **`010-general`**: General environment setup
 - **`app_env_vars`**: Application-specific environment variables
 - **`bash_prompt`**: Custom bash prompt configuration
 
 **Development Tools:**
+
 - **`aider`**: Aider AI coding assistant
 - **`ansible`**: Ansible automation configuration
 - **`binenv`**: Binary environment manager
@@ -206,6 +210,7 @@ for specific tools:
 - **`terraform`**: Terraform infrastructure tools
 
 **Applications:**
+
 - **`calibre`**: Calibre ebook management
 - **`cuda`**: NVIDIA CUDA configuration
 - **`less`**: Less pager configuration
@@ -214,6 +219,7 @@ for specific tools:
 - **`vim`**: Vim configuration
 
 **Completion:**
+
 - **`ssh-config-completion`**: SSH host completion
 
 ### Configuration Directories
@@ -241,12 +247,14 @@ Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-
 for organizing configuration, data, and cache files:
 
 **Environment Variables:**
+
 - **`$XDG_CONFIG_HOME`** (default: `~/.config`) - Configuration files
 - **`$XDG_DATA_HOME`** (default: `~/.local/share`) - Data files
 - **`$XDG_CACHE_HOME`** (default: `~/.cache`) - Cache files
 - **`$XDG_STATE_HOME`** (default: `~/.local/state`) - State files
 
 **Benefits:**
+
 - Clean home directory (no dot-file clutter)
 - Organized configuration structure
 - Easy backup and synchronization
@@ -286,6 +294,7 @@ When using Git for Windows:
 - **MSYS Integration**: Handles symlink creation appropriately
 
 **Setup for Git for Windows**:
+
 ```bash
 # In Git Bash
 ln -sf ~/projects/dotfiles/shell-startup ~/.bash_profile
@@ -330,12 +339,14 @@ bash -l -c 'echo "DOTFILES: $DOTFILES"'
 ## Documentation
 
 **Core Documentation:**
+
 - **[WORKFLOW.md](WORKFLOW.md)**: Repository workflow, development guidelines,
   and tool setup procedures
 - **[TESTS.md](TESTS.md)**: Testing framework, strategy, and how to write tests
 - **[AGENTS.md](AGENTS.md)**: AI agent behavior specification and requirements
 
 **Additional Documentation:**
+
 - **[Bash Completion](docs/bash-completion.md)**: Detailed explanation of the
   completion system
 - **[Git Aliases](docs/git_aliases.md)**: List of available git aliases

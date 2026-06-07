@@ -101,7 +101,7 @@ gh pr create --title "..." --body "..."
 Some `gh` calls will fail because the narrow PAT lacks scope for the
 target repo. Typical error:
 
-```
+```text
 GraphQL: Resource not accessible by personal access token
 ```
 

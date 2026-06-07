@@ -9,16 +9,16 @@ print_unicode_range() {
   local start=$1
   local end=$2
   local description=$3
-  
+
   echo -e "\n$description (U+${start}-U+${end}):"
   echo "----------------------------------------------------"
-  
+
   for i in $(seq "0x$start" "0x$end"); do
     # Convert to Unicode character
     printf "U+%04X: %b   " "$i" "\\U$(printf %08x "$i")"
-    
+
     # Print 8 characters per line
-    if (( (i - 0x$start + 1) % 8 == 0 )); then
+    if (((i - 0x$start + 1) % 8 == 0)); then
       echo ""
     fi
   done

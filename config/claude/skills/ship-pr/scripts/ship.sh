@@ -25,7 +25,7 @@ _gh() {
   local out err rc errfile
   errfile=$(mktemp)
 
-  out=$(gh "$@" 2>"$errfile") && rc=0 || rc=$?
+  out=$(gh "$@" 2> "$errfile") && rc=0 || rc=$?
   err=$(cat "$errfile")
   rm -f "$errfile"
 
@@ -41,7 +41,7 @@ _gh() {
   fi
 
   if grep -qiE 'not accessible by personal access token|HTTP 403' \
-      <<<"$err$out"; then
+    <<< "$err$out"; then
     # Deliberately clear both tokens for this single command so gh uses the
     # stored OAuth credential (rules/gh.md), not an empty-string assignment.
     # shellcheck disable=SC1007
@@ -55,12 +55,12 @@ _gh() {
 
 _default_branch() {
   local def
-  def=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
+  def=$(git symbolic-ref refs/remotes/origin/HEAD 2> /dev/null \
     | sed 's@^refs/remotes/origin/@@') || true
 
   if [[ -z $def ]]; then
     def=$(_gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
-    git remote set-head origin "$def" >/dev/null 2>&1 || true
+    git remote set-head origin "$def" > /dev/null 2>&1 || true
   fi
 
   printf '%s' "$def"
@@ -80,10 +80,22 @@ cmd_pr_create() {
 
   while (($#)); do
     case "$1" in
-      --title) title=$2; shift 2 ;;
-      --body) body=$2; shift 2 ;;
-      --base) base=$2; shift 2 ;;
-      *) echo "pr-create: unknown arg $1" >&2; return 2 ;;
+      --title)
+        title=$2
+        shift 2
+        ;;
+      --body)
+        body=$2
+        shift 2
+        ;;
+      --base)
+        base=$2
+        shift 2
+        ;;
+      *)
+        echo "pr-create: unknown arg $1" >&2
+        return 2
+        ;;
     esac
   done
 
@@ -142,7 +154,7 @@ cmd_ci_watch() {
   mapfile -t check_ids < <(
     _gh api "repos/$nwo/commits/$sha/check-runs" \
       --jq '.check_runs[] | select((.output.annotations_count // 0) > 0) | .id' \
-      2>/dev/null
+      2> /dev/null
   )
 
   if ((${#check_ids[@]} > 0)); then
@@ -159,7 +171,7 @@ cmd_ci_watch() {
       done < <(
         _gh api "repos/$nwo/check-runs/$id/annotations" \
           --jq '.[] | "\(.annotation_level)\t\(.message | split("\n")[0])"' \
-          2>/dev/null
+          2> /dev/null
       )
     done
 
@@ -186,12 +198,12 @@ cmd_merge_methods() {
   nwo=$(_nwo)
 
   ruleset_methods=$(
-    _gh api "repos/$nwo/rulesets" --jq '.[].id' 2>/dev/null \
+    _gh api "repos/$nwo/rulesets" --jq '.[].id' 2> /dev/null \
       | while read -r id; do
-          _gh api "repos/$nwo/rulesets/$id" \
-            --jq '.rules[]? | select(.type=="pull_request")
-                  | .parameters.allowed_merge_methods[]?' 2>/dev/null
-        done | sort -u
+        _gh api "repos/$nwo/rulesets/$id" \
+          --jq '.rules[]? | select(.type=="pull_request")
+                  | .parameters.allowed_merge_methods[]?' 2> /dev/null
+      done | sort -u
   )
 
   if [[ -n $ruleset_methods ]]; then
@@ -219,8 +231,8 @@ cmd_cleanup() {
 
   git checkout "$def"
   git pull origin "$def"
-  git branch -d "$branch" 2>/dev/null || true
-  git branch -dr "origin/$branch" 2>/dev/null || true
+  git branch -d "$branch" 2> /dev/null || true
+  git branch -dr "origin/$branch" 2> /dev/null || true
   git branch -ra
 }
 
@@ -235,7 +247,10 @@ main() {
     merge-methods) cmd_merge_methods "$@" ;;
     merge) cmd_merge "$@" ;;
     cleanup) cmd_cleanup "$@" ;;
-    *) echo "ship.sh: unknown subcommand $sub" >&2; return 2 ;;
+    *)
+      echo "ship.sh: unknown subcommand $sub" >&2
+      return 2
+      ;;
   esac
 }
 

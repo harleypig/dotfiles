@@ -22,7 +22,7 @@ load_perltidyrc_clean();
         'valid_key' => 'value',
     );
     eval { build_equals_default(\%opts, \%defaults) };
-    like($@, qr/Internal error: undefined or empty key found in build_equals_default options/, 
+    like($@, qr/Internal error: undefined or empty key found in build_equals_default options/,
         'build_equals_default dies on empty string key in opts');
 }
 
@@ -36,7 +36,7 @@ load_perltidyrc_clean();
     );
     $defaults{''} = 'value';    # Empty string key - developer error (Perl stringifies undef to "")
     eval { build_equals_default(\%opts, \%defaults) };
-    like($@, qr/Internal error: undefined or empty key found in build_equals_default defaults/, 
+    like($@, qr/Internal error: undefined or empty key found in build_equals_default defaults/,
         'build_equals_default dies on empty string key in defaults');
 }
 
@@ -59,7 +59,7 @@ load_perltidyrc_clean();
         'valid_key' => 'value',
     );
     eval { user_defined_abbreviations(\%abbrev, \%abbrev_default) };
-    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations abbreviations/, 
+    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations abbreviations/,
         'user_defined_abbreviations dies on empty string key in abbrev');
 }
 
@@ -73,7 +73,7 @@ load_perltidyrc_clean();
     );
     $abbrev_default{''} = 'value';    # Empty string key - developer error (Perl stringifies undef to "")
     eval { user_defined_abbreviations(\%abbrev, \%abbrev_default) };
-    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations defaults/, 
+    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations defaults/,
         'user_defined_abbreviations dies on empty string key in abbrev_default');
 }
 
@@ -116,7 +116,7 @@ load_perltidyrc_clean();
             keep_defaults      => 0,
         );
     };
-    like($@, qr/Internal error: undefined or empty key found in dump_options opts/, 
+    like($@, qr/Internal error: undefined or empty key found in dump_options opts/,
         'dump_options dies on empty string key in opts');
 }
 
@@ -150,7 +150,7 @@ load_perltidyrc_clean();
             keep_defaults      => 0,
         );
     };
-    like($@, qr/Internal error: undefined or empty key found in dump_options sections/, 
+    like($@, qr/Internal error: undefined or empty key found in dump_options sections/,
         'dump_options dies on empty string key in sections');
 }
 
@@ -186,7 +186,7 @@ load_perltidyrc_clean();
             keep_defaults      => 0,
         );
     };
-    like($@, qr/Internal error: undefined or empty key found in dump_options abbreviations_user/, 
+    like($@, qr/Internal error: undefined or empty key found in dump_options abbreviations_user/,
         'dump_options dies on empty string key in abbreviations_user');
 }
 
@@ -259,4 +259,3 @@ load_perltidyrc_clean();
 }
 
 done_testing();
-

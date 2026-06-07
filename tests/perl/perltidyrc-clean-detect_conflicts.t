@@ -26,7 +26,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created');
     is(scalar @{$section_notes{'1. Section'}}, 1, 'One conflict note added');
     like($section_notes{'1. Section'}->[0], qr/brace-left-and-indent conflicts with non-indenting-braces/,
@@ -45,7 +45,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when brace-left-and-indent is false');
 }
@@ -62,7 +62,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when non-indenting-braces is false');
 }
@@ -79,7 +79,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created');
     is(scalar @{$section_notes{'1. Section'}}, 1, 'One conflict note added');
     like($section_notes{'1. Section'}->[0], qr/tabs together with entab-leading-whitespace may conflict/,
@@ -98,7 +98,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when tabs is false');
 }
@@ -115,7 +115,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created');
     is(scalar @{$section_notes{'1. Section'}}, 1, 'One conflict note added');
     like($section_notes{'1. Section'}->[0], qr/block-brace-tightness differs from brace-tightness; specific wins/,
@@ -134,7 +134,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when specific brace option equals brace-tightness');
 }
@@ -155,7 +155,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created');
     is(scalar @{$section_notes{'1. Section'}}, 2, 'Two conflict notes added for differing options');
     my @notes = @{$section_notes{'1. Section'}};
@@ -177,7 +177,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when specific brace option is undefined');
 }
@@ -192,7 +192,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when brace-tightness is missing');
 }
@@ -209,7 +209,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created');
     is(scalar @{$section_notes{'1. Section'}}, 1, 'One conflict note added');
     like($section_notes{'1. Section'}->[0], qr/fuzzy-line-length \(100\) exceeds maximum-line-length \(80\)/,
@@ -228,7 +228,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when fuzzy-line-length equals maximum-line-length');
 }
@@ -245,7 +245,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when fuzzy-line-length is less than maximum-line-length');
 }
@@ -262,7 +262,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when values are not integers');
 }
@@ -277,7 +277,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when maximum-line-length is missing');
 }
@@ -294,7 +294,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created');
     is(scalar @{$section_notes{'1. Section'}}, 1, 'One conflict note added');
     like($section_notes{'1. Section'}->[0], qr/format is disabled but format-skipping detection is enabled/,
@@ -313,7 +313,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created');
     is(scalar @{$section_notes{'1. Section'}}, 1, 'One conflict note added');
     like($section_notes{'1. Section'}->[0], qr/format is disabled but format-skipping detection is enabled/,
@@ -332,7 +332,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(!exists $section_notes{'1. Section'} || scalar @{$section_notes{'1. Section'}} == 0,
         'No conflict detected when format is enabled');
 }
@@ -348,12 +348,12 @@ load_perltidyrc_clean();
         'non-indenting-braces'  => '1. Section',
     );
     detect_conflicts(\%opts, \%sections, undef);
-    
+
     # The function should handle undef section_notes by creating an empty hash
     # But since we pass undef, we can't check it directly. Let's test with an empty hash instead.
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created when passed empty hash');
     is(scalar @{$section_notes{'1. Section'}}, 1, 'Conflict note added to empty hash');
 }
@@ -386,7 +386,7 @@ load_perltidyrc_clean();
     );
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     ok(exists $section_notes{'1. Section'}, 'Section notes hash created');
     is(scalar @{$section_notes{'1. Section'}}, 5, 'Five conflict notes added for multiple conflicts');
 }
@@ -397,9 +397,8 @@ load_perltidyrc_clean();
     my %sections = ();
     my %section_notes = ();
     detect_conflicts(\%opts, \%sections, \%section_notes);
-    
+
     is(scalar keys %section_notes, 0, 'No conflicts detected for empty opts hash');
 }
 
 done_testing();
-

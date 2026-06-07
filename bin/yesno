@@ -40,9 +40,15 @@ quiet=0
 
 while [[ ${1-} == -* ]]; do
   case $1 in
-    -q | --quiet) quiet=1 ; shift ;;
+    -q | --quiet)
+      quiet=1
+      shift
+      ;;
     -h | --help) usage ;;
-    *) warn "Unknown option: $1" ; exit 2 ;;
+    *)
+      warn "Unknown option: $1"
+      exit 2
+      ;;
   esac
 done
 

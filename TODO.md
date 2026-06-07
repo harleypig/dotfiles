@@ -10,12 +10,14 @@ guidelines and `TESTS.md` for testing strategy.
 ## 📝 Documentation (HIGH PRIORITY)
 
 ### Immediate Tasks
+
 - [x] Review and consolidate docs/ directory
   - [x] Evaluate docs/bash-completion.md - moved to config/completions/README.md
   - [x] docs/git_aliases.md - leave in docs/; user-facing reference, not config
   - [x] docs/bin.md and docs/windows-notes.md - both user-facing reference, stay in docs/
 
 ### Code Comment Cleanup
+
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
   - See "Code Improvements (LOW PRIORITY)" section for detailed list
 
@@ -215,38 +217,76 @@ have one), so `markdownlint` is "command not found" locally. Add it to the
 `docker_wrapper` dispatcher using the official image
 `ghcr.io/igorshubovych/markdownlint-cli` (versioned tags, e.g. `:v0.48.0`).
 
-- [ ] Add `IMG_MARKDOWNLINT`, a `markdownlint()` function (mount `$PWD` and
-  the repo's `dot-general/.markdownlintrc` like the other wrappers) and
-  `known_tool[markdownlint]=1`, plus the `bin/markdownlint` symlink (the
+- [ ] Add `IMG_MARKDOWNLINT`, a `markdownlint()` function (mount `$PWD`; the
+  repo-local `.markdownlint.json` is auto-discovered from the mounted CWD)
+  and `known_tool[markdownlint]=1`, plus the `bin/markdownlint` symlink (the
   symlink-automation `--fix` above can create it once registered).
 - [ ] Pin the image tag and refresh it alongside the markdownlint-cli
   pre-commit hook rev so the CLI and the hook stay in lock-step.
 - [ ] Note: independent of pre-commit — the remote-pinned markdownlint hook
   uses its own node install, not this wrapper (see Pre-commit Configuration).
 
+## 🪟 Break tmux config into its own repo (MEDIUM PRIORITY)
+
+Move the tmux configuration (or at least enough of it to support the
+`tmux-plugins` repos via **git submodules**) into its own dedicated repo.
+The submodule setup is what was causing trouble inside this dotfiles repo —
+isolating tmux + its plugin submodules avoids tangling submodules into the
+main dotfiles checkout.
+
+- [ ] Carve out the tmux config (`config/tmux/`, `bin/tmux_*`, related
+  completions) into a standalone repo.
+- [ ] Wire `tmux-plugins/*` (e.g. tpm) as submodules in that repo.
+- [ ] Decide how dotfiles references it (submodule of dotfiles, sibling
+  clone, or independent) and update the deploy/symlink steps accordingly.
+
+## 🧩 dotvim check + clone/link automation (LOW PRIORITY)
+
+dotfiles has no check or setup automation for the companion **dotvim** repo
+(vim configuration). Add a check (à la `check-dotfiles`) that dotvim is
+present and linked, and ideally a small script to automate cloning it and
+creating the symlinks.
+
+- [ ] Add a presence/link check for dotvim (warn if missing or unlinked).
+- [ ] Script the clone + symlink setup (idempotent) so a fresh machine gets
+  vim configured in one step.
+- [ ] Decide dotvim's expected location (sibling clone under `$PROJECTS_DIR`
+  per the repo conventions) and reference it consistently.
+
+## 📐 Retire global ~/.markdownlintrc — per-repo configs (MEDIUM PRIORITY)
+
+This repo now uses a repo-local `.markdownlint.json` (authoritative, auto-
+discovered by the markdownlint hooks). Each repo should own its markdown
+config rather than depend on the global `dot-general/.markdownlintrc`
+(symlinked to `~/.markdownlintrc`).
+
+- [ ] Add a repo-local markdownlint config to each other repo that needs one
+  (start from this repo's `.markdownlint.json`).
+- [ ] Remove `dot-general/.markdownlintrc` and its dotlinks entry once no repo
+  relies on the global fallback.
+- [ ] Update `config/claude/rules/markdownlint.md` to drop the global once
+  it's gone.
+
 ## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
 
-The generated meta tests (`tests/scaffold/build-meta-tests`) surface
-pre-existing failures the static checks catch: 26 shellcheck/shfmt failures
-across 21 legacy bash scripts (as of 2026-06-06), plus one perl dependency
-gap. These are deliberately **not** ignored and **not** auto-fixed yet;
-clean them up here, then they pass the meta suite and it can be wired into
-CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
+The shellcheck/shfmt debt across `bin/` and `lib/` has been **cleared** — the
+pre-commit check config now passes `--all-files`. What remains is a meta-suite
+perl dependency and the stray `CleanPath.tmp` (owned by the cleanpath task).
 
 Run `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to see
-current failures. Offenders:
+meta-suite status. Once the perl dep is resolved the meta suite can be wired
+into CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
 
-- [ ] **bin/** (shellcheck/shfmt): ansi, anykey, bash-colors, check-dotfiles,
-  CleanPath.tmp, creds-helper, dir-readable, envsubstitute, git-all,
-  git-branch-clean, lwhich, run-help, show-unicode, tmux_edit_buffer,
-  tmux_mode_indicator, yesno
+- [x] **bin/** (shellcheck/shfmt): cleared — ansi, check-dotfiles,
+  creds-helper, envsubstitute (real `=>`→`>=` bug fixed), git-all,
+  tmux_edit_buffer, tmux_mode_indicator hand-fixed; the rest auto-fixed by
+  `shfmt -w`.
+- [x] **lib/** (shellcheck/shfmt): cleared — debug, parse_params.
+      (`is`, `Arrays`, `strings` archived; `git-prompt` folded into git-status.)
 - [ ] **bin/** (perl -c): gmailfilter_toyaml — needs `XML::LibXML`; install
-  `libxml-libxml-perl` or accept the meta test failing where it is absent
-- [ ] **lib/**: debug, parse_params
-      (`is`, `Arrays`, `strings` moved to `archive/lib/` — legacy/unused;
-      `git-prompt` factored into `bin/git-status` and archived)
-- [ ] `bin/CleanPath.tmp` looks like a stray scratch file — confirm and
-  remove rather than fix, if so.
+  `libxml-libxml-perl` or accept the meta test failing where it is absent.
+- [ ] `bin/CleanPath.tmp`: excluded from pre-commit; removal is owned by the
+  cleanpath task.
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
   when all pass, add the meta suite to CI and run it in pre-commit.
 
@@ -310,7 +350,7 @@ Review all files in `config/shell-startup/` for correctness and security:
 Reduce $HOME clutter by moving dotfiles to XDG directories where supported
 and removing unused ones.
 
-Reference: https://wiki.archlinux.org/title/XDG_Base_Directory
+Reference: <https://wiki.archlinux.org/title/XDG_Base_Directory>
 (comprehensive list of which apps support XDG and how to configure them)
 
 - [ ] Inventory all dotfiles/dotdirs in $HOME (`ls -la ~ | grep '^\.'`)
@@ -356,12 +396,14 @@ working tree — evaluate carefully before implementing.
 ## 🧪 Testing (HIGH PRIORITY)
 
 ### Phase 2: Test Infrastructure
+
 - [ ] Review and enhance existing BATS tests
 - [ ] Ensure meta-tests are up to date (`./tests/build-meta-tests`)
 - [ ] Create test fixtures in `tests/fixtures/`
 - [ ] Create helper functions in `tests/helpers/common.bash`
 
 ### Phase 3: Core Test Coverage
+
 - [ ] Add tests for shell-startup
   - [ ] Test DOTFILES detection
   - [ ] Test PATH building
@@ -385,11 +427,13 @@ working tree — evaluate carefully before implementing.
   - [ ] Test error handling
 
 ### Phase 4: Extended Coverage
+
 - [ ] Completion tests for config/completions/
 - [ ] Integration tests for tool configurations
 - [ ] Performance tests for PATH building
 
 ### Test Infrastructure
+
 - [ ] tests/build-meta-tests:5,6,71 - Add tests for sh compilation, improve
   shebang check, handle symbolic links (XXX)
 
@@ -487,8 +531,8 @@ pre-commit.md, python.md.
   existing implementation to adapt (vendor with a `SOURCE.md` and audit to
   fit) rather than authoring from scratch:
   - GitHub (search repos/topics)
-  - https://github.com/VoltAgent/awesome-agent-skills
-  - https://officialskills.sh/
+  - <https://github.com/VoltAgent/awesome-agent-skills>
+  - <https://officialskills.sh/>
   - other locations as discovered
   Ties into the vendored file/skill update checker (see Configuration
   Enhancements → Dependency Management).
@@ -519,6 +563,7 @@ after every `Edit` or `Write` on a shell file.
 Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 
 ### Phase 1: Core Hooks (DONE — except the rule Agent-Behavior pass below)
+
 - [x] Create `.pre-commit-config.yaml` with core hooks (all remote, pinned):
   - [x] shellcheck (`--external-sources`)
   - [x] shfmt (`-d`, check-only; flags per shfmt.md/.editorconfig)
@@ -549,6 +594,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
   on pre-existing debt.
 
 ### Proposed: pre-commit skill, used by qa-check
+
 - [ ] Evaluate a `pre-commit` **skill** packaging the operational workflow
   (fix → check → commit prep; `install` variants; `autoupdate` on suspected
   drift; `validate-config`; `gc`) now documented in
@@ -560,6 +606,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
   direct invocation when pre-commit is not configured.
 
 ### Phase 2: Security Hooks
+
 - [ ] Add security checks to `.pre-commit-config.yaml`:
   - [ ] gitleaks (secret detection)
   - [ ] detect-private-key
@@ -567,6 +614,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 - [ ] Update documentation
 
 ### Phase 3: Language-Specific Hooks
+
 - [ ] Add Python hooks (commented/conditional):
   - [ ] black (formatting check)
   - [ ] isort (import sorting check)
@@ -583,6 +631,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 - [ ] Update documentation
 
 ### Phase 4: Documentation Linting
+
 - [ ] Add documentation quality hooks:
   - [ ] proselint (prose linting)
   - [ ] Additional markdown checks
@@ -595,6 +644,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 **Dependency:** Each CI/CD phase requires corresponding Pre-commit phase.
 
 ### Phase 1: Basic CI (requires Pre-commit Phase 1)
+
 - [ ] Create `.github/workflows/ci.yml`:
   - [ ] Run on push to master
   - [ ] Run on pull requests
@@ -607,6 +657,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 - [ ] Document CI workflow
 
 ### Phase 2: Security Checks (requires Pre-commit Phase 2)
+
 - [ ] Add security job to CI workflow:
   - [ ] Run gitleaks
   - [ ] Run detect-private-key
@@ -615,6 +666,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 - [ ] Document security workflow
 
 ### Phase 3: Language Checks (requires Pre-commit Phase 3)
+
 - [ ] Add language-specific jobs:
   - [ ] Python testing and linting
   - [ ] Perl linting
@@ -624,6 +676,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 - [ ] Document language workflows
 
 ### Phase 4: Documentation Validation (requires Pre-commit Phase 4)
+
 - [ ] Add documentation quality job:
   - [ ] Prose linting
   - [ ] Link checking
@@ -632,6 +685,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 - [ ] Document validation process
 
 ### Optional: Dependency Updates
+
 - [ ] Create `.github/workflows/update-deps.yml`:
   - [ ] Check for git-completion.bash updates
   - [ ] Check for git-prompt.sh updates
@@ -643,6 +697,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 ## 💻 Code Improvements (LOW PRIORITY)
 
 ### Shell-startup Issues
+
 - [x] shell-startup:26 - Removed dead Windows MSYS block (see docs/windows-notes.md)
 - [x] shell-startup:94 - Added --first/-f and --last/-l options to addpath
 - [x] shell-startup:114 - Replaced XXX with description comment; run_hook is valid
@@ -710,6 +765,7 @@ currently broken. `bin/CleanPath.tmp` appears to be a duplicate/scratch copy.
   to eliminate duplicates accumulated during module loading
 
 ### PowerShell Improvements
+
 - [ ] ps-startup.ps1:49 - Move Python path to dedicated setup file (XXX)
 - [ ] 010-general.ps1:27,42,54,59 - Port remaining bash features marked with XXX
 
@@ -736,12 +792,14 @@ PowerShell 5.1.
   Pester inside the container) before tackling the improvement tasks above
 
 ### Bin Scripts
+
 - [x] git-all:3 - Refactored: replaced missing utility functions inline, fixed
   shellcheck issues (SC2155, unquoted vars, array appends)
 - [x] git-status:3 - Add STASH information (XXX)
 - [x] yesno:33 - Add option to suppress warnings (XXX)
 
 ### Library Documentation and Testing
+
 - [ ] lib/debug:3,4 - Test (documented)
 - [ ] lib/strings:7,8,9 - Document, test, enforce sourcing only (XXX)
 - [ ] lib/Arrays:7,8,9,38 - Document, test, enforce sourcing, consider moving to
@@ -750,6 +808,7 @@ PowerShell 5.1.
 - [ ] lib/parse_params:3 - Test (XXX)
 
 ### Configuration File Issues
+
 - [x] config/perl:12,54 - Existing checks are adequate; removed stale XXX
   markers and commented-out alternative
 - [x] config/less:85,86 - lesspipe.sh handles syntax highlighting; removed XXX
@@ -773,15 +832,18 @@ PowerShell 5.1.
 ## ⚙️ Configuration Enhancements (LOW PRIORITY)
 
 ### Bash Completion
+
 - [ ] Enable bash completion for available but unconfigured tools
 - [ ] Document completion setup in dedicated section or inline
 - [ ] Create completion tests
 
 ### Prompt Enhancements
+
 - [ ] bash_prompt:131 - Fix poetry venv detection
 - [ ] bash_prompt:137 - Fix manual venv color issue
 
 ### Shell Helpers
+
 - [ ] Evaluate creating a reusable `select`/menu helper (sibling to
   `yesno`) for enumerated-option prompts
   - Survey existing callers in `bin/` and `config/shell-startup/` that
@@ -815,7 +877,7 @@ Context detection: use `$TMUX`, `$VIM`/`$VIMRUNTIME`, and
 
 ### Task 1: Claude Statusline Script (MEDIUM PRIORITY)
 
-Docs: https://code.claude.com/docs/en/statusline
+Docs: <https://code.claude.com/docs/en/statusline>
 
 - [x] Decided location: Option B — `config/claude/bin/statusline.sh` (`~/.claude/bin/`)
   - `~/.claude/` IS `config/claude/` in this setup (no symlink needed)
@@ -851,12 +913,14 @@ Once the Claude statusline exists, audit all four surfaces together:
 - [ ] Document the ownership split in a comment block or inline README
 
 ### Tool Configurations
+
 - [ ] Look into lesshst/lesskey configuration
 - [ ] Look into taskwarrior scripts from /usr/share/doc/task/scripts/
 - [ ] Look into colorized columns tool:
-  https://github.com/LukeSavefrogs/column_ansi.git
+  <https://github.com/LukeSavefrogs/column_ansi.git>
 
 ### Dependency Management
+
 - [ ] Create check4update script for git completion files:
   - git-prompt.sh
   - git-completion.bash
@@ -891,11 +955,11 @@ we can stay current.
 
 ## 🔍 Research and Exploration (LOW PRIORITY)
 
-- [ ] Look into serena MCP server: https://github.com/oraios/serena
-- [ ] Look into pyscn tool: https://github.com/ludo-technologies/pyscn
+- [ ] Look into serena MCP server: <https://github.com/oraios/serena>
+- [ ] Look into pyscn tool: <https://github.com/ludo-technologies/pyscn>
   - [ ] Install via: `pipx install pyscn`
 - [ ] Document bash changes resource:
-  https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges
+  <https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges>
 
 ## 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
 
@@ -931,11 +995,13 @@ evaluating test output, summaries — then generalize.
 **Note:** This is extensive future work and may warrant its own project/branch.
 
 ### Pre-commit Templates (Deferred)
+
 - [ ] Research comprehensive pre-commit hook registry
 - [ ] Create language-specific hook collections
 - [ ] Document hook configurations and best practices
 
 ### Configuration Templates (Deferred)
+
 - [ ] Python tooling templates (pyproject.toml, .flake8, etc.)
 - [ ] General development templates (.editorconfig, .gitignore, etc.)
 - [ ] Documentation and markup templates

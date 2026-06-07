@@ -24,7 +24,7 @@ loading based on tool availability.
 
 ### File Organization
 
-```
+```text
 config/completions/          # Custom completion files
 ├── git                      # Git completion (system integration)
 ├── packwiz                  # Packwiz completion
@@ -39,6 +39,7 @@ config/shell-startup/         # Shell startup files that load completions
 ├── perl                     # Loads Perlbrew completion
 └── taskwarrior              # Loads TaskWarrior completion
 ```
+
 ## How It Works
 
 ### 1. Shell Startup Process

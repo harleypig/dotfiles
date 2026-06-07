@@ -69,4 +69,3 @@ like($stdout, qr/^\/.*\n$|^none\n$/, '--showconfig shows config location, ignore
 unlike($stdout, qr/perltidy configuration file created/, '--showconfig does not process config');
 
 done_testing();
-

@@ -13,7 +13,9 @@
 # Revs are pinned. Refresh with `pre-commit autoupdate` when drift is
 # suspected (see .claude/rules/pre-commit.md).
 
-exclude: '^archive/'
+# archive/ = retired code; bin/CleanPath.tmp = stray scratch (cleanpath TODO);
+# .vscode/syncsettings/ = machine-synced VS Code profile data.
+exclude: '^(archive/|bin/CleanPath\.tmp$|\.vscode/syncsettings/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -22,7 +24,10 @@ repos:
       - id: check-merge-conflict
       - id: check-added-large-files
       - id: check-yaml
+      # VS Code's .vscode/*.json are JSONC (comments, trailing commas), which
+      # check-json cannot parse; exclude them.
       - id: check-json
+        exclude: '^\.vscode/'
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.11.0
@@ -34,8 +39,10 @@ repos:
     rev: v3.13.1-1
     hooks:
       # -d = diff only (non-modifying); flags match shfmt.md / .editorconfig.
+      # shfmt does not parse .bats (@test); exclude them (see bats.md).
       - id: shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
+        exclude: '\.bats$'
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.38.0
@@ -46,5 +53,5 @@ repos:
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.48.0
     hooks:
+      # Uses the repo-local .markdownlint.json (auto-discovered at the root).
       - id: markdownlint
-        args: [--config, dot-general/.markdownlintrc]

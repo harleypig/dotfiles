@@ -37,7 +37,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     # Check that options are grouped by section
     my @lines = split /\n/, $output;
     my %section_groups;
@@ -52,7 +52,7 @@ load_perltidyrc_clean();
             }
         }
     }
-    
+
     ok(exists $section_groups{'1. Basic formatting'}, 'Options grouped by section: Basic formatting');
     ok(exists $section_groups{'2. Brace formatting'}, 'Options grouped by section: Brace formatting');
     is($section_groups{'1. Basic formatting'}, 2, 'Basic formatting section has 2 options');
@@ -87,7 +87,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     # Extract section order from output
     my @lines = split /\n/, $output;
     my @section_order;
@@ -101,7 +101,7 @@ load_perltidyrc_clean();
             }
         }
     }
-    
+
     is($section_order[0], '1. Basic formatting', 'Section 1 comes before section 2');
     is($section_order[1], '2. Brace formatting', 'Section 2 comes after section 1');
 }
@@ -122,7 +122,7 @@ load_perltidyrc_clean();
         rc_origin => 'test source',
         quiet => 0,
     );
-    
+
     like($output, qr/perltidy configuration file created/, 'Header contains creation date');
     like($output, qr/using: test command/, 'Header contains cmdline');
     like($output, qr/source: test source/, 'Header contains rc_origin');
@@ -144,7 +144,7 @@ load_perltidyrc_clean();
         rc_origin => 'test source',
         quiet => 1,
     );
-    
+
     unlike($output, qr/perltidy configuration file created/, 'Quiet mode omits header');
     unlike($output, qr/using: test command/, 'Quiet mode omits cmdline');
     unlike($output, qr/source: test source/, 'Quiet mode omits rc_origin');
@@ -166,7 +166,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 0,
     );
-    
+
     like($output, qr/# Basic formatting/, 'Section header appears in output');
 }
 
@@ -186,7 +186,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     unlike($output, qr/# Basic formatting/, 'Quiet mode omits section headers');
 }
 
@@ -208,7 +208,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 0,
     );
-    
+
     like($output, qr/# NOTE: Test note/, 'Section notes appear in output');
 }
 
@@ -237,7 +237,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     like($output, qr/^--indent-columns=4/m, 'Regular option uses -- prefix');
     like($output, qr/^--no-tabs/m, 'False boolean option uses --no- prefix');
 }
@@ -258,7 +258,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     like($output, qr/^--tabs/, 'True boolean option uses -- prefix');
     unlike($output, qr/^--no-tabs/, 'True boolean option does not use --no- prefix');
 }
@@ -291,7 +291,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     like($output, qr/--indent-columns=4/, 'Numeric value not quoted');
     like($output, qr/--maximum-line-length=80/, 'Numeric value not quoted');
     like($output, qr/--output-encoding="utf8"/, 'Non-numeric value is quoted');
@@ -316,7 +316,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     my @lines = split /\n/, $output;
     my $found_default = 0;
     foreach my $line (@lines) {
@@ -350,7 +350,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     my @lines = split /\n/, $output;
     my $found_default = 0;
     foreach my $line (@lines) {
@@ -384,7 +384,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 0,
     );
-    
+
     like($output, qr/# Abbreviations/, 'Abbreviations section header appears');
     like($output, qr/i \{indent-columns\}/, 'User abbreviation appears in output');
 }
@@ -406,7 +406,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     unlike($output, qr/# Abbreviations/, 'Quiet mode omits abbreviations header');
     like($output, qr/i \{indent-columns\}/, 'Abbreviation still appears without header');
 }
@@ -427,7 +427,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     ok($output ne "", 'Output written to scalar ref');
     like($output, qr/--indent-columns/, 'Output contains expected content');
 }
@@ -437,13 +437,13 @@ load_perltidyrc_clean();
     my %opts = ('indent-columns' => '4');
     my %sections = ('indent-columns' => '1. Basic formatting');
     my %getopt_flags = ('indent-columns' => '=');
-    
+
     # Capture stdout using a scalar reference
     my $stdout_output = "";
     {
         local *STDOUT;
         open STDOUT, '>', \$stdout_output or die "Cannot redirect STDOUT: $!";
-        
+
         dump_options(
             opts => \%opts,
             sections => \%sections,
@@ -454,7 +454,7 @@ load_perltidyrc_clean();
             quiet => 1,
         );
     }
-    
+
     ok($stdout_output ne "", 'Output written to stdout');
     like($stdout_output, qr/--indent-columns/, 'Stdout contains expected content');
 }
@@ -475,7 +475,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     is($output, "", 'Empty opts produces empty output');
 }
 
@@ -495,7 +495,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     like($output, qr/--unknown-option="value"/, 'Option without section still appears (non-numeric value quoted)');
 }
 
@@ -517,7 +517,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 0,
     );
-    
+
     my @note_lines = $output =~ /# NOTE: (.*)/g;
     is(scalar @note_lines, 2, 'Multiple section notes appear');
     is($note_lines[0], 'Note 1', 'First note appears');
@@ -540,7 +540,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     like($output, qr/--output-encoding=""/, 'Empty string value is quoted');
 }
 
@@ -560,7 +560,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     like($output, qr/--output-encoding="utf-8"/, 'Value with hyphen is quoted');
 }
 
@@ -592,7 +592,7 @@ load_perltidyrc_clean();
         destination => \$output,
         quiet => 1,
     );
-    
+
     my @lines = split /\n/, $output;
     my @options;
     foreach my $line (@lines) {
@@ -602,11 +602,10 @@ load_perltidyrc_clean();
             push @options, $opt;
         }
     }
-    
+
     is($options[0], 'brace-tightness', 'Options sorted alphabetically: brace-tightness first');
     is($options[1], 'indent-columns', 'Options sorted alphabetically: indent-columns second');
     is($options[2], 'maximum-line-length', 'Options sorted alphabetically: maximum-line-length third');
 }
 
 done_testing();
-

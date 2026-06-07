@@ -5,8 +5,8 @@
 
 for cmd in "$@"; do
   # Find the full path to the command
-  full_path=$(which "$cmd" 2>/dev/null)
-  if [[ -n "$full_path" ]]; then
+  full_path=$(which "$cmd" 2> /dev/null)
+  if [[ -n $full_path ]]; then
     # If 'which' found the command, list it with 'ls -l --color=auto'
     ls -l --color=auto "$full_path"
   else

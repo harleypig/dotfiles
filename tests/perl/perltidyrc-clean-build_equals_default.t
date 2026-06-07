@@ -25,9 +25,9 @@ load_perltidyrc_clean();
         'line-length'     => '80',
         'other-option'    => 'value',
     );
-    
+
     my %equals = build_equals_default(\%opts, \%defaults);
-    
+
     ok($equals{'indent-columns'}, 'indent-columns matches default');
     ok($equals{'line-length'}, 'line-length matches default');
     is(scalar keys %equals, 2, 'Returns hash with correct number of keys');
@@ -43,9 +43,9 @@ load_perltidyrc_clean();
         'indent-columns' => '4',
         'line-length'     => '80',
     );
-    
+
     my %equals = build_equals_default(\%opts, \%defaults);
-    
+
     ok($equals{'indent-columns'}, 'indent-columns matches default');
     ok(!$equals{'line-length'}, 'line-length does not match default');
 }
@@ -61,9 +61,9 @@ load_perltidyrc_clean();
         'option2' => 'value',
         'option3' => 'other',
     );
-    
+
     my %equals = build_equals_default(\%opts, \%defaults);
-    
+
     ok(!$equals{'option1'}, 'Undef option does not equal undef default');
     ok($equals{'option2'}, 'Defined option equals defined default');
 }
@@ -77,9 +77,9 @@ load_perltidyrc_clean();
     my %defaults = (
         'known-option' => 'value',
     );
-    
+
     my %equals = build_equals_default(\%opts, \%defaults);
-    
+
     ok($equals{'known-option'}, 'Known option matches default');
     ok(!exists $equals{'unknown-option'}, 'Unknown option not in result hash');
 }
@@ -94,9 +94,9 @@ load_perltidyrc_clean();
         'numeric-str' => '42',
         'numeric-num' => '42',  # String default
     );
-    
+
     my %equals = build_equals_default(\%opts, \%defaults);
-    
+
     ok($equals{'numeric-str'}, 'String "42" equals string "42"');
     ok($equals{'numeric-num'}, 'Numeric 42 equals string "42" (string comparison)');
 }
@@ -107,9 +107,9 @@ load_perltidyrc_clean();
     my %defaults = (
         'some-option' => 'value',
     );
-    
+
     my %equals = build_equals_default(\%opts, \%defaults);
-    
+
     is(scalar keys %equals, 0, 'Empty opts returns empty hash');
 }
 
@@ -120,9 +120,9 @@ load_perltidyrc_clean();
         'option2' => 'value2',
     );
     my %defaults = ();
-    
+
     my %equals = build_equals_default(\%opts, \%defaults);
-    
+
     is(scalar keys %equals, 0, 'Empty defaults returns empty hash');
 }
 
@@ -137,9 +137,9 @@ load_perltidyrc_clean();
         'option2' => 'different',
         'option3' => 'value',  # Not in opts
     );
-    
+
     my %equals = build_equals_default(\%opts, \%defaults);
-    
+
     ok(exists $equals{'option1'}, 'option1 key exists');
     ok(exists $equals{'option2'}, 'option2 key exists');
     ok(!exists $equals{'option3'}, 'option3 not in result (not in opts)');
@@ -156,7 +156,7 @@ load_perltidyrc_clean();
         'valid_key' => 'value',
     );
     eval { build_equals_default(\%opts, \%defaults) };
-    like($@, qr/Internal error: undefined or empty key found in build_equals_default options/, 
+    like($@, qr/Internal error: undefined or empty key found in build_equals_default options/,
         'Dies on empty string key in opts');
 }
 
@@ -170,7 +170,7 @@ load_perltidyrc_clean();
     );
     $defaults{''} = 'value';    # Empty string key - developer error (Perl stringifies undef to "")
     eval { build_equals_default(\%opts, \%defaults) };
-    like($@, qr/Internal error: undefined or empty key found in build_equals_default defaults/, 
+    like($@, qr/Internal error: undefined or empty key found in build_equals_default defaults/,
         'Dies on empty string key in defaults');
 }
 
@@ -184,4 +184,3 @@ load_perltidyrc_clean();
 }
 
 done_testing();
-

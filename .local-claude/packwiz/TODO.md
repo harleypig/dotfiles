@@ -112,7 +112,7 @@ Watch for: author response, new commits, readiness to merge into
   worktree can be cleaned up (skill Operation 5). The merge gets
   absorbed into `mine` on the next `main` sync.
 
-## Pending decisions
+## Open questions
 
 (none open)
 
@@ -579,7 +579,7 @@ unilaterally.
   is a no-op for us and merging it is harmless but pointless. If
   we (or packs we plan to consume) ever do use `Alias`, the bug
   matters. Action when this surfaces: grep any packs we maintain
-  for `alias = ` in `index.toml`; if absent and no plan to use it,
+  for `alias =` in `index.toml`; if absent and no plan to use it,
   leave parked. Otherwise evaluate for merge into `mine`.
 
 ### When adding CurseForge release-type support

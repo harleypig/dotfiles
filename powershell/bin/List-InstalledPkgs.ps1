@@ -29,7 +29,7 @@
 
 .EXAMPLE
     ./Dump-PSPackages.ps1 -Quiet
-    Outputs the names of all installed packages to the file without screen output. 
+    Outputs the names of all installed packages to the file without screen output.
 #>
 
 param (

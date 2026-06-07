@@ -25,7 +25,7 @@ never needs to know the absolute prefix — all paths are derived from
 
 Example layout (default naming):
 
-```
+```text
 ~/projects/PROJECT/
     PROJECT/            base clone (origin + optional upstream remotes)
     issue321/           worktree for issue branch issue/321
@@ -40,7 +40,7 @@ Repositories that are related to the current project but are not forks of it
 — dependency sources, reference implementations, upstream API repos — are
 expected to be found as **siblings** of the base clone at:
 
-```
+```text
 $PARENT_DIR/<repo-name>/
 ```
 
@@ -63,9 +63,11 @@ When creating a new worktree, resolve the path in this order:
 1. **User supplied an explicit path** — use it as-is.
 2. **Existing worktrees present** — infer the pattern by comparing each
    worktree's path to its checked-out branch:
+
    ```bash
    git worktree list --porcelain | awk '/^worktree/{wt=$2} /^branch/{print wt, $2}'
    ```
+
    If a consistent mapping is visible (e.g., all worktrees are
    `$PARENT_DIR/<branch-without-prefix>`), apply the same pattern.
 3. **No pattern found / first worktree** — default: strip the remote-tracking
@@ -181,11 +183,14 @@ per-clone tooling — aider working files, editor metadata, MCP caches):
    `$DOTFILES/.local-claude/<repo>/`) so it's versioned with your
    dotfiles, not the project.
 2. Symlink it into the repo at the conventional path:
+
    ```bash
    ln -s "$DOTFILES/.local-claude/<repo>" "$BASE_DIR/.claude"
    ```
+
 3. Add the symlink's name to `.git/info/exclude` so git ignores it
    everywhere — every branch, every worktree, every rebase:
+
    ```bash
    printf '\n# Per-clone Claude config (symlinked out-of-tree).\n.claude\n' \
        >> "$BASE_DIR/.git/info/exclude"
@@ -392,6 +397,7 @@ git -C "$WORKTREE_PATH" branch --set-upstream-to="${DEFAULT_REMOTE}/${DEFAULT_BR
 ### Step 4: Report and hand off
 
 Subsequent commands should run with `cwd=$WORKTREE_PATH`. Report:
+
 - Issue title and URL
 - Worktree path
 - Branch name
@@ -411,7 +417,7 @@ branch", "rebase on main", "pull from upstream", etc.
 
 ### Parse source and target
 
-```
+```text
 if user says "X into Y":
     SOURCE = X; TARGET = Y
     cd to Y's worktree (resolve via git worktree list --porcelain)
@@ -589,12 +595,14 @@ etc.
    (tests, linters) — but do not guess; if unclear, ask the
    user whether to run them
 5. Push to origin:
+
    ```bash
    # Detect whether branch has been pushed before
    if git rev-parse --verify "refs/remotes/origin/${BRANCH_NAME}" >/dev/null 2>&1; then
        PREVIOUSLY_PUSHED=true
    fi
    ```
+
    - If rebase (or squash) just ran OR `PREVIOUSLY_PUSHED=true` with
      diverged history: warn user, then
      `git push --force-with-lease --force-if-includes -u origin "$BRANCH_NAME"`
@@ -619,10 +627,12 @@ X", etc.
 ### Preconditions
 
 1. User is NOT currently inside the worktree being removed:
+
    ```bash
    # Use git rather than pwd — pwd can differ from toplevel due to symlinks or subdirectory CWD
    [[ "$(git rev-parse --show-toplevel 2>/dev/null)" != "$WORKTREE_PATH" ]]
    ```
+
 2. Worktree has a clean tree
 3. Branch's PR status — use `gh pr list --head "$BRANCH_NAME"` to check if there's an open/merged PR; warn if no merged PR is found but don't block
 
@@ -646,6 +656,7 @@ fi
 ```
 
 If the remote branch exists:
+
 - Note whether GitHub auto-deleted it already (check if the ref just
   disappeared since `git fetch` earlier in this operation).
 - Ask the user: "Remote branch `origin/$BRANCH_NAME` still exists. Delete
@@ -703,11 +714,13 @@ Recovery cases the skill should recognize:
 ## When to ask vs proceed
 
 Proceed without asking when:
+
 - Trigger is clear and arguments are unambiguous
 - Preconditions are met
 - Operation is reversible or low-risk (fetch, listing, adding a worktree)
 
 Ask first when:
+
 - Source or target branch is ambiguous
 - Tree is dirty and operation needs clean state
 - About to force-delete or force-push
