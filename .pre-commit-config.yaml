@@ -62,16 +62,13 @@ repos:
       # Uses the repo-local .markdownlint.json (auto-discovered at the root).
       - id: markdownlint
 
-  # Phase 3 (Language) — Python: import order, format, lint. Scoped to skip the
-  # legacy bin/ Python scripts (pre-existing lint/format debt + a likely-
-  # vendored poetry2setup) until they're cleaned (see TODO.md). Tools match the
+  # Phase 3 (Language) — Python: import order, format, lint. Tools match the
   # repo's yapf + isort + flake8 choice (python.md), not black/ruff.
   - repo: https://github.com/pycqa/isort
     rev: 6.0.1
     hooks:
       - id: isort
         args: [--check, --diff]
-        exclude: '^bin/(available-subnets|poetry2setup)$'
 
   - repo: https://github.com/google/yapf
     rev: v0.43.0
@@ -79,7 +76,6 @@ repos:
       # 2-space style from config/yapf/style; -d = diff only (non-modifying).
       - id: yapf
         args: [-d, --style, config/yapf/style]
-        exclude: '^bin/(available-subnets|poetry2setup)$'
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.3.0
@@ -87,7 +83,6 @@ repos:
       # config/flake8 reconciles flake8 with yapf's 2-space style (flake8.md).
       - id: flake8
         args: [--config, config/flake8]
-        exclude: '^bin/(available-subnets|poetry2setup)$'
 
   # Phase 3 (Language) — Perl: DEFERRED (intentionally not enabled). Enabling
   # either tool in this *gating* config would currently break the gate:
