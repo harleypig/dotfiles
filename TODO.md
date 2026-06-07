@@ -104,6 +104,23 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
+## 🔁 shell-startup: Double-load Guard + Interactive Guards (MEDIUM PRIORITY)
+
+- [ ] **Idempotency guard.** `.bash_profile` and `.bashrc` both symlink to
+  `shell-startup`, so a login that also starts an interactive shell (ssh
+  login, a new tmux window) runs `shell-startup` twice — re-prepending PATH
+  (duplicate entries), re-sourcing every module, etc. Add an "already loaded"
+  guard near the top that bails when a sentinel (e.g. `SHELL_STARTUP_LOADED`)
+  is set, and set it once loaded. Decide whether a re-source should ever be
+  forced (e.g. `SHELL_STARTUP_LOADED=` to reload).
+- [ ] **Interactive vs non-interactive guards.** Modules in
+  `config/shell-startup/` define things that only make sense in an interactive
+  shell (aliases, prompt, completions) — and aliases aren't even expanded in
+  non-interactive shells. Guard interactive-only content so a non-interactive
+  shell (scripts, scp, non-interactive ssh) skips it: e.g. `[[ $- == *i* ]]`
+  per-module, or split interactive-only modules out. Decide the convention and
+  apply it across the modules.
+
 ## 🧹 shell-startup Follow-ups (LOW PRIORITY)
 
 Deferred from the shell-startup trim (PR #16):
