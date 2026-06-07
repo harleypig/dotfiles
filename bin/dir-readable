@@ -15,8 +15,8 @@ function _dir_readable() {
 
   if [[ ${#pwd} -gt $pwd_max ]]; then # truncate on the left
 
-    local pwd_offset=$(( ${#PWD} - pwd_max ))
-    pwd="${trunc}${pwd:$pwd_offset:$pwd_max}"
+    local pwd_offset=$((${#PWD} - pwd_max))
+    pwd="${trunc}${pwd:pwd_offset:pwd_max}"
 
   fi
 

@@ -21,9 +21,9 @@ load_perltidyrc_clean();
         'brace-tightness' => '2. Whitespace control',
     );
     my %section_notes;
-    
+
     add_section_note(\%sections, \%section_notes, 'indent-columns', 'Test note 1');
-    
+
     ok(exists $section_notes{'1. Indentation'}, 'Section exists after adding note');
     is(scalar @{$section_notes{'1. Indentation'}}, 1, 'One note added to section');
     is($section_notes{'1. Indentation'}[0], 'Test note 1', 'Note text is correct');
@@ -35,9 +35,9 @@ load_perltidyrc_clean();
         'known-option' => '1. Test Section',
     );
     my %section_notes;
-    
+
     add_section_note(\%sections, \%section_notes, 'unknown-option', 'Unknown option note');
-    
+
     ok(exists $section_notes{'UNKNOWN'}, 'UNKNOWN section exists for unknown option');
     is(scalar @{$section_notes{'UNKNOWN'}}, 1, 'One note added to UNKNOWN section');
     is($section_notes{'UNKNOWN'}[0], 'Unknown option note', 'Note text is correct');
@@ -50,11 +50,11 @@ load_perltidyrc_clean();
         'option2' => '1. Test Section',  # Same section
     );
     my %section_notes;
-    
+
     add_section_note(\%sections, \%section_notes, 'option1', 'First note');
     add_section_note(\%sections, \%section_notes, 'option2', 'Second note');
     add_section_note(\%sections, \%section_notes, 'option1', 'Third note');
-    
+
     ok(exists $section_notes{'1. Test Section'}, 'Section exists after adding multiple notes');
     is(scalar @{$section_notes{'1. Test Section'}}, 3, 'Three notes added to same section');
     is($section_notes{'1. Test Section'}[0], 'First note', 'First note is correct');
@@ -68,9 +68,9 @@ load_perltidyrc_clean();
         'test-option' => '1. Test Section',
     );
     my %section_notes;  # Empty hash
-    
+
     add_section_note(\%sections, \%section_notes, 'test-option', 'Note for empty hash');
-    
+
     ok(exists $section_notes{'1. Test Section'}, 'Section created in empty hash');
     is(scalar @{$section_notes{'1. Test Section'}}, 1, 'Note added successfully');
     is($section_notes{'1. Test Section'}[0], 'Note for empty hash', 'Note text is correct');
@@ -82,9 +82,9 @@ load_perltidyrc_clean();
         'known-option' => '1. Test Section',
     );
     my %section_notes;
-    
+
     add_section_note(\%sections, \%section_notes, undef, 'Note for undefined option');
-    
+
     ok(exists $section_notes{'UNKNOWN'}, 'UNKNOWN section exists for undefined option');
     is(scalar @{$section_notes{'UNKNOWN'}}, 1, 'One note added to UNKNOWN section');
     is($section_notes{'UNKNOWN'}[0], 'Note for undefined option', 'Note text is correct');
@@ -96,9 +96,9 @@ load_perltidyrc_clean();
         'known-option' => '1. Test Section',
     );
     my %section_notes;
-    
+
     add_section_note(\%sections, \%section_notes, '', 'Note for empty string option');
-    
+
     ok(exists $section_notes{'UNKNOWN'}, 'UNKNOWN section exists for empty string option');
     is(scalar @{$section_notes{'UNKNOWN'}}, 1, 'One note added to UNKNOWN section');
     is($section_notes{'UNKNOWN'}[0], 'Note for empty string option', 'Note text is correct');
@@ -110,9 +110,9 @@ load_perltidyrc_clean();
         'test-option' => undef,  # Option exists but section is undef
     );
     my %section_notes;
-    
+
     add_section_note(\%sections, \%section_notes, 'test-option', 'Note for undef section');
-    
+
     ok(exists $section_notes{'UNKNOWN'}, 'UNKNOWN section exists when section is undef');
     is(scalar @{$section_notes{'UNKNOWN'}}, 1, 'One note added to UNKNOWN section');
     is($section_notes{'UNKNOWN'}[0], 'Note for undef section', 'Note text is correct');
@@ -124,13 +124,12 @@ load_perltidyrc_clean();
         'test-option' => '1. Test Section',
     );
     my %section_notes;
-    
+
     add_section_note(\%sections, \%section_notes, 'test-option', undef);
-    
+
     ok(exists $section_notes{'1. Test Section'}, 'Section exists after adding undef note');
     is(scalar @{$section_notes{'1. Test Section'}}, 1, 'One note added');
     is($section_notes{'1. Test Section'}[0], undef, 'Undef note text is stored');
 }
 
 done_testing();
-

@@ -101,6 +101,7 @@ git push -u origin "$CUR"
 ## Step 3 — Open the PR (model writes the body)
 
 Compose the title (< 72 chars) and a body per `rules/gh.md` (`## Summary`
+
 + `## Test plan`), then:
 
 ```bash

@@ -40,6 +40,7 @@ These settings are the default. Which form to use depends on the file:
 
 **Files with `.sh` / `.bash` extensions** — shfmt reliably reads
 `.editorconfig`, so the short form works:
+
 ```bash
 shfmt -s -d <file>    # check
 shfmt -s -w <file>    # fix
@@ -49,6 +50,7 @@ shfmt -s -w <file>    # fix
 `config/shell-startup/*`, `config/claude/bin/*`) — shfmt does not
 reliably pick up `.editorconfig` for these, so pass all flags
 explicitly:
+
 ```bash
 shfmt -i 2 -s -bn -ci -sr -d <file>    # check
 shfmt -i 2 -s -bn -ci -sr -w <file>    # fix

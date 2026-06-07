@@ -33,4 +33,3 @@ is(is_true(""), 0, 'Returns 0 for empty string');
 is(is_true("0"), 0, 'Returns 0 for string "0"');
 
 done_testing();
-

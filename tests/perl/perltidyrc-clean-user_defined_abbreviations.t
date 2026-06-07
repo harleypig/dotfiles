@@ -174,7 +174,7 @@ load_perltidyrc_clean();
         'valid_key' => 'value',
     );
     eval { user_defined_abbreviations(\%abbrev, \%abbrev_default) };
-    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations abbreviations/, 
+    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations abbreviations/,
         'Dies on empty string key in abbrev');
 }
 
@@ -188,7 +188,7 @@ load_perltidyrc_clean();
     );
     $abbrev_default{''} = 'value';    # Empty string key - developer error (Perl stringifies undef to "")
     eval { user_defined_abbreviations(\%abbrev, \%abbrev_default) };
-    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations defaults/, 
+    like($@, qr/Internal error: undefined or empty key found in user_defined_abbreviations defaults/,
         'Dies on empty string key in abbrev_default');
 }
 
@@ -202,4 +202,3 @@ load_perltidyrc_clean();
 }
 
 done_testing();
-

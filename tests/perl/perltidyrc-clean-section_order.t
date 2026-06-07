@@ -35,4 +35,3 @@ is(section_order('A. Letter prefix'), 999, 'Returns 999 for letter prefix');
 is(section_order('. Starts with dot'), 999, 'Returns 999 for dot prefix');
 
 done_testing();
-

@@ -26,7 +26,7 @@ otherwise the rule applies.
 One `tests/` root with per-language subdirs (see
 `config/claude/rules/testing.md` for the general convention):
 
-```
+```text
 tests/
   helpers/common.bash   # shared bash/bats support (load_bats_libs, dotfiles_root, make_stub)
   scaffold/             # meta-test generator + templates (build-meta-tests)

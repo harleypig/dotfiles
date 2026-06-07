@@ -28,7 +28,7 @@ load_perltidyrc_clean();
     my %abbreviations = ();
     my %abbreviations_default = ();
     condense_options(\%opts, \%sections, \%section_notes, \%abbreviations, \%abbreviations_default);
-    
+
     ok(exists $opts{'brace-tightness'}, 'Keeps brace-tightness');
     ok(exists $opts{'block-brace-tightness'}, 'Keeps block-brace-tightness when different');
     is($opts{'block-brace-tightness'}, '3', 'Preserves different value');
@@ -48,7 +48,7 @@ load_perltidyrc_clean();
     my %abbreviations = ();
     my %abbreviations_default = ();
     condense_options(\%opts, \%sections, \%section_notes, \%abbreviations, \%abbreviations_default);
-    
+
     ok(exists $opts{'block-brace-tightness'}, 'Keeps block-brace-tightness when brace-tightness missing');
     is($opts{'block-brace-tightness'}, '2', 'Preserves value when brace-tightness missing');
 }
@@ -67,7 +67,7 @@ load_perltidyrc_clean();
     my %abbreviations = ();
     my %abbreviations_default = ();
     condense_options(\%opts, \%sections, \%section_notes, \%abbreviations, \%abbreviations_default);
-    
+
     ok(exists $opts{'indent-columns'}, 'Keeps indent-columns');
     ok(exists $opts{'continuation-indentation'}, 'Keeps continuation-indentation when different');
     is($opts{'continuation-indentation'}, '8', 'Preserves different value');
@@ -85,7 +85,7 @@ load_perltidyrc_clean();
     my %abbreviations = ();
     my %abbreviations_default = ();
     condense_options(\%opts, \%sections, \%section_notes, \%abbreviations, \%abbreviations_default);
-    
+
     ok(exists $opts{'continuation-indentation'}, 'Keeps continuation-indentation when indent-columns missing');
     is($opts{'continuation-indentation'}, '4', 'Preserves value when indent-columns missing');
 }
@@ -102,7 +102,7 @@ load_perltidyrc_clean();
     my %abbreviations = ();
     my %abbreviations_default = ();
     condense_options(\%opts, \%sections, \%section_notes, \%abbreviations, \%abbreviations_default);
-    
+
     ok(exists $opts{'indent-columns'}, 'Keeps indent-columns when continuation-indentation missing');
     is($opts{'indent-columns'}, '4', 'Preserves value when continuation-indentation missing');
 }
@@ -121,7 +121,7 @@ load_perltidyrc_clean();
     my %abbreviations = ();
     my %abbreviations_default = ();
     condense_options(\%opts, \%sections, \%section_notes, \%abbreviations, \%abbreviations_default);
-    
+
     ok(exists $opts{'brace-tightness'}, 'Keeps brace-tightness');
     ok(exists $opts{'block-brace-tightness'}, 'Keeps block-brace-tightness when undefined');
     ok(!defined $opts{'block-brace-tightness'}, 'Preserves undefined value');
@@ -135,7 +135,7 @@ load_perltidyrc_clean();
     my %abbreviations = ();
     my %abbreviations_default = ();
     condense_options(\%opts, \%sections, \%section_notes, \%abbreviations, \%abbreviations_default);
-    
+
     is(scalar keys %opts, 0, 'Empty opts hash remains empty');
 }
 
@@ -153,11 +153,10 @@ load_perltidyrc_clean();
     my %abbreviations = ();
     my %abbreviations_default = ();
     condense_options(\%opts, \%sections, \%section_notes, \%abbreviations, \%abbreviations_default);
-    
+
     ok(exists $opts{'line-length'}, 'Keeps unrelated options');
     ok(exists $opts{'indent-columns'}, 'Keeps indent-columns when continuation-indentation missing');
     is($opts{'line-length'}, '80', 'Preserves unrelated option value');
 }
 
 done_testing();
-

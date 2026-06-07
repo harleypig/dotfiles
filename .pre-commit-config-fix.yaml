@@ -10,7 +10,9 @@
 # Refresh revs with:
 #   pre-commit autoupdate --config .pre-commit-config-fix.yaml
 
-exclude: '^archive/'
+# archive/ = retired code; bin/CleanPath.tmp = stray scratch (cleanpath TODO);
+# .vscode/syncsettings/ = machine-synced VS Code profile data.
+exclude: '^(archive/|bin/CleanPath\.tmp$|\.vscode/syncsettings/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -25,6 +27,15 @@ repos:
       # -w = write in place; flags match shfmt.md / .editorconfig.
       - id: shfmt
         args: [-w, -i, '2', -s, -bn, -ci, -sr]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.48.0
+    hooks:
+      # Auto-fix the mechanical markdown rules (blank lines, table style,
+      # bare URLs, …). Rules it can't fix (MD040 code-fence language, MD013
+      # line length, …) are hand-fixed and gated by the check config.
+      # Uses the repo-local .markdownlint.json (auto-discovered at the root).
+      - id: markdownlint-fix
 
   - repo: https://github.com/rbubley/mirrors-prettier
     rev: v3.8.3

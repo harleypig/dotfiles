@@ -16,7 +16,7 @@ sub load_perltidyrc_clean {
         no warnings 'redefine';
         *CORE::GLOBAL::exit = sub { return; };
     }
-    
+
     # Ensure we're in main package when loading (do executes in current package)
     package main;
     local @ARGV = ('--help');
@@ -36,9 +36,8 @@ sub load_perltidyrc_clean {
     unless (defined &is_true || defined &looks_like_integer) {
         die "Script loaded but functions not found - script may have exited early";
     }
-    
+
     return 1;
 }
 
 1;
-

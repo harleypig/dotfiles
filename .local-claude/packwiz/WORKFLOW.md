@@ -188,7 +188,7 @@ Active test companion branches:
 Each test companion branch is a **multi-way merge**, not a linear
 stack. For `pr/list-pinned-tests` the shape is:
 
-```
+```text
 upstream/main (dfd8b68)
     ├─ list-pinned              (feature code)
     ├─ pr/testing               (test infrastructure, PR #402)
@@ -251,18 +251,24 @@ Procedure (one-time, per branch):
 
 1. Fetch and fast-forward `main` from `upstream/main`.
 2. Create a new branch off the updated `main`:
+
    ```bash
    git checkout -b pr/list-pinned-tests-v2 main
    ```
+
 3. Identify the test commits from the old test branch (the commits
    that add actual test code, not the merge commits):
+
    ```bash
    git log --no-merges --oneline pr/list-pinned-tests ^upstream/main
    ```
+
 4. Cherry-pick those commits onto the new branch:
+
    ```bash
    git cherry-pick <sha> [<sha> ...]
    ```
+
 5. Merge any remaining error-handling branches (if they have not yet
    merged upstream), after they have been rebased onto new `main`.
 6. Push the new branch and open the upstream test PR from it.
@@ -327,4 +333,4 @@ watched PRs" or similar, walk that list and report state via
 
 Most `gh` operations work with the env-var PAT. Writes against
 upstream (PR comments, etc.) require the OAuth fallback documented in
-`~/.claude/rules/gh.md` — prefix with `GH_TOKEN= GITHUB_TOKEN= `.
+`~/.claude/rules/gh.md` — prefix with `GH_TOKEN= GITHUB_TOKEN=`.

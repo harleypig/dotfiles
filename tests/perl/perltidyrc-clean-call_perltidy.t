@@ -25,7 +25,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     eval {
         call_perltidy( "not a hash ref", 'test context', \$stderr, 'die' );
     };
-    like( $@, qr/Internal error: invalid parameter hash/, 
+    like( $@, qr/Internal error: invalid parameter hash/,
         'Dies on invalid params_ref (not a hash ref)' );
 }
 
@@ -36,7 +36,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     eval {
         call_perltidy( \%empty_params, 'test context', \$stderr, 'die' );
     };
-    like( $@, qr/Internal error: invalid parameter hash/, 
+    like( $@, qr/Internal error: invalid parameter hash/,
         'Dies on empty params hash' );
 }
 
@@ -46,7 +46,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %Opts_default;
     my $stderr_var = "";
     my @argv_empty = ();
-    
+
     my %valid_params = (
         perltidyrc         => \$empty_scalar,
         dump_options       => \%Opts_default,
@@ -58,7 +58,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     eval {
         call_perltidy( \%valid_params, 'test context', "not a ref", 'die' );
     };
-    like( $@, qr/Internal error: stderr_ref must be a scalar reference/, 
+    like( $@, qr/Internal error: stderr_ref must be a scalar reference/,
         'Dies on invalid stderr_ref (not a scalar ref)' );
 }
 
@@ -68,7 +68,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %Opts_default;
     my $stderr_var = "";
     my @argv_empty = ();
-    
+
     my %valid_params = (
         perltidyrc         => \$empty_scalar,
         dump_options       => \%Opts_default,
@@ -81,7 +81,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     eval {
         call_perltidy( \%valid_params, 'test context', \$stderr, 'invalid_mode' );
     };
-    like( $@, qr/Internal error: invalid error_mode/, 
+    like( $@, qr/Internal error: invalid error_mode/,
         'Dies on invalid error_mode' );
 }
 
@@ -96,7 +96,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %abbreviations_default;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc         => \$empty_scalar,
         dump_options       => \%Opts_default,
@@ -115,7 +115,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %Opts;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc         => $nonexistent_file,
         dump_options       => \%Opts,
@@ -126,7 +126,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     eval {
         call_perltidy( \%params, 'test context', \$stderr, 'die' );
     };
-    like( $@, qr/Error calling perltidy for test context/, 
+    like( $@, qr/Error calling perltidy for test context/,
         'Dies on error (err == 1) in die mode' );
 }
 
@@ -139,7 +139,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %Opts;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc         => $rc_file,
         dump_options       => \%Opts,
@@ -153,7 +153,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     # Should not die (warnings don't cause death)
     ok( defined $err, 'Does not die on warnings (err == 2) in die mode' );
     # err should be 0 (success) or 2 (warnings), not 1 (error)
-    ok( $err == 0 || $err == 2, 
+    ok( $err == 0 || $err == 2,
         'Returns appropriate error code on warnings' );
 }
 
@@ -168,7 +168,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %abbreviations_default;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc         => \$empty_scalar,
         dump_options       => \%Opts_default,
@@ -177,8 +177,8 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
         stderr             => \$stderr,
         argv               => \@argv_empty,
     );
-    my ( $err, $error_message ) = call_perltidy( 
-        \%params, 'test context', \$stderr, 'accumulate' 
+    my ( $err, $error_message ) = call_perltidy(
+        \%params, 'test context', \$stderr, 'accumulate'
     );
     is( $err, 0, 'Returns error code 0 on success (accumulate mode)' );
     is( $error_message, "", 'Returns empty error message on success' );
@@ -190,7 +190,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %Opts;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc         => $nonexistent_file,
         dump_options       => \%Opts,
@@ -198,13 +198,13 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
         stderr             => \$stderr,
         argv               => \@argv_empty,
     );
-    my ( $err, $error_message ) = call_perltidy( 
-        \%params, 'parsing options', \$stderr, 'accumulate' 
+    my ( $err, $error_message ) = call_perltidy(
+        \%params, 'parsing options', \$stderr, 'accumulate'
     );
     is( $err, 1, 'Returns error code 1 on error (accumulate mode)' );
-    ok( length($error_message) > 0, 
+    ok( length($error_message) > 0,
         'Returns non-empty error message on error' );
-    like( $error_message, qr/perltidy reported an error while parsing options/, 
+    like( $error_message, qr/perltidy reported an error while parsing options/,
         'Error message contains expected text' );
 }
 
@@ -214,7 +214,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %Opts;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc         => $nonexistent_file,
         dump_options       => \%Opts,
@@ -222,12 +222,12 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
         stderr             => \$stderr,
         argv               => \@argv_empty,
     );
-    my ( $err, $error_message ) = call_perltidy( 
-        \%params, 'parsing options', \$stderr, 'accumulate' 
+    my ( $err, $error_message ) = call_perltidy(
+        \%params, 'parsing options', \$stderr, 'accumulate'
     );
     is( $err, 1, 'Returns error code 1 on error' );
     # Error message should include stderr content
-    ok( length($error_message) > 0, 
+    ok( length($error_message) > 0,
         'Error message includes stderr content' );
 }
 
@@ -239,7 +239,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %abbreviations_default;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc         => \$empty_scalar,
         dump_options       => \%Opts_default,
@@ -248,14 +248,14 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
         stderr             => \$stderr,
         argv               => \@argv_empty,
     );
-    my ( $err, $error_message ) = call_perltidy( 
-        \%params, 'test context', \$stderr, 'accumulate' 
+    my ( $err, $error_message ) = call_perltidy(
+        \%params, 'test context', \$stderr, 'accumulate'
     );
     # Should be 0 (success) or 2 (warnings), not 1 (error)
-    ok( $err == 0 || $err == 2, 
+    ok( $err == 0 || $err == 2,
         'Returns appropriate error code (0 or 2)' );
     # On warnings, error_message should contain stderr (which may be empty)
-    ok( defined $error_message, 
+    ok( defined $error_message,
         'Returns defined error message (may be empty on warnings)' );
 }
 
@@ -269,7 +269,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %abbreviations_default;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc         => \"",
         dump_options       => \%Opts_default,
@@ -278,7 +278,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
         stderr             => \$stderr,
         argv               => \@argv_empty,
     );
-    
+
     my $err = call_perltidy( \%params, 'defaults dump', \$stderr, 'die' );
     is( $err, 0, 'Successfully calls Perl::Tidy for defaults dump' );
     ok( keys(%Opts_default) > 0, 'Defaults hash is populated' );
@@ -294,7 +294,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my %abbreviations;
     my $stderr = "";
     my @argv_empty = ();
-    
+
     my %params = (
         perltidyrc             => $rc_file,
         dump_options           => \%Opts,
@@ -305,9 +305,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
         stderr                 => \$stderr,
         argv                   => \@argv_empty,
     );
-    
-    my ( $err, $error_message ) = call_perltidy( 
-        \%params, 'parsing options', \$stderr, 'accumulate' 
+
+    my ( $err, $error_message ) = call_perltidy(
+        \%params, 'parsing options', \$stderr, 'accumulate'
     );
     is( $err, 0, 'Successfully calls Perl::Tidy for config dump' );
     is( $error_message, "", 'No error message on success' );
@@ -316,4 +316,3 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 }
 
 done_testing();
-

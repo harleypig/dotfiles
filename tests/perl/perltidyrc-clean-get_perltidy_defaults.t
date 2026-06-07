@@ -65,11 +65,11 @@ load_perltidyrc_clean();
             $valid_count++;
         }
     }
-    
+
     ok( $valid_count > 0, 'Abbreviations have valid structure' );
-    ok( $valid_count == $total_count, 
+    ok( $valid_count == $total_count,
         "All abbreviations have valid structure ($valid_count/$total_count)" );
-    
+
     # Check a few common abbreviations map to something reasonable
     if ( exists $abbreviations_default->{'i'} ) {
         my @vals = @{ $abbreviations_default->{'i'} };
@@ -96,4 +96,3 @@ load_perltidyrc_clean();
 }
 
 done_testing();
-

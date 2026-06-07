@@ -41,7 +41,7 @@ teardown() {
   cleanup_temp_dir
 }
 
-@test "run_hook runs a readable hook from a custom \$dfdir and returns 0" {
+@test 'run_hook runs a readable hook from a custom $dfdir and returns 0' {
   printf 'touch "%s/ran"\n' "$TEST_TEMP_DIR" > "$TEST_TEMP_DIR/myhook"
 
   dfdir="$TEST_TEMP_DIR" run run_hook myhook
@@ -50,7 +50,7 @@ teardown() {
   assert_file_exist "$TEST_TEMP_DIR/ran"
 }
 
-@test "run_hook falls back to \$DOTFILES/shell_startup.d when \$dfdir unset" {
+@test 'run_hook falls back to $DOTFILES/shell_startup.d when $dfdir unset' {
   mkdir -p "$TEST_TEMP_DIR/shell_startup.d"
   printf 'touch "%s/ran"\n' "$TEST_TEMP_DIR" \
     > "$TEST_TEMP_DIR/shell_startup.d/deflt"

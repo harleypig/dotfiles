@@ -30,14 +30,14 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
         use lib 'tests/perl/lib';
         require TestPerltidyrcClean;
         TestPerltidyrcClean::load_perltidyrc_clean();
-        
+
         # Initialize %cli to known state
         $cli{drop_defaults} = 1;
         $cli{keep_defaults} = 0;
-        
+
         # Call the function
         set_keep_defaults();
-        
+
         # Check results
         if ($cli{drop_defaults} == 0 && $cli{keep_defaults} == 1) {
             print "PASS\n";
@@ -45,7 +45,7 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
             print "FAIL: drop_defaults=$cli{drop_defaults}, keep_defaults=$cli{keep_defaults}\n";
         }
     };
-    
+
     # This won't work because %cli is lexical. Let's test differently.
     # Instead, we'll test through actual script execution.
 }
@@ -57,7 +57,7 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 # Test 1: Verify set_keep_defaults function exists and is callable
 {
     ok( defined &set_keep_defaults, 'set_keep_defaults function is defined' );
-    
+
     eval { set_keep_defaults(); };
     is( $@, "", 'set_keep_defaults can be called without error' );
 }
@@ -65,7 +65,7 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 # Test 2: Verify set_add_missing_defaults function exists and is callable
 {
     ok( defined &set_add_missing_defaults, 'set_add_missing_defaults function is defined' );
-    
+
     eval { set_add_missing_defaults(); };
     is( $@, "", 'set_add_missing_defaults can be called without error' );
 }

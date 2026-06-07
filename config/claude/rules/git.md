@@ -10,7 +10,7 @@
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -62,6 +62,7 @@ issue branches, syncing with upstream, prepping PRs, and cleanup. See
 `config/claude/skills/git-worktree-workflow/SKILL.md`.
 
 Key defaults from that skill:
+
 - `--no-ff` on all merges unless the user overrides
 - Rebase for upstream-bound PR branches; merge `--no-ff` for own-repo branches
 - Resolve worktree path from existing patterns before defaulting to

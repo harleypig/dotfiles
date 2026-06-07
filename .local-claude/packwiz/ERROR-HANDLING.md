@@ -16,6 +16,7 @@ codebase has no documented error posture, so every failure path is
 an ad-hoc decision.
 
 Goal: establish, per site, whether the path should
+
 - **fail fast** (stop the operation, non-zero exit),
 - **surface with context** (print a clear, structured warning and
   continue, but exit non-zero at the end so callers can detect it),
@@ -30,7 +31,7 @@ The error-handling changes depend on test infrastructure — helpers,
 behavioral coverage, expected-failure cases — that lives in
 `pr/testing` and does not exist on `upstream/main` yet.
 
-```
+```text
 upstream/main
     └── pr/testing  (PR #402)
             ├── pr/error-handling-exports
@@ -49,6 +50,7 @@ error-handling branch directly onto `upstream/main` (the
 resume the normal single-base sync from that point.
 
 **Candidate groups** (scope decided at implementation time):
+
 - Export-pipeline silent failures (`modrinth export`,
   `curseforge export`, `AddNonMetafileOverrides`) — includes
   PR #384 merge or equivalent.

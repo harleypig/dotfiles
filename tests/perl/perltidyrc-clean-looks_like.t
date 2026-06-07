@@ -64,4 +64,3 @@ ok(looks_like_number("1e10"), 'looks_like_number: Returns true for scientific no
 ok(looks_like_number("1.5e2"), 'looks_like_number: Returns true for scientific notation "1.5e2"');
 
 done_testing();
-

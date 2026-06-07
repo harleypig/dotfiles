@@ -152,6 +152,7 @@ configuration or environment setup for external tools:
 - **yamllint** - YAML linter
 
 These wrappers ensure consistent tool behavior across the repository and may:
+
 - Set environment variables
 - Provide default configuration
 - Integrate with project-specific settings

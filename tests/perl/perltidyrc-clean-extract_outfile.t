@@ -157,4 +157,3 @@ load_perltidyrc_clean();
 }
 
 done_testing();
-
