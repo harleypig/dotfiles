@@ -447,17 +447,27 @@ working tree — evaluate carefully before implementing.
   - [ ] Test PATH building
   - [ ] Test module loading without errors
 - [ ] Add tests for critical bin/ scripts
-  - [ ] cleanpath (unit tests)
-  - [ ] yesno (unit tests)
-  - [ ] git-status (integration tests)
-  - [ ] check-dotfiles (integration tests)
+  - [x] cleanpath (unit tests) — `tests/shell/test_cleanpath.bats`
+  - [x] yesno (unit tests) — `tests/shell/test_yesno.bats`
+  - [x] git-status (integration tests) — `tests/shell/test_git_status.bats`
+        (skips the prompt assertion if system `git-prompt.sh` is absent)
+  - [ ] check-dotfiles (integration tests) — deferred: it has side effects
+        (`ln -fs` into `$HOME`) so it needs a sandboxed `HOME`/`DOTFILES`;
+        also has a latent bug (`check_dotfiles` links `$DOTFILES/shell_startup`
+        with an underscore, but the file is `shell-startup`) — fix while
+        adding the test.
 - [ ] Add tests for lib/ libraries
   - [ ] debug — complex; its own task
   - [ ] parse_params — complex (657 L); its own task. Evaluate rewriting
         in perl (much simpler than the bash version); note it's currently a
         sourced lib that sets caller variables, so a perl version would need
         to emit eval-able shell (getopt-style) for the caller to `eval`.
-        Write tests for whichever form it ends up as.
+        Write tests for whichever form it ends up as. **Also consider
+        converting `bin/cleanpath` to perl** (same kind of text munging).
+        Constraint: a perl rewrite of either must use **only core modules
+        shipped with perl** — no CPAN dependencies (keeps them runnable
+        anywhere perl is, and avoids the Perl::Tidy/XML::LibXML kind of
+        install gap; see perl CI notes).
   - (`is`, `Arrays`, `strings` archived to `archive/lib/` — legacy/unused,
     not tested; `git-prompt` factored into `bin/git-status`)
 - [ ] Add tests for config/shell-startup/ modules
