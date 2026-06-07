@@ -545,22 +545,44 @@ working tree — evaluate carefully before implementing.
 
 ### Comprehensive BATS Test Coverage Audit (MEDIUM PRIORITY)
 
-Phase 3 covers a handful of critical scripts. This task is a full pass to
-ensure everything that should have tests does.
+`bin/` audited (2026-06-07). The 9 `docker_wrapper` tool symlinks (dive,
+hadolint, ollama, openwebui, prettier, shellcheck, shfmt, trivy, yamllint) are
+tested once at the dispatcher (`test_docker_wrapper`). Real scripts classified:
 
-- [ ] Inventory all scripts in `bin/` and classify each:
-  - Already tested (Phase 3 covers cleanpath, yesno, git-status, check-dotfiles)
-  - Needs unit tests (pure logic, no external deps)
-  - Needs integration tests (calls external tools, modifies state)
-  - Wrapper/trivial — document why tests aren't needed
-- [ ] Write `test_<script>.bats` for each untested bin/ script
-- [ ] Evaluate what else needs BATS tests beyond bin/:
-  - [ ] `lib/` libraries (surface area for reuse bugs)
-  - [ ] `config/shell-startup/` modules (sourcing, conditional logic)
-  - [ ] Any scripts in other locations (setup-work, etc.)
-- [ ] Ensure `tests/scaffold/build-meta-tests` generates tests for all new
-  scripts
-- [ ] Update Phase 3 checklist once items are covered here
+**Tested:** cleanpath, check-dotfiles, docker_wrapper, envsubstitute,
+git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
+(`test_duration.bats`), **dir-readable** (`test_dir-readable.bats`).
+
+**Unit-testable (pure logic) — to do:**
+
+- [ ] `where` — locate/classify commands.
+- [ ] `showvars` — print selected shell variables.
+- [ ] `creds-helper` — credential lookup; pair with the known PAT-fallback bug
+  fix (its own section) so the fix lands with a regression test.
+- [ ] `available-subnets` — Python subnet math; belongs in `tests/python/`
+  (pytest), not bats.
+- [ ] (marginal) `loadavg` (output depends on real load), `dateh` (date-format
+  table — mostly display).
+
+**Integration (external tools / state) — to do:**
+
+- [ ] `git-all`, `git-branch-clean` — run git over repos/branches (use a temp
+  git repo, like the docker harness pattern).
+- [ ] `proj` — project switch (cd / filesystem).
+- [ ] `ansi` — tput wrapper (the TERM-unset path is already covered by
+  `test_integration_context`); a focused unit test could assert sequence
+  emission.
+- [ ] `motd` (large system-summary display), `tmux_mode_indicator` (tmux
+  display; also has the `set -ex` leftover to clean — see tmux section).
+
+**Trivial / skip (documented):** `anykey` (interactive single-key read),
+`lwhich` / `vimwhich` (thin `which`/vim wrappers), `run-help` (9-line readline
+shim), `show-unicode` (static table), `bash-colors` (color-var defs),
+`tmux_edit_buffer` (5-line tmux glue).
+
+- [ ] Also evaluate beyond `bin/`: remaining `config/shell-startup/` modules
+  (mostly covered by the integration tests) and any scripts elsewhere.
+- [ ] Regenerate the meta suite after adding scripts; keep Phase 3 in sync.
 
 ## 🧠 Claude Rules Files (MEDIUM PRIORITY)
 
