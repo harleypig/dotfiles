@@ -103,6 +103,16 @@ wtf_am_i_doing_here() {
 }
 
 #-----------------------------------------------------------------------------
+# perlbrew sets PATH / PERL5LIB / PERLBREW_* — needed in any shell, so run it
+# before the interactive guard.
+setup_perlbrew
+
+##############################################################################
+# Interactive-only below — aliases and helpers.
+
+[[ $- == *i* ]] || return 0
+
+#-----------------------------------------------------------------------------
 # https://metacpan.org/module/Catalyst::Manual::Tutorial::07_Debugging#DEBUGGING-MODULES-FROM-CPAN
 # shellcheck disable=2154
 alias cmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
@@ -120,6 +130,5 @@ command -v cpanm &> /dev/null && {
   [[ $(which cpanm) != $HOME/* ]] && alias cpanm='cpanm -S'
 }
 
-setup_perlbrew
 setup_dzil
 setup_prove
