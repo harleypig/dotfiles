@@ -44,10 +44,22 @@ _pp=$(parse_params "$PARM_DEF" "$@") || show_usage
 eval "$_pp"
 ```
 
+where `show_usage` shows the generated docs via `parse_params --usage
+"$PARM_DEF"`. Or drop `show_usage` entirely with the turnkey form — on bad
+input parse_params prints the errors + usage and emits `exit`, so one line does
+it all:
+
+```bash
+eval "$(parse_params --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
+```
+
 This replaces the boilerplate `while (($#)); do case $1 in …` loop and gives
 consistent type-checking, defaults, required-option enforcement, negatable
-booleans (`--no-x`), repeatable (`type@`) options, positionals, and an
-auto-generated `--help`.
+booleans (`--no-x`), repeatable (`type@` → array) options, positionals, and an
+auto-generated `--help`. It also works **inside a function** — pass the
+function's `"$@"` (declare the target vars `local` first to scope them); a
+function with many parameters is usually better as its own script. Run
+`parse_params --help` for the full reference.
 
 **Scope caveat:** `parse_params` ships in the dotfiles repo (`bin/parse_params`)
 and is only on `PATH` in that environment. Do **not** depend on it in a

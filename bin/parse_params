@@ -26,6 +26,11 @@ my $PROG = 'parse_params';
 my @TYPES   = qw(boolean char date filename integer string varname);
 my %IS_TYPE = map { $_ => 1 } @TYPES;
 
+# Set from leading options in main; read by the error/usage helpers below.
+our $AUTO      = 0;                    # --auto: handle errors itself (usage + emit `exit 2`)
+our $PROG_NAME = '';                   # --prog NAME: shown in the generated usage header
+our ( $OPTS, $POSITIONALS );
+
 #############################################################################
 # Documentation
 #
@@ -49,7 +54,18 @@ my %IS_TYPE = map { $_ => 1 } @TYPES;
 #
 # Generate usage text from a definition (for the caller's own show_usage):
 #
-#   parse_params --usage "$PARM_DEF"
+#   parse_params --usage [--prog NAME] "$PARM_DEF"
+#
+# Or fully turnkey -- parse_params prints errors + usage and emits `exit`
+# itself, so no show_usage is needed:
+#
+#   eval "$(parse_params --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
+#
+# Works in a function too -- pass the function's "$@"; declare the target vars
+# `local` first to scope them to the function. A function with many parameters
+# is usually better off as its own script.
+#
+# `parse_params -h` / `--help` prints parse_params's own reference.
 #
 #=head1 DEFINITION LINES
 #
@@ -84,13 +100,25 @@ my %IS_TYPE = map { $_ => 1 } @TYPES;
 #----------------------------------------------------------------------------
 # Error helpers.
 
-sub input_err {
-  print STDERR "$PROG: $_[0]\n";
+# Bad input from the caller's user. In --auto mode parse_params handles it
+# itself: print the messages + generated usage to STDERR and emit `exit 2` on
+# STDOUT (so the caller's `eval` stops the script); otherwise exit 1 and let
+# the caller's `|| show_usage` handle it.
+sub bail_input {
+  print STDERR "$PROG: $_\n" for @_;
+  if ($AUTO) {
+    print STDERR "\n", build_usage( $OPTS, $POSITIONALS ) if defined $OPTS;
+    print "exit 2\n";
+    exit 0;
+  }
   exit 1;
 }
 
+# Broken definition -- a developer error in PARM_DEF. In --auto mode also emit
+# `exit 2` so the caller's `eval` stops rather than running with unset vars.
 sub def_err {
   print STDERR "$PROG: definition error: $_[0]\n";
+  if ($AUTO) { print "exit 2\n"; exit 0; }
   exit 2;
 }
 
@@ -254,7 +282,8 @@ sub parse_definition {
 sub build_usage {
   my ( $opts, $positionals ) = @_;
 
-  my @lines = ( 'Usage: [options]' . ( @$positionals ? ' ' . join( ' ', map { $_->{var} } @$positionals ) : '' ) . "\n" );
+  my $prog  = length $PROG_NAME ? "$PROG_NAME " : '';
+  my @lines = ( "Usage: ${prog}[options]" . ( @$positionals ? ' ' . join( ' ', map { $_->{var} } @$positionals ) : '' ) . "\n" );
 
   if (@$opts) {
     push @lines, 'Options:';
@@ -283,34 +312,105 @@ sub build_usage {
   return join( "\n", @lines ) . "\n";
 } ## end sub build_usage
 
+#----------------------------------------------------------------------------
+# parse_params's own help (the leading -h/--help), distinct from the usage it
+# generates for a caller (--usage, or a caller program's own -h).
+
+sub tool_help {
+  print <<'EOH';
+parse_params - validate parameters from a definition string and emit
+eval-able shell assignments (replaces hand-written arg-parsing loops).
+
+Usage:
+  parse_params [--auto] [--prog NAME] "$DEF" "$@"   # parse; print assignments
+  parse_params --usage [--prog NAME] "$DEF"         # print generated usage
+  parse_params -h | --help                          # this help
+
+In a script (or a function -- pass the function's "$@"):
+  PARM_DEF='
+  a|app,string,AppName,,required
+  v|verbose,boolean
+  n|num,integer,count,0
+  i|inc,string@,includes
+  #,string,target
+  '
+  _pp=$(parse_params "$PARM_DEF" "$@") || show_usage   # show_usage runs
+  eval "$_pp"                                          #   parse_params --usage
+  # ...or fully turnkey (no show_usage needed):
+  eval "$(parse_params --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
+
+Definition line (comma-separated; trailing fields optional):
+  OPTION, TYPE, VARNAME, DEFAULT, REQUIRED
+  OPTION    short (a), long (app), both (a|app), or # for a positional
+  TYPE      boolean char date filename integer string varname
+            append @ (e.g. string@) to collect repeats into a shell array
+  VARNAME   defaults to the long option, else the short option
+  DEFAULT   used when the option is absent (boolean: 0|1 resting value)
+  REQUIRED  required | optional (default optional)
+
+Behavior:
+  boolean   set -> 1, absent -> 0; negatable (--no-LONG); DEFAULT=1 default-on
+  integer   signed
+  filename  parent dir must exist, file readable or creatable; emitted absolute
+  date      accepted if `date -d VALUE` succeeds
+
+Exit codes: 0 ok / 1 bad input / 2 bad definition.
+EOH
+  exit 0;
+} ## end sub tool_help
+
 #############################################################################
 # Main.
 
-@ARGV or def_err('no definition string given');
+# Leading parse_params options precede the definition string. A definition
+# line never starts with '-', so the first non-option arg is the definition.
+my $usage_mode = 0;
+while ( @ARGV && substr( $ARGV[0], 0, 1 ) eq '-' ) {
+  my $a = $ARGV[0];
 
-# Usage-generation mode: parse_params --usage "$DEF"
-if ( $ARGV[0] eq '--usage' ) {
-  shift @ARGV;
-  def_err('no definition string given') unless @ARGV;
-  my ( $opts, $positionals ) = parse_definition( $ARGV[0] );
-  print build_usage( $opts, $positionals );
-  exit 0;
-}
+  if ( $a eq '-h' || $a eq '--help' ) {
+    tool_help();                       # parse_params's own help; exits 0
+  } elsif ( $a eq '--usage' ) {
+    $usage_mode = 1;
+    shift @ARGV;
+  } elsif ( $a eq '--auto' ) {
+    $AUTO = 1;
+    shift @ARGV;
+  } elsif ( $a eq '--prog' ) {
+    shift @ARGV;
+    @ARGV or def_err('--prog needs a value');
+    $PROG_NAME = shift @ARGV;
+  } elsif ( $a eq '--' ) {
+    shift @ARGV;
+    last;
+  } else {
+    last;                              # unrecognized; treat the next arg as the definition
+  }
+} ## end while ( @ARGV && substr( ...))
+
+@ARGV or def_err('no definition string given');
 
 my $def  = shift @ARGV;
 my @args = @ARGV;
 
-my ( $opts, $positionals, $optspec, $values ) = parse_definition($def);
+my ( $optspec, $values );
+( $OPTS, $POSITIONALS, $optspec, $values ) = parse_definition($def);
 
-# Auto --help, unless the caller defined its own -h / --help.
-my %defined_flag = map { ( $_->{short} // '' ) => 1, ( $_->{long} // '' ) => 1 } @$opts;
+if ($usage_mode) {
+  print build_usage( $OPTS, $POSITIONALS );
+  exit 0;
+}
+
+# A program built on parse_params gets --help for free: if the caller's args
+# include -h/--help (and the caller did not define its own), print the
+# generated usage and tell the caller's `eval` to stop cleanly. (parse_params's
+# own --help is the leading flag handled above.)
+my %defined_flag = map { ( $_->{short} // '' ) => 1, ( $_->{long} // '' ) => 1 } @$OPTS;
 if ( !$defined_flag{h} && !$defined_flag{help} ) {
   for my $a (@args) {
     last if $a eq '--';
     if ( $a eq '-h' || $a eq '--help' ) {
-      print STDERR build_usage( $opts, $positionals );
-
-      # Tell the caller (which `eval`s our stdout) to stop cleanly.
+      print STDERR build_usage( $OPTS, $POSITIONALS );
       print "exit 0\n";
       exit 0;
     }
@@ -321,13 +421,13 @@ Getopt::Long::Configure( 'no_auto_abbrev', 'no_ignore_case', 'permute' );
 {
   # Getopt::Long warns to STDERR on a bad option; let that through, then fail.
   Getopt::Long::GetOptionsFromArray( \@args, @$optspec )
-    or input_err('could not parse options');
+    or bail_input('could not parse options');
 }
 
 my @errors;
 my @out;
 
-for my $o (@$opts) {
+for my $o (@$OPTS) {
   my $var  = $o->{var};
   my $type = $o->{type};
 
@@ -367,10 +467,10 @@ for my $o (@$opts) {
 
   $v = File::Spec->rel2abs($v) if $type eq 'filename' && defined $v && length $v;
   push @out, "$var=" . shq($v);
-} ## end for my $o (@$opts)
+} ## end for my $o (@$OPTS)
 
 # Positionals: assign the leftover args in order.
-for my $p (@$positionals) {
+for my $p (@$POSITIONALS) {
   my $v = shift @args;
   if ( defined $v && length $v && !valid_value( $p->{type}, $v ) ) {
     push @errors, "positional $p->{var} ($v) is not a $p->{type}";
@@ -380,10 +480,7 @@ for my $p (@$positionals) {
   push @out, "$p->{var}=" . shq($v);
 }
 
-if (@errors) {
-  print STDERR "$PROG: $_\n" for @errors;
-  exit 1;
-}
+bail_input(@errors) if @errors;
 
 print "$_\n" for @out;
 exit 0;
