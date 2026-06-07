@@ -49,9 +49,6 @@ Handles various input formats (y/n, yes/no, etc.)
 
 ### System and Information Utilities
 
-**available-subnets**
-List available network subnets on the system.
-
 **bash-colors**
 Display available bash color codes and formatting options. Useful reference for
 terminal color scripting.

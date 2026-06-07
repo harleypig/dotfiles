@@ -582,8 +582,8 @@ git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
   wrapper) + `jq`; covered under the integration group, not pure-unit.
 - [ ] `creds-helper` — credential lookup; pair with the known PAT-fallback bug
   fix (its own section) so the fix lands with a regression test.
-- [ ] `available-subnets` — Python subnet math; belongs in `tests/python/`
-  (pytest), not bats.
+- [x] `available-subnets` — **removed** (obsolete: old GCP-subnet tooling no
+  longer used); archived to `archive/bin/`. No test needed.
 - [ ] (marginal) `loadavg` (output depends on real load), `dateh` (date-format
   table — mostly display).
 
