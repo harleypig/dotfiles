@@ -39,6 +39,31 @@ repos:
       # Uses the repo-local .markdownlint.json (auto-discovered at the root).
       - id: markdownlint-fix
 
+  # Phase 3 (Language) — Python fixers (manual). Same scope-exclude as the
+  # check config; flake8 has no fix variant (lint-only). Run isort before yapf.
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        exclude: '^bin/(available-subnets|poetry2setup)$'
+
+  - repo: https://github.com/google/yapf
+    rev: v0.43.0
+    hooks:
+      - id: yapf
+        args: [-i, --style, config/yapf/style]
+        exclude: '^bin/(available-subnets|poetry2setup)$'
+
+  # Perl fixer (perltidy) DEFERRED for the same reasons as the check config
+  # (perltidy version drift / perlbrew pinning — see TODO.md). When enabled:
+  # - repo: local
+  #   hooks:
+  #     - id: perltidy
+  #       name: perltidy -b
+  #       entry: perltidy -b -bext=/
+  #       language: system
+  #       types: [perl]
+
   - repo: https://github.com/rbubley/mirrors-prettier
     rev: v3.8.3
     hooks:
