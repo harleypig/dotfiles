@@ -12,12 +12,13 @@ my ($out, $err, $rc);
 # parse_params's own help (leading -h / --help) -> stdout, exit 0
 ($out, $err, $rc) = run_pp_argv('-h');
 is($rc, 0, '-h exits 0');
-like($out, qr/^parse_params - validate/, '-h prints parse_params own help');
-like($out, qr/Definition line/, '-h help documents the definition format');
+like($out, qr/parse_params - validate/, '-h prints parse_params own help');
+like($out, qr/^DEFINITION LINES$/m, '-h documents the definition format');
+like($out, qr/^OPTIONS$/m, '-h lists parse_params own options (from POD)');
 
 ($out, $err, $rc) = run_pp_argv('--help');
 is($rc, 0, '--help exits 0');
-like($out, qr/^parse_params - validate/, '--help prints own help');
+like($out, qr/parse_params - validate/, '--help prints own help');
 
 # --prog NAME shows the program name in the generated usage header
 ($out, $err, $rc) = run_pp_argv('--usage', '--prog', 'myscript', "a|app,string");

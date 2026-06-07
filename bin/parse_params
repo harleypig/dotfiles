@@ -20,6 +20,7 @@ use warnings;
 use Getopt::Long   ();
 use File::Basename qw(dirname);
 use File::Spec     ();
+use Pod::Usage     qw(pod2usage);
 
 my $PROG = 'parse_params';
 
@@ -30,72 +31,6 @@ my %IS_TYPE = map { $_ => 1 } @TYPES;
 our $AUTO      = 0;                    # --auto: handle errors itself (usage + emit `exit 2`)
 our $PROG_NAME = '';                   # --prog NAME: shown in the generated usage header
 our ( $OPTS, $POSITIONALS );
-
-#############################################################################
-# Documentation
-#
-#=head1 NAME
-#
-# parse_params - validate parameters from a definition string, emit shell
-# assignments.
-#
-#=head1 SYNOPSIS
-#
-#   PARM_DEF='
-#   a|app,string,AppName,,required
-#   v|verbose,boolean
-#   n|num,integer,count,0
-#   i|inc,string@,includes
-#   #,string,target
-#   '
-#   _pp=$(parse_params "$PARM_DEF" "$@") || show_usage
-#   eval "$_pp"
-#   # now: $AppName, $verbose (0/1), $count, "${includes[@]}", $target
-#
-# Generate usage text from a definition (for the caller's own show_usage):
-#
-#   parse_params --usage [--prog NAME] "$PARM_DEF"
-#
-# Or fully turnkey -- parse_params prints errors + usage and emits `exit`
-# itself, so no show_usage is needed:
-#
-#   eval "$(parse_params --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
-#
-# Works in a function too -- pass the function's "$@"; declare the target vars
-# `local` first to scope them to the function. A function with many parameters
-# is usually better off as its own script.
-#
-# `parse_params -h` / `--help` prints parse_params's own reference.
-#
-#=head1 DEFINITION LINES
-#
-# One option per line, up to five comma-separated fields (surrounding
-# whitespace is trimmed):
-#
-#   OPTION, TYPE, VARNAME, DEFAULT, REQUIRED
-#
-# OPTION   short (`a`), long (`app`), both (`a|app`), or `#` for a positional.
-# TYPE     one of: boolean char date filename integer string varname.
-#          Append `@` (e.g. `string@`) to collect repeats into a shell array.
-# VARNAME  optional; defaults to the long option, else the short option.
-# DEFAULT  optional; used when the option is absent (ignored for boolean).
-# REQUIRED optional; `required` or `optional` (default optional; boolean is
-#          always optional).
-#
-#=head1 BEHAVIOR / EXIT CODES
-#
-#   boolean   set -> 1, absent -> 0 (so `((VAR)) && ...` fires when given).
-#             Negatable: --no-LONG sets 0. DEFAULT 0|1 sets the resting value,
-#             so DEFAULT=1 is a default-on (inverted) flag.
-#   integer   signed: /^-?\d+$/.
-#   filename  parent dir must exist and the file be readable (or creatable);
-#             emitted as an absolute path.
-#   date      accepted if `date -d VALUE` succeeds.
-#
-#   exit 0    success (assignments on stdout), or --help (usage on stderr).
-#   exit 1    invalid input (messages on stderr).
-#   exit 2    invalid definition -- a developer error in PARM_DEF.
-#############################################################################
 
 #----------------------------------------------------------------------------
 # Error helpers.
@@ -317,47 +252,8 @@ sub build_usage {
 # generates for a caller (--usage, or a caller program's own -h).
 
 sub tool_help {
-  print <<'EOH';
-parse_params - validate parameters from a definition string and emit
-eval-able shell assignments (replaces hand-written arg-parsing loops).
-
-Usage:
-  parse_params [--auto] [--prog NAME] "$DEF" "$@"   # parse; print assignments
-  parse_params --usage [--prog NAME] "$DEF"         # print generated usage
-  parse_params -h | --help                          # this help
-
-In a script (or a function -- pass the function's "$@"):
-  PARM_DEF='
-  a|app,string,AppName,,required
-  v|verbose,boolean
-  n|num,integer,count,0
-  i|inc,string@,includes
-  #,string,target
-  '
-  _pp=$(parse_params "$PARM_DEF" "$@") || show_usage   # show_usage runs
-  eval "$_pp"                                          #   parse_params --usage
-  # ...or fully turnkey (no show_usage needed):
-  eval "$(parse_params --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
-
-Definition line (comma-separated; trailing fields optional):
-  OPTION, TYPE, VARNAME, DEFAULT, REQUIRED
-  OPTION    short (a), long (app), both (a|app), or # for a positional
-  TYPE      boolean char date filename integer string varname
-            append @ (e.g. string@) to collect repeats into a shell array
-  VARNAME   defaults to the long option, else the short option
-  DEFAULT   used when the option is absent (boolean: 0|1 resting value)
-  REQUIRED  required | optional (default optional)
-
-Behavior:
-  boolean   set -> 1, absent -> 0; negatable (--no-LONG); DEFAULT=1 default-on
-  integer   signed
-  filename  parent dir must exist, file readable or creatable; emitted absolute
-  date      accepted if `date -d VALUE` succeeds
-
-Exit codes: 0 ok / 1 bad input / 2 bad definition.
-EOH
-  exit 0;
-} ## end sub tool_help
+  pod2usage( -verbose => 2, -exitval => 0 );
+}
 
 #############################################################################
 # Main.
@@ -484,3 +380,143 @@ bail_input(@errors) if @errors;
 
 print "$_\n" for @out;
 exit 0;
+
+__END__
+
+=head1 NAME
+
+parse_params - validate parameters from a definition string and emit
+eval-able shell assignments
+
+=head1 SYNOPSIS
+
+  PARM_DEF='
+  a|app,string,AppName,,required
+  v|verbose,boolean
+  n|num,integer,count,0
+  i|inc,string@,includes
+  #,string,target
+  '
+  _pp=$(parse_params "$PARM_DEF" "$@") || show_usage
+  eval "$_pp"
+  # now: $AppName, $verbose (0/1), $count, "${includes[@]}", $target
+
+Fully turnkey (parse_params prints errors + usage and emits C<exit> itself,
+so no C<show_usage> is needed):
+
+  eval "$(parse_params --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
+
+Generate usage text for a caller's own C<show_usage>:
+
+  parse_params --usage [--prog NAME] "$PARM_DEF"
+
+=head1 DESCRIPTION
+
+Replaces the hand-written C<while (($#)); do case $1 in ...> argument-parsing
+loop. It validates the arguments against a definition string and prints
+C<eval>-able shell assignments; only quoted data is emitted (plus a bare
+C<exit> for C<--help> / C<--auto>), never generated code, so C<eval>-ing the
+output is safe.
+
+It works inside a function too: pass the function's C<"$@">, and declare the
+target variables C<local> first if you want them scoped to the function. A
+function with many parameters is usually better off as its own script.
+
+=head1 OPTIONS
+
+parse_params's own options precede the definition string:
+
+=over 4
+
+=item B<--usage> [B<--prog> I<NAME>] I<DEF>
+
+Print the usage text generated from I<DEF> and exit.
+
+=item B<--prog> I<NAME>
+
+Use I<NAME> in the generated usage header (C<Usage: NAME [options] ...>).
+
+=item B<--auto>
+
+Turnkey error handling: on bad input or a broken definition, print the errors
+and the usage to STDERR and emit C<exit 2> on STDOUT, so the caller's C<eval>
+stops the script with no C<show_usage> needed.
+
+=item B<-h>, B<--help>
+
+Print this reference and exit. (A leading C<-h> is parse_params's own help; a
+C<-h> in the caller's arguments, after I<DEF>, produces that program's
+generated usage instead.)
+
+=back
+
+=head1 DEFINITION LINES
+
+One option per line, up to five comma-separated fields (surrounding whitespace
+is trimmed):
+
+  OPTION, TYPE, VARNAME, DEFAULT, REQUIRED
+
+=over 4
+
+=item B<OPTION>
+
+Short (C<a>), long (C<app>), both (C<a|app>), or C<#> for a positional.
+
+=item B<TYPE>
+
+One of: boolean char date filename integer string varname. Append C<@>
+(e.g. C<string@>) to collect repeats into a shell array.
+
+=item B<VARNAME>
+
+Optional; defaults to the long option, else the short option.
+
+=item B<DEFAULT>
+
+Optional; used when the option is absent. For C<boolean> it is the resting
+value (C<0> or C<1>).
+
+=item B<REQUIRED>
+
+Optional; C<required> or C<optional> (default C<optional>; boolean is always
+optional).
+
+=back
+
+=head1 TYPES AND BEHAVIOR
+
+=over 4
+
+=item boolean
+
+Set -> C<1>, absent -> C<0>, so C<((VAR)) && ...> fires when the flag is
+given. Negatable: C<--no-LONG> sets C<0>. C<DEFAULT=1> makes a default-on
+(inverted) flag.
+
+=item integer
+
+Signed (C</^-?\d+$/>).
+
+=item filename
+
+The parent directory must exist and the file must be readable (or creatable);
+emitted as an absolute path.
+
+=item date
+
+Accepted if C<date -d VALUE> succeeds.
+
+=item char / string / varname
+
+A single character / any non-empty value / a valid shell identifier.
+
+=back
+
+=head1 EXIT STATUS
+
+  0   success (assignments on STDOUT), or --help / --usage
+  1   invalid input (messages on STDERR)
+  2   invalid definition -- a developer error in PARM_DEF
+
+=cut
