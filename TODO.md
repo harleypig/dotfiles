@@ -179,20 +179,18 @@ main dotfiles checkout.
   execution trace to stderr on every tmux status render (almost certainly a
   debugging leftover). Can be fixed independently of the extraction.
 
-## 📧 Move gmailctl scripts to private_dotfiles (MEDIUM PRIORITY)
+## ✅ Move gmailctl scripts to private_dotfiles (DONE 2026-06-07)
 
-`bin/gmailfilter_toyaml` (and likely `bin/filter_gmail`) support **gmailctl**,
-which holds/accesses sensitive Gmail filter config — that work only happens
-out of `private_dotfiles`, so the scripts don't belong in the public dotfiles
-repo. The scripts themselves aren't insecure; this is about keeping
-gmail-related tooling alongside the private config it serves.
+`gmailfilter_toyaml` and `filter_gmail` support **gmailctl** (sensitive Gmail
+config) and `filter_gmail` is explicitly marked "contains sensitive data" with
+a hardcoded personal path — they only run from `private_dotfiles`.
 
-- [ ] Move `bin/gmailfilter_toyaml` to `private_dotfiles` (decide the layout —
-  a `bin/` there, or alongside the gmailctl config). Evaluate moving
-  `bin/filter_gmail` too.
-- [ ] Update any references (PATH expectations, docs) after the move.
-- [ ] This also retires the public meta-suite `perl -c` debt for
-  `gmailfilter_toyaml` (it needs `XML::LibXML`) — it leaves the public repo.
+- [x] Moved both to `private_dotfiles/bin/` (a new `bin/` there, beside the
+  `.gmailctl/` config + gmail certs).
+- [x] Removed their entries from `docs/bin.md` (also dropped the stale
+  `poetry2setup` entry — that script was archived earlier).
+- [x] Retired the public meta-suite `perl -c` debt for `gmailfilter_toyaml`
+  (it needed `XML::LibXML`) — it has left the public repo.
 
 ## 🧩 dotvim check + clone/link automation (LOW PRIORITY)
 
@@ -237,16 +235,14 @@ config rather than depend on the global `dot-general/.markdownlintrc`
 ## 🧹 Meta-suite Gating Debt (MEDIUM PRIORITY)
 
 The shellcheck/shfmt debt across `bin/` and `lib/` is cleared (the pre-commit
-check config passes `--all-files`). What remains is gating the generated meta
-suite. Run `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats`
-to see status.
+check config passes `--all-files`), and the `gmailfilter_toyaml` `perl -c`
+(XML::LibXML) debt is gone now that it moved to private_dotfiles. What remains
+is gating the generated meta suite. Run `tests/scaffold/build-meta-tests &&
+bats tests/shell/*.meta.bats` to see status.
 
-- [ ] **bin/** (perl -c): `gmailfilter_toyaml` needs `XML::LibXML`; resolves
-  itself once the script moves to private_dotfiles (see "Move gmailctl
-  scripts to private_dotfiles") — it leaves the public meta suite.
-- [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
-  when all pass, add the meta suite to CI and run it in pre-commit. (CI today
-  gates only the hand-written `tests/shell/test_*`.)
+- [ ] Confirm the meta suite is clean across `bin/` + `lib/`, then add it to
+  CI and run it in pre-commit. (CI today gates only the hand-written
+  `tests/shell/test_*`.)
 
 ## 🔁 Audit shell scripts for arg-loop → parse_params (LOW PRIORITY)
 
@@ -1037,13 +1033,11 @@ in the future.
 
 ## 🎯 Next Actions (Priority Order)
 
-1. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
-   `XML::LibXML` debt)
-2. **Perl quality tooling** — curated perlcritic + Test::Perl::Critic,
+1. **Perl quality tooling** — curated perlcritic + Test::Perl::Critic,
    Devel::Cover, Pod::Coverage, … (see that section)
-3. **Comprehensive BATS coverage audit** — full pass over the remaining bin/
+2. **Comprehensive BATS coverage audit** — full pass over the remaining bin/
    scripts (Phase 3 wrap-up)
-4. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
+3. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
 
 ## Notes
 

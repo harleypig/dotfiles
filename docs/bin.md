@@ -117,16 +117,6 @@ Clean or validate perltidyrc configuration files.
 
 ### Application-Specific Utilities
 
-**filter_gmail**
-Filter Gmail messages based on criteria. Email management utility.
-
-**gmailfilter_toyaml**
-Convert Gmail filters to YAML format for version control or portability.
-
-**poetry2setup**
-Convert Python Poetry configuration to setup.py or other formats. Migration
-utility.
-
 **run-help**
 Help system integration, used with readline. Provides context-sensitive help.
 
