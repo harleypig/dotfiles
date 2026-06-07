@@ -32,6 +32,8 @@ repos:
       # check-json cannot parse; exclude them.
       - id: check-json
         exclude: '^\.vscode/'
+      # Secret detection (Phase 2): catch committed private keys.
+      - id: detect-private-key
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.11.0
@@ -59,3 +61,12 @@ repos:
     hooks:
       # Uses the repo-local .markdownlint.json (auto-discovered at the root).
       - id: markdownlint
+
+  # Secret detection (Phase 2). The gitleaks hook scans staged content at
+  # commit time — an effective local guard, but a no-op in CI's --all-files
+  # run (nothing is staged there). Full-repo/history secret scanning is the
+  # security-scan skill's job, not this hook.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks

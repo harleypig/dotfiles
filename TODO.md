@@ -611,10 +611,12 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
   - Fix ops: `pre-commit run --config .pre-commit-config-fix.yaml --files <file>`
   - Direct tool invocation becomes the fallback when pre-commit is not
     configured or the file is not covered by any hook
-- [ ] **Wire pre-commit into CI** (allowed now Phase 1 is done): a check-only
-  job running `pre-commit run --all-files` — but only after the legacy
-  lint/format debt is cleared, or scoped to changed files, so it doesn't fail
-  on pre-existing debt.
+- [x] **Wire pre-commit into CI** — `tests.yml` has a `pre-commit` job running
+  `pre-commit run --all-files` (the legacy debt is cleared, so it's clean).
+  `no-commit-to-branch` is skipped in CI (`SKIP=...`) since it would fail on
+  the master-push run.
+- [ ] Make the CI `pre-commit` check a **required status check** in the master
+  ruleset once it's confirmed green (add `{"context": "pre-commit"}`).
 
 ### Proposed: pre-commit skill, used by qa-check
 
@@ -628,13 +630,14 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
   config) instead of invoking shfmt/shellcheck/etc. directly; fall back to
   direct invocation when pre-commit is not configured.
 
-### Phase 2: Security Hooks
+### Phase 2: Security Hooks (DONE)
 
-- [ ] Add security checks to `.pre-commit-config.yaml`:
-  - [ ] gitleaks (secret detection)
-  - [ ] detect-private-key
-- [ ] Test security hooks on repository
-- [ ] Update documentation
+- [x] Add security checks to `.pre-commit-config.yaml`:
+  - [x] gitleaks (secret detection — scans staged content at commit time)
+  - [x] detect-private-key
+- [x] Test security hooks on repository (both pass `--all-files`)
+- Note: gitleaks here is a commit-time guard; full-repo/history secret
+  scanning remains the **security-scan** skill's job (separate from this hook).
 
 ### Phase 3: Language-Specific Hooks
 
