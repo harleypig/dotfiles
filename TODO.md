@@ -598,7 +598,9 @@ git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
   bugs, all masked by the first) — all fixed: the `read -d '' < <(find)` abort
   (→ `mapfile -t`), the `grep && printf` abort on a clean repo (→ `if`), and
   empty-array expansion under `set -u` (→ `declare -a fail=()` etc.).
-- [ ] `proj` — project switch (cd / filesystem).
+- [x] `proj` — `tests/shell/test_proj.bats` (no-arg/existing path, -h, unknown
+  option, too-many-args, unset PROJECTS_DIR, and the select menu create/cancel
+  paths via stdin). No bugs found.
 - [x] `ansi` — `tests/shell/test_ansi.bats` (usage, TERM=dumb no-color
   fallback, escape-sequence emission, `-sb` PS1 delimiters, hex color). No
   bugs found.
