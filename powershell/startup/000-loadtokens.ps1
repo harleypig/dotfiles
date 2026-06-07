@@ -1,7 +1,7 @@
 $private_dotfiles = "$PROJECTS_DIR/private_dotfiles/api-key"
 $config_file = "$DOTFILES/api-keys.cfg"
 
-if (Test-Path $private_dotfiles -and Test-Path $config_file) {
+if ((Test-Path $private_dotfiles) -and (Test-Path $config_file)) {
   $config_lines = Get-Content -Path $config_file
 
   foreach ($line in $config_lines) {
@@ -15,7 +15,7 @@ if (Test-Path $private_dotfiles -and Test-Path $config_file) {
 
       if (Test-Path $filePath) {
         $value = (Get-Content -Path $filePath -Raw).Trim()
-        $env:$varName = $value
+        Set-Item -Path "Env:$varName" -Value $value
       }
     }
   }

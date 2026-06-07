@@ -172,12 +172,16 @@ deploy/symlink (dotlinks) steps that never show on the dev machine.
   (`bash -lc`). Add the other contexts (interactive non-login, non-interactive
   login/non-login, incomplete terminal) once the per-module interactive
   guards land (see "shell-startup: Shell Context Detection").
-- [ ] PowerShell: deploy + load `ps-startup.ps1` (+ `powershell/startup/*`)
+- [x] PowerShell: deploy + load `ps-startup.ps1` (+ `powershell/startup/*`)
   in a PowerShell image (`mcr.microsoft.com/powershell`) and verify the
-  profile comes up functioning, no errors.
-- [ ] Decide the runner (reuse the `docker_wrapper` pattern?) and whether
-  these gate in CI — they need docker available (bats-action + docker, or a
-  dind/services setup).
+  profile comes up functioning, no errors —
+  `tests/shell/test_integration_powershell.bats`. Surfaced + fixed two real
+  parser bugs (`$env:$var` is invalid PowerShell) in `000-loadtokens.ps1` and
+  `aider.ps1`, plus the `Test-Path … -and Test-Path …` paren bug.
+- [x] Decide the runner — driven from bats (like the bash harness): runs the
+  stock `mcr.microsoft.com/powershell` image directly (no custom Dockerfile),
+  deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`. Sits in the
+  gating suite and **skips** when docker is unavailable.
 
 ## 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
 
@@ -872,6 +876,38 @@ arrays — `syntax error: operand expected` on every entry).
 - [ ] (Optional) Extend to other path vars (`LD_LIBRARY_PATH`, `MANPATH`) if
   duplicates show up there too.
 
+### PowerShell ↔ Bash Feature Parity (MEDIUM PRIORITY)
+
+The PowerShell startup (`ps-startup.ps1` + `powershell/startup/*`) lags the
+bash side (`shell-startup` + `config/shell-startup/*` + `lib/*` + `bin/*`).
+Bring it to parity **where it makes sense for PowerShell** — port the
+cross-shell concepts, skip the bash-only or Windows-irrelevant bits. Now that
+`tests/shell/test_integration_powershell.bats` exists, each ported feature
+should get an assertion there (or a Pester test under `tests/powershell/`).
+
+- [ ] Audit bash `config/shell-startup/*` against `powershell/startup/*` and
+  decide, per feature, port / adapt / skip. Candidates that map cleanly:
+  - [ ] **History** — `010-general.ps1` already flags this (PSReadLine: history
+    file location/size, dedupe, search); mirror the bash `HIST*` intent.
+  - [ ] **Completions** — bash completions → PSReadLine / argument completers.
+  - [ ] **Prompt** — a pwsh `prompt` function mirroring the bash prompt (git
+    status, last exit code, cwd) — reuse the `bin/git-status` concept.
+  - [ ] **Aliases/functions** — port still-relevant bash aliases/functions not
+    already in `010-general.ps1`; grep colors → PSReadLine colors.
+  - [ ] **PATH dedup** — a `cleanpath` equivalent for `$env:PATH` so
+    ps-startup's PATH prepend can't accumulate duplicates. (Also fixes the
+    Windows-style `\`/`;` PATH line in `ps-startup.ps1` when run under Linux
+    `pwsh`.)
+  - [ ] **Interactive vs always split** — the bash side guards interactive-only
+    setup with `[[ $- == *i* ]]`; decide the pwsh analog (a non-interactive
+    `pwsh -File`/`-Command` still loads the profile — keep env setup cheap and
+    side-effect-free, gate interactive-only bits on
+    `[Environment]::UserInteractive`/`$Host` if needed).
+  - [ ] **debug helper** — a `$env:DEBUG`-gated trace mirroring `lib/debug`.
+- [ ] `powershell/bin/*` vs `bin/*` — note which bash utilities have a
+  Windows-relevant analog worth providing (and which stay bash-only).
+- [ ] Fold the XXX items below into this audit as they're addressed.
+
 ### PowerShell Improvements
 
 - [ ] ps-startup.ps1:49 - Move Python path to dedicated setup file (XXX)
@@ -889,15 +925,16 @@ PowerShell 5.1.
   - Determine if `ps-startup.ps1` and `config/powershell/` scripts use any
     Windows-only features that would break under `pwsh` on Linux
   - Check if Pester (PowerShell test framework) runs identically on both
-- [ ] Research using Docker for PowerShell testing:
-  - Microsoft publishes official `mcr.microsoft.com/powershell` images
-    (Linux-based `pwsh`) — suitable for CI and local testing
-  - Investigate whether a Windows container (`mcr.microsoft.com/windows/...`)
-    would be needed to test true Windows PowerShell 5.1 behavior, and
-    whether that's practical (requires Windows host for Windows containers)
-  - Document the recommended approach and its limitations in TESTS.md
-- [ ] If Linux `pwsh` + Docker is viable: set up a test harness (likely
-  Pester inside the container) before tackling the improvement tasks above
+- [x] Research using Docker for PowerShell testing — **viable and done**: the
+  stock `mcr.microsoft.com/powershell` image (Linux `pwsh`) runs the profile
+  cleanly. `tests/shell/test_integration_powershell.bats` drives it from bats
+  (skip-if-no-docker), documented in TESTS.md.
+  - [ ] (Still open) Whether a Windows container is needed to test true
+    Windows PowerShell 5.1 behavior, and whether that's practical (requires a
+    Windows host for Windows containers).
+- [x] Test harness set up — the bats-driven container harness above. (Pester
+  unit tests under `tests/powershell/` can layer on later for pure-logic
+  functions; the integration smoke test exists now.)
 
 ### Bin Scripts
 
@@ -908,7 +945,7 @@ PowerShell 5.1.
 
 ### Library Documentation and Testing
 
-- [ ] lib/debug:3,4 - Test (documented)
+- [x] lib/debug:3,4 - Test (documented) — `tests/shell/test_debug.bats`
 - [ ] lib/strings:7,8,9 - Document, test, enforce sourcing only (XXX)
 - [ ] lib/Arrays:7,8,9,38 - Document, test, enforce sourcing, consider moving to
   tools/bin (XXX)

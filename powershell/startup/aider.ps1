@@ -6,7 +6,7 @@ if (Get-Command aider -ErrorAction SilentlyContinue) {
             if ($_ -match "^(.*?)=(.*)$") {
                 $envName = $matches[1]
                 $envValue = $matches[2]
-                $env:$envName = $envValue
+                Set-Item -Path "Env:$envName" -Value $envValue
             }
         }
     }
