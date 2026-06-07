@@ -20,9 +20,11 @@ REPOHOME=${REPOHOME:-$HOME}
 VERBOSE=0
 
 count=0
-declare -a fail
-declare -a pass
-declare -A output
+# Initialize as empty (not just declared): under `set -u`, expanding a declared
+# but never-assigned array (`"${fail[@]}"`) is an "unbound variable" error.
+declare -a fail=()
+declare -a pass=()
+declare -A output=()
 
 print_error() {
   local msg=$1
@@ -69,7 +71,8 @@ breadlink() {
 
 do_all_action() {
   local repo resolved
-  IFS=$'\n' read -r -d $'\0' -a repos < <(find "$REPOHOME" -type d -name '.git' 2> /dev/null)
+  local -a repos
+  mapfile -t repos < <(find "$REPOHOME" -type d -name '.git' 2> /dev/null)
 
   for repo in "${repos[@]}"; do
     ((++count))
@@ -81,12 +84,17 @@ do_all_action() {
 
 stat_repos() {
   local repo resolved
-  IFS=$'\n' read -r -d $'\0' -a repos < <(find "$REPOHOME" -type d -name '.git' 2> /dev/null)
+  local -a repos
+  mapfile -t repos < <(find "$REPOHOME" -type d -name '.git' 2> /dev/null)
 
   for repo in "${repos[@]}"; do
     resolved=$(breadlink "${repo%.git}")
     cd "$resolved"
-    git status -s | grep -qv "^??" && printf "%s\n" "$resolved"
+    # A clean repo makes `grep -qv` exit 1; an `if` keeps that from tripping
+    # `set -e`. Lists repos with any tracked (non-`??`) change.
+    if git status -s | grep -qv "^??"; then
+      printf "%s\n" "$resolved"
+    fi
   done
 }
 

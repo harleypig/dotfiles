@@ -592,8 +592,12 @@ git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
 - [x] `git-branch-clean` — `tests/shell/test_git-branch-clean.bats` (guards +
   gone-upstream dry-run/force/never-pushed, against a throwaway repo with a
   local bare remote).
-- [ ] `git-all` — runs git over every repo under `$REPOHOME` (needs a temp
-  `REPOHOME` with a couple of repos).
+- [x] `git-all` — `tests/shell/test_git-all.bats` (usage/REPOHOME/option
+  guards, run-across-repos summary, `-S` dirty-only). The test exposed that
+  git-all was **completely broken** under `set -euo pipefail` (three cascading
+  bugs, all masked by the first) — all fixed: the `read -d '' < <(find)` abort
+  (→ `mapfile -t`), the `grep && printf` abort on a clean repo (→ `if`), and
+  empty-array expansion under `set -u` (→ `declare -a fail=()` etc.).
 - [ ] `proj` — project switch (cd / filesystem).
 - [ ] `ansi` — tput wrapper (the TERM-unset path is already covered by
   `test_integration_context`); a focused unit test could assert sequence
