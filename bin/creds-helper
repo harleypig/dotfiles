@@ -31,10 +31,15 @@ done
   found && $1 == "password" {print $2; exit}
 ' ~/.netrc)"
 
-# If not found in .netrc, check the PAT file
+# If not found in .netrc, fall back to the PAT file.
+pat_file="$PROJECTS_DIR/private_dotfiles/api-key/github"
 [[ -z $GIT_CREDENTIALS ]] \
-  && [[ -r $PROJECTS_DIR/private_dotfiles/api-key/github ]] \
-  && GIT_CREDENTIALS=$(< "$PAT_FILE")
+  && [[ -r $pat_file ]] \
+  && GIT_CREDENTIALS=$(< "$pat_file")
 
-# Output the password if found, otherwise let Git prompt for credentials
-[[ -n $GIT_CREDENTIALS ]] && echo "password=$GIT_CREDENTIALS"
+# Output the password if found; otherwise emit nothing and still exit cleanly
+# so Git moves on to prompt (a credential helper shouldn't fail just because it
+# has no answer).
+if [[ -n $GIT_CREDENTIALS ]]; then
+  echo "password=$GIT_CREDENTIALS"
+fi

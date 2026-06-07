@@ -205,18 +205,18 @@ creating the symlinks.
 - [ ] Decide dotvim's expected location (sibling clone under `$PROJECTS_DIR`
   per the repo conventions) and reference it consistently.
 
-## 🐛 bin/creds-helper PAT fallback bug (MEDIUM PRIORITY)
+## ✅ bin/creds-helper PAT fallback bug (DONE 2026-06-07)
 
-Found during the lint cleanup (not a lint error, so left unfixed there).
-When the credential isn't found in `~/.netrc`, `bin/creds-helper` checks
-`$PROJECTS_DIR/private_dotfiles/api-key/github` for existence but then reads
-a **different** variable, `$PAT_FILE` (unset) — so it tries `< ""` and errors
-(`No such file or directory`) instead of using the PAT.
+When the credential wasn't found in `~/.netrc`, `creds-helper` checked
+`$PROJECTS_DIR/private_dotfiles/api-key/github` but then read a **different**,
+unset `$PAT_FILE` (`< ""` → error) instead of the PAT.
 
-- [ ] Reconcile the check and the read: either read the file it checked
-  (`$PROJECTS_DIR/private_dotfiles/api-key/github`) or define/point `$PAT_FILE`
-  at it, and guard against an empty/unset path.
-- [ ] Add a bats test covering the .netrc-miss → PAT-fallback path.
+- [x] Read the file it checked (via a single `pat_file` variable).
+- [x] Also made it exit 0 when it has no credential (a helper shouldn't fail
+  just because it has no answer).
+- [x] `tests/shell/test_creds-helper.bats` — netrc hit, netrc-miss → PAT
+  fallback (the regression), netrc-wins precedence, and the no-credential
+  no-op.
 
 ## 📐 Retire global ~/.markdownlintrc — per-repo configs (MEDIUM PRIORITY)
 
@@ -580,8 +580,8 @@ git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
   on success.
 - [ ] (reclassified to integration) `showvars` — needs `shfmt` (docker
   wrapper) + `jq`; covered under the integration group, not pure-unit.
-- [ ] `creds-helper` — credential lookup; pair with the known PAT-fallback bug
-  fix (its own section) so the fix lands with a regression test.
+- [x] `creds-helper` — `tests/shell/test_creds-helper.bats`; landed with the
+  PAT-fallback bug fix (see its section above).
 - [x] `available-subnets` — **removed** (obsolete: old GCP-subnet tooling no
   longer used); archived to `archive/bin/`. No test needed.
 - [ ] (marginal) `loadavg` (output depends on real load), `dateh` (date-format
