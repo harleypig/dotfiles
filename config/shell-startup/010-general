@@ -212,3 +212,12 @@ findword() {
 if command -v gh &> /dev/null; then
   alias ghlastactionid="gh run list --limit 1 --json 'databaseId' --jq '.[0].databaseId'"
 fi
+
+#-----------------------------------------------------------------------------
+# bats: expose this repo's first-class helper lib (lib/bats) ahead of the
+# system libs so any repo can `bats_load_library bats-toolbox`. Only when
+# bats is installed and the lib dir exists; honour an existing BATS_LIB_PATH.
+
+if command -v bats &> /dev/null && [[ -d "$DOTFILES/lib/bats" ]]; then
+  export BATS_LIB_PATH="$DOTFILES/lib/bats:${BATS_LIB_PATH:-/usr/lib/bats}"
+fi
