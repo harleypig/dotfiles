@@ -43,23 +43,12 @@ Caveats (per-clone, not committable):
 - There is no `.gitattributes` mechanism for exec bits; `.ps1` files are
   left as-is (the exec bit is moot for PowerShell).
 
-## 🔒 Dependabot Security Alerts (HIGH PRIORITY)
+## ✅ Dependabot Security Alerts (DONE 2026-06-07)
 
-Open Dependabot alerts on the default branch (triage queue — see `gh.md`
-*Issues & triage*). Both are the **same dependency**, both **high**, both
-fixed by one bump. List them with:
-`gh api repos/harleypig/dotfiles/dependabot/alerts -f state=open`.
-
-- [ ] Bump **dulwich** to **>= 1.2.5** in `config/pypoetry/pyproject.toml`
-  (currently resolves to a vulnerable version), then refresh the lockfile.
-  This closes both alerts:
-  - [ ] Alert #5 — GHSA-9277-mp7x-85jf: command injection via merge driver
-    path (affects `>= 0.24.0, < 1.2.5`).
-  - [ ] Alert #4 — GHSA-897w-fcg9-f6xj: arbitrary file write via
-    NTFS-hostile tree entries on Windows (affects `>= 0.10.0, < 1.2.5`).
-- [ ] After the bump lands on the default branch, confirm both alerts
-  auto-close (or dismiss with reason if dulwich is only a transitive dev
-  dependency that is not actually exercised).
+Pinned `dulwich >= 1.2.5` (PR #10); both high-severity advisories
+(GHSA-9277-mp7x-85jf, GHSA-897w-fcg9-f6xj) auto-closed — 0 open alerts. Keep
+the triage habit: `gh api repos/harleypig/dotfiles/dependabot/alerts -f
+state=open` (see `gh.md` *Issues & triage*).
 
 ## 🛡️ Protect the master Branch (HIGH PRIORITY)
 
@@ -114,6 +103,30 @@ findings. Research how to actually use each and whether to formalize it.
   already cover.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
+
+## 🐚 Test dotfiles Startup in Containers (MEDIUM PRIORITY)
+
+Goal: confirm the **dotfiles startup actually functions** in a fresh,
+reproducible environment — deploy the dotfiles into a clean container and
+verify a login shell comes up *working*, not merely that the scripts parse.
+This catches missing-tool guards, host assumptions, bashisms, and broken
+deploy/symlink (dotlinks) steps that never show on the dev machine.
+
+- [ ] bash: in a stock image (e.g. `bash:5` / `debian:stable`) with a fresh
+  `$HOME`, deploy the dotfiles (the symlink/dotlinks step) and start a login
+  shell through the real chain (`.bash_profile` / `.bashrc` / `.profile` →
+  `shell-startup`). Assert: no errors, expected env (`PATH`, `XDG_*`,
+  `BATS_LIB_PATH`), and that key aliases/functions are actually available
+  (i.e. startup *functions*, not just sources). Wire as a bats integration
+  test (`tests/suite/test_integration_*`) driving the container.
+- [ ] Run in a minimal image (most tools absent) to exercise the `command -v`
+  guards and confirm startup still yields a working shell.
+- [ ] PowerShell: deploy + load `ps-startup.ps1` (+ `powershell/startup/*`)
+  in a PowerShell image (`mcr.microsoft.com/powershell`) and verify the
+  profile comes up functioning, no errors.
+- [ ] Decide the runner (reuse the `docker_wrapper` pattern?) and whether
+  these gate in CI — they need docker available (bats-action + docker, or a
+  dind/services setup).
 
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
