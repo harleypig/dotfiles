@@ -239,6 +239,9 @@ main dotfiles checkout.
 - [ ] Wire `tmux-plugins/*` (e.g. tpm) as submodules in that repo.
 - [ ] Decide how dotfiles references it (submodule of dotfiles, sibling
   clone, or independent) and update the deploy/symlink steps accordingly.
+- [ ] Clean up `bin/tmux_mode_indicator`'s `set -ex` — the `-x` prints an
+  execution trace to stderr on every tmux status render (almost certainly a
+  debugging leftover). Can be fixed independently of the extraction.
 
 ## 🧩 dotvim check + clone/link automation (LOW PRIORITY)
 
@@ -252,6 +255,19 @@ creating the symlinks.
   vim configured in one step.
 - [ ] Decide dotvim's expected location (sibling clone under `$PROJECTS_DIR`
   per the repo conventions) and reference it consistently.
+
+## 🐛 bin/creds-helper PAT fallback bug (MEDIUM PRIORITY)
+
+Found during the lint cleanup (not a lint error, so left unfixed there).
+When the credential isn't found in `~/.netrc`, `bin/creds-helper` checks
+`$PROJECTS_DIR/private_dotfiles/api-key/github` for existence but then reads
+a **different** variable, `$PAT_FILE` (unset) — so it tries `< ""` and errors
+(`No such file or directory`) instead of using the PAT.
+
+- [ ] Reconcile the check and the read: either read the file it checked
+  (`$PROJECTS_DIR/private_dotfiles/api-key/github`) or define/point `$PAT_FILE`
+  at it, and guard against an empty/unset path.
+- [ ] Add a bats test covering the .netrc-miss → PAT-fallback path.
 
 ## 📐 Retire global ~/.markdownlintrc — per-repo configs (MEDIUM PRIORITY)
 
