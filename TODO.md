@@ -295,33 +295,78 @@ older package): `call_perltidy.t:129,207` and `get_perltidy_config.t:103`
 - [ ] Once green across versions, drop `continue-on-error` and **promote
   perl to a required check**.
 
-## 🐫 Curate a perlcritic profile (+ docker) (MEDIUM PRIORITY)
+## 🐫 Perl quality tooling (MEDIUM PRIORITY)
 
-`perlcritic` is unusable as-is: this machine has a pile of **non-core,
-opinionated third-party policy bundles** installed that bury real findings in
-noise. On `bin/parse_params` at `--severity 4`, the only "findings" are
-`ValuesAndExpressions::ProhibitAccessOfPrivateData` (28× — a false positive
-that treats every plain `$hashref->{key}` as object-private); at `--severity
-3` it adds `CodeLayout::TabIndentSpaceAlign` (217×, **demands tabs — rejected,
-this repo is spaces-only**), `CodeLayout::ProhibitHashBarewords`,
-`Reneeb::*`, `logicLAB::*`, `Bangs::*`, `Require*UTF8`, `RequireExtendedFormatting`,
-etc. Excluding `ProhibitAccessOfPrivateData`, parse_params is `source OK` at
-severity 4. The current `config/perl/perlcriticrc` is worse than nothing — it
-references uninstalled bundles (OTRS, TryTiny).
+Build out perl QA across **both the test suite and the CLI scripts** (where
+CLIs exist — e.g. `bin/parse_params`, `bin/perltidyrc-clean`), and make it as
+strict as practical, in stages.
 
-- [ ] Replace `config/perl/perlcriticrc` with a curated profile: pick a
-  severity (4 per `perl.md`), use core policies, and **explicitly exclude**
-  the noise above (TabIndentSpaceAlign, ProhibitAccessOfPrivateData,
-  ProhibitHashBarewords, the Reneeb/logicLAB/Bangs bundles, the UTF-8/
-  extended-formatting opinions). Drop the references to uninstalled policies.
+### perlcritic
+
+`perlcritic` is currently unusable: this machine has many **non-core,
+third-party policy bundles** installed that bury real findings in noise. On
+`bin/parse_params`, `--severity 4` shows only
+`ValuesAndExpressions::ProhibitAccessOfPrivateData` (28× — false positive on
+plain `$hashref->{key}`); `--severity 3` adds `CodeLayout::TabIndentSpaceAlign`
+(217×, demands tabs — **rejected, this repo is spaces-only**),
+`ProhibitHashBarewords`, `Reneeb::*`, `logicLAB::*`, `Bangs::*`, UTF-8 and
+`RequireExtendedFormatting` opinions, etc. The current
+`config/perl/perlcriticrc` is worse than nothing — it references uninstalled
+bundles (OTRS, TryTiny).
+
+- [ ] Rebuild `config/perl/perlcriticrc` as a curated profile; drop the
+  uninstalled-bundle references.
+- [ ] **Review each installed external policy individually** — they are *not*
+  all bad; adopt the useful ones and exclude only what genuinely doesn't fit
+  (e.g. TabIndentSpaceAlign, ProhibitAccessOfPrivateData). Don't dismiss the
+  third-party bundles wholesale.
+- [ ] **Ratchet severity toward the strictest (1), in stages** — clean the
+  findings at each level before tightening; start from the `--severity 4`
+  baseline (`perl.md`) and work down.
+- [ ] **Test::Perl::Critic** — run perlcritic from the test suite (a
+  `tests/perl/*-critic.t` over `bin/` + `lib/`) so the curated profile is
+  *enforced*, not merely available.
 - [ ] **Docker angle** (ties into "run more linters via Docker"): a pinned
-  `perlcritic` image built `FROM perl:…` + `cpanm Perl::Critic` installs a
-  **controlled** policy set — no random third-party bundles — which by itself
-  removes most of the noise. There is no official perlcritic image, so this
-  means a small custom pinned image (a `docker_wrapper` entry). Decide: curated
-  host profile vs. a pinned-image perlcritic (or both).
-- [ ] Once perlcritic gives clean, meaningful output, it **unblocks the
-  deferred Perl pre-commit hook** (see Pre-commit → Phase 3).
+  `perlcritic` image (`FROM perl` + `cpanm Perl::Critic` plus only the chosen
+  policy dists) gives a **controlled** policy set — no stray third-party
+  bundles — removing most noise by construction. No official image exists, so
+  it'd be a small custom pinned `docker_wrapper` entry.
+- [ ] Once perlcritic is clean + enforced, it **unblocks the deferred Perl
+  pre-commit hook** (Pre-commit → Phase 3).
+
+### Coverage and POD
+
+- [ ] **Devel::Cover** — measure coverage for the perl test suite (and the
+  CLIs it exercises); add a report and a coverage target to aim for.
+- [ ] **Pod::Coverage** / **Test::Pod::Coverage** — ensure every public sub
+  and CLI option is documented in POD; gate it in the suite. Pair with
+  **Test::Pod** for POD syntax.
+
+### Additional analysis
+
+- [ ] **B::Lint** — a second, lighter layer of basic checks (accepting some
+  overlap with perlcritic); decide where it adds signal perlcritic doesn't.
+- [ ] **B::Deparse** — use as an *aid* when making scripts idiomatic (compare
+  deparsed output to spot non-idiomatic constructs / hidden behavior); a
+  technique, not a gate.
+- [ ] **Perl::Analyzer** — investigate (call-graph / structure analysis);
+  evaluate whether it's worth adding for the larger perl.
+
+### Security scanning
+
+- [ ] Look into perl SAST: investigate **Checkmarx** (believed to support
+  perl) and open-source alternatives, and fold any perl SAST into the
+  `security-scan` skill / `qa.md` security dimension rather than a one-off.
+
+### Setup / documentation
+
+- [ ] Document installation + setup for **all of the above** (Perl::Critic +
+  the chosen policy dists, Test::Perl::Critic, Devel::Cover, Pod::Coverage /
+  Test::Pod::Coverage / Test::Pod, B::Lint, Perl::Analyzer, any perl SAST)
+  alongside the existing setup docs (WORKFLOW.md *Tool Setup Procedures* /
+  Prerequisites). Use the repo's standard install path — perlbrew + cpanm (see
+  *Tool/Version Manager Setup*) or pinned docker wrappers — so a fresh machine
+  reproduces the whole perl QA toolchain from one documented place.
 
 ## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
 
