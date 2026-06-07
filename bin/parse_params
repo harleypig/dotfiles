@@ -28,9 +28,9 @@ my @TYPES   = qw(boolean char date filename integer string varname);
 my %IS_TYPE = map { $_ => 1 } @TYPES;
 
 # Set from leading options in main; read by the error/usage helpers below.
-our $AUTO      = 0;                    # --auto: handle errors itself (usage + emit `exit 2`)
-our $PROG_NAME = '';                   # --prog NAME: shown in the generated usage header
-our ( $OPTS, $POSITIONALS );
+my $AUTO      = 0;                     # --auto: handle errors itself (usage + emit `exit 2`)
+my $PROG_NAME = '';                    # --prog NAME: shown in the generated usage header
+my ( $OPTS, $POSITIONALS );
 
 #----------------------------------------------------------------------------
 # Error helpers.
@@ -40,7 +40,8 @@ our ( $OPTS, $POSITIONALS );
 # STDOUT (so the caller's `eval` stops the script); otherwise exit 1 and let
 # the caller's `|| show_usage` handle it.
 sub bail_input {
-  print STDERR "$PROG: $_\n" for @_;
+  my @msgs = @_;
+  print STDERR "$PROG: $_\n" for @msgs;
   if ($AUTO) {
     print STDERR "\n", build_usage( $OPTS, $POSITIONALS ) if defined $OPTS;
     print "exit 2\n";
@@ -89,19 +90,24 @@ sub valid_date {
     : 0;
 }
 
+# TYPE => sub returning true for a valid (non-empty) value. To add a type, add
+# it to @TYPES and (if it has a value to check) here. boolean has no value;
+# any type without an entry passes.
+my %CHECK = (
+  char     => sub { length $_[0] == 1 },
+  integer  => sub { $_[0] =~ /^-?\d+$/ },
+  varname  => sub { $_[0] =~ /^[A-Za-z_]\w*$/ },
+  filename => \&valid_filename,
+  date     => \&valid_date,
+);
+
 sub valid_value {
   my ( $type, $v ) = @_;
 
   return 1 unless defined $v && length $v;
 
-  return 1 if $type eq 'string';
-  return length($v) == 1 ? 1 : 0 if $type eq 'char';
-  return $v =~ /^-?\d+$/        ? 1 : 0 if $type eq 'integer';
-  return $v =~ /^[A-Za-z_]\w*$/ ? 1 : 0 if $type eq 'varname';
-  return valid_filename($v) if $type eq 'filename';
-  return valid_date($v)     if $type eq 'date';
-
-  return 1;
+  my $check = $CHECK{$type} or return 1;
+  return $check->($v) ? 1 : 0;
 }
 
 #----------------------------------------------------------------------------
@@ -247,14 +253,6 @@ sub build_usage {
   return join( "\n", @lines ) . "\n";
 } ## end sub build_usage
 
-#----------------------------------------------------------------------------
-# parse_params's own help (the leading -h/--help), distinct from the usage it
-# generates for a caller (--usage, or a caller program's own -h).
-
-sub tool_help {
-  pod2usage( -verbose => 2, -exitval => 0 );
-}
-
 #############################################################################
 # Main.
 
@@ -265,7 +263,9 @@ while ( @ARGV && substr( $ARGV[0], 0, 1 ) eq '-' ) {
   my $a = $ARGV[0];
 
   if ( $a eq '-h' || $a eq '--help' ) {
-    tool_help();                       # parse_params's own help; exits 0
+
+    # parse_params's own reference, rendered from the POD below; exits 0.
+    pod2usage( -verbose => 2, -exitval => 0 );
   } elsif ( $a eq '--usage' ) {
     $usage_mode = 1;
     shift @ARGV;
@@ -301,7 +301,11 @@ if ($usage_mode) {
 # include -h/--help (and the caller did not define its own), print the
 # generated usage and tell the caller's `eval` to stop cleanly. (parse_params's
 # own --help is the leading flag handled above.)
-my %defined_flag = map { ( $_->{short} // '' ) => 1, ( $_->{long} // '' ) => 1 } @$OPTS;
+my %defined_flag;
+for my $o (@$OPTS) {
+  $defined_flag{ $o->{short} } = 1 if defined $o->{short};
+  $defined_flag{ $o->{long} }  = 1 if defined $o->{long};
+}
 if ( !$defined_flag{h} && !$defined_flag{help} ) {
   for my $a (@args) {
     last if $a eq '--';
