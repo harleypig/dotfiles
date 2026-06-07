@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.3.0
+**Version:** v2.4.0
 
 ## Purpose
 
@@ -58,6 +58,11 @@ throwaway container as a sandbox — a mistake there can never touch the host.
 - `tests/shell/test_integration_*.bats` — e.g. `test_integration_startup`
   (login shell comes up with `DOTFILES`/XDG/PATH, double-source guard,
   cleanpath dedup) and `test_integration_check_dotfiles`.
+- `tests/shell/test_integration_powershell.bats` — drives the **stock**
+  `mcr.microsoft.com/powershell` image directly (no custom Dockerfile):
+  deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`, and asserts
+  the profile comes up (`DOTFILES` set, `powershell/startup/*` modules loaded)
+  with no parser errors. Same skip-if-no-docker guard.
 
 These run wherever docker exists (CI, dev) and skip otherwise, so they sit in
 the same gating suite without breaking docker-less environments.

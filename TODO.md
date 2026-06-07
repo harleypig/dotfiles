@@ -172,12 +172,16 @@ deploy/symlink (dotlinks) steps that never show on the dev machine.
   (`bash -lc`). Add the other contexts (interactive non-login, non-interactive
   login/non-login, incomplete terminal) once the per-module interactive
   guards land (see "shell-startup: Shell Context Detection").
-- [ ] PowerShell: deploy + load `ps-startup.ps1` (+ `powershell/startup/*`)
+- [x] PowerShell: deploy + load `ps-startup.ps1` (+ `powershell/startup/*`)
   in a PowerShell image (`mcr.microsoft.com/powershell`) and verify the
-  profile comes up functioning, no errors.
-- [ ] Decide the runner (reuse the `docker_wrapper` pattern?) and whether
-  these gate in CI — they need docker available (bats-action + docker, or a
-  dind/services setup).
+  profile comes up functioning, no errors —
+  `tests/shell/test_integration_powershell.bats`. Surfaced + fixed two real
+  parser bugs (`$env:$var` is invalid PowerShell) in `000-loadtokens.ps1` and
+  `aider.ps1`, plus the `Test-Path … -and Test-Path …` paren bug.
+- [x] Decide the runner — driven from bats (like the bash harness): runs the
+  stock `mcr.microsoft.com/powershell` image directly (no custom Dockerfile),
+  deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`. Sits in the
+  gating suite and **skips** when docker is unavailable.
 
 ## 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
 
