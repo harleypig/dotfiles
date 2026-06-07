@@ -52,4 +52,21 @@ like($out, qr/^count='5'$/m,    'second positional assigned');
 ($out, $err, $rc) = run_pp("#,integer,count", 'notnum');
 is($rc, 1, 'positional type mismatch exits 1');
 
+# slurp positional (#@) collects ALL remaining args into a shell array
+($out, $err, $rc)
+  = run_pp("l|len,integer,len\n#\@,string,words", '--len', '3', 'a', 'b c', 'd');
+is($rc, 0, 'slurp exits 0');
+like($out, qr/^len='3'$/m, 'options still parsed alongside a slurp');
+like($out, qr/^words=\('a' 'b c' 'd'\)$/m,
+  'slurp collects the rest into an array (spaces preserved)');
+
+($out, $err, $rc) = run_pp("#\@,string,words");
+like($out, qr/^words=\(\)$/m, 'slurp with no args -> empty array');
+
+($out, $err, $rc) = run_pp("#\@,integer,nums", '1', 'x');
+is($rc, 1, 'slurp type-checks each element');
+
+($out, $err, $rc) = run_pp("#\@,string,a\n#,string,b");
+is($rc, 2, 'a slurp must be the last positional (definition error)');
+
 done_testing;

@@ -1,49 +1,41 @@
 #!/bin/bash
 
-declare -i len=0 default_len=40
-declare msg char='#'
+# hr - print a horizontal rule, optionally titled.
+#
+# Example of replacing a hand-written option loop with parse_params (see the
+# global bash.md "Argument Parsing"): a definition string + one `eval` do all
+# the parsing, validation, and --help. `--auto` makes parse_params report bad
+# input (and a usage block) itself.
 
-shopt -s extglob
+# shellcheck disable=SC2154  # $len/$char/$words are set by the parse_params eval
 
-warn() { printf '%s\n' "$*" >&2; }
-die() {
-  (($#)) && warn "$*"
-  exit 1
-}
+PARM_DEF='
+l|length,integer,len
+c|char,char,char,#
+#@,string,words
+'
 
-while (($#)); do
-  opt=$1
-  shift
+eval "$(parse_params --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
 
-  case "$opt" in
-    -l)
-      len=$1
-      shift
-      ((len > 0)) || die 'length must be greater than 0'
-      ;;
-
-    -c)
-      char=$1
-      shift
-      [[ ${#char} -gt 1 ]] && die 'only a single character can be used for line character'
-      ;;
-
-    *) msg+="$opt " ;;
-  esac
-done
-
-if ((len == 0)); then
-  len=$default_len
+# Length: a supplied value must be positive (parse_params validates the integer
+# type but allows 0 / negatives). With none supplied, use the terminal width on
+# a tty, else 40.
+if [[ -z $len ]]; then
+  len=40
   [[ -t 1 ]] && len=$(tput cols)
+
+elif ((len <= 0)); then
+  printf 'hr: length must be greater than 0\n' >&2
+  exit 1
 fi
 
-[[ $msg =~ ^[[:space:]]*$ ]] && msg=
+# Optional title: "<char><char> <words> " prefixes the rule and shortens it.
+msg=
 
-if [[ -n $msg ]]; then
-  printf -v msg '%c%c %s' "$char" "$char" "$msg"
-  l="${#msg}"
-  len=$((len - l))
+if ((${#words[@]})); then
+  printf -v msg '%c%c %s ' "$char" "$char" "${words[*]}"
+  len=$((len - ${#msg}))
   ((len < 0)) && len=0
 fi
 
-printf '%s%s\n' "$msg" "$(head -c $len < /dev/zero | tr '\0' "$char")"
+printf '%s%s\n' "$msg" "$(head -c "$len" < /dev/zero | tr '\0' "$char")"
