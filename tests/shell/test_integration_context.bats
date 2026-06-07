@@ -44,3 +44,39 @@ setup() {
   assert_output --partial 'prompt=[set]'
   assert_output --partial 'pyalias=yes'
 }
+
+@test "interactive non-login (reads .bashrc): env + prompt + aliases" {
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$IMAGE" -ic '
+    echo "DOTFILES=$DOTFILES"
+    echo "prompt=[${PS1:+set}]"
+    echo "pyalias=$(alias python > /dev/null 2>&1 && echo yes || echo no)"
+  '
+  assert_success
+  assert_output --partial 'DOTFILES=/dotfiles'
+  assert_output --partial 'prompt=[set]'
+  assert_output --partial 'pyalias=yes'
+}
+
+@test "non-interactive non-login shell does not load the dotfiles" {
+  # bash -c reads neither .bash_profile nor .bashrc, so shell-startup never
+  # runs — scripts/subshells must not inherit the interactive setup.
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$IMAGE" -c \
+    'echo "dotfiles=[${DOTFILES-}]"'
+  assert_success
+  assert_output --partial 'dotfiles=[]'
+}
+
+@test "interactive shell with TERM unset comes up without tput errors" {
+  # Incomplete terminal (cron, non-tty ssh command): TERM unset. ansi falls
+  # back to a usable TERM so the prompt path emits no tput errors.
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" --entrypoint bash \
+    "$IMAGE" -c '
+      unset TERM
+      ln -sf /dotfiles/shell-startup "$HOME/.bash_profile"
+      ln -sf /dotfiles/shell-startup "$HOME/.bashrc"
+      exec bash -lic "ansi fg red > /dev/null; echo started=ok"
+    '
+  assert_success
+  assert_output --partial 'started=ok'
+  refute_output --partial 'No value for $TERM'
+}

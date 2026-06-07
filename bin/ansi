@@ -22,6 +22,15 @@
 # http://wiki.bash-hackers.org/scripting/terminalcodes
 
 ##############################################################################
+# Fall back to a usable TERM so tput never errors in an incomplete terminal
+# (cron, a non-tty ssh command, etc. may have TERM unset, which makes
+# `tput setaf …` fail with "No value for $TERM"). "dumb" yields no color
+# sequences but no error. Exported so the tput child process inherits it.
+# ansi is only ever run as a command (never sourced), so this can't leak a
+# bad TERM into an interactive shell.
+export TERM="${TERM:-dumb}"
+
+##############################################################################
 DEBUG=
 
 function debug() { ((DEBUG)) && printf '%s\n' "$@" >&2; }
