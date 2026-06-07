@@ -248,6 +248,20 @@ to see status.
   when all pass, add the meta suite to CI and run it in pre-commit. (CI today
   gates only the hand-written `tests/shell/test_*`.)
 
+## 🔁 Audit shell scripts for arg-loop → parse_params (LOW PRIORITY)
+
+Now that `bin/parse_params` exists (replaces hand-written option loops; see
+`bash.md` *Argument Parsing*), audit this repo's shell scripts for `while`/
+`case`/`getopts` arg-parsing that could use it instead.
+
+- [ ] Grep for candidates (`while (($#))`, `case "$1" in`, `getopts`) across
+  `bin/`, `lib/`, `config/shell-startup/`.
+- [ ] Convert where it improves clarity, using the
+  `_pp=$(parse_params "$DEF" "$@") || show_usage; eval "$_pp"` pattern; add or
+  adjust tests for each converted script.
+- [ ] Skip portable/standalone scripts — `parse_params` is only on `PATH` in
+  the dotfiles setup (see the scope caveat in `bash.md`).
+
 ## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
 
 The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip

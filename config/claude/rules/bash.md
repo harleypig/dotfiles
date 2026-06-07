@@ -28,6 +28,33 @@ paths:
 - Provide clear error messages to stderr.
 - Include a usage/help function.
 
+## Argument Parsing
+
+For a script that runs **within this user's dotfiles setup** (where
+`parse_params` is on `PATH`), prefer `parse_params` over a hand-written
+`while`/`case` option loop. It validates a definition string and prints
+`eval`-able assignments:
+
+```bash
+PARM_DEF='
+a|app,string,AppName,,required
+v|verbose,boolean
+'
+_pp=$(parse_params "$PARM_DEF" "$@") || show_usage
+eval "$_pp"
+```
+
+This replaces the boilerplate `while (($#)); do case $1 in …` loop and gives
+consistent type-checking, defaults, required-option enforcement, negatable
+booleans (`--no-x`), repeatable (`type@`) options, positionals, and an
+auto-generated `--help`.
+
+**Scope caveat:** `parse_params` ships in the dotfiles repo (`bin/parse_params`)
+and is only on `PATH` in that environment. Do **not** depend on it in a
+portable/standalone script that may run elsewhere — there, use `getopts` or a
+plain `while` loop. (This is the one dotfiles-specific tool referenced from this
+otherwise environment-agnostic rule.)
+
 ## Capturing Command Output
 
 Avoid piping directly into loops or `read`. Instead, capture output into
