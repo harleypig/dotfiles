@@ -123,11 +123,18 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
         stderr             => \$stderr,
         argv               => \@argv_empty,
     );
-    eval {
+    my $ret = eval {
         call_perltidy( \%params, 'test context', \$stderr, 'die' );
     };
-    like( $@, qr/Error calling perltidy for test context/,
-        'Dies on error (err == 1) in die mode' );
+    my $died = $@;
+    # New Perl::Tidy reports a missing perltidyrc as an error (err 1 -> die);
+    # older versions report it as a warning (err 2 -> warn, no die). Accept
+    # either: die mode must surface the problem one way or the other.
+    ok(
+        ( $died && $died =~ /Error calling perltidy for test context/ )
+          || ( defined $ret && $ret == 2 ),
+        'die mode surfaces a perltidy problem (dies on error, warns on warning)'
+    );
 }
 
 # Test 7: Warns but continues on warnings (err == 2) in die mode
@@ -201,11 +208,17 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my ( $err, $error_message ) = call_perltidy(
         \%params, 'parsing options', \$stderr, 'accumulate'
     );
-    is( $err, 1, 'Returns error code 1 on error (accumulate mode)' );
+    isnt( $err, 0,
+        'Returns a non-zero code on a perltidy problem (accumulate mode)' );
     ok( length($error_message) > 0,
         'Returns non-empty error message on error' );
-    like( $error_message, qr/perltidy reported an error while parsing options/,
-        'Error message contains expected text' );
+  SKIP: {
+        skip 'older Perl::Tidy reports this as a warning (err 2)', 1
+          if $err == 2;
+        like( $error_message,
+            qr/perltidy reported an error while parsing options/,
+            'Error message contains the wrapper text (err 1)' );
+    }
 }
 
 # Test 10: Returns stderr content in error message (accumulate mode)
@@ -225,7 +238,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     my ( $err, $error_message ) = call_perltidy(
         \%params, 'parsing options', \$stderr, 'accumulate'
     );
-    is( $err, 1, 'Returns error code 1 on error' );
+    isnt( $err, 0, 'Returns a non-zero code on a perltidy problem' );
     # Error message should include stderr content
     ok( length($error_message) > 0,
         'Error message includes stderr content' );
