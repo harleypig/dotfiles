@@ -202,6 +202,16 @@ unsetvars 'load_files'
 set_bin_dirs
 load_files
 
+#-----------------------------------------------------------------------------
+# De-duplicate PATH and drop nonexistent entries. Guarded: only replace PATH
+# when cleanpath succeeds and returns a non-empty value, so a failure can
+# never blank PATH (which would break the shell).
+if _cleaned_path=$("$DOTFILES/bin/cleanpath" PATH 2> /dev/null) \
+  && [[ -n $_cleaned_path ]]; then
+  export PATH="$_cleaned_path"
+fi
+unset _cleaned_path
+
 ##############################################################################
 # Cleanup
 #
