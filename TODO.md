@@ -89,19 +89,31 @@ README.
 - [ ] Confirm Dependabot / auto-merge interplay once the ruleset is active.
 - [ ] Document the enforced workflow in `WORKFLOW.md`.
 
-## 🌿 Evaluate / Clean Up Stale Branches (MEDIUM PRIORITY)
+## ✅ Evaluate / Clean Up Stale Branches (DONE 2026-06-07)
 
-Remote branches not from current work — evaluate, then remove. As of
-2026-06-06 both are **already merged into master** (their tips are ancestors,
-0 commits ahead), so they're safe to delete after a quick confirm:
+The two `codex/*` branches (both already merged into master) were deleted on
+2026-06-07; no stale branches remain. Going forward, review any non-merged
+stray branch's diff before deleting it.
 
-- [ ] `origin/codex/update-pod-heading-to--environment-check` — last commit
-  "docs: fix typo in util_lib" (2025-06-05).
-- [ ] `origin/codex/fix-typo-in-comment` — last commit "Fix typo in
-  shell-startup comment".
+## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 
-Delete with `git push origin --delete <branch>` (no local copies exist). If a
-future stray branch is *not* merged, review its diff before deleting.
+Both run as PR checks (alongside `bats`), but we don't yet act on their
+findings. Research how to actually use each and whether to formalize it.
+
+- [ ] **CodeFactor**: what it analyzes, where findings surface (PR inline
+  comments, the codefactor.io dashboard, the badge), how to configure it
+  (`.codefactor.yml`), and how to triage/suppress. Decide if it earns a
+  required status check.
+- [ ] **Snyk** (`security/snyk`): what the check scans (deps / code / IaC?),
+  where findings live (app.snyk.io, PR annotations), its auth/config, and how
+  it overlaps with Dependabot and the existing security rules
+  (`semgrep`/`trivy`/`osv-scanner`) plus the `security-scan` skill.
+- [ ] Decide **per tool**: a `config/claude/rules/<tool>.md` (how to read and
+  act on its output), a skill, folding into the existing `security-scan` skill
+  / `qa.md` security dimension, or nothing — without duplicating what those
+  already cover.
+- [ ] If a tool adds no actionable value, consider disabling its check to cut
+  PR-check noise; if it does, document the triage workflow.
 
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
