@@ -61,7 +61,9 @@ Project-wide exceptions belong in `ignore` / per-file ignores in the config.
   1. `ruff format <path>`.
   2. `ruff check <path>` (or `--fix`) and resolve findings.
   3. `pyright`/`mypy` for types (ruff does not type-check).
-- In pre-commit context: `.pre-commit-config.yaml` runs `ruff check` +
-  `ruff format --check`; `.pre-commit-config-fix.yaml` runs
-  `ruff check --fix` + `ruff format`.
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file.
 - Do not run black/isort/flake8 alongside ruff in the same repo.

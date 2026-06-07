@@ -59,5 +59,8 @@ No errors permitted; fix all findings before committing.
 - After creating or modifying any Python file matched by the paths above: run
   `isort`, then `yapf`, then `flake8 --config config/flake8 <file>`, and fix
   all reported issues.
-- In pre-commit context: the check config runs flake8 (lint-only — there is no
-  fix variant); fixes come from `isort` / `yapf` in the fix config.
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file. flake8 is lint-only; fixes come from `isort` / `yapf`.

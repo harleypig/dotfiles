@@ -29,5 +29,8 @@ Dev/Test research task in TODO.md.
 
 - After creating or modifying any PowerShell file matched by the paths above:
   1. Run `Invoke-ScriptAnalyzer -Path <file>` and fix all reported issues.
-- In pre-commit context: `.pre-commit-config.yaml` checks only;
-  `.pre-commit-config-fix.yaml` applies fixes.
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file.

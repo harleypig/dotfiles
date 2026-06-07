@@ -66,5 +66,8 @@ repo root or the directory holding the Dockerfile.
   at or above `warning` before continuing. Inline ignores require a reason.
 - Honour the best-practice policy in `docker.md` (pinning, layer hygiene,
   non-root, secrets) — hadolint catches most of it, but not all.
-- In pre-commit context: `.pre-commit-config.yaml` checks only; there is no
-  auto-fix variant for hadolint (it is check-only).
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file. hadolint is check-only (no fix variant).

@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.4.0
+**Version:** v1.5.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -197,6 +197,29 @@ pre-commit cache. Reclaim that space periodically:
 ```bash
 pre-commit gc
 ```
+
+## Prefer pre-commit Over Direct Tool Invocation
+
+When a repo has `.pre-commit-config.yaml`, prefer driving formatters and
+linters **through pre-commit** rather than invoking the tools directly: the
+hook config is the single source of truth for *which* tool, *which* version,
+and *which* flags apply, so running it keeps what the agent runs in lock-step
+with what the gate enforces.
+
+- **Check (normal dev):** `pre-commit run --files <file>` (list several files,
+  or `--all-files` for the whole tree). Runs every hook matching those files.
+- **One tool only:** add the hook id — `pre-commit run shellcheck --files
+  <file>`.
+- **Fix:** `pre-commit run --config .pre-commit-config-fix.yaml --files
+  <file>` — only as the final pre-commit step, never mid-session for a single
+  failure (see *Pre-Commit Workflow When Ready to Commit*).
+- **Fall back to direct invocation** (`shellcheck <file>`, `yapf -i <file>`, …)
+  only when pre-commit is **not** configured, or the file is **not covered** by
+  any hook. The per-tool rules document those direct commands and flags.
+
+The per-tool rules (`shellcheck.md`, `shfmt.md`, `yamllint.md`,
+`markdownlint.md`, `yapf.md`, `isort.md`, `flake8.md`, `bash.md`, `perl.md`,
+…) point back here for this policy.
 
 ## Agent Rules
 

@@ -36,5 +36,8 @@ Style config lives at `config/yapf/style` in this repo, which resolves to
 - After creating or modifying any Python file matched by the paths above:
   1. Run `yapf --style="$XDG_CONFIG_HOME/yapf/style" -i <file>` to format.
   2. Run `flake8 <file>` to catch any remaining issues.
-- In pre-commit context: `.pre-commit-config.yaml` uses `-d` (check only);
-  `.pre-commit-config-fix.yaml` uses `-i` (fix in place).
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file.

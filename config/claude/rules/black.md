@@ -44,5 +44,8 @@ other is unused for that repo.
   2. Run `black <file>` to format. black must run *after* isort so it
      normalizes the result.
   3. Run `flake8 <file>` to catch any remaining issues.
-- In pre-commit context: `.pre-commit-config.yaml` uses `--check`;
-  `.pre-commit-config-fix.yaml` runs black without flags (fix in place).
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file.
