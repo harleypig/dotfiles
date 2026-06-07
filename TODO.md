@@ -402,6 +402,25 @@ shell-init path per manager — XDG-aware where possible, lazy-loaded in
   under one consistent pattern, documented in each
   `config/shell-startup/<lang>` module.
 
+## 🐢 Login shell slowdown — 3–5s (was <2s) (HIGH PRIORITY)
+
+A new login shell now takes 3–5 seconds; it used to be under 2. Something added
+to startup regressed it — most likely a `config/shell-startup/` module shelling
+out (a version-manager/tool init, completion generation, a `command -v` probe
+that execs, or token loading) at every login.
+
+- [ ] **Profile it.** Time a clean login (`time bash -lic exit`), then find the
+  cost: bisect by disabling modules in `load_files`, or trace with
+  `PS4='+ $EPOCHREALTIME '; bash -lixc exit` (or wrap each module load in
+  `date +%s.%N` timing). Look for network/subprocess calls.
+- [ ] **Likely suspects:** recently-added modules (binenv, nodejs/go/ruby/rust
+  env init, cuda, claude, aider), per-prompt `bin/git-status`, or a slow
+  `000-loadtokens` path.
+- [ ] **Fix:** lazy-load the offender (defer to first use), cache its output, or
+  guard it; re-measure to confirm back under ~2s. Ties into the
+  config/shell-startup audit ("cut per-startup cost") and the Tool/Version
+  Manager Setup (lazy-load) items below.
+
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
 Review all files in `config/shell-startup/` for correctness and security:
@@ -555,8 +574,12 @@ git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
 
 **Unit-testable (pure logic) — to do:**
 
-- [ ] `where` — locate/classify commands.
-- [ ] `showvars` — print selected shell variables.
+- [x] `where` — `tests/shell/test_where.bats` (keyword/builtin/file/not-found).
+  Surfaced + fixed two bugs: a missing command hit the "Unexpected type"
+  branch (modern `type -t` prints nothing for unknowns), and it exited 1 even
+  on success.
+- [ ] (reclassified to integration) `showvars` — needs `shfmt` (docker
+  wrapper) + `jq`; covered under the integration group, not pure-unit.
 - [ ] `creds-helper` — credential lookup; pair with the known PAT-fallback bug
   fix (its own section) so the fix lands with a regression test.
 - [ ] `available-subnets` — Python subnet math; belongs in `tests/python/`
