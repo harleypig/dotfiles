@@ -159,15 +159,19 @@ verify a login shell comes up *working*, not merely that the scripts parse.
 This catches missing-tool guards, host assumptions, bashisms, and broken
 deploy/symlink (dotlinks) steps that never show on the dev machine.
 
-- [ ] bash: in a stock image (e.g. `bash:5` / `debian:stable`) with a fresh
-  `$HOME`, deploy the dotfiles (the symlink/dotlinks step) and start a login
-  shell through the real chain (`.bash_profile` / `.bashrc` / `.profile` →
-  `shell-startup`). Assert: no errors, expected env (`PATH`, `XDG_*`,
-  `BATS_LIB_PATH`), and that key aliases/functions are actually available
-  (i.e. startup *functions*, not just sources). Wire as a bats integration
-  test (`tests/suite/test_integration_*`) driving the container.
-- [ ] Run in a minimal image (most tools absent) to exercise the `command -v`
-  guards and confirm startup still yields a working shell.
+- [x] bash: harness built (`tests/docker/`) — a slim Debian image; the repo
+  is mounted read-only at `/dotfiles`; `~/.bash_profile`/`~/.bashrc` →
+  `shell-startup`; a login shell is started through the real chain.
+  `tests/shell/test_integration_startup.bats` asserts the env comes up
+  (`DOTFILES`, `XDG_CONFIG_HOME`, bin on PATH), the double-source guard
+  holds, and cleanpath dedups PATH. Harness skips when docker is absent.
+- [x] Minimal image (most dev tools absent) — that's exactly what the slim
+  harness exercises; startup still yields a working shell (only `command -v`
+  guards / probes for absent tools, no fatal errors).
+- [ ] **Extend the context matrix** — the harness covers interactive-login
+  (`bash -lc`). Add the other contexts (interactive non-login, non-interactive
+  login/non-login, incomplete terminal) once the per-module interactive
+  guards land (see "shell-startup: Shell Context Detection").
 - [ ] PowerShell: deploy + load `ps-startup.ps1` (+ `powershell/startup/*`)
   in a PowerShell image (`mcr.microsoft.com/powershell`) and verify the
   profile comes up functioning, no errors.
@@ -451,11 +455,12 @@ working tree — evaluate carefully before implementing.
   - [x] yesno (unit tests) — `tests/shell/test_yesno.bats`
   - [x] git-status (integration tests) — `tests/shell/test_git_status.bats`
         (skips the prompt assertion if system `git-prompt.sh` is absent)
-  - [ ] check-dotfiles (integration tests) — deferred: it has side effects
-        (`ln -fs` into `$HOME`) so it needs a sandboxed `HOME`/`DOTFILES`;
-        also has a latent bug (`check_dotfiles` links `$DOTFILES/shell_startup`
-        with an underscore, but the file is `shell-startup`) — fix while
-        adding the test.
+  - [x] check-dotfiles (integration tests) —
+        `tests/shell/test_integration_check_dotfiles.bats`, run in the docker
+        harness so its `ln -fs` into `$HOME` can't touch the host. Fixed the
+        latent bug along the way (`check_dotfiles` linked
+        `$DOTFILES/shell_startup` (underscore) instead of `shell-startup`, so
+        the `.bash_profile`/`.bashrc`/`.profile` linking silently no-op'd).
 - [ ] Add tests for lib/ libraries
   - [ ] debug — complex; its own task
   - [ ] parse_params — complex (657 L); its own task. Evaluate rewriting
@@ -796,13 +801,14 @@ Problems to solve:
     — verify minimal env only, no aliases, no prompt, no errors
   - [ ] Incomplete terminal (vim-style): simulate missing `TERM`/`COLUMNS`
     — verify shell-startup degrades gracefully without errors
-  - [ ] Double-source guard: source shell-startup twice in same session
-    — verify idempotent (no duplicate PATH entries, no re-run of setup)
-  - [ ] Research: can/should BATS drive Docker-based tests? Options include
-    running BATS inside the container, or using BATS on the host to `docker
-    run` and assert on exit codes and output. Determine which approach fits
-    the existing test framework and document the decision in TESTS.md
-  - [ ] Update TESTS.md to document Docker-based integration test approach
+  - [x] Double-source guard: covered hermetically
+    (`test_shell_startup_guard`) and in the harness
+    (`test_integration_startup`) — second source leaves PATH unchanged.
+  - [x] Research: can/should BATS drive Docker-based tests? Decided: **BATS on
+    the host `docker run`s** the harness image and asserts on output/exit
+    (the `dotfiles_harness_image`/`dotfiles_login` helpers), skipping when
+    docker is absent. Documented in TESTS.md.
+  - [x] Update TESTS.md to document Docker-based integration test approach.
 
 ### bin/cleanpath: Fix and Integrate (DONE 2026-06-07)
 

@@ -56,7 +56,7 @@ check_dotfiles() {
 
   #---------------------------------------------------------------------------
   for dotfile in .bash_profile .bashrc .profile; do
-    check_link "$DOTFILES/shell_startup" "$dotfile"
+    check_link "$DOTFILES/shell-startup" "$dotfile"
   done
 
   #---------------------------------------------------------------------------
