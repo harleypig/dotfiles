@@ -53,3 +53,30 @@ EOF
 
   chmod +x "$dir/$name"
 }
+
+#------------------------------------------------------------------------------
+# Docker integration harness. Build (cached) the dotfiles test image and echo
+# its tag; skip the calling test when docker is unavailable or the build
+# fails. The image is the runtime only — tests mount the repo read-only at
+# /dotfiles (see tests/docker/).
+
+dotfiles_harness_image() {
+  command -v docker > /dev/null 2>&1 || skip "docker not available"
+
+  local tag=dotfiles-test:latest
+  docker build -q -t "$tag" "$(dotfiles_root)/tests/docker" > /dev/null 2>&1 \
+    || skip "could not build the dotfiles test image"
+
+  printf '%s' "$tag"
+}
+
+#------------------------------------------------------------------------------
+# Run a command in a throwaway container with the repo mounted read-only at
+# /dotfiles, inside a login shell that has the dotfiles deployed (the image's
+# default entrypoint). Sets $output/$status via bats `run`.
+#   dotfiles_login "$IMAGE" 'echo "$DOTFILES"'
+
+dotfiles_login() {
+  local image=$1 cmd=$2
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" "$cmd"
+}

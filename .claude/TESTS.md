@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.2.0
+**Version:** v2.3.0
 
 ## Purpose
 
@@ -28,9 +28,10 @@ One `tests/` root with per-language subdirs (see
 
 ```text
 tests/
-  helpers/common.bash   # shared bash/bats support (load_bats_libs, dotfiles_root, make_stub)
+  helpers/common.bash   # shared bash/bats support (load_bats_libs, dotfiles_root, make_stub, docker harness)
   scaffold/             # meta-test generator + templates (build-meta-tests)
-  shell/                # bats: *.bats hand-written, *.meta.bats generated (gitignored)
+  docker/               # integration-test harness image (Dockerfile, entrypoint)
+  shell/                # bats: *.bats hand-written, *_integration_*.bats, *.meta.bats (generated, gitignored)
   python/               # pytest: test_*.py
   perl/                 # prove: *.t
   powershell/           # Pester: *.Tests.ps1
@@ -39,6 +40,27 @@ tests/
 bats helper libs come from the Debian packages (`bats bats-support
 bats-assert bats-file`); `tests/helpers/common.bash` adds this repo's
 `lib/bats` (`bats-toolbox`) to `BATS_LIB_PATH`.
+
+## Docker integration harness
+
+Tests that must exercise the *running* dotfiles (a real login shell, or a
+script with side effects like `check-dotfiles`'s `ln -fs` into `$HOME`) use a
+throwaway container as a sandbox — a mistake there can never touch the host.
+
+- `tests/docker/` — the harness image (Debian slim + bash/git/gettext/less +
+  the `en_US.UTF-8` locale). The repo under test is mounted **read-only** at
+  `/dotfiles` at run time, so tests exercise the current checkout. The default
+  entrypoint deploys `~/.bash_profile`/`~/.bashrc` → `shell-startup` and runs a
+  login shell; tests needing a pristine `HOME` override the entrypoint.
+- `tests/helpers/common.bash` provides `dotfiles_harness_image` (builds the
+  image, cached; **skips** the test when docker is unavailable or the build
+  fails) and `dotfiles_login`.
+- `tests/shell/test_integration_*.bats` — e.g. `test_integration_startup`
+  (login shell comes up with `DOTFILES`/XDG/PATH, double-source guard,
+  cleanpath dedup) and `test_integration_check_dotfiles`.
+
+These run wherever docker exists (CI, dev) and skip otherwise, so they sit in
+the same gating suite without breaking docker-less environments.
 
 ## What must be tested here
 
