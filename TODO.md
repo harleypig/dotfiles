@@ -295,6 +295,34 @@ older package): `call_perltidy.t:129,207` and `get_perltidy_config.t:103`
 - [ ] Once green across versions, drop `continue-on-error` and **promote
   perl to a required check**.
 
+## 🐫 Curate a perlcritic profile (+ docker) (MEDIUM PRIORITY)
+
+`perlcritic` is unusable as-is: this machine has a pile of **non-core,
+opinionated third-party policy bundles** installed that bury real findings in
+noise. On `bin/parse_params` at `--severity 4`, the only "findings" are
+`ValuesAndExpressions::ProhibitAccessOfPrivateData` (28× — a false positive
+that treats every plain `$hashref->{key}` as object-private); at `--severity
+3` it adds `CodeLayout::TabIndentSpaceAlign` (217×, **demands tabs — rejected,
+this repo is spaces-only**), `CodeLayout::ProhibitHashBarewords`,
+`Reneeb::*`, `logicLAB::*`, `Bangs::*`, `Require*UTF8`, `RequireExtendedFormatting`,
+etc. Excluding `ProhibitAccessOfPrivateData`, parse_params is `source OK` at
+severity 4. The current `config/perl/perlcriticrc` is worse than nothing — it
+references uninstalled bundles (OTRS, TryTiny).
+
+- [ ] Replace `config/perl/perlcriticrc` with a curated profile: pick a
+  severity (4 per `perl.md`), use core policies, and **explicitly exclude**
+  the noise above (TabIndentSpaceAlign, ProhibitAccessOfPrivateData,
+  ProhibitHashBarewords, the Reneeb/logicLAB/Bangs bundles, the UTF-8/
+  extended-formatting opinions). Drop the references to uninstalled policies.
+- [ ] **Docker angle** (ties into "run more linters via Docker"): a pinned
+  `perlcritic` image built `FROM perl:…` + `cpanm Perl::Critic` installs a
+  **controlled** policy set — no random third-party bundles — which by itself
+  removes most of the noise. There is no official perlcritic image, so this
+  means a small custom pinned image (a `docker_wrapper` entry). Decide: curated
+  host profile vs. a pinned-image perlcritic (or both).
+- [ ] Once perlcritic gives clean, meaningful output, it **unblocks the
+  deferred Perl pre-commit hook** (see Pre-commit → Phase 3).
+
 ## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
 
 Goal: dotfiles should install and configure per-language version/tool
