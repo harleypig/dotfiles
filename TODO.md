@@ -104,6 +104,26 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
+## 🧹 shell-startup Follow-ups (LOW PRIORITY)
+
+Deferred from the shell-startup trim (PR #16):
+
+- [ ] **Move the grok installer block out.** The `>>> grok installer >>>`
+  block (PATH + completion) at the end of `shell-startup` runs after Cleanup
+  and isn't a pre-load global — move it to a `config/shell-startup/grok`
+  module (guarded like the others). First decide how to stop the grok
+  installer re-appending it to `shell-startup` (retarget it, or accept
+  periodic cleanup). *[needs thought]*
+- [ ] **Consider renaming the hook dirs.** `{,.}shell_startup.d` hold *hooks*
+  while `config/shell-startup` holds always-loaded files; renaming the hook
+  dirs to `{,.}shell_startup_hooks.d` would make that distinction obvious. If
+  done, update `load_files`, the pre-setup hook path, and `run_hook`'s default
+  `$dfdir`.
+- [ ] **Test `run_hook`, then comment it out.** It works now but is called
+  nowhere; with the containerized startup-test work, add a test covering the
+  default + a custom `$dfdir` and a missing hook (returns non-zero), then
+  comment `run_hook` out — leaving it in place for possible future use.
+
 ## 🐚 Test dotfiles Startup in Containers (MEDIUM PRIORITY)
 
 Goal: confirm the **dotfiles startup actually functions** in a fresh,
