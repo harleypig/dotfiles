@@ -83,8 +83,8 @@ green checks — e.g. PRs #9–#11); now actually enforce it on GitHub.
   `gh api repos/harleypig/dotfiles/branches/master/protection`): require a PR
   before merging, require status checks to pass and the branch to be up to
   date, and block force-push / deletion. Needs an **admin** token — the narrow
-  PAT can't; use the OAuth credential (`GH_TOKEN= GITHUB_TOKEN= gh ...`) or the
-  web UI.
+  PAT can't; use the OAuth credential (`GH_TOKEN= GITHUB_TOKEN= gh ...`) or
+  the web UI.
 - [ ] Decide the review policy for a solo repo (require 1 approval vs. allow
   self-merge once checks pass).
 - [ ] Confirm Dependabot / auto-merge interplay once protection is on.
