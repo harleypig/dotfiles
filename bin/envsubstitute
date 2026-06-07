@@ -90,7 +90,7 @@ Examples:
   NO_WARN=1 $selfname 'Hello \$UNKNOWN'                 # Output: Hello \$UNKNOWN (preserved)
   $selfname 'Hello \$UNKNOWN'                           # Shows error, outputs with error message
 
-" "$@"
+"
 }
 
 ##############################################################################
@@ -99,7 +99,7 @@ Examples:
 # Check for help flags first, before processing input
 for arg in "$@"; do
   case "$arg" in
-    -h|--help)
+    -h | --help)
       usage
       $RETURN 0
       ;;
@@ -115,7 +115,7 @@ _envsubst() {
   loopcount=1000
 
   # Check for help in the function too, in case it's called directly
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  if [[ $1 == "-h" || $1 == "--help" ]]; then
     usage
     return 0
   fi
@@ -134,9 +134,11 @@ _envsubst() {
     words="${SUBST_DELIM}WORD${SUBST_DELIM}s"
 
   else
+    # shellcheck disable=SC2016  # literal $ in the regex, not a shell expansion
     regex='\\?\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}|\\?\$([a-zA-Z_][a-zA-Z0-9_]*)'
     skipvar='$'
-    words="\$WORDs or \${WORD}s"
+    # shellcheck disable=SC2016  # literal $ in the message, not expansion
+    words='$WORDs or ${WORD}s'
   fi
 
   debug "regex: $regex"
@@ -144,6 +146,7 @@ _envsubst() {
 
   #---------------------------------------------------------------------------
   [[ $s =~ $regex ]] || {
+    # shellcheck disable=SC2319  # capture the [[ =~ ]] result deliberately
     rc=$?
 
     ((rc == 1)) && {
@@ -153,7 +156,7 @@ _envsubst() {
     }
 
     # Force warning on real problems.
-    ((rc => 2)) && unset NO_WARN
+    ((rc >= 2)) && unset NO_WARN
     ((rc == 2)) && die "Syntax error in $selfname's regex."
     ((rc > 2)) && die "Unknown error from =~ in $selfname."
   }
@@ -203,7 +206,7 @@ _envsubst() {
     debug "($LINENO) s: $s"
 
     ((count++))
-    ((count>loopcount)) && die "Too many substitutions - possible infinite loop"
+    ((count > loopcount)) && die "Too many substitutions - possible infinite loop"
   done
 
   s="${s//$skiptext/$skipvar}"

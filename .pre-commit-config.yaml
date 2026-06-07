@@ -39,8 +39,10 @@ repos:
     rev: v3.13.1-1
     hooks:
       # -d = diff only (non-modifying); flags match shfmt.md / .editorconfig.
+      # shfmt does not parse .bats (@test); exclude them (see bats.md).
       - id: shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
+        exclude: '\.bats$'
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.38.0

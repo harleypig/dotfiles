@@ -25,8 +25,10 @@ repos:
     rev: v3.13.1-1
     hooks:
       # -w = write in place; flags match shfmt.md / .editorconfig.
+      # shfmt does not parse .bats (@test); exclude them (see bats.md).
       - id: shfmt
         args: [-w, -i, '2', -s, -bn, -ci, -sr]
+        exclude: '\.bats$'
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.48.0

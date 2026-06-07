@@ -226,6 +226,33 @@ have one), so `markdownlint` is "command not found" locally. Add it to the
 - [ ] Note: independent of pre-commit — the remote-pinned markdownlint hook
   uses its own node install, not this wrapper (see Pre-commit Configuration).
 
+## 🪟 Break tmux config into its own repo (MEDIUM PRIORITY)
+
+Move the tmux configuration (or at least enough of it to support the
+`tmux-plugins` repos via **git submodules**) into its own dedicated repo.
+The submodule setup is what was causing trouble inside this dotfiles repo —
+isolating tmux + its plugin submodules avoids tangling submodules into the
+main dotfiles checkout.
+
+- [ ] Carve out the tmux config (`config/tmux/`, `bin/tmux_*`, related
+  completions) into a standalone repo.
+- [ ] Wire `tmux-plugins/*` (e.g. tpm) as submodules in that repo.
+- [ ] Decide how dotfiles references it (submodule of dotfiles, sibling
+  clone, or independent) and update the deploy/symlink steps accordingly.
+
+## 🧩 dotvim check + clone/link automation (LOW PRIORITY)
+
+dotfiles has no check or setup automation for the companion **dotvim** repo
+(vim configuration). Add a check (à la `check-dotfiles`) that dotvim is
+present and linked, and ideally a small script to automate cloning it and
+creating the symlinks.
+
+- [ ] Add a presence/link check for dotvim (warn if missing or unlinked).
+- [ ] Script the clone + symlink setup (idempotent) so a fresh machine gets
+  vim configured in one step.
+- [ ] Decide dotvim's expected location (sibling clone under `$PROJECTS_DIR`
+  per the repo conventions) and reference it consistently.
+
 ## 📐 Retire global ~/.markdownlintrc — per-repo configs (MEDIUM PRIORITY)
 
 This repo now uses a repo-local `.markdownlint.json` (authoritative, auto-
@@ -242,27 +269,24 @@ config rather than depend on the global `dot-general/.markdownlintrc`
 
 ## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
 
-The generated meta tests (`tests/scaffold/build-meta-tests`) surface
-pre-existing failures the static checks catch: 26 shellcheck/shfmt failures
-across 21 legacy bash scripts (as of 2026-06-06), plus one perl dependency
-gap. These are deliberately **not** ignored and **not** auto-fixed yet;
-clean them up here, then they pass the meta suite and it can be wired into
-CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
+The shellcheck/shfmt debt across `bin/` and `lib/` has been **cleared** — the
+pre-commit check config now passes `--all-files`. What remains is a meta-suite
+perl dependency and the stray `CleanPath.tmp` (owned by the cleanpath task).
 
 Run `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to see
-current failures. Offenders:
+meta-suite status. Once the perl dep is resolved the meta suite can be wired
+into CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
 
-- [ ] **bin/** (shellcheck/shfmt): ansi, anykey, bash-colors, check-dotfiles,
-  CleanPath.tmp, creds-helper, dir-readable, envsubstitute, git-all,
-  git-branch-clean, lwhich, run-help, show-unicode, tmux_edit_buffer,
-  tmux_mode_indicator, yesno
+- [x] **bin/** (shellcheck/shfmt): cleared — ansi, check-dotfiles,
+  creds-helper, envsubstitute (real `=>`→`>=` bug fixed), git-all,
+  tmux_edit_buffer, tmux_mode_indicator hand-fixed; the rest auto-fixed by
+  `shfmt -w`.
+- [x] **lib/** (shellcheck/shfmt): cleared — debug, parse_params.
+      (`is`, `Arrays`, `strings` archived; `git-prompt` folded into git-status.)
 - [ ] **bin/** (perl -c): gmailfilter_toyaml — needs `XML::LibXML`; install
-  `libxml-libxml-perl` or accept the meta test failing where it is absent
-- [ ] **lib/**: debug, parse_params
-      (`is`, `Arrays`, `strings` moved to `archive/lib/` — legacy/unused;
-      `git-prompt` factored into `bin/git-status` and archived)
-- [ ] `bin/CleanPath.tmp` looks like a stray scratch file — confirm and
-  remove rather than fix, if so.
+  `libxml-libxml-perl` or accept the meta test failing where it is absent.
+- [ ] `bin/CleanPath.tmp`: excluded from pre-commit; removal is owned by the
+  cleanpath task.
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
   when all pass, add the meta suite to CI and run it in pre-commit.
 

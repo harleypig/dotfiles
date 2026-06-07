@@ -5,6 +5,7 @@
 
 set -ex
 
+# shellcheck disable=SC2034  # for the commented-out status replacement below
 declare -r mode_indicator_placeholder="\#{tmux_mode_indicator}"
 
 declare -r prefix_prompt_config='@mode_indicator_prefix_prompt'

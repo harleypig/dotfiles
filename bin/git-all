@@ -25,17 +25,23 @@ declare -a pass
 declare -A output
 
 print_error() {
-  local msg=$1; shift
+  local msg=$1
+  shift
+  # shellcheck disable=SC2059  # $msg is a caller-supplied printf format
   printf "$(ansi fg red)::$(ansi off) ${msg}\n" "$@" >&2
 }
 
 print_header() {
-  local msg=$1; shift
+  local msg=$1
+  shift
+  # shellcheck disable=SC2059  # $msg is a caller-supplied printf format
   printf " $(ansi fg green)==>$(ansi off)$(ansi bold) ${msg}$(ansi off)\n" "$@" >&2
 }
 
 print_subheader() {
-  local msg=$1; shift
+  local msg=$1
+  shift
+  # shellcheck disable=SC2059  # $msg is a caller-supplied printf format
   printf " $(ansi fg blue)  ->$(ansi off)$(ansi bold) ${msg}$(ansi off)\n" "$@" >&2
 }
 
@@ -47,7 +53,10 @@ print_failure() {
   printf " $(ansi fg blue)[$(ansi fg red)FAIL$(ansi fg blue)] $(ansi fg cyan)%s$(ansi off)\n" "$1" >&2
 }
 
-die() { print_error "%s" "$*"; exit 1; }
+die() {
+  print_error "%s" "$*"
+  exit 1
+}
 
 breadlink() {
   local path="$1"
@@ -60,10 +69,10 @@ breadlink() {
 
 do_all_action() {
   local repo resolved
-  IFS=$'\n' read -r -d $'\0' -a repos < <(find "$REPOHOME" -type d -name '.git' 2>/dev/null)
+  IFS=$'\n' read -r -d $'\0' -a repos < <(find "$REPOHOME" -type d -name '.git' 2> /dev/null)
 
   for repo in "${repos[@]}"; do
-    (( ++count ))
+    ((++count))
     resolved=$(breadlink "${repo%.git}")
     cd "$resolved"
     output[$resolved]=$(git "$@" 2>&1) && pass+=("$resolved") || fail+=("$resolved")
@@ -72,12 +81,12 @@ do_all_action() {
 
 stat_repos() {
   local repo resolved
-  IFS=$'\n' read -r -d $'\0' -a repos < <(find "$REPOHOME" -type d -name '.git' 2>/dev/null)
+  IFS=$'\n' read -r -d $'\0' -a repos < <(find "$REPOHOME" -type d -name '.git' 2> /dev/null)
 
   for repo in "${repos[@]}"; do
     resolved=$(breadlink "${repo%.git}")
     cd "$resolved"
-    [[ -n $(git status -s | grep -v "^??") ]] && printf "%s\n" "$resolved"
+    git status -s | grep -qv "^??" && printf "%s\n" "$resolved"
   done
 }
 
@@ -90,7 +99,11 @@ job_summary() {
   else
     for repo in "${fail[@]}"; do
       print_failure "$repo"
-      (( VERBOSE )) && { sed 's/^/   /' <<< "${output[$repo]}"; printf "\n"; } >&2
+      ((VERBOSE)) && {
+        # shellcheck disable=SC2001  # per-line ^ prefix; ${//} cannot anchor
+        sed 's/^/   /' <<< "${output[$repo]}"
+        printf "\n"
+      } >&2
     done
   fi
   printf "\n"
@@ -101,19 +114,25 @@ job_summary() {
   printf "\n"
 }
 
-[[ -r "$REPOHOME" ]] || die "Invalid \$REPOHOME: $REPOHOME"
+[[ -r $REPOHOME ]] || die "Invalid \$REPOHOME: $REPOHOME"
 
 while getopts :Sv flag; do
   case $flag in
-    S) stat_repos; exit 0 ;;
+    S)
+      stat_repos
+      exit 0
+      ;;
     v) VERBOSE=1 ;;
     \?) die "invalid option -- '$OPTARG'" ;;
   esac
 done
 
-shift $(( OPTIND - 1 ))
+shift $((OPTIND - 1))
 
-[[ $# -gt 0 ]] || { sed -n '2,/^$/s/^# \?//p' "$0"; exit 1; }
+[[ $# -gt 0 ]] || {
+  sed -n '2,/^$/s/^# \?//p' "$0"
+  exit 1
+}
 
 do_all_action "$@"
 job_summary "$@"
