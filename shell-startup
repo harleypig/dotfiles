@@ -7,6 +7,16 @@
 # ssh localhost "PS4='[\$BASH_SOURCE[0]:\$LINENO]: ' bash -xl" |& tee login.log
 
 #-----------------------------------------------------------------------------
+# Guard against double-sourcing within a single shell. Both ~/.bash_profile
+# and ~/.bashrc are symlinked to this file, so a shell that reads both would
+# otherwise run startup twice (re-prepending PATH, re-sourcing modules). The
+# flag is deliberately NOT exported, so child shells still run their own
+# startup.
+
+[[ -n ${_DOTFILES_STARTUP_DONE-} ]] && return 0
+_DOTFILES_STARTUP_DONE=1
+
+#-----------------------------------------------------------------------------
 # Use these functions to clean up the environment at end of startup.
 #
 # Add any various variables or functions that you want to unset to the

@@ -115,13 +115,11 @@ findings. Research how to actually use each and whether to formalize it.
 
 ## 🔁 shell-startup: Double-load Guard + Interactive Guards (MEDIUM PRIORITY)
 
-- [ ] **Idempotency guard.** `.bash_profile` and `.bashrc` both symlink to
-  `shell-startup`, so a login that also starts an interactive shell (ssh
-  login, a new tmux window) runs `shell-startup` twice — re-prepending PATH
-  (duplicate entries), re-sourcing every module, etc. Add an "already loaded"
-  guard near the top that bails when a sentinel (e.g. `SHELL_STARTUP_LOADED`)
-  is set, and set it once loaded. Decide whether a re-source should ever be
-  forced (e.g. `SHELL_STARTUP_LOADED=` to reload).
+- [x] **Idempotency guard.** Added a non-exported `_DOTFILES_STARTUP_DONE`
+  sentinel near the top of `shell-startup` that `return`s early on a second
+  source in the same shell (child shells, not inheriting it, still run their
+  own startup). Covered by `tests/shell/test_shell_startup_guard.bats`.
+  (To force a reload: `unset _DOTFILES_STARTUP_DONE` then re-source.)
 - [ ] **Interactive vs non-interactive guards.** Modules in
   `config/shell-startup/` define things that only make sense in an interactive
   shell (aliases, prompt, completions) — and aliases aren't even expanded in
@@ -312,6 +310,23 @@ into CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
   cleanpath task.
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
   when all pass, add the meta suite to CI and run it in pre-commit.
+
+## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
+
+The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip
+`shell-startup`** and likely the extensionless `config/shell-startup/*`
+modules — pre-commit's `identify` isn't tagging them as shell, so they get
+no lint/format gating (and the meta generator only scans `bin lib`).
+`shell-startup` in fact has pre-existing shfmt debt that nothing currently
+catches.
+
+- [ ] Make the shfmt + shellcheck hooks cover extensionless shell files —
+  add `files:` patterns (e.g. `^(shell-startup|config/shell-startup/)`) or
+  `types_or: [shell, file]`, and confirm via `pre-commit run --files
+  shell-startup`.
+- [ ] Then clean up the shfmt debt those files surface.
+- [ ] Consider adding `shell-startup` + `config/shell-startup` to the
+  meta-test generator roots too.
 
 ## 🐪 perl CI: make perltidyrc-clean tests version-robust (MEDIUM PRIORITY)
 
@@ -748,8 +763,10 @@ contexts that need different behavior:
 
 Problems to solve:
 
-- [ ] Guard against double-sourcing — detect if shell-startup has already
-  run and skip (or only run the parts appropriate to context)
+- [x] Guard against double-sourcing — done: non-exported
+  `_DOTFILES_STARTUP_DONE` sentinel returns early on a second source in the
+  same shell (`tests/shell/test_shell_startup_guard.bats`). The
+  context-appropriate partial-run is the remaining context work below.
 - [ ] Detect shell context (`$-` contains `i` for interactive; login shells
   set by checking `shopt login_shell` or `$0` prefix `-`)
 - [ ] Skip alias/function/prompt setup for non-interactive shells
