@@ -74,9 +74,15 @@ dotfiles_harness_image() {
 # Run a command in a throwaway container with the repo mounted read-only at
 # /dotfiles, inside a login shell that has the dotfiles deployed (the image's
 # default entrypoint). Sets $output/$status via bats `run`.
-#   dotfiles_login "$IMAGE" 'echo "$DOTFILES"'
+#   dotfiles_login "$IMAGE" 'echo "$DOTFILES"'              # non-interactive
+#   dotfiles_login_interactive "$IMAGE" 'echo "${PS1:+x}"' # interactive
 
 dotfiles_login() {
   local image=$1 cmd=$2
-  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" "$cmd"
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" -lc "$cmd"
+}
+
+dotfiles_login_interactive() {
+  local image=$1 cmd=$2
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" -lic "$cmd"
 }

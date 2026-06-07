@@ -2,6 +2,9 @@
 
 command -v tmux &> /dev/null || return 0
 
+# Aliases — interactive shells only.
+[[ $- == *i* ]] || return 0
+
 # swap this window to the left
 alias swapl='tmux swap-window -t -1 ; tmux select_window -t -'
 
@@ -11,8 +14,9 @@ alias swapr='tmux swap-window -t +1 ; tmux select_window -t +'
 # swap this window with the one passed in
 alias swapw='tmux swap-window -t'
 
-# shellcheck disable=SC1003
+# shellcheck disable=SC1003  # literal \e in the printf format, not a quote
 set_title() { printf '\ek%s\e\\' "$1"; }
+# shellcheck disable=SC1003  # literal \e in the printf format, not a quote
 unset_title() { printf '\ek\e\\'; }
 export -f set_title unset_title
 
