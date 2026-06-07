@@ -207,6 +207,23 @@ tool — or a fresh checkout — can silently lack its symlink.
   symlink mode is 120000 and unaffected by `core.filemode=false` (see Git
   File-Mode Normalization above).
 
+## 📝 bin/markdownlint docker wrapper (MEDIUM PRIORITY)
+
+markdownlint is the only linter in the toolset without a `bin/` docker
+wrapper (shellcheck, shfmt, yamllint, prettier, hadolint, trivy, dive all
+have one), so `markdownlint` is "command not found" locally. Add it to the
+`docker_wrapper` dispatcher using the official image
+`ghcr.io/igorshubovych/markdownlint-cli` (versioned tags, e.g. `:v0.48.0`).
+
+- [ ] Add `IMG_MARKDOWNLINT`, a `markdownlint()` function (mount `$PWD` and
+  the repo's `dot-general/.markdownlintrc` like the other wrappers) and
+  `known_tool[markdownlint]=1`, plus the `bin/markdownlint` symlink (the
+  symlink-automation `--fix` above can create it once registered).
+- [ ] Pin the image tag and refresh it alongside the markdownlint-cli
+  pre-commit hook rev so the CLI and the hook stay in lock-step.
+- [ ] Note: independent of pre-commit — the remote-pinned markdownlint hook
+  uses its own node install, not this wrapper (see Pre-commit Configuration).
+
 ## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
 
 The generated meta tests (`tests/scaffold/build-meta-tests`) surface
@@ -501,31 +518,46 @@ after every `Edit` or `Write` on a shell file.
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
 Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 
-### Phase 1: Core Hooks (NEXT PRIORITY)
-- [ ] Create `.pre-commit-config.yaml` with core hooks:
-  - [ ] shellcheck (bash script linting)
-  - [ ] shfmt (shell formatting check, not fix)
-  - [ ] yamllint (YAML syntax)
-  - [ ] markdownlint (Markdown formatting)
-  - [ ] trailing-whitespace
-  - [ ] end-of-file-fixer (check mode)
-  - [ ] check-yaml
-  - [ ] check-json
-  - [ ] check-merge-conflict
-  - [ ] check-added-large-files
-- [ ] Create `.pre-commit-config-fix.yaml` with auto-fix hooks:
-  - [ ] shfmt -w (write mode)
-  - [ ] prettier (formatting)
-  - [ ] end-of-file-fixer (fix mode)
-  - [ ] trailing-whitespace (fix mode)
-- [ ] Test pre-commit configuration with sample files
-- [ ] Document pre-commit usage in README.md
+### Phase 1: Core Hooks (DONE — except the rule Agent-Behavior pass below)
+- [x] Create `.pre-commit-config.yaml` with core hooks (all remote, pinned):
+  - [x] shellcheck (`--external-sources`)
+  - [x] shfmt (`-d`, check-only; flags per shfmt.md/.editorconfig)
+  - [x] yamllint (`-c config/yamllint/config`)
+  - [x] markdownlint (`--config dot-general/.markdownlintrc`)
+  - [x] check-yaml, check-json, check-merge-conflict, check-added-large-files
+  - trailing-whitespace / end-of-file-fixer: **moved to the fix config** —
+    those hooks can only modify, which violates the check config's
+    non-modifying contract (`.claude/rules/pre-commit.md`).
+- [x] Create `.pre-commit-config-fix.yaml` with auto-fix hooks:
+  - [x] trailing-whitespace, end-of-file-fixer
+  - [x] shfmt `-w` (write mode)
+  - [x] prettier (excludes md/yaml — owned by markdownlint/yamllint)
+- [x] Test pre-commit configuration with sample files (check + fix; clean
+  files pass and are left unmodified; revs confirmed current via autoupdate)
+- [x] Document pre-commit usage in README.md (+ full command reference —
+  `install` variants, `autoupdate`, `validate-config`, `gc` — in
+  `.claude/rules/pre-commit.md`)
 - [ ] Update all `config/claude/rules/*.md` Agent Behavior sections to
   prioritize pre-commit over direct tool invocation:
   - Normal ops: `pre-commit run --files <file>` instead of `shfmt`/`shellcheck`/etc.
   - Fix ops: `pre-commit run --config .pre-commit-config-fix.yaml --files <file>`
   - Direct tool invocation becomes the fallback when pre-commit is not
     configured or the file is not covered by any hook
+- [ ] **Wire pre-commit into CI** (allowed now Phase 1 is done): a check-only
+  job running `pre-commit run --all-files` — but only after the legacy
+  lint/format debt is cleared, or scoped to changed files, so it doesn't fail
+  on pre-existing debt.
+
+### Proposed: pre-commit skill, used by qa-check
+- [ ] Evaluate a `pre-commit` **skill** packaging the operational workflow
+  (fix → check → commit prep; `install` variants; `autoupdate` on suspected
+  drift; `validate-config`; `gc`) now documented in
+  `.claude/rules/pre-commit.md`. The rule is policy/reference; a skill is the
+  forcing function that runs it (cf. qa-check).
+- [ ] Have **qa-check** delegate its Format + Lint stages to pre-commit when
+  `.pre-commit-config.yaml` is present (run the fix config, then the check
+  config) instead of invoking shfmt/shellcheck/etc. directly; fall back to
+  direct invocation when pre-commit is not configured.
 
 ### Phase 2: Security Hooks
 - [ ] Add security checks to `.pre-commit-config.yaml`:
