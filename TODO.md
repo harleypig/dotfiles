@@ -315,7 +315,11 @@ working tree — evaluate carefully before implementing.
   - [ ] check-dotfiles (integration tests)
 - [ ] Add tests for lib/ libraries
   - [ ] debug — complex; its own task
-  - [ ] parse_params — complex (657 L); its own task
+  - [ ] parse_params — complex (657 L); its own task. Evaluate rewriting
+        in perl (much simpler than the bash version); note it's currently a
+        sourced lib that sets caller variables, so a perl version would need
+        to emit eval-able shell (getopt-style) for the caller to `eval`.
+        Write tests for whichever form it ends up as.
   - (`is`, `Arrays`, `strings` archived to `archive/lib/` — legacy/unused,
     not tested; `git-prompt` factored into `bin/git-status`)
 - [ ] Add tests for config/shell-startup/ modules
