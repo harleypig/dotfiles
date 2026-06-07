@@ -95,7 +95,9 @@ This rule is the *policy*; three tools enforce and measure it — lint with
   - Flag inline secrets or credentials.
 - After authoring/changing a Dockerfile run `hadolint` (`hadolint.md`); after
   building/changing an image run `trivy image` + `trivy config` (`trivy.md`).
-- In pre-commit context: `.pre-commit-config.yaml` checks only;
-  `.pre-commit-config-fix.yaml` applies fixes. hadolint is check-only (no
-  auto-fix equivalent); trivy/dive are not pre-commit hooks (they run in CI /
-  on demand).
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file. hadolint is check-only; trivy/dive are not pre-commit
+  hooks (they run in CI / on demand).

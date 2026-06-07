@@ -17,5 +17,8 @@ paths:
   1. Run `perltidy -b <file>` to format in place (`-b` backs up the
      original as `<file>.bak`; delete the backup after confirming).
   2. Run `perlcritic --severity 4 <file>` and fix all reported violations.
-- In pre-commit context: `.pre-commit-config.yaml` checks only;
-  `.pre-commit-config-fix.yaml` applies fixes.
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file.

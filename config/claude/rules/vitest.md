@@ -62,8 +62,9 @@ Direct: `vitest run` (one-shot), `vitest` (watch), `vitest run <file>`
 - After creating or modifying tested logic, run `npm test` (or
   `vitest run <file>`) and make it green before moving on.
 - Run Biome and `tsc` separately (Vitest does not lint or type-check).
-- In pre-commit context: add a check-only `frontend-test` (or equivalent)
-  local hook running `vitest run` in `.pre-commit-config.yaml`; there is no
-  fix variant.
+- **Prefer pre-commit** when the repo wires it (see `pre-commit.md`): run
+  `pre-commit run frontend-test --files <file>`. Add a check-only
+  `frontend-test` local hook running `vitest run` in `.pre-commit-config.yaml`
+  (there is no fix variant). Fall back to direct `vitest run` otherwise.
 - When adding Vitest to a project that lacks a runner, surface the new dev
   deps (`vitest`, and the DOM env if used) per the rule-coverage policy.

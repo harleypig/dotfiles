@@ -88,5 +88,8 @@ the file being formatted).
      (`-s -w`) only for `.sh`/`.bash` files, explicit form
      (`-i 2 -s -bn -ci -sr -w`) for everything else.
   2. Run `shellcheck <file>` to catch any remaining issues.
-- In pre-commit context: `.pre-commit-config.yaml` uses `-d` (check
-  only, never `-w`); `.pre-commit-config-fix.yaml` uses `-w` (auto-fix).
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file.

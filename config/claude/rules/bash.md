@@ -137,5 +137,8 @@ value=$(
 - After creating or modifying any shell file matched by the paths above,
   follow the pipeline defined in `shfmt.md` (format) then `shellcheck.md`
   (lint).
-- In pre-commit context: `.pre-commit-config.yaml` checks only;
-  `.pre-commit-config-fix.yaml` applies fixes.
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file.

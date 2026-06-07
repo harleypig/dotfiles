@@ -45,5 +45,8 @@ re-ordered after formatting and create churn.
   1. Run `isort <file>` to sort imports.
   2. Run the repo's formatter (`black` or `yapf`).
   3. Run `flake8 <file>`.
-- In pre-commit context: `.pre-commit-config.yaml` uses `--check`;
-  `.pre-commit-config-fix.yaml` runs isort without flags (fix in place).
+- **Prefer pre-commit** when the repo has it (see `pre-commit.md`):
+  `pre-commit run --files <file>` to check, and `pre-commit run --config
+  .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
+  invocation above only when pre-commit isn't configured or doesn't cover the
+  file.

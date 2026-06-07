@@ -129,6 +129,33 @@ have one), so `markdownlint` is "command not found" locally. Add it to the
 - [ ] Note: independent of pre-commit — the remote-pinned markdownlint hook
   uses its own node install, not this wrapper (see Pre-commit Configuration).
 
+## 🐳 Research: run more linters/formatters via Docker (MEDIUM PRIORITY)
+
+Today only some tools have a `bin/` docker wrapper (shellcheck, shfmt,
+yamllint, prettier, hadolint, trivy, dive — via `bin/docker_wrapper`). Others
+(yapf, isort, flake8, perltidy, perlcritic, markdownlint) are "command not
+found" unless installed on the host, so a fresh machine is inconsistent and
+pre-commit's isolated envs are the only thing that runs them.
+
+- [ ] **Per-tool wrappers**: identify which remaining tools have a trustworthy
+  official/pinned image and add them to the `docker_wrapper` dispatcher (yapf,
+  isort, flake8, perltidy, perlcritic, …) — same pattern as the existing
+  wrappers, mounting `$PWD` + the relevant `config/` files. Ties into the
+  "bin/markdownlint docker wrapper" and docker_wrapper symlink-automation items.
+- [ ] **Evaluate Super-Linter** (`github/super-linter`) — one image bundling
+  many linters. The tension: it's built to scan a whole repo (CI), not to
+  expose each linter as an individual command, so it doesn't map cleanly onto
+  the per-tool `bin/<tool>` model or pre-commit's per-file hooks. Research
+  whether the bundled linters can be invoked individually
+  (`docker run … <linter> <args>`) and whether that's worth it vs. pinning each
+  tool's own image. Likely roles: a CI "lint everything" aggregate pass, or a
+  convenience wrapper — **not** a replacement for per-tool wrappers / pre-commit
+  hooks.
+- [ ] **Decide the boundary**: which tools are best as standalone pinned
+  images, which (if any) via Super-Linter, and how this interacts with
+  pre-commit (which already runs tools in isolated envs — a host wrapper is
+  mainly for ad-hoc CLI use outside a commit).
+
 ## 🪟 Break tmux config into its own repo (MEDIUM PRIORITY)
 
 Move the tmux configuration (or at least enough of it to support the
@@ -532,12 +559,13 @@ are in place, tested, documented (README + `.claude/rules/pre-commit.md`),
 wired into CI (`pre-commit run --all-files`), and the CI `pre-commit` check is
 required in the master ruleset alongside `bats`. One follow-up remains:
 
-- [ ] Update all `config/claude/rules/*.md` Agent Behavior sections to
-  prioritize pre-commit over direct tool invocation:
-  - Normal ops: `pre-commit run --files <file>` instead of `shfmt`/`shellcheck`/etc.
-  - Fix ops: `pre-commit run --config .pre-commit-config-fix.yaml --files <file>`
-  - Direct tool invocation becomes the fallback when pre-commit is not
-    configured or the file is not covered by any hook
+- [x] Update all `config/claude/rules/*.md` Agent Behavior sections to
+  prioritize pre-commit over direct tool invocation — added a canonical
+  *Prefer pre-commit Over Direct Tool Invocation* section to `pre-commit.md`
+  and pointed all 17 tool rules (bash, shellcheck, shfmt, yamllint,
+  markdownlint, yapf, isort, flake8, black, ruff, biome, perl, powershell,
+  docker, hadolint, vitest, TEMPLATE) at it; direct invocation is now the
+  documented fallback when pre-commit isn't configured / doesn't cover a file.
 
 ### Proposed: pre-commit skill, used by qa-check
 
@@ -904,12 +932,13 @@ in the future.
 
 1. **Testing Phase 3** — `lib/parse_params` (+ evaluate the perl rewrite) and
    `config/shell-startup/` module tests
-2. **Pre-commit Phase 3** — language hooks (Python, Perl, Rust)
+2. **Python lint/format debt in bin/ scripts** — clean `available-subnets`,
+   decide `poetry2setup`, then widen the Python pre-commit gate
 3. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
-   a required check
-4. **Rules `*.md` Agent Behavior** — switch to preferring pre-commit invocation
-5. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
+   a required check (also unblocks the deferred Perl pre-commit hooks)
+4. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
    `XML::LibXML` debt)
+5. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
 
 ## Notes
 
