@@ -13,9 +13,9 @@
 # Revs are pinned. Refresh with `pre-commit autoupdate` when drift is
 # suspected (see .claude/rules/pre-commit.md).
 
-# archive/ = retired code; bin/CleanPath.tmp = stray scratch (cleanpath TODO);
-# .vscode/syncsettings/ = machine-synced VS Code profile data.
-exclude: '^(archive/|bin/CleanPath\.tmp$|\.vscode/syncsettings/)'
+# archive/ = retired code; .vscode/syncsettings/ = machine-synced VS Code
+# profile data.
+exclude: '^(archive/|\.vscode/syncsettings/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

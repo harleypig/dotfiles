@@ -292,7 +292,7 @@ config rather than depend on the global `dot-general/.markdownlintrc`
 
 The shellcheck/shfmt debt across `bin/` and `lib/` has been **cleared** — the
 pre-commit check config now passes `--all-files`. What remains is a meta-suite
-perl dependency and the stray `CleanPath.tmp` (owned by the cleanpath task).
+perl dependency (below).
 
 Run `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to see
 meta-suite status. Once the perl dep is resolved the meta suite can be wired
@@ -306,8 +306,8 @@ into CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
       (`is`, `Arrays`, `strings` archived; `git-prompt` folded into git-status.)
 - [ ] **bin/** (perl -c): gmailfilter_toyaml — needs `XML::LibXML`; install
   `libxml-libxml-perl` or accept the meta test failing where it is absent.
-- [ ] `bin/CleanPath.tmp`: excluded from pre-commit; removal is owned by the
-  cleanpath task.
+- [x] `bin/CleanPath.tmp`: archived to `archive/bin/` as part of the cleanpath
+  fix (see "bin/cleanpath: Fix and Integrate").
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
   when all pass, add the meta suite to CI and run it in pre-commit.
 
@@ -794,18 +794,26 @@ Problems to solve:
     the existing test framework and document the decision in TESTS.md
   - [ ] Update TESTS.md to document Docker-based integration test approach
 
-### bin/cleanpath: Fix and Integrate (HIGH PRIORITY)
+### bin/cleanpath: Fix and Integrate (DONE 2026-06-07)
 
-`bin/cleanpath` deduplicates PATH-style colon-separated variables but is
-currently broken. `bin/CleanPath.tmp` appears to be a duplicate/scratch copy.
+`bin/cleanpath` deduplicates PATH-style colon-separated variables; it was
+broken (the `${ARR[$d]+isset} -ne 0` pattern treated scalar control vars as
+arrays — `syntax error: operand expected` on every entry).
 
-- [ ] Audit `bin/cleanpath` vs `bin/CleanPath.tmp` — determine which is
-  canonical, remove the other (CleanPath.tmp has XXX: Document me, Test me)
-- [ ] Fix `bin/cleanpath` so it works correctly (diagnose current failure)
-- [ ] Add unit tests (`tests/test_cleanpath.bats`)
-- [ ] Integrate into `shell-startup` — run cleanpath on PATH (and possibly
-  other path vars like `LD_LIBRARY_PATH`, `MANPATH`) after `load_files`
-  to eliminate duplicates accumulated during module loading
+- [x] Audited `bin/cleanpath` (canonical) vs `bin/CleanPath.tmp` (stray WIP);
+  archived the latter to `archive/bin/` and dropped it from the pre-commit
+  exclude.
+- [x] Fixed `bin/cleanpath`: `build_path` now parses the colon-separated
+  control vars (`SHOULD_BE_FIRST/LAST/IGNORED/STRIPPED`) into real lookup
+  sets and uses `[[ -v set[key] ]]`; de-dupes by resolved path. shellcheck +
+  shfmt clean.
+- [x] Added `tests/shell/test_cleanpath.bats` (7 tests: dedup, FIRST/LAST,
+  STRIPPED, IGNORED-verbatim, blank/dot, error paths).
+- [x] Integrated into `shell-startup` after `load_files` — guarded
+  (`if _cleaned=$(cleanpath PATH) && [[ -n ... ]]`) so a failure can never
+  blank PATH. Verified: collapses the duplicate `…/dotfiles/bin` entry.
+- [ ] (Optional) Extend to other path vars (`LD_LIBRARY_PATH`, `MANPATH`) if
+  duplicates show up there too.
 
 ### PowerShell Improvements
 

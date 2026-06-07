@@ -60,64 +60,85 @@ jwc() {
 }
 
 #-----------------------------------------------------------------------------
+# Classify and de-duplicate one entry into the named bucket array. Uses
+# build_path's locals (strip_set, ignore_set, seen) via bash dynamic scope.
+
+cp_add() {
+  local e=$1
+  local -n bucket=$2
+  local r
+
+  [[ -z $e || $e == '.' ]] && return 0
+  [[ -v strip_set[$e] ]] && {
+    debug "STRIP: $e"
+    return 0
+  }
+
+  # Ignored entries are kept verbatim, in place, with no path resolution or
+  # existence check; de-duplicated by their literal value.
+  [[ -v ignore_set[$e] ]] && {
+    [[ -v seen[$e] ]] && return 0
+    seen[$e]=1
+    bucket+=("$e")
+    debug "IGNORE: $e"
+    return 0
+  }
+
+  # Keep only real, existing directories; de-duplicate by resolved path.
+  r=$(get_real_dir "$e") || return 0
+  [[ -v strip_set[$r] ]] && {
+    debug "STRIP: $r"
+    return 0
+  }
+  [[ -v seen[$r] ]] && return 0
+  seen[$r]=1
+  bucket+=("$r")
+  debug "DIR: $r"
+}
+
+#-----------------------------------------------------------------------------
+# Build a cleaned value for the named variable. SHOULD_BE_FIRST/LAST/IGNORED/
+# STRIPPED are colon-separated strings (see the header). FIRST/LAST entries
+# are ordered ahead of / behind everything else.
+
 build_path() {
-  local path="${1?Must pass path}"
+  local path="${1?Must pass an environment variable name}"
 
-  declare -a PATHS PATH_NEW PATH_LAST
-  declare -A PATH_CHECK
+  local -a first_list last_list strip_list ignore_list input
+  local -a out_first out_middle out_last
+  local -A first_set last_set strip_set ignore_set seen
+  local entry
 
-  IFS=':' read -ra PATHS <<< "${SHOULD_BE_FIRST}:${!path}:${SHOULD_BE_LAST}"
+  IFS=':' read -ra first_list <<< "${SHOULD_BE_FIRST-}"
+  IFS=':' read -ra last_list <<< "${SHOULD_BE_LAST-}"
+  IFS=':' read -ra strip_list <<< "${SHOULD_BE_STRIPPED-}"
+  IFS=':' read -ra ignore_list <<< "${SHOULD_BE_IGNORED-}"
+  IFS=':' read -ra input <<< "${!path}"
 
-  for d in "${PATHS[@]}"; do
-    debug "Checking $d ..."
+  for entry in "${first_list[@]}"; do [[ -n $entry ]] && first_set[$entry]=1; done
+  for entry in "${last_list[@]}"; do [[ -n $entry ]] && last_set[$entry]=1; done
+  for entry in "${strip_list[@]}"; do [[ -n $entry ]] && strip_set[$entry]=1; done
+  for entry in "${ignore_list[@]}"; do [[ -n $entry ]] && ignore_set[$entry]=1; done
 
-    # Ignore blank entries
-    [[ -z $d ]] && continue
+  # FIRST entries (in order), then the input (FIRST/LAST members routed to
+  # their bucket), then LAST entries (in order). cp_add de-dupes across all.
+  for entry in "${first_list[@]}"; do cp_add "$entry" out_first; done
 
-    # Ignore dot
-    [[ $d == '.' ]] && continue
+  for entry in "${input[@]}"; do
+    if [[ -v first_set[$entry] ]]; then
+      cp_add "$entry" out_first
 
-    # Have we already handled this directory?
-    [[ ${PATH_CHECK[$d]+isset} -ne 0 ]] && continue
-
-    if [[ ${SHOULD_BE_IGNORED[$d]+isset} -ne 0 ]]; then
-      PATH_NEW+=("$d")
-      PATH_CHECK[$d]=1
-      debug "IGNORE: $d"
-      continue
-
-    elif [[ ${SHOULD_BE_STRIPPED[$d]+isset} -ne 0 ]]; then
-      PATH_CHECK[$dir]=1
-      debug "STRIP: $d"
-      continue
-    fi
-
-    # Get the real path, if it really exists.
-    dir=$(get_real_dir "$d") || continue
-
-    # Have we already handled this directory?
-    [[ ${PATH_CHECK[$dir]+isset} -ne 0 ]] && continue
-
-    if [[ ${SHOULD_BE_STRIPPED[$dir]+isset} -ne 0 ]]; then
-      debug "STRIP: $dir"
-
-    elif [[ ${SHOULD_BE_FIRST[$dir]+isset} -ne 0 ]]; then
-      PATH_FIRST+=("$dir")
-      debug "FIRST: $dir"
-
-    elif [[ ${SHOULD_BE_LAST[$dir]+isset} -ne 0 ]]; then
-      PATH_LAST+=("$dir")
-      debug "LAST: $dir"
+    elif [[ -v last_set[$entry] ]]; then
+      cp_add "$entry" out_last
 
     else
-      PATH_NEW+=("$dir")
-      debug "DIR: $dir"
+      cp_add "$entry" out_middle
     fi
-
-    PATH_CHECK[$dir]=1
   done
 
-  jwc "${PATH_FIRST[@]}" "${PATH_NEW[@]}" "${PATH_LAST[@]}"
+  for entry in "${last_list[@]}"; do cp_add "$entry" out_last; done
+
+  jwc "${out_first[@]}" "${out_middle[@]}" "${out_last[@]}"
 
   return 0
 }
@@ -136,6 +157,6 @@ printf '%s' "$NEWVAR"
 #-----------------------------------------------------------------------------
 # Don't clutter the environment in case we are being sourced.
 
-unset -f get_real_dir jwc build_path debug addpath
+unset -f get_real_dir jwc build_path debug cp_add
 unset NEWPATH NEWLDPATH SHOULD_BE_FIRST SHOULD_BE_LAST
 unset SHOULD_BE_IGNORED SHOULD_BE_STRIPPED f
