@@ -1,0 +1,389 @@
+#!/usr/bin/env perl
+
+#############################################################################
+# parse_params - validate CLI/function parameters against a definition string
+# and emit shell variable assignments for the caller to `eval`.
+#
+# This is a self-contained, core-perl-only rewrite of the old bash
+# lib/parse_params (which depended on a long-gone `utility` library and is
+# therefore unrunnable). Because a subprocess cannot set variables in the
+# caller's shell, it prints `eval`-able assignments instead of mutating the
+# caller directly.
+#
+# Only quoted DATA is emitted (plus a bare `exit 0` for --help) -- never
+# generated code -- so `eval`-ing the output is safe.
+#############################################################################
+
+use strict;
+use warnings;
+
+use Getopt::Long   ();
+use File::Basename qw(dirname);
+use File::Spec     ();
+
+my $PROG = 'parse_params';
+
+my @TYPES   = qw(boolean char date filename integer string varname);
+my %IS_TYPE = map { $_ => 1 } @TYPES;
+
+#############################################################################
+# Documentation
+#
+#=head1 NAME
+#
+# parse_params - validate parameters from a definition string, emit shell
+# assignments.
+#
+#=head1 SYNOPSIS
+#
+#   PARM_DEF='
+#   a|app,string,AppName,,required
+#   v|verbose,boolean
+#   n|num,integer,count,0
+#   i|inc,string@,includes
+#   #,string,target
+#   '
+#   _pp=$(parse_params "$PARM_DEF" "$@") || show_usage
+#   eval "$_pp"
+#   # now: $AppName, $verbose (0/1), $count, "${includes[@]}", $target
+#
+# Generate usage text from a definition (for the caller's own show_usage):
+#
+#   parse_params --usage "$PARM_DEF"
+#
+#=head1 DEFINITION LINES
+#
+# One option per line, up to five comma-separated fields (surrounding
+# whitespace is trimmed):
+#
+#   OPTION, TYPE, VARNAME, DEFAULT, REQUIRED
+#
+# OPTION   short (`a`), long (`app`), both (`a|app`), or `#` for a positional.
+# TYPE     one of: boolean char date filename integer string varname.
+#          Append `@` (e.g. `string@`) to collect repeats into a shell array.
+# VARNAME  optional; defaults to the long option, else the short option.
+# DEFAULT  optional; used when the option is absent (ignored for boolean).
+# REQUIRED optional; `required` or `optional` (default optional; boolean is
+#          always optional).
+#
+#=head1 BEHAVIOR / EXIT CODES
+#
+#   boolean   set -> 1, absent -> 0 (so `((VAR)) && ...` fires when given).
+#             Negatable: --no-LONG sets 0. DEFAULT 0|1 sets the resting value,
+#             so DEFAULT=1 is a default-on (inverted) flag.
+#   integer   signed: /^-?\d+$/.
+#   filename  parent dir must exist and the file be readable (or creatable);
+#             emitted as an absolute path.
+#   date      accepted if `date -d VALUE` succeeds.
+#
+#   exit 0    success (assignments on stdout), or --help (usage on stderr).
+#   exit 1    invalid input (messages on stderr).
+#   exit 2    invalid definition -- a developer error in PARM_DEF.
+#############################################################################
+
+#----------------------------------------------------------------------------
+# Error helpers.
+
+sub input_err {
+  print STDERR "$PROG: $_[0]\n";
+  exit 1;
+}
+
+sub def_err {
+  print STDERR "$PROG: definition error: $_[0]\n";
+  exit 2;
+}
+
+#----------------------------------------------------------------------------
+# Single-quote a value for safe shell eval.
+
+sub shq {
+  my $s = shift;
+  $s = '' unless defined $s;
+  $s =~ s/'/'\\''/g;
+  return "'$s'";
+}
+
+#----------------------------------------------------------------------------
+# Type validation. An empty value is always acceptable here (a missing
+# required value is caught separately); validators only judge a present value.
+
+sub valid_filename {
+  my $p   = shift;
+  my $dir = dirname($p);
+
+  return 0 unless -d $dir;
+  return -r $p   ? 1 : 0 if -e $p;
+  return -w $dir ? 1 : 0;
+}
+
+sub valid_date {
+  my $v = shift;
+
+  # Pass the value as $1 to sh so it is never interpreted as shell.
+  return system( 'sh', '-c', 'date -d "$1" >/dev/null 2>&1', 'sh', $v ) == 0
+    ? 1
+    : 0;
+}
+
+sub valid_value {
+  my ( $type, $v ) = @_;
+
+  return 1 unless defined $v && length $v;
+
+  return 1 if $type eq 'string';
+  return length($v) == 1 ? 1 : 0 if $type eq 'char';
+  return $v =~ /^-?\d+$/        ? 1 : 0 if $type eq 'integer';
+  return $v =~ /^[A-Za-z_]\w*$/ ? 1 : 0 if $type eq 'varname';
+  return valid_filename($v) if $type eq 'filename';
+  return valid_date($v)     if $type eq 'date';
+
+  return 1;
+}
+
+#----------------------------------------------------------------------------
+# Parse the definition string into option/positional descriptors.
+
+sub parse_definition {
+  my $def = shift;
+
+  my ( @opts, @positionals, @optspec, %values );
+  my ( %seen_short, %seen_long );
+
+  for my $raw ( split /\n/, $def ) {
+    ( my $line = $raw ) =~ s/^\s+|\s+$//g;
+    next unless length $line;
+
+    my @f = $line =~ /,/ ? split( /\s*,\s*/, $line, -1 ) : split( /\s+/, $line );
+    my ( $opt, $type, $var, $default, $req ) = @f;
+
+    def_err("missing OPTION in: $line") unless defined $opt && length $opt;
+
+    # Positional parameter.
+    if ( $opt eq '#' ) {
+      def_err("positional needs a TYPE in: $line")
+        unless defined $type && length $type;
+      ( my $ptype = $type ) =~ s/\@$//;
+      def_err("unknown type ($type) in: $line") unless $IS_TYPE{$ptype};
+      def_err("positional needs a VARNAME in: $line")
+        unless defined $var && length $var;
+      def_err("invalid variable name ($var) in: $line")
+        unless $var =~ /^[A-Za-z_]\w*$/;
+
+      push @positionals, { type => $ptype, var => $var };
+      next;
+    }
+
+    def_err("missing TYPE in: $line") unless defined $type && length $type;
+
+    my $repeat = ( $type =~ s/\@$// );
+    def_err("unknown type ($type) in: $line") unless $IS_TYPE{$type};
+    def_err("boolean cannot be repeatable (\@) in: $line")
+      if $repeat && $type eq 'boolean';
+
+    my ( $short, $long );
+    if ( $opt =~ /\|/ ) {
+      ( $short, $long ) = split /\|/, $opt, 2;
+      def_err("short option must be one char ($opt) in: $line")
+        unless length($short) == 1;
+      def_err("long option missing after | ($opt) in: $line")
+        unless length($long);
+    } elsif ( length($opt) == 1 ) {
+      $short = $opt;
+    } else {
+      $long = $opt;
+    }
+
+    if ( defined $short ) {
+      def_err("repeated short option ($short) in: $line")
+        if $seen_short{$short}++;
+    }
+    if ( defined $long ) {
+      def_err("repeated long option ($long) in: $line")
+        if $seen_long{$long}++;
+    }
+
+    $var = ( defined $long ? $long : $short )
+      unless defined $var && length $var;
+    def_err("invalid variable name ($var) in: $line")
+      unless $var =~ /^[A-Za-z_]\w*$/;
+
+    $req = defined $req && length $req ? lc $req : 'optional';
+    $req = 'optional' if $type eq 'boolean';
+    def_err("REQUIRED must be required|optional ($req) in: $line")
+      unless $req eq 'required' || $req eq 'optional';
+
+    my $name = join '|', grep { defined } ( $short, $long );
+
+    if ( $type eq 'boolean' ) {
+      def_err("boolean DEFAULT must be 0 or 1 ($default) in: $line")
+        if defined $default && length $default && $default !~ /^[01]$/;
+      $values{$var} = undef;
+
+      # Negatable: -v / --verbose set 1, --no-verbose sets 0. With DEFAULT=1
+      # this gives a default-on (inverted) flag.
+      push @optspec, "$name!" => \$values{$var};
+    } elsif ($repeat) {
+      $values{$var} = [];
+      push @optspec, "$name=s@" => $values{$var};
+    } else {
+      $values{$var} = undef;
+      push @optspec, "$name=s" => \$values{$var};
+    }
+
+    push @opts,
+      { short   => $short,
+        long    => $long,
+        var     => $var,
+        type    => $type,
+        repeat  => $repeat,
+        default => ( defined $default && length $default ? $default : undef ),
+        req     => $req,
+      };
+  } ## end for my $raw ( split /\n/...)
+
+  def_err('definition has no options or positionals')
+    unless @opts || @positionals;
+
+  return ( \@opts, \@positionals, \@optspec, \%values );
+} ## end sub parse_definition
+
+#----------------------------------------------------------------------------
+# Build human-readable usage text from the option descriptors.
+
+sub build_usage {
+  my ( $opts, $positionals ) = @_;
+
+  my @lines = ( 'Usage: [options]' . ( @$positionals ? ' ' . join( ' ', map { $_->{var} } @$positionals ) : '' ) . "\n" );
+
+  if (@$opts) {
+    push @lines, 'Options:';
+    for my $o (@$opts) {
+      my @flags;
+      push @flags, "-$o->{short}" if defined $o->{short};
+      push @flags, "--$o->{long}" if defined $o->{long};
+      my $flag = join ', ', @flags;
+      my $meta =
+          $o->{type} eq 'boolean' ? ''
+        : $o->{repeat}            ? " <$o->{type}>..."
+        :                           " <$o->{type}>";
+      my @notes;
+      push @notes, 'required'               if $o->{req} eq 'required';
+      push @notes, "default: $o->{default}" if defined $o->{default};
+      my $note = @notes ? '  (' . join( '; ', @notes ) . ')' : '';
+      push @lines, sprintf( '  %s%s%s', $flag, $meta, $note );
+    }
+  } ## end if (@$opts)
+
+  if (@$positionals) {
+    push @lines, 'Positional:';
+    push @lines, "  $_->{var} <$_->{type}>" for @$positionals;
+  }
+
+  return join( "\n", @lines ) . "\n";
+} ## end sub build_usage
+
+#############################################################################
+# Main.
+
+@ARGV or def_err('no definition string given');
+
+# Usage-generation mode: parse_params --usage "$DEF"
+if ( $ARGV[0] eq '--usage' ) {
+  shift @ARGV;
+  def_err('no definition string given') unless @ARGV;
+  my ( $opts, $positionals ) = parse_definition( $ARGV[0] );
+  print build_usage( $opts, $positionals );
+  exit 0;
+}
+
+my $def  = shift @ARGV;
+my @args = @ARGV;
+
+my ( $opts, $positionals, $optspec, $values ) = parse_definition($def);
+
+# Auto --help, unless the caller defined its own -h / --help.
+my %defined_flag = map { ( $_->{short} // '' ) => 1, ( $_->{long} // '' ) => 1 } @$opts;
+if ( !$defined_flag{h} && !$defined_flag{help} ) {
+  for my $a (@args) {
+    last if $a eq '--';
+    if ( $a eq '-h' || $a eq '--help' ) {
+      print STDERR build_usage( $opts, $positionals );
+
+      # Tell the caller (which `eval`s our stdout) to stop cleanly.
+      print "exit 0\n";
+      exit 0;
+    }
+  }
+}
+
+Getopt::Long::Configure( 'no_auto_abbrev', 'no_ignore_case', 'permute' );
+{
+  # Getopt::Long warns to STDERR on a bad option; let that through, then fail.
+  Getopt::Long::GetOptionsFromArray( \@args, @$optspec )
+    or input_err('could not parse options');
+}
+
+my @errors;
+my @out;
+
+for my $o (@$opts) {
+  my $var  = $o->{var};
+  my $type = $o->{type};
+
+  if ( $type eq 'boolean' ) {
+    my $bv =
+        defined $values->{$var} ? ( $values->{$var} ? 1 : 0 )
+      : defined $o->{default}   ? $o->{default}
+      :                           0;
+    push @out, "$var=$bv";
+    next;
+  }
+
+  if ( $o->{repeat} ) {
+    my @vals = @{ $values->{$var} };
+    @vals = ( $o->{default} ) if !@vals && defined $o->{default};
+
+    for my $v (@vals) {
+      push @errors, "--$o->{long} ($v) is not a $type"
+        if !valid_value( $type, $v );
+    }
+    push @errors, "$var is required" if $o->{req} eq 'required' && !@vals;
+
+    @vals = map { $type eq 'filename' ? File::Spec->rel2abs($_) : $_ } @vals
+      if $type eq 'filename';
+    push @out, "$var=(" . join( ' ', map { shq($_) } @vals ) . ')';
+    next;
+  }
+
+  my $v = $values->{$var};
+  $v = $o->{default} if !defined $v && defined $o->{default};
+
+  if ( defined $v && length $v && !valid_value( $type, $v ) ) {
+    push @errors, "value ($v) for $var is not a $type";
+  }
+  push @errors, "$var is required"
+    if $o->{req} eq 'required' && !( defined $v && length $v );
+
+  $v = File::Spec->rel2abs($v) if $type eq 'filename' && defined $v && length $v;
+  push @out, "$var=" . shq($v);
+} ## end for my $o (@$opts)
+
+# Positionals: assign the leftover args in order.
+for my $p (@$positionals) {
+  my $v = shift @args;
+  if ( defined $v && length $v && !valid_value( $p->{type}, $v ) ) {
+    push @errors, "positional $p->{var} ($v) is not a $p->{type}";
+  }
+  $v = File::Spec->rel2abs($v)
+    if $p->{type} eq 'filename' && defined $v && length $v;
+  push @out, "$p->{var}=" . shq($v);
+}
+
+if (@errors) {
+  print STDERR "$PROG: $_\n" for @errors;
+  exit 1;
+}
+
+print "$_\n" for @out;
+exit 0;

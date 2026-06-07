@@ -404,16 +404,20 @@ working tree — evaluate carefully before implementing.
         harness so its `ln -fs` into `$HOME` can't touch the host.
 - [ ] Add tests for lib/ libraries
   - [x] debug — `tests/shell/test_debug.bats`
-  - [ ] parse_params — complex (657 L); its own task. Evaluate rewriting
-        in perl (much simpler than the bash version); note it's currently a
-        sourced lib that sets caller variables, so a perl version would need
-        to emit eval-able shell (getopt-style) for the caller to `eval`.
-        Write tests for whichever form it ends up as. **Also consider
-        converting `bin/cleanpath` to perl** (same kind of text munging).
-        Constraint: a perl rewrite of either must use **only core modules
-        shipped with perl** — no CPAN dependencies (keeps them runnable
-        anywhere perl is, and avoids the Perl::Tidy/XML::LibXML kind of
-        install gap; see perl CI notes).
+  - [x] parse_params — **rewritten in core-only perl as `bin/parse_params`**
+        (the old bash `lib/parse_params` was broken — it `source`d a long-gone
+        `utility` lib + missing is_char/is_integer/verify_filename — and is
+        archived to `archive/lib/`). Emits `eval`-able shell assignments
+        (`_pp=$(parse_params "$DEF" "$@") || show_usage; eval "$_pp"`) so it
+        replaces hand-written `while` arg loops. Fixed the original's design
+        flaws: no code-gen/eval, no shell-killing `die` (it's a subprocess),
+        safe quoting, clear exit codes (0/1/2). New features: signed integers,
+        negatable booleans (`--no-x`, DEFAULT 0|1 for default-on), repeatable
+        `type@` → shell arrays, positionals, auto `--help` + `--usage`. Tests:
+        `tests/perl/parse_params-{options,types,boolean,errors}.t` (60 cases).
+  - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
+        munging). Constraint: core perl modules only — no CPAN (keeps it
+        runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
   - [ ] docker_helpers — currently untested.
   - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
     factored into `bin/git-status` — not tested.)
@@ -910,8 +914,9 @@ in the future.
 ## 📊 Progress Tracking
 
 - **Documentation:** ~85% complete (foundation laid, XXX cleanup remaining)
-- **Testing:** ~55% complete (docker harness + context matrix + several
-  scripts/libs covered; `parse_params` and shell-startup-module tests remain)
+- **Testing:** ~60% complete (docker harness + context matrix + several
+  scripts/libs covered, incl. the new perl `parse_params`; shell-startup
+  module tests + `docker_helpers` remain)
 - **Pre-commit:** Phases 1–2 done (core + security, in CI + required); Phases
   3–4 (language, docs) remain
 - **CI/CD:** `tests.yml` (bats/perl/python) + `pre-commit` job live; phased
@@ -921,8 +926,8 @@ in the future.
 
 ## 🎯 Next Actions (Priority Order)
 
-1. **Testing Phase 3** — `lib/parse_params` (+ evaluate the perl rewrite) and
-   `config/shell-startup/` module tests
+1. **Testing Phase 3** — `config/shell-startup/` module tests and
+   `lib/docker_helpers` (parse_params is done — see bin/parse_params)
 2. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
    a required check (also unblocks the deferred Perl pre-commit hooks)
 3. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
