@@ -247,6 +247,26 @@ older package): `call_perltidy.t:129,207` and `get_perltidy_config.t:103`
 - [ ] Once green across versions, drop `continue-on-error` and **promote
   perl to a required check**.
 
+## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
+
+Goal: dotfiles should install and configure per-language version/tool
+managers consistently, replacing the ad-hoc setup that's accreted over time.
+Cover at least **perlbrew** (Perl) and **nvm** (Node), and evaluate the
+equivalents for the other languages in play (pyenv/uv for Python, a Ruby
+manager; `rustup` is already used). One documented, idempotent install +
+shell-init path per manager — XDG-aware where possible, lazy-loaded in
+`config/shell-startup/<lang>` to keep shell startup fast.
+
+- [ ] perlbrew: install a pinned Perl + cpanm, then the toolchain the repo
+  needs (notably **Perl::Tidy**). A controlled Perl::Tidy that's identical
+  across machines **and CI** removes the version drift behind the non-gating
+  perl job (see "perl CI: make perltidyrc-clean tests version-robust" above —
+  pinning fixes the wording drift; the tests should still be hardened too).
+- [ ] nvm: install + lazy-load; pin a default Node.
+- [ ] Evaluate/standardize the rest (Python, Ruby; rustup already in use)
+  under one consistent pattern, documented in each
+  `config/shell-startup/<lang>` module.
+
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
 Review all files in `config/shell-startup/` for correctness and security:
