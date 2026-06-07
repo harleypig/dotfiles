@@ -526,12 +526,17 @@ working tree — evaluate carefully before implementing.
   - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
         munging). Constraint: core perl modules only — no CPAN (keeps it
         runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
-  - [ ] docker_helpers — currently untested.
+  - [x] docker_helpers — `tests/shell/test_docker_helpers.bats` (20 cases).
   - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
     factored into `bin/git-status` — not tested.)
 - [ ] Add tests for config/shell-startup/ modules
-  - [ ] Test conditional loading
-  - [ ] Test error handling
+  - [x] `000-loadtokens` — `tests/shell/test_000-loadtokens.bats` (conditional
+    token loading, comment/missing-file skips, no-op when absent, temp-var
+    cleanup). The one module with real standalone logic worth isolating.
+  - The rest are guarded tool-setup (`command -v`/interactive) already
+    exercised in aggregate by the docker integration tests
+    (`test_integration_startup` + `test_integration_context`); add a focused
+    unit test only when a module grows real conditional logic.
 
 ### Phase 4: Extended Coverage
 
@@ -1022,9 +1027,9 @@ in the future.
 ## 📊 Progress Tracking
 
 - **Documentation:** ~85% complete (foundation laid, XXX cleanup remaining)
-- **Testing:** ~60% complete (docker harness + context matrix + several
-  scripts/libs covered, incl. the new perl `parse_params`; shell-startup
-  module tests + `docker_helpers` remain)
+- **Testing:** ~70% complete (docker harness + context matrix + parse_params,
+  docker_helpers, 000-loadtokens, hr, …; a broad per-script coverage audit and
+  Phase 4 remain)
 - **Pre-commit:** Phases 1–2 done (core + security, in CI + required); Phases
   3–4 (language, docs) remain
 - **CI/CD:** `tests.yml` (bats/perl/python) + `pre-commit` job live; phased
@@ -1034,13 +1039,15 @@ in the future.
 
 ## 🎯 Next Actions (Priority Order)
 
-1. **Testing Phase 3** — `config/shell-startup/` module tests and
-   `lib/docker_helpers` (parse_params is done — see bin/parse_params)
-2. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
+1. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
    a required check (also unblocks the deferred Perl pre-commit hooks)
-3. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
+2. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
    `XML::LibXML` debt)
-4. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
+3. **Perl quality tooling** — curated perlcritic + Test::Perl::Critic,
+   Devel::Cover, Pod::Coverage, … (see that section)
+4. **Comprehensive BATS coverage audit** — full pass over the remaining bin/
+   scripts (Phase 3 wrap-up)
+5. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
 
 ## Notes
 
