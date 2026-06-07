@@ -61,6 +61,48 @@ fixed by one bump. List them with:
   auto-close (or dismiss with reason if dulwich is only a transitive dev
   dependency that is not actually exercised).
 
+## 🛡️ Protect the master Branch (HIGH PRIORITY)
+
+We've started behaving as if `master` is protected (changes land via PR with
+green checks — e.g. PRs #9–#11); now enforce it on GitHub using the prepared
+**rulesets** in `../private_dotfiles/github-rulesets/` (sibling repo), per its
+README.
+
+- [ ] Use `protect-master-solo.json` (this is a solo repo: 0 required reviews,
+  squash-only merges, stale-review dismissal, required thread resolution,
+  deletion + force-push blocked, PR required, status checks required).
+  `protect-master-team.json` is the variant if this ever becomes a team repo.
+- [ ] Fix the required-check contexts before importing — the file ships
+  placeholders (`Build`, `Pre-commit checks`) that don't match this repo. Set
+  them to our real checks: `bats` at minimum, optionally `CodeFactor` and
+  `security/snyk`.
+- [ ] Import via the rulesets API with an admin/OAuth token (the narrow PAT
+  can't — `Resource not accessible by personal access token`):
+
+  ```bash
+  GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets \
+    --method POST --input protect-master-solo.json
+  ```
+
+- [ ] Verify: a direct push to `master` is rejected, and a PR needs green
+  checks to merge.
+- [ ] Confirm Dependabot / auto-merge interplay once the ruleset is active.
+- [ ] Document the enforced workflow in `WORKFLOW.md`.
+
+## 🌿 Evaluate / Clean Up Stale Branches (MEDIUM PRIORITY)
+
+Remote branches not from current work — evaluate, then remove. As of
+2026-06-06 both are **already merged into master** (their tips are ancestors,
+0 commits ahead), so they're safe to delete after a quick confirm:
+
+- [ ] `origin/codex/update-pod-heading-to--environment-check` — last commit
+  "docs: fix typo in util_lib" (2025-06-05).
+- [ ] `origin/codex/fix-typo-in-comment` — last commit "Fix typo in
+  shell-startup comment".
+
+Delete with `git push origin --delete <branch>` (no local copies exist). If a
+future stray branch is *not* merged, review its diff before deleting.
+
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
 `bin/docker_wrapper` is a multi-call dispatcher: each tool is a `bin/<tool>`
