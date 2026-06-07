@@ -387,6 +387,21 @@ Review all files in `config/shell-startup/` for correctness and security:
   — standardize to `|| return 0` pattern per `000-loadtokens` fix
 - [ ] Any other shellcheck warnings not already suppressed with justification
 
+Beyond correctness/security, audit each module for **improve / add / remove**:
+
+- [ ] **Improve**: modernize patterns; fix the lint findings the
+  extensionless-files coverage gap currently hides (e.g. terraform's
+  `COMPREPLY=($(compgen …))` SC2207, perl's SC1003); cut per-startup cost
+  (subprocesses that run at every login).
+- [ ] **Add**: tools/integrations worth their own module that aren't covered.
+- [ ] **Remove / retire**: modules for tools no longer used; dead or
+  commented-out blocks (e.g. perl's `wtf_am_i_doing_here` early-`return`
+  function); stale host assumptions.
+- [ ] Finish the **interactive-context guards**: reorder the heavily-mixed
+  modules (`010-general`, `perl`) into env → `[[ $- == *i* ]] || return 0` →
+  interactive. (`python`, `ssh-config-completion`, `terraform`, `tmux`,
+  `bash_prompt`, `taskwarrior`, `git` are already guarded.)
+
 ## 🏠 $HOME Dotfile Audit (MEDIUM PRIORITY)
 
 Reduce $HOME clutter by moving dotfiles to XDG directories where supported
@@ -782,17 +797,22 @@ Problems to solve:
   `_DOTFILES_STARTUP_DONE` sentinel returns early on a second source in the
   same shell (`tests/shell/test_shell_startup_guard.bats`). The
   context-appropriate partial-run is the remaining context work below.
-- [ ] Detect shell context (`$-` contains `i` for interactive; login shells
-  set by checking `shopt login_shell` or `$0` prefix `-`)
-- [ ] Skip alias/function/prompt setup for non-interactive shells
+- [x] Detect shell context — modules use `[[ $- == *i* ]]` to gate
+  interactive-only content (convention; see the guarded modules below).
+- [ ] Skip alias/function/prompt setup for non-interactive shells — **in
+  progress**: guarded `bash_prompt`, `taskwarrior`, `git` (pre-existing) and
+  `python`, `ssh-config-completion`, `terraform`, `tmux`. Remaining: the
+  heavily-mixed `010-general` and `perl` need an env → guard → interactive
+  reorder (the user OK'd rearranging those files).
 - [ ] Handle incomplete terminal environments gracefully (e.g., vim shell,
   docker exec, ssh command) — these may lack `TERM`, `COLUMNS`, etc.
 - [ ] Audit `config/shell-startup/` modules: tag or split each module by
-  required context (env-only vs interactive-only)
+  required context (env-only vs interactive-only) — see the broader
+  config/shell-startup audit section above.
 - [ ] Write integration tests using Docker to cover each context:
-  - Use a minimal Docker image with bash and the dotfiles mounted/installed
-  - [ ] Interactive login: `docker run -it` with login shell (`bash -l`)
-    — verify aliases, functions, prompt, and full env are set
+  - [x] Harness + interactive/non-interactive login covered
+    (`tests/shell/test_integration_context.bats`: env in both, prompt +
+    aliases interactive-only).
   - [ ] Interactive non-login: `docker run -it` without `-l`
     — verify aliases/prompt present, env inherited correctly, no double-init
   - [ ] Non-interactive login: `docker run` with `bash -lc 'command'`

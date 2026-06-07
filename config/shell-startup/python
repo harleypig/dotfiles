@@ -10,6 +10,9 @@ export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/startup"
 
 export PATH="$PATH:$XDG_DATA_HOME/python/bin"
 
+# Interactive-only below (aliases, helper functions, completions).
+[[ $- == *i* ]] || return 0
+
 alias python='python3'
 alias wondertwins="source venv/bin/activate"
 

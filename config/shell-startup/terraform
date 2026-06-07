@@ -2,6 +2,9 @@
 
 command -v terraform &> /dev/null || return 0
 
+# Aliases + completion — interactive shells only.
+[[ $- == *i* ]] || return 0
+
 #-----------------------------------------------------------------------------
 alias tf='terraform'
 
