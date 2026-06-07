@@ -49,12 +49,14 @@ export XDG_CACHE_HOME="$HOME/.cache"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_STATE_HOME="$HOME/.local/state"
 
+# Ensure the cache/state dirs exist before any module writes into them.
 mkdir -p "$XDG_CACHE_HOME"
 mkdir -p "$XDG_STATE_HOME"
 
-export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
-
-export EDITOR=vim
+# Locale is set here (before load_files) on purpose: load_files orders the
+# startup modules with locale-sensitive `sort`, so a fixed locale keeps the
+# load order deterministic. (EDITOR and INPUTRC live in
+# config/shell-startup/010-general — they are not needed before modules load.)
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -115,8 +117,10 @@ unsetfuncs 'addpath'
 # Source an optional hook file from $dfdir if it exists and is readable.
 
 run_hook() {
-  # shellcheck disable=SC2154
-  local hook="$dfdir/$1"
+  # Kept for possible future use — currently called nowhere (see TODO).
+  # Sources an optional hook named $1 from $dfdir, defaulting to the
+  # dotfiles hook directory when a caller has not set one.
+  local hook="${dfdir:-$DOTFILES/shell_startup.d}/$1"
   debug "running hook: $hook"
   [[ -r $hook ]] || {
     debug "hook not readable: $hook"
@@ -183,13 +187,14 @@ unsetvars 'load_files'
 set_bin_dirs
 load_files
 
-#-----------------------------------------------------------------------------
-# Check if various dotfiles are linked properly (runs after load_files so
-# env vars set by shell-startup modules are available for dotlinks entries)
-[[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
-
 ##############################################################################
 # Cleanup
+#
+# The functions and variables above exist only to bootstrap and load the
+# environment. Unset them here so the bootstrap machinery does not leak into
+# the interactive login shell — keep the general environment as clean as
+# possible. (The dotfiles-link check moved to the zzz-check-dotfiles module so
+# it still runs last, after every other module.)
 
 unset -f "${_unset_funcs[@]}"
 unset "${_unset_vars[@]}"

@@ -3,6 +3,12 @@
 PROMPT_DIRTRIM=2
 
 #-----------------------------------------------------------------------------
+# Environment (moved from shell-startup — not needed before modules load)
+
+export EDITOR=vim
+export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
+
+#-----------------------------------------------------------------------------
 # shellcheck disable=SC2139,SC2086
 alias wget="wget --hsts-file="$XDG_CACHE_HOME/wget-hsts""
 
