@@ -134,6 +134,28 @@ in the pre-commit configuration.
 * Tests must pass
 * At least one review for significant changes
 
+**Enforced branch protection (`master`):**
+
+`master` is protected by a GitHub ruleset (`protect-master-solo.json` in
+`../private_dotfiles/github-rulesets/`, enforcement active). It is **not**
+advisory — the remote enforces it:
+
+* **Direct pushes to `master` are rejected** — all changes land via PR.
+* **Squash is the only allowed merge method.**
+* **`bats` must be green** to merge (required status check). `perl` is
+  non-gating; add the pre-commit CI check to the required set when it lands.
+* Deletion and force-push of `master` are blocked; unresolved review threads
+  block merge; stale reviews are dismissed on push.
+* No bypass actors — even the owner goes through a PR.
+
+To change the ruleset, edit the JSON and re-apply with the OAuth token (the
+narrow PAT lacks admin):
+
+```bash
+GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets/17364459 \
+  --method PUT --input ../private_dotfiles/github-rulesets/protect-master-solo.json
+```
+
 ## Tool Setup Procedures
 
 ### Prerequisites

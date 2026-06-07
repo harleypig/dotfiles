@@ -52,33 +52,40 @@ Pinned `dulwich >= 1.2.5` (PR #10); both high-severity advisories
 the triage habit: `gh api repos/harleypig/dotfiles/dependabot/alerts -f
 state=open` (see `gh.md` *Issues & triage*).
 
-## 🛡️ Protect the master Branch (HIGH PRIORITY)
+## 🛡️ Protect the master Branch (DONE 2026-06-07)
 
-We've started behaving as if `master` is protected (changes land via PR with
-green checks — e.g. PRs #9–#11); now enforce it on GitHub using the prepared
-**rulesets** in `../private_dotfiles/github-rulesets/` (sibling repo), per its
-README.
+Enforced on GitHub via the `protect-master-solo.json` ruleset (id 17364459,
+enforcement active): PR required, squash-only merge, stale-review dismissal,
+required thread resolution, deletion + force-push blocked, `bats` required
+green; `current_user_can_bypass: never`.
 
-- [ ] Use `protect-master-solo.json` (this is a solo repo: 0 required reviews,
-  squash-only merges, stale-review dismissal, required thread resolution,
-  deletion + force-push blocked, PR required, status checks required).
-  `protect-master-team.json` is the variant if this ever becomes a team repo.
-- [ ] Fix the required-check contexts before importing — the file ships
-  placeholders (`Build`, `Pre-commit checks`) that don't match this repo. Set
-  them to our real checks: `bats` at minimum, optionally `CodeFactor` and
-  `security/snyk`.
-- [ ] Import via the rulesets API with an admin/OAuth token (the narrow PAT
-  can't — `Resource not accessible by personal access token`):
+- [x] Applied `protect-master-solo.json` (solo: 0 reviews, squash-only,
+  stale-review dismissal, thread resolution, deletion + force-push blocked).
+  `protect-master-team.json` remains the variant if this becomes a team repo.
+- [x] Fixed the required-check context to the repo's real check (`bats`);
+  removed the `Build` / `Pre-commit checks` placeholders. Add the pre-commit
+  CI check to the required set once it lands (see Pre-commit → CI).
+- [x] Imported via the rulesets API with the OAuth token (the narrow PAT
+  can't).
+- [x] Verified: ruleset active on `master`; direct pushes are rejected and a
+  PR needs `bats` green to merge.
+- [x] Documented the enforced workflow in `WORKFLOW.md`.
+- [ ] Confirm Dependabot / auto-merge interplay once a Dependabot PR appears
+  (squash-only + required `bats` — ensure auto-merge still completes).
 
-  ```bash
-  GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets \
-    --method POST --input protect-master-solo.json
-  ```
+## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
-- [ ] Verify: a direct push to `master` is rejected, and a PR needs green
-  checks to merge.
-- [ ] Confirm Dependabot / auto-merge interplay once the ruleset is active.
-- [ ] Document the enforced workflow in `WORKFLOW.md`.
+We use a single branch ruleset (protect master). Survey what else rulesets
+offer and whether any help this repo:
+
+- [ ] Review the available rule types — **tag** rulesets (protect release
+  tags from deletion/force-push), **push** rulesets (block large files or
+  secrets at push time), required linear history, required deployments /
+  code-scanning results, commit-metadata patterns (e.g. enforce Conventional
+  Commits subjects), restricted file-path changes, required workflows.
+- [ ] Decide which add value here (likely candidates: a tag ruleset for
+  release tags; a commit-message pattern enforcing Conventional Commits) and
+  capture their configs in `../private_dotfiles/github-rulesets/`.
 
 ## ✅ Evaluate / Clean Up Stale Branches (DONE 2026-06-07)
 
