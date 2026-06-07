@@ -21,6 +21,10 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      # Block direct commits to master locally — the server ruleset rejects
+      # the push, this catches it earlier, at commit time (see git.md).
+      - id: no-commit-to-branch
+        args: [--branch, master]
       - id: check-merge-conflict
       - id: check-added-large-files
       - id: check-yaml

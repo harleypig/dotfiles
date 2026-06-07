@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.2.0
+**Version:** v1.3.0
 
 ## Commit Messages
 
@@ -54,6 +54,29 @@ git symbolic-ref "refs/remotes/origin/HEAD" | sed 's@^refs/remotes/origin/@@'
 
 If unset, query via `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`
 and then `git remote set-head origin <branch>` to cache it.
+
+## Protecting the Default Branch
+
+When a repo's default branch should be PR-only, protect it in **two layers**
+— the server enforces it, the local hook catches mistakes earlier:
+
+1. **Server-side ruleset / branch protection** (authoritative): require PRs,
+   required status checks, and block deletion + force-push. This is what
+   actually rejects a direct push. Apply it via the host's API (GitHub
+   rulesets need an admin/OAuth token, not a narrow PAT).
+2. **Local `no-commit-to-branch` pre-commit hook** (early guard): add the
+   `no-commit-to-branch` hook (from `pre-commit/pre-commit-hooks`) to the
+   check config so a direct commit on the protected branch fails *before* the
+   push is even attempted:
+
+   ```yaml
+   - id: no-commit-to-branch
+     args: [--branch, <default-branch>]
+   ```
+
+The local hook is a convenience, not a substitute — without the server-side
+ruleset, anyone (or any tool) without the hook installed can still push. The
+repo's concrete ruleset/config lives in its `.claude/` docs.
 
 ## Worktrees
 
