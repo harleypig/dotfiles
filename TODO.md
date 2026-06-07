@@ -805,8 +805,11 @@ Problems to solve:
   `ssh-config-completion`, `terraform`, `tmux`, and the heavily-mixed
   `010-general` + `perl` reordered into env → guard → interactive. Verified
   in the harness (`test_integration_context.bats`).
-- [ ] Handle incomplete terminal environments gracefully (e.g., vim shell,
-  docker exec, ssh command) — these may lack `TERM`, `COLUMNS`, etc.
+- [x] Handle incomplete terminal environments gracefully (e.g., vim shell,
+  docker exec, ssh command) — `bin/ansi` falls back to `TERM=dumb` when TERM
+  is unset, so the prompt path (bash_prompt/git-status → ansi → tput) no
+  longer errors with "No value for $TERM". Covered by the TERM-unset case in
+  `test_integration_context.bats`.
 - [x] Audit `config/shell-startup/` modules: tag/split by context — done as
   the guarding above (env-only content kept unguarded; interactive-only
   content moved below the guard). Broader improve/add/remove audit tracked in
@@ -815,14 +818,13 @@ Problems to solve:
   - [x] Harness + interactive/non-interactive login covered
     (`tests/shell/test_integration_context.bats`: env in both, prompt +
     aliases interactive-only).
-  - [ ] Interactive non-login: `docker run -it` without `-l`
-    — verify aliases/prompt present, env inherited correctly, no double-init
-  - [ ] Non-interactive login: `docker run` with `bash -lc 'command'`
-    — verify env vars set, aliases/prompt NOT defined
-  - [ ] Non-interactive non-login: `docker run` with `bash -c 'command'`
-    — verify minimal env only, no aliases, no prompt, no errors
-  - [ ] Incomplete terminal (vim-style): simulate missing `TERM`/`COLUMNS`
-    — verify shell-startup degrades gracefully without errors
+  - [x] Interactive non-login (`bash -ic`, reads .bashrc): env + prompt +
+    aliases present.
+  - [x] Non-interactive login (`bash -lc`): env vars set, aliases/prompt NOT
+    defined (the "non-interactive login" case in the context test).
+  - [x] Non-interactive non-login (`bash -c`): shell-startup does not run
+    (DOTFILES empty) — scripts don't inherit the interactive setup.
+  - [x] Incomplete terminal: TERM unset → comes up, no tput errors.
   - [x] Double-source guard: covered hermetically
     (`test_shell_startup_guard`) and in the harness
     (`test_integration_startup`) — second source leaves PATH unchanged.
