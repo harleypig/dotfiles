@@ -13,8 +13,10 @@ my ($out, $err, $rc);
 ($out, $err, $rc) = run_pp_argv('-h');
 is($rc, 0, '-h exits 0');
 like($out, qr/parse_params - validate/, '-h prints parse_params own help');
-like($out, qr/^DEFINITION LINES$/m, '-h documents the definition format');
-like($out, qr/^OPTIONS$/m, '-h lists parse_params own options (from POD)');
+# Assert on POD *body* content, not rendered section headers, which Pod::Text
+# formats differently across versions.
+like($out, qr/OPTION, TYPE, VARNAME/, '-h documents the definition format');
+like($out, qr/--auto/, '-h lists parse_params own options (from POD)');
 
 ($out, $err, $rc) = run_pp_argv('--help');
 is($rc, 0, '--help exits 0');

@@ -299,21 +299,21 @@ catches.
 - [ ] Consider adding `shell-startup` + `config/shell-startup` to the
   meta-test generator roots too.
 
-## 🐪 perl CI: make perltidyrc-clean tests version-robust (MEDIUM PRIORITY)
+## 🐪 perl CI: promote to a required check (MEDIUM PRIORITY)
 
-The `perl` CI job (`prove tests/perl/`) is **non-gating** for now
-(`continue-on-error` in `.github/workflows/tests.yml`). Several
-`perltidyrc-clean` tests assert *exact* Perl::Tidy error wording and break
-across Perl::Tidy versions (pass on local 20250912, fail on the runner's
-older package): `call_perltidy.t:129,207` and `get_perltidy_config.t:103`
-(4/24 and 1/52 subtests).
-
-- [ ] Make the assertions match *that an error was reported* (exit code /
-  non-empty error), not the upstream phrasing — the fix may also reach into
-  `bin/perltidyrc-clean`'s own error-wrapping path, so treat it as its own
-  task (cf. parse_params).
-- [ ] Once green across versions, drop `continue-on-error` and **promote
-  perl to a required check**.
+- [x] Made the perl test assertions **version-robust** — assert *that a problem
+  was reported* (non-zero code / non-blank message), not the exact Perl::Tidy
+  wording or exit code (old Perl::Tidy treats a missing perltidyrc as a
+  warning, err 2, not an error, err 1), and key parse_params `-h` on POD body
+  rather than pod2usage header formatting. Fixed across `call_perltidy.t`,
+  `get_perltidy_config.t`, `integration.t`, `parse_params-modes.t`. The perl
+  job is now green on the runner's older Perl::Tidy.
+- [x] Dropped `continue-on-error` from the perl job — it now gates the CI run.
+- [ ] Add `perl` to the master ruleset's required status checks (alongside
+  `bats` + `pre-commit`) so it also blocks merge. Needs the OAuth token (the
+  narrow PAT can't): edit
+  `../private_dotfiles/github-rulesets/protect-master-solo.json` and re-apply
+  (see WORKFLOW.md).
 
 ## 🐫 Perl quality tooling (MEDIUM PRIORITY)
 
@@ -1039,8 +1039,8 @@ in the future.
 
 ## 🎯 Next Actions (Priority Order)
 
-1. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
-   a required check (also unblocks the deferred Perl pre-commit hooks)
+1. **perl CI** — version-robust + gating done; remaining: add `perl` to the
+   master ruleset's required checks (OAuth) so it blocks merge too
 2. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
    `XML::LibXML` debt)
 3. **Perl quality tooling** — curated perlcritic + Test::Perl::Critic,

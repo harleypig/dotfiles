@@ -3,8 +3,7 @@ name: tests
 
 # Run the test suites on pushes to master and on PRs:
 #   - bats:   the hand-written shell suite (tests/shell/test_*.bats) — gates
-#   - perl:   prove over tests/perl/ — non-gating for now (Perl::Tidy version
-#             drift; see TODO), promote once version-robust
+#   - perl:   prove over tests/perl/ — gates (assertions are version-robust)
 #   - python: pytest over tests/python/ (activates once tests exist)
 #   - pre-commit: the check config (lint/format/secret hooks) via
 #                 `pre-commit run --all-files`
@@ -36,13 +35,12 @@ jobs:
       - name: Run hand-written suite
         run: bats tests/shell/test_*.bats
 
-  # Non-gating for now (continue-on-error): perltidyrc-clean's error-message
-  # assertions are coupled to a specific Perl::Tidy version's wording and fail
-  # on the runner's version. Surfaced + tracked in TODO; promote to a required
-  # check once the suite is version-robust.
+  # Gating: the perltidyrc-clean + parse_params assertions are version-robust
+  # (they assert that a problem was reported, not a specific Perl::Tidy wording
+  # or exit code, and key on POD body rather than pod2usage header formatting),
+  # so this passes across Perl::Tidy / Pod::Text versions.
   perl:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
