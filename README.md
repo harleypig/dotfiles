@@ -125,6 +125,30 @@ echo "XDG_CONFIG_HOME: $XDG_CONFIG_HOME"
 complete -p | grep git
 ```
 
+### 5. (Optional) Enable pre-commit hooks
+
+The repo ships two [pre-commit] configs: `.pre-commit-config.yaml`
+(check-only, gates `git commit`) and `.pre-commit-config-fix.yaml`
+(auto-fixers, run manually).
+
+```bash
+# Install the git hook so the check config runs on every commit
+pre-commit install
+
+# Apply auto-fixes (formatting, trailing whitespace) before committing
+pre-commit run --config .pre-commit-config-fix.yaml --all-files
+
+# Ad-hoc check without committing
+pre-commit run --all-files
+```
+
+`--all-files` surfaces pre-existing lint/format debt in legacy scripts
+(tracked in `TODO.md`); a normal commit only checks the files it touches.
+See `.claude/rules/pre-commit.md` for the full command reference
+(`install` variants, `autoupdate`, `validate-config`, `gc`).
+
+[pre-commit]: https://pre-commit.com/
+
 ## Architecture Overview
 
 ### Shell Startup System

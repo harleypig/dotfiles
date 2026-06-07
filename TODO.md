@@ -501,31 +501,46 @@ after every `Edit` or `Write` on a shell file.
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
 Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 
-### Phase 1: Core Hooks (NEXT PRIORITY)
-- [ ] Create `.pre-commit-config.yaml` with core hooks:
-  - [ ] shellcheck (bash script linting)
-  - [ ] shfmt (shell formatting check, not fix)
-  - [ ] yamllint (YAML syntax)
-  - [ ] markdownlint (Markdown formatting)
-  - [ ] trailing-whitespace
-  - [ ] end-of-file-fixer (check mode)
-  - [ ] check-yaml
-  - [ ] check-json
-  - [ ] check-merge-conflict
-  - [ ] check-added-large-files
-- [ ] Create `.pre-commit-config-fix.yaml` with auto-fix hooks:
-  - [ ] shfmt -w (write mode)
-  - [ ] prettier (formatting)
-  - [ ] end-of-file-fixer (fix mode)
-  - [ ] trailing-whitespace (fix mode)
-- [ ] Test pre-commit configuration with sample files
-- [ ] Document pre-commit usage in README.md
+### Phase 1: Core Hooks (DONE — except the rule Agent-Behavior pass below)
+- [x] Create `.pre-commit-config.yaml` with core hooks (all remote, pinned):
+  - [x] shellcheck (`--external-sources`)
+  - [x] shfmt (`-d`, check-only; flags per shfmt.md/.editorconfig)
+  - [x] yamllint (`-c config/yamllint/config`)
+  - [x] markdownlint (`--config dot-general/.markdownlintrc`)
+  - [x] check-yaml, check-json, check-merge-conflict, check-added-large-files
+  - trailing-whitespace / end-of-file-fixer: **moved to the fix config** —
+    those hooks can only modify, which violates the check config's
+    non-modifying contract (`.claude/rules/pre-commit.md`).
+- [x] Create `.pre-commit-config-fix.yaml` with auto-fix hooks:
+  - [x] trailing-whitespace, end-of-file-fixer
+  - [x] shfmt `-w` (write mode)
+  - [x] prettier (excludes md/yaml — owned by markdownlint/yamllint)
+- [x] Test pre-commit configuration with sample files (check + fix; clean
+  files pass and are left unmodified; revs confirmed current via autoupdate)
+- [x] Document pre-commit usage in README.md (+ full command reference —
+  `install` variants, `autoupdate`, `validate-config`, `gc` — in
+  `.claude/rules/pre-commit.md`)
 - [ ] Update all `config/claude/rules/*.md` Agent Behavior sections to
   prioritize pre-commit over direct tool invocation:
   - Normal ops: `pre-commit run --files <file>` instead of `shfmt`/`shellcheck`/etc.
   - Fix ops: `pre-commit run --config .pre-commit-config-fix.yaml --files <file>`
   - Direct tool invocation becomes the fallback when pre-commit is not
     configured or the file is not covered by any hook
+- [ ] **Wire pre-commit into CI** (allowed now Phase 1 is done): a check-only
+  job running `pre-commit run --all-files` — but only after the legacy
+  lint/format debt is cleared, or scoped to changed files, so it doesn't fail
+  on pre-existing debt.
+
+### Proposed: pre-commit skill, used by qa-check
+- [ ] Evaluate a `pre-commit` **skill** packaging the operational workflow
+  (fix → check → commit prep; `install` variants; `autoupdate` on suspected
+  drift; `validate-config`; `gc`) now documented in
+  `.claude/rules/pre-commit.md`. The rule is policy/reference; a skill is the
+  forcing function that runs it (cf. qa-check).
+- [ ] Have **qa-check** delegate its Format + Lint stages to pre-commit when
+  `.pre-commit-config.yaml` is present (run the fix config, then the check
+  config) instead of invoking shfmt/shellcheck/etc. directly; fall back to
+  direct invocation when pre-commit is not configured.
 
 ### Phase 2: Security Hooks
 - [ ] Add security checks to `.pre-commit-config.yaml`:

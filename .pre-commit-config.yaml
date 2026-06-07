@@ -1,0 +1,50 @@
+---
+# Check-only pre-commit hooks (NON-MODIFYING) — run on `git commit` and gate
+# the commit. Auto-fixers live in .pre-commit-config-fix.yaml and are run
+# manually (see README + .claude/rules/pre-commit.md).
+#
+# Phase 1 (Core). Security / language / docs hooks are tracked in TODO.md and
+# must land here before CI is allowed to gate them.
+#
+# trailing-whitespace / end-of-file-fixer are intentionally NOT here: those
+# hooks can only fix (they modify files), which would violate "check-only".
+# They live in the fix config instead.
+#
+# Revs are pinned. Refresh with `pre-commit autoupdate` when drift is
+# suspected (see .claude/rules/pre-commit.md).
+
+exclude: '^archive/'
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: check-yaml
+      - id: check-json
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+        args: [--external-sources]
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.13.1-1
+    hooks:
+      # -d = diff only (non-modifying); flags match shfmt.md / .editorconfig.
+      - id: shfmt
+        args: [-d, -i, '2', -s, -bn, -ci, -sr]
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+        args: [-c, config/yamllint/config]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.48.0
+    hooks:
+      - id: markdownlint
+        args: [--config, dot-general/.markdownlintrc]

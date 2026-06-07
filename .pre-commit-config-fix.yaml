@@ -1,0 +1,35 @@
+---
+# Auto-fix pre-commit hooks (MODIFYING) — run MANUALLY, never on commit:
+#   pre-commit run --config .pre-commit-config-fix.yaml --all-files
+# The check-only gate is .pre-commit-config.yaml. Per
+# .claude/rules/pre-commit.md, run this once as a final prep step before
+# committing, not mid-session in response to individual failures.
+#
+# Phase 1 (Core).
+#
+# Refresh revs with:
+#   pre-commit autoupdate --config .pre-commit-config-fix.yaml
+
+exclude: '^archive/'
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.13.1-1
+    hooks:
+      # -w = write in place; flags match shfmt.md / .editorconfig.
+      - id: shfmt
+        args: [-w, -i, '2', -s, -bn, -ci, -sr]
+
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.8.3
+    hooks:
+      # Markdown and YAML are owned by markdownlint / yamllint; exclude them
+      # so prettier does not fight those tools' formatting.
+      - id: prettier
+        exclude: '\.(md|markdown|ya?ml)$'

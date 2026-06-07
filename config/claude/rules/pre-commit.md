@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.2.0
+**Version:** v1.3.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -101,6 +101,59 @@ which <command>
 If the command is not installed, note the missing dependency in a
 comment on the hook or add `stages: [manual]` so a missing binary
 does not break `git commit` for other contributors.
+
+## Setup and Maintenance Commands
+
+A config file does nothing on its own. Until the git hook is installed,
+hooks run only when invoked manually (`pre-commit run`). Pick the right
+setup command:
+
+| Command | What it does | When to use |
+|---------|--------------|-------------|
+| `pre-commit install` | Installs the `.git/hooks/pre-commit` git hook so the check config runs on every `git commit`. Hook environments build lazily on first run. | The normal one-time setup per clone. **Without this (or a manual `pre-commit run`) the config is inert.** |
+| `pre-commit install --install-hooks` | The above **plus** eagerly builds all hook environments now rather than on the first commit. | When the first commit should be fast, or to surface install/build errors immediately — e.g. in an onboarding/setup script. |
+| `pre-commit install-hooks` | Builds the hook environments **without** installing the git hook. | Pre-warming environments (CI caches, before going offline) when commits should **not** be gated, or the git hook is installed separately. |
+
+Notes:
+
+- The git hook from `pre-commit install` uses **`.pre-commit-config.yaml`**
+  only. A repo's fix config (e.g. `.pre-commit-config-fix.yaml`) is never a
+  git hook — run it manually with `--config` (see the fix workflow below).
+- `pre-commit run --all-files` / `--files <f>` work without `install`; use
+  them for ad-hoc checks and in CI.
+
+### autoupdate — keep revs current
+
+Hook `rev:`s are pinned. When drift is suspected (a hook is stale, or a newer
+tool release is needed), bump with autoupdate — **once per config file**,
+since a repo may have more than one:
+
+```bash
+pre-commit autoupdate                                       # .pre-commit-config.yaml
+pre-commit autoupdate --config .pre-commit-config-fix.yaml  # fix config
+```
+
+Review the rev changes, then re-run the hooks to confirm nothing broke. Per
+*Hook and Repo Verification*, never hand-edit a rev to a guessed value — let
+autoupdate resolve it, or verify via `gh`.
+
+### validate-config — after editing a config
+
+After creating or editing a config, validate its schema before relying on it:
+
+```bash
+pre-commit validate-config .pre-commit-config.yaml
+pre-commit validate-config .pre-commit-config-fix.yaml
+```
+
+### gc — reclaim cached environments
+
+autoupdate and rev changes leave old, unused hook environments in the
+pre-commit cache. Reclaim that space periodically:
+
+```bash
+pre-commit gc
+```
 
 ## Agent Rules
 
