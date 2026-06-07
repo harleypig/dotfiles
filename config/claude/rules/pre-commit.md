@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.3.0
+**Version:** v1.4.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -101,6 +101,49 @@ which <command>
 If the command is not installed, note the missing dependency in a
 comment on the hook or add `stages: [manual]` so a missing binary
 does not break `git commit` for other contributors.
+
+## Recommended Cross-Cutting Hooks
+
+Beyond the obvious language/file-type linters (shellcheck, shfmt, yamllint,
+markdownlint, a JS/TS linter, …), pre-commit offers **cross-cutting** hooks
+that are easy to forget but cheap to add and catch whole classes of mistakes
+independent of language. **Consider** these for any repo (don't add all of
+them — pick what fits; verify repo/rev/hook-id per *Hook and Repo
+Verification* first):
+
+### Secrets / safety
+
+- `gitleaks` (`gitleaks/gitleaks`) — scan **staged** content for secrets at
+  commit time. (Full repo/history scanning is the **security-scan** skill's
+  job, not this hook.)
+- `detect-private-key` — block committed private keys.
+- `detect-aws-credentials` — block AWS keys (when AWS is in play).
+
+### Git hygiene / safety (from `pre-commit/pre-commit-hooks`)
+
+- `no-commit-to-branch` — block direct commits to a protected branch (pair
+  with server-side branch protection; see `git.md`).
+- `check-added-large-files` — stop accidental large blobs entering history.
+- `check-merge-conflict` — catch leftover `<<<<<<<` conflict markers.
+- `check-case-conflict` — names that collide on case-insensitive filesystems
+  (macOS/Windows).
+- `check-symlinks` / `destroyed-symlinks` — broken symlinks, and symlinks
+  accidentally turned into regular files.
+- `mixed-line-ending` — CRLF/LF mixups.
+
+### Exec-bit / shebang consistency
+
+- `check-executables-have-shebangs` — executables must have a shebang.
+- `check-shebang-scripts-are-executable` — shebang'd scripts must be `+x`.
+
+### Whitespace / encoding (fixers — for the fix config)
+
+- `trailing-whitespace`, `end-of-file-fixer`, `fix-byte-order-marker`.
+
+The point is to *consider* the list, not adopt it wholesale: a repo that uses
+submodules wouldn't add `forbid-new-submodules`; a repo with no AWS skips
+`detect-aws-credentials`. The **qa-check** skill audits a repo's config
+against this list and flags applicable hooks that are missing.
 
 ## Setup and Maintenance Commands
 

@@ -53,6 +53,11 @@ Only the qa-check-specific operational notes (the rest is in `qa.md`):
 
 - **Format** is the one auto-fix stage — run it once (the fix config), then
   the check-only pass; never fix-and-recommit per failure.
+- **Pre-commit hook coverage** — when the repo uses pre-commit, audit its
+  config against the *Recommended Cross-Cutting Hooks* in `pre-commit.md`
+  (secret detection, large-file / merge-conflict / case-conflict guards,
+  exec-bit ↔ shebang consistency, …) and flag any that are missing but would
+  fit the repo — the easy-to-forget, language-agnostic ones.
 - **Code style audit** — beyond what Format/Lint catch, audit the change
   against `code-style.md` (plus any repo override in `.claude/`) for the
   conventions no tool enforces: naming, paragraph spacing, section/function

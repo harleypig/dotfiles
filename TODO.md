@@ -615,8 +615,8 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
   `pre-commit run --all-files` (the legacy debt is cleared, so it's clean).
   `no-commit-to-branch` is skipped in CI (`SKIP=...`) since it would fail on
   the master-push run.
-- [ ] Make the CI `pre-commit` check a **required status check** in the master
-  ruleset once it's confirmed green (add `{"context": "pre-commit"}`).
+- [x] Made the CI `pre-commit` check a **required status check** in the master
+  ruleset (ruleset 17364459 now requires `bats` + `pre-commit`).
 
 ### Proposed: pre-commit skill, used by qa-check
 
