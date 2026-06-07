@@ -207,6 +207,23 @@ tool — or a fresh checkout — can silently lack its symlink.
   symlink mode is 120000 and unaffected by `core.filemode=false` (see Git
   File-Mode Normalization above).
 
+## 📝 bin/markdownlint docker wrapper (MEDIUM PRIORITY)
+
+markdownlint is the only linter in the toolset without a `bin/` docker
+wrapper (shellcheck, shfmt, yamllint, prettier, hadolint, trivy, dive all
+have one), so `markdownlint` is "command not found" locally. Add it to the
+`docker_wrapper` dispatcher using the official image
+`ghcr.io/igorshubovych/markdownlint-cli` (versioned tags, e.g. `:v0.48.0`).
+
+- [ ] Add `IMG_MARKDOWNLINT`, a `markdownlint()` function (mount `$PWD` and
+  the repo's `dot-general/.markdownlintrc` like the other wrappers) and
+  `known_tool[markdownlint]=1`, plus the `bin/markdownlint` symlink (the
+  symlink-automation `--fix` above can create it once registered).
+- [ ] Pin the image tag and refresh it alongside the markdownlint-cli
+  pre-commit hook rev so the CLI and the hook stay in lock-step.
+- [ ] Note: independent of pre-commit — the remote-pinned markdownlint hook
+  uses its own node install, not this wrapper (see Pre-commit Configuration).
+
 ## 🧹 Lint/format Debt in Legacy Scripts (MEDIUM PRIORITY)
 
 The generated meta tests (`tests/scaffold/build-meta-tests`) surface
