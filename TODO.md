@@ -252,6 +252,21 @@ main dotfiles checkout.
   execution trace to stderr on every tmux status render (almost certainly a
   debugging leftover). Can be fixed independently of the extraction.
 
+## 📧 Move gmailctl scripts to private_dotfiles (MEDIUM PRIORITY)
+
+`bin/gmailfilter_toyaml` (and likely `bin/filter_gmail`) support **gmailctl**,
+which holds/accesses sensitive Gmail filter config — that work only happens
+out of `private_dotfiles`, so the scripts don't belong in the public dotfiles
+repo. The scripts themselves aren't insecure; this is about keeping
+gmail-related tooling alongside the private config it serves.
+
+- [ ] Move `bin/gmailfilter_toyaml` to `private_dotfiles` (decide the layout —
+  a `bin/` there, or alongside the gmailctl config). Evaluate moving
+  `bin/filter_gmail` too.
+- [ ] Update any references (PATH expectations, docs) after the move.
+- [ ] This also retires the public meta-suite `perl -c` debt for
+  `gmailfilter_toyaml` (it needs `XML::LibXML`) — it leaves the public repo.
+
 ## 🧩 dotvim check + clone/link automation (LOW PRIORITY)
 
 dotfiles has no check or setup automation for the companion **dotvim** repo
@@ -308,8 +323,9 @@ into CI as a gate (today CI gates only the hand-written `tests/shell/test_*`).
   `shfmt -w`.
 - [x] **lib/** (shellcheck/shfmt): cleared — debug, parse_params.
       (`is`, `Arrays`, `strings` archived; `git-prompt` folded into git-status.)
-- [ ] **bin/** (perl -c): gmailfilter_toyaml — needs `XML::LibXML`; install
-  `libxml-libxml-perl` or accept the meta test failing where it is absent.
+- [ ] **bin/** (perl -c): gmailfilter_toyaml — needs `XML::LibXML`. Resolves
+  itself once the script moves to private_dotfiles (see "Move gmailctl
+  scripts to private_dotfiles" below); it leaves the public meta suite.
 - [x] `bin/CleanPath.tmp`: archived to `archive/bin/` as part of the cleanpath
   fix (see "bin/cleanpath: Fix and Integrate").
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
@@ -477,7 +493,8 @@ working tree — evaluate carefully before implementing.
         `$DOTFILES/shell_startup` (underscore) instead of `shell-startup`, so
         the `.bash_profile`/`.bashrc`/`.profile` linking silently no-op'd).
 - [ ] Add tests for lib/ libraries
-  - [ ] debug — complex; its own task
+  - [x] debug — `tests/shell/test_debug.bats` (refuses execution; debug()
+        silent unless $DEBUG; prefixes + prints args and stdin to stderr).
   - [ ] parse_params — complex (657 L); its own task. Evaluate rewriting
         in perl (much simpler than the bash version); note it's currently a
         sourced lib that sets caller variables, so a perl version would need
