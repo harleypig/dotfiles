@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Test::More;
-use lib 't/lib';
+use lib 'tests/perl/lib';
 use TestPerltidyrcClean;
 
 # Test the section_order function from bin/perltidyrc-clean

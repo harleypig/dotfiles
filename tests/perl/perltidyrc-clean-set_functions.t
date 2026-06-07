@@ -7,14 +7,14 @@ use File::Temp qw(tempfile);
 use File::Spec;
 use Cwd;
 
-use lib 't/lib';
+use lib 'tests/perl/lib';
 use TestPerltidyrcClean;
 
 # Load the script
 load_perltidyrc_clean();
 
 # Get path to test data
-my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
+my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' );
 my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 
 # Since %cli is lexical to bin/perltidyrc-clean, we test these functions
@@ -27,7 +27,7 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
     # Create a temporary script that calls set_keep_defaults and checks %cli
     my $test_code = q{
         package main;
-        use lib 't/lib';
+        use lib 'tests/perl/lib';
         require TestPerltidyrcClean;
         TestPerltidyrcClean::load_perltidyrc_clean();
         

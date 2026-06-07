@@ -6,14 +6,14 @@ use Test::More;
 use File::Spec;
 use Cwd;
 
-use lib 't/lib';
+use lib 'tests/perl/lib';
 use TestPerltidyrcClean;
 
 # Load the script
 load_perltidyrc_clean();
 
 # Get absolute path to test data directory
-my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 't', 'data' );
+my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' );
 
 # ============================================================================
 # Parameter Validation Tests
