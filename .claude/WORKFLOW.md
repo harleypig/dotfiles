@@ -111,9 +111,9 @@ in the pre-commit configuration.
 
 **Quick reference:**
 
-* Run the gating suite: `bats tests/suite/test_*.bats`
-* Run everything present: `bats tests/suite/`
-* Run a specific file: `bats tests/suite/test_<name>.bats`
+* Run the gating suite: `bats tests/shell/test_*.bats`
+* Run everything present: `bats tests/shell/`
+* Run a specific file: `bats tests/shell/test_<name>.bats`
 * Regenerate meta tests: `tests/scaffold/build-meta-tests`
 * Tests MUST pass before merging to master
 * New functionality MUST include tests
@@ -174,7 +174,7 @@ Optional but recommended:
 
 4. Run tests to verify:
    ```bash
-   bats tests/suite/
+   bats tests/shell/
    ```
 
 5. Follow setup instructions in root `README.md`

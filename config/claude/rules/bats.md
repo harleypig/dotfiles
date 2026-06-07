@@ -8,7 +8,7 @@ paths:
 
 # bats (Bash Automated Testing System) Rules
 
-**Version:** v2.0.0
+**Version:** v2.1.0
 
 Conventions for testing shell code with **bats-core**. Pairs with `bash.md`,
 `shellcheck.md`, and `shfmt.md`; the QA pipeline lives in `qa.md`.
@@ -69,24 +69,16 @@ would be no-ops. Ship plain functions and let consumers wire their own setup.
 
 ## Layout
 
-Keep the **actual tests** in a subdirectory, separate from scaffolding:
-
-```
-tests/
-  helpers/common.bash      # shared support (loaded via `load ../helpers/common`)
-  scaffold/                # test-generation machinery
-    build-meta-tests
-    templates/
-  suite/                   # the actual tests
-    test_*.bats            # hand-written (committed)
-    *.meta.bats            # generated (gitignored)
-```
+The test-suite **structure** — one `tests/` root with per-language subdirs,
+and where scaffolding/helpers live — is defined in `testing.md`. bats covers
+the **shell** language: its tests live in `tests/shell/`, load against
+`tests/helpers/`, and the generator lives in `tests/scaffold/`.
 
 | Pattern | Purpose |
 |---------|---------|
-| `tests/suite/test_<component>.bats` | Hand-written unit tests (committed) |
-| `tests/suite/test_integration_<feature>.bats` | Integration tests |
-| `tests/suite/<dir>-<name>.meta.bats` | Generated static checks (gitignored) |
+| `tests/shell/test_<component>.bats` | Hand-written unit tests (committed) |
+| `tests/shell/test_integration_<feature>.bats` | Integration tests |
+| `tests/shell/<dir>-<name>.meta.bats` | Generated static checks (gitignored) |
 | `tests/helpers/<name>.bash` | Shared helper functions |
 
 Resolve the repo root from a helper's own `${BASH_SOURCE[0]}` (not the test's
@@ -95,10 +87,10 @@ depth) so tests can move between subdirs.
 ## Invocation
 
 ```bash
-bats tests/suite/             # everything present (hand-written + generated)
-bats tests/suite/test_*.bats           # hand-written only (the CI gate)
-bats tests/suite/test_foo.bats         # one file
-bats --filter "pattern" tests/suite/   # matching tests only
+bats tests/shell/             # everything present (hand-written + generated)
+bats tests/shell/test_*.bats           # hand-written only (the CI gate)
+bats tests/shell/test_foo.bats         # one file
+bats --filter "pattern" tests/shell/   # matching tests only
 ```
 
 ## Writing tests
@@ -135,7 +127,7 @@ script (exists, shebang, `bash -n`, shellcheck, shfmt) from
 
 - It scans configurable roots (default `bin lib`), skips symlinks (so a
   multi-call dispatcher is tested once, its tool symlinks are not), and writes
-  gitignored `<dir>-<name>.meta.bats` into `tests/suite/`.
+  gitignored `<dir>-<name>.meta.bats` into `tests/shell/`.
 - `tests/scaffold/meta-ignore` lists repo-relative paths to skip. Do **not**
   ignore a file just to hide debt — fix it or record the debt in `TODO.md`.
 - Regenerate after adding/removing scripts: `tests/scaffold/build-meta-tests`.
@@ -145,18 +137,18 @@ script (exists, shebang, `bash -n`, shellcheck, shfmt) from
 - CI installs bats + libs and runs the suite (`.github/workflows/tests.yml`).
   Gate the hand-written suite; add the meta suite once its target scripts are
   clean.
-- Pre-commit: a check-only local hook running `bats tests/suite/test_*.bats`
+- Pre-commit: a check-only local hook running `bats tests/shell/test_*.bats`
   is appropriate; there is no fix variant.
 
 ## Agent Behavior
 
-- New shell code gets bats tests in `tests/suite/`, named
+- New shell code gets bats tests in `tests/shell/`, named
   `test_<component>.bats`, loading helpers via `load ../helpers/common`,
   covering success and failure paths. Bug fixes include a regression test.
 - Load helper libs with `bats_load_library` (OS package first); never add a
   relative-`load`ed `global.bash`.
 - After writing/modifying tests, run the specific file, then
-  `bats tests/suite/test_*.bats`; run `shellcheck` on the `.bats` files and
+  `bats tests/shell/test_*.bats`; run `shellcheck` on the `.bats` files and
   `shfmt` on the `.bash` ones. Reserve the full suite for CI in general use.
 - Regenerate meta tests after adding or removing scripts; record any lint/
   format debt the meta suite surfaces in `TODO.md` rather than ignoring it.

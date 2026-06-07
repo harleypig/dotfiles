@@ -1,6 +1,6 @@
 # Quality Assurance Rules
 
-**Version:** v2.4.0
+**Version:** v2.5.0
 
 QA is the full pipeline that takes a change from "written" to
 "release-ready." This rule is **language- and tool-agnostic**: it defines the
@@ -37,7 +37,8 @@ skip silently.
    running app, for services/web apps), IaC/image scanning, and secrets.
    Delegate to the **security-scan** skill.
 6. **Tests** — unit/integration; cover success **and** failure paths; track
-   coverage. Per the repo's `TESTS.md`.
+   coverage. Test-suite structure/conventions live in `testing.md`; the
+   concrete layout and policy in the repo's `TESTS.md`.
 7. **UI/UX & accessibility** *(repos with a UI)* — visual correctness,
    layout, responsiveness, and a11y (semantic markup, keyboard nav, focus
    order, contrast). Often manual; do the manual pass **even when no tooling

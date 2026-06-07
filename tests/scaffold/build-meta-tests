@@ -10,7 +10,7 @@
 #   tests/scaffold/build-meta-tests [DIR ...]
 #
 # DIR arguments are roots to scan, relative to the repo root (default: bin lib).
-# Output: one <dir>-<name>.meta.bats per script, written to tests/suite/ (which
+# Output: one <dir>-<name>.meta.bats per script, written to tests/shell/ (which
 # gitignores *.meta.bats). Files listed in tests/scaffold/meta-ignore (one
 # repo-relative path per line, # comments allowed) are skipped.
 #
@@ -34,7 +34,7 @@ root=$(cd "$scaffold_dir/../.." && pwd)
 
 template_file="$scaffold_dir/templates/file.meta.bats.template"
 ignore_file="$scaffold_dir/meta-ignore"
-out_dir="$root/tests/suite"
+out_dir="$root/tests/shell"
 
 [[ -f $template_file ]] || die "template not found: $template_file"
 template=$(< "$template_file")
