@@ -2,7 +2,9 @@
 
 #import sys
 import argparse
-from netaddr import IPNetwork, AddrFormatError
+
+from netaddr import AddrFormatError, IPNetwork
+
 
 ##############################################################################
 #-----------------------------------------------------------------------------
@@ -18,15 +20,16 @@ def load_subnets(file_path):
 
         except (AddrFormatError, ValueError) as e:
           raise argparse.ArgumentTypeError(
-              f"Invalid subnet '{subnet.strip()}': {e}"
+            f"Invalid subnet '{subnet.strip()}': {e}"
           )
 
       return valid_subnets
 
   except IOError as e:
     raise argparse.ArgumentTypeError(
-        f"Error: Could not read from '{file_path}': {e}"
+      f"Error: Could not read from '{file_path}': {e}"
     )
+
 
 #-----------------------------------------------------------------------------
 def valid_cidr_range(cidr):
@@ -36,6 +39,7 @@ def valid_cidr_range(cidr):
   except (AddrFormatError, ValueError) as e:
     raise argparse.ArgumentTypeError(f"Invalid CIDR range: {cidr}. Error: {e}")
 
+
 ##############################################################################
 #-----------------------------------------------------------------------------
 def validate_ranges(ranges, base_range):
@@ -44,15 +48,17 @@ def validate_ranges(ranges, base_range):
   for size in ranges:
     if not (base_prefixlen <= size <= 30):
       raise argparse.ArgumentTypeError(
-          f"Invalid required range /{size} for base range /{base_prefixlen}. "
-          f"Required range must be within /{base_prefixlen} to /30."
+        f"Invalid required range /{size} for base range /{base_prefixlen}. "
+        f"Required range must be within /{base_prefixlen} to /30."
       )
+
 
 #-----------------------------------------------------------------------------
 def find_range(base_range, taken_subnets, required_ips):
   available_ips = []
 
-  # Calculate the starting point based on the third octet and start iterating from there
+  # Calculate the starting point based on the third octet and start
+  # iterating from there
   start_ip_index = (base_range.ip.words[2] << 8) + base_range.ip.words[3]
   end_ip_index = (1 << (32 - base_range.prefixlen)) - 1
   #base_ip_index = int(base_range.network)
@@ -75,6 +81,7 @@ def find_range(base_range, taken_subnets, required_ips):
 
   raise ValueError("Not enough free space for requested range.")
 
+
 #-----------------------------------------------------------------------------
 def open_subnets(base_range, used_subnets, ranges):
   taken_subnets = list(used_subnets)
@@ -88,7 +95,8 @@ def open_subnets(base_range, used_subnets, ranges):
 
     except ValueError as e:
       raise ValueError(
-          f"Could not find an open subnet for /{range} within the base range: {e}"
+        f"Could not find an open subnet for /{range} within the "
+        f"base range: {e}"
       )
 
     if len(new_range) != required_ips:
@@ -100,11 +108,13 @@ def open_subnets(base_range, used_subnets, ranges):
 
   return [track_open[pos][1] for pos in track_open if track_open[pos][1]]
 
+
 ##############################################################################
 #-----------------------------------------------------------------------------
 def parseargs():
-  parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
-      description='''Find available subnets within a specified base range.
+  parser = argparse.ArgumentParser(
+    formatter_class=argparse.RawTextHelpFormatter,
+    description='''Find available subnets within a specified base range.
 
 This script calculates available subnets within a given base CIDR range,
 taking into account any subnets that are already in use. It is designed to be
@@ -123,32 +133,38 @@ used. It outputs the calculated subnets in CIDR notation.
 If the script cannot find enough contiguous IP addresses to fulfill
 a requested subnet size, it will raise an error indicating the lack of
 available space within the base range.
-''')
-
-  parser.add_argument(
-      '--base-range',
-      type=valid_cidr_range,
-      default='10.7.0.0/17',
-      help=
-      'Base CIDR range to find available subnets within. Default is 10.7.0.0/17.'
+'''
   )
 
   parser.add_argument(
-      '--used-subnets',
-      type=load_subnets,
-      default=[],
-      help='File containing used subnets, one per line.'
+    '--base-range',
+    type=valid_cidr_range,
+    default='10.7.0.0/17',
+    help=(
+      'Base CIDR range to find available subnets within. '
+      'Default is 10.7.0.0/17.'
+    )
   )
 
   parser.add_argument(
-      'ranges',
-      type=int,
-      nargs='+',
-      help=
-      'Required sizes of available subnets, specified as a list of subnet sizes (e.g., 28 27 27 23).'
+    '--used-subnets',
+    type=load_subnets,
+    default=[],
+    help='File containing used subnets, one per line.'
+  )
+
+  parser.add_argument(
+    'ranges',
+    type=int,
+    nargs='+',
+    help=(
+      'Required sizes of available subnets, specified as a list of '
+      'subnet sizes (e.g., 28 27 27 23).'
+    )
   )
 
   return parser.parse_args()
+
 
 #-----------------------------------------------------------------------------
 def main():
@@ -160,6 +176,7 @@ def main():
 
   for subnet in subnets:
     print(subnet)
+
 
 ##############################################################################
 #-----------------------------------------------------------------------------

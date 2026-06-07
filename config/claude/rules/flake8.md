@@ -31,7 +31,7 @@ the line length:
 ```ini
 [flake8]
 max-line-length = 79
-extend-ignore = E111,E114,E121,E123,E126,E133,E226,E24,E704,W503,W504
+extend-ignore = E111,E114,E121,E123,E126,E133,E226,E24,E265,E266,E704,W503,W504
 ```
 
 Run the tools formatters-first: `isort` → `yapf` → `flake8` (see `isort.md`).
@@ -39,12 +39,11 @@ Run the tools formatters-first: `isort` → `yapf` → `flake8` (see `isort.md`)
 ### Separator comments
 
 `code-style.md`'s `#####` / `#----` section and function separators trip
-flake8's E265/E266. A Python file that uses them needs `E265,E266` added to
-the ignore list (or must use plain comments — `#` followed by a space). The
-currently-gated Python
-(`config/claude/hooks/rule-coverage.py`) uses plain comments, so E265/E266 are
-**not** ignored yet — revisit when the legacy bin/ Python scripts (which do use
-the separators) are cleaned and brought under the gate (see `TODO.md`).
+flake8's E265 (`#----`: no space after `#`) and E266 (`#####`: multiple
+leading `#`). The `#####` thick form is inherently incompatible with E266, so
+honoring the convention requires ignoring both — `E265,E266` are therefore in
+the `extend-ignore` list above. The trade-off: flake8 no longer flags a plain
+comment that's missing the space after `#`.
 
 ## Invocation
 

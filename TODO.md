@@ -248,23 +248,6 @@ to see status.
   when all pass, add the meta suite to CI and run it in pre-commit. (CI today
   gates only the hand-written `tests/shell/test_*`.)
 
-## 🐍 Python lint/format debt in bin/ scripts (MEDIUM PRIORITY)
-
-The Phase-3 Python pre-commit hooks (yapf/isort/flake8) currently **exclude**
-two bin/ scripts that carry pre-existing debt (`exclude:
-'^bin/(available-subnets|poetry2setup)$'` in both configs):
-
-- [ ] `bin/available-subnets` (ours) — yapf/flake8 findings (long lines, E251,
-  and E265 on the repo's `#----` separator comments). Reformat with yapf,
-  hand-fix the rest, and decide the **separator-comment policy for Python**
-  (keep `#####`/`#----` and add `E265,E266` to `config/flake8`, or switch to
-  plain comments — `#` followed by a space). See `flake8.md`.
-- [ ] `bin/poetry2setup` — appears to be the upstream `poetry2setup` tool.
-  Decide: vendor it properly (add a `SOURCE.md`, leave it unformatted) or
-  adopt it as ours (then format it).
-- [ ] Once both are resolved, drop the `exclude` from the Python hooks in both
-  pre-commit configs so the whole repo's Python is gated.
-
 ## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
 
 The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip
@@ -597,9 +580,11 @@ scanning remains the **security-scan** skill's job (separate from this hook).
   `flake8`, **not** black/mypy): `isort --check` + `yapf -d` + `flake8` in the
   check config, `isort` + `yapf -i` in the fix config. Added `config/flake8`
   (reconciles flake8 with yapf's 2-space style) and
-  `config/claude/rules/flake8.md`. `config/claude/hooks/rule-coverage.py` was
-  reformatted to pass; the legacy bin/ Python scripts are excluded pending the
-  debt cleanup below.
+  `config/claude/rules/flake8.md`. All Python is gated (no excludes):
+  `rule-coverage.py` and `bin/available-subnets` reformatted to pass (added
+  `E265,E266` to `config/flake8` to honor the `#####`/`#----` separators);
+  `bin/poetry2setup` archived to `archive/bin/` (legacy setup.py generator, no
+  longer needed).
   - [ ] mypy/pyright stay CI/on-demand (per `python.md`), not in pre-commit.
 - [ ] **Perl** — DEFERRED; staged commented in both configs. Blocked on:
   existing `perlcritic --severity 4` debt; `config/perl/perlcriticrc`
@@ -938,13 +923,11 @@ in the future.
 
 1. **Testing Phase 3** — `lib/parse_params` (+ evaluate the perl rewrite) and
    `config/shell-startup/` module tests
-2. **Python lint/format debt in bin/ scripts** — clean `available-subnets`,
-   decide `poetry2setup`, then widen the Python pre-commit gate
-3. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
+2. **perl CI** — make `perltidyrc-clean` tests version-robust, then promote to
    a required check (also unblocks the deferred Perl pre-commit hooks)
-4. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
+3. **Move gmailctl scripts** to private_dotfiles (retires the meta-suite
    `XML::LibXML` debt)
-5. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
+4. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
 
 ## Notes
 

@@ -9,6 +9,10 @@
 # column_limit = 79): ignore the 4-space-indent assumptions (E111/E114) and the
 # continuation-line / line-break checks yapf owns, and match the line length to
 # yapf's column_limit.
+#
+# E265/E266 are ignored to allow the repo's section/function separator comments
+# (`#####` thick, `#----` thin — see code-style.md); the `#####` thick form is
+# inherently incompatible with E266, so honoring the convention requires this.
 [flake8]
 max-line-length = 79
-extend-ignore = E111,E114,E121,E123,E126,E133,E226,E24,E704,W503,W504
+extend-ignore = E111,E114,E121,E123,E126,E133,E226,E24,E265,E266,E704,W503,W504
