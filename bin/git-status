@@ -23,10 +23,10 @@ git rev-parse &> /dev/null || exit 0
 declare -a locs
 
 # https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
-locs+=("$DOTFILES/lib/git-prompt")
 locs+=('/usr/share/git-core/contrib/completion/git-prompt.sh')
 locs+=('/usr/share/git/completion/git-prompt.sh')
 locs+=('/usr/lib/git-core/git-sh-prompt')
+locs+=('/usr/local/share/git-core/contrib/completion/git-prompt.sh')
 
 locfound=0
 

@@ -220,7 +220,9 @@ current failures. Offenders:
   creds-helper, dir-readable, envsubstitute, git-all, git-branch-clean,
   lwhich, run-help, show-unicode, tmux_edit_buffer, tmux_mode_indicator,
   yesno
-- [ ] **lib/**: Arrays, debug, git-prompt, is, parse_params
+- [ ] **lib/**: debug, parse_params
+      (`is`, `Arrays`, `strings` moved to `archive/lib/` — legacy/unused;
+      `git-prompt` factored into `bin/git-status` and archived)
 - [ ] `bin/CleanPath.tmp` looks like a stray scratch file — confirm and
   remove rather than fix, if so.
 - [ ] Once a script is clean, confirm its `<dir>-<name>.meta.bats` passes;
@@ -312,11 +314,14 @@ working tree — evaluate carefully before implementing.
   - [ ] git-status (integration tests)
   - [ ] check-dotfiles (integration tests)
 - [ ] Add tests for lib/ libraries
-  - [ ] debug
-  - [ ] strings
-  - [ ] Arrays
-  - [ ] is
-  - [ ] parse_params
+  - [ ] debug — complex; its own task
+  - [ ] parse_params — complex (657 L); its own task. Evaluate rewriting
+        in perl (much simpler than the bash version); note it's currently a
+        sourced lib that sets caller variables, so a perl version would need
+        to emit eval-able shell (getopt-style) for the caller to `eval`.
+        Write tests for whichever form it ends up as.
+  - (`is`, `Arrays`, `strings` archived to `archive/lib/` — legacy/unused,
+    not tested; `git-prompt` factored into `bin/git-status`)
 - [ ] Add tests for config/shell-startup/ modules
   - [ ] Test conditional loading
   - [ ] Test error handling
