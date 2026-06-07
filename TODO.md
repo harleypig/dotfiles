@@ -799,16 +799,18 @@ Problems to solve:
   context-appropriate partial-run is the remaining context work below.
 - [x] Detect shell context — modules use `[[ $- == *i* ]]` to gate
   interactive-only content (convention; see the guarded modules below).
-- [ ] Skip alias/function/prompt setup for non-interactive shells — **in
-  progress**: guarded `bash_prompt`, `taskwarrior`, `git` (pre-existing) and
-  `python`, `ssh-config-completion`, `terraform`, `tmux`. Remaining: the
-  heavily-mixed `010-general` and `perl` need an env → guard → interactive
-  reorder (the user OK'd rearranging those files).
+- [x] Skip alias/function/prompt setup for non-interactive shells — all
+  interactive-content modules now guarded with `[[ $- == *i* ]] || return 0`:
+  `bash_prompt`, `taskwarrior`, `git` (pre-existing), `python`,
+  `ssh-config-completion`, `terraform`, `tmux`, and the heavily-mixed
+  `010-general` + `perl` reordered into env → guard → interactive. Verified
+  in the harness (`test_integration_context.bats`).
 - [ ] Handle incomplete terminal environments gracefully (e.g., vim shell,
   docker exec, ssh command) — these may lack `TERM`, `COLUMNS`, etc.
-- [ ] Audit `config/shell-startup/` modules: tag or split each module by
-  required context (env-only vs interactive-only) — see the broader
-  config/shell-startup audit section above.
+- [x] Audit `config/shell-startup/` modules: tag/split by context — done as
+  the guarding above (env-only content kept unguarded; interactive-only
+  content moved below the guard). Broader improve/add/remove audit tracked in
+  the config/shell-startup audit section above.
 - [ ] Write integration tests using Docker to cover each context:
   - [x] Harness + interactive/non-interactive login covered
     (`tests/shell/test_integration_context.bats`: env in both, prompt +

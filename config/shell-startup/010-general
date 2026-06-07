@@ -1,12 +1,76 @@
 # shellcheck shell=bash
 
-PROMPT_DIRTRIM=2
+##############################################################################
+# Always — environment / settings that also apply to non-interactive shells.
+# Interactive-only content (aliases, functions, prompt, completions, history)
+# is below the `[[ $- == *i* ]]` guard.
 
 #-----------------------------------------------------------------------------
 # Environment (moved from shell-startup — not needed before modules load)
 
 export EDITOR=vim
 export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
+
+#-----------------------------------------------------------------------------
+# CVS settings
+export CVS_RSH='ssh'
+
+#-----------------------------------------------------------------------------
+# https://wiki.archlinux.org/index.php/Core_Utilities#grep
+export GREP_COLORS="mt=1;33"
+#export GREP_COLOR="$GREP_COLORS"
+
+#-----------------------------------------------------------------------------
+export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
+
+#-----------------------------------------------------------------------------
+command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
+
+#-----------------------------------------------------------------------------
+umask 022
+
+#-----------------------------------------------------------------------------
+# Java
+#
+# jbang: run Java scripts/apps without a build system
+# https://www.jbang.dev
+addpath "$HOME/.jbang/bin"
+
+#-----------------------------------------------------------------------------
+# rust/rustup
+
+if [[ -d "$XDG_DATA_HOME" ]]; then
+  export CARGO_HOME="$XDG_DATA_HOME/cargo"
+  export RUSTUP_HOME="$XDG_CONFIG_HOME/rustup"
+  # The env file hard codes the location and is wrong
+  #source "$CARGO_HOME/env"
+  addpath "$CARGO_HOME/bin"
+fi
+
+#-----------------------------------------------------------------------------
+# cygwin specific stuff
+
+if [[ "$(uname -o)" == "Cygwin" ]]; then
+  # cygwin specific (not in bash manpage)
+  set -o igncr
+fi
+
+#-----------------------------------------------------------------------------
+# bats: expose this repo's first-class helper lib (lib/bats) ahead of the
+# system libs so any repo can `bats_load_library bats-toolbox`. Only when
+# bats is installed and the lib dir exists; honour an existing BATS_LIB_PATH.
+
+if command -v bats &> /dev/null && [[ -d "$DOTFILES/lib/bats" ]]; then
+  export BATS_LIB_PATH="$DOTFILES/lib/bats:${BATS_LIB_PATH:-/usr/lib/bats}"
+fi
+
+##############################################################################
+# Interactive-only below — aliases, functions, prompt, completions, history.
+
+[[ $- == *i* ]] || return 0
+
+#-----------------------------------------------------------------------------
+PROMPT_DIRTRIM=2
 
 #-----------------------------------------------------------------------------
 # shellcheck disable=SC2139,SC2086
@@ -32,8 +96,6 @@ proj() {
 shopt -s autocd cdspell direxpand dirspell globstar cdable_vars checkhash \
   checkwinsize dotglob extglob nocaseglob 2> /dev/null
 
-umask 022
-
 #-----------------------------------------------------------------------------
 # System
 
@@ -53,10 +115,6 @@ alias dumpldpath='echo -e ${LD_LIBRARY_PATH//:/\\n}'
 alias dotfiles='cd $DOTFILES'
 
 #-----------------------------------------------------------------------------
-# CVS settings
-export CVS_RSH='ssh'
-
-#-----------------------------------------------------------------------------
 # https://wiki.archlinux.org/index.php/Core_Utilities#ls
 # shellcheck disable=SC2046
 eval $(dircolors -b)
@@ -74,8 +132,6 @@ fi
 
 #-----------------------------------------------------------------------------
 # https://wiki.archlinux.org/index.php/Core_Utilities#grep
-export GREP_COLORS="mt=1;33"
-#export GREP_COLOR="$GREP_COLORS"
 alias grep='grep --color=auto'
 alias g='grep --color=auto'
 
@@ -121,18 +177,11 @@ shopt -s cmdhist histappend histreedit histverify
 alias h='history'
 
 #-----------------------------------------------------------------------------
-command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
-
-#-----------------------------------------------------------------------------
-export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
-
-#-----------------------------------------------------------------------------
 # Mimic Zsh run-help ability
 # Press alt+h to get help for word on cursor
 # https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
 # See inputrc for macros
 #run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
-
 
 #-----------------------------------------------------------------------------
 # Vault
@@ -150,29 +199,7 @@ fi
 #-----------------------------------------------------------------------------
 # Java
 
-# jbang: run Java scripts/apps without a build system
-# https://www.jbang.dev
-addpath "$HOME/.jbang/bin"
 alias j!=jbang
-
-#-----------------------------------------------------------------------------
-# rust/rustup
-
-if [[ -d "$XDG_DATA_HOME" ]]; then
-  export CARGO_HOME="$XDG_DATA_HOME/cargo"
-  export RUSTUP_HOME="$XDG_CONFIG_HOME/rustup"
-  # The env file hard codes the location and is wrong
-  #source "$CARGO_HOME/env"
-  addpath "$CARGO_HOME/bin"
-fi
-
-#-----------------------------------------------------------------------------
-# cygwin specific stuff
-
-if [[ "$(uname -o)" == "Cygwin" ]]; then
-  # cygwin specific (not in bash manpage)
-  set -o igncr
-fi
 
 #-----------------------------------------------------------------------------
 # gcloud stuff
@@ -217,13 +244,4 @@ findword() {
 
 if command -v gh &> /dev/null; then
   alias ghlastactionid="gh run list --limit 1 --json 'databaseId' --jq '.[0].databaseId'"
-fi
-
-#-----------------------------------------------------------------------------
-# bats: expose this repo's first-class helper lib (lib/bats) ahead of the
-# system libs so any repo can `bats_load_library bats-toolbox`. Only when
-# bats is installed and the lib dir exists; honour an existing BATS_LIB_PATH.
-
-if command -v bats &> /dev/null && [[ -d "$DOTFILES/lib/bats" ]]; then
-  export BATS_LIB_PATH="$DOTFILES/lib/bats:${BATS_LIB_PATH:-/usr/lib/bats}"
 fi
