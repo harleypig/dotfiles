@@ -114,11 +114,12 @@ Deferred from the shell-startup trim (PR #16):
   module (guarded like the others). First decide how to stop the grok
   installer re-appending it to `shell-startup` (retarget it, or accept
   periodic cleanup). *[needs thought]*
-- [ ] **Consider renaming the hook dirs.** `{,.}shell_startup.d` hold *hooks*
-  while `config/shell-startup` holds always-loaded files; renaming the hook
-  dirs to `{,.}shell_startup_hooks.d` would make that distinction obvious. If
-  done, update `load_files`, the pre-setup hook path, and `run_hook`'s default
-  `$dfdir`.
+- [ ] **Rename the hook dirs — before the startup tests are finalized.**
+  `{,.}shell_startup.d` hold *hooks* while `config/shell-startup` holds
+  always-loaded files; rename the hook dirs to `{,.}shell_startup_hooks.d` to
+  make that obvious. Do this before the containerized startup tests are done
+  so they target the final names. Update `load_files`, the pre-setup hook
+  path, `run_hook`'s default `$dfdir`, and the directories themselves.
 - [ ] **Test `run_hook`, then comment it out.** It works now but is called
   nowhere; with the containerized startup-test work, add a test covering the
   default + a custom `$dfdir` and a missing hook (returns non-zero), then
