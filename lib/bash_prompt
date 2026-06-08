@@ -1,4 +1,5 @@
 # shellcheck shell=bash
+# shellcheck disable=SC2154  # prompt color vars are assigned by the config/shell-startup/bash_prompt wrapper that sources this file
 
 # Ideas ripped off and made to fit from:
 #   http://wiki.archlinux.org/index.php/Color_Bash_Prompt
@@ -15,15 +16,10 @@
 }
 
 #----------------------------------------------------------------------------
-export atsign_color color_off hostname_color nonroot_color prompt_color
-export root_color
-
-atsign_color="$(ansi -n fg bright_black)"
-color_off="$(ansi -n off)"
-hostname_color="$(ansi -n fg yellow)"
-nonroot_color="$(ansi -n fg bright_cyan)"
-prompt_color="$(ansi -n fg cyan)"
-root_color="$(ansi -n fg bright_red)"
+# All prompt colors are computed once by the config/shell-startup/bash_prompt
+# wrapper (atsign_color, color_off, hostname_color, nonroot_color,
+# prompt_color, root_color, plus the exit_*/venv_* colors used below), so the
+# per-render functions never spawn ansi.
 
 # Array of Unicode characters to rotate through for non-root prompt
 # Use show-unicode to see what symbols are available on your current terminal.
@@ -90,11 +86,6 @@ parent=$(_parent)
 function _exit_status() {
   local -a status
 
-  local color_bad color_good
-
-  color_bad="$(ansi -n bg red fg white)"
-  color_good="$(ansi -n bg blue fg yellow)"
-
   for s in "$@"; do
 
     # Wrap the exit symbols in appropriate ansi codes.
@@ -107,8 +98,8 @@ function _exit_status() {
     # doesn't throw an appropriate exit status.
 
     case "$s" in
-      0 | 141) status+="$color_good $s $color_off" ;;
-      *) status+="$color_bad $s $color_off" ;;
+      0 | 141) status+="$exit_good_color $s $color_off" ;;
+      *) status+="$exit_bad_color $s $color_off" ;;
     esac
   done
 
@@ -130,16 +121,16 @@ _venv() {
   if [[ -n $POETRY_ACTIVE ]]; then
     # XXX: Figure out a way to detect true hostname directory
     #      Look into setting virtualenvs.in-project with poetry config
-    color="$(ansi -n fg bright_purple)"
+    color=$venv_poetry_color
     dir="poetry venv"
 
   else
     # XXX: If manually starting a poetry venv, this will be permanently red
-    color="$(ansi -n fg bright_green)"
+    color=$venv_ok_color
     dir="venv"
 
     if [[ ! $curpwd =~ ^${VIRTUAL_ENV%/*} ]]; then
-      color="$(ansi -n fg red)"
+      color=$venv_bad_color
       dir="venv: ${VIRTUAL_ENV%/*}"
     fi
   fi
