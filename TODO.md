@@ -503,6 +503,7 @@ Known offenders to investigate (as of 2026-05-20):
 | `~/.docker` | Docker | `DOCKER_CONFIG` — already set in `010-general` but dir still in `$HOME` |
 | `~/.gradle` | Gradle | `GRADLE_USER_HOME` env var |
 | `~/.gradle-mcp` | gradle-mcp | likely follows `GRADLE_USER_HOME` or its own config |
+| `~/.grok` | grok (xAI CLI) | check XDG / config-dir support; also relocate the installer block out of `shell-startup` (see the **grok** section) |
 | `~/.java` | Java/JVM | `java.util.prefs.userRoot` system property |
 | `~/.jbang` | jbang | `JBANG_DIR` env var |
 | `~/.kivy` | Kivy | `KIVY_HOME` env var |
