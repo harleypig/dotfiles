@@ -85,11 +85,11 @@ export GROFF_NO_SGR=1
 # lesspipe.sh provides syntax highlighting when source-highlight or pygments is installed
 
 # Try to use a more current lesspipe
-if command -v lesspipe.sh &> /dev/null; then
+if havecmd lesspipe.sh; then
 
   export LESSOPEN="|lesspipe.sh %s"
 
-elif command -v lesspipe &> /dev/null; then
+elif havecmd lesspipe; then
 
   eval "$(SHELL=/bin/sh lesspipe)"
 

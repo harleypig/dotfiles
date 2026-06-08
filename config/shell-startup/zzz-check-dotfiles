@@ -4,4 +4,4 @@
 # loader sorts module names), ensuring every env var set by earlier modules is
 # available for the dotlinks entries check-dotfiles evaluates.
 
-[[ -x "$(command -v check-dotfiles 2> /dev/null)" ]] && check-dotfiles
+havecmd check-dotfiles && check-dotfiles

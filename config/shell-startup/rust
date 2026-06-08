@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if command -v rustc &> /dev/null; then
+if havecmd rustc; then
   : # nothing for rust yet
 fi
 
-if command -v cargo &> /dev/null; then
+if havecmd cargo; then
   export CARGO_HOME="${XDG_DATA_HOME}/cargo"
 fi

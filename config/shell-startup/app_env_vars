@@ -1,28 +1,28 @@
 # Environment variables for applications without aliases or functions
 
 # Check if ELINKS is installed and set ELINKS_CONFDIR if it is
-if command -v elinks &>/dev/null; then
+if havecmd elinks; then
   export ELINKS_CONFDIR="$HOME/.elinks"
 fi
 
 # Add other application environment variables here following the same pattern
 # Check if GNUPG is installed and set GNUPGHOME if it is
-if command -v gpg &>/dev/null; then
+if havecmd gpg; then
   export GNUPGHOME="${XDG_DATA_HOME}/gnupg"
 fi
 
 # Check if LEDGER is installed and set LEDGER_FILE if it is
-if command -v ledger &>/dev/null; then
+if havecmd ledger; then
   export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
 fi
 
 # Check if NODE is installed and set NODE_REPL_HISTORY if it is
-if command -v node &>/dev/null; then
+if havecmd node; then
   export NODE_REPL_HISTORY="${XDG_CACHE_HOME}/node_repl_history"
 fi
 
 # Check if NPM is installed and set npm related variables if it is
-if command -v npm &>/dev/null; then
+if havecmd npm; then
   export npm_config_cache="${XDG_CACHE_HOME}/npm"
   export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
 fi

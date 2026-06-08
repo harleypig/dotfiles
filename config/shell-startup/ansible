@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 
-[[ -x "$(command -v ansible)" ]] || return 0
+havecmd ansible || return 0
 
 export ANSIBLE_HOME="$XDG_CONFIG_HOME/ansible"
 export ANSIBLE_CONFIG="$ANSIBLE_HOME/ansible.cfg"
