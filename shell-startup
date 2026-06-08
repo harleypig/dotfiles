@@ -79,10 +79,12 @@ export LC_ALL=en_US.UTF-8
 
 debug() { true; }
 [[ -n "${DEBUG:-}" ]] \
-  && [[ -f "$DOTFILES/bin/debug" ]] \
-  && source "$DOTFILES/bin/debug"
+  && [[ -f "$DOTFILES/lib/debug" ]] \
+  && source "$DOTFILES/lib/debug"
 
 unsetfuncs 'debug'
+
+debug "startup begin" # PROFILE
 
 #-----------------------------------------------------------------------------
 # Add a path to the PATH variable.
@@ -223,6 +225,7 @@ load_files() {
     for f in "${load_files[@]}"; do
       # shellcheck disable=SC1090
       [[ -r $f ]] && source "$f"
+      debug "loaded ${f##*/}" # PROFILE
     done
   done
 }
@@ -235,7 +238,9 @@ unsetvars 'load_files'
 
 #-----------------------------------------------------------------------------
 set_bin_dirs
+debug "after set_bin_dirs" # PROFILE
 load_files
+debug "after load_files" # PROFILE
 
 #-----------------------------------------------------------------------------
 # De-duplicate PATH and drop nonexistent entries. Guarded: only replace PATH
@@ -246,6 +251,7 @@ if _cleaned_path=$("$DOTFILES/bin/cleanpath" PATH 2> /dev/null) \
   export PATH="$_cleaned_path"
 fi
 unset _cleaned_path
+debug "after cleanpath" # PROFILE
 
 ##############################################################################
 # Cleanup

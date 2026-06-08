@@ -9,7 +9,12 @@
 [[ -z $DOTFILES ]] && exit 0
 cd "$HOME" || return 0
 
-source "$DOTFILES/lib/debug"
+# Only pay for lib/debug (sourcing it + its per-call stack walk) when DEBUG is
+# set; otherwise debug() is a cheap no-op. Mirrors shell-startup's wiring.
+debug() { true; }
+[[ -n ${DEBUG:-} ]] \
+  && [[ -f "$DOTFILES/lib/debug" ]] \
+  && source "$DOTFILES/lib/debug"
 
 #-----------------------------------------------------------------------------
 check_link() {

@@ -396,58 +396,53 @@ shell-init path per manager — XDG-aware where possible, lazy-loaded in
   under one consistent pattern, documented in each
   `config/shell-startup/<lang>` module.
 
-## 🐢 Login shell slowdown — 3–5s (was <2s) (HIGH PRIORITY)
+## 🐢 Login shell slowdown — RESOLVED (~1.1s, was 5.8–7.25s)
 
-A new login shell now takes 3–5 seconds; it used to be under 2. Profiled with
-`PS4='+ ${EPOCHREALTIME} ...' bash -lixc exit` and attributed per-command.
+A login shell had regressed to 3–5s (peaks ~7s). Fixed by the cleanpath +
+`havecmd` work; now a stable **~1.05–1.15s**, under the original <2s baseline.
 
-- [x] **Profile it.** Done. Top costs (one login, WSL — times vary with /mnt/c
-  latency): `.grok/completions/bash/grok.bash` **1.54s**, `nvm.sh` (`manpath`)
-  **0.95s**, `bin/cleanpath PATH` **was ~1.5s, now 0.38s** (parallelized — see
-  below), then a long tail of `command -v` probes at **~0.25–0.32s each** (15+
-  of them). The probe tail is systemic: every `command -v` scans all of PATH,
-  and PATH carries ~53 slow-to-stat `/mnt/c` (Windows) entries.
-- [x] **cleanpath** — parallelized its per-entry `readlink` resolution with
-  `xargs -P "$(nproc)"` (sequential fallback where `xargs -P` is unavailable;
-  GNU `parallel` benchmarked **slower** here — 2.89s vs xargs 0.36s — so not
-  used). Output verified identical to the old sequential version; resolve +
-  prune-nonexistent + FIRST/LAST/STRIP/IGNORE semantics unchanged. ~1.1s saved.
-- [x] **`command -v` probe tail** — fixed. Added `havecmd` to `shell-startup`:
-  a `command -v` wrapper that drops the `/mnt/c` (Windows-interop) PATH entries
-  for the duration of one lookup, then restores PATH. Converted every
-  boolean-guard probe in `config/shell-startup/*` (and `tmux`'s `which ta`) to
-  `havecmd`; the two genuine path-captures (`vault`, `which cpanm`) were left on
-  `command -v`/`which`. The prompt probes on every render, after `havecmd` is
-  unset, so its logic moved to `lib/bash_prompt` and the
-  `config/shell-startup/bash_prompt` wrapper caches `pstree`/`pacman-status`
-  detection (`_HAS_PSTREE`/`_HAS_PACMAN_STATUS`) at load time; `loadavg`
-  (`bin/loadavg`) is called unconditionally. Tested in
-  `tests/shell/test_havecmd.bats`.
-- [ ] **nvm (0.95s)** — lazy-load (defer `nvm.sh` to first `nvm`/`node`/`npm`
-  use). Ties into the Tool/Version Manager Setup (lazy-load) item below.
-- [ ] **grok** — see the dedicated **grok** section below (1.54s completion +
-  installer-block relocation).
-- [x] **Re-measure** — login dropped from 5.8–7.25s to **2.2–2.4s** after
-  cleanpath + `havecmd`. The remaining ~2.2s is dominated by grok (1.54s) and
-  nvm (0.95s); finishing those two should bring it back under ~2s.
+**Profiling caveat (important).** Both `bash -lixc` (xtrace) **and** `DEBUG=1`
+*inflate* any module that runs many lines or calls `debug()` internally
+(`check-dotfiles`, `cleanpath`). Several early "findings" were measurement
+artifacts — grok 1.54s / nvm 0.95s / check-dotfiles 220ms / less-probe 67ms
+all evaporated when measured directly (real: ~0.01s / ~0s / ~25ms / ~0s).
+**Measure a suspect module directly (non-DEBUG) before optimizing it.**
+`lib/debug` now prints a `+Nms` delta for per-step timing, but only trust it
+for modules that don't themselves call `debug`.
 
-## 🤖 grok (MEDIUM PRIORITY)
+- [x] **cleanpath** — parallelized per-entry `readlink` with `xargs -P`
+  (sequential fallback; GNU `parallel` benchmarked *slower* for many tiny
+  jobs). Real cost ~145ms: the largest single login cost, already optimized —
+  only a rewrite (e.g. perl) would help further.
+- [x] **`command -v` probe tail** — added `havecmd` (a `command -v` wrapper
+  that drops `/mnt/c` for one lookup, then restores PATH) and converted every
+  boolean-guard probe in `config/shell-startup/*`. The biggest real win.
+- [x] **bash_prompt** — the prompt called `ansi` (a subprocess) on *every*
+  render for constant colors; moved all color computation to load time in the
+  `config/shell-startup/bash_prompt` wrapper so rendering spawns no `ansi`
+  (~16ms/render). `_HAS_PSTREE`/`_HAS_PACMAN_STATUS` cached at load; `loadavg`
+  (bin) called unconditionally. Tested via `tests/shell/test_havecmd.bats` +
+  manual render checks.
+- [x] **debug wiring** — `shell-startup` and `check-dotfiles` sourced the
+  nonexistent `bin/debug` (the lib moved to `lib/debug`), so `DEBUG=1` did
+  nothing; pointed both at `lib/debug`, guarded on `DEBUG`.
+- **Left alone (accepted costs):**
+  - **`git-status` ~99ms/render** — does necessary work for the git-aware
+    prompt; only async/caching would cut it, not worth the complexity.
+  - **grok / nvm** — not real costs (xtrace artifacts); no lazy-load needed.
 
-All grok-related startup work, collected here.
+## 🤖 grok (LOW PRIORITY)
 
-- [ ] **grok.bash completion is the #1 login cost (1.54s).** Profiled at
-  `~/.grok/completions/bash/grok.bash`. Check whether it shells out /
-  regenerates on every login; lazy-load it (defer until first `grok` use) or
-  cache the generated completion. Biggest remaining slowdown item (see the
-  Login shell slowdown section above).
+> **Not a performance item.** Sourcing `grok.bash` is ~0.01s; the "1.54s" in
+> the original profile was an xtrace artifact (tracing its 4,545-line
+> completion function). This is now purely a cleanliness item.
+
 - [ ] **Move the grok installer block out of `shell-startup`.** The
   `>>> grok installer >>>` block (PATH + completion) at the end of
   `shell-startup` runs *after* Cleanup and isn't a pre-load global — move it to
   a `config/shell-startup/grok` module (guarded like the others). First decide
   how to stop the grok installer re-appending it to `shell-startup` (retarget
-  it, or accept periodic cleanup). *[needs thought]* Doing this and the
-  lazy-load together is natural: the new module is where the deferred-load
-  guard would live.
+  it, or accept periodic cleanup). *[needs thought]*
 
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
