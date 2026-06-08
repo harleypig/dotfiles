@@ -601,11 +601,18 @@ git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
 - [x] `proj` — `tests/shell/test_proj.bats` (no-arg/existing path, -h, unknown
   option, too-many-args, unset PROJECTS_DIR, and the select menu create/cancel
   paths via stdin). No bugs found.
-- [ ] `ansi` — tput wrapper (the TERM-unset path is already covered by
-  `test_integration_context`); a focused unit test could assert sequence
-  emission.
-- [ ] `motd` (large system-summary display), `tmux_mode_indicator` (tmux
-  display; also has the `set -ex` leftover to clean — see tmux section).
+- [x] `ansi` — `tests/shell/test_ansi.bats` (usage, TERM=dumb no-color
+  fallback, escape-sequence emission, `-sb` PS1 delimiters, hex color). No
+  bugs found.
+- [ ] (low value) `motd` (large system-summary display), `tmux_mode_indicator`
+  (tmux display; also has the `set -ex` leftover to clean — see tmux section),
+  `loadavg` / `dateh` (load-dependent / display), `showvars` (needs the shfmt
+  docker wrapper + jq). These are display/integration-heavy; deferred.
+
+**Net:** every bin/ script with real logic or external interaction is now
+tested (duration, dir-readable, where, creds-helper, git-branch-clean,
+git-all, proj, ansi + the earlier set); the bin/ coverage pass is
+substantively complete. The above are the remaining display/heavy stragglers.
 
 **Trivial / skip (documented):** `anykey` (interactive single-key read),
 `lwhich` / `vimwhich` (thin `which`/vim wrappers), `run-help` (9-line readline
