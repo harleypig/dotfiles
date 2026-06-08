@@ -1,14 +1,34 @@
 # shellcheck shell=bash
+# shellcheck disable=SC2034  # the flag/color vars below are read by lib/bash_prompt
 
-# Wrapper for the prompt library (lib/bash_prompt). The prompt functions run
-# on every render — after startup has unset havecmd — so probe for the optional
-# tools once here (while havecmd is still defined) and cache the result. The
-# library reads these flags instead of probing.
+# Wrapper for the prompt library (lib/bash_prompt). The prompt is
+# interactive-only and its functions run on every render, so all one-time work
+# happens here at load time and the library only references the results:
+#   - havecmd is unset before the prompt renders, so cache pstree/pacman-status
+#     detection now (_HAS_*).
+#   - compute every (constant) prompt color once here instead of calling ansi
+#     inside _exit_status/_venv on every render — a faster prompt.
 
-# shellcheck disable=SC2034  # read by lib/bash_prompt at prompt-render time
+[[ $- == *i* ]] || return 0
+
 havecmd pstree && _HAS_PSTREE=1
-# shellcheck disable=SC2034  # read by lib/bash_prompt at prompt-render time
 havecmd pacman-status && _HAS_PACMAN_STATUS=1
+
+# Base prompt colors.
+export atsign_color color_off hostname_color nonroot_color prompt_color root_color
+atsign_color="$(ansi -n fg bright_black)"
+color_off="$(ansi -n off)"
+hostname_color="$(ansi -n fg yellow)"
+nonroot_color="$(ansi -n fg bright_cyan)"
+prompt_color="$(ansi -n fg cyan)"
+root_color="$(ansi -n fg bright_red)"
+
+# Colors that _exit_status / _venv used to recompute on every render.
+exit_good_color="$(ansi -n bg blue fg yellow)"
+exit_bad_color="$(ansi -n bg red fg white)"
+venv_poetry_color="$(ansi -n fg bright_purple)"
+venv_ok_color="$(ansi -n fg bright_green)"
+venv_bad_color="$(ansi -n fg red)"
 
 # shellcheck disable=SC1091  # sourced library, resolved at runtime
 source "$DOTFILES/lib/bash_prompt"

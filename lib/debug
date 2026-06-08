@@ -46,6 +46,14 @@ POD
 debug() {
   ((DEBUG)) || return 0
 
+  # Milliseconds elapsed since the previous debug call — cheap profiling with
+  # no subprocess (integer math on EPOCHREALTIME's microseconds). The first
+  # call shows +0ms and seeds the baseline.
+  local now_us=${EPOCHREALTIME/./}
+  local -i delta_ms=0
+  [[ -n ${_DBG_LAST_US:-} ]] && delta_ms=$(((now_us - _DBG_LAST_US) / 1000))
+  _DBG_LAST_US=$now_us
+
   local -a msg
 
   # Read either debug "message" or "command | debug"
@@ -99,7 +107,7 @@ debug() {
     trace+="${el[ix]}"
   done
 
-  printf -v pfx '[%s%s]%s ' "$interactive" "$loginshell" "$trace"
+  printf -v pfx '[%s%s+%dms]%s ' "$interactive" "$loginshell" "$delta_ms" "$trace"
   printf "$pfx%s\n" "${msg[@]}" >&2
 }
 
