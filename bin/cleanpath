@@ -33,20 +33,55 @@ debug() {
 }
 
 #-----------------------------------------------------------------------------
-get_real_dir() {
-  local d=$1
+# Resolve one entry and print "entry<TAB>resolved" iff it canonicalizes to an
+# existing directory. Exported so xargs-spawned shells can call it.
 
-  # What is the real path for $d?
-  dir=$(readlink -ne "$d") || return 1
+_resolve_one() {
+  local r
+  r=$(readlink -ne "$1" 2> /dev/null) \
+    && [[ -d $r ]] \
+    && printf '%s\t%s\n' "$1" "$r"
 
-  # does $dir exist?
-  [[ -z $dir ]] && return 1
-
-  # is $dir a directory?
-  [[ -d $dir ]] || return 1
-
-  printf '%s' "$dir"
   return 0
+}
+export -f _resolve_one
+
+#-----------------------------------------------------------------------------
+# Resolve many entries and fill the named assoc array with entry -> resolved
+# dir (existing dirs only). Each readlink is a subprocess and PATH can hold
+# many slow-to-stat entries (e.g. WSL /mnt/c), so fan the work out with
+# `xargs -P` when it is available, falling back to a sequential loop where it
+# is not. (GNU `parallel` is deliberately not used: for many tiny jobs its
+# per-job startup makes it slower than even the sequential loop.)
+
+resolve_dirs() {
+  local -n _resolved=$1
+  shift
+  (($#)) || return 0
+
+  local jobs orig real
+  jobs=$(nproc 2> /dev/null) || jobs=4
+
+  # SC2004 below: _resolved is an assoc array (the nameref hides its type),
+  # so $orig is a path key, not an arithmetic index. SC2016 below: the
+  # single-quoted "$0" is expanded by the xargs-spawned shell, not here.
+  if printf '' | xargs -0 -P "$jobs" true 2> /dev/null; then
+    while IFS=$'\t' read -r orig real; do
+      # shellcheck disable=SC2004
+      [[ -n $real ]] && _resolved[$orig]=$real
+    done < <(
+      # shellcheck disable=SC2016
+      printf '%s\0' "$@" \
+        | xargs -0 -P "$jobs" -n1 bash -c '_resolve_one "$0"'
+    )
+
+  else
+    for orig in "$@"; do
+      IFS=$'\t' read -r orig real < <(_resolve_one "$orig")
+      # shellcheck disable=SC2004
+      [[ -n $real ]] && _resolved[$orig]=$real
+    done
+  fi
 }
 
 #-----------------------------------------------------------------------------
@@ -61,7 +96,8 @@ jwc() {
 
 #-----------------------------------------------------------------------------
 # Classify and de-duplicate one entry into the named bucket array. Uses
-# build_path's locals (strip_set, ignore_set, seen) via bash dynamic scope.
+# build_path's locals (strip_set, ignore_set, seen, resolved) via bash
+# dynamic scope.
 
 cp_add() {
   local e=$1
@@ -84,8 +120,10 @@ cp_add() {
     return 0
   }
 
-  # Keep only real, existing directories; de-duplicate by resolved path.
-  r=$(get_real_dir "$e") || return 0
+  # Keep only real, existing directories (resolved up front, in parallel);
+  # de-duplicate by resolved path.
+  r=${resolved[$e]-}
+  [[ -n $r ]] || return 0
   [[ -v strip_set[$r] ]] && {
     debug "STRIP: $r"
     return 0
@@ -106,7 +144,7 @@ build_path() {
 
   local -a first_list last_list strip_list ignore_list input
   local -a out_first out_middle out_last
-  local -A first_set last_set strip_set ignore_set seen
+  local -A first_set last_set strip_set ignore_set seen resolved candidates
   local entry
 
   IFS=':' read -ra first_list <<< "${SHOULD_BE_FIRST-}"
@@ -119,6 +157,17 @@ build_path() {
   for entry in "${last_list[@]}"; do [[ -n $entry ]] && last_set[$entry]=1; done
   for entry in "${strip_list[@]}"; do [[ -n $entry ]] && strip_set[$entry]=1; done
   for entry in "${ignore_list[@]}"; do [[ -n $entry ]] && ignore_set[$entry]=1; done
+
+  # Resolve every candidate's real directory once, in parallel. Ignored
+  # entries are kept verbatim (cp_add never resolves them), so they are
+  # excluded here; everything else (incl. strip candidates, which may be
+  # stripped by their resolved path) is resolved.
+  for entry in "${first_list[@]}" "${input[@]}" "${last_list[@]}"; do
+    [[ -n $entry && $entry != '.' && ! -v ignore_set[$entry] ]] \
+      && candidates[$entry]=1
+  done
+
+  resolve_dirs resolved "${!candidates[@]}"
 
   # FIRST entries (in order), then the input (FIRST/LAST members routed to
   # their bucket), then LAST entries (in order). cp_add de-dupes across all.
@@ -157,6 +206,6 @@ printf '%s' "$NEWVAR"
 #-----------------------------------------------------------------------------
 # Don't clutter the environment in case we are being sourced.
 
-unset -f get_real_dir jwc build_path debug cp_add
+unset -f _resolve_one resolve_dirs jwc build_path debug cp_add
 unset NEWPATH NEWLDPATH SHOULD_BE_FIRST SHOULD_BE_LAST
 unset SHOULD_BE_IGNORED SHOULD_BE_STRIPPED f

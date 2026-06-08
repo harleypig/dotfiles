@@ -2,11 +2,11 @@
 
 # Environment variables for perl and perl related stuff
 
-command -v perl &> /dev/null || return 0
+havecmd perl || return 0
 
 #-----------------------------------------------------------------------------
 setup_perlbrew() {
-  command -v perlbrew &> /dev/null || return 0
+  havecmd perlbrew || return 0
 
   [[ -f $PERLBREW_ROOT/etc/perlbrew-completion.bash ]] \
     && source "$PERLBREW_ROOT/etc/perlbrew-completion.bash"
@@ -34,7 +34,7 @@ setup_perlbrew() {
 
 #-----------------------------------------------------------------------------
 setup_dzil() {
-  command -v dzil &> /dev/null || return 0
+  havecmd dzil || return 0
 
   # Run author or release tests, or a single test
   alias dztestauthor="AUTHOR_TESTING=1 dzil run prove -l"
@@ -54,7 +54,7 @@ setup_dzil() {
 
 #-----------------------------------------------------------------------------
 setup_prove() {
-  command -v prove &> /dev/null || return 0
+  havecmd prove || return 0
 
   # Run author or release tests, or a single test
   alias testauthor='AUTHOR_TESTING=1 prove -l'
@@ -97,7 +97,7 @@ wtf_am_i_doing_here() {
     COMPLETION_UTIL="$COMPLETION_UTIL podpath"
 
     for CU in $COMPLETION_UTIL; do
-      command -v "$CU" &> /dev/null && complete -C "$CU" "$CU"
+      havecmd "$CU" && complete -C "$CU" "$CU"
     done
   fi
 }
@@ -118,7 +118,7 @@ setup_perlbrew
 alias cmver="perl -e'for(@ARGV){\$v=eval\"require \$_\"?(\$_->VERSION||q(unknown)):q(not installed);print\"\$_ \$v\\n\"}'"
 
 # replace perldoc with cpandoc if it's installed
-command -v cpandoc &> /dev/null && alias perldoc='cpandoc'
+havecmd cpandoc && alias perldoc='cpandoc'
 
 #echo "What does perldoc-complete do? Fix this!"
 #perldoc='/home/harleypig/projects/bash-completion/perldoc-complete/perldoc-complete'
@@ -126,7 +126,7 @@ command -v cpandoc &> /dev/null && alias perldoc='cpandoc'
 #[[ -f $perldoc ]] && $completion
 
 # Alias cpanm -S only if cpanm is installed and it's not installed in the home directory.
-command -v cpanm &> /dev/null && {
+havecmd cpanm && {
   [[ $(which cpanm) != $HOME/* ]] && alias cpanm='cpanm -S'
 }
 

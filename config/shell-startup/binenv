@@ -4,7 +4,7 @@
 # binenv environment configuration
 # Binary environment manager for installing binaries
 
-if command -v binenv &> /dev/null; then
+if havecmd binenv; then
   # Set binenv environment variables following XDG Base Directory specification
   export BINENV_CACHEDIR="$XDG_CACHE_HOME/binenv"
   export BINENV_CONFDIR="$XDG_CONFIG_HOME/binenv"

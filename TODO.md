@@ -61,12 +61,6 @@ findings. Research how to actually use each and whether to formalize it.
 
 Deferred from the shell-startup trim (PR #16):
 
-- [ ] **Move the grok installer block out.** The `>>> grok installer >>>`
-  block (PATH + completion) at the end of `shell-startup` runs after Cleanup
-  and isn't a pre-load global — move it to a `config/shell-startup/grok`
-  module (guarded like the others). First decide how to stop the grok
-  installer re-appending it to `shell-startup` (retarget it, or accept
-  periodic cleanup). *[needs thought]*
 - [ ] **Rename the hook dirs — before the startup tests are finalized.**
   `{,.}shell_startup.d` hold *hooks* while `config/shell-startup` holds
   always-loaded files; rename the hook dirs to `{,.}shell_startup_hooks.d` to
@@ -404,22 +398,56 @@ shell-init path per manager — XDG-aware where possible, lazy-loaded in
 
 ## 🐢 Login shell slowdown — 3–5s (was <2s) (HIGH PRIORITY)
 
-A new login shell now takes 3–5 seconds; it used to be under 2. Something added
-to startup regressed it — most likely a `config/shell-startup/` module shelling
-out (a version-manager/tool init, completion generation, a `command -v` probe
-that execs, or token loading) at every login.
+A new login shell now takes 3–5 seconds; it used to be under 2. Profiled with
+`PS4='+ ${EPOCHREALTIME} ...' bash -lixc exit` and attributed per-command.
 
-- [ ] **Profile it.** Time a clean login (`time bash -lic exit`), then find the
-  cost: bisect by disabling modules in `load_files`, or trace with
-  `PS4='+ $EPOCHREALTIME '; bash -lixc exit` (or wrap each module load in
-  `date +%s.%N` timing). Look for network/subprocess calls.
-- [ ] **Likely suspects:** recently-added modules (binenv, nodejs/go/ruby/rust
-  env init, cuda, claude, aider), per-prompt `bin/git-status`, or a slow
-  `000-loadtokens` path.
-- [ ] **Fix:** lazy-load the offender (defer to first use), cache its output, or
-  guard it; re-measure to confirm back under ~2s. Ties into the
-  config/shell-startup audit ("cut per-startup cost") and the Tool/Version
-  Manager Setup (lazy-load) items below.
+- [x] **Profile it.** Done. Top costs (one login, WSL — times vary with /mnt/c
+  latency): `.grok/completions/bash/grok.bash` **1.54s**, `nvm.sh` (`manpath`)
+  **0.95s**, `bin/cleanpath PATH` **was ~1.5s, now 0.38s** (parallelized — see
+  below), then a long tail of `command -v` probes at **~0.25–0.32s each** (15+
+  of them). The probe tail is systemic: every `command -v` scans all of PATH,
+  and PATH carries ~53 slow-to-stat `/mnt/c` (Windows) entries.
+- [x] **cleanpath** — parallelized its per-entry `readlink` resolution with
+  `xargs -P "$(nproc)"` (sequential fallback where `xargs -P` is unavailable;
+  GNU `parallel` benchmarked **slower** here — 2.89s vs xargs 0.36s — so not
+  used). Output verified identical to the old sequential version; resolve +
+  prune-nonexistent + FIRST/LAST/STRIP/IGNORE semantics unchanged. ~1.1s saved.
+- [x] **`command -v` probe tail** — fixed. Added `havecmd` to `shell-startup`:
+  a `command -v` wrapper that drops the `/mnt/c` (Windows-interop) PATH entries
+  for the duration of one lookup, then restores PATH. Converted every
+  boolean-guard probe in `config/shell-startup/*` (and `tmux`'s `which ta`) to
+  `havecmd`; the two genuine path-captures (`vault`, `which cpanm`) were left on
+  `command -v`/`which`. The prompt probes on every render, after `havecmd` is
+  unset, so its logic moved to `lib/bash_prompt` and the
+  `config/shell-startup/bash_prompt` wrapper caches `pstree`/`pacman-status`
+  detection (`_HAS_PSTREE`/`_HAS_PACMAN_STATUS`) at load time; `loadavg`
+  (`bin/loadavg`) is called unconditionally. Tested in
+  `tests/shell/test_havecmd.bats`.
+- [ ] **nvm (0.95s)** — lazy-load (defer `nvm.sh` to first `nvm`/`node`/`npm`
+  use). Ties into the Tool/Version Manager Setup (lazy-load) item below.
+- [ ] **grok** — see the dedicated **grok** section below (1.54s completion +
+  installer-block relocation).
+- [x] **Re-measure** — login dropped from 5.8–7.25s to **2.2–2.4s** after
+  cleanpath + `havecmd`. The remaining ~2.2s is dominated by grok (1.54s) and
+  nvm (0.95s); finishing those two should bring it back under ~2s.
+
+## 🤖 grok (MEDIUM PRIORITY)
+
+All grok-related startup work, collected here.
+
+- [ ] **grok.bash completion is the #1 login cost (1.54s).** Profiled at
+  `~/.grok/completions/bash/grok.bash`. Check whether it shells out /
+  regenerates on every login; lazy-load it (defer until first `grok` use) or
+  cache the generated completion. Biggest remaining slowdown item (see the
+  Login shell slowdown section above).
+- [ ] **Move the grok installer block out of `shell-startup`.** The
+  `>>> grok installer >>>` block (PATH + completion) at the end of
+  `shell-startup` runs *after* Cleanup and isn't a pre-load global — move it to
+  a `config/shell-startup/grok` module (guarded like the others). First decide
+  how to stop the grok installer re-appending it to `shell-startup` (retarget
+  it, or accept periodic cleanup). *[needs thought]* Doing this and the
+  lazy-load together is natural: the new module is where the deferred-load
+  guard would live.
 
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 

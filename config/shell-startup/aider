@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 
-if command -v aider &> /dev/null; then
+if havecmd aider; then
   config_file="$DOTFILES/aider.env"
 
   if [[ -r $config_file ]]; then

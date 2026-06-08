@@ -124,6 +124,41 @@ addpath() {
 unsetfuncs 'addpath'
 
 #-----------------------------------------------------------------------------
+# Check whether a command exists, ignoring WSL's Windows-interop PATH entries.
+#
+# WSL copies every Windows PATH directory (dozens of slow-to-stat /mnt/c/...
+# entries) into PATH, so a plain `command -v` probe pays that stat cost on
+# every lookup — the dominant per-module startup cost. havecmd drops the
+# /mnt/c entries for the duration of one lookup, restores PATH, and returns
+# command -v's success/failure. A module that must locate a *Windows* program
+# should use plain `command -v` instead.
+#
+# Usage:
+#   havecmd foo || return 0
+#   if havecmd foo; then ...
+
+havecmd() {
+  local IFS=':'
+  local saved=$PATH
+  local -a parts keep
+  local p rc
+
+  read -ra parts <<< "$PATH"
+  for p in "${parts[@]}"; do
+    [[ $p == /mnt/c || $p == /mnt/c/* ]] || keep+=("$p")
+  done
+
+  PATH="${keep[*]}"
+  command -v "$1" > /dev/null 2>&1
+  rc=$?
+
+  PATH=$saved
+  return "$rc"
+}
+
+unsetfuncs 'havecmd'
+
+#-----------------------------------------------------------------------------
 # Source an optional hook file from $dfdir if it exists and is readable.
 #
 # COMMENTED OUT — preserved for possible future use. run_hook is called

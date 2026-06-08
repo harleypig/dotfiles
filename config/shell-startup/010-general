@@ -24,7 +24,7 @@ export GREP_COLORS="mt=1;33"
 export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 
 #-----------------------------------------------------------------------------
-command -v chromium-browser &> /dev/null && export BROWSER='chromium-browser'
+havecmd chromium-browser && export BROWSER='chromium-browser'
 
 #-----------------------------------------------------------------------------
 umask 022
@@ -60,7 +60,7 @@ fi
 # system libs so any repo can `bats_load_library bats-toolbox`. Only when
 # bats is installed and the lib dir exists; honour an existing BATS_LIB_PATH.
 
-if command -v bats &> /dev/null && [[ -d "$DOTFILES/lib/bats" ]]; then
+if havecmd bats && [[ -d "$DOTFILES/lib/bats" ]]; then
   export BATS_LIB_PATH="$DOTFILES/lib/bats:${BATS_LIB_PATH:-/usr/lib/bats}"
 fi
 
@@ -125,7 +125,7 @@ alias sl=ls
 #-----------------------------------------------------------------------------
 alias diffdir='diff -qr'
 
-if command -v colordiff &> /dev/null; then
+if havecmd colordiff; then
   alias diff='colordiff'
   alias diffdir='colordiff -qr'
 fi
@@ -139,7 +139,7 @@ alias g='grep --color=auto'
 # I got this from a co-worker many moons ago. Unfortunately, I don't remember
 # who. Basically, if a tree program is not installed, fake it with this.
 
-! command -v tree &> /dev/null \
+! havecmd tree \
   && alias tree="find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 
 #-----------------------------------------------------------------------------
@@ -186,7 +186,7 @@ alias h='history'
 #-----------------------------------------------------------------------------
 # Vault
 
-if command -v vault &> /dev/null; then
+if havecmd vault; then
   vaultpath="$(command -v vault 2> /dev/null)"
 
   if [[ -n $vaultpath ]]; then
@@ -205,7 +205,7 @@ alias j!=jbang
 # gcloud stuff
 
 # shellcheck disable=SC1091
-if command -v gcloud &> /dev/null; then
+if havecmd gcloud; then
   alias gcloud-auth='gcloud auth login --no-launch-browser && gcloud auth application-default login --no-launch-browser'
 
   gcpath="$(gcloud info --format='value(installation.sdk_root)')"
@@ -242,6 +242,6 @@ findword() {
 #-----------------------------------------------------------------------------
 # github cli
 
-if command -v gh &> /dev/null; then
+if havecmd gh; then
   alias ghlastactionid="gh run list --limit 1 --json 'databaseId' --jq '.[0].databaseId'"
 fi
