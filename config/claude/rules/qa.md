@@ -1,6 +1,6 @@
 # Quality Assurance Rules
 
-**Version:** v2.5.0
+**Version:** v2.6.0
 
 QA is the full pipeline that takes a change from "written" to
 "release-ready." This rule is **language- and tool-agnostic**: it defines the
@@ -65,11 +65,16 @@ skip silently.
 12. **Build** — the artifact actually compiles/bundles, and images build
     (the **containerize** skill) when containers change. Note size deltas.
 13. **Documentation** — the change's docs are **current** and **accurate**:
-    user-facing docs (README/usage/API), in-repo planning (a `TODO` /
-    roadmap), and the governing rules/skills it affects (global *and* local)
-    are updated; prose is linted (e.g. a Markdown linter) with no stale or
-    broken references. A change that alters behaviour but not its docs is
-    incomplete.
+    user-facing docs (README/usage/API, **changelog**), in-repo planning (a
+    `TODO` / roadmap), and the governing rules/skills it affects (global
+    *and* local) are updated; prose is linted (e.g. a Markdown linter) with
+    no stale or broken references. A change that alters behaviour but not its
+    docs is incomplete. When a repo's **changelog is generated** (from git
+    history or commit metadata), regenerating it **mutates the tree**, so it
+    is a **prep step in the same class as Format** (dimension 1) — run it
+    once just before opening the PR and **commit the result**; never in CI,
+    which gates and must not commit. The concrete command lives in the
+    repo's QA doc.
 14. **Code review** — human peer review of the change. A gate, not a tool;
     state whether/how it is required (e.g. PR approvals) or, for a solo repo,
     that it is informal.

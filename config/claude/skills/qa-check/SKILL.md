@@ -5,7 +5,7 @@ description: Run the full quality-assurance pipeline on a change (format, lint, 
 
 # QA Check
 
-**Version:** v2.2.0
+**Version:** v2.3.0
 
 Run the quality-assurance pipeline for **this** repo and route every stage
 through its rule. QA spans many tools that are individually easy to forget;
@@ -53,6 +53,10 @@ Only the qa-check-specific operational notes (the rest is in `qa.md`):
 
 - **Format** is the one auto-fix stage — run it once (the fix config), then
   the check-only pass; never fix-and-recommit per failure.
+- **Documentation prep (generated changelog)** — if the repo's QA doc lists a
+  changelog-regeneration command (a generate-then-commit prep action, same
+  mutating class as Format), run it once when preparing the PR and commit the
+  result; never in CI. Get the concrete command from the repo's QA doc.
 - **Pre-commit hook coverage** — when the repo uses pre-commit, audit its
   config against the *Recommended Cross-Cutting Hooks* in `pre-commit.md`
   (secret detection, large-file / merge-conflict / case-conflict guards,
