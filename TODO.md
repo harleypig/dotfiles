@@ -57,6 +57,27 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
+## 🔐 Evaluate trufflehog & Checkmarx scanners (MEDIUM PRIORITY)
+
+Two candidate security scanners to weigh for pre-commit and/or GitHub
+Actions. For each, determine what it scans, how it overlaps with the tools
+already in play (gitleaks/detect-private-key, the `security-scan` skill,
+`semgrep`/`trivy`/`osv-scanner`), and where it belongs — then fold any
+adoption into the `security-scan` skill / `qa.md` security dimension rather
+than wiring it as a one-off.
+
+- [ ] **trufflehog** (secret scanning): evaluate adding it to pre-commit and
+  GitHub Actions, and how it complements the existing secret-scanning story —
+  gitleaks is the commit-time guard (Pre-commit Phase 2) and full-repo/history
+  scanning is the `security-scan` skill's job. Decide whether trufflehog's
+  verified-secret detection augments or replaces either, and where it runs
+  (commit-time hook vs CI vs the skill).
+- [ ] **Checkmarx** (SAST): evaluate adding it to pre-commit and/or GitHub
+  Actions; compare against the existing SAST layer (`semgrep`) and decide
+  whether it earns a place. Ties into the perl-SAST investigation under "Perl
+  quality tooling → Security scanning", which already flags Checkmarx for its
+  believed perl support.
+
 ## 🧹 shell-startup Follow-ups (LOW PRIORITY)
 
 Deferred from the shell-startup trim (PR #16):
@@ -803,6 +824,18 @@ scanning remains the **security-scan** skill's job (separate from this hook).
   - [ ] Link validation
 - [ ] Test on repository documentation
 - [ ] Update documentation
+
+## 🔧 Bump GitHub Actions off Node.js 20 (MEDIUM PRIORITY)
+
+CI runs surface deprecation warnings: `actions/checkout@v4` (×4) and
+`actions/setup-python@v5` (×2) in `.github/workflows/tests.yml` run on
+Node.js 20, which GitHub forces to Node 24 by default on 2026-06-16 and
+removes from runners on 2026-09-16.
+
+- [ ] Bump `actions/checkout@v4` → `@v5` (already used in `opencode.yml`)
+  and `actions/setup-python@v5` → a Node 24-compatible release in
+  `tests.yml`, clearing the deprecation warnings. Re-check the run's
+  annotations afterward for any other actions still on Node 20.
 
 ## 🚀 CI/CD Workflows (HIGH PRIORITY)
 
