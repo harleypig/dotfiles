@@ -4,7 +4,7 @@
 
 # gh (GitHub CLI) Rules
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 ## Pull Requests
 
@@ -71,20 +71,23 @@ as `fixup commit 1, fixup commit 2, ...` noise.
 
 This user maintains **two** credentials for `gh`, deliberately:
 
-- **`GH_TOKEN` / `GITHUB_TOKEN` env vars** — a narrowly-scoped
-  fine-grained PAT exported from the user's shell environment. This is
-  the default credential and serves nearly every gh operation in the
-  user's normal workflow. Many of the user's scripts and tools also
-  read these env vars; do not assume the PAT can be removed or
-  widened.
-- **Stored OAuth credential** — broader-scope token saved by
-  `gh auth login`, stored at `$DOTFILES/config/gh/hosts.yml`. Reserved
-  as a fallback for operations the narrow PAT can't reach
-  (commenting on upstream PRs, filing issues against other orgs, and
-  similar third-party-repo writes).
+- **`GH_TOKEN` env var** — a single **wide-open** PAT exported from the
+  user's shell environment (loaded by `config/shell-startup/000-loadtokens`
+  from `private_dotfiles/api-key/gh`). This is the default credential and
+  is intentionally broad so gh works for anything in the user's normal
+  workflow. **`GITHUB_TOKEN` is deliberately left unset** — gh falls
+  straight through to `GH_TOKEN`. (Per-app tools such as the MCP servers
+  in `bin/mymcp` do **not** use these env vars; they read their own
+  narrowly-scoped tokens directly from `private_dotfiles/api-key/`.)
+- **Stored OAuth credential** — token saved by `gh auth login`, stored at
+  `$DOTFILES/config/gh/hosts.yml`. Reserved as a fallback for operations
+  the env-var PAT can't reach (commenting on upstream PRs, filing issues
+  against other orgs, and similar third-party-repo writes — a fine-grained
+  PAT only reaches repos explicitly granted to it).
 
-`gh` precedence: `GH_TOKEN` > `GITHUB_TOKEN` > stored credential. As
-long as either env var is set, the stored credential is ignored.
+`gh` precedence: `GH_TOKEN` > `GITHUB_TOKEN` > stored credential. With
+`GITHUB_TOKEN` unset, gh uses `GH_TOKEN`; clearing it too (the fallback
+prefix below) drops gh to the stored OAuth credential.
 
 ### Default: use the PAT (no prefix)
 
@@ -98,8 +101,10 @@ gh pr create --title "..." --body "..."
 
 ### Fallback: bypass env vars only when the PAT can't do it
 
-Some `gh` calls will fail because the narrow PAT lacks scope for the
-target repo. Typical error:
+Some `gh` calls will fail because the env-var PAT can't reach the
+target repo — even a wide-open fine-grained PAT only covers repos
+explicitly granted to it, so upstream/third-party repos are out of
+reach. Typical error:
 
 ```text
 GraphQL: Resource not accessible by personal access token
@@ -121,8 +126,9 @@ only**, leaving the shell environment intact. Use this prefix when:
 - A previously-working command starts failing with the same scope
   error after a refactor or repo move.
 
-**Never `unset GH_TOKEN GITHUB_TOKEN` in the shell session itself.**
-The env-var PAT is load-bearing for other tools the user runs.
+**Never `unset GH_TOKEN` in the shell session itself.** It is the
+load-bearing credential for gh and other tools the user runs; clear it
+only inline for a single command (the prefix above).
 
 ### Diagnosing further
 
