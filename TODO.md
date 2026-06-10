@@ -825,6 +825,18 @@ scanning remains the **security-scan** skill's job (separate from this hook).
 - [ ] Test on repository documentation
 - [ ] Update documentation
 
+## 🔧 Bump GitHub Actions off Node.js 20 (MEDIUM PRIORITY)
+
+CI runs surface deprecation warnings: `actions/checkout@v4` (×4) and
+`actions/setup-python@v5` (×2) in `.github/workflows/tests.yml` run on
+Node.js 20, which GitHub forces to Node 24 by default on 2026-06-16 and
+removes from runners on 2026-09-16.
+
+- [ ] Bump `actions/checkout@v4` → `@v5` (already used in `opencode.yml`)
+  and `actions/setup-python@v5` → a Node 24-compatible release in
+  `tests.yml`, clearing the deprecation warnings. Re-check the run's
+  annotations afterward for any other actions still on Node 20.
+
 ## 🚀 CI/CD Workflows (HIGH PRIORITY)
 
 **Dependency:** Each CI/CD phase requires corresponding Pre-commit phase.
