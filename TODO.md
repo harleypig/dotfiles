@@ -57,6 +57,27 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
+## 🔐 Evaluate trufflehog & Checkmarx scanners (MEDIUM PRIORITY)
+
+Two candidate security scanners to weigh for pre-commit and/or GitHub
+Actions. For each, determine what it scans, how it overlaps with the tools
+already in play (gitleaks/detect-private-key, the `security-scan` skill,
+`semgrep`/`trivy`/`osv-scanner`), and where it belongs — then fold any
+adoption into the `security-scan` skill / `qa.md` security dimension rather
+than wiring it as a one-off.
+
+- [ ] **trufflehog** (secret scanning): evaluate adding it to pre-commit and
+  GitHub Actions, and how it complements the existing secret-scanning story —
+  gitleaks is the commit-time guard (Pre-commit Phase 2) and full-repo/history
+  scanning is the `security-scan` skill's job. Decide whether trufflehog's
+  verified-secret detection augments or replaces either, and where it runs
+  (commit-time hook vs CI vs the skill).
+- [ ] **Checkmarx** (SAST): evaluate adding it to pre-commit and/or GitHub
+  Actions; compare against the existing SAST layer (`semgrep`) and decide
+  whether it earns a place. Ties into the perl-SAST investigation under "Perl
+  quality tooling → Security scanning", which already flags Checkmarx for its
+  believed perl support.
+
 ## 🧹 shell-startup Follow-ups (LOW PRIORITY)
 
 Deferred from the shell-startup trim (PR #16):
