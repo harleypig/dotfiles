@@ -46,7 +46,37 @@ teardown() {
   assert_output --partial "-y snyk@latest mcp -t stdio"
 }
 
-@test "github refuses to run without GITHUB_TOKEN" {
-  run env -u GITHUB_TOKEN DOTFILES="$FAKE" "$ROOT/bin/mymcp" github
+@test "github fails with a clear error when its token file is missing" {
+  run env PROJECTS_DIR="$BATS_TEST_TMPDIR/projects" DOTFILES="$FAKE" \
+    "$ROOT/bin/mymcp" github
   assert_failure
+
+  run cat "$FAKE"/.mymcp/mymcp-github-*.log
+  assert_output --partial "api-key file not found"
+}
+
+@test "github reads its mcp-github token file and passes it to docker" {
+  local keydir="$BATS_TEST_TMPDIR/projects/private_dotfiles/api-key"
+  mkdir -p "$keydir"
+  printf 'tok-abc123' > "$keydir/mcp-github"
+
+  # Docker stub records both its args and the token it received via the
+  # environment, so we can assert the file's contents reached the server.
+  cat > "$STUB/docker" << EOF
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$STUB/docker.args"
+printf '%s\n' "\$GITHUB_PERSONAL_ACCESS_TOKEN" >> "$STUB/docker.env"
+exit 0
+EOF
+  chmod +x "$STUB/docker"
+
+  run env PROJECTS_DIR="$BATS_TEST_TMPDIR/projects" DOTFILES="$FAKE" \
+    "PATH=$STUB:$PATH" "$ROOT/bin/mymcp" github
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "ghcr.io/github/github-mcp-server stdio --dynamic-toolsets --tools=get_me,search_code"
+
+  run cat "$STUB/docker.env"
+  assert_output "tok-abc123"
 }

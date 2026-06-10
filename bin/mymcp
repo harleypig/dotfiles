@@ -17,6 +17,11 @@ echo "0: $0 ::: $PWD ::: $* <<<" >&2
 : "${DOTFILES:?DOTFILES environment variable is not set}"
 log_dir="$DOTFILES/.mymcp"
 
+# Per-server API tokens live in the private api-key store, alongside the
+# dotfiles checkout. Each server reads the file it needs directly (see
+# read_api_key); servers that share permission needs read the same file.
+api_key_dir="${PROJECTS_DIR:-$(dirname "$DOTFILES")}/private_dotfiles/api-key"
+
 # Create log directory if it doesn't exist
 mkdir -p "$log_dir"
 
@@ -38,6 +43,19 @@ declare -A known_cmd
 # Utility Functions
 
 #------------------------------------------------------------------------------
+# Read a token from the private api-key store. Give a server its own file
+# only when its access needs differ; servers with the same needs pass the
+# same name and share one token.
+read_api_key() {
+  local name="$1"
+  local file="$api_key_dir/$name"
+
+  [[ -r $file ]] || dw_die 1 "api-key file not found or unreadable: $file"
+
+  printf '%s' "$(< "$file")"
+}
+
+#------------------------------------------------------------------------------
 docker_run() {
   local opts=('run' '--rm' '-i' "$@")
   dw_warn "docker ${opts[*]}"
@@ -56,8 +74,8 @@ npx_run() {
 
 # https://github.com/github/github-mcp-server/blob/main/docs/server-configuration.md
 github() {
-  : "${GITHUB_TOKEN:?GITHUB_TOKEN not set}"
-  export GITHUB_PERSONAL_ACCESS_TOKEN="$GITHUB_TOKEN"
+  export GITHUB_PERSONAL_ACCESS_TOKEN
+  GITHUB_PERSONAL_ACCESS_TOKEN="$(read_api_key mcp-github)"
   docker_run \
     '-e' 'GITHUB_PERSONAL_ACCESS_TOKEN' \
     'ghcr.io/github/github-mcp-server' \
