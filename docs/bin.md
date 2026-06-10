@@ -57,6 +57,12 @@ terminal color scripting.
 Human-readable date formatting utility. Converts or displays dates in friendly
 formats.
 
+**findword**
+Wordle solver/cheat. Builds a per-position character-class regex from
+constraints (`--length`, `--exclude`, `--include`, `--posN`, `--not_posN`),
+searches the system dictionary, and ranks matches by vowel richness. Run
+`findword --help` for the full flag list.
+
 **lwhich**
 Enhanced 'which' that follows symbolic links and shows the actual executable
 path.
