@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+
+# findword - a Wordle solver/cheat over the system dictionary.
+#
+# Builds a per-position character-class regex from the supplied constraints,
+# greps the dictionary, then ranks the matches by distinct-vowel richness (a
+# decent opener heuristic) and shows the 100 richest, laid out in columns.
+#
+# Replaces the old `findword` shell function in config/shell-startup/010-general
+# (which only took a raw regex). Argument handling is driven by parse_params.
+#
+# Parameters (the per-position flags are length-dependent and generated from
+# -l, so a 5-letter word exposes --pos1..--pos5 and --not_pos1..--not_pos5):
+#
+#   -l, --length N       word length (default 5)
+#   -x, --exclude STR    letters that do not appear anywhere in the word
+#   -i, --include STR    letters that appear, position unknown
+#       --posN C         position N is exactly letter C (overrides --exclude
+#                        there; any --not_posN for that position is ignored)
+#       --not_posN STR   letters that are invalid at position N
+#
+# Deliberately no `set -euo pipefail` (bash.md's default): an over-constrained
+# query legitimately matches nothing, and pipefail/-e would turn that valid
+# empty result into a failure. Real error paths are guarded explicitly instead.
+
+dict=/usr/share/dict/words
+alphabet=abcdefghijklmnopqrstuvwxyz
+
+bindir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+parse_params=$bindir/parse_params
+
+##############################################################################
+# Pre-scan the length so we know how many --posN / --not_posN flags to define.
+# parse_params can't size its own definition, so length is read manually first;
+# the value is re-validated by parse_params below.
+##############################################################################
+
+length=5
+prev=
+
+for arg in "$@"; do
+  case $arg in
+    -l=* | --length=*) length=${arg#*=} ;;
+    *) [[ $prev == -l || $prev == --length ]] && length=$arg ;;
+  esac
+
+  prev=$arg
+done
+
+# A non-numeric or non-positive length can't size the flag set; fall back to 5
+# for building the definition and let parse_params reject the bad value.
+size=$length
+[[ $size =~ ^[0-9]+$ ]] && ((size > 0)) || size=5
+
+##############################################################################
+# Build the parse_params definition: the fixed flags plus one --posN /
+# --not_posN pair per letter position.
+##############################################################################
+
+def='
+l|length,integer,length,5
+x|exclude,string,exclude
+i|include,string,include
+'
+
+for ((n = 1; n <= size; n++)); do
+  def+="pos$n,char,p$n"$'\n'
+  def+="not_pos$n,string,np$n"$'\n'
+done
+
+# shellcheck disable=SC2154  # length/exclude/include/pN/npN are set by the eval
+eval "$("$parse_params" --auto --prog findword "$def" "$@")"
+
+((length > 0)) || {
+  printf 'findword: length must be greater than 0\n' >&2
+  exit 1
+}
+
+##############################################################################
+# Translate the constraints into a per-position character-class regex.
+##############################################################################
+
+exclude=${exclude,,}
+exclude=${exclude//[^a-z]/}
+include=${include,,}
+include=${include//[^a-z]/}
+
+regex=
+
+for ((n = 1; n <= length; n++)); do
+  pin_var=p$n
+  pin=${!pin_var-}
+  pin=${pin,,}
+  pin=${pin//[^a-z]/}
+
+  not_var=np$n
+  not=${!not_var-}
+  not=${not,,}
+  not=${not//[^a-z]/}
+
+  # A pinned position overrides --exclude and ignores --not_posN there.
+  if [[ -n $pin ]]; then
+    regex+="[$pin]"
+
+  else
+    allowed=$(tr -d "$exclude$not" <<< "$alphabet")
+    [[ -n $allowed ]] || exit 0 # nothing can fill this slot: no matches
+    regex+="[$allowed]"
+  fi
+done
+
+##############################################################################
+# Search, require the included letters, rank by vowel richness, show the top
+# 100 in columns.
+##############################################################################
+
+# The dictionary is only needed once a search is actually attempted; checking
+# it here (not at the top) lets --help, usage errors, and length validation
+# work without one.
+[[ -r $dict ]] || {
+  printf 'findword: cannot read dictionary %s\n' "$dict" >&2
+  exit 1
+}
+
+grep -iE "^$regex\$" "$dict" \
+  | tr '[:upper:]' '[:lower:]' \
+  | grep -xE '[a-z]+' \
+  | sort -u \
+  | awk -v inc="$include" '
+      {
+        for (k = 1; k <= length(inc); k++)
+          if (index($0, substr(inc, k, 1)) == 0) next
+
+        vowels = $0
+        gsub(/[^aeiouy]/, "", vowels)
+        seen = ""
+        count = 0
+        for (i = 1; i <= length(vowels); i++) {
+          c = substr(vowels, i, 1)
+          if (index(seen, c) == 0) { seen = seen c; count++ }
+        }
+        print count "\t" $0
+      }' \
+  | sort -k1,1n -k2 \
+  | cut -f2- \
+  | tail -n 100 \
+  | column
