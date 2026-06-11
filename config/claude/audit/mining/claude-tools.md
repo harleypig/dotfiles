@@ -10,7 +10,7 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 | brainstorm | generic | CANDIDATE | deep requirements ideation; pairs with built-in Plan |
 | bslist | generic | CANDIDATE | list/resume past brainstorm sessions |
 | debug-assistant | generic | ADOPTED | built as the **`debug-assistant`** skill — opens the troubleshooting category |
-| deps-update | generic | CANDIDATE | dependency auditor w/ compat testing + changelog |
+| deps-update | generic | ADOPTED | built as the **`deps-update`** skill (qa / dependency-maintenance orbit — no new category) |
 | dev-docs | generic | CANDIDATE | spec → implementation plan + checklist |
 | dev-docs-update | generic | CANDIDATE | capture session state before context-limit reset |
 | env-sync | generic | CANDIDATE | .env sync/validation/secret rotation (security-sensitive) |

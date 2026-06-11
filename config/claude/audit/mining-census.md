@@ -114,8 +114,9 @@ skill; `plan-reviewer` → the **`plan-review`** skill;
 category** (the `rules/documentation.md` rule plus the skill);
 `debug-assistant` → the **`debug-assistant`** skill, which **opens the
 `troubleshooting` category** (a thin always-on `rules/troubleshooting.md`
-plus the skill). **Remaining:** `deps-update` — see the *Skill ideas &
-future categories* in `SETUP-AUDIT.md`.
+plus the skill); `deps-update` → the **`deps-update`** skill (qa /
+dependency-maintenance orbit — no new category). **Tier-1 is fully
+adopted** — nothing remaining.
 
 **Tier 2 — useful generic, some overlap.** **DONE** (built as qa-dimension
 review skills, the arch-review family): `perf-check`/`performance-engineer` →
@@ -159,8 +160,9 @@ list above.
   code-refactor-master/code-architecture-reviewer, ruff-patterns,
   refactor-planner) is SKIP — covered. A skill adds nothing over the rule
   (and style is personal preference — a rule's job, not a skill's).
-- **`qa`** — substantially built (the `*-review` family + python depth); the
-  **umbrella, worked last**. Open: nothing required.
+- **`qa`** — substantially built (the `*-review` family + python depth + the
+  **`deps-update`** dependency-maintenance skill, wired into the Security/SCA
+  dimension); the **umbrella, worked last**. Open: nothing required.
 - **`testing`** — covered (`testing.md` + `bats-setup` + `test-review` +
   `pytest-patterns` + `qa-check` runs/coverage). Two deferred: **e2e** (qa dim
   8 has no tool — `frontend-qa-tester` is `SKIP-until` a browser-UI/Playwright
