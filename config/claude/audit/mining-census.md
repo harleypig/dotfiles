@@ -19,12 +19,37 @@ Every mined repo gets its own complete matrix file.
   user decides**. Judged by value to *any* repo, not just the one being
   audited. An agent/command can be a CANDIDATE even though we'd reimplement it
   as a skill.
-- **SKIP** — covered by existing tooling, niche/domain-locked, meta-infra, or
-  already adopted. Reason given.
+- **SKIP** (permanent) — already covered by our tooling, redundant, meta-infra,
+  or already adopted. Won't resurface. Reason given.
+- **SKIP-until `<trigger>`** (conditional) — legitimately skipped *now* because
+  a precondition isn't met (a tool we don't use, a domain we're not in), but it
+  **flips to CANDIDATE when the trigger fires** (usually "first use of X" —
+  ADR-0003). The SKIP stands; the trigger keeps it findable. All `SKIP-until`
+  items are collected in the **Watch list** below.
 
 Disposition reflects **generic value to the whole environment**, then overlap
 with existing built-ins / skills / rules, then the "layer the generic over the
 specific" principle (`EXTENDING.md`).
+
+## Watch list — `SKIP-until` triggers
+
+When a trigger below becomes true (you start using the tool / enter the
+domain), re-promote the item to CANDIDATE. Check this list when adopting any
+new dependency or tool; the audit checks it each run.
+
+| Trigger (first use of…) | Re-promotes |
+|-------------------------|-------------|
+| **Mermaid** (diagrams anywhere) | `claude-plugins` `diagram` → an arch/structure diagram step |
+| **Logfire** (observability) | `pydantic/skills` `logfire-instrumentation`/`-query`/`-ui` |
+| **`pydantic_ai`** (building LLM agents) | `pydantic/skills` `building-pydantic-ai-agents`, `pydantic-ai-harness`; the deferred `rules/pydantic-ai.md` |
+| **External SSO** integration | `claude-tools` `multi-system-sso-authentication` |
+| **GraphQL** | `claude-tools` `graphql-architect` (Tier-3) |
+| **Payments** (Stripe/etc.) | `claude-tools` `payment-integration` (Tier-3) |
+| **Linear** (the SaaS) | `claude-plugins` `linear` plugin (board/comment/cycle/issue-enricher) |
+| **A new language** (Go/Rust/TS…) in a repo | the matching `claude-tools` language-expert agent (Tier-3) |
+
+(Tier-3 "build on first use" items are already watch-like by definition; listed
+here so there's one place to scan.)
 
 ## Adopting a CANDIDATE — fold into existing categories
 
@@ -71,11 +96,14 @@ skill; `plan-reviewer` → the **`plan-review`** skill. **Remaining:**
 `write-documentation`/`documentation-architect` (→ a *documentation* category)
 — see the *Skill ideas & future categories* in `SETUP-AUDIT.md`.
 
-**Tier 2 — useful generic, some overlap:**
-`perf-check`/`performance-engineer`,
-`test-reviewer`, `pytest-patterns`/`typing-patterns` (Python depth, like
-fastapi-patterns), `accessibility-specialist`, `security-auditor`,
-`ui-ux-designer`, `handoff`, `standup`, `dev-docs-update`, `brainstorm`.
+**Tier 2 — useful generic, some overlap.** **DONE** (built as qa-dimension
+review skills, the arch-review family): `perf-check`/`performance-engineer` →
+**`perf-review`**; `test-reviewer` → **`test-review`**;
+`accessibility-specialist` → **`a11y-review`**. **Remaining:**
+`pytest-patterns`/`typing-patterns` (Python depth, like fastapi-patterns —
+python-scoped, not qa), `security-auditor` (overlaps `security-scan` +
+`/security-review` — decide), `ui-ux-designer`, `handoff`, `standup`,
+`dev-docs-update`, `brainstorm`.
 
 **Tier 3 — external libraries/frameworks/tools: global, built on first use.**
 These are all guidance about something *foreign to the repo*, so per ADR-0003

@@ -107,6 +107,14 @@ Produce a disposition table (ADOPT / CANDIDATE / SKIP + one-line reason) and
 record it in `config/claude/audit/mining-census.md`. Fan the enumeration out
 to read-only agents so it doesn't consume the audit's own context.
 
+**SKIP is two things.** A permanent **SKIP** (covered/redundant) won't come
+back; a conditional **`SKIP-until <trigger>`** (a tool we don't use, a domain
+we're not in) **flips to CANDIDATE when the trigger fires** — don't bury it as a
+plain SKIP. Every `SKIP-until` goes on the census **Watch list**; check that
+list whenever a new dependency/tool is adopted (and each audit run), and
+re-promote what the trigger unlocks. Never *rewrite* the original SKIP — it was
+right when made; the trigger is what resurfaces it.
+
 **Judging.** Score each item by **generic value to *any* repo** first, then
 overlap with existing built-ins/skills/rules, then the layering principle.
 Consider an agent or command a CANDIDATE **even if we'd reimplement it as a
