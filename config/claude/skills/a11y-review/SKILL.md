@@ -52,8 +52,8 @@ A **skill** you invoke. Reading a large component tree can be delegated to a
 
 Rank by **barrier severity** — a keyboard trap or an unlabelled control blocks
 users entirely; a minor contrast miss degrades. **Assess only**; applying
-fixes is a separate step. Note what needs a real assistive-tech / manual check you
-couldn't fully perform from the code.
+fixes is a separate step. Note what needs a real assistive-tech / manual
+check you couldn't fully perform from the code.
 
 ## Provenance
 

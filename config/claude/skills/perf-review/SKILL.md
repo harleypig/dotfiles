@@ -8,8 +8,9 @@ description: Assess the runtime performance of code — find hotspots, algorithm
 **Version:** v1.0.0
 
 Assess **runtime performance** and return findings ranked by *measured*
-impact. Subject-agnostic. This is the tool for `qa.md`'s **Performance & load**
-dimension, and it follows `qa.md`'s **measure-first** stance to the letter:
+impact. Subject-agnostic. This is the tool for `qa.md`'s **Performance &
+load** dimension, and it follows `qa.md`'s **measure-first** stance to the
+letter:
 premature optimization is itself a smell.
 
 ## Measure first — the rule that governs this skill
