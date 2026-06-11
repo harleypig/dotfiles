@@ -1,11 +1,11 @@
 ---
 name: git-worktree-workflow
-description: Manage git worktree-based development for forked and personal repositories. Use this skill whenever the user wants to work on a GitHub issue, set up a worktree, sync a branch with its upstream base, prepare a branch for a PR, clean up a finished issue, merge or rebase between branches, or perform any operation involving git worktrees. Triggers on phrases like "work on issue #N", "let's tackle issue N", "start issue N", "merge main into X", "pull in upstream", "rebase X on main", "update this branch", "prep for PR", "clean up issue N", "remove the worktree for X", "list worktrees", or any request mentioning worktrees, issue branches, or cross-branch integration in a forked or personal repo context. Also use when the user references a directory like `issueN` as a sibling of the main repo clone.
+description: Manage git worktree-based development for forked and personal repositories. Use this skill whenever the user wants to work on a GitHub issue, set up a worktree, sync a branch with its upstream base, prepare a branch for a PR, clean up a finished issue, merge or rebase between branches, or perform any operation involving git worktrees. Triggers on phrases like "work on issue #N", "let's tackle issue N", "start issue N", "merge main into X", "pull in upstream", "rebase X on main", "update this branch", "prep for PR", "clean up issue N", "remove the worktree for X", "list worktrees", "reconcile gone branches", "clean up gone branches", or any request mentioning worktrees, issue branches, or cross-branch integration in a forked or personal repo context. Also use when the user references a directory like `issueN` as a sibling of the main repo clone.
 ---
 
 # Git Worktree Workflow
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 This skill manages development across git worktrees for forked repos and
 personal repos. It covers issue setup, syncing, PR prep, cross-branch
@@ -685,6 +685,87 @@ Recovery cases the skill should recognize:
 
 ---
 
+## Operation 7: Reconcile gone branches
+
+Triggered by: "reconcile gone branches", "clean up gone branches", "prune
+local branches whose remote is gone", "remove the [gone] branches", etc.
+
+The bulk counterpart to Operation 5. After PRs merge and their remote branches
+are deleted — and the targeted `git branch -dr origin/<branch>` prune from
+`git.md` runs, or GitHub auto-deletes — the local branches that tracked them
+show as `[gone]`. This sweeps them, and their worktrees, with the **same
+guards** as Operation 5: confirm each deletion, skip dirty worktrees, never
+bulk-`--force`.
+
+It does **not** run `git fetch --prune` (this repo prunes remote-tracking refs
+targeted, per `git.md`); it reconciles whatever `[gone]` state already exists.
+Note: with squash merges (this repo's only merge method) a merged branch is
+**not** an ancestor of the default branch, so `git branch -d` will refuse it —
+the **merged-PR** check is the reliable "safe to delete" signal, after which
+deletion needs a confirmed `-D`.
+
+### Step 1: Detect (read-only)
+
+```bash
+mapfile -t GONE < <(
+  git for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads/ \
+    | awk '$2 == "[gone]" { print $1 }'
+)
+((${#GONE[@]})) || echo "No [gone] branches — nothing to reconcile."
+
+CURRENT=$(git rev-parse --abbrev-ref HEAD)
+DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
+            | sed 's@^refs/remotes/origin/@@')
+
+for b in "${GONE[@]}"; do
+  wt=$(git worktree list --porcelain \
+         | awk -v ref="refs/heads/$b" \
+             '/^worktree /{p=substr($0,10)} $0=="branch "ref{print p; exit}')
+  if [[ -n $wt && -n $(git -C "$wt" status --porcelain) ]]; then
+    wtstate="DIRTY worktree ($wt) — skip"
+  elif [[ -n $wt ]]; then
+    wtstate="clean worktree ($wt)"
+  else
+    wtstate="no worktree"
+  fi
+
+  pr=$(gh pr list --head "$b" --state merged --json number \
+         -q '.[0].number' 2>/dev/null)
+  prstate=${pr:+PR #$pr merged}
+
+  printf '  %-28s %s; %s\n' "$b" "$wtstate" "${prstate:-no merged PR — verify}"
+done
+```
+
+### Step 2: Present and confirm
+
+Show the list, then exclude from any offer:
+
+- the **current branch** (`$CURRENT`) and the **default branch** (`$DEFAULT`);
+- branches with a **DIRTY worktree** — skipped (clean-tree precondition);
+  report them so the user can deal with the changes first.
+
+Default the proposed set to branches with a **merged PR** and a clean (or no)
+worktree. Call out any **"no merged PR"** branch explicitly — those need a
+deliberate decision. Never delete silently.
+
+### Step 3: Remove (guarded, per confirmed branch)
+
+```bash
+# For each CONFIRMED $b (never $CURRENT / $DEFAULT, never a dirty worktree):
+[[ -n $wt ]] && git worktree remove "$wt"   # no --force; refuses dirty/locked
+git branch -d "$b"                          # refuses unmerged…
+# …which squash-merged branches are. With a confirmed merged PR, upgrade to
+#   git branch -D "$b"   — only after the user OKs that specific branch.
+git worktree prune                          # tidy metadata once, at the end
+```
+
+If `git worktree remove` or `git branch -d` refuses, report and ask — a dirty
+worktree is left untouched, and `-D` is used only with explicit per-branch
+confirmation.
+
+---
+
 ## Rules and defaults
 
 - **Never hardcode `main` or `master`.** Always derive from the appropriate remote's default.
@@ -710,6 +791,7 @@ Recovery cases the skill should recognize:
 | "ready to submit" / "prep for PR" | Operation 4 |
 | "issue 321 is done" / "clean up 321" | Operation 5 |
 | "list worktrees" / "prune worktrees" | Operation 6 |
+| "reconcile gone branches" / "clean up gone branches" | Operation 7 |
 
 ## When to ask vs proceed
 
