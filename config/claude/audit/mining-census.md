@@ -63,10 +63,11 @@ stack-flavored ones per the layering principle. Grouped by leverage:
 
 **Tier 1 — strong generic, low overlap (best whole-environment wins):**
 architecture/codebase analysis — `dependency-analyzer`/`deps` (coupling,
-circular deps), `arch-review`/`architecture-reviewer`, `diagram` (Mermaid),
-`modernize` (legacy roadmap), `codebase-explorer`; `plan-reviewer`
-(pre-implementation plan QA); `tech-debt` (debt catalog); `debug-assistant`;
-`deps-update`; `write-documentation`/`documentation-architect`.
+circular deps), `arch-review`/`architecture-reviewer`, `tech-debt` (debt
+catalog), `codebase-explorer` — **DONE: consolidated into the `arch-review`
+skill** (`diagram`/Mermaid dropped — not used). Remaining: `modernize` (legacy
+roadmap), `plan-reviewer` (pre-implementation plan QA), `debug-assistant`,
+`deps-update`, `write-documentation`/`documentation-architect`.
 
 **Tier 2 — useful generic, some overlap:**
 `perf-check`/`performance-engineer`,

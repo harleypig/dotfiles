@@ -10,15 +10,16 @@ during the 2026-06-11 mining and are recorded in the census.
 Recorded in `../../audit/mining/`:
 
 - `ruslan-korneev/claude-plugins` `tech-lead` — `arch-review`, `deps`,
-  `dependency-analyzer`, `diagram` (architecture audit, coupling metrics,
-  circular-dep detection, Mermaid output). MIT.
+  `dependency-analyzer` (architecture audit, coupling metrics, circular-dep
+  detection). MIT. (Its `diagram`/Mermaid output was **dropped** — not used.)
 - `rafaelkamimura/claude-tools` — `tech-debt`, `database-optimizer`,
   `code-architecture-reviewer` (debt cataloguing, hotspot ideas). MIT.
 
 ## Local design decisions
 
-- **Consolidated** four mined items (a command + several agents) into one
-  skill — they are facets of one job (Rule of Three).
+- **Consolidated** three mined items (a command + several agents) into one
+  skill — they are facets of one job (Rule of Three). The `diagram`/Mermaid
+  item was dropped (Mermaid isn't used here).
 - **Spawns a generic agent** with the lens in the prompt rather than defining
   a bespoke agent type (generic-in-subject, specific-in-method).
 - **Assess-only** — turning findings into a phased plan is the (separate)

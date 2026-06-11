@@ -1,6 +1,6 @@
 ---
 name: arch-review
-description: Assess the architecture and health of an existing codebase as a whole — structure and layering, module coupling and circular dependencies, architecture anti-patterns, and tech-debt hotspots (complexity, duplication, stale TODOs) — with an optional Mermaid diagram. Use for whole-codebase questions, not line-level diff review: "review the architecture", "is this codebase healthy", "find circular dependencies", "what's the coupling like", "where's the tech debt", "map/diagram the modules", "are the layers clean". The tool for qa.md's Code-smell/complexity/maintainability dimension. Distinct from /code-review (diff bugs), /simplify (diff cleanup), /review (a PR).
+description: Assess the architecture and health of an existing codebase as a whole — structure and layering, module coupling and circular dependencies, architecture anti-patterns, and tech-debt hotspots (complexity, duplication, stale TODOs). Use for whole-codebase questions, not line-level diff review: "review the architecture", "is this codebase healthy", "find circular dependencies", "what's the coupling like", "where's the tech debt", "are the layers clean". The tool for qa.md's Code-smell/complexity/maintainability dimension. Distinct from /code-review (diff bugs), /simplify (diff cleanup), /review (a PR).
 ---
 
 # arch-review
@@ -31,8 +31,8 @@ this change correct."
 
 This is one **skill** (the entry point you invoke and watch) that consolidates
 what upstream split across a command + several agents (`arch-review`,
-`dependency-analyzer`, `tech-debt`, `diagram`) — they are all facets of one
-job, so they are one skill, not four micro-skills.
+`dependency-analyzer`, `tech-debt`) — they are all facets of one job, so they
+are one skill, not three micro-skills.
 
 The **scan itself is read-heavy** (potentially dozens of files), so delegate
 it to a **subagent** — the isolation keeps that intermediate reading out of
@@ -65,10 +65,7 @@ use agents here.
      size.
 3. **Synthesize** the agents' findings into one report (below). Deduplicate;
    resolve disagreements by re-reading the specific spot yourself.
-4. **Diagram (optional).** If asked, or if the structure is non-obvious, emit
-   a **Mermaid** diagram of the module/layer graph (mark cycles in red). Keep
-   it to the top ~2 levels — a diagram of everything is noise.
-5. **Report and stop.** Do **not** start refactoring. This skill *assesses*;
+4. **Report and stop.** Do **not** start refactoring. This skill *assesses*;
    acting on it is a separate, confirmed step (and turning the findings into a
    phased plan is the `modernize` skill's job).
 
@@ -93,9 +90,6 @@ Lead with the verdict, then the evidence, ordered by leverage:
 
 ### Tech-debt hotspots (by impact × churn)
 1. `path` — <complexity/duplication/…>, <suggested direction>
-
-### Diagram   (if requested)
-<a Mermaid module/layer graph, per step 4>
 ```
 
 Keep it proportional — a small repo gets a short report. Don't pad sections
@@ -114,6 +108,6 @@ never let a bounded scan read as exhaustive coverage.
 ## Provenance
 
 Adapted (idea-level) from the mining census — `claude-plugins` tech-lead
-(`arch-review`/`deps`/`diagram`/`dependency-analyzer`) and `claude-tools`
+(`arch-review`/`deps`/`dependency-analyzer`) and `claude-tools`
 (`tech-debt`/`database-optimizer` ideas). No upstream code reused. See
 `SOURCE.md`.
