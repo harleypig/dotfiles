@@ -24,9 +24,9 @@ costs a rewrite.
 A **skill** (a focused review you invoke). The plan is usually text already in
 context, so no agent is needed — **except** for one high-value case: when the
 plan makes **claims about the codebase** ("module X is isolated", "nothing
-else calls Y"), spawn an agent to **verify those assumptions against the actual
-code** and return confirm/refute. That's the textbook agent job — an isolated
-check whose *answer* is what matters.
+else calls Y"), spawn an agent to **verify those assumptions against the
+actual code** and return confirm/refute. That's the textbook agent job — an
+isolated check whose *answer* is what matters.
 
 ## Review lens
 
