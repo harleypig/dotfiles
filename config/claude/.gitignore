@@ -4,6 +4,7 @@
 
 !.gitignore
 !CLAUDE.md
+!EXTENDING.md
 !settings.json
 !rules/
 !rules/**
