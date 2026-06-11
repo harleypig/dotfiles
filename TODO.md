@@ -812,14 +812,15 @@ that prevents real mistakes just because it is large.
   is unclear — getting it suggested matters more than placing it perfectly,
   and the audit's recategorize step re-homes it. Expect several audits before
   some items settle (MVP — keep progressing).
-- [ ] **Cadence + form.** A quick pass *often* (enabled plugins/MCP, obvious
-  always-on bloat) and a deeper audit *periodically* (recategorize,
-  build-vs-adopt), with a short interval between detailed runs. This is
-  multi-step with decisions ⇒ a **skill** — and one that should *run via an
-  agent* so the audit's own reading does not eat the context it is meant to
-  protect. Record decisions + rationale so it is repeatable and not
-  re-litigated. Evaluate `claude-code-setup:claude-automation-recommender` for
-  the gap-finding part before authoring from scratch.
+- [x] **Form: the audit is the `claude-audit` skill** (`/claude-audit`) —
+  multi-step, runs its inventory *via an agent*, modifies global config via a
+  dotfiles PR and sets up the local repo. (`claude-code-setup:claude-automation-recommender`
+  can still help the gap-finding within a run.)
+- [ ] **Cadence.** Run `claude-audit` on a cadence — a quick pass *often*
+  (enabled plugins/MCP, obvious always-on bloat) and a deeper audit
+  *periodically*, with a short interval between detailed runs. Wire it to a
+  reminder / `/schedule`. Each detailed run records decisions in
+  `SETUP-AUDIT.md`.
 - [ ] **Plugin-audit follow-ups (from the 2026-06-10 global-fit pass):**
   - [ ] `rules/pydantic-ai.md` — path-scoped (`**/*.py`) framework rule
     capturing pydantic_ai conventions (provider-prefixed model strings, typed
