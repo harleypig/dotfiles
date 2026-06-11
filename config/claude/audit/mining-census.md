@@ -132,3 +132,21 @@ library/tool, front-loaded, not deferred. Items: language-expert agents
 `deploy`/`rollback`/`deployment-engineer`/
 `devops-troubleshooter`/`cloud-architect`, the FastAPI scaffolders
 (`module`/`endpoint`/`migrate-*`), pydantic-ai + Logfire skills.
+
+## Category status (so audits don't re-survey)
+
+- **`code-style`** — **complete as-is; nothing to adopt.** It is documented
+  policy (`code-style.md`) + per-language formatters/linters (`ruff.md`,
+  `shfmt`, …) + the qa *Code-style audit* dimension executed by `/code-review`
+  and `/simplify`. Every mined code-style item (clean-code-patterns,
+  code-refactor-master/code-architecture-reviewer, ruff-patterns,
+  refactor-planner) is SKIP — covered. A skill adds nothing over the rule
+  (and style is personal preference — a rule's job, not a skill's).
+- **`qa`** — substantially built (the `*-review` family + python depth); the
+  **umbrella, worked last**. Open: nothing required.
+- **`testing`** — covered (`testing.md` + `bats-setup` + `test-review` +
+  `pytest-patterns`).
+- **`gh`/`git`** — covered by rules + skills; open ideas: `resolve-issue`,
+  `categorize-issue` (audit backlog).
+- **`documentation`, `troubleshooting`** — **not yet opened**; homes for
+  `write-documentation` and `debug-assistant` (the remaining Tier-1 items).
