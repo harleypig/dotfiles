@@ -42,7 +42,7 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 | database-optimizer | generic | CANDIDATE | query/index/N+1 — SQLAlchemy half in sqlalchemy-patterns; generic lens novel |
 | performance-engineer | generic | CANDIDATE | profiling/load/Core-Web-Vitals (broader than database-optimizer) |
 | accessibility-specialist | generic | CANDIDATE | WCAG/ARIA/keyboard — novel a11y lens |
-| security-auditor | generic | CANDIDATE | deeper OWASP/auth/crypto audit (vs `/security-review`) |
+| security-auditor | generic | SKIP | overlaps `security-scan` skill + `/security-review`; deeper-audit lens not worth a separate skill now |
 | documentation-architect | generic | CANDIDATE | comprehensive docs across stacks |
 | api-documenter | generic | CANDIDATE | OpenAPI/SDK — layering: FastAPI auto-OpenAPI covers Python; generic remainder thin |
 | backend-architect | generic | CANDIDATE | API/schema/caching design patterns |
