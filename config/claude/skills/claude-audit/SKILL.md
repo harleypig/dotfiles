@@ -80,6 +80,45 @@ log) — the canonical methodology and living record. In short:
    findings. Convert "evaluate later" items into `TODO.md` follow-ups,
    surfaced by the repo that needs them.
 
+## Mining repos for ideas
+
+An audit improves the **whole** dev environment, not just the current repo —
+so the strongest finds are *generic* tools that spread everywhere. When the
+audit looks to external repos for ideas:
+
+**Finding a source.** If the *Idea sources* registry (`SETUP-AUDIT.md`) has no
+repo covering an aspect of the current repo, go find one. Rank by:
+
+1. **Official / first-party first** — the tool's or framework's own org (e.g.
+   `pydantic/skills`, `fastapi/.agents`). Authoritative; tracks the tool's
+   versions. Re-mine these on the tool's version bumps.
+2. **Otherwise third-party**, ranked by a bundle, not stars alone: **stars**
+   (adoption) **+ recency** (last commit) **+ maintenance health** (open-issue
+   ratio, contributor count). Stars are laggy and gameable; recency catches
+   the popular-but-abandoned repo. Take the top 2–3.
+3. **Staleness gate:** last commit **> 1 year** → flag for re-evaluation, do
+   **not** auto-discard. Some stable tools rarely change; judge on fit, not
+   age alone.
+
+**Charting it — full census, no pre-filtering.** Enumerate the **entire**
+surface (every agent / command / hook / skill), not a curated shortlist — a
+shortlist hides what was skipped and biases toward the current repo's stack.
+Produce a disposition table (ADOPT / CANDIDATE / SKIP + one-line reason) and
+record it in `config/claude/audit/mining-census.md`. Fan the enumeration out
+to read-only agents so it doesn't consume the audit's own context.
+
+**Judging.** Score each item by **generic value to *any* repo** first, then
+overlap with existing built-ins/skills/rules, then the layering principle.
+Consider an agent or command a CANDIDATE **even if we'd reimplement it as a
+skill** (skills over commands — ADR-0001). Don't dismiss a good generic tool
+because it arrived in a different form. **Placement:** anything about a
+repo-foreign library/tool is built **global**, on first use (ADR-0003) — not
+repo-local, not deferred; and **fold a new capability into an existing
+top-level category** (`code-style` / `testing` / `qa` / `gh` / `git`) rather
+than spawning a new one unless it genuinely doesn't fit. Record sources in the
+*Idea sources* registry; a per-artifact `SOURCE.md` only on implementation
+reuse (ADR-0002).
+
 ## Guardrails
 
 - **Second-class MCP/plugins** — never make a rule/skill depend on one.
