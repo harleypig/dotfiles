@@ -63,7 +63,11 @@ log) — the canonical methodology and living record. In short:
    audit's own reading does not consume the context it is protecting.
 2. **Classify** every artifact by load tier (always-on / on-demand / isolated)
    and assess right-fit: is it the correct *kind* (rule vs skill vs hook vs
-   command) and in the right *place*?
+   command), in the right *place*, and — for anything generic — **free of one
+   stack's specifics bleeding into it**? A generic primitive should be a thin
+   stack-agnostic layer that points to path-scoped per-stack patterns (see
+   *Layer the generic over the specific* in `EXTENDING.md`); flag a Python-
+   flavored "generic" agent that would mislead a Go-only repo.
 3. **Recommend** by **cost × (1 − relevance)** — trim weight, never
    guardrails. Apply the placement ladder from `EXTENDING.md` (global+lazy >
    per-repo) and the plugin/MCP rules from `rules/mcp.md` (plugins are global
