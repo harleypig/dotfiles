@@ -144,6 +144,13 @@ Do not invent skills for one-shot tool invocations — those belong in a
 rule. The threshold is "this is a procedure I would write up for a new
 contributor," not "this is how a flag works."
 
+**Rules and skills suggest commands; they cannot call them.** When a
+built-in slash command (`/code-review`, `/security-review`, `/simplify`,
+…) is the right tool for a step in a rule or skill you author, **name it**
+at that step — the model invokes skill-backed commands via its Skill tool,
+so naming is enough to get it run (a suggestion, not a guarantee; for a
+must-run gate, use a hook). Do not reimplement what a command already does.
+
 ## Resource Validity
 
 - Before recommending a tool, library, or pattern, verify it is actively

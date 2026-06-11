@@ -66,9 +66,12 @@ Only the qa-check-specific operational notes (the rest is in `qa.md`):
   against `code-style.md` (plus any repo override in `.claude/`) for the
   conventions no tool enforces: naming, paragraph spacing, section/function
   separators, comment wrap/density, Rule of Three, efficiency by default.
-  Report deviations as findings (see *Code style audit* in `qa.md`).
-- **Security** → defer to the **security-scan** skill; **Build**'s image step
-  → the **containerize** skill.
+  Report deviations as findings (see *Code style audit* in `qa.md`). Invoke
+  the built-in `/code-review` (diff: bugs + cleanups) for the review pass and
+  `/simplify` for cleanup-only — the dedicated commands for this.
+- **Security** → defer to the **security-scan** skill (plus the built-in
+  `/security-review` for a quick pending-changes vuln pass); **Build**'s image
+  step → the **containerize** skill.
 - **CI** is the post-push stage — watch it to green; honour required checks.
 - For a dimension with no tooling (UI/UX, e2e), do the manual pass and flag
   the gap rather than skipping it.
