@@ -18,3 +18,5 @@
 !hooks/**
 !adr/
 !adr/**
+!audit/
+!audit/**

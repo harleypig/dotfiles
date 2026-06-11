@@ -96,8 +96,12 @@ again. The two are distinct by design:
 | `rafaelkamimura/claude-tools` | Layered-architecture ideas; candidate commands (`adr`, `tech-debt`, `debug-assistant`) and agents (`database-optimizer`, `api-documenter`) | MIT | 2026-06-11 | No (ideas only) |
 | `pydantic/skills` (official) | Pydantic AI **agent-framework** + Logfire skills — relevant only if we adopt LLM agents or Logfire observability; not used today | MIT (check) | 2026-06-11 | No |
 
-Open mining follow-up (agents/commands worth evaluating) is in the *Audit
-backlog* below.
+The **full disposition census** of every item in these repos (every agent /
+command / hook / skill considered, ADOPT/CANDIDATE/SKIP + reason) is in
+`audit/mining-census.md`. The open CANDIDATE backlog lives there too. The
+source-discovery method (official-first → stars+recency+health; the >1yr
+staleness gate) and the full-census/generic-lens practice are documented in the
+**claude-audit** skill (*Mining repos for ideas*).
 
 ## Audit backlog
 
@@ -255,3 +259,14 @@ decisions are also summarized in the *Decisions log*.
   `SOURCE.md` only on implementation reuse). The dotfiles-system `docs/adr/`
   area is out of audit scope — created when its first decision arises. Landed
   via dotfiles PR.
+- 2026-06-11 — **Full mining census + discovery method (corrective).** The
+  earlier mining evaluated a pre-filtered shortlist of 9 and under-weighted
+  generic, whole-environment value. Corrected: charted **all ~158 items** across
+  the four repos into `audit/mining-census.md` (ADOPT/CANDIDATE/SKIP + reason),
+  and documented two practices in the claude-audit skill — **source discovery**
+  (official-first → stars+recency+maintenance-health; >1yr staleness gate,
+  re-evaluate not discard) and **full-census + generic-lens mining** (enumerate
+  the whole surface, judge by value to *any* repo, treat an agent/command as a
+  candidate even when reimplemented as a skill). Surfaced a tiered CANDIDATE
+  backlog (strongest: the architecture/codebase-analysis cluster). Landed via
+  dotfiles PR.
