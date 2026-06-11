@@ -9,6 +9,10 @@ paths:
 
 Conventions for Alembic database migrations. Pairs with `sqlalchemy.md`.
 
+For the migration recipes autogenerate gets wrong (enum create/drop lifecycle,
+data-backfill before NOT NULL, SQLite batch mode, downgrade FK order), invoke
+the **sqlalchemy-patterns** skill.
+
 ## Detection
 
 Active when an `alembic.ini` or an `alembic/` directory exists.

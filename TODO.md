@@ -755,99 +755,12 @@ after every `Edit` or `Write` on a shell file.
 
 ## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
-Periodically audit the **whole** Claude Code setup — CLAUDE.md/memory, rules,
-skills, agents, hooks, commands, plugins, MCP servers, settings — not just
-plugins. Two goals: **context economy** ("just because we have the space
-doesn't mean we should use it" — the efficiency-by-default rule applied to the
-context window) and **right-fit** (each artifact in the correct category,
-lean, and either ours or a deliberately-adopted plugin). See
-`config/claude/EXTENDING.md` for what each primitive is and `rules/mcp.md` for
-the MCP/plugin conventions.
-
-**Measure first** (`qa.md` — optimize on measurement, not guesswork): use
-`/context` to baseline what actually consumes the window before trimming.
-Always-on memory/rules and enabled tool/MCP schemas are the usual
-heavyweights. Trim by *measured cost × low relevance* — never delete guidance
-that prevents real mistakes just because it is large.
-
-- [ ] **Context-load tiering.** Classify every artifact by *when* it loads:
-  - *Always-on* (every turn): global CLAUDE.md, rules with no path-scope,
-    enabled MCP tool schemas → the expensive tier; keep ruthlessly lean.
-  - *On-demand* (when relevant): path-scoped rules (`paths:` frontmatter),
-    skills (description-matched / invoked), deferred MCP tools (ToolSearch).
-  - *Isolated* (own context): agents → ~free to the main thread.
-  Highest-leverage lever: push always-on content down a tier — path-scope a
-  single-language rule, extract a verbose CLAUDE.md procedure into a skill,
-  delegate heavy reading to an agent.
-- [ ] **Recategorize / split / merge.** For each artifact ask whether it is
-  the right *kind*: a "rule" that is really a procedure → skill; a "rule" that
-  must happen every time → hook; a bloated multi-tool rule → split per tool;
-  content duplicated across rules → dedupe to one canonical source (Rule of
-  Three). Improve or move as needed.
-- [ ] **Plugins / MCP dimension** (the original plugin audit): inventory every
-  enabled plugin (what it does, what it bundles, whether used); cull
-  duplicates of the `gh` CLI / existing rules+skills and unused ones; remember
-  plugins carry context cost (their commands/skills/agents/MCP schemas).
-  MCP servers here come *from* plugins (no hand-maintained `mcp.json`).
-  (github plugin already removed — its MCP server authed with
-  `GITHUB_PERSONAL_ACCESS_TOKEN` vs the gh CLI's `GH_TOKEN`; that token
-  mismatch was the earlier "sketchy github responses".)
-- [ ] **Build vs. adopt.** For each capability (have or want), weigh a
-  maintained plugin/skill against our own: adopt when it is good and lean;
-  **vendor-and-modify** per the borrow-existing convention (awesome-agent-
-  skills, officialskills.sh — see *Claude Rules Files*), recording a
-  `SOURCE.md`; write our own when the plugin is bloated/over-scoped for the
-  context it costs. Weigh context cost against maintenance burden explicitly.
-- [ ] **External validation (GitHub Apps).** Evaluate third-party GitHub App
-  checks as outside validation/quality signals: what is wired (CodeFactor,
-  Snyk already run as PR checks) vs. candidates (e.g. Codecov for coverage,
-  Codacy / SonarCloud). For each: what it adds, its noise/cost, and whether it
-  earns its place. (A repo/CI-quality dimension — pairs with `qa.md` — folded
-  in here per request; the audit may re-home it.)
-- [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
-  rule/skill for a capability, also check whether a plugin provides it or
-  should be added. Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* +
-  *When to Propose a Skill* and the `rule-coverage.py` hook. **Bias to
-  surfacing in the moment:** propose it even when the right category/location
-  is unclear — getting it suggested matters more than placing it perfectly,
-  and the audit's recategorize step re-homes it. Expect several audits before
-  some items settle (MVP — keep progressing).
-- [x] **Form: the audit is the `claude-audit` skill** (`/claude-audit`) —
-  multi-step, runs its inventory *via an agent*, modifies global config via a
-  dotfiles PR and sets up the local repo. (`claude-code-setup:claude-automation-recommender`
-  can still help the gap-finding within a run.)
-- [ ] **Cadence.** Run `claude-audit` on a cadence — a quick pass *often*
-  (enabled plugins/MCP, obvious always-on bloat) and a deeper audit
-  *periodically*, with a short interval between detailed runs. Wire it to a
-  reminder / `/schedule`. Each detailed run records decisions in
-  `SETUP-AUDIT.md`.
-- [ ] **Plugin-audit follow-ups (from the 2026-06-10 global-fit pass):**
-  - [ ] `rules/pydantic-ai.md` — path-scoped (`**/*.py`) framework rule
-    capturing pydantic_ai conventions (provider-prefixed model strings, typed
-    `output_type`, `@agent.tool` vs `tool_plain`, `TestModel` via
-    `agent.override`, Logfire), folding in the dropped `pydantic-ai` plugin's
-    guidance. Write when next working with pydantic_ai.
-  - [x] `git-worktree-workflow`: add a **guarded** "reconcile gone branches"
-    operation — bulk-remove `[gone]` branches and their worktrees — adapting
-    the dropped `commit-commands` `/clean_gone` idea but with the repo's safety
-    posture (confirm each deletion, skip dirty worktrees, no blanket `--force`
-    / `fetch --prune`). **Done** — Operation 7 in the skill (v1.1.0).
-  - [ ] **Trial `ralph-loop`** to evaluate it (autonomous completion loop,
-    distinct from `/loop`). It can run unbounded — set a max-iteration cap and
-    respect the CLAUDE.md autonomy boundaries.
-  - [x] **Evaluated `pr-review-toolkit`, `feature-dev`, `security-guidance`**
-    — all dropped (not a good global fit; redundant with built-ins / `qa.md` /
-    `security-scan`; security-guidance was a blocking JS-substring edit hook).
-    Vendor bits below are **surfaced by the repo that needs them** — don't
-    build proactively:
-    - [ ] When a repo's review actually needs them, vendor the unique
-      pr-review lenses (silent-failure, comment-rot, type-design) — or fold
-      into `qa.md`'s code-style audit, which mostly covers them already.
-    - [ ] When a repo wants the phased feature-dev flow, vendor `/feature-dev`
-      as a **skill** driving the built-in Explore/Plan agents (not bundled
-      agents).
-    - [ ] When a repo needs it, add a tiny path-only GH-Actions-injection hook
-      (likely unnecessary — `github-actions.md` already covers the awareness).
+The Claude Code setup audit — its methodology, dimensions, idea sources,
+backlog, and decisions log — lives in `config/claude/SETUP-AUDIT.md`, which is
+read only when running `/claude-audit` (it is **not** context-loaded). Audit
+follow-ups (e.g. the deferred `pydantic_ai` framework rule, repo-mining
+shortlists) are tracked there, not here, so this repo's `TODO.md` stays about
+actual dotfiles work.
 
 ## ⌨️ Custom slash commands: /push and /push-pr (MEDIUM PRIORITY)
 
