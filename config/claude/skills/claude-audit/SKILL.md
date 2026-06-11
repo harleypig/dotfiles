@@ -19,6 +19,27 @@ from.
 2. **Local** — the current repo's own Claude setup: its `.claude/` (CLAUDE.md,
    rules, skills) and any per-repo MCP/plugin needs.
 
+## Global is re-evaluated from every repo — by design
+
+The global config is shared across many repos, so the audit re-examines it
+**every time it runs, from whatever repo invoked it** — quite possibly several
+times in a single day. That repetition is expected, not wasted work:
+
+- Each repo exercises the shared languages/frameworks differently and brings
+  its **own quirks**. A gap, rough edge, or missing rule that only one repo
+  surfaces is still a **global** gap worth fixing once, for every repo that
+  shares that stack.
+- So "I already audited the global config earlier today" is **not** a reason
+  to skip it. Re-evaluate it from *this* repo's vantage.
+- Resolve each quirk to the right scope: **iron it out globally** when it
+  helps every repo on that stack (a new or improved rule or skill, landed via
+  the dotfiles PR), or **document it locally** in the repo's `.claude/`
+  when it is genuinely repo-specific. Either way the quirk becomes a decision,
+  not a recurring surprise.
+
+Treat the global config as a living thing many repos keep sharpening — the
+more vantage points it is audited from, the better it fits all of them.
+
 ## Running from another repo — modify dotfiles, scoped
 
 When invoked outside the dotfiles repo, the audit **modifies the dotfiles
