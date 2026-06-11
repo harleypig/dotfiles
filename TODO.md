@@ -753,39 +753,67 @@ after every `Edit` or `Write` on a shell file.
   `PostToolUse` hook receive? (need file path of edited file)
 - [ ] Document hook setup in this repo's WORKFLOW.md once stable
 
-## 🧩 Audit Claude Code Plugins + MCP Servers (MEDIUM PRIORITY)
+## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
-Enabled plugins live in `~/.claude/settings.json` (`enabledPlugins`); each is
-cached under `~/.claude/plugins/`. **MCP servers in this setup are provided by
-plugins** — an enabled plugin may bundle its own `.mcp.json` (e.g. the github
-plugin shipped a *hosted* server at `https://api.githubcopilot.com/mcp/`
-authed via `${GITHUB_PERSONAL_ACCESS_TOKEN}`). There is no hand-maintained
-global `mcp.json`, so auditing plugins **is** auditing the MCP surface. The
-standing convention is captured in `config/claude/rules/mcp.md`.
+Periodically audit the **whole** Claude Code setup — CLAUDE.md/memory, rules,
+skills, agents, hooks, commands, plugins, MCP servers, settings — not just
+plugins. Two goals: **context economy** ("just because we have the space
+doesn't mean we should use it" — the efficiency-by-default rule applied to the
+context window) and **right-fit** (each artifact in the correct category,
+lean, and either ours or a deliberately-adopted plugin). See
+`config/claude/EXTENDING.md` for what each primitive is and `rules/mcp.md` for
+the MCP/plugin conventions.
 
-- [ ] **Inventory** every enabled plugin: what it does, whether it bundles an
-  MCP server, and whether we actually use it.
-- [ ] **Cull** plugins that duplicate the `gh` CLI / existing rules+skills or
-  go unused. (github plugin already being removed — its hosted MCP server
-  authed with `GITHUB_PERSONAL_ACCESS_TOKEN`, a *different* token than the gh
-  CLI's `GH_TOKEN`; that mismatch was the earlier "sketchy github responses".)
-- [ ] **Gaps**: identify capabilities we want but have no plugin for.
-- [ ] **Record decisions** (keep/remove + why) so the audit is repeatable.
-- [ ] Create a **rule and/or skill to run this audit routinely** — multi-step
-  (inventory → classify → cull → gap-check) ⇒ likely a *skill* per the "When
-  to Propose a Skill" threshold in `CLAUDE.md`. Evaluate the existing
-  `claude-code-setup:claude-automation-recommender` plugin for the gap-finding
-  part before authoring from scratch.
-- [ ] **Cadence:** run the *detailed* audit on a short recurring interval (it
-  should not be a long time between runs — e.g. monthly), not just once. Wire
-  the audit skill to a reminder / `/schedule` routine so it recurs.
-- [ ] **Plugin-aware proposals (behavior rule):** when proposing a new
-  language/tool *rule* or *skill* for a capability, also check whether a
-  **plugin** already provides it (or whether one should be added). Extend
-  `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a Skill*
-  sections and the `rule-coverage.py` hook to cover plugins, not just
-  rules/skills. (Plugins can bundle commands, skills, subagents, hooks, and
-  MCP servers — so they are a first-class option alongside a rule or skill.)
+**Measure first** (`qa.md` — optimize on measurement, not guesswork): use
+`/context` to baseline what actually consumes the window before trimming.
+Always-on memory/rules and enabled tool/MCP schemas are the usual
+heavyweights. Trim by *measured cost × low relevance* — never delete guidance
+that prevents real mistakes just because it is large.
+
+- [ ] **Context-load tiering.** Classify every artifact by *when* it loads:
+  - *Always-on* (every turn): global CLAUDE.md, rules with no path-scope,
+    enabled MCP tool schemas → the expensive tier; keep ruthlessly lean.
+  - *On-demand* (when relevant): path-scoped rules (`paths:` frontmatter),
+    skills (description-matched / invoked), deferred MCP tools (ToolSearch).
+  - *Isolated* (own context): agents → ~free to the main thread.
+  Highest-leverage lever: push always-on content down a tier — path-scope a
+  single-language rule, extract a verbose CLAUDE.md procedure into a skill,
+  delegate heavy reading to an agent.
+- [ ] **Recategorize / split / merge.** For each artifact ask whether it is
+  the right *kind*: a "rule" that is really a procedure → skill; a "rule" that
+  must happen every time → hook; a bloated multi-tool rule → split per tool;
+  content duplicated across rules → dedupe to one canonical source (Rule of
+  Three). Improve or move as needed.
+- [ ] **Plugins / MCP dimension** (the original plugin audit): inventory every
+  enabled plugin (what it does, what it bundles, whether used); cull
+  duplicates of the `gh` CLI / existing rules+skills and unused ones; remember
+  plugins carry context cost (their commands/skills/agents/MCP schemas).
+  MCP servers here come *from* plugins (no hand-maintained `mcp.json`).
+  (github plugin already removed — its MCP server authed with
+  `GITHUB_PERSONAL_ACCESS_TOKEN` vs the gh CLI's `GH_TOKEN`; that token
+  mismatch was the earlier "sketchy github responses".)
+- [ ] **Build vs. adopt.** For each capability (have or want), weigh a
+  maintained plugin/skill against our own: adopt when it is good and lean;
+  **vendor-and-modify** per the borrow-existing convention (awesome-agent-
+  skills, officialskills.sh — see *Claude Rules Files*), recording a
+  `SOURCE.md`; write our own when the plugin is bloated/over-scoped for the
+  context it costs. Weigh context cost against maintenance burden explicitly.
+- [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
+  rule/skill for a capability, also check whether a plugin provides it or
+  should be added. Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* +
+  *When to Propose a Skill* and the `rule-coverage.py` hook. **Bias to
+  surfacing in the moment:** propose it even when the right category/location
+  is unclear — getting it suggested matters more than placing it perfectly,
+  and the audit's recategorize step re-homes it. Expect several audits before
+  some items settle (MVP — keep progressing).
+- [ ] **Cadence + form.** A quick pass *often* (enabled plugins/MCP, obvious
+  always-on bloat) and a deeper audit *periodically* (recategorize,
+  build-vs-adopt), with a short interval between detailed runs. This is
+  multi-step with decisions ⇒ a **skill** — and one that should *run via an
+  agent* so the audit's own reading does not eat the context it is meant to
+  protect. Record decisions + rationale so it is repeatable and not
+  re-litigated. Evaluate `claude-code-setup:claude-automation-recommender` for
+  the gap-finding part before authoring from scratch.
 
 ## 🔒 Pre-commit Configuration (HIGH PRIORITY)
 
