@@ -1,3 +1,7 @@
+---
+# No paths — applies to all code regardless of language or file type.
+---
+
 # Code Style
 
 **Version:** v1.5.0

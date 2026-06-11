@@ -1,3 +1,9 @@
+---
+# No paths — always-on; the rule self-gates in its Tool Detection
+# section (no-ops unless .github/workflows/ is present). Kept always-on
+# because its trigger (creating a PR) is not a file-edit pattern.
+---
+
 # GitHub Actions Rules
 
 **Version:** v1.0.0

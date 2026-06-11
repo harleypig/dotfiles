@@ -1,3 +1,8 @@
+---
+# No paths — the QA pipeline applies to every change regardless of
+# file type.
+---
+
 # Quality Assurance Rules
 
 **Version:** v2.6.0
