@@ -205,8 +205,9 @@ decisions are also summarized in the *Decisions log*.
 ### Skill ideas & future categories (not from mining)
 
 - [ ] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
-  issue → **agent** investigates it against the codebase (root cause, "simple
-  or not", proposed fix or a question) → decide → fix → open PR with
+  issue → **agent** investigates it against the codebase via the
+  `debug-assistant` skill (root cause, "simple or not", proposed fix or a
+  question) → decide → fix → open PR with
   `Closes #X` → merge. The investigation is an agent; **PR-open and merge stay
   gated** per `gh.md` ("no PR create/merge without explicit approval") unless a
   deliberately opted-in autonomous variant with guardrails (trivial-only, after
@@ -219,12 +220,30 @@ decisions are also summarized in the *Decisions log*.
   - [x] **`documentation`** — **opened** 2026-06-11: `rules/documentation.md`
     (the doc bar + form stance) + the `write-documentation` skill. Doc tooling
     (`markdownlint.md`) and the `adr` skill compose in. See *Decisions log*.
-  - [ ] **`troubleshooting`** — home for a `debug-assistant` skill (the
-    remaining Tier-1 debugging item; distinct from qa — assessing quality vs
-    diagnosing a failure).
+  - [x] **`troubleshooting`** — **opened** 2026-06-11: a *thin* always-on
+    `rules/troubleshooting.md` (the debugging bar) + the `debug-assistant`
+    skill (the procedure). Not a qa dimension — a peer category. See
+    *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-11 — **Opened the `troubleshooting` category (thin always-on).**
+  Added a **deliberately thin** always-on `rules/troubleshooting.md` carrying
+  only the debugging *bar* (reproduce-first, root-cause-not-symptom,
+  regression-test-per-fix) plus a pointer — kept always-on, unlike a
+  path-scoped rule, because a failure can surface on **any** turn (a bug
+  report, a red test, surprising behaviour mid-build), so the guardrail must
+  be present whenever it's needed; kept thin (the depth is in the skill) to
+  respect the always-on-tier anti-bloat guardrail. Built the Tier-1
+  **`debug-assistant`** skill (the scientific-method session: reproduce →
+  capture evidence → isolate by bisection → one hypothesis at a time → fix the
+  root cause → regression-test → verify with `qa-check`). **Not wired into
+  `qa.md`** — troubleshooting is the diagnostic activity triggered *when* a
+  check or behaviour fails, a peer category, not a qa gate dimension. The
+  **ops facet** (`devops-troubleshooter`) stays build-on-first-use (ADR-0003);
+  the planned `resolve-issue` skill will compose `debug-assistant`. This
+  **completes the Tier-1 cluster** (only `deps-update` remains). Idea-level
+  adaptation (ADR-0002). Landed via dotfiles PR.
 - 2026-06-11 — **Opened the `documentation` category.** Added an always-on
   `rules/documentation.md` (the doc **bar** + the "right form per audience"
   **stance**), modeled on `testing.md`, as the canonical home for what had
