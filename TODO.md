@@ -820,6 +820,22 @@ that prevents real mistakes just because it is large.
   protect. Record decisions + rationale so it is repeatable and not
   re-litigated. Evaluate `claude-code-setup:claude-automation-recommender` for
   the gap-finding part before authoring from scratch.
+- [ ] **Plugin-audit follow-ups (from the 2026-06-10 global-fit pass):**
+  - [ ] `rules/pydantic-ai.md` — path-scoped (`**/*.py`) framework rule
+    capturing pydantic_ai conventions (provider-prefixed model strings, typed
+    `output_type`, `@agent.tool` vs `tool_plain`, `TestModel` via
+    `agent.override`, Logfire), folding in the dropped `pydantic-ai` plugin's
+    guidance. Write when next working with pydantic_ai.
+  - [ ] `git-worktree-workflow`: add a **guarded** "reconcile gone branches"
+    operation — bulk-remove `[gone]` branches and their worktrees — adapting
+    the dropped `commit-commands` `/clean_gone` idea but with the repo's safety
+    posture (confirm each deletion, skip dirty worktrees, no blanket `--force`
+    / `fetch --prune`).
+  - [ ] **Trial `ralph-loop`** to evaluate it (autonomous completion loop,
+    distinct from `/loop`). It can run unbounded — set a max-iteration cap and
+    respect the CLAUDE.md autonomy boundaries.
+  - [ ] **Evaluate `pr-review-toolkit`, `feature-dev`, `security-guidance`**
+    for global fit (keep / drop / vendor) — the decide-later plugins.
 
 ## 🔒 Pre-commit Configuration (HIGH PRIORITY)
 
