@@ -798,6 +798,12 @@ that prevents real mistakes just because it is large.
   skills, officialskills.sh — see *Claude Rules Files*), recording a
   `SOURCE.md`; write our own when the plugin is bloated/over-scoped for the
   context it costs. Weigh context cost against maintenance burden explicitly.
+- [ ] **External validation (GitHub Apps).** Evaluate third-party GitHub App
+  checks as outside validation/quality signals: what is wired (CodeFactor,
+  Snyk already run as PR checks) vs. candidates (e.g. Codecov for coverage,
+  Codacy / SonarCloud). For each: what it adds, its noise/cost, and whether it
+  earns its place. (A repo/CI-quality dimension — pairs with `qa.md` — folded
+  in here per request; the audit may re-home it.)
 - [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
   rule/skill for a capability, also check whether a plugin provides it or
   should be added. Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* +
