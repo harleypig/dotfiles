@@ -99,9 +99,10 @@ skill; `plan-reviewer` → the **`plan-review`** skill. **Remaining:**
 **Tier 2 — useful generic, some overlap.** **DONE** (built as qa-dimension
 review skills, the arch-review family): `perf-check`/`performance-engineer` →
 **`perf-review`**; `test-reviewer` → **`test-review`**;
-`accessibility-specialist` → **`a11y-review`**. **Remaining:**
-`pytest-patterns`/`typing-patterns` (Python depth, like fastapi-patterns —
-python-scoped, not qa), `security-auditor` (overlaps `security-scan` +
+`accessibility-specialist` → **`a11y-review`**; `pytest-patterns` →
+**`pytest-patterns`** skill (testing depth) and `typing-patterns` →
+**`typing-patterns`** skill (typing depth, paired with `python.md`).
+**Remaining:** `security-auditor` (overlaps `security-scan` +
 `/security-review` — decide), `ui-ux-designer`, `handoff`, `standup`,
 `dev-docs-update`, `brainstorm`.
 
