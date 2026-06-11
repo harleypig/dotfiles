@@ -31,9 +31,9 @@ The architecture/codebase-analysis cluster is the strongest generic find.
 
 | name | type | scope | disp. | reason |
 |------|------|-------|-------|--------|
-| pytest-patterns | skill | generic | CANDIDATE | production pytest/TDD depth — could enrich like fastapi-patterns did |
+| pytest-patterns | skill | generic | ADOPTED | built as the **`pytest-patterns`** skill (testing depth) |
 | typing-patterns | skill | generic | CANDIDATE | Python typing depth (no `type: ignore`) — augments python.md |
-| test-reviewer | agent | generic | CANDIDATE | coverage + test-quality (AAA/naming) analysis |
+| test-reviewer | agent | generic | ADOPTED | built as the **`test-review`** skill |
 | lint:explain, typecheck:explain | cmd | generic | SKIP | no-suppression policy already in ruff.md + python.md; explain = normal agent capability |
 | test:first | cmd | generic | SKIP | testing.md bar; TDD on request |
 | clean:review, clean-code-patterns | cmd/skill | generic | SKIP | code-style.md + qa.md Code-style audit + `/simplify` |

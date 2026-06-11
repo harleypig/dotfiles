@@ -20,7 +20,7 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 | standup | generic | CANDIDATE | standup notes from git history + todos |
 | task-init | generic | CANDIDATE | multi-phase task orchestration (overlaps Plan) |
 | tech-debt | generic | CANDIDATE | catalog debt/TODOs/complexity, prioritize by ROI |
-| test-suite | generic | CANDIDATE | test runner + coverage delta + missing-test gen (overlaps qa-check) |
+| test-suite | generic | SKIP | runner + coverage = `qa-check` (Tests dim); missing-test gaps = `test-review` |
 | write-documentation | generic | CANDIDATE | multi-format doc generation (API/arch/DB) |
 | deploy | stack | CANDIDATE | deployment orchestration — infra/repo-specific |
 | rollback | stack | CANDIDATE | recovery/rollback orchestration — infra-specific |
@@ -48,8 +48,8 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 | backend-architect | generic | CANDIDATE | API/schema/caching design patterns |
 | refactor-planner | generic | SKIP | refactoring plans + risk — now covered by `modernize` (large) + `/simplify` (small) + `arch-review`/`plan-review` |
 | legacy-modernizer | generic | CANDIDATE | framework migration / monolith→services |
-| test-automator | generic | CANDIDATE | test strategy/pyramid planning |
-| frontend-qa-tester | generic | CANDIDATE | Playwright-driven manual QA + bug reports |
+| test-automator | generic | SKIP | test strategy/pyramid = `testing.md` bar + `plan-review` + `test-review` |
+| frontend-qa-tester | generic | SKIP-until browser-UI/e2e | the tool for qa.md's End-to-end dimension (no tool yet); Playwright/browser-specific — build on first browser-UI/e2e need (watch list) |
 | ui-ux-designer | generic | CANDIDATE | design methodology (vs frontend-design's implementation) |
 | devops-troubleshooter | generic | CANDIDATE | incident response / log analysis |
 | web-research-specialist | generic | CANDIDATE | overlaps `/deep-research`; lower priority |

@@ -47,6 +47,7 @@ new dependency or tool; the audit checks it each run.
 | **Payments** (Stripe/etc.) | `claude-tools` `payment-integration` (Tier-3) |
 | **Linear** (the SaaS) | `claude-plugins` `linear` plugin (board/comment/cycle/issue-enricher) |
 | **A new language** (Go/Rust/TS…) in a repo | the matching `claude-tools` language-expert agent (Tier-3) |
+| **A browser UI / e2e need** (Playwright) | `claude-tools` `frontend-qa-tester` → the qa End-to-end (dim 8) tool |
 
 (Tier-3 "build on first use" items are already watch-like by definition; listed
 here so there's one place to scan.)
@@ -153,7 +154,10 @@ list above.
 - **`qa`** — substantially built (the `*-review` family + python depth); the
   **umbrella, worked last**. Open: nothing required.
 - **`testing`** — covered (`testing.md` + `bats-setup` + `test-review` +
-  `pytest-patterns`).
+  `pytest-patterns` + `qa-check` runs/coverage). Two deferred: **e2e** (qa dim
+  8 has no tool — `frontend-qa-tester` is `SKIP-until` a browser-UI/Playwright
+  need, watch list) and **Codecov** coverage upload (audit finding F, deferred
+  — infra, not a skill).
 - **`gh`/`git`** — covered by rules + skills; open ideas: `resolve-issue`,
   `categorize-issue` (audit backlog).
 - **`documentation`, `troubleshooting`** — **not yet opened**; homes for
