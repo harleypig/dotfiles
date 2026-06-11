@@ -202,3 +202,31 @@ whole**. Lift the generic intent into a thin rule/skill, and re-home (or newly
 write) the stack-specific half as a path-scoped pattern. Often the right form
 is *not* the original's — adopt the idea, then choose the kind (rule/skill)
 that fits, rather than copying the agent verbatim.
+
+### Foreign to the repo → global, and front-loaded
+
+Guidance about anything **foreign to the current repo** — a third-party
+library / framework / tool, **or our own code that lives in a *different*
+repo** — belongs in the **global generic layer** (a global skill or
+path-scoped rule), **even if only this one repo uses it today**. "Foreign to
+this repo" means "shared by nature": it already exists outside this repo and
+*will* recur in another one. So author the full global artifact the **first**
+time you need it, while already in context — not a repo-local half-job you
+have to remember to generalize later. Front-load the grunt work; you are
+spending it anyway. (ADR-0003.)
+
+Repo-local `.claude/` is therefore reserved for *this repo's own* code,
+architecture, and quirks — never for an external dependency.
+
+This is **not** a violation of the Rule of Three (`code-style.md`), which
+guards against speculatively abstracting *your own* code before the pattern is
+proven. An external library is not speculative — it is already stable, and
+"foreign to this repo" *is* the signal that the third instance is effectively
+guaranteed. So:
+
+- **Our own repo-specific pattern** → repo-local; wait for the third instance
+  before abstracting.
+- **A library/tool foreign to the repo** → global immediately, on first use.
+
+The build/skip decision is still "do we use it at all" — but *when* we do
+build, the placement is global, and the timing is now.

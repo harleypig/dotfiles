@@ -111,8 +111,10 @@ to read-only agents so it doesn't consume the audit's own context.
 overlap with existing built-ins/skills/rules, then the layering principle.
 Consider an agent or command a CANDIDATE **even if we'd reimplement it as a
 skill** (skills over commands — ADR-0001). Don't dismiss a good generic tool
-because it arrived in a different form. Record sources in the *Idea sources*
-registry; a per-artifact `SOURCE.md` only on implementation reuse (ADR-0002).
+because it arrived in a different form. **Placement:** anything about a
+repo-foreign library/tool is built **global**, on first use (ADR-0003) — not
+repo-local, not deferred. Record sources in the *Idea sources* registry; a
+per-artifact `SOURCE.md` only on implementation reuse (ADR-0002).
 
 ## Guardrails
 

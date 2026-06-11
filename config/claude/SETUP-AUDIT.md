@@ -270,3 +270,11 @@ decisions are also summarized in the *Decisions log*.
   candidate even when reimplemented as a skill). Surfaced a tiered CANDIDATE
   backlog (strongest: the architecture/codebase-analysis cluster). Landed via
   dotfiles PR.
+- 2026-06-11 — **Placement refinement (ADR-0003).** Guidance for anything
+  *foreign to the current repo* (a third-party library, or our own code in a
+  different repo) is **global and front-loaded** — authored as a global
+  skill/rule the first time any repo uses it, even for single-repo use, rather
+  than repo-local or deferred. Corrected the mining census Tier-3 mislabel
+  ("per-repo need" → global/build-on-first-use) and documented the principle in
+  `EXTENDING.md`. Reconciles with the Rule of Three (which guards *our own*
+  code, not stable external libraries).

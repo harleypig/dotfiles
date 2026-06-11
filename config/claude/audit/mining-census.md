@@ -191,7 +191,11 @@ circular deps), `arch-review`/`architecture-reviewer`, `diagram` (Mermaid),
 fastapi-patterns), `accessibility-specialist`, `security-auditor`,
 `ui-ux-designer`, `handoff`, `standup`, `dev-docs-update`, `brainstorm`.
 
-**Tier 3 — adopt per-repo-need (stack/specialized):** language-expert agents
+**Tier 3 — external libraries/frameworks/tools: global, built on first use.**
+These are all guidance about something *foreign to the repo*, so per ADR-0003
+they live in the **global** generic layer (not repo-local), and the only
+question is *when* to build — answer: the first time any repo uses the
+library/tool, front-loaded, not deferred. Items: language-expert agents
 (python/go/rust/ts), `graphql-architect`, `payment-integration`,
 `ai-engineer`, `data-engineer`/`ml-engineer`,
 `deploy`/`rollback`/`deployment-engineer`/

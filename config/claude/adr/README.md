@@ -15,6 +15,7 @@ decision; immutable once Accepted (supersede, don't rewrite).
 |----|-------|--------|------|
 | [0001](0001-skills-over-custom-commands.md) | Skills over custom commands for invokable procedures | Accepted | 2026-06-11 |
 | [0002](0002-adapt-not-vendor-provenance.md) | Adapt-not-vendor; SOURCE.md only on implementation reuse | Accepted | 2026-06-11 |
+| [0003](0003-foreign-library-guidance-is-global.md) | Guidance for repo-foreign libraries is global, front-loaded | Accepted | 2026-06-11 |
 
 ## Statuses
 
