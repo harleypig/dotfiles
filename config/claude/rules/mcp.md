@@ -1,6 +1,20 @@
+---
+# Path-scoped: this rule is a setup/decision procedure, not always-on
+# policy. It loads when touching MCP config (a committed .mcp.json or the
+# mymcp wrapper) or when authoring rules/skills/agents — where the
+# "MCP is second-class, never depend on it" policy actually applies.
+paths:
+  - "**/.mcp.json"
+  - "**/mcp.json"
+  - "bin/mymcp"
+  - "**/rules/**"
+  - "**/skills/**"
+  - "**/agents/**"
+---
+
 # MCP (Model Context Protocol) Rules
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 How this user's environments use MCP servers, and the standing rule that
 MCP is a **second-class** capability the agent must never depend on.

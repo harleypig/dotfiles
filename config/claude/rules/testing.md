@@ -1,3 +1,8 @@
+---
+# No paths — always-on; the rule self-gates in its Detection section
+# (active only when the repo has a tests/ dir or equivalent).
+---
+
 # Testing Rules
 
 **Version:** v1.0.0
