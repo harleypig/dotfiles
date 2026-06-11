@@ -1,7 +1,10 @@
 ---
-# No paths — always-on; the rule self-gates in its Tool Detection
-# section (no-ops unless .github/workflows/ is present). Kept always-on
-# because its trigger (creating a PR) is not a file-edit pattern.
+# On-demand: auto-loads only when a workflow file is being edited. The
+# other trigger (watching CI after creating a PR) is covered by gh.md —
+# always-on and pointing here — so the agent reads this rule when it
+# actually creates a PR, rather than paying for it every turn.
+paths:
+  - ".github/workflows/**"
 ---
 
 # GitHub Actions Rules
