@@ -13,7 +13,7 @@ The architecture/codebase-analysis cluster is the strongest generic find.
 | dependency-analyzer | agent | generic | CANDIDATE | same, deeper — instability scoring, layer violations |
 | arch-review | cmd | generic | CANDIDATE | architecture audit (layers, DI, anti-patterns) — deeper than `/review` |
 | architecture-reviewer | agent | generic | CANDIDATE | Opus-grade architecture audit (10-point) |
-| diagram | cmd | generic | CANDIDATE | Mermaid architecture diagrams (component/ER/sequence/deploy) |
+| diagram | cmd | generic | SKIP | Mermaid output — not used here (dropped from the arch-review skill) |
 | modernize | cmd | generic | CANDIDATE | legacy assessment + Strangler-Fig roadmap |
 | codebase-explorer | agent | generic | CANDIDATE | fast project-structure discovery (feeds planning) |
 | codebase-analyzer | agent | generic | CANDIDATE | extract entities/endpoints/services from existing code |

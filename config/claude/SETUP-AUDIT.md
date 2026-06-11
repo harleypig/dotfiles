@@ -202,6 +202,26 @@ decisions are also summarized in the *Decisions log*.
   - [ ] add a tiny path-only GH-Actions-injection hook only if a repo needs it
     (likely unnecessary — `github-actions.md` covers awareness).
 
+### Skill ideas & future categories (not from mining)
+
+- [ ] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
+  issue → **agent** investigates it against the codebase (root cause, "simple
+  or not", proposed fix or a question) → decide → fix → open PR with
+  `Closes #X` → merge. The investigation is an agent; **PR-open and merge stay
+  gated** per `gh.md` ("no PR create/merge without explicit approval") unless a
+  deliberately opted-in autonomous variant with guardrails (trivial-only, after
+  CI green) is built. Tools/category: `gh`.
+- [ ] **`categorize-issue` skill** — triage a `gh` issue: suggest
+  labels/priority/estimate from codebase context and fold it into the repo's
+  TODO triage queue (the `gh.md` *Issues & triage* workflow). Category: `gh`.
+- [ ] **Future top-level categories** (per the "fold into existing categories,
+  new one only if it doesn't fit" guidance):
+  - [ ] **`documentation`** — home for a `write-documentation` skill (the
+    remaining Tier-1 doc-generation item) and doc tooling.
+  - [ ] **`troubleshooting`** — home for a `debug-assistant` skill (the
+    remaining Tier-1 debugging item; distinct from qa — assessing quality vs
+    diagnosing a failure).
+
 ## Decisions log
 
 - 2026-06-10 — **A (MCP plugins): done globally.** terraform + serena
