@@ -10,6 +10,10 @@ paths:
 Conventions for FastAPI services. Builds on the Python rules
 (`python.md`) — type hints and pydantic are assumed.
 
+For concrete recipes beyond these conventions — Pydantic v2 DTO splits,
+validators, the native-`Depends` repository pattern, `AppError`→
+`HTTPException` mapping — invoke the **fastapi-patterns** skill.
+
 ## Detection
 
 Active when `fastapi` is a dependency (e.g. in `pyproject.toml`), or a

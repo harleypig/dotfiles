@@ -75,6 +75,121 @@ Plugin enable/disable is user-global, so these touch every repo:
 if it is a good global fit; otherwise register the MCP server per-repo or
 vendor the feature. **Each repo needs its own audit** of what it enables.
 
+## Idea sources (mined for ideas; re-check during audits)
+
+Repos we have mined for ideas. This registry is **broader** than any per-skill
+`SOURCE.md`: it lists every repo we have looked to for inspiration, **whether
+or not we reused its implementation**, so a future audit knows where to look
+again. The two are distinct by design:
+
+- **This registry** — "places worth picking the brains of." Idea-level. A repo
+  appears here even if we liked a concept but wrote our own implementation.
+- **Per-artifact `SOURCE.md`** — provenance for a *specific* skill/command.
+  A repo is cited there **only when we reused implementation details** from it
+  (so there is something concrete to track for upstream updates). Liked the
+  idea but used none of the code → it stays here, not in a `SOURCE.md`.
+
+| Repo | Mined for | License | Last mined | Reused impl? |
+|------|-----------|---------|-----------|--------------|
+| `ruslan-korneev/claude-plugins` | FastAPI/Pydantic DTO+repository+exception patterns; Alembic enum-handling; python `lint-explain`/`test-first`/`clean-review` commands; `tech-lead` ADR/arch-review/modernize commands | MIT | 2026-06-11 | Yes → fastapi-patterns, sqlalchemy-patterns |
+| `fastapi/fastapi` (official `.agents/skills`) | FastAPI best-practice concepts (Annotated, return-type serialization, async-vs-sync); maintained with new versions, so re-mine on FastAPI upgrades | MIT | 2026-06-11 | No (concepts only) |
+| `rafaelkamimura/claude-tools` | Layered-architecture ideas; candidate commands (`adr`, `tech-debt`, `debug-assistant`) and agents (`database-optimizer`, `api-documenter`) | MIT | 2026-06-11 | No (ideas only) |
+| `pydantic/skills` (official) | Pydantic AI **agent-framework** + Logfire skills — relevant only if we adopt LLM agents or Logfire observability; not used today | MIT (check) | 2026-06-11 | No |
+
+Open mining follow-up (agents/commands worth evaluating) is in the *Audit
+backlog* below.
+
+## Audit backlog
+
+Follow-up tasks for the audit itself — **audit-only**, read when running
+`/claude-audit`, not dotfiles-repo work (kept here, not in the repo `TODO.md`,
+so the two stay separate). Done items are retained for continuity; new
+decisions are also summarized in the *Decisions log*.
+
+### Audit dimensions / design
+
+- [x] **Form: the audit is the `claude-audit` skill** (`/claude-audit`) —
+  multi-step, runs its inventory *via an agent*, modifies global config via a
+  dotfiles PR and sets up the local repo.
+  (`claude-code-setup:claude-automation-recommender` can help gap-finding
+  within a run.)
+- [ ] **Cadence.** Run `claude-audit` on a cadence — a quick pass *often*
+  (enabled plugins/MCP, obvious always-on bloat) and a deeper audit
+  *periodically*. Wire it to a reminder / `/schedule`. Each detailed run
+  records decisions here.
+- [ ] **Context-load tiering.** Classify every artifact by *when* it loads:
+  always-on (every turn: global CLAUDE.md, unscoped rules, enabled MCP tool
+  schemas — the expensive tier), on-demand (path-scoped rules, skills, deferred
+  MCP tools), isolated (agents — ~free to the main thread). Highest-leverage
+  lever: push always-on content down a tier.
+- [ ] **Recategorize / split / merge.** For each artifact ask whether it is the
+  right *kind*: a "rule" that is really a procedure → skill; one that must
+  happen every time → hook; a bloated multi-tool rule → split per tool;
+  duplicated content → dedupe to one canonical source.
+- [ ] **Plugins / MCP dimension.** Inventory every enabled plugin (what it
+  does/bundles, whether used); cull duplicates of the `gh` CLI / existing
+  rules+skills and unused ones; remember plugins carry context cost. MCP
+  servers here come *from* plugins (no hand-maintained `mcp.json`).
+- [ ] **Build vs. adopt.** For each capability weigh a maintained plugin/skill
+  against our own: adopt when good and lean (vendor-and-modify with a
+  `SOURCE.md`); write our own when the plugin is bloated/over-scoped for the
+  context it costs. Weigh context cost vs maintenance burden explicitly.
+- [ ] **External validation (GitHub Apps).** Evaluate third-party App checks as
+  outside quality signals: what is wired (CodeFactor, Snyk) vs candidates
+  (Codecov for coverage, Codacy / SonarCloud) — what each adds, its noise/cost,
+  whether it earns its place.
+- [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
+  rule/skill, also check whether a plugin provides it or should be added.
+  Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a
+  Skill* and the `rule-coverage.py` hook. Bias to surfacing in the moment.
+
+### Plugin-audit follow-ups (from the 2026-06-10/-11 passes)
+
+- [x] **Resolved the `pydantic-ai` name-conflation (2026-06-11).** Two things
+  were conflated: (a) `pydantic_ai`, the **agent framework**
+  (provider-prefixed model strings, `@agent.tool`, `TestModel`, Logfire), vs
+  (b) **AI-assisted work on pydantic** validation models, what pigify-style
+  FastAPI apps need. Split accordingly:
+  - [x] **(b) pydantic-validation / FastAPI / SQLAlchemy patterns** — DONE.
+    Built the global on-demand skills `fastapi-patterns` +
+    `sqlalchemy-patterns` (adapted from the *Idea sources* repos), cross-linked
+    from the slim `fastapi.md` / `sqlalchemy.md` / `alembic.md` rules.
+  - [ ] **(a) `pydantic_ai` agent-framework rule** — deferred; write a
+    path-scoped `rules/pydantic-ai.md` only **when actually building agents
+    with `pydantic_ai`**. Source: `pydantic/skills` `building-pydantic-ai-agents`
+    (+ Logfire). Idea-level until then.
+- [ ] **Mine the idea-source repos for non-skill borrowings (agents /
+  commands).** From the 2026-06-11 mining (repos in *Idea sources*, all MIT).
+  Adopt **only if** a repo actually needs it; prefer re-implementing the idea in
+  house idiom over vendoring (cite a `SOURCE.md` only if implementation detail
+  is reused). Shortlist:
+  - [ ] `claude-plugins` python `lint-explain` / `typecheck-explain`
+    (explain a ruff/mypy finding + the correct fix, no `noqa`).
+  - [ ] `claude-plugins` `test-first` (TDD red-phase) and `clean-review`
+    (code-smell pass) — weigh against built-in `/code-review`.
+  - [ ] `claude-plugins` `tech-lead` `adr` command (ADR scaffolding) — no
+    current equivalent.
+  - [ ] `claude-plugins` `fastapi` `migration-reviewer` agent / `migrate-check`
+    command — pairs with the sqlalchemy-patterns migration recipes.
+  - [ ] `claude-tools` `database-optimizer` / `api-documenter` agents — niche;
+    only if a repo needs them.
+- [x] **`git-worktree-workflow` reconcile-gone-branches** — guarded bulk-remove
+  of `[gone]` branches + worktrees (confirm each, skip dirty, no blanket
+  `--force` / `fetch --prune`). Done — Operation 7 (skill v1.1.0).
+- [ ] **Trial `ralph-loop`** (autonomous completion loop, distinct from
+  `/loop`). Unbounded — set a max-iteration cap, respect CLAUDE.md autonomy
+  boundaries.
+- [x] **Evaluated `pr-review-toolkit`, `feature-dev`, `security-guidance`** —
+  all dropped (redundant with built-ins / `qa.md` / `security-scan`). Vendor
+  bits surfaced by the repo that needs them — don't build proactively:
+  - [ ] vendor the unique pr-review lenses (silent-failure, comment-rot,
+    type-design) when a repo's review needs them — or fold into `qa.md`'s
+    code-style audit.
+  - [ ] vendor `/feature-dev` as a **skill** driving built-in Explore/Plan
+    agents when a repo wants the phased flow.
+  - [ ] add a tiny path-only GH-Actions-injection hook only if a repo needs it
+    (likely unnecessary — `github-actions.md` covers awareness).
+
 ## Decisions log
 
 - 2026-06-10 — **A (MCP plugins): done globally.** terraform + serena
@@ -110,3 +225,15 @@ vendor the feature. **Each repo needs its own audit** of what it enables.
   `security-scan` / `semgrep` / `/security-review` already cover it).
   `enabledPlugins` now 6: context7, the authoring triad, claude-code-setup,
   ralph-loop. Vendor bits left as surface-when-needed TODOs.
+- 2026-06-11 — **pigify-triggered: pydantic/FastAPI/SQLAlchemy pattern
+  skills.** Resolved the earlier `pydantic-ai` name-conflation (the agent
+  framework vs AI-assisted pydantic work). Mined four repos (see *Idea
+  sources*) and **adapted** — not vendored — two global on-demand skills:
+  `fastapi-patterns` and `sqlalchemy-patterns`, rendered in the native-`Depends`
+  house idiom, each cross-linked from the slim path-scoped rules
+  (`fastapi.md`/`sqlalchemy.md`/`alembic.md`) so the always-on tier stays lean.
+  Established the **provenance policy**: per-artifact `SOURCE.md` cites a repo
+  only when implementation detail was reused; idea-only sources go in the *Idea
+  sources* registry. **No edit-time hook** (conflicts with "auto-fixers run
+  once"); instead each skill has a troubleshooting step pointing at `qa-check`.
+  Landed via dotfiles PR.

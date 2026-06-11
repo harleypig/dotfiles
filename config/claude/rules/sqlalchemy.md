@@ -10,6 +10,11 @@ paths:
 Conventions for SQLAlchemy (2.0 style). Builds on `python.md`. Schema
 changes for persistent databases go through Alembic (`alembic.md`).
 
+For concrete recipes beyond these conventions — model mixins, custom
+`TypeDecorator` storage, eager-loading to kill N+1, the session unit-of-work,
+and the tricky Alembic migration recipes — invoke the **sqlalchemy-patterns**
+skill.
+
 ## Detection
 
 Active when `sqlalchemy` is a dependency (e.g. in `pyproject.toml`).
