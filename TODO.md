@@ -826,11 +826,11 @@ that prevents real mistakes just because it is large.
     `output_type`, `@agent.tool` vs `tool_plain`, `TestModel` via
     `agent.override`, Logfire), folding in the dropped `pydantic-ai` plugin's
     guidance. Write when next working with pydantic_ai.
-  - [ ] `git-worktree-workflow`: add a **guarded** "reconcile gone branches"
+  - [x] `git-worktree-workflow`: add a **guarded** "reconcile gone branches"
     operation — bulk-remove `[gone]` branches and their worktrees — adapting
     the dropped `commit-commands` `/clean_gone` idea but with the repo's safety
     posture (confirm each deletion, skip dirty worktrees, no blanket `--force`
-    / `fetch --prune`).
+    / `fetch --prune`). **Done** — Operation 7 in the skill (v1.1.0).
   - [ ] **Trial `ralph-loop`** to evaluate it (autonomous completion loop,
     distinct from `/loop`). It can run unbounded — set a max-iteration cap and
     respect the CLAUDE.md autonomy boundaries.
