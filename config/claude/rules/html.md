@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.html"
+  - "**/*.htm"
+---
+
 # HTML Rules
 
 **Version:** v1.0.0

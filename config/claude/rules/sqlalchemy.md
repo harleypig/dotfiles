@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.py"
+---
+
 # SQLAlchemy Rules
 
 **Version:** v1.0.0

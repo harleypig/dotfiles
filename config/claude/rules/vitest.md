@@ -1,3 +1,12 @@
+---
+paths:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "**/vitest.config.*"
+---
+
 # Vitest Rules
 
 **Version:** v1.0.0

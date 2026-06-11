@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.py"
+---
+
 # Alembic Rules
 
 **Version:** v1.0.0

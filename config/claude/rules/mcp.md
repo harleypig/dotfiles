@@ -1,6 +1,6 @@
 # MCP (Model Context Protocol) Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 How this user's environments use MCP servers, and the standing rule that
 MCP is a **second-class** capability the agent must never depend on.
@@ -59,6 +59,19 @@ Per-server tokens are read directly from `private_dotfiles/api-key/` by the
 wrapper, **not** from `GH_TOKEN` / `GITHUB_TOKEN` (see `gh.md` and the
 `api-key/README.md`).
 
+## Plugins are global; put MCP per-repo only when needed
+
+Plugin enable/disable is **user-global** (`enabledPlugins`) — a plugin can't
+be on in one repo and off in another, and an enabled MCP-bundling plugin
+loads its tool schemas every turn. So enable a plugin only if it is a good
+**global** fit. When an MCP capability is wanted in only some repos, skip the
+plugin and register the server at **project/local** scope there (`claude mcp
+add --scope project|local …`, or `mymcp`) — it then loads only in that repo.
+
+For *where* to place any capability (global+lazy vs per-repo), follow the
+placement ladder in `EXTENDING.md`: prefer one global, lazily-loaded copy; go
+per-repo only when lazy global loading is not possible.
+
 ## Agent Behavior
 
 - Treat MCP as optional: prefer the CLI (`gh`, etc.) for any documented
@@ -68,3 +81,6 @@ wrapper, **not** from `GH_TOKEN` / `GITHUB_TOKEN` (see `gh.md` and the
   specific repo; use project scope only to share it via the repo itself.
 - Plugin = MCP surface: when auditing or removing plugins, account for any
   MCP server they bundle (see the plugin audit in `TODO.md`).
+- Enable a plugin only if it is a good **global** fit; for a per-repo-only
+  need, register the MCP server at project/local scope (or vendor the
+  feature) instead of enabling the plugin globally.

@@ -146,3 +146,26 @@ Worked examples:
   can *invoke* qa-check via an agent to keep its verbose lint/test output
   out of your main context. Skill and agent compose — they are not an
   either/or.
+
+### Placement: global + lazy beats per-repo copies
+
+Once you've picked the *kind* of artifact, decide *where* it lives. DRY and
+context-economy pull the same way:
+
+1. **Global + lazy (preferred).** One copy that loads only when needed: a
+   path-scoped rule (`paths:` frontmatter), an on-demand skill / agent /
+   command, or an MCP server with tool-search deferral. It works across every
+   repo at ~zero idle cost — e.g. the React rule lives once globally but loads
+   only on `*.tsx`, in any repo that has them.
+2. **Per-repo (fallback).** Only when global+lazy is not achievable —
+   typically a heavy MCP server wanted in just one or two repos, because
+   plugin enablement is global-only and an enabled MCP plugin is always-on.
+   The **definition stays centralized** even for a single-repo server: define
+   the MCP server once in `mymcp`, then turn it on per-repo with a thin
+   local-scope switch (`claude mcp add <name> -- mymcp <name>`). Only a
+   non-MCP feature that genuinely can't be made global+lazy gets vendored into
+   the repo itself.
+
+Avoid duplicating a capability across repos: copies drift and are
+error-prone, even with an agent maintaining them. Keep it global wherever it
+can be made to load lazily.

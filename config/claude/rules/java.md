@@ -1,5 +1,6 @@
 ---
-# No paths — applies to all Java files regardless of location.
+paths:
+  - "**/*.java"
 ---
 
 # Java Rules

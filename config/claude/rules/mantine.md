@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.tsx"
+  - "**/*.jsx"
+---
+
 # Mantine Rules
 
 **Version:** v1.0.0
