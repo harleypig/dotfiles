@@ -46,7 +46,7 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 | documentation-architect | generic | CANDIDATE | comprehensive docs across stacks |
 | api-documenter | generic | CANDIDATE | OpenAPI/SDK — layering: FastAPI auto-OpenAPI covers Python; generic remainder thin |
 | backend-architect | generic | CANDIDATE | API/schema/caching design patterns |
-| refactor-planner | generic | CANDIDATE | refactoring plans + risk (planning vs execution) |
+| refactor-planner | generic | SKIP | refactoring plans + risk — now covered by `modernize` (large) + `/simplify` (small) + `arch-review`/`plan-review` |
 | legacy-modernizer | generic | CANDIDATE | framework migration / monolith→services |
 | test-automator | generic | CANDIDATE | test strategy/pyramid planning |
 | frontend-qa-tester | generic | CANDIDATE | Playwright-driven manual QA + bug reports |
