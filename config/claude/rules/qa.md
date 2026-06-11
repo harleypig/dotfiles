@@ -40,7 +40,9 @@ skip silently.
 5. **Security** — the layered set: **SAST** (static), **SCA** (dependencies/
    supply-chain — vulns *and* licenses), **DAST** (runtime scan of the
    running app, for services/web apps), IaC/image scanning, and secrets.
-   Delegate to the **security-scan** skill.
+   Delegate to the **security-scan** skill. Keeping dependencies *current* —
+   proactive, considered upgrades beyond vuln-patching — is the
+   **deps-update** skill (which compat-gates each batch with `qa-check`).
 6. **Tests** — unit/integration; cover success **and** failure paths; track
    coverage. Test-suite structure/conventions live in `testing.md`; the
    concrete layout and policy in the repo's `TESTS.md`.

@@ -227,6 +227,22 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-11 — **Built `deps-update`; Tier-1 cluster done.** The proactive,
+  human-driven dependency-currency sweep — inventory outdated → triage by
+  risk/security-urgency → read changelogs → apply in safe batches →
+  compat-gate each batch with `qa-check` (red batch → `debug-assistant` to
+  isolate the offending bump). Folded into the **qa /
+  dependency-maintenance orbit** — **no new category, no new rule** — and
+  wired into `qa.md`'s Security/SCA dimension. Deliberately scoped to the gap
+  the existing tools leave:
+  `dependabot.md` (automated, scheduled, one-PR-per-bump bot) and
+  `security-scan` (vuln/CVE-driven) are *reactive*; `deps-update` is the
+  *considered, on-demand* counterpart (majors one at a time, changelog-read,
+  no blindly widened ranges). Generic over ecosystem (commands from
+  `poetry.md`, …). This was the **last Tier-1 mined item** — the cluster
+  (`arch-review`, `modernize`, `plan-review`, `write-documentation`,
+  `debug-assistant`, `deps-update`) is now fully adopted. Idea-level
+  (ADR-0002). Landed via dotfiles PR.
 - 2026-06-11 — **Opened the `troubleshooting` category (thin always-on).**
   Added a **deliberately thin** always-on `rules/troubleshooting.md` carrying
   only the debugging *bar* (reproduce-first, root-cause-not-symptom,
