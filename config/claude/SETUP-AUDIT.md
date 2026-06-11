@@ -64,9 +64,9 @@ Plugin enable/disable is user-global, so these touch every repo:
 
 - **Disabled MCP-providing plugins `terraform` and `serena`** (unused here;
   ~16–20k tokens/turn of tool schemas). To use one in a specific repo, do
-  **not** re-enable the global plugin — register the MCP server directly at
-  project/local scope there (`claude mcp add --scope local terraform -- …`,
-  or a `mymcp` wrapper) so it loads only in that repo. Known need:
+  **not** re-enable the global plugin — define the server once in `mymcp` and
+  turn it on there with a local-scope switch (`claude mcp add terraform --
+  mymcp terraform`) so it loads only in that repo. Known need:
   **terraform → harleydev**.
 - **Removed the duplicate `commit-commands`** (was enabled from two
   marketplaces).
@@ -88,6 +88,6 @@ vendor the feature. **Each repo needs its own audit** of what it enables.
   `config/claude/rule-TEMPLATE.md`, out of the rules auto-load.
 - 2026-06-10 — **E (plugins): partial.** duplicate commit-commands removed;
   borderline plugins (code-review, pr-review-toolkit, ralph-loop,
-  pydantic-ai, jdtls-lsp) left enabled pending a per-repo-usage check (same
-  global-impact caveat — they may be needed in other repos).
+  pydantic-ai, jdtls-lsp) left enabled **until their repos are audited**
+  (global-impact caveat — they may be needed elsewhere; revisit per-repo).
 - 2026-06-10 — **F (Codecov): deferred** by request.

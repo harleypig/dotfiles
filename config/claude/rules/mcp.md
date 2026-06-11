@@ -59,29 +59,18 @@ Per-server tokens are read directly from `private_dotfiles/api-key/` by the
 wrapper, **not** from `GH_TOKEN` / `GITHUB_TOKEN` (see `gh.md` and the
 `api-key/README.md`).
 
-## Plugins are global — use them only for a good global fit
+## Plugins are global; put MCP per-repo only when needed
 
-Plugin enable/disable is **user-global** (`~/.claude/settings.json`,
-`enabledPlugins`); a plugin cannot be enabled in one repo and disabled in
-another. So enable a plugin only when it is a good fit **everywhere** —
-light enough to justify its always-on context cost in every repo. A plugin
-that bundles an MCP server loads that server's tool schemas every turn.
+Plugin enable/disable is **user-global** (`enabledPlugins`) — a plugin can't
+be on in one repo and off in another, and an enabled MCP-bundling plugin
+loads its tool schemas every turn. So enable a plugin only if it is a good
+**global** fit. When an MCP capability is wanted in only some repos, skip the
+plugin and register the server at **project/local** scope there (`claude mcp
+add --scope project|local …`, or `mymcp`) — it then loads only in that repo.
 
-When a capability is wanted in only **some** repos, do not enable the plugin
-globally:
-
-- **MCP-providing plugins** (e.g. terraform): skip the plugin and register
-  the underlying MCP server directly at **project/local** scope in the repos
-  that need it (`claude mcp add --scope project|local …`, or via the `mymcp`
-  wrapper) — it loads only there. You rarely need to re-implement; the plugin
-  was just a global wrapper around the same server.
-- **Non-MCP plugin features** (commands/skills/agents/hooks): vendor-and-
-  modify the pieces you want into the repo's own `.claude/` (per the
-  borrow-existing convention), rather than enabling the whole plugin
-  everywhere.
-
-For a heavy MCP server you do keep, prefer **tool-search deferral** so its
-schemas load on demand rather than every turn.
+For *where* to place any capability (global+lazy vs per-repo), follow the
+placement ladder in `EXTENDING.md`: prefer one global, lazily-loaded copy; go
+per-repo only when lazy global loading is not possible.
 
 ## Agent Behavior
 
