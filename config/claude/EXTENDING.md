@@ -169,3 +169,36 @@ context-economy pull the same way:
 Avoid duplicating a capability across repos: copies drift and are
 error-prone, even with an agent maintaining them. Keep it global wherever it
 can be made to load lazily.
+
+### Layer the generic over the specific
+
+A capability that is *mostly* generic but carries language- or
+framework-specific details (an API-doc generator, a test scaffolder, a
+"clean-code" reviewer) should be built in **two layers** — never as one
+artifact with a single stack's specifics baked in:
+
+1. **A thin, stack-agnostic layer** describing *what* to do in terms true for
+   every language — qa-check's "format, then lint, then type-check"; an
+   api-documenter's "extract the public surface, document each symbol, show
+   usage." It carries no Python/Go/TS-only assumptions.
+2. **The stack-specific pattern it points to** — the concrete *how*, kept in a
+   path-scoped rule or an on-demand skill that loads only on that stack
+   (`fastapi-patterns` on `**/*.py`; a hypothetical `godoc-patterns` on
+   `**/*.go`). The thin layer **delegates** here instead of hard-coding it.
+
+Why: one language's specifics inside a generic artifact **mislead every other
+repo**. An `api-documenter` that quietly assumes docstrings and type hints is
+confusing — even wrong — in a Go-only repo like packwiz. Splitting the layers
+keeps the generic part reusable everywhere and the specifics correct only
+where they apply. This is the three-tier *Configuration Migration* model (in
+`CLAUDE.md`) applied **inside** one capability — and exactly why `qa.md` is
+tool-agnostic and the `fastapi.md` rule points to the `fastapi-patterns`
+skill.
+
+**When mining other repos for ideas** (the audit's *Idea sources*): a borrowed
+item that fuses generic intent with one stack's specifics — like
+`claude-tools`'s `api-documenter` agent — should be **split, not vendored
+whole**. Lift the generic intent into a thin rule/skill, and re-home (or newly
+write) the stack-specific half as a path-scoped pattern. Often the right form
+is *not* the original's — adopt the idea, then choose the kind (rule/skill)
+that fits, rather than copying the agent verbatim.

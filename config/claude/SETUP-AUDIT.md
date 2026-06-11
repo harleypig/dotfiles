@@ -116,7 +116,9 @@ decisions are also summarized in the *Decisions log*.
 - [ ] **Cadence.** Run `claude-audit` on a cadence — a quick pass *often*
   (enabled plugins/MCP, obvious always-on bloat) and a deeper audit
   *periodically*. Wire it to a reminder / `/schedule`. Each detailed run
-  records decisions here.
+  records decisions here. Expect the **global** config to be re-evaluated from
+  many repos — possibly several times a day; that repetition is by design (see
+  the claude-audit skill, *Global is re-evaluated from every repo*).
 - [ ] **Context-load tiering.** Classify every artifact by *when* it loads:
   always-on (every turn: global CLAUDE.md, unscoped rules, enabled MCP tool
   schemas — the expensive tier), on-demand (path-scoped rules, skills, deferred
