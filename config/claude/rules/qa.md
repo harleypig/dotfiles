@@ -147,7 +147,16 @@ reason to restructure this doc.
 | This rule (`qa.md`) | dimensions, ordering, discipline (generic) | "run a formatter, then lint, then type-check" |
 | Repo `.claude/` QA doc | the repo's concrete tools + commands + required checks | "`npm run check` then `tsc -b` then `npm test`" |
 | Per-tool rules (detection-activated) | each tool's invocation/config | `biome.md`, `semgrep.md`, … |
-| Skills | forcing functions that run it | **qa-check**, composing **security-scan** + **containerize** |
+| Skills | forcing functions that run it | **qa-check**, composing **security-scan**, **containerize**, and the per-dimension review skills below |
+
+Several dimensions have a global, cross-language **review skill** that
+`qa-check` composes (these *assess* a whole codebase — distinct from the
+diff-level `/code-review` · `/simplify`, and from *running* the suite):
+**arch-review** (4 — code-smell/complexity/maintainability), **test-review** (6
+— test-suite *quality*, vs executing), **a11y-review** (7 — UI/UX &
+accessibility), **perf-review** (10 — performance). Python implementation depth:
+**pytest-patterns**, **typing-patterns**. These are *our* tools, named here as
+the standing ones; per-repo concrete tools still live in the repo's QA doc.
 
 ## The repo QA doc covers every dimension, with a status
 

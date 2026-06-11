@@ -72,6 +72,14 @@ Only the qa-check-specific operational notes (the rest is in `qa.md`):
 - **Security** → defer to the **security-scan** skill (plus the built-in
   `/security-review` for a quick pending-changes vuln pass); **Build**'s image
   step → the **containerize** skill.
+- **Whole-codebase dimension reviews** (an across-the-repo pass, not the diff)
+  → route to the review skills: **arch-review** (code-smell/complexity/
+  maintainability), **perf-review** (performance — measure-first),
+  **test-review** (test-suite *quality*, distinct from the Tests step that
+  *runs* them), **a11y-review** (UI/UX & accessibility — UI repos). They assess
+  and report; they don't mutate. For Python depth invoke **pytest-patterns** /
+  **typing-patterns**. Run these when the change (or the request) is about a
+  dimension's health, not on every trivial diff.
 - **CI** is the post-push stage — watch it to green; honour required checks.
 - For a dimension with no tooling (UI/UX, e2e), do the manual pass and flag
   the gap rather than skipping it.

@@ -6,7 +6,12 @@ paths:
 
 # Python Rules
 
-**Version:** v2.3.0
+**Version:** v2.4.0
+
+For concrete depth beyond these conventions — pytest technique (fixtures,
+mocking discipline, async, flakiness) and typing technique (TypedDict,
+Protocol, generics, narrowing, avoiding `# type: ignore`) — invoke the
+**pytest-patterns** and **typing-patterns** skills.
 
 ## Detection
 
