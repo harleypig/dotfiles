@@ -108,10 +108,13 @@ stack-flavored ones per the layering principle. Grouped by leverage:
 (`dependency-analyzer`/`deps`, `arch-review`/`architecture-reviewer`,
 `tech-debt`, `codebase-explorer`) → the **`arch-review`** skill
 (`diagram`/Mermaid dropped — not used); `modernize` → the **`modernize`**
-skill; `plan-reviewer` → the **`plan-review`** skill. **Remaining:**
-`debug-assistant` (→ a *troubleshooting* category), `deps-update`,
-`write-documentation`/`documentation-architect` (→ a *documentation* category)
-— see the *Skill ideas & future categories* in `SETUP-AUDIT.md`.
+skill; `plan-reviewer` → the **`plan-review`** skill;
+`write-documentation`/`documentation-architect` → the
+**`write-documentation`** skill, which **opens the `documentation`
+category** (the `rules/documentation.md` rule plus the skill).
+**Remaining:** `debug-assistant` (→ a *troubleshooting* category),
+`deps-update` — see the *Skill ideas & future categories* in
+`SETUP-AUDIT.md`.
 
 **Tier 2 — useful generic, some overlap.** **DONE** (built as qa-dimension
 review skills, the arch-review family): `perf-check`/`performance-engineer` →
@@ -120,8 +123,12 @@ review skills, the arch-review family): `perf-check`/`performance-engineer` →
 **`pytest-patterns`** skill (testing depth) and `typing-patterns` →
 **`typing-patterns`** skill (typing depth, paired with `python.md`).
 `security-auditor` → **SKIP** (overlaps `security-scan` + `/security-review`).
-**Remaining (not qa):** `ui-ux-designer`, `handoff`, `standup`,
-`dev-docs-update`, `brainstorm` — workflow/UX items for later categories.
+The documentation-output item `api-documenter` → **ADOPTED** (folded into
+`write-documentation`, above). **Remaining (not qa):** `ui-ux-designer`,
+`handoff`, `standup`, `dev-docs-update`, `brainstorm` — workflow/UX items for
+later categories; `handoff`/`standup`/`dev-docs-update` were **considered for
+`documentation` and deliberately held out** as session-continuity workflow
+(not product docs) — see *Category status*.
 
 **Tier 3 — external libraries/frameworks/tools: global, built on first use.**
 These are all guidance about something *foreign to the repo*, so per ADR-0003
@@ -160,5 +167,17 @@ list above.
   — infra, not a skill).
 - **`gh`/`git`** — covered by rules + skills; open ideas: `resolve-issue`,
   `categorize-issue` (audit backlog).
-- **`documentation`, `troubleshooting`** — **not yet opened**; homes for
-  `write-documentation` and `debug-assistant` (the remaining Tier-1 items).
+- **`documentation`** — **opened.** `documentation.md` (the doc bar + the
+  "right form per audience" stance) + the **`write-documentation`** skill
+  (authoring procedure) + `code-style.md` (writing mechanics) +
+  `markdownlint.md` (lint) + the `adr` skill (decisions) + `qa.md` dim 13 (the
+  pre-merge gate, which points here). Mined doc-output items folded in:
+  `documentation-architect`, `api-documenter` → `write-documentation`. **Held
+  as adjacent — not documentation:** `handoff`/`standup`/`dev-docs-update`
+  (session-continuity workflow) and `dev-docs`/`read-specs`/
+  `feature-specification` (spec → plan) belong to a future *workflow*/planning
+  category, not product docs — folding them in would force unrelated concerns
+  together ("don't force it").
+- **`troubleshooting`** — **not yet opened**; home for a `debug-assistant`
+  skill (the remaining Tier-1 item; distinct from qa — diagnosing a failure
+  vs assessing quality).

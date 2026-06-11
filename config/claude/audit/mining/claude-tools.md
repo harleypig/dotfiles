@@ -21,7 +21,7 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 | task-init | generic | CANDIDATE | multi-phase task orchestration (overlaps Plan) |
 | tech-debt | generic | CANDIDATE | catalog debt/TODOs/complexity, prioritize by ROI |
 | test-suite | generic | SKIP | runner + coverage = `qa-check` (Tests dim); missing-test gaps = `test-review` |
-| write-documentation | generic | CANDIDATE | multi-format doc generation (API/arch/DB) |
+| write-documentation | generic | ADOPTED | built as the **`write-documentation`** skill — opens the documentation category |
 | deploy | stack | CANDIDATE | deployment orchestration — infra/repo-specific |
 | rollback | stack | CANDIDATE | recovery/rollback orchestration — infra-specific |
 | commit | generic | SKIP | overlaps git/gh rules + ship-pr; msg-gen fights the staging rules |
@@ -43,8 +43,8 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 | performance-engineer | generic | CANDIDATE | profiling/load/Core-Web-Vitals (broader than database-optimizer) |
 | accessibility-specialist | generic | CANDIDATE | WCAG/ARIA/keyboard — novel a11y lens |
 | security-auditor | generic | SKIP | overlaps `security-scan` skill + `/security-review`; deeper-audit lens not worth a separate skill now |
-| documentation-architect | generic | CANDIDATE | comprehensive docs across stacks |
-| api-documenter | generic | CANDIDATE | OpenAPI/SDK — layering: FastAPI auto-OpenAPI covers Python; generic remainder thin |
+| documentation-architect | generic | ADOPTED | folded into the **`write-documentation`** skill (comprehensive-docs facet) |
+| api-documenter | generic | ADOPTED | folded into `write-documentation` as the API-doc mode; FastAPI auto-OpenAPI layered to `fastapi-patterns` |
 | backend-architect | generic | CANDIDATE | API/schema/caching design patterns |
 | refactor-planner | generic | SKIP | refactoring plans + risk — now covered by `modernize` (large) + `/simplify` (small) + `arch-review`/`plan-review` |
 | legacy-modernizer | generic | CANDIDATE | framework migration / monolith→services |
