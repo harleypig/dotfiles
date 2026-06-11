@@ -1,4 +1,19 @@
 {
+  "model": "opus",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/rule-coverage.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/bin/statusline.sh",
@@ -6,7 +21,6 @@
   },
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
     "serena@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
@@ -33,20 +47,5 @@
     }
   },
   "effortLevel": "high",
-  "editorMode": "vim",
-  "model": "opus",
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/rule-coverage.py",
-            "timeout": 15
-          }
-        ]
-      }
-    ]
-  }
+  "editorMode": "vim"
 }
