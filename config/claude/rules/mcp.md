@@ -1,6 +1,6 @@
 # MCP (Model Context Protocol) Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 How this user's environments use MCP servers, and the standing rule that
 MCP is a **second-class** capability the agent must never depend on.
@@ -59,6 +59,30 @@ Per-server tokens are read directly from `private_dotfiles/api-key/` by the
 wrapper, **not** from `GH_TOKEN` / `GITHUB_TOKEN` (see `gh.md` and the
 `api-key/README.md`).
 
+## Plugins are global — use them only for a good global fit
+
+Plugin enable/disable is **user-global** (`~/.claude/settings.json`,
+`enabledPlugins`); a plugin cannot be enabled in one repo and disabled in
+another. So enable a plugin only when it is a good fit **everywhere** —
+light enough to justify its always-on context cost in every repo. A plugin
+that bundles an MCP server loads that server's tool schemas every turn.
+
+When a capability is wanted in only **some** repos, do not enable the plugin
+globally:
+
+- **MCP-providing plugins** (e.g. terraform): skip the plugin and register
+  the underlying MCP server directly at **project/local** scope in the repos
+  that need it (`claude mcp add --scope project|local …`, or via the `mymcp`
+  wrapper) — it loads only there. You rarely need to re-implement; the plugin
+  was just a global wrapper around the same server.
+- **Non-MCP plugin features** (commands/skills/agents/hooks): vendor-and-
+  modify the pieces you want into the repo's own `.claude/` (per the
+  borrow-existing convention), rather than enabling the whole plugin
+  everywhere.
+
+For a heavy MCP server you do keep, prefer **tool-search deferral** so its
+schemas load on demand rather than every turn.
+
 ## Agent Behavior
 
 - Treat MCP as optional: prefer the CLI (`gh`, etc.) for any documented
@@ -68,3 +92,6 @@ wrapper, **not** from `GH_TOKEN` / `GITHUB_TOKEN` (see `gh.md` and the
   specific repo; use project scope only to share it via the repo itself.
 - Plugin = MCP surface: when auditing or removing plugins, account for any
   MCP server they bundle (see the plugin audit in `TODO.md`).
+- Enable a plugin only if it is a good **global** fit; for a per-repo-only
+  need, register the MCP server at project/local scope (or vendor the
+  feature) instead of enabling the plugin globally.

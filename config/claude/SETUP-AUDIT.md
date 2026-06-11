@@ -28,7 +28,7 @@ Approx **~40–44k tokens/turn** loaded before any task content:
 27 rules (linters + `python`/`typescript`) are correctly deferred via `paths:`
 frontmatter — the on-demand tier is working well.
 
-## Findings & recommendations (proposed — awaiting decisions)
+## Findings & recommendations (status in Decisions log)
 
 Ordered by leverage.
 
@@ -58,6 +58,36 @@ Ordered by leverage.
   `--cov`, bash needs `kcov`/`bashcov`. Skip Sonar / Codacy / DeepSource
   (duplicate CodeFactor). CodeFactor + Snyk already run app-side.
 
+## Global changes (affect ALL repos — 2026-06-10)
+
+Plugin enable/disable is user-global, so these touch every repo:
+
+- **Disabled MCP-providing plugins `terraform` and `serena`** (unused here;
+  ~16–20k tokens/turn of tool schemas). To use one in a specific repo, do
+  **not** re-enable the global plugin — register the MCP server directly at
+  project/local scope there (`claude mcp add --scope local terraform -- …`,
+  or a `mymcp` wrapper) so it loads only in that repo. Known need:
+  **terraform → harleydev**.
+- **Removed the duplicate `commit-commands`** (was enabled from two
+  marketplaces).
+
+**Principle (now in `rules/mcp.md`):** plugins are global — enable one only
+if it is a good global fit; otherwise register the MCP server per-repo or
+vendor the feature. **Each repo needs its own audit** of what it enables.
+
 ## Decisions log
 
-Record keep / drop / defer + rationale here as each item is decided.
+- 2026-06-10 — **A (MCP plugins): done globally.** terraform + serena
+  disabled (user-level); re-enable per-repo via project/local MCP
+  registration. terraform needed in harleydev.
+- 2026-06-10 — **B (path-scope 9 rules): done.** java, vitest, vite, react,
+  mantine, fastapi, sqlalchemy, alembic, html now `paths:`-scoped.
+- 2026-06-10 — **C (zap.md): done.** scoped to compose/Dockerfile globs
+  (approximate; could later fold into the security-scan skill).
+- 2026-06-10 — **D (TEMPLATE.md): done.** moved to
+  `config/claude/rule-TEMPLATE.md`, out of the rules auto-load.
+- 2026-06-10 — **E (plugins): partial.** duplicate commit-commands removed;
+  borderline plugins (code-review, pr-review-toolkit, ralph-loop,
+  pydantic-ai, jdtls-lsp) left enabled pending a per-repo-usage check (same
+  global-impact caveat — they may be needed in other repos).
+- 2026-06-10 — **F (Codecov): deferred** by request.
