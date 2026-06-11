@@ -753,6 +753,40 @@ after every `Edit` or `Write` on a shell file.
   `PostToolUse` hook receive? (need file path of edited file)
 - [ ] Document hook setup in this repo's WORKFLOW.md once stable
 
+## 🧩 Audit Claude Code Plugins + MCP Servers (MEDIUM PRIORITY)
+
+Enabled plugins live in `~/.claude/settings.json` (`enabledPlugins`); each is
+cached under `~/.claude/plugins/`. **MCP servers in this setup are provided by
+plugins** — an enabled plugin may bundle its own `.mcp.json` (e.g. the github
+plugin shipped a *hosted* server at `https://api.githubcopilot.com/mcp/`
+authed via `${GITHUB_PERSONAL_ACCESS_TOKEN}`). There is no hand-maintained
+global `mcp.json`, so auditing plugins **is** auditing the MCP surface. The
+standing convention is captured in `config/claude/rules/mcp.md`.
+
+- [ ] **Inventory** every enabled plugin: what it does, whether it bundles an
+  MCP server, and whether we actually use it.
+- [ ] **Cull** plugins that duplicate the `gh` CLI / existing rules+skills or
+  go unused. (github plugin already being removed — its hosted MCP server
+  authed with `GITHUB_PERSONAL_ACCESS_TOKEN`, a *different* token than the gh
+  CLI's `GH_TOKEN`; that mismatch was the earlier "sketchy github responses".)
+- [ ] **Gaps**: identify capabilities we want but have no plugin for.
+- [ ] **Record decisions** (keep/remove + why) so the audit is repeatable.
+- [ ] Create a **rule and/or skill to run this audit routinely** — multi-step
+  (inventory → classify → cull → gap-check) ⇒ likely a *skill* per the "When
+  to Propose a Skill" threshold in `CLAUDE.md`. Evaluate the existing
+  `claude-code-setup:claude-automation-recommender` plugin for the gap-finding
+  part before authoring from scratch.
+- [ ] **Cadence:** run the *detailed* audit on a short recurring interval (it
+  should not be a long time between runs — e.g. monthly), not just once. Wire
+  the audit skill to a reminder / `/schedule` routine so it recurs.
+- [ ] **Plugin-aware proposals (behavior rule):** when proposing a new
+  language/tool *rule* or *skill* for a capability, also check whether a
+  **plugin** already provides it (or whether one should be added). Extend
+  `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a Skill*
+  sections and the `rule-coverage.py` hook to cover plugins, not just
+  rules/skills. (Plugins can bundle commands, skills, subagents, hooks, and
+  MCP servers — so they are a first-class option alongside a rule or skill.)
+
 ## 🔒 Pre-commit Configuration (HIGH PRIORITY)
 
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
