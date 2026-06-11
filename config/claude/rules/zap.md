@@ -1,3 +1,12 @@
+---
+paths:
+  - "**/docker-compose*.yml"
+  - "**/docker-compose*.yaml"
+  - "**/compose.yml"
+  - "**/compose.yaml"
+  - "**/Dockerfile"
+---
+
 # OWASP ZAP (DAST) Rules
 
 **Version:** v1.1.0

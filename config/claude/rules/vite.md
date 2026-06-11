@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/vite.config.*"
+---
+
 # Vite Rules
 
 **Version:** v1.0.0
