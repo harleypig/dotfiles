@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.3.0
+**Version:** v1.4.0
 
 ## Commit Messages
 
@@ -77,6 +77,27 @@ When a repo's default branch should be PR-only, protect it in **two layers**
 The local hook is a convenience, not a substitute — without the server-side
 ruleset, anyone (or any tool) without the hook installed can still push. The
 repo's concrete ruleset/config lives in its `.claude/` docs.
+
+## Never Work Directly on a Protected Branch
+
+A protected branch exists to *receive* PRs, not to author on. **Never make
+changes while a protected branch is checked out — neither edits nor
+commits.** This applies to **any** protected branch, not just the default
+(`master` / `main`): if a repo protects `develop`, `release/*`, or anything
+else, the same rule holds.
+
+Before touching a single file, **create or switch to a working branch**
+(`feature/…`, `bugfix/…`, `docs/…`, or a worktree — see *Branch Naming* and
+the **git-worktree-workflow** skill). Branch **first**, then edit. Do not
+edit on the protected branch intending to create the branch afterward — even
+though uncommitted changes carry across `git checkout -b`, accumulating work
+on the protected branch is exactly the habit this rule forbids (one slip and
+the change is committed where it must never land).
+
+To tell whether a branch is protected: a server-side ruleset / branch
+protection, a local `no-commit-to-branch` hook (above), or the repo's
+`.claude/` docs name it. When in doubt, treat the default branch as
+protected.
 
 ## Worktrees
 
@@ -205,6 +226,10 @@ The deleted branch should no longer appear in the output.
 - NEVER force-delete a branch silently — always confirm with the user.
 - NEVER amend published commits or skip hooks without explicit user approval.
 - NEVER push to the default branch without user confirmation.
+- NEVER make changes (edits or commits) while a **protected branch** is
+  checked out — create/switch to a working branch FIRST, then edit. Applies
+  to ANY protected branch, not just the default. See *Never Work Directly on
+  a Protected Branch*.
 - Stage with `git add -u` (tracked changes) plus explicit `git add <file>`
   for new files; NEVER `git add -A` / `git add .` (they sweep up untracked
   scratch into the commit). See *Staging*.
