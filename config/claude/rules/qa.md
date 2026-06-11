@@ -69,14 +69,16 @@ skip silently.
     acknowledge it (status it) rather than pretend it's covered.
 12. **Build** — the artifact actually compiles/bundles, and images build
     (the **containerize** skill) when containers change. Note size deltas.
-13. **Documentation** — the change's docs are **current** and **accurate**:
-    user-facing docs (README/usage/API, **changelog**), in-repo planning (a
-    `TODO` / roadmap), and the governing rules/skills it affects (global
-    *and* local) are updated; prose is linted (e.g. a Markdown linter) with
-    no stale or broken references. A change that alters behaviour but not its
-    docs is incomplete. When a repo's **changelog is generated** (from git
-    history or commit metadata), regenerating it **mutates the tree**, so it
-    is a **prep step in the same class as Format** (dimension 1) — run it
+13. **Documentation** — runs the **documentation bar** (`documentation.md`,
+    which owns it): the docs are **current** and **accurate** across every
+    layer that rule names (user-facing incl. the **changelog**, in-repo
+    planning, the governing rules/skills it affects — global *and* local, and
+    inline); prose is linted (e.g. a Markdown linter) with no stale or broken
+    references; a change that alters behaviour but not its docs is incomplete.
+    The **`write-documentation`** skill authors/refreshes a doc; the `adr`
+    skill records decisions. When a repo's **changelog is generated** (from
+    git history or commit metadata), regenerating it **mutates the tree**, so
+    it is a **prep step in the same class as Format** (dimension 1) — run it
     once just before opening the PR and **commit the result**; never in CI,
     which gates and must not commit. The concrete command lives in the
     repo's QA doc.

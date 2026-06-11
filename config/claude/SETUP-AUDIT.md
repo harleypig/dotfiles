@@ -216,14 +216,31 @@ decisions are also summarized in the *Decisions log*.
   TODO triage queue (the `gh.md` *Issues & triage* workflow). Category: `gh`.
 - [ ] **Future top-level categories** (per the "fold into existing categories,
   new one only if it doesn't fit" guidance):
-  - [ ] **`documentation`** — home for a `write-documentation` skill (the
-    remaining Tier-1 doc-generation item) and doc tooling.
+  - [x] **`documentation`** — **opened** 2026-06-11: `rules/documentation.md`
+    (the doc bar + form stance) + the `write-documentation` skill. Doc tooling
+    (`markdownlint.md`) and the `adr` skill compose in. See *Decisions log*.
   - [ ] **`troubleshooting`** — home for a `debug-assistant` skill (the
     remaining Tier-1 debugging item; distinct from qa — assessing quality vs
     diagnosing a failure).
 
 ## Decisions log
 
+- 2026-06-11 — **Opened the `documentation` category.** Added an always-on
+  `rules/documentation.md` (the doc **bar** + the "right form per audience"
+  **stance**), modeled on `testing.md`, as the canonical home for what had
+  been scattered: `code-style.md` keeps the writing *mechanics*,
+  `markdownlint.md` the *linter*, `qa.md` dim 13 the *pipeline gate* — dim 13
+  now **points to** `documentation.md` for the bar instead of restating the
+  audience list (qa wired last, per the umbrella rule). Built the Tier-1
+  **`write-documentation`** skill (the authoring *how*), consolidating three
+  mined items — `write-documentation` + `documentation-architect` +
+  `api-documenter` (folded as the API-doc mode; FastAPI auto-OpenAPI layered
+  to `fastapi-patterns`). **Deliberately held out** of the category as
+  adjacent-but-different: `handoff`/`standup`/`dev-docs-update` (session
+  continuity) and `dev-docs`/`read-specs`/`feature-specification` (spec→plan)
+  — a future *workflow*/planning category, not product docs. Idea-level
+  adaptation (ADR-0002): no upstream code reused, `SOURCE.md` records the
+  census ideas. Landed via dotfiles PR.
 - 2026-06-10 — **A (MCP plugins): done globally.** terraform + serena
   disabled (user-level); re-enable per-repo via project/local MCP
   registration. terraform needed in harleydev.
