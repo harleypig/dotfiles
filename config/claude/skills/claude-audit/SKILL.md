@@ -113,8 +113,11 @@ Consider an agent or command a CANDIDATE **even if we'd reimplement it as a
 skill** (skills over commands — ADR-0001). Don't dismiss a good generic tool
 because it arrived in a different form. **Placement:** anything about a
 repo-foreign library/tool is built **global**, on first use (ADR-0003) — not
-repo-local, not deferred. Record sources in the *Idea sources* registry; a
-per-artifact `SOURCE.md` only on implementation reuse (ADR-0002).
+repo-local, not deferred; and **fold a new capability into an existing
+top-level category** (`code-style` / `testing` / `qa` / `gh` / `git`) rather
+than spawning a new one unless it genuinely doesn't fit. Record sources in the
+*Idea sources* registry; a per-artifact `SOURCE.md` only on implementation
+reuse (ADR-0002).
 
 ## Guardrails
 
