@@ -91,3 +91,13 @@ vendor the feature. **Each repo needs its own audit** of what it enables.
   pydantic-ai, jdtls-lsp) left enabled **until their repos are audited**
   (global-impact caveat — they may be needed elsewhere; revisit per-repo).
 - 2026-06-10 — **F (Codecov): deferred** by request.
+- 2026-06-10 — **Plugin audit (global-fit pass; supersedes E above).**
+  Dropped (redundant with built-ins / not a good global fit): `code-review` &
+  `code-simplifier` (built-in `/review`, `/simplify` cover them; the latter
+  was also JS-only and misfit this repo), `commit-commands` (`ship-pr` +
+  `git-worktree-workflow` are stronger, and its `/commit*` violate the staging
+  rules), `jdtls-lsp` and `pydantic-ai` (niche). Kept: the authoring triad
+  (skill-creator / claude-md-management / hookify), context7,
+  claude-code-setup, `ralph-loop` (to trial — distinct from `/loop`), and
+  `pr-review-toolkit` / `feature-dev` / `security-guidance` (decide-later).
+  Follow-ups in `TODO.md`.
