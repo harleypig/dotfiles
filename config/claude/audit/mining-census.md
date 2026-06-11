@@ -61,13 +61,15 @@ Not built — surfaced for the user to choose. Adopt as skills (ADR-0001),
 folding into an existing category where one fits (above) and splitting any
 stack-flavored ones per the layering principle. Grouped by leverage:
 
-**Tier 1 — strong generic, low overlap (best whole-environment wins):**
-architecture/codebase analysis — `dependency-analyzer`/`deps` (coupling,
-circular deps), `arch-review`/`architecture-reviewer`, `tech-debt` (debt
-catalog), `codebase-explorer` — **DONE: consolidated into the `arch-review`
-skill** (`diagram`/Mermaid dropped — not used). Remaining: `modernize` (legacy
-roadmap), `plan-reviewer` (pre-implementation plan QA), `debug-assistant`,
-`deps-update`, `write-documentation`/`documentation-architect`.
+**Tier 1 — strong generic, low overlap (best whole-environment wins).**
+**DONE** (built as skills): the architecture/codebase cluster
+(`dependency-analyzer`/`deps`, `arch-review`/`architecture-reviewer`,
+`tech-debt`, `codebase-explorer`) → the **`arch-review`** skill
+(`diagram`/Mermaid dropped — not used); `modernize` → the **`modernize`**
+skill; `plan-reviewer` → the **`plan-review`** skill. **Remaining:**
+`debug-assistant` (→ a *troubleshooting* category), `deps-update`,
+`write-documentation`/`documentation-architect` (→ a *documentation* category)
+— see the *Skill ideas & future categories* in `SETUP-AUDIT.md`.
 
 **Tier 2 — useful generic, some overlap:**
 `perf-check`/`performance-engineer`,
