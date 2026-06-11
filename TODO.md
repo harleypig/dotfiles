@@ -834,8 +834,19 @@ that prevents real mistakes just because it is large.
   - [ ] **Trial `ralph-loop`** to evaluate it (autonomous completion loop,
     distinct from `/loop`). It can run unbounded — set a max-iteration cap and
     respect the CLAUDE.md autonomy boundaries.
-  - [ ] **Evaluate `pr-review-toolkit`, `feature-dev`, `security-guidance`**
-    for global fit (keep / drop / vendor) — the decide-later plugins.
+  - [x] **Evaluated `pr-review-toolkit`, `feature-dev`, `security-guidance`**
+    — all dropped (not a good global fit; redundant with built-ins / `qa.md` /
+    `security-scan`; security-guidance was a blocking JS-substring edit hook).
+    Vendor bits below are **surfaced by the repo that needs them** — don't
+    build proactively:
+    - [ ] When a repo's review actually needs them, vendor the unique
+      pr-review lenses (silent-failure, comment-rot, type-design) — or fold
+      into `qa.md`'s code-style audit, which mostly covers them already.
+    - [ ] When a repo wants the phased feature-dev flow, vendor `/feature-dev`
+      as a **skill** driving the built-in Explore/Plan agents (not bundled
+      agents).
+    - [ ] When a repo needs it, add a tiny path-only GH-Actions-injection hook
+      (likely unnecessary — `github-actions.md` already covers the awareness).
 
 ## 🔒 Pre-commit Configuration (HIGH PRIORITY)
 

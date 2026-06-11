@@ -101,3 +101,12 @@ vendor the feature. **Each repo needs its own audit** of what it enables.
   claude-code-setup, `ralph-loop` (to trial — distinct from `/loop`), and
   `pr-review-toolkit` / `feature-dev` / `security-guidance` (decide-later).
   Follow-ups in `TODO.md`.
+- 2026-06-10 — **Plugin audit, round 2 (the three decide-later): all dropped.**
+  `pr-review-toolkit` (6 always-on agents; redundant with built-in `/review`,
+  `/code-review`, `/simplify` + `qa.md`), `feature-dev` (agents dup
+  Explore/Plan; the value was the command's orchestration), and
+  `security-guidance` (a **blocking** PreToolUse hook matching JS/TS/py
+  substrings — false-positives on Bash, references non-existent files;
+  `security-scan` / `semgrep` / `/security-review` already cover it).
+  `enabledPlugins` now 6: context7, the authoring triad, claude-code-setup,
+  ralph-loop. Vendor bits left as surface-when-needed TODOs.
