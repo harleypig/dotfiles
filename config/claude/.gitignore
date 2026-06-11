@@ -16,3 +16,5 @@
 !bin/**
 !hooks/
 !hooks/**
+!adr/
+!adr/**
