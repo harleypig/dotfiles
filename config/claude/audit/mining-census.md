@@ -135,6 +135,13 @@ library/tool, front-loaded, not deferred. Items: language-expert agents
 
 ## Category status (so audits don't re-survey)
 
+**Snapshot of the current repos/stacks — not "closed forever."** A **new repo**
+(or a new language/framework in an existing one) **re-opens every category** for
+re-evaluation against it — `code-style` most obviously (a new language carries
+its own style conventions and formatter/linter), but **all** of them. "Complete"
+here means "covered for what we build today." Pairs with the global-re-eval
+principle (claude-audit skill) and the `SKIP-until` watch list above.
+
 - **`code-style`** — **complete as-is; nothing to adopt.** It is documented
   policy (`code-style.md`) + per-language formatters/linters (`ruff.md`,
   `shfmt`, …) + the qa *Code-style audit* dimension executed by `/code-review`
