@@ -67,7 +67,10 @@ log) — the canonical methodology and living record. In short:
    stack's specifics bleeding into it**? A generic primitive should be a thin
    stack-agnostic layer that points to path-scoped per-stack patterns (see
    *Layer the generic over the specific* in `EXTENDING.md`); flag a Python-
-   flavored "generic" agent that would mislead a Go-only repo.
+   flavored "generic" agent that would mislead a Go-only repo. Also check the
+   **categories themselves**: has a top-level category grown **too big or too
+   spread out** and need **splitting** (e.g. `qa` shedding `documentation` /
+   `troubleshooting`)? Splitting is the counter-move to over-folding.
 3. **Recommend** by **cost × (1 − relevance)** — trim weight, never
    guardrails. Apply the placement ladder from `EXTENDING.md` (global+lazy >
    per-repo) and the plugin/MCP rules from `rules/mcp.md` (plugins are global
@@ -123,9 +126,12 @@ because it arrived in a different form. **Placement:** anything about a
 repo-foreign library/tool is built **global**, on first use (ADR-0003) — not
 repo-local, not deferred; and **fold a new capability into an existing
 top-level category** (`code-style` / `testing` / `qa` / `gh` / `git`) rather
-than spawning a new one unless it genuinely doesn't fit. Record sources in the
-*Idea sources* registry; a per-artifact `SOURCE.md` only on implementation
-reuse (ADR-0002).
+than spawning a new one unless it genuinely doesn't fit. **`qa` is the
+umbrella — work it last:** it aggregates the other categories, so build the
+category-specific pieces first and touch `qa` (and `qa-check`) last, wiring
+the new pieces in (`qa.md` names them, `qa-check` composes them). Record
+sources in the *Idea sources* registry; a per-artifact `SOURCE.md` only on
+implementation reuse (ADR-0002).
 
 ## Guardrails
 

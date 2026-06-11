@@ -63,6 +63,22 @@ Don't force it — a genuinely new area (e.g. an `architecture`/`docs` family)
 earns its own top-level category. The default is "extend a family," the
 exception is "open a new one."
 
+**Split a category that's outgrown itself.** Folding-in is the default, but a
+category can grow **too big or too spread out** — so **each audit checks
+whether any top-level category should split** into separate ones (e.g. a
+bulging `qa` shedding `documentation` / `troubleshooting`, or a `tools`
+grab-bag separating by tool). Splitting is the release valve that keeps
+fold-in from creating a junk drawer.
+
+**`qa` is the umbrella — work it last.** `qa` (and the `qa-check` skill)
+aggregates the other categories — code-style, testing, security,
+documentation, performance — plus its own pipeline discipline, even though
+each of those stays its own category. So when **mining or otherwise
+creating/modifying rules/skills**, build/adopt the category-specific pieces
+**first** and touch `qa` **last** — then **wire them in**: `qa.md` names the
+tool and `qa-check` composes it. Updating `qa` before its pieces exist
+guarantees the wiring gap (a review skill that nothing calls).
+
 ---
 
 ## Round 2026-06-11 — FastAPI/SQLAlchemy/Python mining
@@ -102,9 +118,9 @@ review skills, the arch-review family): `perf-check`/`performance-engineer` →
 `accessibility-specialist` → **`a11y-review`**; `pytest-patterns` →
 **`pytest-patterns`** skill (testing depth) and `typing-patterns` →
 **`typing-patterns`** skill (typing depth, paired with `python.md`).
-**Remaining:** `security-auditor` (overlaps `security-scan` +
-`/security-review` — decide), `ui-ux-designer`, `handoff`, `standup`,
-`dev-docs-update`, `brainstorm`.
+`security-auditor` → **SKIP** (overlaps `security-scan` + `/security-review`).
+**Remaining (not qa):** `ui-ux-designer`, `handoff`, `standup`,
+`dev-docs-update`, `brainstorm` — workflow/UX items for later categories.
 
 **Tier 3 — external libraries/frameworks/tools: global, built on first use.**
 These are all guidance about something *foreign to the repo*, so per ADR-0003
