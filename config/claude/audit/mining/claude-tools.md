@@ -9,7 +9,7 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 |------|-------|-------|--------|
 | brainstorm | generic | CANDIDATE | deep requirements ideation; pairs with built-in Plan |
 | bslist | generic | CANDIDATE | list/resume past brainstorm sessions |
-| debug-assistant | generic | CANDIDATE | structured debugging harness (stack-trace → repro → fix) |
+| debug-assistant | generic | ADOPTED | built as the **`debug-assistant`** skill — opens the troubleshooting category |
 | deps-update | generic | CANDIDATE | dependency auditor w/ compat testing + changelog |
 | dev-docs | generic | CANDIDATE | spec → implementation plan + checklist |
 | dev-docs-update | generic | CANDIDATE | capture session state before context-limit reset |
@@ -51,7 +51,7 @@ the cross-repo CANDIDATE backlog). MIT. Round 2026-06-11. 93 items.
 | test-automator | generic | SKIP | test strategy/pyramid = `testing.md` bar + `plan-review` + `test-review` |
 | frontend-qa-tester | generic | SKIP-until browser-UI/e2e | the tool for qa.md's End-to-end dimension (no tool yet); Playwright/browser-specific — build on first browser-UI/e2e need (watch list) |
 | ui-ux-designer | generic | CANDIDATE | design methodology (vs frontend-design's implementation) |
-| devops-troubleshooter | generic | CANDIDATE | incident response / log analysis |
+| devops-troubleshooter | generic | CANDIDATE | the **ops facet** of troubleshooting (incident response / log analysis on running infra) — distinct from `debug-assistant` (code-level); build on first ops-incident need (ADR-0003) |
 | web-research-specialist | generic | CANDIDATE | overlaps `/deep-research`; lower priority |
 | ai-engineer | generic | CANDIDATE | LLM/RAG/agent patterns — relevant if building AI features |
 | deployment-engineer, cloud-architect, data-engineer, ml-engineer | stack | CANDIDATE | infra/data/ML — build when first used (ADR-0003) |

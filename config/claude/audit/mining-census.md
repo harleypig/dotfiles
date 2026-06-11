@@ -111,10 +111,11 @@ stack-flavored ones per the layering principle. Grouped by leverage:
 skill; `plan-reviewer` → the **`plan-review`** skill;
 `write-documentation`/`documentation-architect` → the
 **`write-documentation`** skill, which **opens the `documentation`
-category** (the `rules/documentation.md` rule plus the skill).
-**Remaining:** `debug-assistant` (→ a *troubleshooting* category),
-`deps-update` — see the *Skill ideas & future categories* in
-`SETUP-AUDIT.md`.
+category** (the `rules/documentation.md` rule plus the skill);
+`debug-assistant` → the **`debug-assistant`** skill, which **opens the
+`troubleshooting` category** (a thin always-on `rules/troubleshooting.md`
+plus the skill). **Remaining:** `deps-update` — see the *Skill ideas &
+future categories* in `SETUP-AUDIT.md`.
 
 **Tier 2 — useful generic, some overlap.** **DONE** (built as qa-dimension
 review skills, the arch-review family): `perf-check`/`performance-engineer` →
@@ -178,6 +179,15 @@ list above.
   `feature-specification` (spec → plan) belong to a future *workflow*/planning
   category, not product docs — folding them in would force unrelated concerns
   together ("don't force it").
-- **`troubleshooting`** — **not yet opened**; home for a `debug-assistant`
-  skill (the remaining Tier-1 item; distinct from qa — diagnosing a failure
-  vs assessing quality).
+- **`troubleshooting`** — **opened.** A **thin** always-on
+  `rules/troubleshooting.md` (the debugging bar — reproduce-first,
+  root-cause, regression-test — present every turn because a failure can
+  surface on any turn) + the **`debug-assistant`** skill (the full
+  scientific-method session, where the depth lives). Deliberately lighter
+  than `testing.md`/`documentation.md`: the bar is always-on, the procedure
+  is on-demand. **Not a qa dimension** — troubleshooting is the *diagnostic
+  activity triggered when any check or behaviour fails*, a peer category, not
+  a qa gate (so `qa.md` is unchanged). The **ops facet**
+  (`devops-troubleshooter` — incident response on running infra) is held as
+  build-on-first-use (ADR-0003). The planned `resolve-issue` skill composes
+  `debug-assistant` as its investigation step.
