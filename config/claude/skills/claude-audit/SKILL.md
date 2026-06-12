@@ -83,6 +83,18 @@ log) — the canonical methodology and living record. In short:
    findings. Convert "evaluate later" items into `TODO.md` follow-ups,
    surfaced by the repo that needs them.
 
+**Verify currency with live docs (Context7, if available).** Rules and skills
+go stale as tools change — deprecations, renamed flags, shifted best practice.
+When auditing an existing rule or adopting a new pattern, use **Context7** (the
+`context7` MCP, *if it is enabled in this session*) to check the tool /
+library / API's **current** documentation before trusting what's written — it
+catches drift without cloning a repo (e.g. it surfaced Spotify's now-deprecated
+`PUT/DELETE /me/tracks` that older third-party guides still listed as current).
+Resolve the library id, then query the specific question. It is **second-class**
+(`rules/mcp.md`): a convenience for the audit *process* only — never a
+dependency the resulting rules/skills rely on, and the audit must work
+without it. Fall back to official docs or a shallow clone when it's absent.
+
 ## Mining repos for ideas
 
 An audit improves the **whole** dev environment, not just the current repo —

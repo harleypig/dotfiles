@@ -95,6 +95,7 @@ again. The two are distinct by design:
 | `fastapi/fastapi` (official `.agents/skills`) | FastAPI best-practice concepts (Annotated, return-type serialization, async-vs-sync); maintained with new versions, so re-mine on FastAPI upgrades | MIT | 2026-06-11 | No (concepts only) |
 | `rafaelkamimura/claude-tools` | Layered-architecture ideas; candidate commands (`adr`, `tech-debt`, `debug-assistant`) and agents (`database-optimizer`, `api-documenter`) | MIT | 2026-06-11 | No (ideas only) |
 | `pydantic/skills` (official) | Pydantic AI **agent-framework** + Logfire skills — relevant only if we adopt LLM agents or Logfire observability; not used today | MIT (check) | 2026-06-11 | No |
+| `fabioc-aloha/spotify-skill` | Spotify Web API skill — endpoint/scope/error inventory, auto-refresh pattern, `ugc-image-upload`→401, cover-art + playlist strategies; refs are stale (pre-2024-11-27, no PKCE) so official docs win | Apache-2.0 | 2026-06-12 | Ideas → `spotify-audit` + `rules/spotify.md` (SOURCE.md) |
 
 The **full disposition census** of every item in these repos (every agent /
 command / hook / skill considered, ADOPT/CANDIDATE/SKIP + reason) is in
@@ -227,6 +228,29 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-12 — **Spotify category: `rules/spotify.md` + `spotify-audit`
+  skill (audit run from pigify).** pigify (the first Spotify repo) surfaced a
+  cluster of hard-won, non-obvious Spotify Web API quirks — track relinking
+  (`linked_from` for Library ops), the 1-hour token + proactive refresh, the
+  `127.0.0.1`-only OAuth redirect, and the Web-Playback-SDK / EME / Permissions-
+  Policy requirements — each of which had already caused a bug. Built a global,
+  detection-activated **`rules/spotify.md`** (the policy/reference: auth +
+  PKCE, tokens, scopes, current-vs-deprecated endpoints incl. the 2024-11-27
+  deprecations and the legacy `/me/tracks` save/remove, 429/Retry-After,
+  relinking, SDK/EME, compliance) and a **`spotify-audit`** skill (`/spotify-
+  audit`) that checks a codebase against it and emits a severity-grouped
+  report. Repo-foreign-API guidance → **global, front-loaded** (ADR-0003).
+  Ideas adapted from `fabioc-aloha/spotify-skill` (Apache-2.0, ideas-only —
+  SOURCE.md); policy grounded in Spotify's official docs (its references are
+  stale). `spotify-patterns` (cover-art, playlist strategies, pagination/dedup)
+  deferred to `TODO.md`. Landed via dotfiles PR.
+- 2026-06-12 — **claude-audit: use Context7 (if available) to verify
+  currency.** Added a step to the **claude-audit** skill — when auditing a rule
+  or adopting a pattern, query **Context7** for the tool/library/API's current
+  docs to catch drift without cloning (it caught Spotify's `/me/tracks`
+  deprecation that third-party guides missed). Strictly **second-class**
+  (`mcp.md`): a convenience for the audit *process*, never a dependency of the
+  resulting config; the audit works without it.
 - 2026-06-11 — **Built `deps-update`; Tier-1 cluster done.** The proactive,
   human-driven dependency-currency sweep — inventory outdated → triage by
   risk/security-urgency → read changelogs → apply in safe batches →
