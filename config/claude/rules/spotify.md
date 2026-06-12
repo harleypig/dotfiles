@@ -13,9 +13,10 @@ paths:
 
 Conventions for integrating the **Spotify Web API** and **Web Playback SDK**.
 This rule is the policy/reference; to audit an existing codebase against it,
-run the **spotify-audit** skill. Concrete recipes (cover-art generation,
-playlist-building strategies, pagination/dedup helpers) are planned for a
-**spotify-patterns** skill (tracked in the dotfiles `TODO.md`).
+run the **spotify-audit** skill. For concrete recipes — proactive token
+refresh, relinking-aware Library ops, pagination/dedup, a 429 wrapper,
+playlist-creation strategies, and cover-art generation — invoke the
+**spotify-patterns** skill.
 
 ## Detection
 
@@ -138,6 +139,9 @@ without it.
 - When adding or changing Spotify integration code, follow the auth, token,
   scope, endpoint, and relinking rules above — in particular proactive token
   refresh and `linked_from`-for-library-operations.
+- For the concrete *how* (a token-refresh helper, relinking-aware id
+  selection, pagination/dedup, a 429 backoff wrapper, playlist-creation
+  strategies, cover-art generation), invoke the **spotify-patterns** skill.
 - To audit an existing Spotify codebase for alignment, run the
   **spotify-audit** skill.
 - Treat Spotify's official docs as authoritative; older tutorials and

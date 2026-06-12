@@ -228,6 +228,19 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-12 — **Built `spotify-patterns` skill (completes the Spotify
+  category).** The recipe half deferred from the Spotify category, mirroring
+  `fastapi-patterns` / `sqlalchemy-patterns`: concrete recipes for proactive
+  token refresh, relinking-aware Library ops (the two bugs pigify hit, written
+  first-hand from those fixes), pagination + set-based dedup, a 429/Retry-After
+  backoff wrapper, playlist-creation strategies (by-artist / theme /
+  song-list — the recommendation-seeded one dropped as deprecated-dependent),
+  and cover-art (SVG→PNG, a11y contrast, `ugc-image-upload`). Wired into
+  `rules/spotify.md` ("for recipes, invoke spotify-patterns"); SOURCE.md cites
+  `fabioc-aloha/spotify-skill` (Apache-2.0, ideas-only). The mining census's
+  ADOPT set is now fully shipped. **Follow-up logged** (census + TODO): re-mine
+  Spotify's official Concepts / Tutorials / How-Tos sections for more material.
+  Landed via dotfiles PR.
 - 2026-06-12 — **Spotify category: `rules/spotify.md` + `spotify-audit`
   skill (audit run from pigify).** pigify (the first Spotify repo) surfaced a
   cluster of hard-won, non-obvious Spotify Web API quirks — track relinking
