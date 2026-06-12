@@ -106,27 +106,23 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
 
-## 🎵 Build a `spotify-patterns` skill (LOW PRIORITY)
+## ✅ Build a `spotify-patterns` skill (DONE 2026-06-12)
 
-Companion to `rules/spotify.md` + the `spotify-audit` skill (added 2026-06-12).
-The audit/rule cover *policy and alignment*; this would carry the concrete
-*recipes* — mirroring how `fastapi-patterns` / `sqlalchemy-patterns` back their
-rules. Mined as a CANDIDATE from `fabioc-aloha/spotify-skill` (see
-`config/claude/audit/mining/spotify-skill.md`). Lower priority, but genuinely
-useful — having these recipes earlier would have pre-empted the relinking and
-token-refresh bugs that motivated the Spotify category.
+Done — the recipe companion to `rules/spotify.md` + `spotify-audit`, mirroring
+`fastapi-patterns` / `sqlalchemy-patterns`. All recipes shipped:
 
-- [ ] **Token refresh + relinking recipes** — proactive refresh-before-expiry,
-  and the `linked_from`-for-Library-ops pattern (the two bugs we hit).
-- [ ] **Pagination + set-based dedup** — always loop list reads (per-endpoint
-  page size); collect ids into a set before populating a playlist.
-- [ ] **Rate-limit handling** — a 429 / `Retry-After` + exponential-backoff
-  wrapper for the HTTP layer.
-- [ ] **Playlist-creation strategies** — by-artist / theme / song-list (drop
-  the recommendation-seeded one — it depends on a deprecated endpoint).
-- [ ] **Cover-art generation** — SVG→PNG with a11y contrast + `ugc-image-upload`.
-- [ ] Wire it into `rules/spotify.md` ("for recipes, invoke spotify-patterns")
-  and record in `SETUP-AUDIT.md`.
+- [x] **Token refresh + relinking recipes** — proactive refresh-before-expiry
+  and `linked_from`-for-Library-ops (written first-hand from the pigify fixes).
+- [x] **Pagination + set-based dedup**.
+- [x] **Rate-limit handling** — 429 / `Retry-After` + exponential-backoff wrapper.
+- [x] **Playlist-creation strategies** — by-artist / theme / song-list
+  (recommendation-seeded dropped — deprecated endpoint).
+- [x] **Cover-art generation** — SVG→PNG, a11y contrast, `ugc-image-upload`.
+- [x] Wired into `rules/spotify.md`; recorded in `SETUP-AUDIT.md` + the census.
+
+Follow-up (also logged in the mining census): re-mine Spotify's official
+**Concepts / Tutorials / How-Tos** sections for more material for the rule
+and skills.
 
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
