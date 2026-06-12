@@ -228,6 +228,22 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-12 — **Added `rules/nginx.md` (rule-coverage gap from pigify).**
+  pigify configures nginx (TLS termination, the `/api` reverse proxy, and a
+  CSP / `Permissions-Policy` tuned for a cross-origin SDK iframe) but there was
+  no nginx rule — every nginx edit there had been unguided, and the session hit
+  the two classic footguns first-hand: the missing `always` flag (headers
+  dropped on error responses) and `Permissions-Policy` delegation to a
+  cross-origin iframe. The new detection-activated rule covers reverse-proxy
+  header hygiene, TLS hardening (1.2/1.3, HSTS, OCSP), the security-header set
+  with the `always` + `add_header`-inheritance gotchas, CSP / Permissions-
+  Policy authoring, SPA serving, and hardening. Grounded in official nginx docs
+  (Context7 currency check). **Rule-only — no skill:** authoring is reference/
+  policy (a rule's job), and the *procedural* side (verifying headers are
+  actually served, incl. on error responses) already lives in `rules/zap.md` /
+  DAST + the qa Security dimension, which the rule cross-references. No Idea
+  source / SOURCE.md (official docs, no third-party repo mined). Landed via
+  dotfiles PR.
 - 2026-06-12 — **Built `spotify-patterns` skill (completes the Spotify
   category).** The recipe half deferred from the Spotify category, mirroring
   `fastapi-patterns` / `sqlalchemy-patterns`: concrete recipes for proactive
