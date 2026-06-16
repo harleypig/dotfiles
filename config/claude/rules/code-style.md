@@ -35,6 +35,21 @@ at the bottom).
   restate what well-named code already says.
 - Public APIs in any language MUST have a docstring / equivalent.
 
+### Marker comments
+
+Tag in-code notes with a consistent uppercase marker so they are greppable:
+
+- **`TODO:`** — work that will be done.
+- **`FIXME:`** — something broken to fix.
+- **`XXX:`** — a wart or risky spot needing attention.
+- **`ICEBOX:`** — a *deferred / maybe-someday* decision to **revisit only on
+  request** (a considered "not now", not a "will do"). Make the note
+  **keyword-dense** — include the synonyms a future request might use — so a
+  grep on that wording lands on the comment, not just the surrounding code.
+
+Acting on `ICEBOX:` notes (scanning the codebase for them when a feature
+request arrives) is an agent behaviour — see `CLAUDE.md`.
+
 ### Error Handling Posture
 
 - **Executables:** fail fast. A binary or CLI may call `exit` / `panic`
