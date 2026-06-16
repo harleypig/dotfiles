@@ -5,7 +5,7 @@ description: Commit a finished feature branch and push it, then — each only wi
 
 # Ship PR
 
-**Version:** v1.6.0
+**Version:** v1.7.0
 
 Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → (approval) open PR → watch CI → (approval) merge →
@@ -78,7 +78,9 @@ to the change, per the repo's QA doc) and reports each dimension's status.
 (qa-check's CI stage is Step 4 here, not part of this local pass.) This
 includes the **Documentation** dimension — update the docs, `TODO`/roadmap,
 and any rules/skills (global *and* local) this change touches before
-committing.
+committing. (Here you **mark** progress / add new items; **removing** the
+completed `TODO`/`ROADMAP` items is deferred to the merge-time finalization,
+Step 4.5, so they're pruned only once the PR is proven green.)
 
 qa-check's format/lint/test stages are the pre-commit sequence — run it ONCE
 (per `rules/pre-commit.md`): the fix config, then the check config.
@@ -127,6 +129,28 @@ warning/error annotations a green conclusion would otherwise hide:
 - **`2` (passed, but warnings present):** the printed `annotations:` block
   lists them. **Do not silently merge** — report the warnings to the user
   and get acknowledgment (or fix them) before proceeding to merge.
+
+## Step 4.5 — Merge-time finalization (docs only, after CI is green)
+
+Once CI is green and the branch is judged ready to merge, perform the
+**merge-time documentation finalization** — and **only** this. No code lands
+at merge time; the only changes here are documentation.
+
+- **Remove the completed items** from `TODO.md` and `ROADMAP.md` (and any
+  equivalent planning list). Delete them outright — do **not** leave them
+  marked `[x]`. Do this **now**, not earlier: an item is pruned exactly when
+  the PR that completes it has gone **green**, so the planning docs always
+  track only open work and nothing is removed for a PR that never lands.
+- **Changelog management** — regenerate / write the changelog per the repo (a
+  generated changelog mutates the tree, so it is committed here, never in CI;
+  see `qa.md` dim 13 and the repo's QA doc), plus any related doc updates.
+
+Commit these doc-only changes, push, and **re-watch CI** (Step 4) — quick,
+since only documentation changed. Proceed to merge only after that is green.
+
+This separates *progress tracking* (Step 1 marks items done / adds new ones as
+you work) from *finalization* (here, completed items are pruned once the PR is
+proven green).
 
 ## Step 5 — Merge (only with explicit approval)
 
