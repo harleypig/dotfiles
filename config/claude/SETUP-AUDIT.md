@@ -228,6 +228,19 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-16 — **`ICEBOX:` marker + feature-request behaviors (from pigify).**
+  Standardized a discoverability convention for *deferred / revisit-on-request*
+  decisions, born from a real pigify case (persistent playlist reorder under
+  review). Global: `rules/code-style.md` defines the `ICEBOX:` marker (vs
+  `TODO`/`FIXME`/`XXX`) and the keyword-dense rule so a grep on a future
+  request's wording lands on the note; `CLAUDE.md` gains a **Handling Feature
+  Requests** section — scan `ICEBOX:` first, and (the *generic* form of) verify
+  external-API support against current docs before building, surfacing +
+  recording any limitation (an `ICEBOX:` note plus the dependency's
+  `rules/<tool>.md` *or* the repo's `.claude/`). The *specific* Spotify limits
+  (no queue reorder, no playlist-library reorder) live in pigify's local
+  `.claude/CONVENTIONS.md`, per the generic-global / specific-local split.
+  Landed via dotfiles PR.
 - 2026-06-12 — **Added `rules/nginx.md` (rule-coverage gap from pigify).**
   pigify configures nginx (TLS termination, the `/api` reverse proxy, and a
   CSP / `Permissions-Policy` tuned for a cross-origin SDK iframe) but there was

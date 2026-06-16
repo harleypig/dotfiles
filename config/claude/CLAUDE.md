@@ -26,6 +26,26 @@ directory and override anything stated here.
 - If a simpler approach exists, say so before implementing the requested one.
 - If the task is unclear, stop and name what is confusing before proceeding.
 
+## Handling Feature Requests
+
+Before implementing a requested feature or resolving an issue:
+
+- **Scan for prior deferred decisions first.** Run `grep -rn "ICEBOX:"`
+  across the codebase — an `ICEBOX:` marker (see `rules/code-style.md`)
+  records a considered "not now" with the context for revisiting. Surface a
+  relevant hit instead of silently re-deciding.
+- **When the feature depends on an external API / service / library, verify
+  it is actually supported** against *current* official docs before committing
+  to build it (Context7 if available, otherwise the official reference).
+  Capabilities and limits change — do not assume from memory.
+- **If it is unsupported, say so with evidence** (what the API does expose
+  versus what is missing) and offer the nearest feasible alternative.
+- **Record the limitation so it is not re-attempted:** an `ICEBOX:` note at
+  the nearest relevant code (dated, keyword-dense) **and** an entry in that
+  dependency's *Limitations* list — its `rules/<tool>.md` when the limit is a
+  generic fact about the dependency, or the repo's `.claude/` when it is a
+  repo-specific constraint.
+
 ## Scope Discipline
 
 - No features beyond what was asked.
