@@ -5,7 +5,7 @@ description: Audit a Spotify Web API / Web Playback SDK codebase for alignment w
 
 # Spotify Audit
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 Audit a codebase that integrates the Spotify Web API and/or Web Playback SDK
 for alignment with current Spotify practice and the Developer Terms. This
@@ -104,6 +104,21 @@ available — optional, not required).
   attribution in the UI, or feeding Spotify data into model training →
   Developer-Terms violation → cache only for immediate use, attribute, never
   train.
+
+## Re-evaluate each run (watch list)
+
+A finding where the repo depends on a **deprecated endpoint that has no
+current replacement** (e.g. `/audio-features`, `/audio-analysis` after the
+2024-11-27 deprecations) is **not a one-time decision — it is a watch item.**
+On **every** run, re-ask: *has anything become available since the last
+audit?* — re-verify against current docs (Context7's
+`/websites/developer_spotify_web-api`, or official) whether Spotify has
+shipped a replacement or un-deprecated it, **and** whether an open alternative
+has changed status (e.g. AcousticBrainz, ListenBrainz, Essentia for
+audio-features). Then update the repo's record — its `TODO.md` watch list or
+`.claude/` — with the **date checked and the finding**, even when nothing has
+changed (a dated "still none" is the proof the check ran). Don't silently
+re-flag the same item statically; the value is the *repeated* re-check.
 
 ## Report
 
