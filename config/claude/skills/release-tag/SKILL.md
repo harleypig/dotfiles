@@ -5,7 +5,7 @@ description: Cut a release version tag (vX.Y.Z) at a merge commit, following the
 
 # Release tag
 
-**Version:** v1.0.0
+**Version:** v1.0.1
 
 Cut a **release version tag** that follows the repo's declared tagging method.
 The *format* (`vX.Y.Z` = semver) and *tag hygiene* (annotated, at the merge
@@ -45,13 +45,21 @@ convention (tag history, release docs, CI triggers). Match what they do.
 
 ### 2. Choose the stream(s)
 
-Tag **only a stream whose shipped artifact changed**:
+Tag **only a stream whose shipped artifact changed** — what is actually built
+into that stream's image/package, **not** its tests, docs, or other unshipped
+files. A change confined to a component's subtree can still ship **nothing**
+(e.g. a test-only edit), in which case that component gets **no tag**.
 
 - `repo` → the single `v*` stream (if anything shipped).
-- `subdir` → only the component(s) whose subtree changed — a frontend-only
-  change tags `frontend/v*`, not `backend/v*`; a change to both tags each.
+- `subdir` → only the component(s) whose **shipped** files changed — a
+  frontend-only change tags `frontend/v*`, not `backend/v*`; a change to both
+  tags each. Diffing a component's subtree is the *first* cut; then confirm at
+  least one changed file is actually shipped (built into the image) — a
+  subtree whose only diff is `tests/` (or docs/CI/config it doesn't ship)
+  gets no tag.
 
-Skip docs / CI / compose / meta-only changes — they ship nothing.
+Skip changes that ship nothing — docs, CI, compose, **tests**, and other
+meta-only edits — even when they live inside a tagged component's subtree.
 
 ### 3. Decide the bump
 
