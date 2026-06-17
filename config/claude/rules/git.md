@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.4.0
+**Version:** v1.5.0
 
 ## Commit Messages
 
@@ -217,6 +217,72 @@ git branch -ra
 
 The deleted branch should no longer appear in the output.
 
+## Versioning & tags
+
+Two separate things: **what a version *is*** (the `vX.Y.Z` format — universal)
+versus **how it's *applied*** (the tagging *method* — per-repo).
+
+### What `vX.Y.Z` is
+
+`vMAJOR.MINOR.PATCH`. How strict the parts are depends on whether the major
+(`X`) has reached 1:
+
+- **`X = 0` (`v0.y.z`) — alpha / pre-stable.** **Breakage is expected**, and
+  the `y.z` split is **loose** — don't agonize over minor-vs-patch, and a
+  breaking change needs no ceremony. Roughly: bump `y` for a meaningful
+  addition, `z` for a smaller change.
+- **`X ≥ 1` (`v1.y.z`+) — stable.** The version is now a compatibility
+  promise, so `y.z` get **strict**: a **breaking change requires bumping
+  `X`** (a major bump); `y` is a backward-compatible feature; `z` is a
+  backward-compatible fix.
+
+The `0 → 1` jump — declaring the project stable — is a **major decision in
+its own right**: give it as much thought and care as any later major bump
+(`1 → 2`, …). Cross it on purpose, never by accident.
+
+### Tag hygiene (independent of method)
+
+- **Annotated** tags only — `git tag -a <tag> -m "<msg>"`, never lightweight.
+- Tag the **merge commit** the release ships from, not a side branch.
+- A pushed tag is **immutable history**: never move, delete, or re-point it.
+  A mistake gets a **new** tag, not a rewrite.
+- Push tags **explicitly** (`git push origin <tag>`); a plain `git push`
+  does not push them. Pushing usually **triggers the release/publish
+  workflow**, so it is outward-facing — **confirm before pushing**.
+
+### How it's applied — tagging methods
+
+The *scope* a tag versions is per-repo. A repo uses **one** method and
+**declares it** in its `.claude/CONVENTIONS.md` ("Versioning & tagging") — the
+method, the tag pattern(s), the bump policy, and what pushing a tag triggers.
+
+| Method | Tag pattern | Versions | Fits |
+|--------|-------------|----------|------|
+| **`repo`** | `vX.Y.Z` | the whole repo as one unit | a single deployable / one artifact |
+| **`subdir`** | `<component>/vX.Y.Z` (e.g. `backend/v*`, `frontend/v*`) | each deployable subtree independently | a monorepo with separate components/images |
+
+The catalog is **open**. If a repo needs a method not listed (e.g.
+package-name-prefixed tags in a multi-package monorepo, or date-based
+versions), that is a **config change, not an ad-hoc choice**: add the method
+to this table and teach the **release-tag** skill to derive it *before* using
+it — the same discipline as a new tool getting a `rules/<tool>.md` (see
+`CLAUDE.md` *Missing or Conflicting Tool Rules*).
+
+### Foreign / forked repos — follow theirs
+
+The catalog + declaration model is for repos **you control**. On a repo you
+do **not** own (contributing upstream, or a fork's upstream), **do not impose
+this catalog** — detect and follow **that repo's** existing convention (its
+tag history, release docs, CI triggers). Match what they do; our methods are
+for our own repos.
+
+### Cutting a tag
+
+The procedure — read the declared method, pick the changed stream(s) (only
+when a *shipped artifact* changed), decide the bump, cut the annotated tag at
+the merge commit, push, and watch the release — is the **release-tag** skill;
+`ship-pr` Step 6 delegates to it.
+
 ## Agent Rules
 
 - NEVER hardcode `main` or `master` — always derive the default branch.
@@ -243,3 +309,11 @@ The deleted branch should no longer appear in the output.
 - Scan `git config --get-regexp '^alias\.'` at the start of non-trivial
   git work; prefer formatting/complex aliases over equivalent raw
   commands. See *Aliases and Configuration* above.
+- `vX.Y.Z` is semver — `X = 0` is alpha (breakage expected, loose `y.z`);
+  once `X ≥ 1`, breaking changes require a major bump. Tags are **annotated**,
+  at the **merge commit**, and **never moved** once pushed. See *Versioning &
+  tags*.
+- Apply tags per the repo's **declared method** (`.claude/CONVENTIONS.md`
+  "Versioning & tagging" — `repo` vs `subdir`); use the **release-tag** skill.
+  A new method is a config change (add it to the catalog first), not an
+  ad-hoc choice. For a repo you don't own, follow ITS convention.

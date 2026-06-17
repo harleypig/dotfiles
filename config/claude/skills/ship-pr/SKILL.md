@@ -5,7 +5,7 @@ description: Commit a finished feature branch and push it, then — each only wi
 
 # Ship PR
 
-**Version:** v1.7.1
+**Version:** v1.8.0
 
 Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → (approval) open PR → watch CI → (approval) merge →
@@ -196,23 +196,16 @@ Read the rejection, if any:
 
 ## Step 6 — Tag the release (if the repo tags releases)
 
-If the repo's versioning convention ties a release/deploy to a **tag at the
-merge commit** (not to every merge), create and push it now — but **only for
-a change that ships an artifact**; skip docs/CI/meta-only merges. Defer to the
-repo for the scheme, the bump type (patch/minor/major), and per-component
-streams (its `CONVENTIONS.md` "Versioning & tagging"; `rules/git.md` for tag
-hygiene). **Skip entirely** if the repo doesn't tag, or the change ships
-nothing.
+If the change **ships an artifact** and the repo ties a release to a **tag at
+the merge commit**, cut it now with the **release-tag** skill — it reads the
+repo's declared tagging method (`rules/git.md` › *Versioning & tags*, plus the
+repo's `CONVENTIONS.md` "Versioning & tagging"), decides the bump (alpha-loose
+under `v0`, strict once `v1`+, the `0 → 1` jump a deliberate call), cuts the
+annotated tag(s) at the merge commit, pushes (with confirmation — it
+publishes), and watches the release.
 
-```bash
-git checkout "$DEF" && git pull --ff-only          # get the squash-merge commit
-git tag -a "<tag>" -m "<message>" "$(git rev-parse HEAD)"
-git push origin "<tag>"
-```
-
-Pushing the tag is usually what triggers the release/publish workflow — watch
-it (see Notes). Confirm the tag is what the user wants if the bump type or
-stream is ambiguous.
+**Skip entirely** for docs / CI / meta-only merges, or if the repo doesn't
+tag.
 
 ## Step 7 — Post-merge cleanup
 
