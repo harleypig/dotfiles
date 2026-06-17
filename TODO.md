@@ -37,6 +37,20 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
+## ⬆️ Bump GitHub Actions off Node.js 20 (MEDIUM PRIORITY)
+
+CI runs green but GitHub annotates a deprecation warning: `actions/checkout@v4`
+and `actions/setup-python@v5` run on Node.js 20, which is forced to Node.js 24
+starting 2026-06-16 and removed from runners 2026-09-16. Bump the pinned
+versions before the forced cutover so the workflows aren't surprised.
+
+- [ ] `.github/workflows/tests.yml` — bump `actions/checkout@v4` → `@v5`
+  (lines 25, 46, 65, 89) and `actions/setup-python@v5` → `@v6` (lines 68, 92).
+- [ ] Confirm `actions/setup-python@v6` exists / is the Node 24 line before
+  pinning; otherwise pin to whatever version GitHub ships on Node 24.
+- [ ] `opencode.yml` already uses `actions/checkout@v5` — no change needed.
+- [ ] Re-run CI and confirm the Node.js 20 deprecation annotations are gone.
+
 ## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
 
 Create a `/test-audit` skill that checks for **missing or outdated tests**
