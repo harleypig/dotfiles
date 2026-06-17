@@ -37,6 +37,25 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
+## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
+
+Create a `/test-audit` skill that checks for **missing or outdated tests**
+(scripts/functions with no test, bug fixes without a regression test, tests
+that have drifted from the code they cover) and wire it into the `qa-check`
+skill's Tests dimension (`qa.md` dimension 6).
+
+- [ ] **First reconcile with the existing `test-review` skill** — it already
+  covers "Tests dimension (quality, not execution): success AND failure
+  paths, regression-test-per-bug, edge-case gaps." Decide whether
+  `/test-audit` is a new skill or whether this is just *wiring `test-review`
+  into `qa-check`* (and possibly renaming/extending it). Avoid duplicating
+  what `test-review` already does — see the Rule of Three in `code-style.md`.
+- [ ] Define what "outdated" means concretely for this repo (e.g. a
+  `bin/`/`lib/` file newer than its `tests/shell/test_<name>.bats`, or a test
+  referencing removed code) per `TESTS.md`'s coverage rules.
+- [ ] Hook the chosen skill into `qa-check` for the Tests dimension; record
+  the status in the repo QA doc per `qa.md`.
+
 ## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 
 Both run as PR checks (alongside `bats`), but we don't yet act on their
