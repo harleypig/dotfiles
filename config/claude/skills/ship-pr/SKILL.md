@@ -5,7 +5,7 @@ description: Commit a finished feature branch and push it, then — each only wi
 
 # Ship PR
 
-**Version:** v1.7.0
+**Version:** v1.7.1
 
 Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → (approval) open PR → watch CI → (approval) merge →
@@ -153,6 +153,16 @@ you work) from *finalization* (here, completed items are pruned once the PR is
 proven green).
 
 ## Step 5 — Merge (only with explicit approval)
+
+A `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`) backstops Step
+4.5. It is **opt-in per repo** — because keeping `[x]` as a done-work record
+is a valid convention in some repos: a repo enables the hard block with the
+sentinel `merge-finalization: enforce` in its `.claude/WORKFLOW.md` or
+`.claude/CONVENTIONS.md`. In an opted-in repo it **blocks** a `gh pr merge` /
+`ship.sh merge` whose working tree still has completed `- [x]` items in
+`TODO.md` / `ROADMAP.md` (the prune was skipped). Otherwise — not opted in, or
+clean — it injects the finalization checklist as a reminder and never blocks.
+The hook is a guard; the responsibility to run Step 4.5 is still yours.
 
 Confirm the user asked to merge this branch. Discover the allowed methods
 (rulesets often restrict to squash-only) and choose:
