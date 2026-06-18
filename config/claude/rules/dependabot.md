@@ -6,7 +6,7 @@ paths:
 
 # Dependabot Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 Dependabot (native GitHub) opens PRs for dependency and version updates. It
 is the **durable** counterpart to scanning: scanners (trivy, semgrep) find
@@ -48,6 +48,13 @@ the language deps — gaps are where drift hides:
 
 ## Agent Behavior
 
+- **Before** authoring or editing `dependabot.yml`, confirm whether this rule
+  and config already exist, then **consult the current official Dependabot
+  documentation** (configuration options + ecosystem support) and verify
+  ecosystem-specific constraints — do not rely on memory; schema keys and
+  supported ecosystems change. Concrete gotcha: Poetry **security** updates
+  for *transitive* deps need a committed `poetry.lock`; without one, promote
+  the dep to a **direct** constraint as the workaround.
 - When adding or editing `dependabot.yml`, ensure **all** manifests are
   covered, including `docker` and `github-actions`.
 - Reviewing Dependabot PRs: a green grouped minor/patch PR is normally safe
