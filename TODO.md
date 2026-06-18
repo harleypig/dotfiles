@@ -661,6 +661,22 @@ shim), `show-unicode` (static table), `bash-colors` (color-var defs),
   (mostly covered by the integration tests) and any scripts elsewhere.
 - [ ] Regenerate the meta suite after adding scripts; keep Phase 3 in sync.
 
+## 🔐 Document the Claude Code auth setup (MEDIUM PRIORITY)
+
+Retrospective follow-up (PR #110): `gh.md` documents this user's dual `gh`
+credential scheme, but nothing documents the **Claude Code** auth setup —
+which cost real time (forced re-login every ~12h).
+
+- [ ] Capture the rule: **never export `ANTHROPIC_API_KEY` globally** — Claude
+  Code's auth precedence makes it override the Max subscription *and* the
+  long-lived `CLAUDE_CODE_OAUTH_TOKEN`. Prefer the long-lived `claude
+  setup-token`; Claude Code's OAuth access token is ~12h and isn't
+  auto-refreshed. Likely a short section in `mcp.md` or a new auth note.
+- [ ] Investigate why `CLAUDE_CODE_OAUTH_TOKEN` was unset in this session
+  despite the `api-keys.cfg` mapping (loader / child-session env), so the
+  long-lived token actually takes effect — ties into the `~/.claude →
+  config/claude` symlink realpath issues (CC 2.1.181).
+
 ## 🧠 Claude Rules Files (MEDIUM PRIORITY)
 
 Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the

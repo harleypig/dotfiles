@@ -65,6 +65,15 @@ goes green (see the merge-time finalization in
   don't rebuild). `enabledPlugins` 6 → 1; per-plugin rationale in
   `SETUP-AUDIT.md`. (PR #109)
 
+### Fixed
+
+- **Stopped exporting `ANTHROPIC_API_KEY` globally** (`api-keys.cfg`). Per
+  Claude Code's auth precedence it overrode the Max subscription *and* the
+  long-lived `CLAUDE_CODE_OAUTH_TOKEN`, forcing a re-login every ~12h (the
+  OAuth access-token lifetime, which Claude Code doesn't auto-refresh). Tools
+  that need the key now read it from `private_dotfiles/api-key/anthropic`
+  directly (the `mymcp` pattern). (PR #110)
+
 ## 2026-06-17
 
 ### Security
