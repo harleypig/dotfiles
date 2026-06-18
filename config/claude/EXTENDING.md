@@ -54,6 +54,11 @@ current context; no separate process.
 decisions or branches) you want done consistently — e.g. `ship-pr`,
 `qa-check`, `bats-setup`. Reach for a skill when you'd write the procedure
 up for a new contributor.
+**Authoring:** when creating or iterating a skill, use the **skill-creator**
+skill — draft it, run its evals/benchmarks on test prompts, and run its
+description-trigger optimizer so the skill fires on the right requests, not
+just whatever wording was first guessed. We are deliberately exercising
+skill-creator on every new skill to learn its worth (`SETUP-AUDIT.md`).
 
 ## Agent (subagent)
 

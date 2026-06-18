@@ -206,6 +206,14 @@ decisions are also summarized in the *Decisions log*.
 
 ### Skill ideas & future categories (not from mining)
 
+- [ ] **Rule eval / optimization (analogous to `skill-creator`)** — `skill-
+  creator` measures whether a *skill* triggers on the right prompts and does
+  its job (evals/benchmarks + a description-trigger optimizer). Investigate the
+  same for *rules*: can we measure whether a rule is actually applied at the
+  right moments, and optimize its wording/`paths:` so it fires when it should?
+  Decide only **after** we have exercised skill-creator enough to judge the
+  approach's worth (see the skill-creator decision in the Decisions log). May
+  reuse skill-creator's harness rather than build new.
 - [ ] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
   issue → **agent** investigates it against the codebase via the
   `debug-assistant` skill (root cause, "simple or not", proposed fix or a
@@ -229,6 +237,24 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-18 — **Kept `skill-creator` (the one plugin worth keeping) and put
+  it to work.** Unlike the four dropped plugins, skill-creator is **not
+  redundant** — it is a skill-authoring + **evaluation** harness (analyzer /
+  comparator / grader agents; `run_eval` / `aggregate_benchmark` /
+  `improve_description` / `package_skill` / `quick_validate` scripts; an
+  eval-viewer) whose quantitative skill evals and **description-trigger
+  optimization** are a capability we otherwise lack. It is Anthropic-official
+  (low supply-chain risk, stays current), so we **keep it enabled** rather than
+  vendor + restyle ~8 third-party Python scripts for a tool not yet exercised.
+  To stop it sitting idle, it is now **wired into our workflow**: the
+  `claude-audit` skill names it as the standing tool for the skills dimension
+  (measure triggering/behaviour, not eyeball the frontmatter), and
+  `EXTENDING.md` instructs using it when **authoring/iterating any skill**
+  (draft → eval → description-optimize). The sooner it is used, the sooner we
+  learn whether to leave it as a plugin, **vendor** it, borrow its ideas, or
+  drop it. **Follow-up logged** (audit backlog): investigate an analogous
+  **rule eval / optimization** capability (possibly reusing skill-creator's
+  harness). Landed via dotfiles PR.
 - 2026-06-18 — **Dropped the `ralph-loop` plugin (built-in `/loop` covers
   it).** ralph-loop implements the "Ralph Wiggum" technique: a **Stop hook**
   that blocks Claude's exit and re-feeds the same prompt until a completion

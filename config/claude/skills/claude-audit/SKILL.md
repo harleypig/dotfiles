@@ -95,6 +95,14 @@ Resolve the library id, then query the specific question. It is **second-class**
 dependency the resulting rules/skills rely on, and the audit must work
 without it. Fall back to official docs or a shallow clone when it's absent.
 
+**Evaluate skills with `skill-creator`.** When the audit questions a skill's
+quality or whether its `description` triggers on the right requests, use the
+**skill-creator** skill — its evals / benchmarks and description-trigger
+optimizer *measure* triggering and behaviour rather than eyeballing the
+frontmatter. This is the audit's standing tool for the skills dimension; the
+more it is used, the sooner we learn whether to leave skill-creator enabled,
+vendor it, borrow its ideas, or drop it (`SETUP-AUDIT.md`).
+
 ## Mining repos for ideas
 
 An audit improves the **whole** dev environment, not just the current repo —
