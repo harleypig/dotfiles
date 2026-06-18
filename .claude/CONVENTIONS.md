@@ -37,3 +37,9 @@ The principles below are a working subset relevant to this repository.
 - Keep the subject line under 72 characters.
 - Wrap body at 72 columns.
 - Reference issues where applicable: `Fixes #123`, `Relates to #456`.
+
+## Quality Assurance
+
+This repo's QA map — the concrete tools, commands, and a per-dimension
+status for every dimension in the global `config/claude/rules/qa.md`
+pipeline — lives in [`QA.md`](QA.md). The **qa-check** skill reads it.

@@ -155,3 +155,26 @@ real costs (xtrace artifacts).
 - **`tests.yml`** runs on push to `master` and on pull requests, executing
   BATS tests and running shellcheck/yamllint/markdownlint via the
   `pre-commit` job.
+
+## Planning-doc history (TODO.md)
+
+Revision history of the planning document itself, moved here from
+[`TODO.md`](TODO.md):
+
+- **v1.2.0** (2026-06-17): Merge-finalization opt-in. Pruned all completed
+  `- [x]` items (whole DONE sections: spotify-patterns, gmailctl move,
+  creds-helper fix, perl CI, login-shell perf; plus done sub-items across
+  Testing, pre-commit Phase 1/3, and CI/CD Phase 1), migrating the
+  done-work record to this changelog. Also removed the two duplicate "Bump
+  GitHub Actions off Node.js 20" sections (completed in PR #101 — verified
+  against `tests.yml`). This repo now opts in to the merge-time finalization
+  hook (see `.claude/WORKFLOW.md`), so the planning docs track only open work.
+- **v1.1.0** (2026-06-07): Cleanup pass — removed completed sections (git
+  file-mode normalization, Dependabot alerts, stale-branch cleanup, the
+  container-harness build, shell context detection, and assorted done
+  sub-items), fixed stale/contradictory statuses, deduplicated entries
+  (grok block, bash_prompt venv, parse_params), dropped stale items for
+  archived libs, and refreshed Progress Tracking + Next Actions.
+- **v1.0.0** (2026-01-18): Initial consolidated TODO based on modernization
+  plan. Documented completed tasks, organized remaining work by phase and
+  priority.

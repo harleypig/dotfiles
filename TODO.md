@@ -23,6 +23,18 @@ follow-up remains:
 - [ ] Confirm Dependabot / auto-merge interplay once a Dependabot PR appears
   (squash-only + required checks — ensure auto-merge still completes).
 
+## 📦 Commit a poetry.lock for the Poetry tool-env (MEDIUM PRIORITY)
+
+`config/pypoetry/pyproject.toml` has no committed `poetry.lock`, so transitive
+dependencies aren't pinned and Dependabot can't open security-update PRs for
+them. Alert #6 (`cryptography`) was remediated with a **direct** pin in the
+manifest instead; per `rules/poetry.md` the lockfile MUST be committed.
+
+- [ ] Generate and commit `config/pypoetry/poetry.lock` (resolving
+  `cryptography >= 48.0.1`) so transitive deps are pinned and Dependabot
+  security updates can cover them. Larger change than the direct pin — its
+  own fix.
+
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
 We use a single branch ruleset (protect master). Survey what else rulesets
@@ -1116,27 +1128,6 @@ in the future.
 - Code improvements and config enhancements are cataloged but can be addressed
   opportunistically
 - Template creation is extensive future work, deferred for now
-
-## Version History
-
-- **v1.2.0** (2026-06-17): Merge-finalization opt-in. Pruned all completed
-  `- [x]` items (whole DONE sections: spotify-patterns, gmailctl move,
-  creds-helper fix, perl CI, login-shell perf; plus done sub-items across
-  Testing, pre-commit Phase 1/3, and CI/CD Phase 1), migrating the
-  done-work record to the new [`CHANGELOG.md`](CHANGELOG.md). Also removed
-  the two duplicate "Bump GitHub Actions off Node.js 20" sections (completed
-  in PR #101 — verified against `tests.yml`). This repo now opts in to the
-  merge-time finalization hook (see `WORKFLOW.md`), so the planning docs
-  track only open work.
-- **v1.1.0** (2026-06-07): Cleanup pass — removed completed sections (git
-  file-mode normalization, Dependabot alerts, stale-branch cleanup, the
-  container-harness build, shell context detection, and assorted done
-  sub-items), fixed stale/contradictory statuses, deduplicated entries
-  (grok block, bash_prompt venv, parse_params), dropped stale items for
-  archived libs, and refreshed Progress Tracking + Next Actions.
-- **v1.0.0** (2026-01-18): Initial consolidated TODO based on modernization
-  plan. Documented completed tasks, organized remaining work by phase and
-  priority.
 
 ## References
 
