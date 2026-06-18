@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # This tests for the variable in the environment, not in secrets.
       # - name: Verify required secrets
