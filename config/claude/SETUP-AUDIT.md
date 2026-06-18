@@ -228,6 +228,32 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-18 — **context7 MCP: marketplace plugin → `mymcp` (own/version it).**
+  The context7 plugin bundled nothing but its MCP server (`npx -y
+  @upstash/context7-mcp`) — no skills/commands/rules/agents/hooks — so there
+  was nothing to convert to a rule/skill, only the launcher to re-home. Added
+  a `context7()` case to `bin/mymcp` (`npx_run '@upstash/context7-mcp'`) and
+  dropped `context7@claude-plugins-official` from `enabledPlugins` in
+  `config/claude/settings.json` (the same file as `~/.claude/settings.json`
+  via the `~/.claude → config/claude` symlink, so one edit covers both).
+  context7 is wanted **globally**, so it is re-registered at **user scope** —
+  `claude mcp add context7 --scope user -- mymcp context7`, written to the
+  personal, uncommitted `~/.claude.json`. (Verified via claude-code-guide:
+  MCP servers are **not** configured in `settings.json`, and user scope is the
+  only all-projects mechanism short of bundling a plugin — so there is no
+  committed global-MCP file; the launcher is what we own/version, the
+  registration is a per-machine deploy step.) Same global availability as the
+  plugin, but the `mymcp` launcher is now ours instead of a marketplace
+  dependency. The Context7 API key now comes from the private store —
+  `context7()` does `read_api_key context7` and passes it via the
+  `CONTEXT7_API_KEY` env var the server reads — so the key no longer needs
+  exporting into every shell; its line was removed from `api-keys.cfg`.
+  **Deferred:** `config/opencode/config.json`'s remote context7 still reads
+  `{env:CONTEXT7_API_KEY}` and will be broken until reconfigured — left as-is
+  per the user (opencode unused lately; fix on next encounter). Smoke-tested:
+  `mymcp context7` launches Context7 v3.2.1 over stdio and answers the MCP
+  `initialize` handshake; full tool-resolution is a post-deploy check
+  (re-register + reload). Landed via dotfiles PR.
 - 2026-06-16 — **`ICEBOX:` marker + feature-request behaviors (from pigify).**
   Standardized a discoverability convention for *deferred / revisit-on-request*
   decisions, born from a real pigify case (persistent playlist reorder under

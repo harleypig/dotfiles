@@ -94,6 +94,22 @@ snyk() {
 known_cmd['snyk']=1
 
 #------------------------------------------------------------------------------
+# https://github.com/upstash/context7 (package: @upstash/context7-mcp).
+# Replaces the marketplace context7 plugin so the server is owned and
+# versioned here. context7 is wanted globally, so register it once at
+# user scope (MCP servers are not configured in settings.json):
+#   claude mcp add context7 --scope user -- mymcp context7
+# The API key is read from the private store and passed via the env var
+# the server reads (so it no longer needs exporting into every shell).
+context7() {
+  export CONTEXT7_API_KEY
+  CONTEXT7_API_KEY="$(read_api_key context7)"
+  npx_run '@upstash/context7-mcp'
+}
+
+known_cmd['context7']=1
+
+#------------------------------------------------------------------------------
 # https://github.com/Pimzino/spec-workflow-mcp
 spec_workflow() {
   npx_run "@pimzino/spec-workflow-mcp@latest" "$@"
