@@ -65,50 +65,6 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🔌 Convert marketplace plugins to in-repo rules/skills (MEDIUM PRIORITY)
-
-Replace these installed plugins with rules/skills that live in our own
-`config/claude/` and fit our environment (XDG paths, `mymcp`, our QA/git
-workflow), so we own and version the behaviour instead of depending on
-external marketplace plugins:
-
-- [x] **claude-code-setup** — dropped (redundant; covered by EXTENDING.md /
-  CLAUDE.md proposal triggers / claude-audit).
-- [x] **claude-md-management** — dropped; its useful idea rebuilt as the new
-  `retrospective` skill (memory system + documentation.md + claude-audit
-  cover the rest).
-- [x] **hookify** — dropped + ICEBOX (kept our bespoke-hook model; revisit a
-  declarative guard engine only on Rule-of-Three).
-- [x] **ralph-loop** — dropped + ICEBOX (built-in `/loop` covers it; extend
-  `/loop`, don't rebuild).
-- [x] **skill-creator** — kept (documented exception — the one non-redundant
-  plugin); wired into claude-audit + EXTENDING.md.
-
-For each: extract the useful behaviour into a `config/claude/rules/<name>.md`
-or `config/claude/skills/<name>/` per the three-tier model in `CLAUDE.md`,
-drop anything redundant with what we already have, then disable/remove the
-plugin in `settings.json` + `installed_plugins.json`. Record the outcome in
-`SETUP-AUDIT.md`.
-
-## 🔁 Point the context7 plugin at `mymcp` (MEDIUM PRIORITY)
-
-**Investigation done:** the `context7` plugin contains **nothing besides the
-MCP server** — just `.mcp.json` (`npx -y @upstash/context7-mcp`) and a
-`plugin.json` manifest. No skills, commands, rules, agents, or hooks. So there
-is nothing to convert to a rule/skill; it only needs to run through our own
-MCP launcher.
-
-- [x] Added a `context7` case to `bin/mymcp` (also reads the API key from the
-  private store and passes `CONTEXT7_API_KEY`; removed the global export from
-  `api-keys.cfg`).
-- [x] Registered context7 — at **user scope** (global), not per-repo:
-  `claude mcp add context7 --scope user -- mymcp context7` (a deploy step;
-  `~/.claude.json` is uncommitted — MCP servers aren't in `settings.json`).
-- [x] Disabled the plugin: dropped `"context7@claude-plugins-official"` from
-  `settings.json` (one file — `~/.claude` is a symlink to `config/claude`).
-- [x] Verified via the MCP `initialize` handshake (Context7 v3.2.1 over
-  stdio); recorded in `SETUP-AUDIT.md`. Full tool-resolution is post-deploy.
-
 ## 🐙 `/github-tasks` skill — recurring GitHub housekeeping (MEDIUM PRIORITY)
 
 Create a `/github-tasks` skill that sweeps the repo's GitHub state and drives
@@ -228,24 +184,29 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
 
-## 📓 Rule/skill-authoring doc-sourcing; evaluate a Dependabot skill (MEDIUM PRIORITY)
+## 📓 Evaluate a Dependabot skill (MEDIUM PRIORITY)
 
-`config/claude/rules/dependabot.md` already exists (since 2026-06-03) and now
-carries a doc-consultation instruction (v1.1.0). What remains is cross-cutting:
+`config/claude/rules/dependabot.md` already exists (since 2026-06-03) and
+carries a doc-consultation instruction (v1.1.0). One follow-up remains
+(the rule/skill-authoring doc-sourcing half is now done — see CHANGELOG):
 
-- [x] **Rule/skill-authoring must source docs** — codified in `EXTENDING.md`
-  (*Grounding & sourcing*, canonical): check the artifact doesn't already
-  exist, then ground it in official docs / man page / local package docs (not
-  memory) and cite the source (rule *Sources* section — added to
-  `rule-TEMPLATE.md`; skill `SOURCE.md`). Referenced from `CLAUDE.md` (*Missing
-  or Conflicting Tool Rules*); `/claude-audit` gained a grounding lens to
-  catch ungrounded artifacts. Added once + referenced, not duplicated.
 - [ ] **Evaluate a `dependabot` skill** — a forcing function that scans the
   repo for every manifest / Dockerfile / workflow, consults current official
   docs, generates/reconciles `dependabot.yml` to full coverage + conventions
   (per `rules/dependabot.md`), and verifies (yamllint). Decide scope vs the
   existing `security-scan` skill (which *triages* Dependabot findings) — setup
   vs triage; avoid duplication (Rule of Three).
+
+## 🧪 Dogfood skill-creator on the retrospective skill (LOW PRIORITY)
+
+Retrospective follow-up (from the PR that added the `retrospective` skill):
+`EXTENDING.md` now says to use **skill-creator** when authoring a skill, but
+`retrospective` predated that rule. Exercising skill-creator on it both
+validates the skill and starts the keep/vendor/borrow/drop learning its
+`SETUP-AUDIT.md` decision calls for.
+
+- [ ] Run skill-creator's eval + description-trigger optimizer on the
+  `retrospective` skill; apply or capture what it surfaces.
 
 ## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
 
