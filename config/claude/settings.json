@@ -11,6 +11,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/branch-protection.py",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUse": [
