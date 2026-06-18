@@ -103,6 +103,25 @@ frontmatter. This is the audit's standing tool for the skills dimension; the
 more it is used, the sooner we learn whether to leave skill-creator enabled,
 vendor it, borrow its ideas, or drop it (`SETUP-AUDIT.md`).
 
+**Check reference consistency (cross-impact).** Artifacts cross-reference each
+other by greppable name — rules by filename (`git.md`), skills by name, hooks
+by path, `[[links]]` in docs. When the audit recommends **changing, moving, or
+deleting** an artifact, `grep config/claude/` for references to it and confirm
+each referrer is still accurate: a renamed flag, moved section, dropped skill,
+or bumped version silently leaves its referrers stale. **Fix or flag the
+ripple — never change the target in isolation.** (Where the repo has a
+structure map — e.g. a `STRUCTURE.md` of rule/skill/hook edges — it charts
+this for humans; the grep is the actual check regardless.)
+
+**Check grounding (author-from-docs).** Each rule/skill should be grounded in,
+and cite, an authoritative source where one exists — official docs / man page
+(a rule's **Sources** section) or an adapted-from `SOURCE.md` (a skill) — per
+`EXTENDING.md` *Grounding & sourcing*. Flag any artifact that asserts a
+tool/library/API's behaviour with **no source and not marked a house
+convention**: its claims may be memory-based and already stale. This pairs
+with the currency check above (Context7) — grounding is *whether* a source
+exists; currency is *whether* it is still current.
+
 ## Mining repos for ideas
 
 An audit improves the **whole** dev environment, not just the current repo —
