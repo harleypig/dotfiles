@@ -152,6 +152,20 @@ This separates *progress tracking* (Step 1 marks items done / adds new ones as
 you work) from *finalization* (here, completed items are pruned once the PR is
 proven green).
 
+## Step 4.6 — Retrospective (agent tooling, advisory)
+
+Run the **retrospective** skill: a short reflection on whether the work hit
+friction with the agent's **own tooling** — a missing/stale rule, a procedure
+worth a skill, a rule worth enforcing with a hook, recipe depth worth a
+patterns file, an awkward command or MCP entry. Each finding becomes a
+**detailed, open** `- [ ]` TODO (routed global vs repo-local), **not** an edit
+— capturing it keeps this PR focused; `claude-audit` works the backlog later.
+
+It is **advisory, never a gate**. Fold any TODO additions into the Step 4.5
+doc-only commit (or a quick follow-up) and re-watch CI once before merging. A
+clean retrospective ("nothing to change") is a valid outcome — say so and move
+on.
+
 ## Step 5 — Merge (only with explicit approval)
 
 A `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`) backstops Step
