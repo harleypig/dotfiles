@@ -22,6 +22,15 @@ Brief description of what the command does and when to use it.
 
 Where the config lives, how it is resolved, and any Docker wrapper notes.
 
+## Sources
+
+What this rule is grounded in (per `EXTENDING.md` *Grounding & sourcing*) —
+the official docs / man page(s) it is built on, so it can be re-checked when
+the tool changes. State "house convention — no external source" if none
+applies.
+
+- <official doc URL, or `man <tool>` / `<tool> --help` / `/usr/share/doc/<pkg>`>
+
 ## Agent Behavior
 
 - After creating or modifying any file matched by the paths above:

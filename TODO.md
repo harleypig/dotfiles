@@ -65,47 +65,6 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🔌 Convert marketplace plugins to in-repo rules/skills (MEDIUM PRIORITY)
-
-Replace these installed plugins with rules/skills that live in our own
-`config/claude/` and fit our environment (XDG paths, `mymcp`, our QA/git
-workflow), so we own and version the behaviour instead of depending on
-external marketplace plugins:
-
-- [ ] **claude-code-setup** (`claude-automation-recommender` skill).
-- [ ] **claude-md-management** (`claude-md-improver` + `revise-claude-md`
-  skills) — overlaps our existing CLAUDE.md/rules discipline; reconcile.
-- [ ] **hookify** (skills + `conversation-analyzer` agent + the hook
-  machinery) — our hooks live under `~/.claude/hooks/`; decide what carries
-  over.
-- [ ] **ralph-loop** (`ralph-loop` / `cancel-ralph` / `help` skills).
-- [ ] **skill-creator** (`skill-creator` skill).
-
-For each: extract the useful behaviour into a `config/claude/rules/<name>.md`
-or `config/claude/skills/<name>/` per the three-tier model in `CLAUDE.md`,
-drop anything redundant with what we already have, then disable/remove the
-plugin in `settings.json` + `installed_plugins.json`. Record the outcome in
-`SETUP-AUDIT.md`.
-
-## 🔁 Point the context7 plugin at `mymcp` (MEDIUM PRIORITY)
-
-**Investigation done:** the `context7` plugin contains **nothing besides the
-MCP server** — just `.mcp.json` (`npx -y @upstash/context7-mcp`) and a
-`plugin.json` manifest. No skills, commands, rules, agents, or hooks. So there
-is nothing to convert to a rule/skill; it only needs to run through our own
-MCP launcher.
-
-- [ ] Add a `context7` case to `bin/mymcp`:
-  `context7() { npx_run '@upstash/context7-mcp'; }` + `known_cmd['context7']=1`
-  (`npx_run` already prepends `-y`, so pass only the package).
-- [ ] Register context7 as an `mcpServers` entry running `mymcp context7`
-  (stdio) the way `github`/`snyk` are, instead of the marketplace plugin.
-- [ ] Disable the plugin: drop `"context7@claude-plugins-official": true` from
-  both `config/claude/settings.json` and `~/.claude/settings.json` (they
-  mirror).
-- [ ] Verify the context7 MCP tools still resolve after the switch; record in
-  `SETUP-AUDIT.md`.
-
 ## 🐙 `/github-tasks` skill — recurring GitHub housekeeping (MEDIUM PRIORITY)
 
 Create a `/github-tasks` skill that sweeps the repo's GitHub state and drives
@@ -225,26 +184,29 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
 
-## 📓 Rule/skill-authoring doc-sourcing; evaluate a Dependabot skill (MEDIUM PRIORITY)
+## 📓 Evaluate a Dependabot skill (MEDIUM PRIORITY)
 
-`config/claude/rules/dependabot.md` already exists (since 2026-06-03) and now
-carries a doc-consultation instruction (v1.1.0). What remains is cross-cutting:
+`config/claude/rules/dependabot.md` already exists (since 2026-06-03) and
+carries a doc-consultation instruction (v1.1.0). One follow-up remains
+(the rule/skill-authoring doc-sourcing half is now done — see CHANGELOG):
 
-- [ ] **Rule/skill-authoring must source docs** — whatever governs creating
-  rules/skills (`config/claude/EXTENDING.md`, `config/claude/CLAUDE.md`,
-  `config/claude/rule-TEMPLATE.md`) should state that a new rule/skill must
-  first **check whether the rule already exists**, **consult official
-  documentation**, and refer to any **man page / local package-installed
-  docs** (`man <tool>`, `<tool> --help`, `/usr/share/doc/<pkg>`) — not memory.
-  Motivating incident: a `dependabot.yml` was authored on the false premise
-  that `rules/dependabot.md` didn't exist (it did). Add once to the canonical
-  authoring doc and reference it; don't duplicate.
 - [ ] **Evaluate a `dependabot` skill** — a forcing function that scans the
   repo for every manifest / Dockerfile / workflow, consults current official
   docs, generates/reconciles `dependabot.yml` to full coverage + conventions
   (per `rules/dependabot.md`), and verifies (yamllint). Decide scope vs the
   existing `security-scan` skill (which *triages* Dependabot findings) — setup
   vs triage; avoid duplication (Rule of Three).
+
+## 🧪 Dogfood skill-creator on the retrospective skill (LOW PRIORITY)
+
+Retrospective follow-up (from the PR that added the `retrospective` skill):
+`EXTENDING.md` now says to use **skill-creator** when authoring a skill, but
+`retrospective` predated that rule. Exercising skill-creator on it both
+validates the skill and starts the keep/vendor/borrow/drop learning its
+`SETUP-AUDIT.md` decision calls for.
+
+- [ ] Run skill-creator's eval + description-trigger optimizer on the
+  `retrospective` skill; apply or capture what it surfaces.
 
 ## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
 

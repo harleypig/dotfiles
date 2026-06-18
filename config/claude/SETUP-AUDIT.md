@@ -189,9 +189,10 @@ decisions are also summarized in the *Decisions log*.
 - [x] **`git-worktree-workflow` reconcile-gone-branches** — guarded bulk-remove
   of `[gone]` branches + worktrees (confirm each, skip dirty, no blanket
   `--force` / `fetch --prune`). Done — Operation 7 (skill v1.1.0).
-- [ ] **Trial `ralph-loop`** (autonomous completion loop, distinct from
-  `/loop`). Unbounded — set a max-iteration cap, respect CLAUDE.md autonomy
-  boundaries.
+- [x] **Decided: dropped `ralph-loop`** (2026-06-18) — not trialed; built-in
+  `/loop` covers autonomous iteration. See Decisions log. ICEBOX preserves the
+  exit-blocking technique as a revisit, *via `/loop`* rather than new
+  machinery.
 - [x] **Evaluated `pr-review-toolkit`, `feature-dev`, `security-guidance`** —
   all dropped (redundant with built-ins / `qa.md` / `security-scan`). Vendor
   bits surfaced by the repo that needs them — don't build proactively:
@@ -205,6 +206,14 @@ decisions are also summarized in the *Decisions log*.
 
 ### Skill ideas & future categories (not from mining)
 
+- [ ] **Rule eval / optimization (analogous to `skill-creator`)** — `skill-
+  creator` measures whether a *skill* triggers on the right prompts and does
+  its job (evals/benchmarks + a description-trigger optimizer). Investigate the
+  same for *rules*: can we measure whether a rule is actually applied at the
+  right moments, and optimize its wording/`paths:` so it fires when it should?
+  Decide only **after** we have exercised skill-creator enough to judge the
+  approach's worth (see the skill-creator decision in the Decisions log). May
+  reuse skill-creator's harness rather than build new.
 - [ ] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
   issue → **agent** investigates it against the codebase via the
   `debug-assistant` skill (root cause, "simple or not", proposed fix or a
@@ -228,6 +237,122 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-18 — **Kept `skill-creator` (the one plugin worth keeping) and put
+  it to work.** Unlike the four dropped plugins, skill-creator is **not
+  redundant** — it is a skill-authoring + **evaluation** harness (analyzer /
+  comparator / grader agents; `run_eval` / `aggregate_benchmark` /
+  `improve_description` / `package_skill` / `quick_validate` scripts; an
+  eval-viewer) whose quantitative skill evals and **description-trigger
+  optimization** are a capability we otherwise lack. It is Anthropic-official
+  (low supply-chain risk, stays current), so we **keep it enabled** rather than
+  vendor + restyle ~8 third-party Python scripts for a tool not yet exercised.
+  To stop it sitting idle, it is now **wired into our workflow**: the
+  `claude-audit` skill names it as the standing tool for the skills dimension
+  (measure triggering/behaviour, not eyeball the frontmatter), and
+  `EXTENDING.md` instructs using it when **authoring/iterating any skill**
+  (draft → eval → description-optimize). The sooner it is used, the sooner we
+  learn whether to leave it as a plugin, **vendor** it, borrow its ideas, or
+  drop it. **Follow-up logged** (audit backlog): investigate an analogous
+  **rule eval / optimization** capability (possibly reusing skill-creator's
+  harness). Landed via dotfiles PR.
+- 2026-06-18 — **Dropped the `ralph-loop` plugin (built-in `/loop` covers
+  it).** ralph-loop implements the "Ralph Wiggum" technique: a **Stop hook**
+  that blocks Claude's exit and re-feeds the same prompt until a completion
+  promise, an autonomous "keep going until DONE" loop, plus `/ralph-loop` /
+  `/cancel-ralph` / `/help` commands. Dropped because the built-in **`/loop`**
+  skill already does self-paced autonomous iteration (omit the interval) plus
+  scheduled re-firing (ScheduleWakeup); ralph-loop's distinctive
+  exit-blocking-until-promise mechanism is also the riskiest part — unbounded
+  by default and in tension with `CLAUDE.md`'s autonomy boundaries — and it
+  was never trialed. Disabled via `enabledPlugins`; cache +
+  `installed_plugins.json` are gitignored local state; the stale "Trial
+  ralph-loop" audit-backlog item is resolved to this decision.
+  `ICEBOX:` if an autonomous **completion loop** / **exit-blocking "until
+  DONE" loop** (ralph / Ralph Wiggum technique) is ever wanted, **extend the
+  existing `/loop` command** (self-pacing + a completion check + a
+  max-iteration cap) rather than build new but similar machinery — incorporate
+  `/loop`, don't reinvent it.
+- 2026-06-18 — **Dropped the `hookify` plugin (kept our bespoke-hook model).**
+  hookify is a ~847-LOC vendored Python rule engine + four generic hook entry
+  points that evaluate declarative markdown rules
+  (`.claude/hookify.<name>.local.md`) to warn/block on bash/file/stop/prompt
+  events, plus a `conversation-analyzer` agent and a `writing-rules` skill. It
+  is a different hook model from ours (bespoke, single-purpose Python per hook:
+  `merge-finalization.py`, `rule-coverage.py`, `branch-protection.py`).
+  Dropped because: (a) the "own **and version**" goal cuts against it — its
+  rules are gitignored, per-machine `*.local.md`, whereas our committed hooks
+  are versioned; (b) none of our real hooks fit its pattern model (each needs
+  custom logic — reading `.pre-commit-config.yaml`, scanning TODO, tracking
+  deps); (c) owning 847 LOC that can block every tool event is a real
+  maintenance + **security** surface for trivial guards we have never needed;
+  (d) the conversation-analyzer "mine pain → propose a guard" angle is now
+  covered by the new `retrospective` skill. Disabled via `enabledPlugins`;
+  cache + `installed_plugins.json` are gitignored local state.
+  `ICEBOX:` revisit a **declarative hook / guard-rule engine** — hookify-style
+  pattern-based block/warn guard rules, low-friction declarative hooks without
+  bespoke Python — **only if** we start writing many trivial pattern-guards
+  and the Rule of Three kicks in. Until then, write a bespoke hook (cf.
+  `branch-protection.py`). Landed via dotfiles PR.
+- 2026-06-18 — **Dropped the `claude-md-management` plugin; built the
+  `retrospective` skill from its idea.** The plugin's `claude-md-improver`
+  (audit/edit CLAUDE.md against a rubric) and `revise-claude-md` (append
+  session learnings to CLAUDE.md) are redundant with, and structurally
+  mismatched to, our setup: it is CLAUDE.md-centric, whereas our repo context
+  is split across `.claude/CLAUDE.md` → WORKFLOW/CONVENTIONS/TESTS/QA (quality
+  + currency governed by `documentation.md`, audited by `claude-audit`), and
+  "capture session learnings" is already the **memory system**'s job (richer:
+  structured frontmatter + index) — appending prose to CLAUDE.md would erode
+  the curated, versioned file. So the plugin was **dropped** (disabled via
+  `enabledPlugins`; cache + `installed_plugins.json` are gitignored local
+  state). The one genuinely useful idea — *reflect after a piece of work and
+  persist what was learned* — was **rebuilt, not converted**, as the global
+  `retrospective` skill, but aimed at the **agent's own tooling** (rules /
+  skills / hooks / patterns / commands / MCP): it runs as **ship-pr Step 4.6**
+  (advisory, never a gate), decides kind + scope per `EXTENDING.md` + the
+  three-tier model, and captures each finding as a detailed open TODO routed
+  global vs repo-local — feeding `claude-audit`'s backlog. Landed via dotfiles
+  PR.
+- 2026-06-18 — **Dropped the `claude-code-setup` plugin (redundant).** Its sole
+  content is the read-only `claude-automation-recommender` skill — "analyze a
+  repo's stack → suggest 1–2 Claude Code automations per category." The
+  capability is already covered, and better fitted to our environment, by
+  `CLAUDE.md` (*When to Propose a Skill* + *Missing or Conflicting Tool Rules*
+  — proactive gap-surfacing as work happens), `EXTENDING.md` (the placement
+  ladder: rule vs skill vs hook vs MCP, global-lazy vs per-repo), the
+  `claude-audit` skill (surfaces gaps from each repo's vantage), and `mcp.md`
+  (the mymcp pattern). Converting it would mean rewriting nearly all of its
+  concrete advice, which actively conflicts with our setup (`claude mcp add
+  context7` vs mymcp, recommending marketplace plugins we're removing, generic
+  `.claude/skills/` patterns vs the three-tier model) — duplication, not
+  value. Disabled via `enabledPlugins` in `config/claude/settings.json`; the
+  cached copy + `installed_plugins.json` entry are gitignored local state
+  (optional cleanup). Landed via dotfiles PR.
+- 2026-06-18 — **context7 MCP: marketplace plugin → `mymcp` (own/version it).**
+  The context7 plugin bundled nothing but its MCP server (`npx -y
+  @upstash/context7-mcp`) — no skills/commands/rules/agents/hooks — so there
+  was nothing to convert to a rule/skill, only the launcher to re-home. Added
+  a `context7()` case to `bin/mymcp` (`npx_run '@upstash/context7-mcp'`) and
+  dropped `context7@claude-plugins-official` from `enabledPlugins` in
+  `config/claude/settings.json` (the same file as `~/.claude/settings.json`
+  via the `~/.claude → config/claude` symlink, so one edit covers both).
+  context7 is wanted **globally**, so it is re-registered at **user scope** —
+  `claude mcp add context7 --scope user -- mymcp context7`, written to the
+  personal, uncommitted `~/.claude.json`. (Verified via claude-code-guide:
+  MCP servers are **not** configured in `settings.json`, and user scope is the
+  only all-projects mechanism short of bundling a plugin — so there is no
+  committed global-MCP file; the launcher is what we own/version, the
+  registration is a per-machine deploy step.) Same global availability as the
+  plugin, but the `mymcp` launcher is now ours instead of a marketplace
+  dependency. The Context7 API key now comes from the private store —
+  `context7()` does `read_api_key context7` and passes it via the
+  `CONTEXT7_API_KEY` env var the server reads — so the key no longer needs
+  exporting into every shell; its line was removed from `api-keys.cfg`.
+  **Deferred:** `config/opencode/config.json`'s remote context7 still reads
+  `{env:CONTEXT7_API_KEY}` and will be broken until reconfigured — left as-is
+  per the user (opencode unused lately; fix on next encounter). Smoke-tested:
+  `mymcp context7` launches Context7 v3.2.1 over stdio and answers the MCP
+  `initialize` handshake; full tool-resolution is a post-deploy check
+  (re-register + reload). Landed via dotfiles PR.
 - 2026-06-16 — **`ICEBOX:` marker + feature-request behaviors (from pigify).**
   Standardized a discoverability convention for *deferred / revisit-on-request*
   decisions, born from a real pigify case (persistent playlist reorder under

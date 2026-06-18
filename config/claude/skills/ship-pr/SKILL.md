@@ -78,9 +78,12 @@ to the change, per the repo's QA doc) and reports each dimension's status.
 (qa-check's CI stage is Step 4 here, not part of this local pass.) This
 includes the **Documentation** dimension — update the docs, `TODO`/roadmap,
 and any rules/skills (global *and* local) this change touches before
-committing. (Here you **mark** progress / add new items; **removing** the
-completed `TODO`/`ROADMAP` items is deferred to the merge-time finalization,
-Step 4.5, so they're pruned only once the PR is proven green.)
+committing. **Mark each completed `TODO`/`ROADMAP` item `[x]` in the commit
+that completes it** (the *mark-as-you-go* rule in `git.md`; this skill runs
+once at the end, so the rule lives there to be in context at every commit) and
+add newly-surfaced follow-ups as open `- [ ]`. *Removing* the `[x]` items is
+deferred to the merge-time finalization (Step 4.5), so they're pruned only
+once the PR is proven green.
 
 qa-check's format/lint/test stages are the pre-commit sequence — run it ONCE
 (per `rules/pre-commit.md`): the fix config, then the check config.
@@ -151,6 +154,20 @@ since only documentation changed. Proceed to merge only after that is green.
 This separates *progress tracking* (Step 1 marks items done / adds new ones as
 you work) from *finalization* (here, completed items are pruned once the PR is
 proven green).
+
+## Step 4.6 — Retrospective (agent tooling, advisory)
+
+Run the **retrospective** skill: a short reflection on whether the work hit
+friction with the agent's **own tooling** — a missing/stale rule, a procedure
+worth a skill, a rule worth enforcing with a hook, recipe depth worth a
+patterns file, an awkward command or MCP entry. Each finding becomes a
+**detailed, open** `- [ ]` TODO (routed global vs repo-local), **not** an edit
+— capturing it keeps this PR focused; `claude-audit` works the backlog later.
+
+It is **advisory, never a gate**. Fold any TODO additions into the Step 4.5
+doc-only commit (or a quick follow-up) and re-watch CI once before merging. A
+clean retrospective ("nothing to change") is a valid outcome — say so and move
+on.
 
 ## Step 5 — Merge (only with explicit approval)
 
