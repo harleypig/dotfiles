@@ -233,15 +233,13 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
 `config/claude/rules/dependabot.md` already exists (since 2026-06-03) and now
 carries a doc-consultation instruction (v1.1.0). What remains is cross-cutting:
 
-- [ ] **Rule/skill-authoring must source docs** — whatever governs creating
-  rules/skills (`config/claude/EXTENDING.md`, `config/claude/CLAUDE.md`,
-  `config/claude/rule-TEMPLATE.md`) should state that a new rule/skill must
-  first **check whether the rule already exists**, **consult official
-  documentation**, and refer to any **man page / local package-installed
-  docs** (`man <tool>`, `<tool> --help`, `/usr/share/doc/<pkg>`) — not memory.
-  Motivating incident: a `dependabot.yml` was authored on the false premise
-  that `rules/dependabot.md` didn't exist (it did). Add once to the canonical
-  authoring doc and reference it; don't duplicate.
+- [x] **Rule/skill-authoring must source docs** — codified in `EXTENDING.md`
+  (*Grounding & sourcing*, canonical): check the artifact doesn't already
+  exist, then ground it in official docs / man page / local package docs (not
+  memory) and cite the source (rule *Sources* section — added to
+  `rule-TEMPLATE.md`; skill `SOURCE.md`). Referenced from `CLAUDE.md` (*Missing
+  or Conflicting Tool Rules*); `/claude-audit` gained a grounding lens to
+  catch ungrounded artifacts. Added once + referenced, not duplicated.
 - [ ] **Evaluate a `dependabot` skill** — a forcing function that scans the
   repo for every manifest / Dockerfile / workflow, consults current official
   docs, generates/reconciles `dependabot.yml` to full coverage + conventions

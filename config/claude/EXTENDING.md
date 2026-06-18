@@ -23,6 +23,34 @@ Claude Code itself, not any one repo.
 | MCP server | External tools/data over MCP | Active | External process/endpoint | Tools a CLI lacks |
 | Plugin | A bundle of the above | — | — | Packaging / distribution |
 
+## Grounding & sourcing (author from docs, not memory)
+
+Before authoring **any** primitive below — and when editing one — two
+requirements:
+
+1. **Check it doesn't already exist.** Search `config/claude/` (and the
+   built-in skills/commands) for a rule/skill/hook that already covers this.
+   Authoring a duplicate on the false premise that none existed is a real
+   past failure mode.
+2. **Ground the content in authoritative sources where they exist** — the
+   tool/library/API's **official documentation**, its **man page**
+   (`man <tool>`, `<tool> --help`), or **local package docs**
+   (`/usr/share/doc/<pkg>`) — **not memory**, which goes stale. (Context7, if
+   enabled, is a convenience for the currency check — second-class, never
+   required; see `rules/mcp.md`.) Where the artifact encodes a **house
+   convention** with no external source, say so explicitly.
+
+**Cite what you grounded in**, so it is auditable and re-checkable later:
+
+- **Rules** — a brief **Sources** section (the official doc / man page the
+  rule is built on); `rule-TEMPLATE.md` carries the slot.
+- **Skills** — a **`SOURCE.md`** in the skill dir when it adapts or reuses
+  external material (ADR-0002).
+
+`/claude-audit` checks for this grounding and flags artifacts that lack it
+(no source and not a stated house convention) — so a gap here is caught at the
+next audit, not silently carried.
+
 ## Memory / `CLAUDE.md` (the foundation)
 
 **What:** User-written instructions the harness loads every session (user,

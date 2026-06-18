@@ -127,6 +127,8 @@ conflicts with how the repo actually uses the tool, or the rule has
 gone stale relative to current best practice:
 
 - Stop and surface the gap before silently working around it.
+- Ground the new or updated rule in official docs / man pages and cite the
+  source, never memory (see `EXTENDING.md` *Grounding & sourcing*).
 - Propose creating or updating the rule, and decide its scope using the
   three-tier model in *Configuration Migration*:
   - Generally useful across repos → new or updated global
