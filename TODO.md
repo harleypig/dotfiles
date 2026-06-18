@@ -7,6 +7,22 @@ This TODO file tracks the modernization effort for the dotfiles repository,
 organized by work area with phase markers. See `WORKFLOW.md` for development
 guidelines and `TESTS.md` for testing strategy.
 
+## 📊 Slim down the STRUCTURE.md mermaid diagram (HIGH PRIORITY / LOW IMPORTANCE — IN PROGRESS)
+
+**Status:** in progress — pick-at-it. High priority (surface it when the repo
+is touched) but low importance (nothing depends on it; purely a readability
+nicety). Lives on branch `docs/structure-diagram`, no PR yet.
+
+`config/claude/STRUCTURE.md` (added in ea9cdbd) renders the agent-config
+relationships as a Mermaid flowchart, but the diagram is too big/wide to read
+comfortably. Make it less sprawling without losing the relationships it maps.
+
+- [ ] Reduce the diagram's width/sprawl — e.g. group related nodes into
+  subgraphs, split into smaller diagrams per concern, prune low-value edges,
+  or change layout direction — so it reads on a normal screen.
+- [ ] Verify the rendered result in Brave, not the user's Chrome (Chrome
+  blocks GitHub's mermaid sandbox).
+
 ## 📝 Documentation (HIGH PRIORITY)
 
 ### Code Comment Cleanup
