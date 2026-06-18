@@ -5,7 +5,7 @@ description: Commit a finished feature branch, push it, and open a pull request,
 
 # Ship PR
 
-**Version:** v1.9.0
+**Version:** v1.9.1
 
 Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → open PR → watch CI → (approval) merge →
@@ -105,9 +105,8 @@ git push -u origin "$CUR"
 
 ## Step 3 — Open the PR (model writes the body)
 
-Compose the title (< 72 chars) and a body per `rules/gh.md` (`## Summary`
-
-+ `## Test plan`), then:
+Compose the title (< 72 chars) and a body per `rules/gh.md`
+(`## Summary` + `## Test plan`), then:
 
 ```bash
 ship.sh pr-create --title "<title>" --body "<body>"
@@ -148,8 +147,10 @@ at merge time; the only changes here are documentation.
   generated changelog mutates the tree, so it is committed here, never in CI;
   see `qa.md` dim 13 and the repo's QA doc), plus any related doc updates.
 
-Commit these doc-only changes, push, and **re-watch CI** (Step 4) — quick,
-since only documentation changed. Proceed to merge only after that is green.
+Run the **Step 4.6 retrospective** next, then commit these doc-only changes —
+**together with any open `- [ ]` TODOs the retrospective adds** — push, and
+**re-watch CI** (Step 4) — quick, since only documentation changed. Proceed to
+merge only after that is green.
 
 This separates *progress tracking* (Step 1 marks items done / adds new ones as
 you work) from *finalization* (here, completed items are pruned once the PR is
@@ -164,10 +165,10 @@ patterns file, an awkward command or MCP entry. Each finding becomes a
 **detailed, open** `- [ ]` TODO (routed global vs repo-local), **not** an edit
 — capturing it keeps this PR focused; `claude-audit` works the backlog later.
 
-It is **advisory, never a gate**. Fold any TODO additions into the Step 4.5
-doc-only commit (or a quick follow-up) and re-watch CI once before merging. A
-clean retrospective ("nothing to change") is a valid outcome — say so and move
-on.
+It is **advisory, never a gate**. Its TODO additions ride along in the Step
+4.5 finalization commit (the two steps are one doc-only phase, committed
+once), so there's no extra CI cycle. A clean retrospective ("nothing to
+change") is a valid outcome — say so and move on.
 
 ## Step 5 — Merge (only with explicit approval)
 
