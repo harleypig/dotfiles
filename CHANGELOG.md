@@ -31,6 +31,13 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **Conformed `.github/dependabot.yml` to its rule** — added `docker`
+  entries for the repo's own Dockerfiles (`/tests/docker`, `/config/nvm`)
+  and grouped minor/patch updates per ecosystem for pip + github-actions
+  (majors stay individual). Updated `config/claude/rules/dependabot.md` to
+  v1.1.0 with a doc-consultation authoring instruction (check the rule
+  exists, consult official docs, verify ecosystem constraints — not memory).
+  (PR #106)
 - **Bumped GitHub Actions off Node.js 20** — `actions/checkout@v4` → `@v5`
   (×4) and `actions/setup-python@v5` → `@v6` (×2) in
   `.github/workflows/tests.yml`, clearing the Node 20 deprecation warnings
