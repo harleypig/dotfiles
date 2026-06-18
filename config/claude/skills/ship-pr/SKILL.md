@@ -78,9 +78,12 @@ to the change, per the repo's QA doc) and reports each dimension's status.
 (qa-check's CI stage is Step 4 here, not part of this local pass.) This
 includes the **Documentation** dimension — update the docs, `TODO`/roadmap,
 and any rules/skills (global *and* local) this change touches before
-committing. (Here you **mark** progress / add new items; **removing** the
-completed `TODO`/`ROADMAP` items is deferred to the merge-time finalization,
-Step 4.5, so they're pruned only once the PR is proven green.)
+committing. **Mark each completed `TODO`/`ROADMAP` item `[x]` in the commit
+that completes it** (the *mark-as-you-go* rule in `git.md`; this skill runs
+once at the end, so the rule lives there to be in context at every commit) and
+add newly-surfaced follow-ups as open `- [ ]`. *Removing* the `[x]` items is
+deferred to the merge-time finalization (Step 4.5), so they're pruned only
+once the PR is proven green.
 
 qa-check's format/lint/test stages are the pre-commit sequence — run it ONCE
 (per `rules/pre-commit.md`): the fix config, then the check config.

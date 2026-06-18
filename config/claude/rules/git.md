@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.6.0
+**Version:** v1.7.0
 
 ## Commit Messages
 
@@ -35,6 +35,26 @@ Stage deliberately — never blanket-add untracked files into a commit.
   stray files land in a commit. Use `-u` plus explicit paths instead.
 - Review `git status` / `git diff --staged` before committing to confirm
   only the intended changes are staged.
+
+## Tracking Progress as You Commit
+
+When a commit completes a tracked item — a `TODO.md` / `ROADMAP.md` entry or an
+issue — **mark it done in that same commit** (`- [x]`, or per the repo's
+convention). Mark it **as you go**, never in a batch at the end.
+
+Why: it makes end-of-PR finalization **mechanical**. At merge you just act on
+the `[x]` items — the repo's merge-time finalization prunes them and migrates
+them to the changelog (see the repo's `WORKFLOW.md`) — instead of re-scanning
+the whole list asking "did we do this?". Marking late forces reconstructing
+what got done, which is exactly the error this rule prevents. Add a
+newly-surfaced follow-up the same way: as an open `- [ ]` in the commit that
+surfaces it.
+
+This is the **mark-as-you-go** half of the loop; the **prune-at-merge** half
+is the repo's merge-time finalization, with the merge-finalization hook as the
+end-state backstop (it blocks a merge that still has unpruned `[x]` items, in
+repos that opt in). This rule is always-on **because committing is**: it has to
+be in front of you at each commit, not only when a PR skill runs at the end.
 
 ## Branch Naming
 
