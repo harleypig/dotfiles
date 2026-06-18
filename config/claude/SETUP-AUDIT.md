@@ -228,6 +228,25 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-18 — **Dropped the `claude-md-management` plugin; built the
+  `retrospective` skill from its idea.** The plugin's `claude-md-improver`
+  (audit/edit CLAUDE.md against a rubric) and `revise-claude-md` (append
+  session learnings to CLAUDE.md) are redundant with, and structurally
+  mismatched to, our setup: it is CLAUDE.md-centric, whereas our repo context
+  is split across `.claude/CLAUDE.md` → WORKFLOW/CONVENTIONS/TESTS/QA (quality
+  + currency governed by `documentation.md`, audited by `claude-audit`), and
+  "capture session learnings" is already the **memory system**'s job (richer:
+  structured frontmatter + index) — appending prose to CLAUDE.md would erode
+  the curated, versioned file. So the plugin was **dropped** (disabled via
+  `enabledPlugins`; cache + `installed_plugins.json` are gitignored local
+  state). The one genuinely useful idea — *reflect after a piece of work and
+  persist what was learned* — was **rebuilt, not converted**, as the global
+  `retrospective` skill, but aimed at the **agent's own tooling** (rules /
+  skills / hooks / patterns / commands / MCP): it runs as **ship-pr Step 4.6**
+  (advisory, never a gate), decides kind + scope per `EXTENDING.md` + the
+  three-tier model, and captures each finding as a detailed open TODO routed
+  global vs repo-local — feeding `claude-audit`'s backlog. Landed via dotfiles
+  PR.
 - 2026-06-18 — **Dropped the `claude-code-setup` plugin (redundant).** Its sole
   content is the read-only `claude-automation-recommender` skill — "analyze a
   repo's stack → suggest 1–2 Claude Code automations per category." The
