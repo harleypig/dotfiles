@@ -1,14 +1,14 @@
 ---
 name: ship-pr
-description: Commit a finished feature branch and push it, then — each only with explicit approval — open a pull request, watch CI to green, merge it, tag the release if it ships an artifact, and clean up — using this user's gh credential fallback and the repo's branch-protection merge policy. Use whenever the user wants to land work via a PR: "ship this", "ship it", "land this branch", "commit push and PR", "open a PR and merge", "put up a PR", "get this merged", "create the PR and merge after CI", or any request to take a ready branch through the PR-and-merge sequence. Starts where git-worktree-workflow's "prep for PR" ends; works for plain feature branches too (no worktree required).
+description: Commit a finished feature branch, push it, and open a pull request, then watch CI to green and — with explicit approval — merge it, tag the release if it ships an artifact, and clean up — using this user's gh credential fallback and the repo's branch-protection merge policy. Use whenever the user wants to land work via a PR: "ship this", "ship it", "land this branch", "commit push and PR", "open a PR and merge", "put up a PR", "get this merged", "create the PR and merge after CI", or any request to take a ready branch through the PR-and-merge sequence. Starts where git-worktree-workflow's "prep for PR" ends; works for plain feature branches too (no worktree required).
 ---
 
 # Ship PR
 
-**Version:** v1.8.0
+**Version:** v1.9.0
 
 Take a finished branch through the standard landing sequence: **QA check** →
-commit → push → (approval) open PR → watch CI → (approval) merge →
+commit → push → open PR → watch CI → (approval) merge →
 (if it ships an artifact) tag → clean up.
 
 The deterministic mechanics live in the bundled **`scripts/ship.sh`** (in
@@ -46,13 +46,13 @@ auto-retries with the env tokens cleared on a PAT scope error, so the
 
 ## Guardrails (do not violate)
 
-- **Never** open or merge a PR without explicit approval (per `rules/gh.md`).
-  Invoking this skill is consent to run qa-check, commit, and push the branch
-  only. **Opening the PR requires an explicit instruction** ("open the PR",
-  "ship it", "put up a PR", etc.), and **merging requires a separate explicit
-  "merge" instruction** for this branch. If the user only said "commit and
-  push", stop after the push and ask before opening. If they only said "open
-  a PR", stop after CI and ask before merging.
+- **Never** merge or close a PR without explicit approval (per `rules/gh.md`).
+  **Invoking this skill is consent to run the flow through opening the PR** —
+  qa-check → commit → push → **open the PR** → watch CI. **Merging requires a
+  separate explicit instruction** for this branch ("merge it", "merge if CI
+  passes", etc.): stop after CI is green and ask before merging. (If the user
+  explicitly scoped the request narrower — "just commit and push" — honor that
+  and stop before opening.)
 - **Never** push to or merge directly into the default branch.
 - **Never** force-push without `--force-with-lease --force-if-includes`,
   and warn first.
