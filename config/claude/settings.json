@@ -43,8 +43,7 @@
   },
   "enabledPlugins": {
     "ralph-loop@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true,
-    "hookify@claude-plugins-official": true
+    "skill-creator@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-code-plugins": {

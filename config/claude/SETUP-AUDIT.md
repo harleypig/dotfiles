@@ -228,6 +228,27 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-18 — **Dropped the `hookify` plugin (kept our bespoke-hook model).**
+  hookify is a ~847-LOC vendored Python rule engine + four generic hook entry
+  points that evaluate declarative markdown rules
+  (`.claude/hookify.<name>.local.md`) to warn/block on bash/file/stop/prompt
+  events, plus a `conversation-analyzer` agent and a `writing-rules` skill. It
+  is a different hook model from ours (bespoke, single-purpose Python per hook:
+  `merge-finalization.py`, `rule-coverage.py`, `branch-protection.py`).
+  Dropped because: (a) the "own **and version**" goal cuts against it — its
+  rules are gitignored, per-machine `*.local.md`, whereas our committed hooks
+  are versioned; (b) none of our real hooks fit its pattern model (each needs
+  custom logic — reading `.pre-commit-config.yaml`, scanning TODO, tracking
+  deps); (c) owning 847 LOC that can block every tool event is a real
+  maintenance + **security** surface for trivial guards we have never needed;
+  (d) the conversation-analyzer "mine pain → propose a guard" angle is now
+  covered by the new `retrospective` skill. Disabled via `enabledPlugins`;
+  cache + `installed_plugins.json` are gitignored local state.
+  `ICEBOX:` revisit a **declarative hook / guard-rule engine** — hookify-style
+  pattern-based block/warn guard rules, low-friction declarative hooks without
+  bespoke Python — **only if** we start writing many trivial pattern-guards
+  and the Rule of Three kicks in. Until then, write a bespoke hook (cf.
+  `branch-protection.py`). Landed via dotfiles PR.
 - 2026-06-18 — **Dropped the `claude-md-management` plugin; built the
   `retrospective` skill from its idea.** The plugin's `claude-md-improver`
   (audit/edit CLAUDE.md against a rubric) and `revise-claude-md` (append
