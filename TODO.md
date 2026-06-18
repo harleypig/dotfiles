@@ -72,14 +72,17 @@ Replace these installed plugins with rules/skills that live in our own
 workflow), so we own and version the behaviour instead of depending on
 external marketplace plugins:
 
-- [ ] **claude-code-setup** (`claude-automation-recommender` skill).
-- [ ] **claude-md-management** (`claude-md-improver` + `revise-claude-md`
-  skills) — overlaps our existing CLAUDE.md/rules discipline; reconcile.
-- [ ] **hookify** (skills + `conversation-analyzer` agent + the hook
-  machinery) — our hooks live under `~/.claude/hooks/`; decide what carries
-  over.
-- [ ] **ralph-loop** (`ralph-loop` / `cancel-ralph` / `help` skills).
-- [ ] **skill-creator** (`skill-creator` skill).
+- [x] **claude-code-setup** — dropped (redundant; covered by EXTENDING.md /
+  CLAUDE.md proposal triggers / claude-audit).
+- [x] **claude-md-management** — dropped; its useful idea rebuilt as the new
+  `retrospective` skill (memory system + documentation.md + claude-audit
+  cover the rest).
+- [x] **hookify** — dropped + ICEBOX (kept our bespoke-hook model; revisit a
+  declarative guard engine only on Rule-of-Three).
+- [x] **ralph-loop** — dropped + ICEBOX (built-in `/loop` covers it; extend
+  `/loop`, don't rebuild).
+- [x] **skill-creator** — kept (documented exception — the one non-redundant
+  plugin); wired into claude-audit + EXTENDING.md.
 
 For each: extract the useful behaviour into a `config/claude/rules/<name>.md`
 or `config/claude/skills/<name>/` per the three-tier model in `CLAUDE.md`,
@@ -95,16 +98,16 @@ MCP server** — just `.mcp.json` (`npx -y @upstash/context7-mcp`) and a
 is nothing to convert to a rule/skill; it only needs to run through our own
 MCP launcher.
 
-- [ ] Add a `context7` case to `bin/mymcp`:
-  `context7() { npx_run '@upstash/context7-mcp'; }` + `known_cmd['context7']=1`
-  (`npx_run` already prepends `-y`, so pass only the package).
-- [ ] Register context7 as an `mcpServers` entry running `mymcp context7`
-  (stdio) the way `github`/`snyk` are, instead of the marketplace plugin.
-- [ ] Disable the plugin: drop `"context7@claude-plugins-official": true` from
-  both `config/claude/settings.json` and `~/.claude/settings.json` (they
-  mirror).
-- [ ] Verify the context7 MCP tools still resolve after the switch; record in
-  `SETUP-AUDIT.md`.
+- [x] Added a `context7` case to `bin/mymcp` (also reads the API key from the
+  private store and passes `CONTEXT7_API_KEY`; removed the global export from
+  `api-keys.cfg`).
+- [x] Registered context7 — at **user scope** (global), not per-repo:
+  `claude mcp add context7 --scope user -- mymcp context7` (a deploy step;
+  `~/.claude.json` is uncommitted — MCP servers aren't in `settings.json`).
+- [x] Disabled the plugin: dropped `"context7@claude-plugins-official"` from
+  `settings.json` (one file — `~/.claude` is a symlink to `config/claude`).
+- [x] Verified via the MCP `initialize` handshake (Context7 v3.2.1 over
+  stdio); recorded in `SETUP-AUDIT.md`. Full tool-resolution is post-deploy.
 
 ## 🐙 `/github-tasks` skill — recurring GitHub housekeeping (MEDIUM PRIORITY)
 
