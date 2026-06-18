@@ -228,6 +228,21 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-18 — **Dropped the `claude-code-setup` plugin (redundant).** Its sole
+  content is the read-only `claude-automation-recommender` skill — "analyze a
+  repo's stack → suggest 1–2 Claude Code automations per category." The
+  capability is already covered, and better fitted to our environment, by
+  `CLAUDE.md` (*When to Propose a Skill* + *Missing or Conflicting Tool Rules*
+  — proactive gap-surfacing as work happens), `EXTENDING.md` (the placement
+  ladder: rule vs skill vs hook vs MCP, global-lazy vs per-repo), the
+  `claude-audit` skill (surfaces gaps from each repo's vantage), and `mcp.md`
+  (the mymcp pattern). Converting it would mean rewriting nearly all of its
+  concrete advice, which actively conflicts with our setup (`claude mcp add
+  context7` vs mymcp, recommending marketplace plugins we're removing, generic
+  `.claude/skills/` patterns vs the three-tier model) — duplication, not
+  value. Disabled via `enabledPlugins` in `config/claude/settings.json`; the
+  cached copy + `installed_plugins.json` entry are gitignored local state
+  (optional cleanup). Landed via dotfiles PR.
 - 2026-06-18 — **context7 MCP: marketplace plugin → `mymcp` (own/version it).**
   The context7 plugin bundled nothing but its MCP server (`npx -y
   @upstash/context7-mcp`) — no skills/commands/rules/agents/hooks — so there
