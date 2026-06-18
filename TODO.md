@@ -209,6 +209,50 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
 
+## 📓 Add a global `rules/dependabot.md` (MEDIUM PRIORITY)
+
+Authoring `.github/dependabot.yml` (the Dependabot setup / *Commit a
+poetry.lock* item) surfaced that Dependabot has no
+`config/claude/rules/<tool>.md`, which `CLAUDE.md` *Missing or Conflicting
+Tool Rules* says to fill. Dependabot is repo-agnostic → a **tier-1 (global)**
+rule.
+
+- [ ] Write `config/claude/rules/dependabot.md` covering: the `dependabot.yml`
+  v2 schema essentials (`package-ecosystem`, `directory` / `directories`,
+  `schedule.interval`, `groups`, `commit-message`,
+  `open-pull-requests-limit`); the pip/Poetry gotcha (transitive-dep security
+  updates need a committed lockfile; direct deps update without one); the
+  no-auto-merge default (PRs land via `ship-pr`); and conventional-commit
+  prefixing. Ecosystems in use here: pip + github-actions.
+- [ ] **Cross-cutting fix to the rule/skill-authoring guidance** — whatever
+  governs creating rules/skills (`config/claude/EXTENDING.md`,
+  `config/claude/CLAUDE.md`, `config/claude/rule-TEMPLATE.md`) should state,
+  among its authoring steps, that a new rule/skill must **consult official
+  documentation first**, and **also** any **man page or other local
+  documentation installed by the package** (`man <tool>`, `<tool> --help`,
+  `/usr/share/doc/<pkg>`, …) — not memory. Add it once to the canonical
+  authoring doc and reference it; don't duplicate.
+
+## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
+
+The agent config under `config/claude/` (rules, skills, `CLAUDE.md`,
+`EXTENDING.md`, hooks, …) is language- and repo-agnostic and is consumed by
+every project, not just dotfiles. Move it to a standalone repo so it can be
+shared/versioned independently and carries **no dotfiles-specific references**
+(generic — no mention of "dotfiles").
+
+- [ ] **Check first whether such a repo already exists** before creating one —
+  scan sibling clones under `$PROJECTS_DIR` and `gh repo list` (candidates to
+  rule out: `newdotfiles`, `gollum-config`). As of 2026-06-17 no dedicated
+  agent-config repo was found.
+- [ ] Carve `config/claude/` out into the standalone repo; scrub
+  dotfiles-specific wording so the content reads generically.
+- [ ] Decide how dotfiles (and other repos) consume it — submodule, sibling
+  clone, or symlink into `$CLAUDE_CONFIG_DIR` — and update the deploy/symlink
+  steps and any hardcoded paths.
+- [ ] Reconcile with the "Break tmux config into its own repo" item (same
+  extraction question: submodule vs sibling).
+
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
 `bin/docker_wrapper` is a multi-call dispatcher: each tool is a `bin/<tool>`
