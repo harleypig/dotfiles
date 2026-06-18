@@ -189,9 +189,10 @@ decisions are also summarized in the *Decisions log*.
 - [x] **`git-worktree-workflow` reconcile-gone-branches** — guarded bulk-remove
   of `[gone]` branches + worktrees (confirm each, skip dirty, no blanket
   `--force` / `fetch --prune`). Done — Operation 7 (skill v1.1.0).
-- [ ] **Trial `ralph-loop`** (autonomous completion loop, distinct from
-  `/loop`). Unbounded — set a max-iteration cap, respect CLAUDE.md autonomy
-  boundaries.
+- [x] **Decided: dropped `ralph-loop`** (2026-06-18) — not trialed; built-in
+  `/loop` covers autonomous iteration. See Decisions log. ICEBOX preserves the
+  exit-blocking technique as a revisit, *via `/loop`* rather than new
+  machinery.
 - [x] **Evaluated `pr-review-toolkit`, `feature-dev`, `security-guidance`** —
   all dropped (redundant with built-ins / `qa.md` / `security-scan`). Vendor
   bits surfaced by the repo that needs them — don't build proactively:
@@ -228,6 +229,23 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-18 — **Dropped the `ralph-loop` plugin (built-in `/loop` covers
+  it).** ralph-loop implements the "Ralph Wiggum" technique: a **Stop hook**
+  that blocks Claude's exit and re-feeds the same prompt until a completion
+  promise, an autonomous "keep going until DONE" loop, plus `/ralph-loop` /
+  `/cancel-ralph` / `/help` commands. Dropped because the built-in **`/loop`**
+  skill already does self-paced autonomous iteration (omit the interval) plus
+  scheduled re-firing (ScheduleWakeup); ralph-loop's distinctive
+  exit-blocking-until-promise mechanism is also the riskiest part — unbounded
+  by default and in tension with `CLAUDE.md`'s autonomy boundaries — and it
+  was never trialed. Disabled via `enabledPlugins`; cache +
+  `installed_plugins.json` are gitignored local state; the stale "Trial
+  ralph-loop" audit-backlog item is resolved to this decision.
+  `ICEBOX:` if an autonomous **completion loop** / **exit-blocking "until
+  DONE" loop** (ralph / Ralph Wiggum technique) is ever wanted, **extend the
+  existing `/loop` command** (self-pacing + a completion check + a
+  max-iteration cap) rather than build new but similar machinery — incorporate
+  `/loop`, don't reinvent it.
 - 2026-06-18 — **Dropped the `hookify` plugin (kept our bespoke-hook model).**
   hookify is a ~847-LOC vendored Python rule engine + four generic hook entry
   points that evaluate declarative markdown rules

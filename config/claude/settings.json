@@ -42,7 +42,6 @@
     "refreshInterval": 5
   },
   "enabledPlugins": {
-    "ralph-loop@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
