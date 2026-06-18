@@ -209,29 +209,26 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
 
-## 📓 Add a global `rules/dependabot.md` (MEDIUM PRIORITY)
+## 📓 Rule/skill-authoring doc-sourcing; evaluate a Dependabot skill (MEDIUM PRIORITY)
 
-Authoring `.github/dependabot.yml` (the Dependabot setup / *Commit a
-poetry.lock* item) surfaced that Dependabot has no
-`config/claude/rules/<tool>.md`, which `CLAUDE.md` *Missing or Conflicting
-Tool Rules* says to fill. Dependabot is repo-agnostic → a **tier-1 (global)**
-rule.
+`config/claude/rules/dependabot.md` already exists (since 2026-06-03) and now
+carries a doc-consultation instruction (v1.1.0). What remains is cross-cutting:
 
-- [ ] Write `config/claude/rules/dependabot.md` covering: the `dependabot.yml`
-  v2 schema essentials (`package-ecosystem`, `directory` / `directories`,
-  `schedule.interval`, `groups`, `commit-message`,
-  `open-pull-requests-limit`); the pip/Poetry gotcha (transitive-dep security
-  updates need a committed lockfile; direct deps update without one); the
-  no-auto-merge default (PRs land via `ship-pr`); and conventional-commit
-  prefixing. Ecosystems in use here: pip + github-actions.
-- [ ] **Cross-cutting fix to the rule/skill-authoring guidance** — whatever
-  governs creating rules/skills (`config/claude/EXTENDING.md`,
-  `config/claude/CLAUDE.md`, `config/claude/rule-TEMPLATE.md`) should state,
-  among its authoring steps, that a new rule/skill must **consult official
-  documentation first**, and **also** any **man page or other local
-  documentation installed by the package** (`man <tool>`, `<tool> --help`,
-  `/usr/share/doc/<pkg>`, …) — not memory. Add it once to the canonical
+- [ ] **Rule/skill-authoring must source docs** — whatever governs creating
+  rules/skills (`config/claude/EXTENDING.md`, `config/claude/CLAUDE.md`,
+  `config/claude/rule-TEMPLATE.md`) should state that a new rule/skill must
+  first **check whether the rule already exists**, **consult official
+  documentation**, and refer to any **man page / local package-installed
+  docs** (`man <tool>`, `<tool> --help`, `/usr/share/doc/<pkg>`) — not memory.
+  Motivating incident: a `dependabot.yml` was authored on the false premise
+  that `rules/dependabot.md` didn't exist (it did). Add once to the canonical
   authoring doc and reference it; don't duplicate.
+- [ ] **Evaluate a `dependabot` skill** — a forcing function that scans the
+  repo for every manifest / Dockerfile / workflow, consults current official
+  docs, generates/reconciles `dependabot.yml` to full coverage + conventions
+  (per `rules/dependabot.md`), and verifies (yamllint). Decide scope vs the
+  existing `security-scan` skill (which *triages* Dependabot findings) — setup
+  vs triage; avoid duplication (Rule of Three).
 
 ## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
 

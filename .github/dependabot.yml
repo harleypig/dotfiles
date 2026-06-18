@@ -5,7 +5,9 @@
 # security settings; this file configures scheduled *version*-update PRs.
 # No auto-merge — Dependabot PRs land through the normal protected-master
 # flow (squash-only + required checks), reviewed/merged via the ship-pr
-# skill like any other PR.
+# skill like any other PR. Conventions per config/claude/rules/dependabot.md:
+# cover every shipped manifest (incl. docker + github-actions), schedule
+# weekly, group minor/patch (majors stay individual), conventional commits.
 version: 2
 
 updates:
@@ -21,11 +23,40 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
 
   # GitHub Actions in .github/workflows — keeps actions off deprecated
   # runtimes automatically (cf. the manual Node 20 bump in PR #101).
   - package-ecosystem: github-actions
     directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Docker base-image (FROM) pins in the repo's own Dockerfiles. The
+  # vendored Dockerfiles under config/coc/.../node_modules and the plugin
+  # marketplace are third-party and are not covered here.
+  - package-ecosystem: docker
+    directory: /tests/docker
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: docker
+    directory: /config/nvm
     schedule:
       interval: weekly
     commit-message:
