@@ -10,6 +10,28 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-18
+
+### Added
+
+- **`config/claude/hooks/branch-protection.py`** — a `PreToolUse` hook on
+  `Edit`/`Write`/`MultiEdit` that blocks an agent edit while a protected
+  branch is checked out, enforcing git.md's "Never Work Directly on a
+  Protected Branch" at edit time (the earliest of three layers, below the
+  commit-time `no-commit-to-branch` hook and the push-time server ruleset).
+  It reads the protected set from the repo's `no-commit-to-branch` args, so
+  it activates only where that hook is configured (silent in repos without
+  it, e.g. cloned upstreams/forks); plan-mode edits are whitelisted and any
+  error fails safe. Wired into `settings.json`, covered by
+  `tests/python/test_branch_protection.py` (the first python test, which
+  self-activates the python CI job). (PR #108)
+
+### Changed
+
+- **Documented the edit-time protection layer** — `config/claude/rules/git.md`
+  now describes **three** protection layers (v1.6.0) and `.claude/WORKFLOW.md`
+  notes the hook for `master` (v1.2.0). (PR #108)
+
 ## 2026-06-17
 
 ### Security

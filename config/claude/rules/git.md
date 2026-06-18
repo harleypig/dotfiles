@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.5.0
+**Version:** v1.6.0
 
 ## Commit Messages
 
@@ -57,15 +57,16 @@ and then `git remote set-head origin <branch>` to cache it.
 
 ## Protecting the Default Branch
 
-When a repo's default branch should be PR-only, protect it in **two layers**
-— the server enforces it, the local hook catches mistakes earlier:
+When a repo's default branch should be PR-only, protect it in **three layers**
+— the server enforces it; two local guards catch mistakes earlier, at commit
+time and edit time:
 
 1. **Server-side ruleset / branch protection** (authoritative): require PRs,
    required status checks, and block deletion + force-push. This is what
    actually rejects a direct push. Apply it via the host's API (GitHub
    rulesets need an admin/OAuth token, not a narrow PAT).
-2. **Local `no-commit-to-branch` pre-commit hook** (early guard): add the
-   `no-commit-to-branch` hook (from `pre-commit/pre-commit-hooks`) to the
+2. **Local `no-commit-to-branch` pre-commit hook** (commit-time guard): add
+   the `no-commit-to-branch` hook (from `pre-commit/pre-commit-hooks`) to the
    check config so a direct commit on the protected branch fails *before* the
    push is even attempted:
 
@@ -74,8 +75,18 @@ When a repo's default branch should be PR-only, protect it in **two layers**
      args: [--branch, <default-branch>]
    ```
 
-The local hook is a convenience, not a substitute — without the server-side
-ruleset, anyone (or any tool) without the hook installed can still push. The
+3. **Edit-time Claude Code hook** (earliest, agent-only): the global
+   `branch-protection.py` `PreToolUse` hook blocks an `Edit`/`Write`/
+   `MultiEdit` while a protected branch is checked out, so the agent is told
+   to branch *before* writing the first character. It reads the protected set
+   straight from the repo's `no-commit-to-branch` args (layer 2), so it
+   activates **only where that hook is configured** — a repo without it (a
+   cloned upstream/fork) gets no edit-time guard. It is a backstop for the
+   agent, not a constraint on a human editor, and fails safe (any error
+   allows the edit).
+
+The local guards are conveniences, not substitutes — without the server-side
+ruleset, anyone (or any tool) without the hooks installed can still push. The
 repo's concrete ruleset/config lives in its `.claude/` docs.
 
 ## Never Work Directly on a Protected Branch
@@ -97,7 +108,9 @@ the change is committed where it must never land).
 To tell whether a branch is protected: a server-side ruleset / branch
 protection, a local `no-commit-to-branch` hook (above), or the repo's
 `.claude/` docs name it. When in doubt, treat the default branch as
-protected.
+protected. In a repo that configures `no-commit-to-branch`, the edit-time
+`branch-protection.py` hook enforces this rule for the agent automatically
+(see *Protecting the Default Branch*).
 
 ## Worktrees
 

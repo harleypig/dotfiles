@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 ## Purpose
 
@@ -150,6 +150,11 @@ advisory — the remote enforces it:
 * A local `no-commit-to-branch` pre-commit hook also blocks a direct commit
   to `master` at commit time (early guard; the server ruleset is what
   actually enforces it). See `config/claude/rules/git.md`.
+* The global `branch-protection.py` `PreToolUse` hook blocks an agent
+  `Edit`/`Write`/`MultiEdit` while `master` is checked out — the earliest
+  guard, at edit time. It derives the protected branch from the
+  `no-commit-to-branch` args above, so this repo activates it automatically.
+  See `config/claude/rules/git.md` *Protecting the Default Branch*.
 
 To change the ruleset, edit the JSON and re-apply with the OAuth token (the
 narrow PAT lacks admin):
@@ -263,7 +268,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.1.0)
+* `WORKFLOW.md` - Versioned (this file, v1.2.0)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 
