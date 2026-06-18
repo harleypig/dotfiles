@@ -109,20 +109,6 @@ Scope:
   (start of git/gh work + daily) rather than a scheduled job; decide if that
   rule should *name* the skill as its forcing function.
 
-## ⬆️ Bump GitHub Actions off Node.js 20 (MEDIUM PRIORITY)
-
-CI runs green but GitHub annotates a deprecation warning: `actions/checkout@v4`
-and `actions/setup-python@v5` run on Node.js 20, which is forced to Node.js 24
-starting 2026-06-16 and removed from runners 2026-09-16. Bump the pinned
-versions before the forced cutover so the workflows aren't surprised.
-
-- [ ] `.github/workflows/tests.yml` — bump `actions/checkout@v4` → `@v5`
-  (lines 25, 46, 65, 89) and `actions/setup-python@v5` → `@v6` (lines 68, 92).
-- [ ] Confirm `actions/setup-python@v6` exists / is the Node 24 line before
-  pinning; otherwise pin to whatever version GitHub ships on Node 24.
-- [ ] `opencode.yml` already uses `actions/checkout@v5` — no change needed.
-- [ ] Re-run CI and confirm the Node.js 20 deprecation annotations are gone.
-
 ## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
 
 Create a `/test-audit` skill that checks for **missing or outdated tests**
@@ -210,24 +196,6 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
 - [ ] Consolidate drift: the same rule copied (and diverging) across repos
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
-
-## ✅ Build a `spotify-patterns` skill (DONE 2026-06-12)
-
-Done — the recipe companion to `rules/spotify.md` + `spotify-audit`, mirroring
-`fastapi-patterns` / `sqlalchemy-patterns`. All recipes shipped:
-
-- [x] **Token refresh + relinking recipes** — proactive refresh-before-expiry
-  and `linked_from`-for-Library-ops (written first-hand from the pigify fixes).
-- [x] **Pagination + set-based dedup**.
-- [x] **Rate-limit handling** — 429 / `Retry-After` + exponential-backoff wrapper.
-- [x] **Playlist-creation strategies** — by-artist / theme / song-list
-  (recommendation-seeded dropped — deprecated endpoint).
-- [x] **Cover-art generation** — SVG→PNG, a11y contrast, `ugc-image-upload`.
-- [x] Wired into `rules/spotify.md`; recorded in `SETUP-AUDIT.md` + the census.
-
-Follow-up (also logged in the mining census): re-mine Spotify's official
-**Concepts / Tutorials / How-Tos** sections for more material for the rule
-and skills.
 
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
@@ -317,19 +285,6 @@ main dotfiles checkout.
   execution trace to stderr on every tmux status render (almost certainly a
   debugging leftover). Can be fixed independently of the extraction.
 
-## ✅ Move gmailctl scripts to private_dotfiles (DONE 2026-06-07)
-
-`gmailfilter_toyaml` and `filter_gmail` support **gmailctl** (sensitive Gmail
-config) and `filter_gmail` is explicitly marked "contains sensitive data" with
-a hardcoded personal path — they only run from `private_dotfiles`.
-
-- [x] Moved both to `private_dotfiles/bin/` (a new `bin/` there, beside the
-  `.gmailctl/` config + gmail certs).
-- [x] Removed their entries from `docs/bin.md` (also dropped the stale
-  `poetry2setup` entry — that script was archived earlier).
-- [x] Retired the public meta-suite `perl -c` debt for `gmailfilter_toyaml`
-  (it needed `XML::LibXML`) — it has left the public repo.
-
 ## 🧩 dotvim check + clone/link automation (LOW PRIORITY)
 
 dotfiles has no check or setup automation for the companion **dotvim** repo
@@ -342,19 +297,6 @@ creating the symlinks.
   vim configured in one step.
 - [ ] Decide dotvim's expected location (sibling clone under `$PROJECTS_DIR`
   per the repo conventions) and reference it consistently.
-
-## ✅ bin/creds-helper PAT fallback bug (DONE 2026-06-07)
-
-When the credential wasn't found in `~/.netrc`, `creds-helper` checked
-`$PROJECTS_DIR/private_dotfiles/api-key/github` but then read a **different**,
-unset `$PAT_FILE` (`< ""` → error) instead of the PAT.
-
-- [x] Read the file it checked (via a single `pat_file` variable).
-- [x] Also made it exit 0 when it has no credential (a helper shouldn't fail
-  just because it has no answer).
-- [x] `tests/shell/test_creds-helper.bats` — netrc hit, netrc-miss → PAT
-  fallback (the regression), netrc-wins precedence, and the no-credential
-  no-op.
 
 ## 📐 Retire global ~/.markdownlintrc — per-repo configs (MEDIUM PRIORITY)
 
@@ -395,8 +337,6 @@ updates that script's bats test.
 
 Conversion candidates (dotfiles `bin/`; opportunistic, low priority):
 
-- [x] `bin/hr` — converted to parse_params (the worked example); its title is
-  a `#@` slurp positional. `tests/shell/test_hr.bats`.
 - [ ] `bin/git-branch-clean` — `getopts nfah`; flags fit, but the `-f`/`-n`
   **mutual-exclusion** check stays manual.
 - [ ] `bin/git-all` — `getopts :Sv` (two bool flags + positional); small, low
@@ -432,20 +372,6 @@ catches.
 - [ ] Then clean up the shfmt debt those files surface.
 - [ ] Consider adding `shell-startup` + `config/shell-startup` to the
   meta-test generator roots too.
-
-## 🐪 perl CI: promote to a required check (MEDIUM PRIORITY)
-
-- [x] Made the perl test assertions **version-robust** — assert *that a problem
-  was reported* (non-zero code / non-blank message), not the exact Perl::Tidy
-  wording or exit code (old Perl::Tidy treats a missing perltidyrc as a
-  warning, err 2, not an error, err 1), and key parse_params `-h` on POD body
-  rather than pod2usage header formatting. Fixed across `call_perltidy.t`,
-  `get_perltidy_config.t`, `integration.t`, `parse_params-modes.t`. The perl
-  job is now green on the runner's older Perl::Tidy.
-- [x] Dropped `continue-on-error` from the perl job — it now gates the CI run.
-- [x] Added `perl` to the master ruleset's required status checks (now
-  `bats` + `perl` + `pre-commit`); applied live to ruleset 17364459 and
-  recorded in `../private_dotfiles/github-rulesets/protect-master-solo.json`.
 
 ## 🐫 Perl quality tooling (MEDIUM PRIORITY)
 
@@ -539,41 +465,6 @@ shell-init path per manager — XDG-aware where possible, lazy-loaded in
 - [ ] Evaluate/standardize the rest (Python, Ruby; rustup already in use)
   under one consistent pattern, documented in each
   `config/shell-startup/<lang>` module.
-
-## 🐢 Login shell slowdown — RESOLVED (~1.1s, was 5.8–7.25s)
-
-A login shell had regressed to 3–5s (peaks ~7s). Fixed by the cleanpath +
-`havecmd` work; now a stable **~1.05–1.15s**, under the original <2s baseline.
-
-**Profiling caveat (important).** Both `bash -lixc` (xtrace) **and** `DEBUG=1`
-*inflate* any module that runs many lines or calls `debug()` internally
-(`check-dotfiles`, `cleanpath`). Several early "findings" were measurement
-artifacts — grok 1.54s / nvm 0.95s / check-dotfiles 220ms / less-probe 67ms
-all evaporated when measured directly (real: ~0.01s / ~0s / ~25ms / ~0s).
-**Measure a suspect module directly (non-DEBUG) before optimizing it.**
-`lib/debug` now prints a `+Nms` delta for per-step timing, but only trust it
-for modules that don't themselves call `debug`.
-
-- [x] **cleanpath** — parallelized per-entry `readlink` with `xargs -P`
-  (sequential fallback; GNU `parallel` benchmarked *slower* for many tiny
-  jobs). Real cost ~145ms: the largest single login cost, already optimized —
-  only a rewrite (e.g. perl) would help further.
-- [x] **`command -v` probe tail** — added `havecmd` (a `command -v` wrapper
-  that drops `/mnt/c` for one lookup, then restores PATH) and converted every
-  boolean-guard probe in `config/shell-startup/*`. The biggest real win.
-- [x] **bash_prompt** — the prompt called `ansi` (a subprocess) on *every*
-  render for constant colors; moved all color computation to load time in the
-  `config/shell-startup/bash_prompt` wrapper so rendering spawns no `ansi`
-  (~16ms/render). `_HAS_PSTREE`/`_HAS_PACMAN_STATUS` cached at load; `loadavg`
-  (bin) called unconditionally. Tested via `tests/shell/test_havecmd.bats` +
-  manual render checks.
-- [x] **debug wiring** — `shell-startup` and `check-dotfiles` sourced the
-  nonexistent `bin/debug` (the lib moved to `lib/debug`), so `DEBUG=1` did
-  nothing; pointed both at `lib/debug`, guarded on `DEBUG`.
-- **Left alone (accepted costs):**
-  - **`git-status` ~99ms/render** — does necessary work for the git-aware
-    prompt; only async/caching would cut it, not worth the complexity.
-  - **grok / nvm** — not real costs (xtrace artifacts); no lazy-load needed.
 
 ## 🤖 grok (LOW PRIORITY)
 
@@ -674,46 +565,17 @@ working tree — evaluate carefully before implementing.
 - [ ] Review and enhance existing BATS tests
 - [ ] Ensure meta-tests are up to date (`tests/scaffold/build-meta-tests`)
 - [ ] Create test fixtures in `tests/fixtures/` if needed
-- [x] Helper functions in `tests/helpers/common.bash` (`load_bats_libs`,
-  `dotfiles_root`, `make_stub`, docker harness)
 
 ### Phase 3: Core Test Coverage
 
-- [x] shell-startup (DOTFILES detection, PATH building, module loading) —
-  `tests/shell/test_integration_startup.bats` + `test_integration_context.bats`
-  (full context matrix) in the docker harness.
 - [ ] Add tests for critical bin/ scripts
-  - [x] cleanpath (unit tests) — `tests/shell/test_cleanpath.bats`
-  - [x] yesno (unit tests) — `tests/shell/test_yesno.bats`
-  - [x] git-status (integration tests) — `tests/shell/test_git_status.bats`
-        (skips the prompt assertion if system `git-prompt.sh` is absent)
-  - [x] check-dotfiles (integration tests) —
-        `tests/shell/test_integration_check_dotfiles.bats`, run in the docker
-        harness so its `ln -fs` into `$HOME` can't touch the host.
 - [ ] Add tests for lib/ libraries
-  - [x] debug — `tests/shell/test_debug.bats`
-  - [x] parse_params — **rewritten in core-only perl as `bin/parse_params`**
-        (the old bash `lib/parse_params` was broken — it `source`d a long-gone
-        `utility` lib + missing is_char/is_integer/verify_filename — and is
-        archived to `archive/lib/`). Emits `eval`-able shell assignments
-        (`_pp=$(parse_params "$DEF" "$@") || show_usage; eval "$_pp"`) so it
-        replaces hand-written `while` arg loops. Fixed the original's design
-        flaws: no code-gen/eval, no shell-killing `die` (it's a subprocess),
-        safe quoting, clear exit codes (0/1/2). New features: signed integers,
-        negatable booleans (`--no-x`, DEFAULT 0|1 for default-on), repeatable
-        `type@` → shell arrays, fixed + `#@` slurp positionals, `--prog`,
-        turnkey `--auto`, POD-driven `--help` (Pod::Usage) + `--usage`. Tests:
-        `tests/perl/parse_params-{options,types,boolean,errors,modes}.t` (85).
   - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
         munging). Constraint: core perl modules only — no CPAN (keeps it
         runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
-  - [x] docker_helpers — `tests/shell/test_docker_helpers.bats` (20 cases).
   - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
     factored into `bin/git-status` — not tested.)
 - [ ] Add tests for config/shell-startup/ modules
-  - [x] `000-loadtokens` — `tests/shell/test_000-loadtokens.bats` (conditional
-    token loading, comment/missing-file skips, no-op when absent, temp-var
-    cleanup). The one module with real standalone logic worth isolating.
   - The rest are guarded tool-setup (`command -v`/interactive) already
     exercised in aggregate by the docker integration tests
     (`test_integration_startup` + `test_integration_context`); add a focused
@@ -742,36 +604,13 @@ git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
 
 **Unit-testable (pure logic) — to do:**
 
-- [x] `where` — `tests/shell/test_where.bats` (keyword/builtin/file/not-found).
-  Surfaced + fixed two bugs: a missing command hit the "Unexpected type"
-  branch (modern `type -t` prints nothing for unknowns), and it exited 1 even
-  on success.
 - [ ] (reclassified to integration) `showvars` — needs `shfmt` (docker
   wrapper) + `jq`; covered under the integration group, not pure-unit.
-- [x] `creds-helper` — `tests/shell/test_creds-helper.bats`; landed with the
-  PAT-fallback bug fix (see its section above).
-- [x] `available-subnets` — **removed** (obsolete: old GCP-subnet tooling no
-  longer used); archived to `archive/bin/`. No test needed.
 - [ ] (marginal) `loadavg` (output depends on real load), `dateh` (date-format
   table — mostly display).
 
 **Integration (external tools / state) — to do:**
 
-- [x] `git-branch-clean` — `tests/shell/test_git-branch-clean.bats` (guards +
-  gone-upstream dry-run/force/never-pushed, against a throwaway repo with a
-  local bare remote).
-- [x] `git-all` — `tests/shell/test_git-all.bats` (usage/REPOHOME/option
-  guards, run-across-repos summary, `-S` dirty-only). The test exposed that
-  git-all was **completely broken** under `set -euo pipefail` (three cascading
-  bugs, all masked by the first) — all fixed: the `read -d '' < <(find)` abort
-  (→ `mapfile -t`), the `grep && printf` abort on a clean repo (→ `if`), and
-  empty-array expansion under `set -u` (→ `declare -a fail=()` etc.).
-- [x] `proj` — `tests/shell/test_proj.bats` (no-arg/existing path, -h, unknown
-  option, too-many-args, unset PROJECTS_DIR, and the select menu create/cancel
-  paths via stdin). No bugs found.
-- [x] `ansi` — `tests/shell/test_ansi.bats` (usage, TERM=dumb no-color
-  fallback, escape-sequence emission, `-sb` PS1 delimiters, hex color). No
-  bugs found.
 - [ ] (low value) `motd` (large system-summary display), `tmux_mode_indicator`
   (tmux display; also has the `set -ex` leftover to clean — see tmux section),
   `loadavg` / `dateh` (load-dependent / display), `showvars` (needs the shfmt
@@ -911,15 +750,7 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 Core (`.pre-commit-config.yaml`) + fix (`.pre-commit-config-fix.yaml`) configs
 are in place, tested, documented (README + `.claude/rules/pre-commit.md`),
 wired into CI (`pre-commit run --all-files`), and the CI `pre-commit` check is
-required in the master ruleset alongside `bats`. One follow-up remains:
-
-- [x] Update all `config/claude/rules/*.md` Agent Behavior sections to
-  prioritize pre-commit over direct tool invocation — added a canonical
-  *Prefer pre-commit Over Direct Tool Invocation* section to `pre-commit.md`
-  and pointed all 17 tool rules (bash, shellcheck, shfmt, yamllint,
-  markdownlint, yapf, isort, flake8, black, ruff, biome, perl, powershell,
-  docker, hadolint, vitest, TEMPLATE) at it; direct invocation is now the
-  documented fallback when pre-commit isn't configured / doesn't cover a file.
+required in the master ruleset alongside `bats`.
 
 ### Proposed: pre-commit skill, used by qa-check
 
@@ -941,28 +772,14 @@ scanning remains the **security-scan** skill's job (separate from this hook).
 
 ### Phase 3: Language-Specific Hooks
 
-- [x] **Python** — wired the repo's actual toolchain (`yapf` + `isort` +
-  `flake8`, **not** black/mypy): `isort --check` + `yapf -d` + `flake8` in the
-  check config, `isort` + `yapf -i` in the fix config. Added `config/flake8`
-  (reconciles flake8 with yapf's 2-space style) and
-  `config/claude/rules/flake8.md`. All Python is gated (no excludes):
-  `rule-coverage.py` and `bin/available-subnets` reformatted to pass (added
-  `E265,E266` to `config/flake8` to honor the `#####`/`#----` separators);
-  `bin/poetry2setup` archived to `archive/bin/` (legacy setup.py generator, no
-  longer needed).
-  - [ ] mypy/pyright stay CI/on-demand (per `python.md`), not in pre-commit.
+- [ ] **Python** (mypy/pyright) — stay CI/on-demand (per `python.md`), not in
+  pre-commit. The `yapf` + `isort` + `flake8` hooks and `config/flake8` are
+  done (see CHANGELOG); Rust is N/A for this repo.
 - [ ] **Perl** — DEFERRED; staged commented in both configs. Blocked on:
   existing `perlcritic --severity 4` debt; `config/perl/perlcriticrc`
   referencing uninstalled policy bundles (OTRS, TryTiny); perltidy version
-  drift (the perl CI job is already non-gating for this — see "perl CI"); and
-  needing perl tools installed in the CI pre-commit job. Enable after perlbrew
-  pinning + perlcriticrc trim + debt cleanup.
-- [x] **Rust** — N/A (no Rust in this repo); noted in the config.
-- [x] Update fix configuration with language-specific auto-fixes (isort, yapf).
-- [x] Test with actual project files (rule-coverage.py passes; full check run
-  green).
-- [x] Update documentation (`flake8.md` added; `python.md`/`yapf.md`/`isort.md`
-  already cover the tools).
+  drift; and needing perl tools installed in the CI pre-commit job. Enable
+  after perlbrew pinning + perlcriticrc trim + debt cleanup.
 
 ### Phase 4: Documentation Linting
 
@@ -972,18 +789,6 @@ scanning remains the **security-scan** skill's job (separate from this hook).
   - [ ] Link validation
 - [ ] Test on repository documentation
 - [ ] Update documentation
-
-## 🔧 Bump GitHub Actions off Node.js 20 (MEDIUM PRIORITY)
-
-CI runs surface deprecation warnings: `actions/checkout@v4` (×4) and
-`actions/setup-python@v5` (×2) in `.github/workflows/tests.yml` run on
-Node.js 20, which GitHub forces to Node 24 by default on 2026-06-16 and
-removes from runners on 2026-09-16.
-
-- [ ] Bump `actions/checkout@v4` → `@v5` (already used in `opencode.yml`)
-  and `actions/setup-python@v5` → a Node 24-compatible release in
-  `tests.yml`, clearing the deprecation warnings. Re-check the run's
-  annotations afterward for any other actions still on Node 20.
 
 ## 🚀 CI/CD Workflows (HIGH PRIORITY)
 
@@ -995,9 +800,6 @@ below is the remaining buildout.
 ### Phase 1: Basic CI (requires Pre-commit Phase 1)
 
 - [ ] Consolidate/confirm the CI workflow:
-  - [x] Run on push to master and on pull requests (`tests.yml`)
-  - [x] Execute BATS tests; run shellcheck/yamllint/markdownlint via the
-        `pre-commit` job
   - [ ] Report results as job status (confirm coverage matches the plan)
 - [ ] Document CI workflow
 
@@ -1317,6 +1119,15 @@ in the future.
 
 ## Version History
 
+- **v1.2.0** (2026-06-17): Merge-finalization opt-in. Pruned all completed
+  `- [x]` items (whole DONE sections: spotify-patterns, gmailctl move,
+  creds-helper fix, perl CI, login-shell perf; plus done sub-items across
+  Testing, pre-commit Phase 1/3, and CI/CD Phase 1), migrating the
+  done-work record to the new [`CHANGELOG.md`](CHANGELOG.md). Also removed
+  the two duplicate "Bump GitHub Actions off Node.js 20" sections (completed
+  in PR #101 — verified against `tests.yml`). This repo now opts in to the
+  merge-time finalization hook (see `WORKFLOW.md`), so the planning docs
+  track only open work.
 - **v1.1.0** (2026-06-07): Cleanup pass — removed completed sections (git
   file-mode normalization, Dependabot alerts, stale-branch cleanup, the
   container-harness build, shell context detection, and assorted done
@@ -1329,6 +1140,8 @@ in the future.
 
 ## References
 
+- **[CHANGELOG.md](CHANGELOG.md)**: Finalized (completed) work — TODO's
+  counterpart; items land there once their PR goes green
 - **[WORKFLOW.md](.claude/WORKFLOW.md)**: Development guidelines and conventions
 - **[TESTS.md](.claude/TESTS.md)**: Testing framework and strategy
 - **[CLAUDE.md](config/claude/CLAUDE.md)**: AI agent behavior specification

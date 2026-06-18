@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 ## Purpose
 
@@ -159,6 +159,18 @@ GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets/17364459 \
   --method PUT --input ../private_dotfiles/github-rulesets/protect-master-solo.json
 ```
 
+**Merge-time finalization (`merge-finalization: enforce`):**
+
+This repo opts in to the merge-time documentation finalization (ship-pr
+Step 4.5). Completed items are **pruned outright** from `TODO.md` (and
+`ROADMAP.md` if one exists) once the PR that finishes them goes green —
+finalized work is migrated to [`CHANGELOG.md`](../CHANGELOG.md), not left as
+`[x]` markers. The `merge-finalization: enforce` sentinel in the heading above
+activates the `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`),
+which **blocks** a `gh pr merge` / `ship.sh merge` while any completed `- [x]`
+items still remain in the planning docs. See
+`config/claude/skills/ship-pr/SKILL.md` and `config/claude/rules/git.md`.
+
 ## Tool Setup Procedures
 
 ### Prerequisites
@@ -251,7 +263,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.0.0)
+* `WORKFLOW.md` - Versioned (this file, v1.1.0)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 
