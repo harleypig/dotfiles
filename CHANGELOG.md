@@ -12,6 +12,23 @@ goes green (see the merge-time finalization in
 
 ## 2026-06-17
 
+### Security
+
+- **Resolved Dependabot alert #6** (HIGH — vulnerable OpenSSL in
+  `cryptography` wheels, `< 48.0.1`). `cryptography` is a transitive dep of
+  the Poetry tool-env with no committed lockfile, so it was promoted to a
+  direct constraint `cryptography = ">=48.0.1"` in
+  `config/pypoetry/pyproject.toml`. (PR #103)
+
+### Added
+
+- **`.github/dependabot.yml`** — weekly version-update PRs for the pip
+  (Poetry) and github-actions ecosystems; no auto-merge (PRs land via the
+  normal protected-master flow). (PR #103)
+- **`.claude/QA.md`** — repo QA doc mapping every dimension in the global
+  `rules/qa.md` pipeline to this repo with an explicit status and the
+  concrete commands; pointer added from `.claude/CONVENTIONS.md`. (PR #103)
+
 ### Changed
 
 - **Bumped GitHub Actions off Node.js 20** — `actions/checkout@v4` → `@v5`
