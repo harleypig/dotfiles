@@ -201,12 +201,36 @@ carries a doc-consultation instruction (v1.1.0). One follow-up remains
 
 Retrospective follow-up (from the PR that added the `retrospective` skill):
 `EXTENDING.md` now says to use **skill-creator** when authoring a skill, but
-`retrospective` predated that rule. Exercising skill-creator on it both
-validates the skill and starts the keep/vendor/borrow/drop learning its
-`SETUP-AUDIT.md` decision calls for.
+`retrospective` predated that rule.
 
-- [ ] Run skill-creator's eval + description-trigger optimizer on the
-  `retrospective` skill; apply or capture what it surfaces.
+**Blocked on the trigger eval:** dogfooding skill-creator on `ship-pr` showed
+`run_eval.py` returns **0% regardless** on CC 2.1.x (upstream issue #2003 + a
+command-vs-`Skill` detection gap — see `SETUP-AUDIT.md`). So the automated
+triggering eval won't help here until upstream fixes it.
+
+- [ ] When upstream fixes #2003 (or we vendor + patch `run_eval`), run the
+  trigger eval + description optimizer on `retrospective`.
+- [ ] Meanwhile, do a **manual** triggering judgment + instruction-review of
+  `retrospective` (the value skill-creator delivers that isn't blocked).
+
+## 🔌 skill-creator plugin upgrade + marketplace path-corruption (MEDIUM PRIORITY)
+
+Surfaced while dogfooding skill-creator (see `SETUP-AUDIT.md`).
+
+- [ ] **Fix the marketplace path-corruption.** CC 2.1.181 rejects the
+  `claude-plugins-official` marketplace because its recorded `installLocation`
+  is the `~/.claude/...` **symlink** path, not the real
+  `config/claude/plugins/marketplaces/...` path (the `~/.claude → config/claude`
+  symlink). It blocks `claude plugin marketplace update` / `plugin update`.
+  Sanctioned fix: `claude plugin marketplace remove claude-plugins-official`
+  then re-add — **global** (re-pulls all that marketplace's plugins; may shift
+  versions), so do it deliberately. Affects *all* plugin management, not just
+  skill-creator.
+- [ ] **Then upgrade `skill-creator`** to current upstream — its
+  `improve_description.py` dropped the `anthropic` SDK / API-key requirement
+  (now `claude -p`-based, 2026-04-23). Note: `run_eval.py` is unchanged
+  upstream, so the upgrade does **not** fix the broken trigger eval (still
+  gated on #2003).
 
 ## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
 

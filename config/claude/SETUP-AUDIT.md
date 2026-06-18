@@ -237,6 +237,33 @@ decisions are also summarized in the *Decisions log*.
 
 ## Decisions log
 
+- 2026-06-18 — **Dogfooded `skill-creator` on `ship-pr`; its trigger eval is
+  broken on CC 2.1.181 (updates the "keep + put to work" entry below).** Ran
+  `run_eval.py` against ship-pr's `description` with a 20-query should/
+  should-not set. **Uniform 0% trigger rate in BOTH configs** — installed skill
+  present, *and* (per upstream issue #2003's Option-2 workaround) with the
+  installed skill moved aside so only the temp registration remained. Two root
+  causes: (1) **issue #2003** (anthropics/claude-plugins-official) — `run_eval`
+  registers a UUID-named temp copy and checks for that UUID name, but a
+  co-installed real skill is invoked instead (its name lacks the UUID) → 0%;
+  (2) **deeper, isolated by our hidden rerun** — `run_eval` writes a **command**
+  to `.claude/commands/` but detects a **`Skill`** tool-use, and on CC 2.1.181
+  that command is never invoked as a `Skill`, so it reads 0% *even with no
+  competing skill*. So #2003's hide-workaround does **not** fix it for us —
+  there is currently **no usable triggering eval here**, and the
+  `improve_description`/`run_loop` loop is moot (it depends on `run_eval`).
+  `run_eval.py` is **byte-identical to upstream `main`** (diffed) — unfixed
+  upstream; #2003 is OPEN. We commented our repro on #2003. **Verdict (revises
+  the entry below):** keep skill-creator's `SKILL.md` as *conceptual* guidance
+  — and note its **instruction-review pass produced two real `ship-pr` fixes**
+  (the genuine value this round) — but treat its **automated eval/optimize
+  machinery as non-functional on CC 2.1.x**; use **manual triggering judgment**
+  until upstream fixes #2003. **Plugin upgrade deferred** (would only modernize
+  the moot improve-loop): blocked by a **marketplace path-corruption** — the
+  `~/.claude` → `config/claude` symlink makes CC 2.1.181 reject the recorded
+  marketplace `installLocation` (not the real dotfiles path); the sanctioned
+  fix is a global marketplace remove + re-add. Both tracked in `TODO.md`.
+  Landed via dotfiles PR.
 - 2026-06-18 — **Kept `skill-creator` (the one plugin worth keeping) and put
   it to work.** Unlike the four dropped plugins, skill-creator is **not
   redundant** — it is a skill-authoring + **evaluation** harness (analyzer /
