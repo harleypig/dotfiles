@@ -1,0 +1,33 @@
+---
+# Dependabot version updates.
+#
+# Security (alert-driven) updates are enabled separately in the repo's
+# security settings; this file configures scheduled *version*-update PRs.
+# No auto-merge — Dependabot PRs land through the normal protected-master
+# flow (squash-only + required checks), reviewed/merged via the ship-pr
+# skill like any other PR.
+version: 2
+
+updates:
+  # Python tooling environment (Poetry manifest). cryptography is pinned
+  # directly in the manifest for alert #6; committing a poetry.lock so
+  # transitive deps are covered too is a tracked follow-up (see TODO.md).
+  # Dependabot's pip ecosystem updates the direct deps listed in
+  # pyproject.toml even without a committed lockfile.
+  - package-ecosystem: pip
+    directory: /config/pypoetry
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+      include: scope
+
+  # GitHub Actions in .github/workflows — keeps actions off deprecated
+  # runtimes automatically (cf. the manual Node 20 bump in PR #101).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+      include: scope

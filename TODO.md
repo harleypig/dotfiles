@@ -23,6 +23,18 @@ follow-up remains:
 - [ ] Confirm Dependabot / auto-merge interplay once a Dependabot PR appears
   (squash-only + required checks — ensure auto-merge still completes).
 
+## 📦 Commit a poetry.lock for the Poetry tool-env (MEDIUM PRIORITY)
+
+`config/pypoetry/pyproject.toml` has no committed `poetry.lock`, so transitive
+dependencies aren't pinned and Dependabot can't open security-update PRs for
+them. Alert #6 (`cryptography`) was remediated with a **direct** pin in the
+manifest instead; per `rules/poetry.md` the lockfile MUST be committed.
+
+- [ ] Generate and commit `config/pypoetry/poetry.lock` (resolving
+  `cryptography >= 48.0.1`) so transitive deps are pinned and Dependabot
+  security updates can cover them. Larger change than the direct pin — its
+  own fix.
+
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
 We use a single branch ruleset (protect master). Survey what else rulesets
@@ -196,6 +208,50 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
 - [ ] Consolidate drift: the same rule copied (and diverging) across repos
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
+
+## 📓 Add a global `rules/dependabot.md` (MEDIUM PRIORITY)
+
+Authoring `.github/dependabot.yml` (the Dependabot setup / *Commit a
+poetry.lock* item) surfaced that Dependabot has no
+`config/claude/rules/<tool>.md`, which `CLAUDE.md` *Missing or Conflicting
+Tool Rules* says to fill. Dependabot is repo-agnostic → a **tier-1 (global)**
+rule.
+
+- [ ] Write `config/claude/rules/dependabot.md` covering: the `dependabot.yml`
+  v2 schema essentials (`package-ecosystem`, `directory` / `directories`,
+  `schedule.interval`, `groups`, `commit-message`,
+  `open-pull-requests-limit`); the pip/Poetry gotcha (transitive-dep security
+  updates need a committed lockfile; direct deps update without one); the
+  no-auto-merge default (PRs land via `ship-pr`); and conventional-commit
+  prefixing. Ecosystems in use here: pip + github-actions.
+- [ ] **Cross-cutting fix to the rule/skill-authoring guidance** — whatever
+  governs creating rules/skills (`config/claude/EXTENDING.md`,
+  `config/claude/CLAUDE.md`, `config/claude/rule-TEMPLATE.md`) should state,
+  among its authoring steps, that a new rule/skill must **consult official
+  documentation first**, and **also** any **man page or other local
+  documentation installed by the package** (`man <tool>`, `<tool> --help`,
+  `/usr/share/doc/<pkg>`, …) — not memory. Add it once to the canonical
+  authoring doc and reference it; don't duplicate.
+
+## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
+
+The agent config under `config/claude/` (rules, skills, `CLAUDE.md`,
+`EXTENDING.md`, hooks, …) is language- and repo-agnostic and is consumed by
+every project, not just dotfiles. Move it to a standalone repo so it can be
+shared/versioned independently and carries **no dotfiles-specific references**
+(generic — no mention of "dotfiles").
+
+- [ ] **Check first whether such a repo already exists** before creating one —
+  scan sibling clones under `$PROJECTS_DIR` and `gh repo list` (candidates to
+  rule out: `newdotfiles`, `gollum-config`). As of 2026-06-17 no dedicated
+  agent-config repo was found.
+- [ ] Carve `config/claude/` out into the standalone repo; scrub
+  dotfiles-specific wording so the content reads generically.
+- [ ] Decide how dotfiles (and other repos) consume it — submodule, sibling
+  clone, or symlink into `$CLAUDE_CONFIG_DIR` — and update the deploy/symlink
+  steps and any hardcoded paths.
+- [ ] Reconcile with the "Break tmux config into its own repo" item (same
+  extraction question: submodule vs sibling).
 
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
@@ -1116,27 +1172,6 @@ in the future.
 - Code improvements and config enhancements are cataloged but can be addressed
   opportunistically
 - Template creation is extensive future work, deferred for now
-
-## Version History
-
-- **v1.2.0** (2026-06-17): Merge-finalization opt-in. Pruned all completed
-  `- [x]` items (whole DONE sections: spotify-patterns, gmailctl move,
-  creds-helper fix, perl CI, login-shell perf; plus done sub-items across
-  Testing, pre-commit Phase 1/3, and CI/CD Phase 1), migrating the
-  done-work record to the new [`CHANGELOG.md`](CHANGELOG.md). Also removed
-  the two duplicate "Bump GitHub Actions off Node.js 20" sections (completed
-  in PR #101 — verified against `tests.yml`). This repo now opts in to the
-  merge-time finalization hook (see `WORKFLOW.md`), so the planning docs
-  track only open work.
-- **v1.1.0** (2026-06-07): Cleanup pass — removed completed sections (git
-  file-mode normalization, Dependabot alerts, stale-branch cleanup, the
-  container-harness build, shell context detection, and assorted done
-  sub-items), fixed stale/contradictory statuses, deduplicated entries
-  (grok block, bash_prompt venv, parse_params), dropped stale items for
-  archived libs, and refreshed Progress Tracking + Next Actions.
-- **v1.0.0** (2026-01-18): Initial consolidated TODO based on modernization
-  plan. Documented completed tasks, organized remaining work by phase and
-  priority.
 
 ## References
 
