@@ -139,6 +139,31 @@ STUBEOF
   assert_output --partial '<bg red>'
 }
 
+@test "vim NORMAL leads the line in bright-yellow on red" {
+  local json='{"vim":{"mode":"NORMAL"},"model":{"display_name":"O"},"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  # leads the line (before the first ' | '), red bg + bright-yellow fg
+  assert_output --regexp '^[^|]*NORMAL'
+  assert_output --partial '<bg red>'
+  assert_output --partial '<fg bright_yellow>'
+}
+
+@test "vim INSERT uses the standard color (no alarm)" {
+  local json='{"vim":{"mode":"INSERT"},"model":{"display_name":"O"},"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  assert_output --regexp '^[^|]*INSERT'
+  refute_output --partial '<bg red>'
+}
+
+@test "vim segment is absent when no vim mode is reported" {
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  refute_output --partial 'NORMAL'
+  refute_output --partial 'INSERT'
+}
+
 @test "missing jq prints a graceful notice and exits 0" {
   run env PATH="$STUB" "$BASH_BIN" "$SL" <<< "$JSON"
   assert_success

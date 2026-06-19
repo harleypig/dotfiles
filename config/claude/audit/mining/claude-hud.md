@@ -71,7 +71,14 @@ todos `(2/5)` — heavier than a stateless bash/jq line. Reused impl: **none**
 
 While verifying the effort field, the docs also showed **`.vim.mode`
 (NORMAL/INSERT) is a real field** (present when Claude Code vim mode is on) —
-so the `mode` field removed in the statusline fix was *documented*, not
-bogus. It was still broken as written (the build emitted only the empty label,
-never the value, and the absent value shifted the parse). Whether to restore it
-(now the parse is empty-safe) is a **user decision** — see the BACKLOG entry.
+so the `mode` field removed in the statusline fix was *documented*, not bogus.
+It was **restored** 2026-06-19, rendered ourselves with `hideVimModeIndicator:
+true` (NORMAL bright-yellow-on-red, INSERT/others standard; leads the line).
+
+Re-examined `claude-hud` (2026-06-19) for a way to suppress Claude Code's
+native below-prompt lines — **it has none**: it sets no suppression key, can't
+read the permission/auto-accept mode (not in its stdin), and its agents line is
+a transcript-parsed display stacked on top of the native one. The
+**auto-accept indicator and subagent line have no off-switch** and the
+permission mode isn't in the statusline JSON — see the BACKLOG `ICEBOX:` note
+(upstream #27916 / #48246).

@@ -412,23 +412,31 @@ Done 2026-06-19 (fixed + regression-tested; see the decisions log): the display
 bug (leading empty field + a field-shift from the empty `.vim.mode` column —
 root-caused to the whitespace-`IFS`/`@tsv` parse, now joined on the unit
 separator so absent fields are safe), the context-% prominence, the
-**reasoning-effort `[level]`** indicator (`.effort.level`), and the
+**reasoning-effort `[level]`** indicator (`.effort.level`), the
 **rate-limit usage segment** (`5h:`/`7d:` `used_percentage` riding inside the
-context segment, colored by the shared pct ramp; hidden for non-subscribers).
-`jarrodwatts/claude-hud` was mined — full matrix in
+context segment, colored by the shared pct ramp; hidden for non-subscribers),
+and the **vim-mode segment** (`.vim.mode` rendered ourselves with
+`hideVimModeIndicator: true` — NORMAL is bright-yellow-on-red, INSERT/others
+standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
 [`mining/claude-hud.md`](mining/claude-hud.md). Remaining candidates:
 
-- [ ] **Restore `.vim.mode` (NORMAL/INSERT)?** — user decision. The field is
-  *documented* (present when Claude Code vim mode is on; the user uses vim mode);
-  it was removed in the fix because it was broken as written (built only the
-  empty label, and its empty column shifted the parse). The parse is now
-  empty-safe, so it could be re-added correctly (emit the value, bracket/guard
-  when absent). Decide whether it earns a slot.
 - [ ] **Heavier candidates** (transcript-driven — defer): the tools/agents
   lines and todos `(2/5)`. *(2026-06-19: project path, session duration, output
   speed, and token totals were skipped by the user; the context progress-bar
   glyph is `SKIP-until` on the census watch list — revisit if the plain `X%`
   stops being enough.)*
+
+**`ICEBOX:` cannot hide the native below-prompt indicator lines** — the
+**auto-accept / permission-mode** indicator (`⏵⏵ auto mode on`) and the
+**running-subagent / task** line have **no off-switch** (settings, env, or
+flag) as of 2026-06-19 — verified against the Claude Code docs and by
+re-examining `claude-hud` (which sets no suppression key, can't even read the
+permission mode, and only stacks a transcript-parsed agents line *on top of*
+the native one). The permission mode isn't in the statusline stdin JSON at all,
+so it can't be reconstructed either. Open upstream requests: anthropics/
+claude-code **#27916**, **#48246**. Revisit if either lands a hide option or
+exposes the mode in the JSON; until then, only the vim indicator was
+controllable (and is done).
 
 ### Claude Code compaction control (moved from TODO.md)
 

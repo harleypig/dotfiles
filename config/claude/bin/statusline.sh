@@ -39,6 +39,12 @@ join_array() {
 declare -a vars
 declare -A jq_filter sl_label
 
+# Vim mode (NORMAL/INSERT/VISUAL/…), present only with vim editor mode +
+# hideVimModeIndicator set, so we render it ourselves instead of the built-in.
+vars+=('vim')
+jq_filter['vim']='.vim.mode // ""'
+sl_label['vim']=''
+
 vars+=('model')
 jq_filter['model']='.model.display_name // "unknown"'
 sl_label['model']=''
@@ -103,14 +109,22 @@ cost=$(printf '%.2f' "$cost" 2> /dev/null || printf '?.??')
 # bright yellow past 60%, then an alarm block (bright text on a red background)
 # once it crosses 80%.
 
-declare cyan bright_yellow alarm reset
+declare cyan bright_yellow alarm vim_normal reset
 
 if command -v ansi &> /dev/null; then
   cyan=$(ansi fg cyan)
   bright_yellow=$(ansi fg bright_yellow)
   alarm="$(ansi bg red)$(ansi fg bright_white)"
+  vim_normal="$(ansi bg red)$(ansi fg bright_yellow)"
   reset=$(ansi off)
 fi
+
+# NORMAL mode stands out (bright yellow on red — command keystrokes are live);
+# INSERT and the rest use the terminal's standard color.
+case $vim in
+  NORMAL) vim_color=$vim_normal ;;
+  *) vim_color='' ;;
+esac
 
 # Percentage fields (context %, the rate-limit usage caps) share one ramp:
 # calm cyan < 60, bright yellow 60–79, alarm block >= 80. An empty value
@@ -147,6 +161,8 @@ declare -a parts
 
 add_part() { [[ -n $1 ]] && parts+=("$1"); }
 
+# Vim mode leads the line (we render it; the built-in indicator is hidden).
+[[ -n $vim ]] && add_part "${vim_color}${vim}${reset}"
 add_part "$(git-status)"
 # Effort rides with the model (no ' | ' between them), colored by level and
 # bracketed — only when the model reports one.

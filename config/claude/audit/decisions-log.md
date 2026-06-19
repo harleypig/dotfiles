@@ -6,6 +6,20 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Restored the vim-mode segment; confirmed the other native
+  indicator lines can't be hidden.** Set `statusLine.hideVimModeIndicator: true`
+  (placement confirmed against the docs — a sibling of `type`/`command`) and
+  render `.vim.mode` ourselves: a leading segment, NORMAL in bright-yellow-on-red
+  (live command keystrokes), INSERT/others standard, absent when vim mode is off.
+  This removes the built-in `-- INSERT --` text and its NORMAL-collapses-to-empty
+  vertical jitter. Two research tasks settled the rest: (a) the **auto-accept /
+  permission-mode** indicator (`⏵⏵ auto mode on`) and the **subagent/task** line
+  have **no documented or findable off-switch**, and the permission mode is **not
+  in the statusline stdin JSON** (so not reconstructable); (b) **`claude-hud`
+  offers no suppression** of native lines (sets no key, can't see the mode, just
+  stacks its transcript-parsed agents line on top). Recorded as a BACKLOG
+  `ICEBOX:` with upstream #27916 / #48246. 15 statusline tests. Folded into the
+  statusline PR.
 - 2026-06-19 — **Added the rate-limit / usage segment to the statusline.**
   Worked the top remaining claude-hud candidate. Added two fields
   (`rate_limits.five_hour.used_percentage`, `…seven_day…`) rendered as
