@@ -719,6 +719,25 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
   Ties into the vendored file/skill update checker (see Configuration
   Enhancements → Dependency Management).
 
+## 🪝 branch-protection hook: exempt gitignored paths (LOW PRIORITY)
+
+**Pain (PR #118 retrospective):** writing an auto-memory note — under the
+gitignored `config/claude/projects/*/memory/` dir, a path that can *never*
+land in a commit — was blocked by the edit-time `branch-protection.py`
+`PreToolUse` hook because `master` was checked out, forcing an unnecessary
+throwaway branch just to satisfy the guard. A write that cannot be committed
+cannot violate branch protection, so this is a false-positive in a
+forcing-function hook (the memory system is meant to be written directly at
+any time).
+
+- [ ] **Artifact:** update the existing hook
+  `config/claude/hooks/branch-protection.py` (global; symlinked to
+  `~/.claude/hooks/`) to **allow** an `Edit`/`Write`/`MultiEdit` whose target
+  path is gitignored (e.g. `git check-ignore -q <path>`), since such a write
+  can't reach a commit on the protected branch. Keep failing safe (any error →
+  allow). Scope: **global** dotfiles agent-config. Confirm it doesn't weaken
+  the guard for tracked files.
+
 ## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
 The Claude Code setup audit — its methodology, dimensions, idea sources,
