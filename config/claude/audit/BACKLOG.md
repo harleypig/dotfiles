@@ -52,7 +52,19 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
 - [ ] **External validation (GitHub Apps).** Evaluate third-party App checks as
   outside quality signals: what is wired (CodeFactor, Snyk) vs candidates
   (Codecov for coverage, Codacy / SonarCloud) — what each adds, its noise/cost,
-  whether it earns its place.
+  whether it earns its place. *(Partly advanced 2026-06-19: CodeFactor/Snyk
+  resolved via the `security-scan` §4 escape hatch; the broader candidate sweep
+  now lives in the "🏅 credibility signals / badges" research task below — keep
+  them in sync.)*
+- [ ] **Cross-repo follow-up routing (LOW — retrospective, PR #123).** The
+  TODO-routing convention (`WORKFLOW.md`) routes a follow-up to *its* repo's
+  `TODO.md` — but a global-config change can spawn a follow-up **for a different
+  repo I'm not currently in** (here: per-repo Snyk evals for pigify /
+  scripturestudy-app). There's no first-class capture for that; they were
+  parked in this BACKLOG with a "migrate when next in that repo" flag — a
+  workaround. Decide a convention (or a tiny mechanism) for cross-repo
+  follow-ups so they aren't lost or mis-homed. Likely a short addition to the
+  `WORKFLOW.md` TODO-routing section.
 - [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
   rule/skill, also check whether a plugin provides it or should be added.
   Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a
@@ -167,18 +179,10 @@ comfortably. Make it less sprawling without losing the relationships it maps.
 
 ### 🔎 CodeFactor & Snyk — evaluated & resolved (2026-06-19)
 
-- [x] **Researched both (grounded in current official docs) and decided.**
-  CI-placement answer: **neither belongs in this repo's CI.** CodeFactor is
-  App-only SaaS (no CLI — it *can't* run in a workflow at all); Snyk *can* run
-  in CI (`snyk/actions` + `SNYK_TOKEN`) but conflicts with the OSS-pinned
-  posture and adds no worthwhile result on a manifest-light shell repo. Both
-  fail this repo's *worthwhile-results* bar: only `config/pypoetry/{poetry.lock,
-  pyproject.toml}` exists (already covered by osv-scanner + Dependabot), and
-  CodeFactor only re-runs ShellCheck/yamllint already gated locally (skipping
-  Markdown/Perl). **Decision: drop Snyk (uninstall the App); keep CodeFactor as
-  a passive, non-required badge.** Recorded in `.claude/QA.md`; the general
-  policy became the `security-scan` §4 escape hatch (below). See decisions-log
-  2026-06-19.
+Evaluation done and the policy landed (the `security-scan` §4 escape hatch;
+decision recorded in `.claude/QA.md`; see decisions-log 2026-06-19). One manual
+action remains:
+
 - [ ] **User action (web UI, not scriptable here):** uninstall the **Snyk**
   GitHub App from `harleypig/dotfiles` and remove the repo's projects from
   app.snyk.io, so the advisory `security/snyk` check stops posting.
