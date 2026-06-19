@@ -11,7 +11,7 @@ paths:
 
 # osv-scanner Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 osv-scanner (Google, OSS) scans dependency lockfiles against **OSV.dev** —
 which aggregates GHSA/PYSEC/etc. advisories **and** the OpenSSF
@@ -34,7 +34,8 @@ osv-scanner scan source -r <dir>
 Exit code is non-zero when any advisory matches, so a CI step that runs it
 **hard-gates** on findings (malicious packages **and** vulns). Run it from
 the pinned OSS image directly — no marketplace action, no SaaS (same posture
-as `trivy.md` / `semgrep.md`).
+as `trivy.md` / `semgrep.md`). This is the default, not an absolute ban: a repo
+may adopt a hosted scanner when its results are worthwhile (`security-scan` §4).
 
 ## False positives & allowlisting
 
