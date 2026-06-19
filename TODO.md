@@ -65,37 +65,6 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🐙 `/github-tasks` skill — recurring GitHub housekeeping (MEDIUM PRIORITY)
-
-Create a `/github-tasks` skill that sweeps the repo's GitHub state and drives
-the routine maintenance, then presents a prioritized worklist to the user.
-Scope:
-
-- [x] **Dependabot PRs** — find open Dependabot PRs and work through any that
-  exist (review, compat-gate via `qa-check`, land per the merge policy).
-  Ties into the existing "Confirm Dependabot / auto-merge interplay" item
-  under *Protect the master Branch*.
-- [x] **Issue triage** — list open issues and auto-triage them, applying the
-  right labels (`bug`, `docs`, `feature`, etc.); fold actionable issues into
-  the repo's TODO triage queue per `rules/gh.md` *Issues & triage*.
-- [x] **Present a worklist** — surface the gathered issues/PRs as a ranked
-  list of candidates to work on, and **ask the requestor clarifying
-  questions** before acting on ambiguous items.
-- [x] **Whatever else comes up** — leave room for other recurring GitHub
-  chores (stale branches, failing required checks, release/tag hygiene,
-  open review threads).
-- [x] **Reconcile with existing rules/skills** — `rules/gh.md` already
-  defines the issue-triage cadence ("at the start of git/gh work, and
-  daily") and the credential fallback; `ship-pr` lands PRs;
-  `git-worktree-workflow` manages branches; `security-scan` triages
-  Dependabot/CVE findings. Decide what `/github-tasks` orchestrates vs.
-  delegates, and whether any of that content should roll into the skill or
-  the skill should defer to it — avoid duplicating per the Rule of Three.
-- [x] **Recurring, not scheduled** — this must run on a regular basis but
-  **not** on a cron. Wire it to the natural trigger already in `rules/gh.md`
-  (start of git/gh work + daily) rather than a scheduled job; decide if that
-  rule should *name* the skill as its forcing function.
-
 ## 🌳 Worktree creation: explicit-only, conforming names (MEDIUM PRIORITY)
 
 Retrospective follow-up (PR #111): this background job launched *already

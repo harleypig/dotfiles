@@ -41,6 +41,16 @@ goes green (see the merge-time finalization in
   item `[x]` in the commit that completes it, so merge-time finalization is a
   mechanical prune. Placed in always-on `git.md` so it is in context at every
   commit (a skill at PR-end cannot be). (PR #109)
+- **`config/claude/skills/github-tasks/`** — a repo-agnostic GitHub
+  housekeeping skill: one sweep that gathers a repo's open GitHub state (open
+  Dependabot PRs, untriaged issues, failing required checks, stale/gone
+  branches, release/tag hygiene, unresolved review threads), triages it, and
+  presents a single ranked worklist — asking before acting on anything
+  ambiguous. It orchestrates rather than duplicates: gather/triage/label is
+  the only default-scope action; the heavy lifting routes to existing skills
+  (security-scan, qa-check, ship-pr, git-worktree-workflow, release-tag,
+  debug-assistant). Wired as the forcing function for `gh.md`'s "start of
+  git/gh work, and daily" cadence (`gh.md` v1.3.0). (PR #111)
 
 ### Changed
 
