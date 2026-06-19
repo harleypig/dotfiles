@@ -388,7 +388,8 @@ catches.
 
 Build out perl QA across **both the test suite and the CLI scripts** (where
 CLIs exist — e.g. `bin/parse_params`, `bin/perltidyrc-clean`), and make it as
-strict as practical, in stages.
+strict as practical, in stages. Capture the resulting toolchain in **agent
+rules/skills** (see *Rules & skills* below), not only human setup docs.
 
 ### perlcritic
 
@@ -458,6 +459,31 @@ bundles (OTRS, TryTiny).
   Prerequisites). Use the repo's standard install path — perlbrew + cpanm (see
   *Tool/Version Manager Setup*) or pinned docker wrappers — so a fresh machine
   reproduces the whole perl QA toolchain from one documented place.
+
+### Rules & skills (agent config)
+
+These stages adopt several tools the **agent** must know how to drive — capture
+each as agent config, not only human setup docs, per `CLAUDE.md` *Missing or
+Conflicting Tool Rules* and *When to Propose a Skill*. Today only a thin
+`rules/perl.md` exists (a one-line `perltidy` + `perlcritic --severity 4`
+mention) and there is **no** perl-QA skill (cf. `bats-setup`,
+`pytest-patterns`).
+
+- [ ] **Per-tool rules.** As each tool lands, create or extend its
+  `rules/<tool>.md`, **grounded in current official docs with a Sources cite**
+  (`EXTENDING.md` *Grounding & sourcing*) — never memory. Likely a dedicated
+  **`rules/perlcritic.md`** (the curated profile, policy-selection judgement,
+  staged severity ratchet, and docker-pinned-policy-set angle are far more than
+  `perl.md`'s one-liner), plus shorter rules or `perl.md` sections for
+  `perltidy`, `Devel::Cover`, and `Test::Pod::Coverage`. Wire each into the
+  tool-detection table and the `qa.md` / repo QA-doc dimension mapping.
+- [ ] **A perl-QA skill?** Decide whether the multi-step procedures here
+  (scaffold the toolchain → curate the perlcritic profile → ratchet severity in
+  stages → wire Test::Perl::Critic + coverage + POD gates) warrant a skill — a
+  perl analog of **`bats-setup`** (scaffolding) and/or **`pytest-patterns`**
+  (depth recipes). Weigh against `qa-check` (which *runs* QA) and the existing
+  skills; fold into one rather than duplicate if it already fits (Rule of
+  Three).
 
 ## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
 
