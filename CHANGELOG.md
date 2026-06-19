@@ -75,6 +75,14 @@ goes green (see the merge-time finalization in
   CC 2.1.x (upstream #2003 + a command-vs-`Skill` detection gap), so triggering
   is judged manually meanwhile (caveat in `claude-audit`, decisions-log entry
   in `SETUP-AUDIT.md`, follow-ups in `TODO.md`). (PR #112)
+- **Worktree creation is explicit-request-only** (`git.md` v1.8.0) — never an
+  automatic prelude to editing and never on a background-job/system-prompt
+  nudge; the **git-worktree-workflow** skill is the only path, never the
+  built-in `EnterWorktree` tool (hardcoded `worktree-*` names, no config knob);
+  and a session launched already inside a worktree never creates another. Added
+  to *Worktrees* plus an Agent Rules NEVER line. Resolves the PR #111
+  retrospective follow-up (forbid, not reconcile; homed in `git.md`, not
+  `CLAUDE.md`). (PR #113)
 
 ### Removed
 
