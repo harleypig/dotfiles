@@ -101,7 +101,13 @@ quality or whether its `description` triggers on the right requests, use the
 optimizer *measure* triggering and behaviour rather than eyeballing the
 frontmatter. This is the audit's standing tool for the skills dimension; the
 more it is used, the sooner we learn whether to leave skill-creator enabled,
-vendor it, borrow its ideas, or drop it (`SETUP-AUDIT.md`).
+vendor it, borrow its ideas, or drop it (`SETUP-AUDIT.md`). **Caveat (CC
+2.1.x):** skill-creator's automated **trigger eval** (`run_eval.py`) is
+currently broken — it returns 0% regardless of the description (upstream
+issue #2003 plus a command-vs-`Skill` detection gap; verified, see
+`SETUP-AUDIT.md`). Until upstream fixes it, judge triggering **manually**;
+skill-creator's value here is its `SKILL.md` *writing* guidance and the
+instruction-review pass, not the eval scripts.
 
 **Check reference consistency (cross-impact).** Artifacts cross-reference each
 other by greppable name — rules by filename (`git.md`), skills by name, hooks
