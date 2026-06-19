@@ -96,6 +96,30 @@ Scope:
   (start of git/gh work + daily) rather than a scheduled job; decide if that
   rule should *name* the skill as its forcing function.
 
+## 🌳 Worktree creation: explicit-only, conforming names (MEDIUM PRIORITY)
+
+Retrospective follow-up (PR #111): this background job launched *already
+inside* `.claude/worktrees/feature+github-tasks-skill`, yet the agent still
+called the built-in **`EnterWorktree`** tool — creating a second branch named
+`worktree-feature+github-tasks-skill` (the tool's hardcoded `worktree-`
+prefix + `/`→`+` scheme), which violates the repo's `feature/<name>`
+convention (`rules/git.md` *Branch Naming*). Root cause: the background-job
+system prompt nudges "use EnterWorktree before any code changes," competing
+with both `EnterWorktree`'s own "explicit-request-only" contract and
+`git.md`'s "use the **git-worktree-workflow** skill for all worktree
+operations." There is **no settings.json knob** for the built-in tool's
+naming.
+
+- [ ] Strengthen `rules/git.md` *Worktrees* so the agent resists the
+  background-job nudge: worktree creation is **explicit-request-only**; use
+  the **git-worktree-workflow** skill (conforming `feature/<name>` names),
+  **not** the built-in `EnterWorktree` tool; and **if already inside a
+  worktree at launch, never create another** (the background-job exception).
+- [ ] Decide whether to reconcile the built-in `EnterWorktree` path at all
+  (it can't be renamed via config) or simply forbid its use here in favour of
+  the skill — and whether any of this belongs in global `CLAUDE.md` vs the
+  `git.md` rule.
+
 ## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
 
 Create a `/test-audit` skill that checks for **missing or outdated tests**
