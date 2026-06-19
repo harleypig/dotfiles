@@ -761,19 +761,26 @@ Rules files instruct the agent to run shellcheck/shfmt, but only if the agent
 remembers. `PostToolUse` hooks in `settings.json` enforce this automatically
 after every `Edit` or `Write` on a shell file.
 
-- [ ] Decide hook approach:
-  - Option A: inline command in `settings.json` (simple, but not version-controlled
-    separately from settings)
-  - Option B: `config/claude/bin/post-edit-shell.sh` script invoked by the hook
-    (keeps logic in a file, easier to maintain)
-- [ ] Implement hook in `config/claude/settings.json`:
-  - Match on `Edit` and `Write` tool use
-  - Detect if the modified file is a shell file (by path pattern or shebang)
-  - Run `shfmt -i 2 -s -bn -ci -sr -w <file>` then `shellcheck <file>`
-  - Output failures so Claude sees them and can fix before continuing
-- [ ] Research Claude Code hook input format: what env vars / stdin does a
-  `PostToolUse` hook receive? (need file path of edited file)
-- [ ] Document hook setup in this repo's WORKFLOW.md once stable
+- [x] **Approach:** Option B — a script, `config/claude/hooks/shell-check.py`,
+  matching the three existing hooks (`branch-protection`, `rule-coverage`,
+  `merge-finalization`).
+- [x] **Input format** (grounded in the working `rule-coverage.py`): the hook
+  reads JSON on stdin → `tool_input.file_path`; project dir via
+  `CLAUDE_PROJECT_DIR` or `cwd`; surfaces feedback to the agent (non-blocking)
+  via `print(json.dumps({"hookSpecificOutput": {"hookEventName":
+  "PostToolUse", "additionalContext": ...}}))`.
+- [x] **Implemented** on `Edit|Write|MultiEdit` in `settings.json`. Detects a
+  shell file by `.sh`/`.bash` extension or shell shebang, runs `shellcheck`,
+  and surfaces findings. **Deviations from the original sketch (deliberate):**
+  *check-only* (no `shfmt -w` — auto-fixing mid-session fights `pre-commit.md`,
+  and the file would change under the agent), and *shellcheck only* (the
+  bug-catching half; formatting stays at commit time — one container per edit,
+  not two). Fail-open (skips non-shell / out-of-project / missing-shellcheck).
+  Regression-tested: `tests/python/test_shell_check.py` (7 cases, hermetic via
+  a `shellcheck` stub).
+- [x] **Documented** in `rules/shellcheck.md` (new *Enforcement* section,
+  v1.1.0) — the rule the hook enforces — rather than `WORKFLOW.md`, since the
+  hook is **global** shell hygiene, not this repo's specific workflow.
 
 ## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
