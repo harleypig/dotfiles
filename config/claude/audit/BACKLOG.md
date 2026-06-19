@@ -12,16 +12,15 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
 
 ## Always-on rule scoping
 
-- [ ] **Evaluate `claude-code-auth.md` and `trufflehog.md` for path-scoping
-  (2026-06-19 audit).** These two are the only single-purpose rules still
-  always-on (no `paths:`) after the 2026-06-10 scoping pass — 9 always-on
-  total, of which 7 are genuinely cross-cutting (`code-style`,
-  `documentation`, `gh`, `git`, `qa`, `testing`, `troubleshooting`).
-  `trufflehog.md` (PR-time secret scanning) could scope to
-  `.github/workflows/**`; `claude-code-auth.md` is niche but has no natural
-  file glob (it is about the agent's own auth, not repo files) — may be a
-  legitimate always-on, or fold its essence elsewhere. Decide per rule; low
-  cost (~166 lines combined), low urgency.
+- [x] **Evaluated `claude-code-auth.md` and `trufflehog.md` for path-scoping
+  (2026-06-19 audit; resolved 2026-06-19).** `trufflehog.md` → **scoped** to
+  `.github/workflows/**` (its whole concern is the `secret-scan.yml` workflow;
+  mirrors the `github-actions.md` precedent; the security-scan skill still
+  reads it by name on-demand). `claude-code-auth.md` → **kept always-on** with
+  a documenting `# No paths` frontmatter — it is a conversational-trigger
+  guardrail (never export `ANTHROPIC_API_KEY` globally) with no file glob, so
+  path-scoping would make it miss exactly when needed. Always-on rules now
+  number 8 (7 cross-cutting + `claude-code-auth`). See `decisions-log.md`.
 
 ## Audit dimensions / design
 

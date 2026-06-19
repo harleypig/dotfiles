@@ -6,6 +6,25 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Resolved the always-on rule-scoping review (the last two
+  unscoped single-purpose rules).** Worked the BACKLOG *Always-on rule scoping*
+  item. **`trufflehog.md` → path-scoped** to `.github/workflows/**` (bumped
+  v1.0.0 → v1.1.0): the rule's entire concern is the `secret-scan.yml` CI
+  workflow, so it loads only when a workflow file is edited — mirroring the
+  `github-actions.md` precedent (same glob, same reasoning). The `security-scan`
+  skill reads it by name when it runs, so nothing that needs it depends on the
+  per-turn tier. **`claude-code-auth.md` → kept always-on** (bumped v1.0.0 →
+  v1.1.0, added a documenting `# No paths` frontmatter): it is a guardrail
+  (never export `ANTHROPIC_API_KEY` globally — the mistake that broke the Max
+  subscription, PR #110) whose trigger is **conversational** (auth diagnosis,
+  "/status shows the wrong method", "set up my key"), not a file edit — so
+  path-scoping would make it miss exactly those moments, and its token files
+  live in a separate repo (`private_dotfiles`) anyway. Per "trim weight, never
+  guardrails," it stays. Consequence: the always-on tier drops from 9 unscoped
+  rules to 8 (7 cross-cutting + `claude-code-auth`); 42 are now `paths:`-scoped.
+  Every always-on rule now carries an explicit `# No paths — <why>` frontmatter,
+  so "no frontmatter" is no longer an ambiguous state. Updated `SETUP-AUDIT.md`
+  baseline.
 - 2026-06-19 — **Restored the vim-mode segment; confirmed the other native
   indicator lines can't be hidden.** Set `statusLine.hideVimModeIndicator: true`
   (placement confirmed against the docs — a sibling of `type`/`command`) and
