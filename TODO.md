@@ -46,10 +46,14 @@ dependencies aren't pinned and Dependabot can't open security-update PRs for
 them. Alert #6 (`cryptography`) was remediated with a **direct** pin in the
 manifest instead; per `rules/poetry.md` the lockfile MUST be committed.
 
-- [ ] Generate and commit `config/pypoetry/poetry.lock` (resolving
-  `cryptography >= 48.0.1`) so transitive deps are pinned and Dependabot
-  security updates can cover them. Larger change than the direct pin — its
-  own fix.
+- [x] Generated and committed `config/pypoetry/poetry.lock` (`poetry lock`,
+  poetry 2.4.1): 49 packages pinned, `cryptography` resolved to 49.0.0
+  (≥ 48.0.1), `poetry check --lock` consistent. Transitive deps are now pinned
+  and Dependabot's pip ecosystem can cover them.
+- [ ] Follow-up (optional): the direct `cryptography = ">=48.0.1"` pin in the
+  manifest is now redundant (the lock pins it transitively and Dependabot can
+  update it) — consider dropping it back to transitive and re-locking. Its own
+  small change; left in place for now.
 
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
