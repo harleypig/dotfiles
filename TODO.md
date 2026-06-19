@@ -76,12 +76,16 @@ run. Hit on PR #112's post-finalization re-watch (it printed the old run as
 databaseId,headSha -q 'select(.headSha==$HEAD)'` then `gh run watch <id>`),
 applied preemptively on PR #113.
 
-- [ ] Fix `config/claude/skills/ship-pr/scripts/ship.sh` `ci-watch` to resolve
+- [x] Fix `config/claude/skills/ship-pr/scripts/ship.sh` `ci-watch` to resolve
   the run by the current HEAD SHA — poll until a run for that SHA registers,
   then watch *that* run — instead of "latest run for branch"; fall back to
   latest only if no SHA-matched run appears within a timeout. Update ship-pr
   Step 4 guidance if the contract changes. Pointer: PR #112 re-watch reported
   run 27804458673 (SHA 53a3941) green after pushing 25d0c8b.
+  (Done: SHA-pinned poll loop with a ~60s timeout + latest-run fallback;
+  observable contract unchanged so no Step 4 edit. ship-pr → v1.9.2. Verified
+  functionally against live gh/git data; skill helper scripts are outside the
+  `bin lib` meta-test scope, so no bats regression test was added.)
 
 ## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
 
