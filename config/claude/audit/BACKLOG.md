@@ -470,17 +470,19 @@ Can we steer *when* and *how* Claude Code compacts context? Two
 below, so it needs settling against current official docs (not memory) before
 acting.
 
-- [ ] **Verify the `# Compact instructions` CLAUDE.md feature.** One lookup
-  asserted a special heading in CLAUDE.md steers what compaction preserves; a
-  second, more thorough search of `code.claude.com/docs` found **no documented
-  heading-matching feature** of that name. Settle which is true. If real → add
-  the block to global `config/claude/CLAUDE.md`. If not → it's only ordinary
-  guidance text the model happens to see (CLAUDE.md is in context during
-  compaction; project-root CLAUDE.md is re-injected from disk after), with no
-  dedicated engine — don't oversell it.
-- [ ] **Evaluate a `SessionStart`/`compact` hook** as the documented, reliable
-  lever for "make X survive compaction": its stdout is injected into context
-  after a compaction. Decide whether it's worth wiring for this setup.
+- [x] **Settled the `# Compact instructions` CLAUDE.md feature — REFUTED.** No
+  such heading-matching feature is documented (the more thorough prior lookup
+  was right). What's real: project-root + global `CLAUDE.md` and `MEMORY.md` are
+  auto-reinjected after a compaction, with no magic heading filtering what's
+  kept. So **nothing added to `CLAUDE.md`**; recorded so it isn't re-attempted.
+- [x] **Wired a `SessionStart`/`compact` hook (git/session-state snapshot).**
+  Confirmed `SessionStart` fires post-compaction with `source: "compact"` and
+  its `additionalContext` is injected. Built `config/claude/hooks/
+  compact-snapshot.py` (matcher `compact`) to re-inject a short snapshot — repo,
+  branch (+ protected-default warning), the branch's open PR, working-tree
+  status — which auto-reinjection does *not* cover. Read-only, fail-safe; runs
+  only on compaction (no per-turn cost). Tested via
+  `tests/python/test_compact_snapshot.py`. See decisions-log 2026-06-19.
 
 Confirmed (not in question): there is **no** config to change the auto-compact
 *threshold*; `autoCompactEnabled: false` (or `DISABLE_AUTO_COMPACT=1`) disables
