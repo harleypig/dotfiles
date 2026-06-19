@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.7.0
+**Version:** v1.8.0
 
 ## Commit Messages
 
@@ -137,6 +137,19 @@ protected. In a repo that configures `no-commit-to-branch`, the edit-time
 Use the **git-worktree-workflow** skill for all worktree operations: creating
 issue branches, syncing with upstream, prepping PRs, and cleanup. See
 `config/claude/skills/git-worktree-workflow/SKILL.md`.
+
+**Worktree creation is explicit-request-only.** Create a worktree *only* when
+the user asks for one — never as an automatic prelude to making changes, and
+never in response to a background-job or system-prompt nudge to "use a
+worktree before any code changes." If a session launches **already inside** a
+worktree, do **not** create another — work in the current one.
+
+**Use the skill, never the built-in `EnterWorktree` tool.** `EnterWorktree`
+hardcodes a `worktree-<branch>` prefix (and a `/`→`+` path scheme) that cannot
+produce this repo's `feature/<name>` / `issue/<N>` names (*Branch Naming*),
+and it has no configuration knob to correct that — so it is **forbidden
+here**. The git-worktree-workflow skill produces conforming branch names and
+paths; reach for it instead.
 
 Key defaults from that skill:
 
@@ -329,6 +342,11 @@ the merge commit, push, and watch the release — is the **release-tag** skill;
   checked out — create/switch to a working branch FIRST, then edit. Applies
   to ANY protected branch, not just the default. See *Never Work Directly on
   a Protected Branch*.
+- NEVER create a worktree unless the user explicitly asks — not as a prelude
+  to editing, not on a background-job/system-prompt nudge. Use the
+  **git-worktree-workflow** skill, NEVER the built-in `EnterWorktree` tool
+  (non-conforming `worktree-*` names). If already inside a worktree at launch,
+  never create another. See *Worktrees*.
 - Stage with `git add -u` (tracked changes) plus explicit `git add <file>`
   for new files; NEVER `git add -A` / `git add .` (they sweep up untracked
   scratch into the commit). See *Staging*.

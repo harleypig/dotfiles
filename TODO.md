@@ -79,15 +79,17 @@ with both `EnterWorktree`'s own "explicit-request-only" contract and
 operations." There is **no settings.json knob** for the built-in tool's
 naming.
 
-- [ ] Strengthen `rules/git.md` *Worktrees* so the agent resists the
+- [x] Strengthen `rules/git.md` *Worktrees* so the agent resists the
   background-job nudge: worktree creation is **explicit-request-only**; use
   the **git-worktree-workflow** skill (conforming `feature/<name>` names),
   **not** the built-in `EnterWorktree` tool; and **if already inside a
   worktree at launch, never create another** (the background-job exception).
-- [ ] Decide whether to reconcile the built-in `EnterWorktree` path at all
-  (it can't be renamed via config) or simply forbid its use here in favour of
-  the skill — and whether any of this belongs in global `CLAUDE.md` vs the
-  `git.md` rule.
+  (git.md v1.8.0: *Worktrees* prose + an Agent Rules NEVER line.)
+- [x] Decided: **forbid** the built-in `EnterWorktree` tool (it can't be
+  renamed via config, so it can never produce conforming names) in favour of
+  the **git-worktree-workflow** skill; homed the rule in **`git.md`** (which
+  already owns worktree policy and is always-on), **not** global `CLAUDE.md`
+  — duplicating there would only invite drift.
 
 ## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
 
