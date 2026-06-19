@@ -24,9 +24,13 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   `name`+`description` frontmatter; **skip the optional standard fields**
   (`license`/`compatibility`/`metadata`/`allowed-tools`) for internal skills
   (one vendored skill, `frontend-design`, legitimately keeps an upstream
-  `license`). Left a **LOW** follow-up: optionally guard conformance against
-  drift via our own bats/meta check (preferred — self-hosted) or the external
-  `skills-ref validate`; not built, to keep this a documentation-only outcome.
+  `license`). **Guard built (option a, same PR):**
+  `tests/shell/test_skill_frontmatter.bats` self-hosts the conformance check
+  (name matches dir + charset/length; description ≤1024) in the gating suite;
+  the external Apache-2.0 `skills-ref` validator (option b) is **ICEBOXed** in
+  that test — same no-external-tool-to-lint-our-own-files posture as semgrep/
+  trufflehog/etc. Negative-tested (it fails on a missing description, bad
+  charset, and name≠dir) so it isn't a no-op.
 - 2026-06-19 — **`branch-protection.py` hook now allows edits to gitignored,
   untracked files.** The edit-time guard blocked an edit to a **gitignored**
   memory file while on `master` — and the report wrongly called that an

@@ -98,8 +98,12 @@ use it), then the Markdown body and optional `scripts/` / `references/` /
 `assets/`. Optional standard fields (`license`, `compatibility`, `metadata`,
 `allowed-tools`) are **skipped by default** for these internal skills — add
 one only when it earns its place (e.g. a vendored skill keeping its upstream
-`license`). The standard ships a validator (`skills-ref validate <dir>`); we
-don't wire it (see `audit/BACKLOG.md`).
+`license`). Conformance is guarded by
+`tests/shell/test_skill_frontmatter.bats` — a self-hosted check of the
+required-field rules above, run in the gating suite. The standard's external
+`skills-ref` validator is **ICEBOXed** (noted in that test) in favour of the
+self-hosted check, matching the repo's no-external-tool-to-lint-our-own-files
+posture.
 
 ## Agent (subagent)
 

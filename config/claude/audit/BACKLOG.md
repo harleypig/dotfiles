@@ -426,14 +426,13 @@ duplicates / similar setups). Chart each in
   (Skill › *Format*). The "no `claude`/`anthropic` in a name" rule one source
   claimed is **not in the standard** (verified) — `claude-audit` is fine. See
   decisions-log 2026-06-19.
-- [ ] **Optional: guard skill-frontmatter conformance against drift (LOW).**
-  We're conformant today but nothing enforces it as skills are added/renamed.
-  Decide between (a) a small **own** check (a bats/meta test asserting each
-  `SKILL.md`'s `name` matches its dir + charset/length rules — fits the repo's
-  self-hosted, no-external-dep posture, like the meta-test generator), or
-  (b) wiring the standard's **`skills-ref validate`** (external Apache-2.0 tool;
-  authoritative but adds a dependency). Lean (a). Not built — scoped out of the
-  investigation PR.
+- [x] **Guarded skill-frontmatter conformance against drift (option a).** Built
+  `tests/shell/test_skill_frontmatter.bats` — a self-hosted bats check asserting
+  each `SKILL.md`'s `name` matches its dir + the charset/length rules and the
+  `description` is present and ≤1024 chars (gating suite). The external
+  Apache-2.0 **`skills-ref`** validator (option b) is left **ICEBOXed** (noted
+  in the test) — same no-external-tool-to-lint-our-own-files posture as the rest
+  of the repo. See decisions-log 2026-06-19.
 
 ### Claude statusline enhancements (claude-hud candidates)
 
