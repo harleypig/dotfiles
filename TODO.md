@@ -75,16 +75,17 @@ test suite never sees. The meta-test generator scans `bin lib` only
 `config/claude/skills/*/scripts/*` is uncovered. That gap let a defect ship and
 caused manual workarounds across PRs #112–#114.
 
-- [ ] Decide how to cover skill helper scripts and act on it. Options: (a)
-  extend the meta-test generator's roots to include
-  `config/claude/skills/*/scripts` (gets free static checks — shebang,
-  `bash -n`, shellcheck, shfmt — for all of them at once); and/or (b) add a
-  hand-written bats test for `ship.sh` behaviour with a `gh`/`git` stub
-  (`tests/helpers/common.bash` already has `make_stub`), at least for the
-  pure-logic parts (`ci-watch` SHA selection, `merge-methods` ruleset parse).
-  Update `TESTS.md` coverage scope once decided. Pointer: meta roots default
-  `bin lib` at `tests/scaffold/build-meta-tests`; the bug was the
-  "latest run" vs "run for HEAD SHA" selection in `cmd_ci_watch`.
+- [x] Option (a) done: extended the meta-test generator's default roots to
+  `bin lib config/claude/skills` (`tests/scaffold/build-meta-tests`), so skill
+  helper scripts now get the static checks (shebang, `bash -n`, shellcheck,
+  shfmt). `ship.sh`'s generated meta test passes all five; no debt imported.
+  `TESTS.md` coverage scope updated.
+- [ ] Option (b), still open (lower priority): a hand-written bats test for
+  `ship.sh` *behaviour* with a `gh`/`git` stub (`tests/helpers/common.bash`
+  `make_stub`) — `ci-watch` SHA selection, `merge-methods` ruleset parse.
+  Static checks (a) would **not** have caught the #114 logic bug; only a
+  behavioural test would, so this is the real regression-coverage piece if we
+  want it.
 
 ## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
 

@@ -86,10 +86,13 @@ the same gating suite without breaking docker-less environments.
 
 The generated **meta suite** runs language-specific static checks per file:
 bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
-`perl -c`; python → shebang + `compile()`. It currently surfaces pre-existing
-debt (legacy bash lint/format + one perl module dependency) — tracked in
-`TODO.md` ("Lint/format Debt in Legacy Scripts"), not ignored and not
-auto-fixed. Until those are clean, only the hand-written suite is gated.
+`perl -c`; python → shebang + `compile()`. It scans `bin lib` **plus
+`config/claude/skills`** (the last covers skill helper scripts such as
+`config/claude/skills/*/scripts/*`, e.g. `ship-pr`'s `ship.sh`; non-script
+files are skipped). It currently surfaces pre-existing debt (legacy bash
+lint/format + one perl module dependency) — tracked in `TODO.md`
+("Lint/format Debt in Legacy Scripts"), not ignored and not auto-fixed. Until
+those are clean, only the hand-written suite is gated.
 
 ## Running
 
