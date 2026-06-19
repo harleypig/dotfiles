@@ -14,6 +14,12 @@ setup() {
   load_bats_libs
   ROOT="$(dotfiles_root)"
 
+  # Stub `ansi` to a no-op — NOT because ansi is broken (it already degrades to
+  # silence in an incomplete terminal: TERM=dumb / no tput). The stub is purely
+  # for the test: bin/ isn't on PATH in CI, so git-status's bare `ansi` call
+  # would print "command not found" to stderr (which `run` captures), and the
+  # stub also strips real color codes so the paren/space assertions see clean
+  # text.
   STUB="$(make_stub_dir)"
   printf '#!/usr/bin/env bash\n' > "$STUB/ansi"
   chmod +x "$STUB/ansi"
