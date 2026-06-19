@@ -81,11 +81,12 @@ now triggers **two** workflow runs (`tests` + `secret-scan`), but
 the wrong workflow (the non-required `secret-scan` instead of the required
 `tests`). Both runs had to be watched by hand this PR.
 
-- [ ] Make `ship.sh ci-watch` robust to multiple workflows per PR: either
-  watch **all** runs for the HEAD SHA and aggregate their conclusions, or
-  target the gating workflow (whose jobs are the repo's required checks).
-  Pointer: `cmd_ci_watch` picks `.[0].databaseId` after SHA-matching in
-  `config/claude/skills/ship-pr/scripts/ship.sh`.
+- [x] Made `ship.sh ci-watch` watch **all** runs for the HEAD SHA and
+  aggregate (any run failed → exit 1), reporting per-workflow results instead
+  of `.[0]`; added a short grace pass so a sibling workflow registering a beat
+  later isn't missed. The per-commit annotation scan already spanned all
+  workflows, so it's unchanged. `test_ship.bats` gains a multi-workflow
+  regression case (5 tests pass); ship-pr → v1.9.3.
 
 ## 🔑 Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
 
