@@ -88,6 +88,18 @@ description-trigger optimizer so the skill fires on the right requests, not
 just whatever wording was first guessed. We are deliberately exercising
 skill-creator on every new skill to learn its worth
 (`audit/decisions-log.md`).
+**Format:** our `SKILL.md` *is* the **Agent Skills open standard**
+([agentskills.io](https://agentskills.io/specification)) — the format
+Anthropic created and released as a cross-vendor open standard (Dec 2025). A
+skill is a directory whose name matches its `SKILL.md`'s required `name`
+(1–64 chars, lowercase/digits/hyphens, no leading/trailing or consecutive
+hyphen) plus a required `description` (≤1024 chars: what it does *and* when to
+use it), then the Markdown body and optional `scripts/` / `references/` /
+`assets/`. Optional standard fields (`license`, `compatibility`, `metadata`,
+`allowed-tools`) are **skipped by default** for these internal skills — add
+one only when it earns its place (e.g. a vendored skill keeping its upstream
+`license`). The standard ships a validator (`skills-ref validate <dir>`); we
+don't wire it (see `audit/BACKLOG.md`).
 
 ## Agent (subagent)
 

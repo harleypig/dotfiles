@@ -416,9 +416,24 @@ duplicates / similar setups). Chart each in
 
 ### Skill-format standard: agentskills.io
 
-- [ ] Investigate whether <https://agentskills.io> is a real/emerging standard
-  (does Anthropic or another AI vendor back it?). If meaningful, align our
-  skills' format to it.
+- [x] Investigated (2026-06-19). **`agentskills.io` is the real, authoritative
+  open standard** — the `SKILL.md` format Anthropic created and released
+  cross-vendor (Dec 2025; adopted by OpenAI, Google, Microsoft/GitHub, Cursor,
+  etc.). It is **the same format we already use**, not a competitor — so we are
+  **already conformant**: all 27 skills pass the hard constraints (name matches
+  dir; lowercase/digits/hyphens; no `--`; ≤64 chars; description ≤1024). No
+  migration. Documented the standard as our reference in `EXTENDING.md`
+  (Skill › *Format*). The "no `claude`/`anthropic` in a name" rule one source
+  claimed is **not in the standard** (verified) — `claude-audit` is fine. See
+  decisions-log 2026-06-19.
+- [ ] **Optional: guard skill-frontmatter conformance against drift (LOW).**
+  We're conformant today but nothing enforces it as skills are added/renamed.
+  Decide between (a) a small **own** check (a bats/meta test asserting each
+  `SKILL.md`'s `name` matches its dir + charset/length rules — fits the repo's
+  self-hosted, no-external-dep posture, like the meta-test generator), or
+  (b) wiring the standard's **`skills-ref validate`** (external Apache-2.0 tool;
+  authoritative but adds a dependency). Lean (a). Not built — scoped out of the
+  investigation PR.
 
 ### Claude statusline enhancements (claude-hud candidates)
 

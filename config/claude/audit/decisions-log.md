@@ -6,6 +6,27 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Investigated the agentskills.io skill-format standard;
+  confirmed we're already conformant.** Worked the BACKLOG item, grounded in
+  current sources (three research agents). **`agentskills.io` is the real,
+  Anthropic-originated open standard** for Agent Skills — the `SKILL.md` format
+  Anthropic created and released as a cross-vendor open standard on 2025-12-18
+  (adopters include OpenAI Codex, Google Gemini CLI, GitHub Copilot, Cursor,
+  JetBrains, Goose, …). Crucially it is **the same format we already use**, not
+  a competing one, so there is **nothing to migrate**: a conformance sweep of
+  all 27 skills passed every hard constraint (name matches parent dir;
+  lowercase/digits/hyphens; no leading/trailing/`--`; ≤64 chars; description
+  ≤1024). **Corrected an over-claim:** one research agent asserted a name
+  "must not contain `claude`/`anthropic`" rule; a targeted re-check of the spec,
+  the Claude Code docs, and the `skills-ref` validator found **no such rule** —
+  `claude-audit` is fully valid. Decision: **document the open standard as our
+  reference** (`EXTENDING.md` Skill › *Format*) and keep the minimal
+  `name`+`description` frontmatter; **skip the optional standard fields**
+  (`license`/`compatibility`/`metadata`/`allowed-tools`) for internal skills
+  (one vendored skill, `frontend-design`, legitimately keeps an upstream
+  `license`). Left a **LOW** follow-up: optionally guard conformance against
+  drift via our own bats/meta check (preferred — self-hosted) or the external
+  `skills-ref validate`; not built, to keep this a documentation-only outcome.
 - 2026-06-19 — **`branch-protection.py` hook now allows edits to gitignored,
   untracked files.** The edit-time guard blocked an edit to a **gitignored**
   memory file while on `master` — and the report wrongly called that an
