@@ -73,20 +73,19 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
-## 🔭 ship.sh ci-watch: handle multiple workflows per PR (LOW PRIORITY)
+## 🔭 Document the kept-branch-after-squash sync mechanic (LOW PRIORITY)
 
-Retrospective follow-up (PR #116). With the new `secret-scan` workflow a PR
-now triggers **two** workflow runs (`tests` + `secret-scan`), but
-`ship.sh ci-watch` selects `.[0]` of the SHA-matched runs — so it can watch
-the wrong workflow (the non-required `secret-scan` instead of the required
-`tests`). Both runs had to be watched by hand this PR.
+Retrospective follow-up (PR #117). When a batch branch is **kept** after a
+squash-merge to continue working, syncing it with `git merge master` carries
+the already-merged commits forward as redundant history that pollutes the next
+PR's commit list — PR #117 needed a `git rebase --onto master <merge>` cleanup
+before its commit list was tidy.
 
-- [x] Made `ship.sh ci-watch` watch **all** runs for the HEAD SHA and
-  aggregate (any run failed → exit 1), reporting per-workflow results instead
-  of `.[0]`; added a short grace pass so a sibling workflow registering a beat
-  later isn't missed. The per-commit annotation scan already spanned all
-  workflows, so it's unchanged. `test_ship.bats` gains a multi-workflow
-  regression case (5 tests pass); ship-pr → v1.9.3.
+- [ ] Document the clean mechanic in `git.md` (or the ship-pr / batch
+  workflow): after a squash-merge with the branch kept, sync via
+  `git reset --hard origin/master` (the batch is already in master) or
+  `git rebase --onto`, **not** `git merge master`. (Already captured in the
+  batch-todos working memory; promote to a rule note so it isn't memory-only.)
 
 ## 🔑 Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
 
@@ -132,20 +131,6 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
 - [ ] Consolidate drift: the same rule copied (and diverging) across repos
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
-
-## 📓 Evaluate a Dependabot skill (MEDIUM PRIORITY)
-
-`config/claude/rules/dependabot.md` already exists (since 2026-06-03) and
-carries a doc-consultation instruction (v1.1.0). One follow-up remains
-(the rule/skill-authoring doc-sourcing half is now done — see CHANGELOG):
-
-- [x] **Evaluated — declined a separate `dependabot` skill** (Rule of Three: it
-  would duplicate `security-scan` step 2 + `rules/dependabot.md`). Dependabot
-  *setup* and *triage* already live in the `security-scan` skill, and the
-  ecosystems/conventions/authoring procedure live in the rule. Instead made the
-  *reconcile-and-verify* procedure explicit in `security-scan` step 2 (scan all
-  manifests → consult official docs → reconcile to full coverage → yamllint),
-  pointing at the rule. `security-scan` → v1.1.0.
 
 ## 🧪 Dogfood skill-creator on the retrospective skill (LOW PRIORITY)
 
@@ -669,27 +654,6 @@ shim), `show-unicode` (static table), `bash-colors` (color-var defs),
   (mostly covered by the integration tests) and any scripts elsewhere.
 - [ ] Regenerate the meta suite after adding scripts; keep Phase 3 in sync.
 
-## 🔐 Document the Claude Code auth setup (MEDIUM PRIORITY)
-
-Retrospective follow-up (PR #110): `gh.md` documents this user's dual `gh`
-credential scheme, but nothing documents the **Claude Code** auth setup —
-which cost real time (forced re-login every ~12h).
-
-- [x] Documented in **`config/claude/rules/claude-code-auth.md`** (a new auth
-  note, parallel to `gh.md`) — the three methods this setup uses (Console
-  `ANTHROPIC_API_KEY`, long-lived `CLAUDE_CODE_OAUTH_TOKEN`, subscription
-  `/login`), the full six-method **precedence**, the never-export-globally
-  rule, and checking/switching. Grounded in the official Claude Code auth docs
-  (Sources cited), which corrected two beliefs: `ANTHROPIC_API_KEY` **does**
-  authenticate the CLI (it just overrides at precedence #3), and the
-  subscription OAuth **does** auto-refresh — the docs name no literal 12h
-  cycle; the global-API-key override was the actual culprit (fixed in PR #110).
-- [x] Investigated (empirically resolved): `CLAUDE_CODE_OAUTH_TOKEN` appearing
-  unset mid-session cleared after a **full `/login` logout + login**. Root
-  cause not definitively pinned (the loader / `~/.claude → config/claude`
-  symlink-realpath angle on CC 2.1.181 was the suspect) — captured the
-  logout+login fix in the rule's *gotcha* section; reopen if it recurs.
-
 ## 🧠 Claude Rules Files (MEDIUM PRIORITY)
 
 Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the
@@ -754,33 +718,6 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
   - other locations as discovered
   Ties into the vendored file/skill update checker (see Configuration
   Enhancements → Dependency Management).
-
-## 🪝 Claude Code PostToolUse Hooks (MEDIUM PRIORITY)
-
-Rules files instruct the agent to run shellcheck/shfmt, but only if the agent
-remembers. `PostToolUse` hooks in `settings.json` enforce this automatically
-after every `Edit` or `Write` on a shell file.
-
-- [x] **Approach:** Option B — a script, `config/claude/hooks/shell-check.py`,
-  matching the three existing hooks (`branch-protection`, `rule-coverage`,
-  `merge-finalization`).
-- [x] **Input format** (grounded in the working `rule-coverage.py`): the hook
-  reads JSON on stdin → `tool_input.file_path`; project dir via
-  `CLAUDE_PROJECT_DIR` or `cwd`; surfaces feedback to the agent (non-blocking)
-  via `print(json.dumps({"hookSpecificOutput": {"hookEventName":
-  "PostToolUse", "additionalContext": ...}}))`.
-- [x] **Implemented** on `Edit|Write|MultiEdit` in `settings.json`. Detects a
-  shell file by `.sh`/`.bash` extension or shell shebang, runs `shellcheck`,
-  and surfaces findings. **Deviations from the original sketch (deliberate):**
-  *check-only* (no `shfmt -w` — auto-fixing mid-session fights `pre-commit.md`,
-  and the file would change under the agent), and *shellcheck only* (the
-  bug-catching half; formatting stays at commit time — one container per edit,
-  not two). Fail-open (skips non-shell / out-of-project / missing-shellcheck).
-  Regression-tested: `tests/python/test_shell_check.py` (7 cases, hermetic via
-  a `shellcheck` stub).
-- [x] **Documented** in `rules/shellcheck.md` (new *Enforcement* section,
-  v1.1.0) — the rule the hook enforces — rather than `WORKFLOW.md`, since the
-  hook is **global** shell hygiene, not this repo's specific workflow.
 
 ## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
