@@ -93,17 +93,15 @@ Create a `/test-audit` skill that checks for **missing or outdated tests**
 that have drifted from the code they cover) and wire it into the `qa-check`
 skill's Tests dimension (`qa.md` dimension 6).
 
-- [ ] **First reconcile with the existing `test-review` skill** — it already
-  covers "Tests dimension (quality, not execution): success AND failure
-  paths, regression-test-per-bug, edge-case gaps." Decide whether
-  `/test-audit` is a new skill or whether this is just *wiring `test-review`
-  into `qa-check`* (and possibly renaming/extending it). Avoid duplicating
-  what `test-review` already does — see the Rule of Three in `code-style.md`.
-- [ ] Define what "outdated" means concretely for this repo (e.g. a
-  `bin/`/`lib/` file newer than its `tests/shell/test_<name>.bats`, or a test
-  referencing removed code) per `TESTS.md`'s coverage rules.
-- [ ] Hook the chosen skill into `qa-check` for the Tests dimension; record
-  the status in the repo QA doc per `qa.md`.
+- [x] **Reconciled with `test-review` — decided NOT to build `/test-audit`**
+  (it would duplicate `test-review`, already qa.md's dim-6 tool that `qa-check`
+  composes). Instead extended `test-review` (v1.1.0) with the unique sliver.
+- [x] Defined "outdated/untested" in `test-review`: a **coverage census**
+  (units with no test per `TESTS.md`) plus a **staleness/drift** lens (source
+  newer than its test, a test referencing removed/renamed code, a test
+  guarding deleted behavior).
+- [x] Wiring: `qa-check` already composes `test-review` for the Tests
+  dimension; named it in the repo QA doc dim-6 row (`.claude/QA.md`).
 
 ## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 

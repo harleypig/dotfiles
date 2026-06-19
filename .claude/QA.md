@@ -48,7 +48,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 3 | Type-check | **Off** | No typed source under active dev; Python `mypy`/`pyright` deferred to on-demand (`rules/python.md`). See TODO *pre-commit Phase 3*. |
 | 4 | Code smell / complexity | **Off** | `shellcheck` catches some; no dedicated bash complexity tool. Acknowledged gap, no tracked owner yet. |
 | 5 | Security | **Active (partial)** | Secrets: `gitleaks` + `detect-private-key` (check). SCA / supply-chain: Dependabot alerts + version updates (`.github/dependabot.yml`). SAST: **Planned** — TODO *trufflehog & Checkmarx*, *CodeFactor & Snyk*. DAST: **N/A** (no running service). Deeper triage → `security-scan` skill. |
-| 6 | Tests | **Active** | `bats tests/shell/test_*.bats` (gate), `prove tests/perl/`, `pytest tests/python` (self-activating). Layout/policy in `TESTS.md`. |
+| 6 | Tests | **Active** | `bats tests/shell/test_*.bats` (gate), `prove tests/perl/`, `pytest tests/python` (self-activating). Layout/policy in `TESTS.md`. Suite *quality/coverage* (missing, outdated, brittle tests) → the **test-review** skill (qa.md dim 6), which `qa-check` composes. |
 | 7 | UI/UX & accessibility | **N/A** | Headless dotfiles / CLI — no UI. |
 | 8 | End-to-end | **N/A** | No application. Docker integration tests that bring up a real login shell / pwsh profile live under Tests (`TESTS.md`). |
 | 9 | Compatibility | **N/A** | No external API / data-format contracts. Cross-shell (bash + PowerShell) and the docker context matrix are exercised under Tests. |
