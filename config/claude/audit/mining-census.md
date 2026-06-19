@@ -1,7 +1,8 @@
 # Mining census
 
 The index + explanations for repos mined for ideas during audits. The *Idea
-sources* registry in `SETUP-AUDIT.md` is the higher-level index; this file
+sources* registry in [`idea-sources.md`](idea-sources.md) is the higher-level
+index; this file
 explains the method and links the **complete mapping** — every agent / command
 / hook / skill considered and why it was or wasn't adopted, in a **per-repo
 matrix file** under `mining/`. Audit-only (not context-loaded).

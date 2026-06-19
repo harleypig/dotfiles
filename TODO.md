@@ -140,7 +140,8 @@ Retrospective follow-up (from the PR that added the `retrospective` skill):
 
 **Blocked on the trigger eval:** dogfooding skill-creator on `ship-pr` showed
 `run_eval.py` returns **0% regardless** on CC 2.1.x (upstream issue #2003 + a
-command-vs-`Skill` detection gap — see `SETUP-AUDIT.md`). So the automated
+command-vs-`Skill` detection gap — see `config/claude/audit/decisions-log.md`).
+So the automated
 triggering eval won't help here until upstream fixes it.
 
 **Reconfirmed (PR #115):** the *modify-an-existing-skill* path is unusable too
@@ -156,7 +157,8 @@ it as conceptual guidance only until #2003 is fixed.
 
 ## 🔌 skill-creator plugin upgrade + marketplace path-corruption (MEDIUM PRIORITY)
 
-Surfaced while dogfooding skill-creator (see `SETUP-AUDIT.md`).
+Surfaced while dogfooding skill-creator (see
+`config/claude/audit/decisions-log.md`).
 
 - [ ] **Fix the marketplace path-corruption.** CC 2.1.181 rejects the
   `claude-plugins-official` marketplace because its recorded `installLocation`
@@ -740,11 +742,13 @@ any time).
 
 ## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
-The Claude Code setup audit — its methodology, dimensions, idea sources,
-backlog, and decisions log — lives in `config/claude/SETUP-AUDIT.md`, which is
-read only when running `/claude-audit` (it is **not** context-loaded). Audit
-follow-ups (e.g. the deferred `pydantic_ai` framework rule, repo-mining
-shortlists) are tracked there, not here, so this repo's `TODO.md` stays about
+The Claude Code setup audit's *methodology* is the `claude-audit` skill; its
+*record* lives under `config/claude/audit/` — `decisions-log.md` (the "why"),
+`BACKLOG.md` (open audit follow-ups), `idea-sources.md` + `mining-census.md`
+(mined repos) — indexed by `config/claude/SETUP-AUDIT.md`. None of it is
+context-loaded; it is read only when running `/claude-audit`. Audit follow-ups
+(e.g. the deferred `pydantic_ai` framework rule, repo-mining shortlists) are
+tracked in `audit/BACKLOG.md`, not here, so this repo's `TODO.md` stays about
 actual dotfiles work.
 
 ## 🗜️ Research: Claude Code compaction control (LOW PRIORITY)

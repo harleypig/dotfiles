@@ -86,7 +86,8 @@ up for a new contributor.
 skill — draft it, run its evals/benchmarks on test prompts, and run its
 description-trigger optimizer so the skill fires on the right requests, not
 just whatever wording was first guessed. We are deliberately exercising
-skill-creator on every new skill to learn its worth (`SETUP-AUDIT.md`).
+skill-creator on every new skill to learn its worth
+(`audit/decisions-log.md`).
 
 ## Agent (subagent)
 

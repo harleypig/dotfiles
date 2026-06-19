@@ -55,8 +55,11 @@ repo** for global changes — but **only audit-relevant files**:
 
 ## Procedure
 
-Follow `$DOTFILES/config/claude/SETUP-AUDIT.md` ("How to run" + the Decisions
-log) — the canonical methodology and living record. In short:
+This procedure **is** the canonical methodology (it used to live in
+`SETUP-AUDIT.md`'s "How to run"; that file is now only the record's index). The
+living record is in `config/claude/audit/` — `decisions-log.md` (the "why"),
+`BACKLOG.md` (open follow-ups), `idea-sources.md` (mined repos) — indexed by
+`SETUP-AUDIT.md`. In short:
 
 1. **Measure first** — `/context` for the live baseline, then a **read-only
    inventory agent** (rules + sizes, MCP tool counts, plugins, hooks) so the
@@ -79,8 +82,9 @@ log) — the canonical methodology and living record. In short:
 4. **Confirm** drops/moves with the user (never silent), then **apply**:
    global → a dotfiles branch (audit files only) → PR; local → in this repo as
    needed.
-5. **Record** decisions in `SETUP-AUDIT.md` (global) and surface per-repo
-   findings. Convert "evaluate later" items into `TODO.md` follow-ups,
+5. **Record** decisions in `audit/decisions-log.md` (global) and surface
+   per-repo findings. Convert audit-only "evaluate later" items into
+   `audit/BACKLOG.md`; route repo-specific follow-ups to that repo's `TODO.md`,
    surfaced by the repo that needs them.
 
 **Verify currency with live docs (Context7, if available).** Rules and skills
@@ -101,11 +105,11 @@ quality or whether its `description` triggers on the right requests, use the
 optimizer *measure* triggering and behaviour rather than eyeballing the
 frontmatter. This is the audit's standing tool for the skills dimension; the
 more it is used, the sooner we learn whether to leave skill-creator enabled,
-vendor it, borrow its ideas, or drop it (`SETUP-AUDIT.md`). **Caveat (CC
+vendor it, borrow its ideas, or drop it (`audit/decisions-log.md`). **Caveat (CC
 2.1.x):** skill-creator's automated **trigger eval** (`run_eval.py`) is
 currently broken — it returns 0% regardless of the description (upstream
 issue #2003 plus a command-vs-`Skill` detection gap; verified, see
-`SETUP-AUDIT.md`). Until upstream fixes it, judge triggering **manually**;
+`audit/decisions-log.md`). Until upstream fixes it, judge triggering **manually**;
 skill-creator's value here is its `SKILL.md` *writing* guidance and the
 instruction-review pass, not the eval scripts.
 
@@ -134,8 +138,8 @@ An audit improves the **whole** dev environment, not just the current repo —
 so the strongest finds are *generic* tools that spread everywhere. When the
 audit looks to external repos for ideas:
 
-**Finding a source.** If the *Idea sources* registry (`SETUP-AUDIT.md`) has no
-repo covering an aspect of the current repo, go find one. Rank by:
+**Finding a source.** If the *Idea sources* registry (`audit/idea-sources.md`)
+has no repo covering an aspect of the current repo, go find one. Rank by:
 
 1. **Official / first-party first** — the tool's or framework's own org (e.g.
    `pydantic/skills`, `fastapi/.agents`). Authoritative; tracks the tool's
