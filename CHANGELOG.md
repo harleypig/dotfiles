@@ -66,6 +66,15 @@ goes green (see the merge-time finalization in
 - **Kept `skill-creator` and put it to work** — the one non-redundant
   marketplace plugin; wired into `claude-audit` (the skills dimension) and
   `EXTENDING.md` (use it when authoring a skill). (PR #109)
+- **Refined the `ship-pr` approval model + finalization** (skill v1.9.1) —
+  invoking the skill now consents through *opening the PR* (qa-check → commit
+  → push → open PR → watch CI); merge and close still require a separate
+  explicit instruction (`gh.md` updated to match). Step 4.5/4.6 reframed as a
+  single doc-only finalization phase committed once. Also recorded
+  skill-creator dogfooding findings — its automated trigger eval returns 0% on
+  CC 2.1.x (upstream #2003 + a command-vs-`Skill` detection gap), so triggering
+  is judged manually meanwhile (caveat in `claude-audit`, decisions-log entry
+  in `SETUP-AUDIT.md`, follow-ups in `TODO.md`). (PR #112)
 
 ### Removed
 
