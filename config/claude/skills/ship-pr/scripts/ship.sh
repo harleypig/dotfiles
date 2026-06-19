@@ -108,14 +108,17 @@ cmd_pr_create() {
     --title "$title" --body "$body"
 }
 
-# Watch the CI run for the branch's current tip commit until it completes.
-# Pinning to the tip SHA — not merely "the latest run for the branch" — avoids
-# latching onto a previous commit's already-finished run when the new push's
-# run has not registered yet (GitHub lags a few seconds after a push). Polling
-# (not `gh run watch`) sidesteps the annotation-scope 403 a narrow PAT can hit.
+# Watch the CI run(s) for the branch's current tip commit until they finish.
+# Pin to the tip SHA — not merely "the latest run for the branch" — so a
+# previous commit's already-finished run is never mistaken for this push's
+# (GitHub lags a few seconds after a push). A single push can trigger SEVERAL
+# workflows (e.g. tests + secret-scan), so watch EVERY run for the SHA and
+# aggregate — not just the first. Polling (not `gh run watch`) sidesteps the
+# annotation-scope 403 a narrow PAT can hit.
 cmd_ci_watch() {
   local branch=${1:-$(git branch --show-current)}
-  local run_id="" status conclusion target_sha attempt
+  local target_sha attempt run_id status
+  local -a run_ids=()
 
   # The commit whose run we want is the tip we just pushed. Prefer the local
   # ref for the named branch; fall back to HEAD.
@@ -123,51 +126,70 @@ cmd_ci_watch() {
     || target_sha=$(git rev-parse --verify --quiet HEAD) \
     || target_sha=""
 
-  # Poll until a run for target_sha registers, then watch THAT run. Give up
-  # after ~60s and fall back to the latest run for the branch.
+  # Poll until at least one run for target_sha registers, then a short grace
+  # pass to catch sibling workflows that register a beat later. Collect ALL of
+  # them. Give up after ~60s and fall back to the latest run for the branch.
   if [[ -n $target_sha ]]; then
     for ((attempt = 0; attempt < 12; attempt++)); do
-      run_id=$(_gh run list --branch "$branch" --limit 20 \
-        --json databaseId,headSha \
-        --jq "map(select(.headSha==\"$target_sha\")) | .[0].databaseId // empty")
+      mapfile -t run_ids < <(
+        _gh run list --branch "$branch" --limit 20 --json databaseId,headSha \
+          --jq "map(select(.headSha==\"$target_sha\")) | .[].databaseId"
+      )
 
-      [[ -n $run_id ]] && break
+      ((${#run_ids[@]} > 0)) && break
 
       sleep 5
     done
-  fi
 
-  if [[ -z $run_id ]]; then
-    run_id=$(_gh run list --branch "$branch" --limit 1 \
-      --json databaseId --jq '.[0].databaseId // empty')
-
-    if [[ -n $run_id && -n $target_sha ]]; then
-      echo "ci-watch: no run for ${target_sha:0:9} yet;" \
-        "watching latest run $run_id instead" >&2
+    if ((${#run_ids[@]} > 0)); then
+      sleep 5
+      mapfile -t run_ids < <(
+        _gh run list --branch "$branch" --limit 20 --json databaseId,headSha \
+          --jq "map(select(.headSha==\"$target_sha\")) | .[].databaseId"
+      )
     fi
   fi
 
-  if [[ -z $run_id ]]; then
+  if ((${#run_ids[@]} == 0)); then
+    run_id=$(_gh run list --branch "$branch" --limit 1 \
+      --json databaseId --jq '.[0].databaseId // empty')
+
+    if [[ -n $run_id ]]; then
+      [[ -n $target_sha ]] && echo "ci-watch: no run for ${target_sha:0:9}" \
+        "yet; watching latest run $run_id instead" >&2
+      run_ids=("$run_id")
+    fi
+  fi
+
+  if ((${#run_ids[@]} == 0)); then
     echo "no CI run found for $branch" >&2
     return 0
   fi
 
-  while :; do
-    status=$(_gh run view "$run_id" --json status --jq '.status')
+  # Wait for every collected run to complete.
+  for run_id in "${run_ids[@]}"; do
+    while :; do
+      status=$(_gh run view "$run_id" --json status --jq '.status')
 
-    if [[ $status == completed ]]; then
-      break
-    fi
+      [[ $status == completed ]] && break
 
-    sleep 15
+      sleep 15
+    done
   done
 
-  _gh run view "$run_id" --json jobs \
-    --jq '.jobs[] | "\(.name): \(.conclusion)"'
-  echo
+  # Report each run's workflow + jobs + conclusion; track the worst outcome.
+  local failed=0 name conclusion
+  for run_id in "${run_ids[@]}"; do
+    name=$(_gh run view "$run_id" --json workflowName --jq '.workflowName')
+    conclusion=$(_gh run view "$run_id" --json conclusion --jq '.conclusion')
 
-  conclusion=$(_gh run view "$run_id" --json conclusion --jq '.conclusion')
-  echo "run $run_id: $conclusion"
+    echo "$name (run $run_id): $conclusion"
+    _gh run view "$run_id" --json jobs \
+      --jq '.jobs[] | "  \(.name): \(.conclusion)"'
+
+    [[ $conclusion == success ]] || failed=1
+  done
+  echo
 
   # A "success" conclusion can still carry warning/error annotations
   # (deprecations, audit notices, lint warnings) that the conclusion hides.
@@ -177,7 +199,10 @@ cmd_ci_watch() {
   local warnings=0 errors=0
   local -a check_ids=()
 
-  sha=$(_gh run view "$run_id" --json headSha --jq '.headSha')
+  # Annotations are per-COMMIT (check-runs for the SHA span every workflow), so
+  # scan once for the tip SHA rather than per run.
+  sha=$target_sha
+  [[ -n $sha ]] || sha=$(_gh run view "${run_ids[0]}" --json headSha --jq '.headSha')
   nwo=$(_nwo)
 
   mapfile -t check_ids < <(
@@ -207,9 +232,9 @@ cmd_ci_watch() {
     echo "  total: $errors error(s), $warnings warning(s)"
   fi
 
-  # Exit codes: 1 = failed (or error annotations); 2 = passed with
+  # Exit codes: 1 = any run failed (or error annotations); 2 = passed with
   # warnings; 0 = clean. The caller decides what to do with warnings.
-  if [[ $conclusion != success ]] || ((errors > 0)); then
+  if ((failed)) || ((errors > 0)); then
     return 1
   fi
 

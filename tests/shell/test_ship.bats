@@ -61,7 +61,12 @@ case "${args[0]}" in
   run)
     case "${args[1]}" in
       list) emit "$GH_RUNS" ;;
-      view) emit "$GH_RUN" ;;
+      view)
+        # Per-run-id data via GH_RUN_<id>, falling back to GH_RUN. Lets a test
+        # give two runs (workflows) distinct conclusions.
+        var="GH_RUN_${args[2]}"
+        emit "${!var:-$GH_RUN}"
+        ;;
     esac
     ;;
   repo) emit "$GH_REPO" ;;
@@ -96,25 +101,42 @@ EOF
   # The latest run (222) is for a different commit; the older run (111) is the
   # one for our tip. The pre-fix code took .[0] (222); the fix selects 111.
   local runs='[{"databaseId":222,"headSha":"feedface"},{"databaseId":111,"headSha":"abc123"}]'
-  local run='{"status":"completed","conclusion":"success","headSha":"abc123","jobs":[{"name":"bats","conclusion":"success"}]}'
+  local run='{"status":"completed","conclusion":"success","workflowName":"tests","headSha":"abc123","jobs":[{"name":"bats","conclusion":"success"}]}'
 
   run env "PATH=$STUB:$PATH" GIT_SHA="abc123" GH_RUNS="$runs" GH_RUN="$run" \
     "$SHIP" ci-watch some-branch
 
   assert_success
-  assert_output --partial "run 111: success"
+  assert_output --partial "tests (run 111): success"
   refute_output --partial "run 222"
 }
 
 @test "ci-watch returns non-zero when the tip run failed" {
   local runs='[{"databaseId":111,"headSha":"abc123"}]'
-  local run='{"status":"completed","conclusion":"failure","headSha":"abc123","jobs":[{"name":"bats","conclusion":"failure"}]}'
+  local run='{"status":"completed","conclusion":"failure","workflowName":"tests","headSha":"abc123","jobs":[{"name":"bats","conclusion":"failure"}]}'
 
   run env "PATH=$STUB:$PATH" GIT_SHA="abc123" GH_RUNS="$runs" GH_RUN="$run" \
     "$SHIP" ci-watch some-branch
 
   assert_failure
-  assert_output --partial "run 111: failure"
+  assert_output --partial "tests (run 111): failure"
+}
+
+@test "ci-watch watches every workflow run for the tip SHA, not just one" {
+  # Two workflows ran the same commit; the second (secret-scan) failed.
+  # Watching only .[0] (tests, success) would miss it — we must see both and
+  # fail. This is the regression for the multi-workflow gap.
+  local runs='[{"databaseId":501,"headSha":"abc123"},{"databaseId":502,"headSha":"abc123"}]'
+  local tests_run='{"status":"completed","conclusion":"success","workflowName":"tests","headSha":"abc123","jobs":[{"name":"bats","conclusion":"success"}]}'
+  local scan_run='{"status":"completed","conclusion":"failure","workflowName":"secret-scan","headSha":"abc123","jobs":[{"name":"trufflehog","conclusion":"failure"}]}'
+
+  run env "PATH=$STUB:$PATH" GIT_SHA="abc123" GH_RUNS="$runs" \
+    GH_RUN_501="$tests_run" GH_RUN_502="$scan_run" \
+    "$SHIP" ci-watch some-branch
+
+  assert_failure
+  assert_output --partial "tests (run 501): success"
+  assert_output --partial "secret-scan (run 502): failure"
 }
 
 #------------------------------------------------------------------------------

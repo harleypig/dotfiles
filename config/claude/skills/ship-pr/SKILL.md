@@ -5,7 +5,7 @@ description: Commit a finished feature branch, push it, and open a pull request,
 
 # Ship PR
 
-**Version:** v1.9.2
+**Version:** v1.9.3
 
 Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → open PR → watch CI → (approval) merge →
@@ -39,7 +39,7 @@ auto-retries with the env tokens cleared on a PAT scope error, so the
 |------------|------|
 | `default-branch` | Print the repo's default branch. |
 | `pr-create --title T --body B [--base BR]` | Open the PR from the current branch; prints the URL. |
-| `ci-watch [BRANCH]` | Poll the latest run to completion; print job results **and any warning/error annotations**. Exit `0` clean, `1` failed, `2` passed-with-warnings. |
+| `ci-watch [BRANCH]` | Poll **every** workflow run for the branch tip SHA to completion (a push can trigger several, e.g. tests + secret-scan); print per-workflow job results **and any warning/error annotations**. Exit `0` clean, `1` any run failed, `2` passed-with-warnings. |
 | `merge-methods` | Print the merge methods the repo/ruleset allows. |
 | `merge NUMBER --squash\|--merge\|--rebase` | Merge and delete the branch. |
 | `cleanup BRANCH` | Switch to default, pull, prune the merged branch. |

@@ -73,19 +73,19 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
-## 🔭 ship.sh ci-watch: handle multiple workflows per PR (LOW PRIORITY)
+## 🔭 Document the kept-branch-after-squash sync mechanic (LOW PRIORITY)
 
-Retrospective follow-up (PR #116). With the new `secret-scan` workflow a PR
-now triggers **two** workflow runs (`tests` + `secret-scan`), but
-`ship.sh ci-watch` selects `.[0]` of the SHA-matched runs — so it can watch
-the wrong workflow (the non-required `secret-scan` instead of the required
-`tests`). Both runs had to be watched by hand this PR.
+Retrospective follow-up (PR #117). When a batch branch is **kept** after a
+squash-merge to continue working, syncing it with `git merge master` carries
+the already-merged commits forward as redundant history that pollutes the next
+PR's commit list — PR #117 needed a `git rebase --onto master <merge>` cleanup
+before its commit list was tidy.
 
-- [ ] Make `ship.sh ci-watch` robust to multiple workflows per PR: either
-  watch **all** runs for the HEAD SHA and aggregate their conclusions, or
-  target the gating workflow (whose jobs are the repo's required checks).
-  Pointer: `cmd_ci_watch` picks `.[0].databaseId` after SHA-matching in
-  `config/claude/skills/ship-pr/scripts/ship.sh`.
+- [ ] Document the clean mechanic in `git.md` (or the ship-pr / batch
+  workflow): after a squash-merge with the branch kept, sync via
+  `git reset --hard origin/master` (the batch is already in master) or
+  `git rebase --onto`, **not** `git merge master`. (Already captured in the
+  batch-todos working memory; promote to a rule note so it isn't memory-only.)
 
 ## 🔑 Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
 
@@ -131,19 +131,6 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
 - [ ] Consolidate drift: the same rule copied (and diverging) across repos
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
-
-## 📓 Evaluate a Dependabot skill (MEDIUM PRIORITY)
-
-`config/claude/rules/dependabot.md` already exists (since 2026-06-03) and
-carries a doc-consultation instruction (v1.1.0). One follow-up remains
-(the rule/skill-authoring doc-sourcing half is now done — see CHANGELOG):
-
-- [ ] **Evaluate a `dependabot` skill** — a forcing function that scans the
-  repo for every manifest / Dockerfile / workflow, consults current official
-  docs, generates/reconciles `dependabot.yml` to full coverage + conventions
-  (per `rules/dependabot.md`), and verifies (yamllint). Decide scope vs the
-  existing `security-scan` skill (which *triages* Dependabot findings) — setup
-  vs triage; avoid duplication (Rule of Three).
 
 ## 🧪 Dogfood skill-creator on the retrospective skill (LOW PRIORITY)
 
@@ -386,7 +373,8 @@ catches.
 
 Build out perl QA across **both the test suite and the CLI scripts** (where
 CLIs exist — e.g. `bin/parse_params`, `bin/perltidyrc-clean`), and make it as
-strict as practical, in stages.
+strict as practical, in stages. Capture the resulting toolchain in **agent
+rules/skills** (see *Rules & skills* below), not only human setup docs.
 
 ### perlcritic
 
@@ -456,6 +444,31 @@ bundles (OTRS, TryTiny).
   Prerequisites). Use the repo's standard install path — perlbrew + cpanm (see
   *Tool/Version Manager Setup*) or pinned docker wrappers — so a fresh machine
   reproduces the whole perl QA toolchain from one documented place.
+
+### Rules & skills (agent config)
+
+These stages adopt several tools the **agent** must know how to drive — capture
+each as agent config, not only human setup docs, per `CLAUDE.md` *Missing or
+Conflicting Tool Rules* and *When to Propose a Skill*. Today only a thin
+`rules/perl.md` exists (a one-line `perltidy` + `perlcritic --severity 4`
+mention) and there is **no** perl-QA skill (cf. `bats-setup`,
+`pytest-patterns`).
+
+- [ ] **Per-tool rules.** As each tool lands, create or extend its
+  `rules/<tool>.md`, **grounded in current official docs with a Sources cite**
+  (`EXTENDING.md` *Grounding & sourcing*) — never memory. Likely a dedicated
+  **`rules/perlcritic.md`** (the curated profile, policy-selection judgement,
+  staged severity ratchet, and docker-pinned-policy-set angle are far more than
+  `perl.md`'s one-liner), plus shorter rules or `perl.md` sections for
+  `perltidy`, `Devel::Cover`, and `Test::Pod::Coverage`. Wire each into the
+  tool-detection table and the `qa.md` / repo QA-doc dimension mapping.
+- [ ] **A perl-QA skill?** Decide whether the multi-step procedures here
+  (scaffold the toolchain → curate the perlcritic profile → ratchet severity in
+  stages → wire Test::Perl::Critic + coverage + POD gates) warrant a skill — a
+  perl analog of **`bats-setup`** (scaffolding) and/or **`pytest-patterns`**
+  (depth recipes). Weigh against `qa-check` (which *runs* QA) and the existing
+  skills; fold into one rather than duplicate if it already fits (Rule of
+  Three).
 
 ## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
 
@@ -641,22 +654,6 @@ shim), `show-unicode` (static table), `bash-colors` (color-var defs),
   (mostly covered by the integration tests) and any scripts elsewhere.
 - [ ] Regenerate the meta suite after adding scripts; keep Phase 3 in sync.
 
-## 🔐 Document the Claude Code auth setup (MEDIUM PRIORITY)
-
-Retrospective follow-up (PR #110): `gh.md` documents this user's dual `gh`
-credential scheme, but nothing documents the **Claude Code** auth setup —
-which cost real time (forced re-login every ~12h).
-
-- [ ] Capture the rule: **never export `ANTHROPIC_API_KEY` globally** — Claude
-  Code's auth precedence makes it override the Max subscription *and* the
-  long-lived `CLAUDE_CODE_OAUTH_TOKEN`. Prefer the long-lived `claude
-  setup-token`; Claude Code's OAuth access token is ~12h and isn't
-  auto-refreshed. Likely a short section in `mcp.md` or a new auth note.
-- [ ] Investigate why `CLAUDE_CODE_OAUTH_TOKEN` was unset in this session
-  despite the `api-keys.cfg` mapping (loader / child-session env), so the
-  long-lived token actually takes effect — ties into the `~/.claude →
-  config/claude` symlink realpath issues (CC 2.1.181).
-
 ## 🧠 Claude Rules Files (MEDIUM PRIORITY)
 
 Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the
@@ -722,26 +719,6 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
   Ties into the vendored file/skill update checker (see Configuration
   Enhancements → Dependency Management).
 
-## 🪝 Claude Code PostToolUse Hooks (MEDIUM PRIORITY)
-
-Rules files instruct the agent to run shellcheck/shfmt, but only if the agent
-remembers. `PostToolUse` hooks in `settings.json` enforce this automatically
-after every `Edit` or `Write` on a shell file.
-
-- [ ] Decide hook approach:
-  - Option A: inline command in `settings.json` (simple, but not version-controlled
-    separately from settings)
-  - Option B: `config/claude/bin/post-edit-shell.sh` script invoked by the hook
-    (keeps logic in a file, easier to maintain)
-- [ ] Implement hook in `config/claude/settings.json`:
-  - Match on `Edit` and `Write` tool use
-  - Detect if the modified file is a shell file (by path pattern or shebang)
-  - Run `shfmt -i 2 -s -bn -ci -sr -w <file>` then `shellcheck <file>`
-  - Output failures so Claude sees them and can fix before continuing
-- [ ] Research Claude Code hook input format: what env vars / stdin does a
-  `PostToolUse` hook receive? (need file path of edited file)
-- [ ] Document hook setup in this repo's WORKFLOW.md once stable
-
 ## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
 The Claude Code setup audit — its methodology, dimensions, idea sources,
@@ -751,23 +728,7 @@ follow-ups (e.g. the deferred `pydantic_ai` framework rule, repo-mining
 shortlists) are tracked there, not here, so this repo's `TODO.md` stays about
 actual dotfiles work.
 
-## ⌨️ Custom slash commands: /push and /push-pr (MEDIUM PRIORITY)
-
-Shortcuts for the common ship flow:
-
-- `/push` — commit (if needed) and push the current branch.
-- `/push-pr` — commit, push, and open a PR.
-
-**First evaluate workability.** A slash command is a prompt the model
-executes, so it *can* run git/`gh` (commit → push → `gh pr create`) — but it
-**suggests**, it does not guarantee, and it must respect the protected-branch
-rule (never author on master), the staging discipline (`git add -u` + explicit
-paths, never `-A`/`.`), and the gh approval gates (never open/merge a PR
-without explicit approval — `gh.md`). These largely duplicate the **ship-pr**
-skill, so the real question is whether a thin command that **delegates to
-ship-pr** (or a subset) beats just typing the request. Decide: command vs.
-skill-trigger, the exact scope of each (`/push` = commit+push only), and where
-it lives (global `commands/`).
+## 🪝 Pre-commit hooks: phased rollout (MEDIUM PRIORITY)
 
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
 Pre-commit can progress independently. CI/CD cannot lead pre-commit.

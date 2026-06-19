@@ -30,6 +30,16 @@ goes green (see the merge-time finalization in
   updates the security-scan skill + `.claude/QA.md`. (Checkmarx was also
   evaluated and **declined** — commercial, no free tier; `semgrep` covers
   SAST.) (PR #116)
+- **`PostToolUse` shellcheck hook** — `config/claude/hooks/shell-check.py`
+  (wired on `Edit|Write|MultiEdit`) runs `shellcheck` on a shell file right
+  after it's edited and surfaces findings to the agent, so "run shellcheck
+  after editing" is enforced, not just remembered. Check-only, shellcheck-only,
+  fail-open. Tested by `tests/python/test_shell_check.py` (7 cases); documented
+  in `rules/shellcheck.md` (v1.1.0). (PR #117)
+- **`config/claude/rules/claude-code-auth.md`** — documents this user's three
+  Claude Code auth methods, the full six-method precedence, and the
+  never-export-`ANTHROPIC_API_KEY`-globally rule. Grounded in the official auth
+  docs. (PR #117)
 
 ### Changed
 
@@ -38,6 +48,19 @@ goes green (see the merge-time finalization in
   version churn, and the lock now correctly scopes the
   cryptography/cffi/pycparser chain to `sys_platform == "linux"` instead of
   forcing it on every platform. (PR #116)
+- **`security-scan` skill (v1.1.0): dependabot reconcile made explicit** —
+  evaluated a standalone dependabot skill and **declined** it (would duplicate
+  step 2 + `rules/dependabot.md`); instead spelled out the reconcile-and-verify
+  procedure in step 2 (scan manifests → consult docs → reconcile → yamllint).
+  (PR #117)
+
+### Fixed
+
+- **`ship.sh ci-watch` watches every workflow run for the tip SHA** — it took
+  `.[0]` of the SHA-matched runs, so with two workflows per PR (`tests` +
+  `secret-scan`) it could watch the wrong one. Now collects all runs for the
+  SHA, reports per-workflow, and aggregates the exit code (any failed → 1).
+  Regression-tested via `test_ship.bats`. (PR #117)
 
 ## 2026-06-18
 
