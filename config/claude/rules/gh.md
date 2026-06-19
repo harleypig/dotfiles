@@ -4,7 +4,7 @@
 
 # gh (GitHub CLI) Rules
 
-**Version:** v1.2.0
+**Version:** v1.3.0
 
 ## Pull Requests
 
@@ -159,13 +159,20 @@ its `TODO.md` (or equivalent) — each with a priority, then resolve or close
 them. Don't let auto-created issues pile up unseen. A closed/empty queue is
 the goal; surface the list to the user when items appear.
 
+The **github-tasks** skill is the forcing function for this cadence: it runs
+this issue check as one part of a wider repo sweep (open Dependabot PRs,
+failing required checks, stale branches, release/tag hygiene) and presents a
+single ranked worklist. Reach for it at the start of git/gh work rather than
+running the `gh issue list` calls above piecemeal.
+
 ## Agent Rules
 
 - After creating a PR, follow the CI monitoring workflow in
   `github-actions.md` if Actions are configured in the repo.
 - In a repo with issue-opening automation, check `gh issue list` at the start
   of git/gh work (and daily) and add open items to the repo's TODO triage
-  queue (see *Issues & triage*).
+  queue (see *Issues & triage*). Prefer the **github-tasks** skill — it runs
+  this check as part of a single repo sweep.
 - Always return the PR URL after creating.
 - Use `gh` for all GitHub operations (issues, PRs, checks, releases).
 - Do not create, merge, or close PRs without explicit user approval.
