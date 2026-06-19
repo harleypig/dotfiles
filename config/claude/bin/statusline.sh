@@ -37,10 +37,6 @@ join_array() {
 declare -a vars
 declare -A jq_filter sl_label
 
-vars+=('mode')
-jq_filter['mode']='.vim.mode'
-sl_label['mode']=
-
 vars+=('model')
 jq_filter['model']='.model.display_name // "unknown"'
 sl_label['model']=''
@@ -84,35 +80,40 @@ ctx=$((${ctx%%.*} + 0))
 cost=$(printf '%.2f' "$cost" 2> /dev/null || printf '?.??')
 
 #------------------------------------------------------------------------------
-# Set colors
+# Set colors. Context % escalates so a near-full window is hard to miss —
+# compaction is manual, so the percentage is the only warning: calm cyan, then
+# bright yellow past 60%, then an alarm block (bright text on a red background)
+# once it crosses 80%.
 
-declare red yellow cyan reset
+declare cyan bright_yellow alarm reset
 
 if command -v ansi &> /dev/null; then
-  red=$(ansi fg red)
-  yellow=$(ansi fg yellow)
   cyan=$(ansi fg cyan)
+  bright_yellow=$(ansi fg bright_yellow)
+  alarm="$(ansi bg red)$(ansi fg bright_white)"
   reset=$(ansi off)
 fi
 
-if ((ctx >= 75)); then
-  ctx_color=$red
-elif ((ctx >= 50)); then
-  ctx_color=$yellow
+if ((ctx >= 80)); then
+  ctx_color=$alarm
+elif ((ctx >= 60)); then
+  ctx_color=$bright_yellow
 else
   ctx_color=$cyan
 fi
 
 #------------------------------------------------------------------------------
-# Build output parts and join with ' | '
+# Build output parts and join with ' | '. Empty fields are dropped so a blank
+# value (e.g. git-status outside a repo) leaves no stray ' | '.
 
 declare -a parts
 
-parts+=("${sl_label['mode']}")
-parts+=("$(git-status)")
-parts+=("${sl_label['model']}${model}")
-parts+=("${sl_label['ctx']}${ctx_color}${ctx}%${reset}")
-parts+=("${sl_label['cost']}${cost}")
-parts+=("${sl_label['version']}${version}")
+add_part() { [[ -n $1 ]] && parts+=("$1"); }
+
+add_part "$(git-status)"
+add_part "${sl_label['model']}${model}"
+add_part "${sl_label['ctx']}${ctx_color}${ctx}%${reset}"
+add_part "${sl_label['cost']}${cost}"
+add_part "${sl_label['version']}${version}"
 
 printf '%s\n' "$(join_array ' | ' 'parts')"

@@ -406,22 +406,27 @@ duplicates / similar setups). Chart each in
   (does Anthropic or another AI vendor back it?). If meaningful, align our
   skills' format to it.
 
-### Claude statusline fix (urgent)
+### Claude statusline enhancements (claude-hud candidates)
 
-- [ ] **Fix the Claude statusline display** (`config/claude/bin/statusline.sh`).
-  Output is malformed — a leading empty field and awkward layout:
+The urgent display bug (leading empty field + a `@tsv`/`read` field-shift from
+the dead `.vim.mode` field) and the context-% prominence are **done** (fixed +
+regression-tested 2026-06-19; see the decisions log). `jarrodwatts/claude-hud`
+was mined for further ideas — full matrix in
+[`mining/claude-hud.md`](mining/claude-hud.md). The top picks are all **gated**
+(none was a clean adopt-now), so they sit here as candidates:
 
-  ```text
-    |  (dotfiles: bugfix/ci-watch-head-sha) | Opus 4.8 | Ctx: 20% | $10.36 | code v2.1.183
-  ```
-
-  Review the settings; mine <https://github.com/jarrodwatts/claude-hud> for
-  ideas. This is the **simpler, resolve-now** statusline issue — *separate*
-  from the complex four-surface *Statusline Coordination* / Task 1 in `TODO.md`
-  (which stays there, coupled to the bash/tmux/vim work).
-- [ ] **Make the context % more prominent** — since `/compact` is manual (see
-  compaction control below), surface it harder past a threshold (the user's
-  half-joke: blinking bright-yellow-on-deep-red after 60%).
+- [ ] **Rate-limit / usage segment** — a `| usage NN% |` field (5h + weekly cap)
+  with our existing threshold-color trick; highest value for a Max user, pure
+  stdin JSON. **Gate:** first confirm `rate_limits` is present in our statusline
+  stdin (claude-hud notes it's absent for API-key/Bedrock/Vertex sessions).
+- [ ] **Git ahead/behind `↑N ↓N`** — cheap `git rev-list --count`. **Gate:**
+  belongs in the **shared `git-status`** helper (also feeds the bash prompt) —
+  scope it there, and check it doesn't already emit this.
+- [ ] **Reasoning-effort indicator** `[high]` — tiny, zero extra I/O. **Gate:**
+  verify an effort field is in our stdin JSON.
+- [ ] **Heavier candidates** (transcript-driven, need cache/state — defer):
+  context progress-bar glyph, todos `(2/5)`, session duration, output speed
+  (tok/s), session token totals. See the matrix for the per-item rationale.
 
 ### Claude Code compaction control (moved from TODO.md)
 

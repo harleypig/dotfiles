@@ -6,6 +6,26 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Worked a backlog item: fixed the Claude statusline + mined
+  `claude-hud`.** First use of the *Working the backlog* step. (1) **Fixed
+  `config/claude/bin/statusline.sh`:** the reported "leading empty field" was
+  the surface of a deeper bug — the dead `mode` field (`.vim.mode`, absent from
+  Claude Code's statusline JSON) emitted an empty leading `@tsv` column, and
+  `read` with a whitespace `IFS` collapsed the leading tab and **shifted every
+  field by one** (model→mode, ctx→model, …). Removed the `mode` field
+  (eliminates both the stray `|` and the shift), added empty-part filtering for
+  robustness, and made context % escalate harder (cyan → bright-yellow ≥60% →
+  white-on-red alarm ≥80%, since compaction is manual). Added
+  `tests/shell/test_statusline.bats` (6 tests) — the regression test **caught
+  the field-shift** the cosmetic fix alone would have missed. (2) **Mined
+  `jarrodwatts/claude-hud`** (MIT, active, ~25k★) for statusline ideas via a
+  read-only agent: it's a transcript-enriching TS plugin (wrong form to vendor).
+  Recorded the full disposition in `mining/claude-hud.md` and a row in
+  `idea-sources.md`; the top ideas (rate-limit/usage segment, git ahead/behind,
+  effort indicator) are all **gated** on JSON-field verification or the shared
+  `git-status`, so captured as `BACKLOG` candidates rather than added
+  speculatively. Pruned the done statusline item from `BACKLOG`. Landed via
+  dotfiles PR.
 - 2026-06-19 — **Routed a scratch `tmptodo.txt` into `BACKLOG.md` (first live
   test of the routing convention).** Every item proved to be Claude-agent-config
   work — nothing for the dotfiles `TODO.md` — so the whole file routed to
