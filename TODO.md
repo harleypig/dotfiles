@@ -675,15 +675,20 @@ Retrospective follow-up (PR #110): `gh.md` documents this user's dual `gh`
 credential scheme, but nothing documents the **Claude Code** auth setup —
 which cost real time (forced re-login every ~12h).
 
-- [ ] Capture the rule: **never export `ANTHROPIC_API_KEY` globally** — Claude
-  Code's auth precedence makes it override the Max subscription *and* the
-  long-lived `CLAUDE_CODE_OAUTH_TOKEN`. Prefer the long-lived `claude
-  setup-token`; Claude Code's OAuth access token is ~12h and isn't
-  auto-refreshed. Likely a short section in `mcp.md` or a new auth note.
-- [ ] Investigate why `CLAUDE_CODE_OAUTH_TOKEN` was unset in this session
-  despite the `api-keys.cfg` mapping (loader / child-session env), so the
-  long-lived token actually takes effect — ties into the `~/.claude →
-  config/claude` symlink realpath issues (CC 2.1.181).
+- [x] Documented in **`config/claude/rules/claude-code-auth.md`** (a new auth
+  note, parallel to `gh.md`) — the three methods this setup uses (Console
+  `ANTHROPIC_API_KEY`, long-lived `CLAUDE_CODE_OAUTH_TOKEN`, subscription
+  `/login`), the full six-method **precedence**, the never-export-globally
+  rule, and checking/switching. Grounded in the official Claude Code auth docs
+  (Sources cited), which corrected two beliefs: `ANTHROPIC_API_KEY` **does**
+  authenticate the CLI (it just overrides at precedence #3), and the
+  subscription OAuth **does** auto-refresh — the docs name no literal 12h
+  cycle; the global-API-key override was the actual culprit (fixed in PR #110).
+- [x] Investigated (empirically resolved): `CLAUDE_CODE_OAUTH_TOKEN` appearing
+  unset mid-session cleared after a **full `/login` logout + login**. Root
+  cause not definitively pinned (the loader / `~/.claude → config/claude`
+  symlink-realpath angle on CC 2.1.181 was the suspect) — captured the
+  logout+login fix in the rule's *gotcha* section; reopen if it recurs.
 
 ## 🧠 Claude Rules Files (MEDIUM PRIORITY)
 
