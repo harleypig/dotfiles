@@ -36,7 +36,7 @@ rules) are all resolved — see [`audit/decisions-log.md`](audit/decisions-log.m
 
 | Tier | State |
 |------|-------|
-| Always-on rules | 9 unscoped: the 7 cross-cutting (`code-style`, `documentation`, `gh`, `git`, `qa`, `testing`, `troubleshooting`) plus `claude-code-auth` + `trufflehog` (scoping review queued in `BACKLOG.md`). 41 rules are `paths:`-scoped (on-demand). |
+| Always-on rules | 8 unscoped: the 7 cross-cutting (`code-style`, `documentation`, `gh`, `git`, `qa`, `testing`, `troubleshooting`) plus `claude-code-auth` (a conversational-trigger guardrail with no file glob — kept always-on by design). `trufflehog` was scoped to `.github/workflows/**` (2026-06-19). 42 rules are `paths:`-scoped (on-demand). |
 | MCP tool schemas | context7 only, via `mymcp` at user scope. terraform / serena dropped (2026-06-10). |
 | Plugins | 1 enabled (`skill-creator`); all other marketplace plugins disabled. |
 | Hooks | 4 bespoke (`branch-protection`, `merge-finalization`, `rule-coverage`, `shell-check`). |

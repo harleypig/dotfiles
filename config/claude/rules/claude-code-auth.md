@@ -1,6 +1,15 @@
+---
+# No paths — this is a guardrail (never export ANTHROPIC_API_KEY globally;
+# it broke the Max subscription, PR #110) whose trigger is conversational
+# (auth diagnosis, "/status shows the wrong method", "set up my key"), not a
+# file edit. Path-scoping would make it miss exactly those moments, and its
+# token files live in a separate repo (private_dotfiles) anyway. Always-on by
+# design: trim weight, never guardrails.
+---
+
 # Claude Code Auth Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 How **this user** authenticates Claude Code (the CLI), the precedence between
 methods, and the standing rule that keeps the Max subscription working — the

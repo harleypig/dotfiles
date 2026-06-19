@@ -1,6 +1,15 @@
+---
+# On-demand: loads only when a workflow file is edited, since trufflehog's
+# whole concern is the `secret-scan.yml` GitHub Actions workflow. The
+# security-scan skill reads this rule by name when it runs, so nothing that
+# needs it depends on the per-turn tier.
+paths:
+  - ".github/workflows/**"
+---
+
 # trufflehog Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 ## Detection
 
