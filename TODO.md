@@ -719,6 +719,25 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
   Ties into the vendored file/skill update checker (see Configuration
   Enhancements → Dependency Management).
 
+## 🪝 branch-protection hook: exempt gitignored paths (LOW PRIORITY)
+
+**Pain (PR #118 retrospective):** writing an auto-memory note — under the
+gitignored `config/claude/projects/*/memory/` dir, a path that can *never*
+land in a commit — was blocked by the edit-time `branch-protection.py`
+`PreToolUse` hook because `master` was checked out, forcing an unnecessary
+throwaway branch just to satisfy the guard. A write that cannot be committed
+cannot violate branch protection, so this is a false-positive in a
+forcing-function hook (the memory system is meant to be written directly at
+any time).
+
+- [ ] **Artifact:** update the existing hook
+  `config/claude/hooks/branch-protection.py` (global; symlinked to
+  `~/.claude/hooks/`) to **allow** an `Edit`/`Write`/`MultiEdit` whose target
+  path is gitignored (e.g. `git check-ignore -q <path>`), since such a write
+  can't reach a commit on the protected branch. Keep failing safe (any error →
+  allow). Scope: **global** dotfiles agent-config. Confirm it doesn't weaken
+  the guard for tracked files.
+
 ## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
 The Claude Code setup audit — its methodology, dimensions, idea sources,
@@ -727,6 +746,33 @@ read only when running `/claude-audit` (it is **not** context-loaded). Audit
 follow-ups (e.g. the deferred `pydantic_ai` framework rule, repo-mining
 shortlists) are tracked there, not here, so this repo's `TODO.md` stays about
 actual dotfiles work.
+
+## 🗜️ Research: Claude Code compaction control (LOW PRIORITY)
+
+Can we steer *when* and *how* Claude Code compacts context? Two
+`claude-code-guide` lookups on 2026-06-19 conflicted on the central question
+below, so it needs settling against current official docs (not memory) before
+acting.
+
+- [ ] **Verify the `# Compact instructions` CLAUDE.md feature.** One lookup
+  asserted a special heading in CLAUDE.md steers what compaction preserves; a
+  second, more thorough search of `code.claude.com/docs` found **no documented
+  heading-matching feature** of that name. Settle which is true. If real → add
+  the block to global `config/claude/CLAUDE.md`. If not → it's only ordinary
+  guidance text the model happens to see (CLAUDE.md is in context during
+  compaction; project-root CLAUDE.md is re-injected from disk after), with no
+  dedicated engine — don't oversell it.
+- [ ] **Evaluate a `SessionStart`/`compact` hook** as the documented, reliable
+  lever for "make X survive compaction": its stdout is injected into context
+  after a compaction. Decide whether it's worth wiring for this setup.
+
+Confirmed (not in question): there is **no** config to change the auto-compact
+*threshold*; `autoCompactEnabled: false` (or `DISABLE_AUTO_COMPACT=1`) disables
+it entirely; the statusline script is the only programmatic read of context
+fullness (`context_window.used_percentage` etc. — hooks can't read it); and
+`/compact` cannot be triggered programmatically (user-only). The statusline
+already color-codes context %, so the current workflow is manual `/compact`
+(see "Statusline Coordination").
 
 ## 🪝 Pre-commit hooks: phased rollout (MEDIUM PRIORITY)
 
