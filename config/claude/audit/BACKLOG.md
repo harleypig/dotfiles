@@ -356,3 +356,102 @@ evaluating test output, summaries — then generalize.
   a fallback to Claude when the local model is unsure.
 - [ ] Depends on: beaker GPU setup (driver + NVIDIA Container Toolkit) and
   ollama/openwebui running.
+
+## tmptodo intake (2026-06-19)
+
+Captured from a scratch `tmptodo.txt` and routed here per the TODO-routing
+convention — every item proved to be Claude-agent-config work. Guiding
+principle the user attached: keep rules/skills small and focused, breaking a
+topic into sub-areas (e.g. api-testing vs optimization vs refactor) when that
+helps.
+
+### Mining queue
+
+Mine one repo at a time; **don't decide until all are mined** (expect
+duplicates / similar setups). Chart each in
+[`mining-census.md`](mining-census.md) and promote useful sources to
+[`idea-sources.md`](idea-sources.md). None below are mined yet.
+
+- [ ] **Anthropic official plugins — text re-mine of `code-simplifier` +
+  `commit-commands`.** Both were dropped at *capability* level (decisions log
+  2026-06-10) **without** a text-level review, and both have our equivalents
+  (`/simplify`; the git rules + `ship-pr` / `git-worktree-workflow`). Review
+  their actual prompt/command text for wording / sectioning worth folding into
+  ours. The other three (`pr-review-toolkit`, `feature-dev`,
+  `security-guidance`) were already content-reviewed — their extractable bits
+  are the vendor-when-needed items under *Plugin-audit follow-ups*; not
+  re-opened.
+  - <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/code-simplifier>
+  - <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/commit-commands>
+- [ ] **Plugin/skill collection repos (big — one at a time).**
+  - <https://github.com/ComposioHQ/awesome-claude-plugins>
+  - <https://github.com/jeremylongshore/claude-code-plugins-plus-skills>
+  - <https://github.com/ccplugins/awesome-claude-code-plugins>
+  - <https://github.com/alirezarezvani/claude-skills>
+  - <https://github.com/JuliusBrussee/caveman>
+  - <https://github.com/sickn33/antigravity-awesome-skills>
+  - <https://github.com/chopratejas/headroom>
+  - <https://github.com/VoltAgent/awesome-claude-code-subagents>
+  - <https://github.com/Jeffallan/claude-skills>
+  - <https://github.com/team-attention/plugins-for-claude-natives/tree/main/plugins/clarify>
+  - <https://github.com/JoasASantos/ClaudeAdvancedPlugins>
+- [ ] **`ykdojo/claude-code-tips`** — a tips collection (not skills); codify any
+  into a rule/skill. <https://github.com/ykdojo/claude-code-tips>
+- [ ] **`ruvnet/ruflo`** — evaluate whether worth exploring (not a
+  plugin/skill). <https://github.com/ruvnet/ruflo>
+
+### Skill-format standard: agentskills.io
+
+- [ ] Investigate whether <https://agentskills.io> is a real/emerging standard
+  (does Anthropic or another AI vendor back it?). If meaningful, align our
+  skills' format to it.
+
+### Claude statusline fix (urgent)
+
+- [ ] **Fix the Claude statusline display** (`config/claude/bin/statusline.sh`).
+  Output is malformed — a leading empty field and awkward layout:
+
+  ```text
+    |  (dotfiles: bugfix/ci-watch-head-sha) | Opus 4.8 | Ctx: 20% | $10.36 | code v2.1.183
+  ```
+
+  Review the settings; mine <https://github.com/jarrodwatts/claude-hud> for
+  ideas. This is the **simpler, resolve-now** statusline issue — *separate*
+  from the complex four-surface *Statusline Coordination* / Task 1 in `TODO.md`
+  (which stays there, coupled to the bash/tmux/vim work).
+- [ ] **Make the context % more prominent** — since `/compact` is manual (see
+  compaction control below), surface it harder past a threshold (the user's
+  half-joke: blinking bright-yellow-on-deep-red after 60%).
+
+### Claude Code compaction control (moved from TODO.md)
+
+Can we steer *when* and *how* Claude Code compacts context? Two
+`claude-code-guide` lookups on 2026-06-19 conflicted on the central question
+below, so it needs settling against current official docs (not memory) before
+acting.
+
+- [ ] **Verify the `# Compact instructions` CLAUDE.md feature.** One lookup
+  asserted a special heading in CLAUDE.md steers what compaction preserves; a
+  second, more thorough search of `code.claude.com/docs` found **no documented
+  heading-matching feature** of that name. Settle which is true. If real → add
+  the block to global `config/claude/CLAUDE.md`. If not → it's only ordinary
+  guidance text the model happens to see (CLAUDE.md is in context during
+  compaction; project-root CLAUDE.md is re-injected from disk after), with no
+  dedicated engine — don't oversell it.
+- [ ] **Evaluate a `SessionStart`/`compact` hook** as the documented, reliable
+  lever for "make X survive compaction": its stdout is injected into context
+  after a compaction. Decide whether it's worth wiring for this setup.
+
+Confirmed (not in question): there is **no** config to change the auto-compact
+*threshold*; `autoCompactEnabled: false` (or `DISABLE_AUTO_COMPACT=1`) disables
+it entirely; the statusline script is the only programmatic read of context
+fullness (`context_window.used_percentage` etc. — hooks can't read it); and
+`/compact` cannot be triggered programmatically (user-only). The statusline
+already color-codes context %, so the current workflow is manual `/compact`
+(see "Statusline Coordination").
+
+### New rule/skill candidates
+
+- [ ] **Gollum Wiki** rule (wiki engine).
+- [ ] **Ruby** rule — especially as it relates to the Gollum wiki.
+- [ ] **Essay Helper** skill — for the scripturestudy.org wiki ("LDS Scholar").

@@ -6,6 +6,22 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Routed a scratch `tmptodo.txt` into `BACKLOG.md` (first live
+  test of the routing convention).** Every item proved to be Claude-agent-config
+  work — nothing for the dotfiles `TODO.md` — so the whole file routed to
+  `BACKLOG.md` under a "tmptodo intake" section: a mining queue (11 collection
+  repos + `claude-code-tips` + `ruflo`), an agentskills.io standard check, an
+  urgent Claude-statusline display fix, and new rule/skill candidates (Gollum
+  wiki, Ruby, an essay-helper skill). For the 5 Anthropic official plugins the
+  user asked to *re-mine for text*: checked the decisions log — `pr-review-
+  toolkit` / `feature-dev` / `security-guidance` were already content-reviewed
+  (their bits are the vendor-when-needed items), so only `code-simplifier` +
+  `commit-commands` (dropped at capability level, no text review, and both with
+  our own equivalents) were queued for a text re-mine. Also **moved the
+  `Research: Claude Code compaction control` item from `TODO.md`** here (it's
+  config/claude, and its context-% theme overlaps the statusline fix); left the
+  coordination *Statusline Coordination / Task 1* in `TODO.md` (coupled) with a
+  cross-ref. Deleted the consumed `tmptodo.txt`. Landed via dotfiles PR.
 - 2026-06-19 — **Established TODO routing; migrated Claude-config items from the
   repo `TODO.md`; made `claude-audit` work the backlog.** Defined the
   convention — a follow-up about the Claude agent config (`config/claude/`)
