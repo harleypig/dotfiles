@@ -427,9 +427,11 @@ Remaining candidates:
   empty label, and its empty column shifted the parse). The parse is now
   empty-safe, so it could be re-added correctly (emit the value, bracket/guard
   when absent). Decide whether it earns a slot.
-- [ ] **Heavier candidates** (transcript-driven, need cache/state — defer):
-  context progress-bar glyph, todos `(2/5)`, session duration, output speed
-  (tok/s), session token totals. See the matrix for the per-item rationale.
+- [ ] **Heavier candidates** (transcript-driven — defer): the tools/agents
+  lines and todos `(2/5)`. *(2026-06-19: project path, session duration, output
+  speed, and token totals were skipped by the user; the context progress-bar
+  glyph is `SKIP-until` on the census watch list — revisit if the plain `X%`
+  stops being enough.)*
 
 ### Claude Code compaction control (moved from TODO.md)
 
