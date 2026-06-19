@@ -427,19 +427,23 @@ standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
   stops being enough.)*
 
 **`ICEBOX:` cannot hide the native below-prompt indicator lines** — the
-**auto-accept / permission-mode** indicator (`⏵⏵ auto mode on`) and the
-**running-subagent / task** line have **no off-switch** (settings, env, or
-flag) as of 2026-06-19 — verified against the Claude Code docs and by
-re-examining `claude-hud` (which sets no suppression key, can't even read the
-permission mode, and only stacks a transcript-parsed agents line *on top of*
-the native one). The permission mode isn't in the statusline **stdin** JSON —
-but it **is** recorded in the **transcript JSONL** (`permission-mode` / `mode`
-entries: `default` / `acceptEdits` / `plan`), so it *could* be reconstructed
-via the heavy transcript-parse path — though that would only **duplicate** the
-un-hideable native line, so it isn't worth it. Open upstream requests:
-anthropics/claude-code **#27916**, **#48246**. Revisit if either lands a hide
-option or exposes the mode in the stdin JSON; until then, only the vim indicator
-was controllable (and is done).
+**auto-accept / permission-mode** indicator (`⏵⏵ auto mode on`), the
+**running-subagent / task** line, and the **`· PR #N`** badge have **no
+off-switch** (settings, env, or flag) as of 2026-06-19 — verified against the
+Claude Code docs and by re-examining `claude-hud` (which sets no suppression
+key, can't even read the permission mode, and only stacks a transcript-parsed
+agents line *on top of* the native one). The only documented `statusLine` hide
+field is `hideVimModeIndicator`; the full set of `statusLine` sub-fields is
+`type` / `command` / `padding` / `refreshInterval` / `hideVimModeIndicator` /
+`subagentStatusLine` (the last **formats** subagent rows — it does **not** hide
+the native line). Consequence: reconstructing any of these (PR#, permission
+mode, agents) in our own statusline would only **duplicate** the un-hideable
+native badge, so it isn't worth it — the permission mode and PR# are both in
+the data (permission mode in the **transcript** `permission-mode`/`mode`
+entries; `.pr.number` in the **stdin** JSON), they just can't replace the
+native display. Open upstream requests: anthropics/claude-code **#27916**,
+**#48246**. Revisit if either lands a hide option; until then, only the vim
+indicator was controllable (and is done).
 
 ### Claude Code compaction control (moved from TODO.md)
 
