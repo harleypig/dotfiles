@@ -65,29 +65,23 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🌳 Worktree creation: explicit-only, conforming names (MEDIUM PRIORITY)
+## 🔭 `ship.sh ci-watch` should pin to the current HEAD SHA (MEDIUM PRIORITY)
 
-Retrospective follow-up (PR #111): this background job launched *already
-inside* `.claude/worktrees/feature+github-tasks-skill`, yet the agent still
-called the built-in **`EnterWorktree`** tool — creating a second branch named
-`worktree-feature+github-tasks-skill` (the tool's hardcoded `worktree-`
-prefix + `/`→`+` scheme), which violates the repo's `feature/<name>`
-convention (`rules/git.md` *Branch Naming*). Root cause: the background-job
-system prompt nudges "use EnterWorktree before any code changes," competing
-with both `EnterWorktree`'s own "explicit-request-only" contract and
-`git.md`'s "use the **git-worktree-workflow** skill for all worktree
-operations." There is **no settings.json knob** for the built-in tool's
-naming.
+Retrospective follow-up (PR #113). `ship.sh ci-watch <branch>` watches the
+*latest run for the branch*, not the run for the current HEAD commit. After a
+push it can latch onto the **previous** commit's already-complete run and
+report green before the new push's run has registered — masking an in-progress
+run. Hit on PR #112's post-finalization re-watch (it printed the old run as
+`success`); worked around by resolving the run by HEAD SHA (`gh run list --json
+databaseId,headSha -q 'select(.headSha==$HEAD)'` then `gh run watch <id>`),
+applied preemptively on PR #113.
 
-- [ ] Strengthen `rules/git.md` *Worktrees* so the agent resists the
-  background-job nudge: worktree creation is **explicit-request-only**; use
-  the **git-worktree-workflow** skill (conforming `feature/<name>` names),
-  **not** the built-in `EnterWorktree` tool; and **if already inside a
-  worktree at launch, never create another** (the background-job exception).
-- [ ] Decide whether to reconcile the built-in `EnterWorktree` path at all
-  (it can't be renamed via config) or simply forbid its use here in favour of
-  the skill — and whether any of this belongs in global `CLAUDE.md` vs the
-  `git.md` rule.
+- [ ] Fix `config/claude/skills/ship-pr/scripts/ship.sh` `ci-watch` to resolve
+  the run by the current HEAD SHA — poll until a run for that SHA registers,
+  then watch *that* run — instead of "latest run for branch"; fall back to
+  latest only if no SHA-matched run appears within a timeout. Update ship-pr
+  Step 4 guidance if the contract changes. Pointer: PR #112 re-watch reported
+  run 27804458673 (SHA 53a3941) green after pushing 25d0c8b.
 
 ## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
 
