@@ -6,6 +6,26 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Added the reasoning-effort indicator; root-caused the parse;
+  corrected the `.vim.mode` story.** Verified against the official statusline
+  docs (claude-code-guide) that **`.effort.level`** (low/medium/high/xhigh/max,
+  absent when the model lacks effort) is a real field — added it to
+  `statusline.sh`, rendered `[level]` only when present. While there, fixed the
+  **root cause** of the earlier field-shift rather than just its symptom: the
+  `@tsv` + whitespace-`IFS` `read` collapsed empty/leading fields; switched to
+  `join("")` + `IFS=$'\x1f'` (non-whitespace), so an absent field stays in
+  place — effort and future fields are now safe in any position. Two
+  **corrections** the verification surfaced: (a) **`.vim.mode` IS documented**
+  (NORMAL/INSERT, present when CC vim mode is on; the user uses it) — the prior
+  commit's "not in the JSON" was wrong; the field was still broken as written
+  (emitted only the empty label) and caused the shift, so its removal was
+  functionally right but the *reason* was not. Restoring it correctly is now a
+  user-decision BACKLOG item. (b) **`rate_limits` IS present** (5h + 7-day
+  `used_percentage`, subscriber-only) — the rate-limit segment's gate is
+  satisfied; left as the top remaining candidate. Marked git ahead/behind
+  **SKIP** (already in `git-status`, user doesn't surface it). Extended
+  `test_statusline.bats` to 8 tests (effort present/absent). Folded into the
+  statusline PR.
 - 2026-06-19 — **Worked a backlog item: fixed the Claude statusline + mined
   `claude-hud`.** First use of the *Working the backlog* step. (1) **Fixed
   `config/claude/bin/statusline.sh`:** the reported "leading empty field" was

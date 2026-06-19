@@ -31,8 +31,10 @@ join_array() {
 }
 
 #------------------------------------------------------------------------------
-# Field definitions — add/remove fields here; vars order sets display order.
-# jq expressions receive the full session JSON object.
+# Field definitions — add/remove fields here; the build section below sets
+# display order. Every jq expression MUST yield a string (use `// ""` /
+# `tostring`) so the join in Gather never sees a null. Fields may be empty
+# (effort is absent on models without it); empties are handled downstream.
 
 declare -a vars
 declare -A jq_filter sl_label
@@ -40,6 +42,10 @@ declare -A jq_filter sl_label
 vars+=('model')
 jq_filter['model']='.model.display_name // "unknown"'
 sl_label['model']=''
+
+vars+=('effort')
+jq_filter['effort']='.effort.level // ""'
+sl_label['effort']=''
 
 vars+=('ctx')
 jq_filter['ctx']='(.context_window.used_percentage // 0) | floor | tostring'
@@ -50,14 +56,16 @@ jq_filter['cost']='.cost.total_cost_usd // 0 | tostring'
 sl_label['cost']='$'
 
 vars+=('version')
-jq_filter['version']='.version'
+jq_filter['version']='.version // ""'
 sl_label['version']='code v'
 
 #------------------------------------------------------------------------------
-# Gather data — single jq call via @tsv, one read
+# Gather data — single jq call, one read.
 #
-# @tsv formats the jq array as tab-separated values so that a single
-# IFS=$'\t' read can split all fields into their named variables in one pass.
+# Fields are joined on the ASCII unit separator (US, 0x1f) rather than @tsv:
+# a tab is an IFS whitespace char, so `read` would collapse a leading/empty
+# field and shift every value left (an absent effort/version would scramble
+# the line). US is non-whitespace, so `read` preserves empty fields in place.
 
 data=$(cat)
 
@@ -66,11 +74,11 @@ for v in "${vars[@]}"; do
   jq_parts+=("(${jq_filter[$v]})")
 done
 
-IFS=$'\t' read -r "${vars[@]}" < <(
+IFS=$'\x1f' read -r "${vars[@]}" < <(
   printf '%s' "$data" | jq -r "[ $(
     IFS=','
     printf '%s' "${jq_parts[*]}"
-  ) ] | @tsv" 2> /dev/null
+  ) ] | join(\"\u001f\")" 2> /dev/null
 ) || true
 
 #------------------------------------------------------------------------------
@@ -112,6 +120,8 @@ add_part() { [[ -n $1 ]] && parts+=("$1"); }
 
 add_part "$(git-status)"
 add_part "${sl_label['model']}${model}"
+# effort is absent on models without it; bracket it only when present
+[[ -n $effort ]] && add_part "[$effort]"
 add_part "${sl_label['ctx']}${ctx_color}${ctx}%${reset}"
 add_part "${sl_label['cost']}${cost}"
 add_part "${sl_label['version']}${version}"

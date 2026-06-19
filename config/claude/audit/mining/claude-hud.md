@@ -38,31 +38,38 @@ covered/not a fit.
 | Provider label (Bedrock/Vertex) | stdin | SKIP | single-provider Max user |
 | Project path (1–3 levels) | cwd | CANDIDATE | cheap nicety; git branch usually conveys location |
 | Git branch + dirty | git | SKIP | our `git-status` covers it |
-| **Git ahead/behind `↑N ↓N`** | `git rev-list --count` | **CANDIDATE** | cheap, flags unpushed/unpulled — but belongs in the **shared `git-status`** helper (touches the bash prompt too) |
+| Git ahead/behind `↑N ↓N` | `git rev-list --count` | **SKIP** | already implemented in our `git-status` helper — the user deliberately does not surface it |
 | Git file stats | porcelain | SKIP | `git-status` covers dirty |
 | Context progress **bar** glyph | stdin % | CANDIDATE | nicer than our colored %, but costs width + render logic |
-| **Rate-limit / usage bar (5h + weekly)** | stdin `rate_limits` | **CANDIDATE (verify)** | highest practical value for a Max user, pure-JSON — **but must confirm `rate_limits` is in our stdin** (absent for API-key/Bedrock/Vertex) |
+| **Rate-limit / usage bar (5h + weekly)** | stdin `rate_limits` | **CANDIDATE** | highest practical value for a Max user, pure-JSON. `rate_limits.{five_hour,seven_day}.used_percentage` **confirmed present** in the docs (subscriber-only, after first API response) — gate satisfied, ready to implement |
 | Tools / Skills / MCP / Agents lines | transcript | SKIP/CANDIDATE | transcript-stream heavy; agents-line is the only tempting one |
 | Todos progress `(2/5)` | transcript | CANDIDATE | nice, transcript-dependent |
 | Session duration / last-reply | transcript | CANDIDATE | start time needs transcript |
 | **Output speed (tok/s)** | render-to-render `output_tokens` delta, cached on `sha256(transcript_path)` | CANDIDATE | clever, but needs a per-session **cache file + delta state** — heavy for a stateless line |
 | Session token totals (in/out/cache) | transcript | CANDIDATE | transcript sum |
 | Compaction count / advisor / cache-TTL / mem | transcript / OS | SKIP | niche / not session state |
-| **Reasoning-effort `[high]`** | stdin effort | **CANDIDATE (verify)** | tiny, zero I/O — **if** our stdin exposes an effort field |
+| **Reasoning-effort `[high]`** | stdin `.effort.level` | **ADOPTED** | done 2026-06-19 — `.effort.level` (low/medium/high/xhigh/max) confirmed in the docs; rendered as `[level]` only when present |
 | Threshold color escalation | numeric → color | SKIP | we already do cyan/yellow/red-alarm |
 | Cost / version | stdin | SKIP | already shown |
 | `--extra-cmd` arbitrary shell | spawn | SKIP | security surface, unwanted |
 
-## Top ideas (all gated — none clean-adopt-now)
+## Top ideas — outcome
 
-1. **Rate-limit / usage segment** — best value, pure-JSON, same threshold-color
-   trick. **Gate:** verify `rate_limits` exists in our statusline stdin.
-2. **Git ahead/behind `↑N ↓N`** — cheap. **Gate:** belongs in the shared
-   `git-status` helper (affects the bash prompt), and check it doesn't already
-   emit it.
-3. **Reasoning-effort indicator** — tiny. **Gate:** verify an effort field is
-   in stdin.
+- **Reasoning-effort indicator** — **DONE** 2026-06-19 (`.effort.level`
+  confirmed; rendered `[level]`).
+- **Rate-limit / usage segment** — **READY** (gate satisfied: `rate_limits`
+  confirmed in the docs). Best remaining value for a Max user; left as a
+  `BACKLOG` candidate.
+- ~~Git ahead/behind~~ — **SKIP**: already in `git-status`, user doesn't
+  surface it.
 
 Everything transcript-driven (tools/agents/todos/tokens/duration/speed) is
 **heavier than a stateless bash/jq line** and stays CANDIDATE. Reused impl:
 **none** (ideas only; it's a TS plugin, wrong form for our bash statusline).
+
+While verifying the effort field, the docs also showed **`.vim.mode`
+(NORMAL/INSERT) is a real field** (present when Claude Code vim mode is on) —
+so the `mode` field removed in the statusline fix was *documented*, not
+bogus. It was still broken as written (the build emitted only the empty label,
+never the value, and the absent value shifted the parse). Whether to restore it
+(now the parse is empty-safe) is a **user decision** — see the BACKLOG entry.

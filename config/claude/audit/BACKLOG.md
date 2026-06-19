@@ -408,22 +408,25 @@ duplicates / similar setups). Chart each in
 
 ### Claude statusline enhancements (claude-hud candidates)
 
-The urgent display bug (leading empty field + a `@tsv`/`read` field-shift from
-the dead `.vim.mode` field) and the context-% prominence are **done** (fixed +
-regression-tested 2026-06-19; see the decisions log). `jarrodwatts/claude-hud`
-was mined for further ideas — full matrix in
-[`mining/claude-hud.md`](mining/claude-hud.md). The top picks are all **gated**
-(none was a clean adopt-now), so they sit here as candidates:
+Done 2026-06-19 (fixed + regression-tested; see the decisions log): the display
+bug (leading empty field + a field-shift from the empty `.vim.mode` column —
+root-caused to the whitespace-`IFS`/`@tsv` parse, now joined on the unit
+separator so absent fields are safe), the context-% prominence, and the
+**reasoning-effort `[level]`** indicator (`.effort.level`). `jarrodwatts/claude-hud`
+was mined — full matrix in [`mining/claude-hud.md`](mining/claude-hud.md).
+Remaining candidates:
 
 - [ ] **Rate-limit / usage segment** — a `| usage NN% |` field (5h + weekly cap)
-  with our existing threshold-color trick; highest value for a Max user, pure
-  stdin JSON. **Gate:** first confirm `rate_limits` is present in our statusline
-  stdin (claude-hud notes it's absent for API-key/Bedrock/Vertex sessions).
-- [ ] **Git ahead/behind `↑N ↓N`** — cheap `git rev-list --count`. **Gate:**
-  belongs in the **shared `git-status`** helper (also feeds the bash prompt) —
-  scope it there, and check it doesn't already emit this.
-- [ ] **Reasoning-effort indicator** `[high]` — tiny, zero extra I/O. **Gate:**
-  verify an effort field is in our stdin JSON.
+  with our existing threshold-color trick; the **highest remaining value** for a
+  Max user, pure stdin JSON. Gate satisfied:
+  `rate_limits.{five_hour,seven_day}.used_percentage` is confirmed in the docs
+  (subscriber-only, present after the first API response — guard for absence).
+- [ ] **Restore `.vim.mode` (NORMAL/INSERT)?** — user decision. The field is
+  *documented* (present when Claude Code vim mode is on; the user uses vim mode);
+  it was removed in the fix because it was broken as written (built only the
+  empty label, and its empty column shifted the parse). The parse is now
+  empty-safe, so it could be re-added correctly (emit the value, bracket/guard
+  when absent). Decide whether it earns a slot.
 - [ ] **Heavier candidates** (transcript-driven, need cache/state — defer):
   context progress-bar glyph, todos `(2/5)`, session duration, output speed
   (tok/s), session token totals. See the matrix for the per-item rationale.

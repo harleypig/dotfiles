@@ -80,6 +80,23 @@ STUBEOF
   assert_output --partial '<fg cyan>'
 }
 
+@test "reasoning effort is shown bracketed when present" {
+  local json='{"model":{"display_name":"Opus"},"effort":{"level":"high"},"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  assert_output --partial '[high]'
+}
+
+@test "effort segment is absent (no empty brackets) when the model has none" {
+  # default JSON has no .effort — and an absent field must not shift the line
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  refute_output --partial '[]'
+  refute_output --partial '['
+  assert_output --partial 'Opus 4.8'
+  assert_output --partial 'code v2.1.183'
+}
+
 @test "missing jq prints a graceful notice and exits 0" {
   run env PATH="$STUB" "$BASH_BIN" "$SL" <<< "$JSON"
   assert_success
