@@ -152,9 +152,11 @@ advisory — the remote enforces it:
   actually enforces it). See `config/claude/rules/git.md`.
 * The global `branch-protection.py` `PreToolUse` hook blocks an agent
   `Edit`/`Write`/`MultiEdit` while `master` is checked out — the earliest
-  guard, at edit time. It derives the protected branch from the
-  `no-commit-to-branch` args above, so this repo activates it automatically.
-  See `config/claude/rules/git.md` *Protecting the Default Branch*.
+  guard, at edit time (it allows plan files and gitignored, untracked files —
+  local-only state that can't be committed). It derives the protected branch
+  from the `no-commit-to-branch` args above, so this repo activates it
+  automatically. See `config/claude/rules/git.md` *Protecting the Default
+  Branch*.
 
 To change the ruleset, edit the JSON and re-apply with the OAuth token (the
 narrow PAT lacks admin):

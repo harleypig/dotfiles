@@ -26,7 +26,12 @@ guard here — the agent's git.md discipline and the server ruleset still apply.
 Revisit if that gap bites in practice.
 
 Edits to a plan file (`.../claude/plans/...`) are always allowed, so plan mode
-is never blocked.
+is never blocked. Edits to a **gitignored, untracked** file are likewise
+allowed: such a file is local-only state (logs, caches, the agent's own
+gitignored memory) that can never be committed to the protected branch, so the
+"don't author on it" rule does not apply. The *untracked* half matters — a
+force-added file that is both tracked and ignore-matched can still land in a
+commit, so it stays protected.
 
 Fail-safe: any error exits 0 silently so a hook bug can never block editing.
 """
@@ -78,6 +83,33 @@ def _git(repo: Path, *args: str) -> str | None:
   if res.returncode != 0:
     return None
   return res.stdout.strip()
+
+
+def _git_ok(repo: Path, *args: str) -> bool:
+  """True iff `git <args>` exits 0 in `repo`. For check-ignore / ls-files
+  probes where only the exit status matters; any error is False (fail-safe —
+  an unconfirmed probe falls through to the normal protection logic)."""
+  try:
+    res = subprocess.run(
+      ["git", "-C", str(repo), *args],
+      capture_output=True,
+      text=True,
+      timeout=5,
+    )
+  except Exception:
+    return False
+  return res.returncode == 0
+
+
+def _is_local_only(repo: Path, target: Path) -> bool:
+  """True when `target` is gitignored AND not tracked — purely local state
+  (logs, caches, the agent's own gitignored memory) that can never be
+  committed, so editing it on a protected branch breaks nothing. A force-added
+  file that is both tracked and ignore-matched stays protected (it can still
+  land in a commit), which is why the tracked check is required."""
+  if not _git_ok(repo, "check-ignore", "-q", "--", str(target)):
+    return False
+  return not _git_ok(repo, "ls-files", "--error-unmatch", "--", str(target))
 
 
 def _existing_ancestor(path: Path) -> Path | None:
@@ -182,6 +214,12 @@ def main() -> int:
   repo = _repo_root(target)
   if repo is None:
     return 0  # not in a git repo → nothing to protect
+
+  # A gitignored, untracked file is local-only state that can never be
+  # committed to the protected branch, so the "don't author on it" rule does
+  # not apply — allow it (e.g. the agent's own gitignored memory files).
+  if _is_local_only(repo, target):
+    return 0
 
   protected = _protected_branches(repo)
   if not protected:

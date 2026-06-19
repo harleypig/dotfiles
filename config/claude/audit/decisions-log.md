@@ -6,6 +6,21 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **`branch-protection.py` hook now allows edits to gitignored,
+  untracked files.** The edit-time guard blocked an edit to a **gitignored**
+  memory file while on `master` — and the report wrongly called that an
+  inherent limitation ("the hook can't tell tracked from untracked"). The user
+  corrected it: `git check-ignore` / `git ls-files --error-unmatch` answer
+  exactly that. Added `_is_local_only(repo, target)` — **ignored AND
+  untracked** — and a short-circuit allow in `main()`. The *untracked* half is
+  load-bearing: a force-added file that is both tracked and ignore-matched can
+  still land in a commit, so it stays protected (verified by a dedicated test).
+  Rationale: the rule guards *commits* on the protected branch, and an
+  ignored, untracked file (logs, caches, the agent's own memory) can never
+  become one. Two new tests in `test_branch_protection.py` (allow ignored;
+  block tracked-but-ignored); docs updated in `git.md` (v1.9.0→v1.10.0,
+  layer 3) and `.claude/WORKFLOW.md`. Same-file edit (the `~/.claude →
+  config/claude` symlink) means no separate deploy.
 - 2026-06-19 — **Documented the kept-branch-after-squash sync mechanic in
   `git.md`.** Worked the BACKLOG item (a PR #117 retrospective follow-up).
   Added a new section *Continuing on a Kept Branch After a Squash-Merge*
