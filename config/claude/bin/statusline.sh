@@ -163,7 +163,8 @@ add_part() { [[ -n $1 ]] && parts+=("$1"); }
 
 # Vim mode leads the line (we render it; the built-in indicator is hidden).
 [[ -n $vim ]] && add_part "${vim_color}${vim}${reset}"
-add_part "$(git-status)"
+# --plain: no wrapping parens / leading space; the ' | ' join handles spacing.
+add_part "$(git-status --plain)"
 # Effort rides with the model (no ' | ' between them), colored by level and
 # bracketed — only when the model reports one.
 model_part="${sl_label['model']}${model}"
