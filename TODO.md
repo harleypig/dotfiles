@@ -39,23 +39,6 @@ follow-up remains:
 - [ ] Confirm Dependabot / auto-merge interplay once a Dependabot PR appears
   (squash-only + required checks — ensure auto-merge still completes).
 
-## 📦 Commit a poetry.lock for the Poetry tool-env (MEDIUM PRIORITY)
-
-`config/pypoetry/pyproject.toml` has no committed `poetry.lock`, so transitive
-dependencies aren't pinned and Dependabot can't open security-update PRs for
-them. Alert #6 (`cryptography`) was remediated with a **direct** pin in the
-manifest instead; per `rules/poetry.md` the lockfile MUST be committed.
-
-- [x] Generated and committed `config/pypoetry/poetry.lock` (`poetry lock`,
-  poetry 2.4.1): 49 packages pinned, `cryptography` resolved to 49.0.0
-  (≥ 48.0.1), `poetry check --lock` consistent. Transitive deps are now pinned
-  and Dependabot's pip ecosystem can cover them.
-- [x] Dropped the direct `cryptography = ">=48.0.1"` pin and re-locked: it's
-  transitive again (via `secretstorage`), still resolved to 49.0.0, and the
-  lock now correctly scopes the cryptography/cffi/pycparser chain to
-  `sys_platform == "linux"` instead of forcing it everywhere. No other package
-  versions changed; `poetry check --lock` consistent.
-
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
 We use a single branch ruleset (protect master). Survey what else rulesets
@@ -69,19 +52,6 @@ offer and whether any help this repo:
 - [ ] Decide which add value here (likely candidates: a tag ruleset for
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
-
-## 🧪 Skill helper scripts — behavioural test coverage (LOW PRIORITY)
-
-*Static* coverage landed in PR #115 (the meta-test generator now scans
-`config/claude/skills`, so `ship.sh` gets shebang/`bash -n`/shellcheck/shfmt).
-But the #114 ci-watch bug was a **logic** error those static checks can't
-catch — only a behavioural test would.
-
-- [x] Added `tests/shell/test_ship.bats` — a faithful `gh` stub (canned JSON +
-  real `jq`, as gh does) plus a `git rev-parse` stub exercise the pure-logic
-  paths: `ci-watch` selecting the run for the branch tip SHA (regression for
-  #114), its non-zero-on-failure exit, and `merge-methods` ruleset parse with
-  repo-settings fallback. 4 tests, in the gated `test_*.bats` suite.
 
 ## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 
@@ -103,31 +73,19 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
-## 🔐 Evaluate trufflehog & Checkmarx scanners (MEDIUM PRIORITY)
+## 🔭 ship.sh ci-watch: handle multiple workflows per PR (LOW PRIORITY)
 
-Two candidate security scanners to weigh for pre-commit and/or GitHub
-Actions. For each, determine what it scans, how it overlaps with the tools
-already in play (gitleaks/detect-private-key, the `security-scan` skill,
-`semgrep`/`trivy`/`osv-scanner`), and where it belongs — then fold any
-adoption into the `security-scan` skill / `qa.md` security dimension rather
-than wiring it as a one-off.
+Retrospective follow-up (PR #116). With the new `secret-scan` workflow a PR
+now triggers **two** workflow runs (`tests` + `secret-scan`), but
+`ship.sh ci-watch` selects `.[0]` of the SHA-matched runs — so it can watch
+the wrong workflow (the non-required `secret-scan` instead of the required
+`tests`). Both runs had to be watched by hand this PR.
 
-- [x] **trufflehog — adopted as a PR-time verified secret scan in CI.**
-  Overlaps gitleaks heavily on common-secret *detection*, but its
-  verification (authenticating each hit → live/not, near-zero false positives)
-  is genuinely complementary in a *different lane*: gitleaks stays the
-  fast commit-time pre-commit guard; trufflehog runs at PR time. Wired as
-  `.github/workflows/secret-scan.yml` (`on: pull_request`, digest-pinned image
-  run directly per the security-scan skill — not the marketplace action),
-  **non-required first**. Added `rules/trufflehog.md`; noted in the
-  security-scan skill and `.claude/QA.md`. Not a pre-commit/dev-local hook
-  (verification makes network calls).
-- [x] **Checkmarx — declined.** Commercial, no free tier, no public pricing
-  (contact-sales, per-developer subscription) — disproportionate for a
-  personal dotfiles repo; `semgrep` already covers SAST for free. The one pull
-  was Perl SAST coverage; that gap stays tracked separately (solve with OSS if
-  at all, not a paid enterprise platform). See the perl-SAST note under "Perl
-  quality tooling".
+- [ ] Make `ship.sh ci-watch` robust to multiple workflows per PR: either
+  watch **all** runs for the HEAD SHA and aggregate their conclusions, or
+  target the gating workflow (whose jobs are the repo's required checks).
+  Pointer: `cmd_ci_watch` picks `.[0].databaseId` after SHA-matching in
+  `config/claude/skills/ship-pr/scripts/ship.sh`.
 
 ## 🔑 Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
 
