@@ -65,44 +65,17 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🧪 Skill helper scripts have no test coverage (MEDIUM PRIORITY)
+## 🧪 Skill helper scripts — behavioural test coverage (LOW PRIORITY)
 
-Retrospective follow-up (PR #114). The ci-watch bug fixed in #114 lived in
-`config/claude/skills/ship-pr/scripts/ship.sh` — a script with real logic (the
-gh credential fallback, run-polling, ruleset merge-method parsing) that the
-test suite never sees. The meta-test generator scans `bin lib` only
-(`tests/scaffold/build-meta-tests`, default roots), so every
-`config/claude/skills/*/scripts/*` is uncovered. That gap let a defect ship and
-caused manual workarounds across PRs #112–#114.
+*Static* coverage landed in PR #115 (the meta-test generator now scans
+`config/claude/skills`, so `ship.sh` gets shebang/`bash -n`/shellcheck/shfmt).
+But the #114 ci-watch bug was a **logic** error those static checks can't
+catch — only a behavioural test would.
 
-- [x] Option (a) done: extended the meta-test generator's default roots to
-  `bin lib config/claude/skills` (`tests/scaffold/build-meta-tests`), so skill
-  helper scripts now get the static checks (shebang, `bash -n`, shellcheck,
-  shfmt). `ship.sh`'s generated meta test passes all five; no debt imported.
-  `TESTS.md` coverage scope updated.
-- [ ] Option (b), still open (lower priority): a hand-written bats test for
-  `ship.sh` *behaviour* with a `gh`/`git` stub (`tests/helpers/common.bash`
-  `make_stub`) — `ci-watch` SHA selection, `merge-methods` ruleset parse.
-  Static checks (a) would **not** have caught the #114 logic bug; only a
-  behavioural test would, so this is the real regression-coverage piece if we
+- [ ] Add a hand-written bats test for `ship.sh` *behaviour* with a `gh`/`git`
+  stub (`tests/helpers/common.bash` `make_stub`) — `ci-watch` SHA selection,
+  `merge-methods` ruleset parse. The real regression-coverage piece, if we
   want it.
-
-## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
-
-Create a `/test-audit` skill that checks for **missing or outdated tests**
-(scripts/functions with no test, bug fixes without a regression test, tests
-that have drifted from the code they cover) and wire it into the `qa-check`
-skill's Tests dimension (`qa.md` dimension 6).
-
-- [x] **Reconciled with `test-review` — decided NOT to build `/test-audit`**
-  (it would duplicate `test-review`, already qa.md's dim-6 tool that `qa-check`
-  composes). Instead extended `test-review` (v1.1.0) with the unique sliver.
-- [x] Defined "outdated/untested" in `test-review`: a **coverage census**
-  (units with no test per `TESTS.md`) plus a **staleness/drift** lens (source
-  newer than its test, a test referencing removed/renamed code, a test
-  guarding deleted behavior).
-- [x] Wiring: `qa-check` already composes `test-review` for the Tests
-  dimension; named it in the repo QA doc dim-6 row (`.claude/QA.md`).
 
 ## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 
@@ -196,6 +169,12 @@ Retrospective follow-up (from the PR that added the `retrospective` skill):
 `run_eval.py` returns **0% regardless** on CC 2.1.x (upstream issue #2003 + a
 command-vs-`Skill` detection gap — see `SETUP-AUDIT.md`). So the automated
 triggering eval won't help here until upstream fixes it.
+
+**Reconfirmed (PR #115):** the *modify-an-existing-skill* path is unusable too
+— extending `test-review` was done by hand because skill-creator's
+improve/optimize loop depends on the same broken `run_eval`. So skill-creator
+helps with neither new-skill eval nor existing-skill edits on CC 2.1.x; treat
+it as conceptual guidance only until #2003 is fixed.
 
 - [ ] When upstream fixes #2003 (or we vendor + patch `run_eval`), run the
   trigger eval + description optimizer on `retrospective`.
