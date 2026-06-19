@@ -217,22 +217,6 @@ QA docs.
 - [ ] Decide which earn their surface per repo type (app vs library vs
   dotfiles) and which are pure vanity. Record the shortlist + rationale.
 
-### 🔭 Document the kept-branch-after-squash sync mechanic (LOW PRIORITY)
-
-Retrospective follow-up (PR #117). When a batch branch is **kept** after a
-squash-merge to continue working, syncing it with `git merge master` carries
-the already-merged commits forward as redundant history that pollutes the next
-PR's commit list — PR #117 needed a `git rebase --onto master <merge>` cleanup
-before its commit list was tidy.
-
-- [x] Documented the clean mechanic in `git.md` — new section *Continuing on a
-  Kept Branch After a Squash-Merge* (v1.8.0→v1.9.0) + an Agent Rules bullet:
-  after a squash-merge with the branch kept, sync via
-  `git reset --hard origin/<default>` (the batch is already merged) or
-  `git rebase --onto`, **never** `git merge <default>` (it replays
-  already-merged commits into the next PR). Promoted out of the batch-todos
-  working memory into the rule. See decisions-log 2026-06-19.
-
 ### 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
 
 Review every repo under `$PROJECTS_DIR` and decide, per the three-tier model
