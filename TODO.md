@@ -791,23 +791,7 @@ follow-ups (e.g. the deferred `pydantic_ai` framework rule, repo-mining
 shortlists) are tracked there, not here, so this repo's `TODO.md` stays about
 actual dotfiles work.
 
-## ⌨️ Custom slash commands: /push and /push-pr (MEDIUM PRIORITY)
-
-Shortcuts for the common ship flow:
-
-- `/push` — commit (if needed) and push the current branch.
-- `/push-pr` — commit, push, and open a PR.
-
-**First evaluate workability.** A slash command is a prompt the model
-executes, so it *can* run git/`gh` (commit → push → `gh pr create`) — but it
-**suggests**, it does not guarantee, and it must respect the protected-branch
-rule (never author on master), the staging discipline (`git add -u` + explicit
-paths, never `-A`/`.`), and the gh approval gates (never open/merge a PR
-without explicit approval — `gh.md`). These largely duplicate the **ship-pr**
-skill, so the real question is whether a thin command that **delegates to
-ship-pr** (or a subset) beats just typing the request. Decide: command vs.
-skill-trigger, the exact scope of each (`/push` = commit+push only), and where
-it lives (global `commands/`).
+## 🪝 Pre-commit hooks: phased rollout (MEDIUM PRIORITY)
 
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
 Pre-commit can progress independently. CI/CD cannot lead pre-commit.
