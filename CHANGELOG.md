@@ -10,6 +10,35 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-19
+
+### Added
+
+- **`tests/shell/test_ship.bats`** — behavioural tests for the ship-pr
+  `ship.sh` helper via a faithful `gh`/`git` stub (canned JSON applied through
+  real `jq`, as `gh --jq` does): `ci-watch` selecting the run for the branch
+  tip SHA (regression for the #114 latest-run bug) and `merge-methods` ruleset
+  parse with repo-settings fallback. (PR #116)
+- **`config/pypoetry/poetry.lock`** — committed the Poetry tool-env lockfile
+  (49 packages; `cryptography` 49.0.0 ≥ 48.0.1), so transitive deps are pinned
+  and Dependabot's pip ecosystem can open security PRs for them. (PR #116)
+- **PR-time verified secret scanning** — `.github/workflows/secret-scan.yml`
+  runs **trufflehog** on `pull_request`, scanning the PR diff with the
+  digest-pinned image run directly (per the security-scan skill, not a
+  marketplace action), gating via `--fail`. Complements the commit-time
+  `gitleaks` guard; **non-required** for now. Adds `rules/trufflehog.md` and
+  updates the security-scan skill + `.claude/QA.md`. (Checkmarx was also
+  evaluated and **declined** — commercial, no free tier; `semgrep` covers
+  SAST.) (PR #116)
+
+### Changed
+
+- **Dropped the redundant direct `cryptography` pin** (`config/pypoetry`) and
+  re-locked — `cryptography` is transitive again via `secretstorage`, no
+  version churn, and the lock now correctly scopes the
+  cryptography/cffi/pycparser chain to `sys_platform == "linux"` instead of
+  forcing it on every platform. (PR #116)
+
 ## 2026-06-18
 
 ### Added

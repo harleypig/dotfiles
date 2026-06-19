@@ -39,18 +39,6 @@ follow-up remains:
 - [ ] Confirm Dependabot / auto-merge interplay once a Dependabot PR appears
   (squash-only + required checks — ensure auto-merge still completes).
 
-## 📦 Commit a poetry.lock for the Poetry tool-env (MEDIUM PRIORITY)
-
-`config/pypoetry/pyproject.toml` has no committed `poetry.lock`, so transitive
-dependencies aren't pinned and Dependabot can't open security-update PRs for
-them. Alert #6 (`cryptography`) was remediated with a **direct** pin in the
-manifest instead; per `rules/poetry.md` the lockfile MUST be committed.
-
-- [ ] Generate and commit `config/pypoetry/poetry.lock` (resolving
-  `cryptography >= 48.0.1`) so transitive deps are pinned and Dependabot
-  security updates can cover them. Larger change than the direct pin — its
-  own fix.
-
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
 We use a single branch ruleset (protect master). Survey what else rulesets
@@ -64,18 +52,6 @@ offer and whether any help this repo:
 - [ ] Decide which add value here (likely candidates: a tag ruleset for
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
-
-## 🧪 Skill helper scripts — behavioural test coverage (LOW PRIORITY)
-
-*Static* coverage landed in PR #115 (the meta-test generator now scans
-`config/claude/skills`, so `ship.sh` gets shebang/`bash -n`/shellcheck/shfmt).
-But the #114 ci-watch bug was a **logic** error those static checks can't
-catch — only a behavioural test would.
-
-- [ ] Add a hand-written bats test for `ship.sh` *behaviour* with a `gh`/`git`
-  stub (`tests/helpers/common.bash` `make_stub`) — `ci-watch` SHA selection,
-  `merge-methods` ruleset parse. The real regression-coverage piece, if we
-  want it.
 
 ## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 
@@ -97,26 +73,36 @@ findings. Research how to actually use each and whether to formalize it.
 - [ ] If a tool adds no actionable value, consider disabling its check to cut
   PR-check noise; if it does, document the triage workflow.
 
-## 🔐 Evaluate trufflehog & Checkmarx scanners (MEDIUM PRIORITY)
+## 🔭 ship.sh ci-watch: handle multiple workflows per PR (LOW PRIORITY)
 
-Two candidate security scanners to weigh for pre-commit and/or GitHub
-Actions. For each, determine what it scans, how it overlaps with the tools
-already in play (gitleaks/detect-private-key, the `security-scan` skill,
-`semgrep`/`trivy`/`osv-scanner`), and where it belongs — then fold any
-adoption into the `security-scan` skill / `qa.md` security dimension rather
-than wiring it as a one-off.
+Retrospective follow-up (PR #116). With the new `secret-scan` workflow a PR
+now triggers **two** workflow runs (`tests` + `secret-scan`), but
+`ship.sh ci-watch` selects `.[0]` of the SHA-matched runs — so it can watch
+the wrong workflow (the non-required `secret-scan` instead of the required
+`tests`). Both runs had to be watched by hand this PR.
 
-- [ ] **trufflehog** (secret scanning): evaluate adding it to pre-commit and
-  GitHub Actions, and how it complements the existing secret-scanning story —
-  gitleaks is the commit-time guard (Pre-commit Phase 2) and full-repo/history
-  scanning is the `security-scan` skill's job. Decide whether trufflehog's
-  verified-secret detection augments or replaces either, and where it runs
-  (commit-time hook vs CI vs the skill).
-- [ ] **Checkmarx** (SAST): evaluate adding it to pre-commit and/or GitHub
-  Actions; compare against the existing SAST layer (`semgrep`) and decide
-  whether it earns a place. Ties into the perl-SAST investigation under "Perl
-  quality tooling → Security scanning", which already flags Checkmarx for its
-  believed perl support.
+- [ ] Make `ship.sh ci-watch` robust to multiple workflows per PR: either
+  watch **all** runs for the HEAD SHA and aggregate their conclusions, or
+  target the gating workflow (whose jobs are the repo's required checks).
+  Pointer: `cmd_ci_watch` picks `.[0].databaseId` after SHA-matching in
+  `config/claude/skills/ship-pr/scripts/ship.sh`.
+
+## 🔑 Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
+
+Secrets currently live as plaintext files in the sibling `private_dotfiles`
+repo, loaded by `config/shell-startup/000-loadtokens`. Because they sit in a
+*separate* repo that this one references, it's easy to accidentally pull a
+secret value into the dotfiles repo (a hardcoded token while debugging, a
+value leaked into a committed config) — which *raises*, not lowers, the value
+of secret scanning here.
+
+- [ ] Investigate whether GitHub can serve as a secrets vault to replace (or
+  back) the plaintext `private_dotfiles/api-key/*` files — e.g. Actions /
+  Codespaces / Dependabot secrets, `gh secret`, or a runtime fetch of an
+  encrypted store via the `gh` API. Key constraint to assess: Actions secrets
+  are only exposed *inside* Actions runs, not in a local login shell, so weigh
+  what is actually reachable from the `shell-startup` path. Goal: shrink the
+  accidental-ingestion surface.
 
 ## 🧹 shell-startup Follow-ups (LOW PRIORITY)
 
@@ -455,9 +441,11 @@ bundles (OTRS, TryTiny).
 
 ### Security scanning
 
-- [ ] Look into perl SAST: investigate **Checkmarx** (believed to support
-  perl) and open-source alternatives, and fold any perl SAST into the
-  `security-scan` skill / `qa.md` security dimension rather than a one-off.
+- [ ] Look into perl SAST: **Checkmarx was evaluated and declined** (commercial,
+  no free tier — see "Evaluate trufflehog & Checkmarx"), so pursue
+  **open-source** options only (e.g. `perlcritic` security policies, or other
+  OSS perl analyzers), and fold any perl SAST into the `security-scan` skill /
+  `qa.md` security dimension rather than a one-off.
 
 ### Setup / documentation
 

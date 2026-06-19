@@ -22,6 +22,10 @@ truth.
 - **`rules/trivy.md`** — dependency/secret scanning of the source tree
   (`trivy fs`) and the supply-chain pinning posture. (Image scanning lives in
   the **containerize** skill.)
+- **`rules/trufflehog.md`** — PR-time **verified** secret scanning in CI (the
+  digest-pinned image, run directly). Distinct lane from the commit-time
+  `gitleaks` pre-commit guard — keep them separate; don't make trufflehog a
+  dev-local/pre-commit hook (it makes network calls to verify).
 
 ## Scope to the repo
 
