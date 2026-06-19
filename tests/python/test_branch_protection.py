@@ -125,6 +125,32 @@ def test_allows_plan_files_even_on_protected_branch(tmp_path):
   assert out == {}
 
 
+def test_allows_gitignored_untracked_file_on_protected_branch(tmp_path):
+  # A gitignored (untracked) file is local-only and can never be committed,
+  # so editing it on protected master is allowed (e.g. agent memory files).
+  repo = _make_repo(tmp_path, "master", PROTECT_MASTER)
+  (repo / ".gitignore").write_text("*.log\n", encoding="utf-8")
+  out = _run(str(repo / "scratch.log"), str(repo))
+  assert out == {}
+
+
+def test_blocks_tracked_file_even_if_ignore_matched(tmp_path):
+  # A file that is BOTH tracked (force-added) and ignore-matched can still
+  # land in a commit, so it stays protected on master — the tracked check,
+  # not check-ignore alone, is what makes this correct.
+  repo = _make_repo(tmp_path, "master", PROTECT_MASTER)
+  (repo / ".gitignore").write_text("tracked.log\n", encoding="utf-8")
+  f = repo / "tracked.log"
+  f.write_text("x\n", encoding="utf-8")
+  _git(repo, "add", "-f", "tracked.log")
+  _git(
+    repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m",
+    "force-add ignored file"
+  )
+  out = _run(str(f), str(repo))
+  assert _is_deny(out)
+
+
 def test_allows_outside_any_git_repo(tmp_path):
   out = _run(str(tmp_path / "loose.txt"), str(tmp_path))
   assert out == {}

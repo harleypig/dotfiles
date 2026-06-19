@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.9.0
+**Version:** v1.10.0
 
 ## Commit Messages
 
@@ -98,12 +98,14 @@ time and edit time:
 3. **Edit-time Claude Code hook** (earliest, agent-only): the global
    `branch-protection.py` `PreToolUse` hook blocks an `Edit`/`Write`/
    `MultiEdit` while a protected branch is checked out, so the agent is told
-   to branch *before* writing the first character. It reads the protected set
-   straight from the repo's `no-commit-to-branch` args (layer 2), so it
-   activates **only where that hook is configured** — a repo without it (a
-   cloned upstream/fork) gets no edit-time guard. It is a backstop for the
-   agent, not a constraint on a human editor, and fails safe (any error
-   allows the edit).
+   to branch *before* writing the first character. (It allows edits to plan
+   files and to **gitignored, untracked** files — local-only state, such as
+   the agent's own memory, that can never be committed to the branch.) It
+   reads the protected set straight from the repo's `no-commit-to-branch` args
+   (layer 2), so it activates **only where that hook is configured** — a repo
+   without it (a cloned upstream/fork) gets no edit-time guard. It is a
+   backstop for the agent, not a constraint on a human editor, and fails safe
+   (any error allows the edit).
 
 The local guards are conveniences, not substitutes — without the server-side
 ruleset, anyone (or any tool) without the hooks installed can still push. The
