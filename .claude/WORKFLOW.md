@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.2.0
+**Version:** v1.3.0
 
 ## Purpose
 
@@ -176,6 +176,28 @@ which **blocks** a `gh pr merge` / `ship.sh merge` while any completed `- [x]`
 items still remain in the planning docs. See
 `config/claude/skills/ship-pr/SKILL.md` and `config/claude/rules/git.md`.
 
+### TODO Routing
+
+This repo splits its task tracking by **scope**, so each list stays focused.
+When capturing any follow-up, decide where it belongs before writing it:
+
+* **Dotfiles work** → root [`TODO.md`](../TODO.md). Anything about the broader
+  repo: `bin/`, `lib/`, `config/` (except `config/claude/`), shell-startup,
+  tests, CI, packaging, the OS/$HOME setup.
+* **Claude-agent-config work** → [`config/claude/audit/BACKLOG.md`](../config/claude/audit/BACKLOG.md).
+  Anything under `config/claude/`: rules, skills, hooks, the agent-config docs
+  (`CLAUDE.md`, `EXTENDING.md`, `SETUP-AUDIT.md`), plugin/MCP setup. This is the
+  audit's todo file; `claude-audit` reads it.
+* **Mixed** → split into both files with a cross-reference **unless** the parts
+  are merely coupled (added together, or the config piece can't be authored
+  until the dotfiles piece lands). When coupled, keep the item whole in its
+  primary file and add an inline scope note pointing at the other — and, for an
+  embedded config deliverable, either author it as part of the parent task or
+  move it to `BACKLOG.md` when the parent completes, so it isn't stranded.
+
+The reciprocal pointers live in each file's header and in `TODO.md`'s *Audit
+the Claude Code Setup* section.
+
 ## Tool Setup Procedures
 
 ### Prerequisites
@@ -268,7 +290,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.2.0)
+* `WORKFLOW.md` - Versioned (this file, v1.3.0)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 

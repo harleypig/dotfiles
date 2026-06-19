@@ -87,6 +87,33 @@ living record is in `config/claude/audit/` — `decisions-log.md` (the "why"),
    `audit/BACKLOG.md`; route repo-specific follow-ups to that repo's `TODO.md`,
    surfaced by the repo that needs them.
 
+## Working the backlog
+
+The audit *assesses* and *feeds* `audit/BACKLOG.md` (above + the `retrospective`
+skill); this is how it also *works it down*. Invoke explicitly — "work the
+backlog", "/claude-audit work" — or offer it at the end of an assessment run
+when the backlog is non-empty. It is **not** part of the default assess pass;
+working an item ships real config changes, so keep it a deliberate, separate
+action.
+
+1. **Pick** — read `audit/BACKLOG.md`, present the open `- [ ]` items as a
+   ranked worklist (priority × cost × leverage), and confirm which to work. One
+   item (or one coherent cluster) at a time.
+2. **Decide kind + scope** — for the chosen item, apply the placement ladder in
+   `EXTENDING.md` (rule vs skill vs hook vs patterns vs command vs MCP; global
+   vs repo-local) and the three-tier model. Verify currency (Context7) and
+   grounding before authoring, per the checks below.
+3. **Implement** — author/modify the artifact. Run the reference-consistency
+   grep (below) for anything renamed/moved/dropped.
+4. **Land** — global changes via a dotfiles PR (audit + affected files; squash;
+   watch CI; merge on explicit approval) using **ship-pr**.
+5. **Finalize** — once green, **remove** the item from `audit/BACKLOG.md` and
+   record the outcome in `audit/decisions-log.md` (the same prune-at-merge
+   discipline the repo uses for `TODO.md`).
+
+A config task that arrived from the repo `TODO.md` (the "Repo-config follow-ups"
+section) is worked the same way — it is now a backlog item like any other.
+
 **Verify currency with live docs (Context7, if available).** Rules and skills
 go stale as tools change — deprecations, renamed flags, shifted best practice.
 When auditing an existing rule or adopting a new pattern, use **Context7** (the

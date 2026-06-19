@@ -1,11 +1,14 @@
 # Audit backlog
 
-Open follow-up tasks for the audit itself — **a todo file** (this repo's own
-`TODO.md` tracks dotfiles work; this tracks audit work, kept separate to avoid
-confusion). Read when running `/claude-audit`. Audit-only (not context-loaded).
-Completed items are summarized in [`decisions-log.md`](decisions-log.md);
-mined-repo provenance in [`idea-sources.md`](idea-sources.md). Completed items
-are retained here for continuity.
+A **todo file** for **Claude-agent-config** work (`config/claude/` — rules,
+skills, hooks, agent-config docs), kept separate from the dotfiles `TODO.md`
+to avoid confusion. Includes both audit-process follow-ups and config tasks
+migrated from `TODO.md`. **Routing:** a config task lands here; a dotfiles task
+in `TODO.md`; a mixed task is split with a cross-reference unless its parts are
+merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
+`/claude-audit`. Audit-only (not context-loaded). Completed items are
+summarized in [`decisions-log.md`](decisions-log.md) and retained here for
+continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
 
 ## Always-on rule scoping
 
@@ -143,3 +146,213 @@ are retained here for continuity.
     `rules/troubleshooting.md` (the debugging bar) + the `debug-assistant`
     skill (the procedure). Not a qa dimension — a peer category. See
     *Decisions log*.
+
+## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
+
+These were tracked in the dotfiles `TODO.md` but are Claude-agent-config
+work (rules, skills, plugins, agent-config docs) — moved here per the TODO
+routing convention (see the header). Provenance preserved verbatim.
+
+### 📊 Slim down the STRUCTURE.md mermaid diagram (HIGH PRIORITY / LOW IMPORTANCE — IN PROGRESS)
+
+**Status:** in progress — pick-at-it. High priority (surface it when the repo
+is touched) but low importance (nothing depends on it; purely a readability
+nicety). Lives on branch `docs/structure-diagram`, no PR yet.
+
+`config/claude/STRUCTURE.md` (added in ea9cdbd) renders the agent-config
+relationships as a Mermaid flowchart, but the diagram is too big/wide to read
+comfortably. Make it less sprawling without losing the relationships it maps.
+
+- [ ] Reduce the diagram's width/sprawl — e.g. group related nodes into
+  subgraphs, split into smaller diagrams per concern, prune low-value edges,
+  or change layout direction — so it reads on a normal screen.
+- [ ] Verify the rendered result in Brave, not the user's Chrome (Chrome
+  blocks GitHub's mermaid sandbox).
+
+### 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
+
+Both run as PR checks (alongside `bats`), but we don't yet act on their
+findings. Research how to actually use each and whether to formalize it.
+
+- [ ] **CodeFactor**: what it analyzes, where findings surface (PR inline
+  comments, the codefactor.io dashboard, the badge), how to configure it
+  (`.codefactor.yml`), and how to triage/suppress. Decide if it earns a
+  required status check.
+- [ ] **Snyk** (`security/snyk`): what the check scans (deps / code / IaC?),
+  where findings live (app.snyk.io, PR annotations), its auth/config, and how
+  it overlaps with Dependabot and the existing security rules
+  (`semgrep`/`trivy`/`osv-scanner`) plus the `security-scan` skill.
+- [ ] Decide **per tool**: a `config/claude/rules/<tool>.md` (how to read and
+  act on its output), a skill, folding into the existing `security-scan` skill
+  / `qa.md` security dimension, or nothing — without duplicating what those
+  already cover.
+- [ ] If a tool adds no actionable value, consider disabling its check to cut
+  PR-check noise; if it does, document the triage workflow.
+
+### 🔭 Document the kept-branch-after-squash sync mechanic (LOW PRIORITY)
+
+Retrospective follow-up (PR #117). When a batch branch is **kept** after a
+squash-merge to continue working, syncing it with `git merge master` carries
+the already-merged commits forward as redundant history that pollutes the next
+PR's commit list — PR #117 needed a `git rebase --onto master <merge>` cleanup
+before its commit list was tidy.
+
+- [ ] Document the clean mechanic in `git.md` (or the ship-pr / batch
+  workflow): after a squash-merge with the branch kept, sync via
+  `git reset --hard origin/master` (the batch is already in master) or
+  `git rebase --onto`, **not** `git merge master`. (Already captured in the
+  batch-todos working memory; promote to a rule note so it isn't memory-only.)
+
+### 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
+
+Review every repo under `$PROJECTS_DIR` and decide, per the three-tier model
+in `CLAUDE.md`, whether anything repo-local in its `.claude/` should be
+promoted to the global config (`config/claude/rules/` or `.../skills/`).
+
+- [ ] Enumerate projects with a `.claude/`:
+  `find "$PROJECTS_DIR" -maxdepth 2 -name .claude -type d`.
+- [ ] For each, compare its `rules/`, `skills/`, and CONVENTIONS/WORKFLOW/
+  TESTS against the global set; flag anything language- or repo-agnostic
+  (tier 1/2) that's repo-local or duplicated.
+- [ ] Promote tier-1/2 items to global `config/claude/rules/<name>.md` or
+  `config/claude/skills/`; leave truly repo-specific bits in place.
+- [ ] Consolidate drift: the same rule copied (and diverging) across repos
+  should become one global source that repos reference.
+- [ ] Note any project that lacks a `.claude/` but should have one.
+
+### 🧪 Dogfood skill-creator on the retrospective skill (LOW PRIORITY)
+
+Retrospective follow-up (from the PR that added the `retrospective` skill):
+`EXTENDING.md` now says to use **skill-creator** when authoring a skill, but
+`retrospective` predated that rule.
+
+**Blocked on the trigger eval:** dogfooding skill-creator on `ship-pr` showed
+`run_eval.py` returns **0% regardless** on CC 2.1.x (upstream issue #2003 + a
+command-vs-`Skill` detection gap — see `config/claude/audit/decisions-log.md`).
+So the automated
+triggering eval won't help here until upstream fixes it.
+
+**Reconfirmed (PR #115):** the *modify-an-existing-skill* path is unusable too
+— extending `test-review` was done by hand because skill-creator's
+improve/optimize loop depends on the same broken `run_eval`. So skill-creator
+helps with neither new-skill eval nor existing-skill edits on CC 2.1.x; treat
+it as conceptual guidance only until #2003 is fixed.
+
+- [ ] When upstream fixes #2003 (or we vendor + patch `run_eval`), run the
+  trigger eval + description optimizer on `retrospective`.
+- [ ] Meanwhile, do a **manual** triggering judgment + instruction-review of
+  `retrospective` (the value skill-creator delivers that isn't blocked).
+
+### 🔌 skill-creator plugin upgrade + marketplace path-corruption (MEDIUM PRIORITY)
+
+Surfaced while dogfooding skill-creator (see
+`config/claude/audit/decisions-log.md`).
+
+- [ ] **Fix the marketplace path-corruption.** CC 2.1.181 rejects the
+  `claude-plugins-official` marketplace because its recorded `installLocation`
+  is the `~/.claude/...` **symlink** path, not the real
+  `config/claude/plugins/marketplaces/...` path (the `~/.claude → config/claude`
+  symlink). It blocks `claude plugin marketplace update` / `plugin update`.
+  Sanctioned fix: `claude plugin marketplace remove claude-plugins-official`
+  then re-add — **global** (re-pulls all that marketplace's plugins; may shift
+  versions), so do it deliberately. Affects *all* plugin management, not just
+  skill-creator.
+- [ ] **Then upgrade `skill-creator`** to current upstream — its
+  `improve_description.py` dropped the `anthropic` SDK / API-key requirement
+  (now `claude -p`-based, 2026-04-23). Note: `run_eval.py` is unchanged
+  upstream, so the upgrade does **not** fix the broken trigger eval (still
+  gated on #2003).
+
+### 🧠 Claude Rules Files (MEDIUM PRIORITY)
+
+Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the
+agent how to use each tool. Already have, among others: bash, perl,
+powershell, pre-commit, python, shellcheck, shfmt, yamllint, markdownlint,
+yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
+
+- [ ] Remaining rules to author:
+  - [ ] new project setup — rule covering the general checklist for
+    initializing a project (git init, pre-commit, .claude/ scaffold,
+    DEVELOPER.md, TODO.md, etc.); evaluate splitting language-specific
+    bootstrapping steps (e.g. NeoForge MDK, Poetry, npm init) into the
+    relevant per-language rules file rather than bloating the general rule.
+    Points to consider from experience:
+    - Investigate actual storage/file formats before designing around them;
+      official docs may describe outdated formats (e.g. JourneyMap switched
+      from per-waypoint JSON to a binary DAT in 6.x without updating docs)
+    - Check whether related/foreign repos are already cloned as siblings
+      before suggesting clone locations (../reponame convention)
+    - Defer .claude/ scaffold until project-specific conventions emerge;
+      Phase 0 setup rarely produces enough repo-specific content to justify it
+    - Editor config belongs in the editor's own config repo, not the project;
+      DEVELOPER.md should note the maintainer's editor but not prescribe setup
+    - When adding language support to an editor config, verify that
+      indentation and formatting settings match the chosen formatter's output
+      rather than blindly following language community conventions (e.g.
+      google-java-format uses 2-space, not the traditional 4-space Java style)
+    - New project setup frequently exposes gaps in existing global config
+      (missing docs, redundant settings, stale paths); capture these as
+      follow-up items in the relevant repo's TODO rather than blocking setup
+    - DEVELOPER.md should cover the full build/test workflow including
+      platform-specific quirks (e.g. build in WSL2, test in Windows Minecraft)
+    - Pin pre-commit hook versions to current stable at time of setup;
+      note that versions need periodic review as hooks release updates
+    - Document the rationale for non-obvious decisions (e.g. why 2-space
+      Java indent) so future sessions don't relitigate them
+  - [ ] commitizen — rule and/or skill for conventional commit message
+    formatting; evaluate whether a rule (policy + invocation) is sufficient
+    or whether the multi-step workflow warrants a skill
+  - [ ] git tagging — rule and/or skill for version tag conventions (semver
+    vs calver, signed vs unsigned, when to tag vs branch, how tags relate
+    to release branches); likely a rule unless the tagging+push+release
+    sequence is complex enough to warrant a skill
+  - [ ] changelog generation — rule and/or skill for producing changelogs
+    from git history on version changes; evaluate tools (git-cliff,
+    conventional-changelog, keep-a-changelog manual pattern) and whether
+    changelog generation should be part of a broader release skill alongside
+    tagging and commitizen
+  - [ ] Any other tools discovered during pre-commit or CI work
+- [ ] Add a "best practices" rules/skills layer. The current
+  `rules/code-style.md` may be better recast as a general best-practices
+  document with language-specific subdocuments — i.e. a shared core that
+  per-language rules files extend. Decide structure: one general
+  best-practices doc + per-language extensions, vs. keeping `code-style.md`
+  as the shared base that the language rules reference.
+- [ ] When creating/modifying a rule or skill, check known sources for an
+  existing implementation to adapt (vendor with a `SOURCE.md` and audit to
+  fit) rather than authoring from scratch:
+  - GitHub (search repos/topics)
+  - <https://github.com/VoltAgent/awesome-agent-skills>
+  - <https://officialskills.sh/>
+  - other locations as discovered
+  Ties into the vendored file/skill update checker (see Configuration
+  Enhancements → Dependency Management).
+
+### 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
+
+**Importance: high** (cost, privacy, and actually leveraging the dedicated
+AI box, `beaker`). **Priority: low** (exploratory; depends on beaker's GPU
+stack being finished and on finding the right integration point).
+
+Idea: route the simpler, high-volume Claude Code subtasks to a locally
+hosted model served from my own OpenWebUI/Ollama on `beaker` (see
+`bin/openwebui`, `bin/ollama`), keeping the heavy reasoning on Claude.
+Start with cheap, well-bounded work — qa-check triage, running and
+evaluating test output, summaries — then generalize.
+
+- [ ] Find the integration surface. Claude Code's main loop is
+  Anthropic-only, so investigate the realistic hook points:
+  - a **hook** (`PostToolUse`, etc.) that shells out to a local-LLM
+    script for a specific check;
+  - a **subagent** or **MCP server** that wraps the local endpoint;
+  - the **Claude Agent SDK** for a custom delegating agent.
+- [ ] Pick the API: OpenWebUI exposes an OpenAI-compatible endpoint;
+  Ollama serves its own API on `:11434`. Decide which to target.
+- [ ] Choose local model(s) sized for beaker's RTX 4080 (~12 GB VRAM) and
+  capable enough for the offloaded tier (code-aware small/mid models).
+- [ ] Define the task split: what is safe to delegate (triage, test-output
+  evaluation, summarization) vs. what stays on Claude.
+- [ ] Evaluate quality / cost / latency on real tasks before adopting; keep
+  a fallback to Claude when the local model is unsure.
+- [ ] Depends on: beaker GPU setup (driver + NVIDIA Container Toolkit) and
+  ollama/openwebui running.

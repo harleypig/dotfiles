@@ -6,6 +6,25 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Established TODO routing; migrated Claude-config items from the
+  repo `TODO.md`; made `claude-audit` work the backlog.** Defined the
+  convention — a follow-up about the Claude agent config (`config/claude/`)
+  goes in this `BACKLOG.md`; a dotfiles task in the repo `TODO.md`; a mixed task
+  is split with a cross-ref unless its parts are merely coupled — and homed it
+  in `WORKFLOW.md` → *TODO routing* (repo-scoped, so it costs no global
+  always-on tokens) with reciprocal header pointers in both files. Reviewed the
+  ~37-section `TODO.md` and **moved 8 Claude-config sections** here (STRUCTURE.md
+  diagram, kept-branch sync mechanic, `.claude/`-promotion audit, skill-creator
+  retrospective dogfood, skill-creator upgrade, Claude Rules Files, CodeFactor/
+  Snyk rule-or-skill, OpenWebUI offload) under "Repo-config follow-ups". Left
+  coupled items in `TODO.md` with scope notes (Extract-`config/claude` =
+  packaging; Perl agent-config subsection; Claude statusline = 1 of 4 surfaces;
+  the pre-commit-skill + markdownlint-rule sub-items). Chose to **extend
+  `claude-audit`** with a "Working the backlog" step (pick → kind/scope →
+  implement → ship-pr → prune+record) rather than spawn a `claude-backlog`
+  skill — reuses the audit's context and PR machinery; revisit a dedicated
+  skill only if the activity proves frequent/distinct (Rule of Three). Folded
+  into the same PR as the `SETUP-AUDIT.md` restructure. Landed via dotfiles PR.
 - 2026-06-19 — **Restructured `SETUP-AUDIT.md` into an index + split record
   (user-requested revamp).** The file had accreted into a 575-line mix of stale
   point-in-time snapshots, methodology duplicated from the `claude-audit` skill,
