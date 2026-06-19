@@ -5,7 +5,7 @@ description: Run and wire up source/dependency security scanning (SAST + depende
 
 # Security Scan
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 Drive source and dependency security through its rules. Security tooling is
 periodic, so the rules are easy to forget — this skill is the forcing
@@ -45,9 +45,16 @@ triage step; "set up scanning" is the wiring steps.
 1. **SAST (semgrep)** — run the `p/...` packs for the languages present,
    gating on `--severity ERROR --error` (widen later). Fix ERROR findings;
    a true false positive gets `# nosemgrep: <rule-id>` + reason.
-2. **Dependencies / supply chain** — ensure `.github/dependabot.yml` covers
-   every manifest (incl. `docker` + `github-actions`), weekly + grouped. For
-   an ad-hoc check, `trivy fs .` surfaces dependency CVEs + secrets now.
+2. **Dependencies / supply chain** — **reconcile `.github/dependabot.yml` to
+   full coverage** per `rules/dependabot.md` (the source of truth for ecosystems
+   + conventions): scan the repo for every manifest / Dockerfile / workflow, map
+   each to its ecosystem, **consult current official Dependabot docs before
+   authoring** (schema keys + supported ecosystems change), add an `updates`
+   entry for each (incl. `docker` + `github-actions`), apply the conventions
+   (weekly, group minor/patch, `chore(deps)` messages), then **verify**
+   (yamllint). This is dependabot *setup* — triaging the resulting PRs is the
+   next step. For an ad-hoc check, `trivy fs .` surfaces dependency CVEs +
+   secrets now.
 3. **Triage Dependabot PRs** — green grouped minor/patch is usually safe to
    merge; review **major** bumps individually. Never blanket-auto-merge
    majors or silence an advisory without justification.

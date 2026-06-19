@@ -139,12 +139,13 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
 carries a doc-consultation instruction (v1.1.0). One follow-up remains
 (the rule/skill-authoring doc-sourcing half is now done — see CHANGELOG):
 
-- [ ] **Evaluate a `dependabot` skill** — a forcing function that scans the
-  repo for every manifest / Dockerfile / workflow, consults current official
-  docs, generates/reconciles `dependabot.yml` to full coverage + conventions
-  (per `rules/dependabot.md`), and verifies (yamllint). Decide scope vs the
-  existing `security-scan` skill (which *triages* Dependabot findings) — setup
-  vs triage; avoid duplication (Rule of Three).
+- [x] **Evaluated — declined a separate `dependabot` skill** (Rule of Three: it
+  would duplicate `security-scan` step 2 + `rules/dependabot.md`). Dependabot
+  *setup* and *triage* already live in the `security-scan` skill, and the
+  ecosystems/conventions/authoring procedure live in the rule. Instead made the
+  *reconcile-and-verify* procedure explicit in `security-scan` step 2 (scan all
+  manifests → consult official docs → reconcile to full coverage → yamllint),
+  pointing at the rule. `security-scan` → v1.1.0.
 
 ## 🧪 Dogfood skill-creator on the retrospective skill (LOW PRIORITY)
 
