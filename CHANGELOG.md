@@ -100,6 +100,12 @@ goes green (see the merge-time finalization in
   OAuth access-token lifetime, which Claude Code doesn't auto-refresh). Tools
   that need the key now read it from `private_dotfiles/api-key/anthropic`
   directly (the `mymcp` pattern). (PR #110)
+- **`ship.sh ci-watch` pins to the branch tip SHA** (`ship-pr` v1.9.2) — it
+  watched the *latest run for the branch*, so a re-watch right after a push
+  could latch onto the previous commit's already-green run before the new run
+  registered (masking an in-progress run). Now resolves the run by the branch
+  tip SHA — polls until that run appears (~60s), then falls back to the latest
+  run only on timeout. (PR #114)
 
 ## 2026-06-17
 

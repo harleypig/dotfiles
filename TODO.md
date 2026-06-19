@@ -65,23 +65,26 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🔭 `ship.sh ci-watch` should pin to the current HEAD SHA (MEDIUM PRIORITY)
+## 🧪 Skill helper scripts have no test coverage (MEDIUM PRIORITY)
 
-Retrospective follow-up (PR #113). `ship.sh ci-watch <branch>` watches the
-*latest run for the branch*, not the run for the current HEAD commit. After a
-push it can latch onto the **previous** commit's already-complete run and
-report green before the new push's run has registered — masking an in-progress
-run. Hit on PR #112's post-finalization re-watch (it printed the old run as
-`success`); worked around by resolving the run by HEAD SHA (`gh run list --json
-databaseId,headSha -q 'select(.headSha==$HEAD)'` then `gh run watch <id>`),
-applied preemptively on PR #113.
+Retrospective follow-up (PR #114). The ci-watch bug fixed in #114 lived in
+`config/claude/skills/ship-pr/scripts/ship.sh` — a script with real logic (the
+gh credential fallback, run-polling, ruleset merge-method parsing) that the
+test suite never sees. The meta-test generator scans `bin lib` only
+(`tests/scaffold/build-meta-tests`, default roots), so every
+`config/claude/skills/*/scripts/*` is uncovered. That gap let a defect ship and
+caused manual workarounds across PRs #112–#114.
 
-- [ ] Fix `config/claude/skills/ship-pr/scripts/ship.sh` `ci-watch` to resolve
-  the run by the current HEAD SHA — poll until a run for that SHA registers,
-  then watch *that* run — instead of "latest run for branch"; fall back to
-  latest only if no SHA-matched run appears within a timeout. Update ship-pr
-  Step 4 guidance if the contract changes. Pointer: PR #112 re-watch reported
-  run 27804458673 (SHA 53a3941) green after pushing 25d0c8b.
+- [ ] Decide how to cover skill helper scripts and act on it. Options: (a)
+  extend the meta-test generator's roots to include
+  `config/claude/skills/*/scripts` (gets free static checks — shebang,
+  `bash -n`, shellcheck, shfmt — for all of them at once); and/or (b) add a
+  hand-written bats test for `ship.sh` behaviour with a `gh`/`git` stub
+  (`tests/helpers/common.bash` already has `make_stub`), at least for the
+  pure-logic parts (`ci-watch` SHA selection, `merge-methods` ruleset parse).
+  Update `TESTS.md` coverage scope once decided. Pointer: meta roots default
+  `bin lib` at `tests/scaffold/build-meta-tests`; the bug was the
+  "latest run" vs "run for HEAD SHA" selection in `cmd_ci_watch`.
 
 ## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
 

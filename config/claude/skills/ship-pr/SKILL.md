@@ -5,7 +5,7 @@ description: Commit a finished feature branch, push it, and open a pull request,
 
 # Ship PR
 
-**Version:** v1.9.1
+**Version:** v1.9.2
 
 Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → open PR → watch CI → (approval) merge →

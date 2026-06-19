@@ -108,15 +108,44 @@ cmd_pr_create() {
     --title "$title" --body "$body"
 }
 
-# Poll the latest run for the branch until it completes. Polling avoids the
-# annotation-scope 403 that `gh run watch` can hit with a narrow PAT.
+# Watch the CI run for the branch's current tip commit until it completes.
+# Pinning to the tip SHA — not merely "the latest run for the branch" — avoids
+# latching onto a previous commit's already-finished run when the new push's
+# run has not registered yet (GitHub lags a few seconds after a push). Polling
+# (not `gh run watch`) sidesteps the annotation-scope 403 a narrow PAT can hit.
 cmd_ci_watch() {
   local branch=${1:-$(git branch --show-current)}
-  local run_id status conclusion
+  local run_id="" status conclusion target_sha attempt
 
-  sleep 6
-  run_id=$(_gh run list --branch "$branch" --limit 1 \
-    --json databaseId --jq '.[0].databaseId')
+  # The commit whose run we want is the tip we just pushed. Prefer the local
+  # ref for the named branch; fall back to HEAD.
+  target_sha=$(git rev-parse --verify --quiet "refs/heads/$branch") \
+    || target_sha=$(git rev-parse --verify --quiet HEAD) \
+    || target_sha=""
+
+  # Poll until a run for target_sha registers, then watch THAT run. Give up
+  # after ~60s and fall back to the latest run for the branch.
+  if [[ -n $target_sha ]]; then
+    for ((attempt = 0; attempt < 12; attempt++)); do
+      run_id=$(_gh run list --branch "$branch" --limit 20 \
+        --json databaseId,headSha \
+        --jq "map(select(.headSha==\"$target_sha\")) | .[0].databaseId // empty")
+
+      [[ -n $run_id ]] && break
+
+      sleep 5
+    done
+  fi
+
+  if [[ -z $run_id ]]; then
+    run_id=$(_gh run list --branch "$branch" --limit 1 \
+      --json databaseId --jq '.[0].databaseId // empty')
+
+    if [[ -n $run_id && -n $target_sha ]]; then
+      echo "ci-watch: no run for ${target_sha:0:9} yet;" \
+        "watching latest run $run_id instead" >&2
+    fi
+  fi
 
   if [[ -z $run_id ]]; then
     echo "no CI run found for $branch" >&2
