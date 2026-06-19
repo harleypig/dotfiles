@@ -10,7 +10,9 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   corrected the `.vim.mode` story.** Verified against the official statusline
   docs (claude-code-guide) that **`.effort.level`** (low/medium/high/xhigh/max,
   absent when the model lacks effort) is a real field — added it to
-  `statusline.sh`, rendered `[level]` only when present. While there, fixed the
+  `statusline.sh` as a `[level]` tag riding with the model (no `|` between),
+  colored by level via the same calm/warn/alarm scheme as context %, shown only
+  when present. While there, fixed the
   **root cause** of the earlier field-shift rather than just its symptom: the
   `@tsv` + whitespace-`IFS` `read` collapsed empty/leading fields; switched to
   `join("")` + `IFS=$'\x1f'` (non-whitespace), so an absent field stays in

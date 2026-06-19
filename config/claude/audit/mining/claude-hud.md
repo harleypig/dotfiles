@@ -48,7 +48,7 @@ covered/not a fit.
 | **Output speed (tok/s)** | render-to-render `output_tokens` delta, cached on `sha256(transcript_path)` | CANDIDATE | clever, but needs a per-session **cache file + delta state** — heavy for a stateless line |
 | Session token totals (in/out/cache) | transcript | CANDIDATE | transcript sum |
 | Compaction count / advisor / cache-TTL / mem | transcript / OS | SKIP | niche / not session state |
-| **Reasoning-effort `[high]`** | stdin `.effort.level` | **ADOPTED** | done 2026-06-19 — `.effort.level` (low/medium/high/xhigh/max) confirmed in the docs; rendered as `[level]` only when present |
+| **Reasoning-effort `[high]`** | stdin `.effort.level` | **ADOPTED** | done 2026-06-19 — `.effort.level` (low/medium/high/xhigh/max) confirmed; rendered as a `[level]` tag attached to the model (no `\|` between), colored by level via the context calm/warn/alarm scheme; shown only when present |
 | Threshold color escalation | numeric → color | SKIP | we already do cyan/yellow/red-alarm |
 | Cost / version | stdin | SKIP | already shown |
 | `--extra-cmd` arbitrary shell | spawn | SKIP | security surface, unwanted |

@@ -110,6 +110,14 @@ else
   ctx_color=$cyan
 fi
 
+# Effort reuses the context calm/warn/alarm colors, ranked by how expensive
+# the reasoning level is (higher effort burns more, like a fuller window).
+case $effort in
+  max | xhigh) effort_color=$alarm ;;
+  high) effort_color=$bright_yellow ;;
+  *) effort_color=$cyan ;;
+esac
+
 #------------------------------------------------------------------------------
 # Build output parts and join with ' | '. Empty fields are dropped so a blank
 # value (e.g. git-status outside a repo) leaves no stray ' | '.
@@ -119,9 +127,11 @@ declare -a parts
 add_part() { [[ -n $1 ]] && parts+=("$1"); }
 
 add_part "$(git-status)"
-add_part "${sl_label['model']}${model}"
-# effort is absent on models without it; bracket it only when present
-[[ -n $effort ]] && add_part "[$effort]"
+# Effort rides with the model (no ' | ' between them), colored by level and
+# bracketed — only when the model reports one.
+model_part="${sl_label['model']}${model}"
+[[ -n $effort ]] && model_part+=" ${effort_color}[$effort]${reset}"
+add_part "$model_part"
 add_part "${sl_label['ctx']}${ctx_color}${ctx}%${reset}"
 add_part "${sl_label['cost']}${cost}"
 add_part "${sl_label['version']}${version}"

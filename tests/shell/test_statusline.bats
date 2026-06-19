@@ -80,11 +80,25 @@ STUBEOF
   assert_output --partial '<fg cyan>'
 }
 
-@test "reasoning effort is shown bracketed when present" {
+@test "effort rides with the model (no pipe between) and is bracketed" {
   local json='{"model":{"display_name":"Opus"},"effort":{"level":"high"},"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"}'
   run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
   assert_success
   assert_output --partial '[high]'
+  # no ' | ' separator between the model and the effort segment
+  assert_output --regexp 'Opus[^|]*\[high\]'
+}
+
+@test "effort color escalates by level (high=yellow, max=alarm)" {
+  # ctx held low (cyan) so any warn/alarm color must come from effort
+  local base='"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "{\"model\":{\"display_name\":\"O\"},\"effort\":{\"level\":\"high\"},$base}"
+  assert_success
+  assert_output --partial '<fg bright_yellow>'
+
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "{\"model\":{\"display_name\":\"O\"},\"effort\":{\"level\":\"max\"},$base}"
+  assert_success
+  assert_output --partial '<bg red>'
 }
 
 @test "effort segment is absent (no empty brackets) when the model has none" {
