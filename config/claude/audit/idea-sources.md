@@ -24,6 +24,7 @@ again. The two are distinct by design:
 | `rafaelkamimura/claude-tools` | Layered-architecture ideas; candidate commands (`adr`, `tech-debt`, `debug-assistant`) and agents (`database-optimizer`, `api-documenter`) | MIT | 2026-06-11 | No (ideas only) |
 | `pydantic/skills` (official) | Pydantic AI **agent-framework** + Logfire skills — relevant only if we adopt LLM agents or Logfire observability; not used today | MIT (check) | 2026-06-11 | No |
 | `fabioc-aloha/spotify-skill` | Spotify Web API skill — endpoint/scope/error inventory, auto-refresh pattern, `ugc-image-upload`→401, cover-art + playlist strategies; refs are stale (pre-2024-11-27, no PKCE) so official docs win | Apache-2.0 | 2026-06-12 | Ideas → `spotify-audit` + `rules/spotify.md` (SOURCE.md) |
+| `jarrodwatts/claude-hud` | Statusline/HUD ideas — rate-limit/usage segment, git ahead/behind, reasoning-effort, progress-bar glyph, and transcript-derived segments (tools/agents/todos/tokens/speed). Top picks all gated on JSON-field verification or the shared `git-status`. Full matrix: [`mining/claude-hud.md`](mining/claude-hud.md) | MIT | 2026-06-19 | No (ideas only; TS plugin, wrong form for our bash line) |
 
 The **full disposition census** of every item in these repos (every agent /
 command / hook / skill considered, ADOPT/CANDIDATE/SKIP + reason) is in

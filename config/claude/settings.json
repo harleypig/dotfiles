@@ -44,7 +44,8 @@
   "statusLine": {
     "type": "command",
     "command": "~/.claude/bin/statusline.sh",
-    "refreshInterval": 5
+    "refreshInterval": 5,
+    "hideVimModeIndicator": true
   },
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true

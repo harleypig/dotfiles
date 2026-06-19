@@ -6,6 +6,73 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Restored the vim-mode segment; confirmed the other native
+  indicator lines can't be hidden.** Set `statusLine.hideVimModeIndicator: true`
+  (placement confirmed against the docs — a sibling of `type`/`command`) and
+  render `.vim.mode` ourselves: a leading segment, NORMAL in bright-yellow-on-red
+  (live command keystrokes), INSERT/others standard, absent when vim mode is off.
+  This removes the built-in `-- INSERT --` text and its NORMAL-collapses-to-empty
+  vertical jitter. Two research tasks settled the rest: (a) the **auto-accept /
+  permission-mode** indicator (`⏵⏵ auto mode on`) and the **subagent/task** line
+  have **no documented or findable off-switch**, and the permission mode is **not
+  in the statusline stdin JSON** (so not reconstructable); (b) **`claude-hud`
+  offers no suppression** of native lines (sets no key, can't see the mode, just
+  stacks its transcript-parsed agents line on top). Recorded as a BACKLOG
+  `ICEBOX:` with upstream #27916 / #48246. 15 statusline tests. Folded into the
+  statusline PR.
+- 2026-06-19 — **Added the rate-limit / usage segment to the statusline.**
+  Worked the top remaining claude-hud candidate. Added two fields
+  (`rate_limits.five_hour.used_percentage`, `…seven_day…`) rendered as
+  `5h:NN% 7d:NN%` **inside the context segment** (no `|` between — per the
+  user), each colored by a shared `pct_color` helper (the same calm/warn/alarm
+  ramp as context %; extracted because ctx/5h/7d all need it — Rule of Three).
+  Hidden when `rate_limits` is absent (non-subscriber sessions). jq uses
+  `(… // "") | if . == "" then "" else (floor|tostring) end` so the field is an
+  empty string (not a vanished array element) when missing — safe with the
+  unit-separator parse. Extended `test_statusline.bats` to 12 tests (present /
+  absent / color-escalation). Folded into the statusline PR.
+- 2026-06-19 — **Added the reasoning-effort indicator; root-caused the parse;
+  corrected the `.vim.mode` story.** Verified against the official statusline
+  docs (claude-code-guide) that **`.effort.level`** (low/medium/high/xhigh/max,
+  absent when the model lacks effort) is a real field — added it to
+  `statusline.sh` as a `[level]` tag riding with the model (no `|` between),
+  colored by level via the same calm/warn/alarm scheme as context %, shown only
+  when present. While there, fixed the
+  **root cause** of the earlier field-shift rather than just its symptom: the
+  `@tsv` + whitespace-`IFS` `read` collapsed empty/leading fields; switched to
+  `join("")` + `IFS=$'\x1f'` (non-whitespace), so an absent field stays in
+  place — effort and future fields are now safe in any position. Two
+  **corrections** the verification surfaced: (a) **`.vim.mode` IS documented**
+  (NORMAL/INSERT, present when CC vim mode is on; the user uses it) — the prior
+  commit's "not in the JSON" was wrong; the field was still broken as written
+  (emitted only the empty label) and caused the shift, so its removal was
+  functionally right but the *reason* was not. Restoring it correctly is now a
+  user-decision BACKLOG item. (b) **`rate_limits` IS present** (5h + 7-day
+  `used_percentage`, subscriber-only) — the rate-limit segment's gate is
+  satisfied; left as the top remaining candidate. Marked git ahead/behind
+  **SKIP** (already in `git-status`, user doesn't surface it). Extended
+  `test_statusline.bats` to 8 tests (effort present/absent). Folded into the
+  statusline PR.
+- 2026-06-19 — **Worked a backlog item: fixed the Claude statusline + mined
+  `claude-hud`.** First use of the *Working the backlog* step. (1) **Fixed
+  `config/claude/bin/statusline.sh`:** the reported "leading empty field" was
+  the surface of a deeper bug — the dead `mode` field (`.vim.mode`, absent from
+  Claude Code's statusline JSON) emitted an empty leading `@tsv` column, and
+  `read` with a whitespace `IFS` collapsed the leading tab and **shifted every
+  field by one** (model→mode, ctx→model, …). Removed the `mode` field
+  (eliminates both the stray `|` and the shift), added empty-part filtering for
+  robustness, and made context % escalate harder (cyan → bright-yellow ≥60% →
+  white-on-red alarm ≥80%, since compaction is manual). Added
+  `tests/shell/test_statusline.bats` (6 tests) — the regression test **caught
+  the field-shift** the cosmetic fix alone would have missed. (2) **Mined
+  `jarrodwatts/claude-hud`** (MIT, active, ~25k★) for statusline ideas via a
+  read-only agent: it's a transcript-enriching TS plugin (wrong form to vendor).
+  Recorded the full disposition in `mining/claude-hud.md` and a row in
+  `idea-sources.md`; the top ideas (rate-limit/usage segment, git ahead/behind,
+  effort indicator) are all **gated** on JSON-field verification or the shared
+  `git-status`, so captured as `BACKLOG` candidates rather than added
+  speculatively. Pruned the done statusline item from `BACKLOG`. Landed via
+  dotfiles PR.
 - 2026-06-19 — **Routed a scratch `tmptodo.txt` into `BACKLOG.md` (first live
   test of the routing convention).** Every item proved to be Claude-agent-config
   work — nothing for the dotfiles `TODO.md` — so the whole file routed to

@@ -11,11 +11,23 @@ command -v git &> /dev/null || exit 0
 # Are we in a git repo?
 git rev-parse &> /dev/null || exit 0
 
+# --plain drops the leading space and the wrapping parens. The prompt callers
+# (lib/bash_prompt, config/python/startup) use the default; the Claude
+# statusline uses --plain because it supplies its own ' | ' separators.
+plain=0
+[[ ${1:-} == --plain ]] && plain=1
+
 # Are we in a bare repo?
 [[ $(git rev-parse --is-bare-repository) == 'true' ]] && {
   bare_color=$(ansi bg red fg yellow)
   color_off=$(ansi off)
-  printf ' %s(BARE)%s' "$bare_color" "$color_off"
+
+  if ((plain)); then
+    printf '%sBARE%s' "$bare_color" "$color_off"
+  else
+    printf ' %s(BARE)%s' "$bare_color" "$color_off"
+  fi
+
   exit 0
 }
 
@@ -96,5 +108,9 @@ if [ -n "$info" ]; then
     wt_info=" [wt:${main_repo}]"
   fi
 
-  printf ' %s(%s%s%s%s%s)%s' "$status_color" "$repo" "$branch" "$wt_info" "$upstream" "$stash_info" "$color_off"
+  if ((plain)); then
+    printf '%s%s%s%s%s%s%s' "$status_color" "$repo" "$branch" "$wt_info" "$upstream" "$stash_info" "$color_off"
+  else
+    printf ' %s(%s%s%s%s%s)%s' "$status_color" "$repo" "$branch" "$wt_info" "$upstream" "$stash_info" "$color_off"
+  fi
 fi

@@ -406,22 +406,54 @@ duplicates / similar setups). Chart each in
   (does Anthropic or another AI vendor back it?). If meaningful, align our
   skills' format to it.
 
-### Claude statusline fix (urgent)
+### Claude statusline enhancements (claude-hud candidates)
 
-- [ ] **Fix the Claude statusline display** (`config/claude/bin/statusline.sh`).
-  Output is malformed — a leading empty field and awkward layout:
+Done 2026-06-19 (fixed + regression-tested; see the decisions log): the display
+bug (leading empty field + a field-shift from the empty `.vim.mode` column —
+root-caused to the whitespace-`IFS`/`@tsv` parse, now joined on the unit
+separator so absent fields are safe), the context-% prominence, the
+**reasoning-effort `[level]`** indicator (`.effort.level`), the
+**rate-limit usage segment** (`5h:`/`7d:` `used_percentage` riding inside the
+context segment, colored by the shared pct ramp; hidden for non-subscribers),
+and the **vim-mode segment** (`.vim.mode` rendered ourselves with
+`hideVimModeIndicator: true` — NORMAL is bright-yellow-on-red, INSERT/others
+standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
+[`mining/claude-hud.md`](mining/claude-hud.md). Remaining candidates:
 
-  ```text
-    |  (dotfiles: bugfix/ci-watch-head-sha) | Opus 4.8 | Ctx: 20% | $10.36 | code v2.1.183
-  ```
+- [ ] **Investigate `statusLine.subagentStatusLine`** (surfaced 2026-06-19
+  while confirming the PR-badge can't be hidden). It's a `statusLine` sub-field
+  that *formats* subagent rows. **Decide if it's worth using by answering one
+  thing: does it OVERRIDE the native subagent line or ADD to it?** If it
+  **overrides** (replaces the native row format), great — it's the one native
+  below-prompt element we *can* take control of, so we could restyle the
+  subagent display our way. If it only **adds** a custom row alongside the
+  native one, it would **duplicate** output — not what we want, so skip.
+  Ground the answer in the docs + a quick trial (fire a background subagent and
+  watch the row) before wiring anything.
+- [ ] **Heavier candidates** (transcript-driven — defer): the tools/agents
+  lines and todos `(2/5)`. *(2026-06-19: project path, session duration, output
+  speed, and token totals were skipped by the user; the context progress-bar
+  glyph is `SKIP-until` on the census watch list — revisit if the plain `X%`
+  stops being enough.)*
 
-  Review the settings; mine <https://github.com/jarrodwatts/claude-hud> for
-  ideas. This is the **simpler, resolve-now** statusline issue — *separate*
-  from the complex four-surface *Statusline Coordination* / Task 1 in `TODO.md`
-  (which stays there, coupled to the bash/tmux/vim work).
-- [ ] **Make the context % more prominent** — since `/compact` is manual (see
-  compaction control below), surface it harder past a threshold (the user's
-  half-joke: blinking bright-yellow-on-deep-red after 60%).
+**`ICEBOX:` cannot hide the native below-prompt indicator lines** — the
+**auto-accept / permission-mode** indicator (`⏵⏵ auto mode on`), the
+**running-subagent / task** line, and the **`· PR #N`** badge have **no
+off-switch** (settings, env, or flag) as of 2026-06-19 — verified against the
+Claude Code docs and by re-examining `claude-hud` (which sets no suppression
+key, can't even read the permission mode, and only stacks a transcript-parsed
+agents line *on top of* the native one). The only documented `statusLine` hide
+field is `hideVimModeIndicator`; the full set of `statusLine` sub-fields is
+`type` / `command` / `padding` / `refreshInterval` / `hideVimModeIndicator` /
+`subagentStatusLine` (the last **formats** subagent rows — it does **not** hide
+the native line). Consequence: reconstructing any of these (PR#, permission
+mode, agents) in our own statusline would only **duplicate** the un-hideable
+native badge, so it isn't worth it — the permission mode and PR# are both in
+the data (permission mode in the **transcript** `permission-mode`/`mode`
+entries; `.pr.number` in the **stdin** JSON), they just can't replace the
+native display. Open upstream requests: anthropics/claude-code **#27916**,
+**#48246**. Revisit if either lands a hide option; until then, only the vim
+indicator was controllable (and is done).
 
 ### Claude Code compaction control (moved from TODO.md)
 

@@ -49,6 +49,7 @@ new dependency or tool; the audit checks it each run.
 | **Linear** (the SaaS) | `claude-plugins` `linear` plugin (board/comment/cycle/issue-enricher) |
 | **A new language** (Go/Rust/TS…) in a repo | the matching `claude-tools` language-expert agent (Tier-3) |
 | **A browser UI / e2e need** (Playwright) | `claude-tools` `frontend-qa-tester` → the qa End-to-end (dim 8) tool |
+| **Wanting a richer context gauge** (plain `X%` no longer enough) | `claude-hud` context progress-bar glyph → the Claude statusline |
 
 (Tier-3 "build on first use" items are already watch-like by definition; listed
 here so there's one place to scan.)
