@@ -83,6 +83,17 @@ goes green (see the merge-time finalization in
   to *Worktrees* plus an Agent Rules NEVER line. Resolves the PR #111
   retrospective follow-up (forbid, not reconcile; homed in `git.md`, not
   `CLAUDE.md`). (PR #113)
+- **`test-review` absorbs the test-audit role** (skill v1.1.0) — reconciled the
+  planned `/test-audit` skill against `test-review` and decided **not** to
+  build it (it would duplicate `test-review`, already qa.md's Tests-dimension
+  tool that `qa-check` composes). Extended `test-review` instead with an
+  untested-unit **coverage census** and a **staleness/drift** lens, and named
+  it in the repo QA doc's dim-6 row. (PR #115)
+- **Meta-test generator covers skill helper scripts** — `build-meta-tests`
+  default roots `bin lib` → `bin lib config/claude/skills`, so scripts like
+  `ship-pr`'s `ship.sh` get the static checks (shebang, `bash -n`, shellcheck,
+  shfmt) the suite never ran on them; no debt imported. `TESTS.md` scope
+  updated. (PR #115)
 
 ### Removed
 

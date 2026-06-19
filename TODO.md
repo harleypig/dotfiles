@@ -65,45 +65,17 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🧪 Skill helper scripts have no test coverage (MEDIUM PRIORITY)
+## 🧪 Skill helper scripts — behavioural test coverage (LOW PRIORITY)
 
-Retrospective follow-up (PR #114). The ci-watch bug fixed in #114 lived in
-`config/claude/skills/ship-pr/scripts/ship.sh` — a script with real logic (the
-gh credential fallback, run-polling, ruleset merge-method parsing) that the
-test suite never sees. The meta-test generator scans `bin lib` only
-(`tests/scaffold/build-meta-tests`, default roots), so every
-`config/claude/skills/*/scripts/*` is uncovered. That gap let a defect ship and
-caused manual workarounds across PRs #112–#114.
+*Static* coverage landed in PR #115 (the meta-test generator now scans
+`config/claude/skills`, so `ship.sh` gets shebang/`bash -n`/shellcheck/shfmt).
+But the #114 ci-watch bug was a **logic** error those static checks can't
+catch — only a behavioural test would.
 
-- [ ] Decide how to cover skill helper scripts and act on it. Options: (a)
-  extend the meta-test generator's roots to include
-  `config/claude/skills/*/scripts` (gets free static checks — shebang,
-  `bash -n`, shellcheck, shfmt — for all of them at once); and/or (b) add a
-  hand-written bats test for `ship.sh` behaviour with a `gh`/`git` stub
-  (`tests/helpers/common.bash` already has `make_stub`), at least for the
-  pure-logic parts (`ci-watch` SHA selection, `merge-methods` ruleset parse).
-  Update `TESTS.md` coverage scope once decided. Pointer: meta roots default
-  `bin lib` at `tests/scaffold/build-meta-tests`; the bug was the
-  "latest run" vs "run for HEAD SHA" selection in `cmd_ci_watch`.
-
-## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
-
-Create a `/test-audit` skill that checks for **missing or outdated tests**
-(scripts/functions with no test, bug fixes without a regression test, tests
-that have drifted from the code they cover) and wire it into the `qa-check`
-skill's Tests dimension (`qa.md` dimension 6).
-
-- [ ] **First reconcile with the existing `test-review` skill** — it already
-  covers "Tests dimension (quality, not execution): success AND failure
-  paths, regression-test-per-bug, edge-case gaps." Decide whether
-  `/test-audit` is a new skill or whether this is just *wiring `test-review`
-  into `qa-check`* (and possibly renaming/extending it). Avoid duplicating
-  what `test-review` already does — see the Rule of Three in `code-style.md`.
-- [ ] Define what "outdated" means concretely for this repo (e.g. a
-  `bin/`/`lib/` file newer than its `tests/shell/test_<name>.bats`, or a test
-  referencing removed code) per `TESTS.md`'s coverage rules.
-- [ ] Hook the chosen skill into `qa-check` for the Tests dimension; record
-  the status in the repo QA doc per `qa.md`.
+- [ ] Add a hand-written bats test for `ship.sh` *behaviour* with a `gh`/`git`
+  stub (`tests/helpers/common.bash` `make_stub`) — `ci-watch` SHA selection,
+  `merge-methods` ruleset parse. The real regression-coverage piece, if we
+  want it.
 
 ## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 
@@ -197,6 +169,12 @@ Retrospective follow-up (from the PR that added the `retrospective` skill):
 `run_eval.py` returns **0% regardless** on CC 2.1.x (upstream issue #2003 + a
 command-vs-`Skill` detection gap — see `SETUP-AUDIT.md`). So the automated
 triggering eval won't help here until upstream fixes it.
+
+**Reconfirmed (PR #115):** the *modify-an-existing-skill* path is unusable too
+— extending `test-review` was done by hand because skill-creator's
+improve/optimize loop depends on the same broken `run_eval`. So skill-creator
+helps with neither new-skill eval nor existing-skill edits on CC 2.1.x; treat
+it as conceptual guidance only until #2003 is fixed.
 
 - [ ] When upstream fixes #2003 (or we vendor + patch `run_eval`), run the
   trigger eval + description optimizer on `retrospective`.
