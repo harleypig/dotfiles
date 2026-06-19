@@ -76,6 +76,10 @@ the same gating suite without breaking docker-less environments.
   test that sources them and asserts the resulting environment.
 - Multi-call dispatchers (e.g. `bin/docker_wrapper`) are tested once at the
   real file; their tool symlinks are not (the generator skips symlinks).
+- Repo-structure invariants get a guard test too: `test_skill_frontmatter.bats`
+  holds every `config/claude/skills/*/SKILL.md` to the Agent Skills
+  open-standard frontmatter rules (see `config/claude/EXTENDING.md` Skill ›
+  *Format*).
 
 ## Coverage priorities (incremental)
 

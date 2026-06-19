@@ -414,12 +414,6 @@ duplicates / similar setups). Chart each in
 - [ ] **`ruvnet/ruflo`** — evaluate whether worth exploring (not a
   plugin/skill). <https://github.com/ruvnet/ruflo>
 
-### Skill-format standard: agentskills.io
-
-- [ ] Investigate whether <https://agentskills.io> is a real/emerging standard
-  (does Anthropic or another AI vendor back it?). If meaningful, align our
-  skills' format to it.
-
 ### Claude statusline enhancements (claude-hud candidates)
 
 Done 2026-06-19 (fixed + regression-tested; see the decisions log): the display
