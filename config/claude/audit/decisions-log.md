@@ -6,6 +6,21 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Documented the kept-branch-after-squash sync mechanic in
+  `git.md`.** Worked the BACKLOG item (a PR #117 retrospective follow-up).
+  Added a new section *Continuing on a Kept Branch After a Squash-Merge*
+  (git.md v1.8.0→v1.9.0) + an Agent Rules bullet. The fact: a squash-merge
+  makes the branch's changes a *new* commit on the default branch but does
+  **not** make the branch an ancestor, so `git merge <default>` into a kept
+  branch carries the branch's original commits forward as redundant history
+  that pollutes the next PR's commit list (PR #117 needed a `rebase --onto`
+  cleanup). The mechanic: `git reset --hard origin/<default>` when nothing new
+  is on the branch, or `git rebase --onto origin/<default> <last-merged>
+  <branch>` when post-squash commits exist — never `git merge`. This **promotes
+  the note out of the (untracked, personal) `batch-todos` working memory into
+  the canonical rule** so it isn't memory-only; the memory can now point at the
+  rule. Default-branch-agnostic wording (no hardcoded `master`), per `git.md`'s
+  own rule.
 - 2026-06-19 — **Evaluated CodeFactor & Snyk; relaxed the OSS-pinned-only
   security posture into a default + per-repo escape hatch.** Worked the BACKLOG
   *CodeFactor & Snyk* item, grounded in current official docs (two research

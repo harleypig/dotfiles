@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.8.0
+**Version:** v1.9.0
 
 ## Commit Messages
 
@@ -263,6 +263,52 @@ git branch -ra
 
 The deleted branch should no longer appear in the output.
 
+## Continuing on a Kept Branch After a Squash-Merge
+
+Normally a merged branch is deleted (above). Sometimes a branch is **kept**
+after its squash-merge to keep working — e.g. the batched-TODOs flow, where
+commits accumulate on one branch across several PRs. Re-syncing that branch
+needs care, because **a squash-merge does not make the branch an ancestor of
+the default branch**: the squash created one *new* commit on the default
+branch holding the batch's changes, while the branch still holds the original
+individual commits that produced them.
+
+**Never `git merge <default>` into the kept branch.** The merge pulls in the
+squash commit while leaving the branch's original commits in place — the same
+changes now exist twice in the branch, and the *next* PR's commit list shows
+every already-merged commit again as redundant noise. (PR #117 hit exactly
+this and needed a `rebase --onto` cleanup before its commit list was tidy.)
+
+Fetch the merged tip first, then sync so the branch becomes a clean
+continuation of the default branch:
+
+```bash
+git fetch origin
+```
+
+- **Nothing new on the branch yet** (the whole batch went into the squash) —
+  reset it onto the merged tip. `--hard` discards anything not already in the
+  default branch, which is exactly right here since the batch is merged:
+
+  ```bash
+  git reset --hard origin/<default>
+  ```
+
+  New work then lands on top, so the next PR's diff is only that new work.
+
+- **New commits already made after the squash** — replay only those onto the
+  default branch, dropping the already-merged ones:
+
+  ```bash
+  git rebase --onto origin/<default> <last-merged-commit> <branch>
+  ```
+
+  where `<last-merged-commit>` is the branch tip at squash time (everything up
+  to it is already in the default branch via the squash). The result is the
+  default branch plus the new commits only.
+
+Both keep the branch a clean continuation; `git merge` does not.
+
 ## Versioning & tags
 
 Two separate things: **what a version *is*** (the `vX.Y.Z` format — universal)
@@ -368,3 +414,7 @@ the merge commit, push, and watch the release — is the **release-tag** skill;
   "Versioning & tagging" — `repo` vs `subdir`); use the **release-tag** skill.
   A new method is a config change (add it to the catalog first), not an
   ad-hoc choice. For a repo you don't own, follow ITS convention.
+- When a branch is **kept** after a squash-merge to keep working, re-sync it
+  with `git reset --hard origin/<default>` (or `git rebase --onto`), NEVER
+  `git merge <default>` — the merge replays already-merged commits into the
+  next PR. See *Continuing on a Kept Branch After a Squash-Merge*.
