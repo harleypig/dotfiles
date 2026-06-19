@@ -72,10 +72,11 @@ offer and whether any help this repo:
 But the #114 ci-watch bug was a **logic** error those static checks can't
 catch — only a behavioural test would.
 
-- [ ] Add a hand-written bats test for `ship.sh` *behaviour* with a `gh`/`git`
-  stub (`tests/helpers/common.bash` `make_stub`) — `ci-watch` SHA selection,
-  `merge-methods` ruleset parse. The real regression-coverage piece, if we
-  want it.
+- [x] Added `tests/shell/test_ship.bats` — a faithful `gh` stub (canned JSON +
+  real `jq`, as gh does) plus a `git rev-parse` stub exercise the pure-logic
+  paths: `ci-watch` selecting the run for the branch tip SHA (regression for
+  #114), its non-zero-on-failure exit, and `merge-methods` ruleset parse with
+  repo-settings fallback. 4 tests, in the gated `test_*.bats` suite.
 
 ## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
 
