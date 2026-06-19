@@ -432,11 +432,14 @@ standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
 flag) as of 2026-06-19 — verified against the Claude Code docs and by
 re-examining `claude-hud` (which sets no suppression key, can't even read the
 permission mode, and only stacks a transcript-parsed agents line *on top of*
-the native one). The permission mode isn't in the statusline stdin JSON at all,
-so it can't be reconstructed either. Open upstream requests: anthropics/
-claude-code **#27916**, **#48246**. Revisit if either lands a hide option or
-exposes the mode in the JSON; until then, only the vim indicator was
-controllable (and is done).
+the native one). The permission mode isn't in the statusline **stdin** JSON —
+but it **is** recorded in the **transcript JSONL** (`permission-mode` / `mode`
+entries: `default` / `acceptEdits` / `plan`), so it *could* be reconstructed
+via the heavy transcript-parse path — though that would only **duplicate** the
+un-hideable native line, so it isn't worth it. Open upstream requests:
+anthropics/claude-code **#27916**, **#48246**. Revisit if either lands a hide
+option or exposes the mode in the stdin JSON; until then, only the vim indicator
+was controllable (and is done).
 
 ### Claude Code compaction control (moved from TODO.md)
 
