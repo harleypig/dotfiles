@@ -411,16 +411,13 @@ duplicates / similar setups). Chart each in
 Done 2026-06-19 (fixed + regression-tested; see the decisions log): the display
 bug (leading empty field + a field-shift from the empty `.vim.mode` column —
 root-caused to the whitespace-`IFS`/`@tsv` parse, now joined on the unit
-separator so absent fields are safe), the context-% prominence, and the
-**reasoning-effort `[level]`** indicator (`.effort.level`). `jarrodwatts/claude-hud`
-was mined — full matrix in [`mining/claude-hud.md`](mining/claude-hud.md).
-Remaining candidates:
+separator so absent fields are safe), the context-% prominence, the
+**reasoning-effort `[level]`** indicator (`.effort.level`), and the
+**rate-limit usage segment** (`5h:`/`7d:` `used_percentage` riding inside the
+context segment, colored by the shared pct ramp; hidden for non-subscribers).
+`jarrodwatts/claude-hud` was mined — full matrix in
+[`mining/claude-hud.md`](mining/claude-hud.md). Remaining candidates:
 
-- [ ] **Rate-limit / usage segment** — a `| usage NN% |` field (5h + weekly cap)
-  with our existing threshold-color trick; the **highest remaining value** for a
-  Max user, pure stdin JSON. Gate satisfied:
-  `rate_limits.{five_hour,seven_day}.used_percentage` is confirmed in the docs
-  (subscriber-only, present after the first API response — guard for absence).
 - [ ] **Restore `.vim.mode` (NORMAL/INSERT)?** — user decision. The field is
   *documented* (present when Claude Code vim mode is on; the user uses vim mode);
   it was removed in the fix because it was broken as written (built only the

@@ -48,7 +48,7 @@ teardown() {
   assert_success
   assert_output --partial 'REPO'
   assert_output --partial 'Opus 4.8'
-  assert_output --partial 'Ctx: '
+  assert_output --partial 'Ctx:'
   assert_output --partial '20%'
   # shellcheck disable=SC2016  # literal '$' cost prefix, not a variable
   assert_output --partial '$10.36'
@@ -109,6 +109,34 @@ STUBEOF
   refute_output --partial '['
   assert_output --partial 'Opus 4.8'
   assert_output --partial 'code v2.1.183'
+}
+
+@test "rate-limit usage rides inside the context segment (no pipe)" {
+  local json='{"model":{"display_name":"O"},"context_window":{"used_percentage":20},"rate_limits":{"five_hour":{"used_percentage":24.5},"seven_day":{"used_percentage":41.2}},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  # label and value are split by a color code, so assert them separately
+  assert_output --partial '5h:'
+  assert_output --partial '24%'
+  assert_output --partial '7d:'
+  assert_output --partial '41%'
+  # no ' | ' between the context % and the usage figures
+  assert_output --regexp 'Ctx:[^|]*5h:[^|]*7d:'
+}
+
+@test "rate-limit usage is absent when rate_limits is missing" {
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  refute_output --partial '5h:'
+  refute_output --partial '7d:'
+}
+
+@test "rate-limit usage color escalates (5h near cap -> alarm)" {
+  # ctx + 7d held low (cyan) so the alarm color must come from the 5h cap
+  local json='{"model":{"display_name":"O"},"context_window":{"used_percentage":20},"rate_limits":{"five_hour":{"used_percentage":92},"seven_day":{"used_percentage":10}},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  assert_output --partial '<bg red>'
 }
 
 @test "missing jq prints a graceful notice and exits 0" {

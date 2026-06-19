@@ -49,7 +49,17 @@ sl_label['effort']=''
 
 vars+=('ctx')
 jq_filter['ctx']='(.context_window.used_percentage // 0) | floor | tostring'
-sl_label['ctx']='Ctx: '
+sl_label['ctx']='Ctx:'
+
+# Subscriber rate-limit usage (5-hour + 7-day caps), absent on non-subscriber
+# sessions — empty string when missing so the segment is simply skipped.
+vars+=('r5h')
+jq_filter['r5h']='(.rate_limits.five_hour.used_percentage // "") | if . == "" then "" else (floor | tostring) end'
+sl_label['r5h']=''
+
+vars+=('r7d')
+jq_filter['r7d']='(.rate_limits.seven_day.used_percentage // "") | if . == "" then "" else (floor | tostring) end'
+sl_label['r7d']=''
 
 vars+=('cost')
 jq_filter['cost']='.cost.total_cost_usd // 0 | tostring'
@@ -102,15 +112,26 @@ if command -v ansi &> /dev/null; then
   reset=$(ansi off)
 fi
 
-if ((ctx >= 80)); then
-  ctx_color=$alarm
-elif ((ctx >= 60)); then
-  ctx_color=$bright_yellow
-else
-  ctx_color=$cyan
-fi
+# Percentage fields (context %, the rate-limit usage caps) share one ramp:
+# calm cyan < 60, bright yellow 60–79, alarm block >= 80. An empty value
+# (a missing rate limit) ranks as 0 — its color is unused anyway.
+pct_color() {
+  local v=$((${1:-0} + 0))
 
-# Effort reuses the context calm/warn/alarm colors, ranked by how expensive
+  if ((v >= 80)); then
+    printf '%s' "$alarm"
+  elif ((v >= 60)); then
+    printf '%s' "$bright_yellow"
+  else
+    printf '%s' "$cyan"
+  fi
+}
+
+ctx_color=$(pct_color "$ctx")
+r5h_color=$(pct_color "$r5h")
+r7d_color=$(pct_color "$r7d")
+
+# Effort reuses the same calm/warn/alarm colors, ranked by how expensive
 # the reasoning level is (higher effort burns more, like a fuller window).
 case $effort in
   max | xhigh) effort_color=$alarm ;;
@@ -132,7 +153,13 @@ add_part "$(git-status)"
 model_part="${sl_label['model']}${model}"
 [[ -n $effort ]] && model_part+=" ${effort_color}[$effort]${reset}"
 add_part "$model_part"
-add_part "${sl_label['ctx']}${ctx_color}${ctx}%${reset}"
+# Context % and the rate-limit usage caps (5h / 7-day) ride together as one
+# segment — no ' | ' between them — each colored by the shared pct ramp.
+# Percentages are right-aligned in 3 columns so the values line up.
+ctx_part="${sl_label['ctx']}${ctx_color}$(printf '%3d' "$ctx")%${reset}"
+[[ -n $r5h ]] && ctx_part+=" 5h:${r5h_color}$(printf '%3d' "$r5h")%${reset}"
+[[ -n $r7d ]] && ctx_part+=" 7d:${r7d_color}$(printf '%3d' "$r7d")%${reset}"
+add_part "$ctx_part"
 add_part "${sl_label['cost']}${cost}"
 add_part "${sl_label['version']}${version}"
 

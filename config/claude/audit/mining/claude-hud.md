@@ -41,7 +41,7 @@ covered/not a fit.
 | Git ahead/behind `↑N ↓N` | `git rev-list --count` | **SKIP** | already implemented in our `git-status` helper — the user deliberately does not surface it |
 | Git file stats | porcelain | SKIP | `git-status` covers dirty |
 | Context progress **bar** glyph | stdin % | **SKIP-until** | user is fine with the plain `X%` for now — revisit if a richer context gauge is wanted (on the census watch list) |
-| **Rate-limit / usage bar (5h + weekly)** | stdin `rate_limits` | **CANDIDATE** | highest practical value for a Max user, pure-JSON. `rate_limits.{five_hour,seven_day}.used_percentage` **confirmed present** in the docs (subscriber-only, after first API response) — gate satisfied, ready to implement |
+| **Rate-limit / usage bar (5h + weekly)** | stdin `rate_limits` | **ADOPTED** | done 2026-06-19 — `5h:`/`7d:` `used_percentage` ride inside the context segment (no `\|`), colored by the shared pct ramp; hidden when `rate_limits` is absent (non-subscriber) |
 | Tools / Skills / MCP / Agents lines | transcript | SKIP/CANDIDATE | transcript-stream heavy; agents-line is the only tempting one |
 | Todos progress `(2/5)` | transcript | CANDIDATE | nice, transcript-dependent |
 | Session duration / last-reply | transcript | SKIP | user not interested |
@@ -57,9 +57,8 @@ covered/not a fit.
 
 - **Reasoning-effort indicator** — **DONE** 2026-06-19 (`.effort.level`
   confirmed; rendered `[level]`).
-- **Rate-limit / usage segment** — **READY** (gate satisfied: `rate_limits`
-  confirmed in the docs). Best remaining value for a Max user; left as a
-  `BACKLOG` candidate.
+- **Rate-limit / usage segment** — **DONE** 2026-06-19 (`5h:`/`7d:`
+  `used_percentage` inside the context segment, colored by the pct ramp).
 - ~~Git ahead/behind~~ — **SKIP**: already in `git-status`, user doesn't
   surface it.
 - **User-trimmed (2026-06-19):** project path, session duration, output speed,

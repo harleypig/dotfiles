@@ -6,6 +6,17 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Added the rate-limit / usage segment to the statusline.**
+  Worked the top remaining claude-hud candidate. Added two fields
+  (`rate_limits.five_hour.used_percentage`, `…seven_day…`) rendered as
+  `5h:NN% 7d:NN%` **inside the context segment** (no `|` between — per the
+  user), each colored by a shared `pct_color` helper (the same calm/warn/alarm
+  ramp as context %; extracted because ctx/5h/7d all need it — Rule of Three).
+  Hidden when `rate_limits` is absent (non-subscriber sessions). jq uses
+  `(… // "") | if . == "" then "" else (floor|tostring) end` so the field is an
+  empty string (not a vanished array element) when missing — safe with the
+  unit-separator parse. Extended `test_statusline.bats` to 12 tests (present /
+  absent / color-escalation). Folded into the statusline PR.
 - 2026-06-19 — **Added the reasoning-effort indicator; root-caused the parse;
   corrected the `.vim.mode` story.** Verified against the official statusline
   docs (claude-code-guide) that **`.effort.level`** (low/medium/high/xhigh/max,
