@@ -420,6 +420,16 @@ and the **vim-mode segment** (`.vim.mode` rendered ourselves with
 standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
 [`mining/claude-hud.md`](mining/claude-hud.md). Remaining candidates:
 
+- [ ] **Investigate `statusLine.subagentStatusLine`** (surfaced 2026-06-19
+  while confirming the PR-badge can't be hidden). It's a `statusLine` sub-field
+  that *formats* subagent rows. **Decide if it's worth using by answering one
+  thing: does it OVERRIDE the native subagent line or ADD to it?** If it
+  **overrides** (replaces the native row format), great — it's the one native
+  below-prompt element we *can* take control of, so we could restyle the
+  subagent display our way. If it only **adds** a custom row alongside the
+  native one, it would **duplicate** output — not what we want, so skip.
+  Ground the answer in the docs + a quick trial (fire a background subagent and
+  watch the row) before wiring anything.
 - [ ] **Heavier candidates** (transcript-driven — defer): the tools/agents
   lines and todos `(2/5)`. *(2026-06-19: project path, session duration, output
   speed, and token totals were skipped by the user; the context progress-bar
