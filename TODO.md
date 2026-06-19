@@ -112,17 +112,22 @@ already in play (gitleaks/detect-private-key, the `security-scan` skill,
 adoption into the `security-scan` skill / `qa.md` security dimension rather
 than wiring it as a one-off.
 
-- [ ] **trufflehog** (secret scanning): evaluate adding it to pre-commit and
-  GitHub Actions, and how it complements the existing secret-scanning story —
-  gitleaks is the commit-time guard (Pre-commit Phase 2) and full-repo/history
-  scanning is the `security-scan` skill's job. Decide whether trufflehog's
-  verified-secret detection augments or replaces either, and where it runs
-  (commit-time hook vs CI vs the skill).
-- [ ] **Checkmarx** (SAST): evaluate adding it to pre-commit and/or GitHub
-  Actions; compare against the existing SAST layer (`semgrep`) and decide
-  whether it earns a place. Ties into the perl-SAST investigation under "Perl
-  quality tooling → Security scanning", which already flags Checkmarx for its
-  believed perl support.
+- [x] **trufflehog — adopted as a PR-time verified secret scan in CI.**
+  Overlaps gitleaks heavily on common-secret *detection*, but its
+  verification (authenticating each hit → live/not, near-zero false positives)
+  is genuinely complementary in a *different lane*: gitleaks stays the
+  fast commit-time pre-commit guard; trufflehog runs at PR time. Wired as
+  `.github/workflows/secret-scan.yml` (`on: pull_request`, digest-pinned image
+  run directly per the security-scan skill — not the marketplace action),
+  **non-required first**. Added `rules/trufflehog.md`; noted in the
+  security-scan skill and `.claude/QA.md`. Not a pre-commit/dev-local hook
+  (verification makes network calls).
+- [x] **Checkmarx — declined.** Commercial, no free tier, no public pricing
+  (contact-sales, per-developer subscription) — disproportionate for a
+  personal dotfiles repo; `semgrep` already covers SAST for free. The one pull
+  was Perl SAST coverage; that gap stays tracked separately (solve with OSS if
+  at all, not a paid enterprise platform). See the perl-SAST note under "Perl
+  quality tooling".
 
 ## 🔑 Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
 
@@ -478,9 +483,11 @@ bundles (OTRS, TryTiny).
 
 ### Security scanning
 
-- [ ] Look into perl SAST: investigate **Checkmarx** (believed to support
-  perl) and open-source alternatives, and fold any perl SAST into the
-  `security-scan` skill / `qa.md` security dimension rather than a one-off.
+- [ ] Look into perl SAST: **Checkmarx was evaluated and declined** (commercial,
+  no free tier — see "Evaluate trufflehog & Checkmarx"), so pursue
+  **open-source** options only (e.g. `perlcritic` security policies, or other
+  OSS perl analyzers), and fold any perl SAST into the `security-scan` skill /
+  `qa.md` security dimension rather than a one-off.
 
 ### Setup / documentation
 
