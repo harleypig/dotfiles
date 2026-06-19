@@ -10,18 +10,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 summarized in [`decisions-log.md`](decisions-log.md) and retained here for
 continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
 
-## Always-on rule scoping
-
-- [x] **Evaluated `claude-code-auth.md` and `trufflehog.md` for path-scoping
-  (2026-06-19 audit; resolved 2026-06-19).** `trufflehog.md` → **scoped** to
-  `.github/workflows/**` (its whole concern is the `secret-scan.yml` workflow;
-  mirrors the `github-actions.md` precedent; the security-scan skill still
-  reads it by name on-demand). `claude-code-auth.md` → **kept always-on** with
-  a documenting `# No paths` frontmatter — it is a conversational-trigger
-  guardrail (never export `ANTHROPIC_API_KEY` globally) with no file glob, so
-  path-scoping would make it miss exactly when needed. Always-on rules now
-  number 8 (7 cross-cutting + `claude-code-auth`). See `decisions-log.md`.
-
 ## Audit dimensions / design
 
 - [x] **Form: the audit is the `claude-audit` skill** (`/claude-audit`) —
@@ -44,6 +32,15 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   right *kind*: a "rule" that is really a procedure → skill; one that must
   happen every time → hook; a bloated multi-tool rule → split per tool;
   duplicated content → dedupe to one canonical source.
+- [ ] **Enforce always-on intent: flag rules with no frontmatter** (LOW —
+  retrospective, PR #122). Both `trufflehog.md` and `claude-code-auth.md` were
+  added *always-on by omission* (no `paths:` and no `# No paths` comment) — only
+  an audit caught it. Now every `rules/*.md` is either `paths:`-scoped or
+  carries a `# No paths — <why>` comment. A tiny **meta-test or `PostToolUse`
+  hook** could keep it that way: flag any `config/claude/rules/*.md` whose
+  frontmatter has neither `paths:` nor a documenting comment, so a new rule
+  can't silently join the per-turn tier. Decide kind (meta-test vs hook) and
+  whether the leverage justifies the check.
 - [ ] **Plugins / MCP dimension.** Inventory every enabled plugin (what it
   does/bundles, whether used); cull duplicates of the `gh` CLI / existing
   rules+skills and unused ones; remember plugins carry context cost. MCP
