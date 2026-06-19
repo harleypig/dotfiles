@@ -6,6 +6,34 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Evaluated CodeFactor & Snyk; relaxed the OSS-pinned-only
+  security posture into a default + per-repo escape hatch.** Worked the BACKLOG
+  *CodeFactor & Snyk* item, grounded in current official docs (two research
+  agents). **Findings:** both are hosted SaaS *App* checks (not in CI).
+  CodeFactor is App-only (no CLI — structurally can't run in a workflow); Snyk
+  *can* run in CI via `snyk/actions` but only with a `SNYK_TOKEN` + account,
+  reporting to app.snyk.io — the exact token-gated marketplace pattern the
+  posture avoids. For *this* repo both fail the worthwhile-results bar: the only
+  manifests are `config/pypoetry/{poetry.lock,pyproject.toml}` (already covered
+  by osv-scanner + Dependabot), and CodeFactor merely re-runs ShellCheck /
+  yamllint already gated locally (and skips Markdown/Perl). **Decision (this
+  repo):** drop Snyk (uninstall the App — a user web-UI action, captured in
+  BACKLOG), keep CodeFactor as a passive non-required badge; recorded in
+  `.claude/QA.md`. **Policy change (global):** the user judged the absolute
+  "never a marketplace action / vendor cloud" stance too broad — it's right for
+  *this* shell repo but would wrongly forbid a real app repo from adopting Snyk
+  SCA where its curated intel / reachability / fix-PRs are genuinely worthwhile.
+  Reframed `security-scan` §4 (v1.1.0→v1.2.0) into **OSS-pinned-direct default +
+  a documented per-repo exception**: a hosted scanner may be adopted when its
+  results are worthwhile, overlap is acceptable (the user's bar: *some overlap
+  is fine if the results are worthwhile*), the owner accepts the token/account/
+  drift costs, and it's recorded in that repo's `.claude/` QA doc, non-required
+  first. Cross-noted in `semgrep.md` (v1.0.0→v1.1.0) and `trufflehog.md`
+  (v1.1.0→v1.2.0) — both note the exception doesn't apply to *them* (their OSS
+  engines fully match the SaaS for our use). Spawned follow-ups: per-repo Snyk
+  evaluation for **pigify** (Python) and **scripturestudy-app** (Ruby), plus a
+  research task on **credibility badges as social proof** across public repos
+  (all in BACKLOG).
 - 2026-06-19 — **Resolved the always-on rule-scoping review (the last two
   unscoped single-purpose rules).** Worked the BACKLOG *Always-on rule scoping*
   item. **`trufflehog.md` → path-scoped** to `.github/workflows/**` (bumped

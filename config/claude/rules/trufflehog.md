@@ -9,7 +9,7 @@ paths:
 
 # trufflehog Rules
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 ## Detection
 
@@ -43,8 +43,13 @@ high-assurance/regulated repos; it is overkill for a personal repo.
 ## Invocation
 
 Run the **digest-pinned OSS image directly**, never the marketplace action
-(the security-scan skill's standing posture — same as semgrep). Pin the tag so
-Dependabot's `github-actions` ecosystem bumps it:
+(the security-scan skill's standing posture — same as semgrep). This is the
+default, not an absolute ban: `security-scan` §4 documents the per-repo
+exception under which a repo may adopt a hosted scanner when its results are
+worthwhile. It does not apply to trufflehog here — the OSS image is fully
+capable and its verified secret scanning is exactly what we want, with no
+worthwhile result a SaaS tier would add. Pin the tag so Dependabot's
+`github-actions` ecosystem bumps it:
 
 ```bash
 docker run --rm -v "$PWD:/repo:ro" \
