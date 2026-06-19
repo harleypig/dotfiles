@@ -414,26 +414,6 @@ duplicates / similar setups). Chart each in
 - [ ] **`ruvnet/ruflo`** — evaluate whether worth exploring (not a
   plugin/skill). <https://github.com/ruvnet/ruflo>
 
-### Skill-format standard: agentskills.io
-
-- [x] Investigated (2026-06-19). **`agentskills.io` is the real, authoritative
-  open standard** — the `SKILL.md` format Anthropic created and released
-  cross-vendor (Dec 2025; adopted by OpenAI, Google, Microsoft/GitHub, Cursor,
-  etc.). It is **the same format we already use**, not a competitor — so we are
-  **already conformant**: all 27 skills pass the hard constraints (name matches
-  dir; lowercase/digits/hyphens; no `--`; ≤64 chars; description ≤1024). No
-  migration. Documented the standard as our reference in `EXTENDING.md`
-  (Skill › *Format*). The "no `claude`/`anthropic` in a name" rule one source
-  claimed is **not in the standard** (verified) — `claude-audit` is fine. See
-  decisions-log 2026-06-19.
-- [x] **Guarded skill-frontmatter conformance against drift (option a).** Built
-  `tests/shell/test_skill_frontmatter.bats` — a self-hosted bats check asserting
-  each `SKILL.md`'s `name` matches its dir + the charset/length rules and the
-  `description` is present and ≤1024 chars (gating suite). The external
-  Apache-2.0 **`skills-ref`** validator (option b) is left **ICEBOXed** (noted
-  in the test) — same no-external-tool-to-lint-our-own-files posture as the rest
-  of the repo. See decisions-log 2026-06-19.
-
 ### Claude statusline enhancements (claude-hud candidates)
 
 Done 2026-06-19 (fixed + regression-tested; see the decisions log): the display
