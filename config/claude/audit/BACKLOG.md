@@ -52,7 +52,19 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
 - [ ] **External validation (GitHub Apps).** Evaluate third-party App checks as
   outside quality signals: what is wired (CodeFactor, Snyk) vs candidates
   (Codecov for coverage, Codacy / SonarCloud) — what each adds, its noise/cost,
-  whether it earns its place.
+  whether it earns its place. *(Partly advanced 2026-06-19: CodeFactor/Snyk
+  resolved via the `security-scan` §4 escape hatch; the broader candidate sweep
+  now lives in the "🏅 credibility signals / badges" research task below — keep
+  them in sync.)*
+- [ ] **Cross-repo follow-up routing (LOW — retrospective, PR #123).** The
+  TODO-routing convention (`WORKFLOW.md`) routes a follow-up to *its* repo's
+  `TODO.md` — but a global-config change can spawn a follow-up **for a different
+  repo I'm not currently in** (here: per-repo Snyk evals for pigify /
+  scripturestudy-app). There's no first-class capture for that; they were
+  parked in this BACKLOG with a "migrate when next in that repo" flag — a
+  workaround. Decide a convention (or a tiny mechanism) for cross-repo
+  follow-ups so they aren't lost or mis-homed. Likely a short addition to the
+  `WORKFLOW.md` TODO-routing section.
 - [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
   rule/skill, also check whether a plugin provides it or should be added.
   Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a
@@ -165,25 +177,45 @@ comfortably. Make it less sprawling without losing the relationships it maps.
 - [ ] Verify the rendered result in Brave, not the user's Chrome (Chrome
   blocks GitHub's mermaid sandbox).
 
-### 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
+### 🔎 CodeFactor & Snyk — evaluated & resolved (2026-06-19)
 
-Both run as PR checks (alongside `bats`), but we don't yet act on their
-findings. Research how to actually use each and whether to formalize it.
+Evaluation done and the policy landed (the `security-scan` §4 escape hatch;
+decision recorded in `.claude/QA.md`; see decisions-log 2026-06-19). One manual
+action remains:
 
-- [ ] **CodeFactor**: what it analyzes, where findings surface (PR inline
-  comments, the codefactor.io dashboard, the badge), how to configure it
-  (`.codefactor.yml`), and how to triage/suppress. Decide if it earns a
-  required status check.
-- [ ] **Snyk** (`security/snyk`): what the check scans (deps / code / IaC?),
-  where findings live (app.snyk.io, PR annotations), its auth/config, and how
-  it overlaps with Dependabot and the existing security rules
-  (`semgrep`/`trivy`/`osv-scanner`) plus the `security-scan` skill.
-- [ ] Decide **per tool**: a `config/claude/rules/<tool>.md` (how to read and
-  act on its output), a skill, folding into the existing `security-scan` skill
-  / `qa.md` security dimension, or nothing — without duplicating what those
-  already cover.
-- [ ] If a tool adds no actionable value, consider disabling its check to cut
-  PR-check noise; if it does, document the triage workflow.
+- [ ] **User action (web UI, not scriptable here):** uninstall the **Snyk**
+  GitHub App from `harleypig/dotfiles` and remove the repo's projects from
+  app.snyk.io, so the advisory `security/snyk` check stops posting.
+
+### 🌐 Per-repo SaaS-scanner evaluation (escape hatch, 2026-06-19)
+
+Spawned by the new `security-scan` §4 escape hatch (OSS-pinned default + a
+per-repo exception when a hosted scanner's results are worthwhile). **Migrate
+each to that repo's own `TODO.md` when next working it** — captured here so the
+policy isn't created without a path to apply it.
+
+- [ ] **pigify (FastAPI/Python):** assess **Snyk SCA** against the bar — a real
+  Python dependency tree means curated vuln intel / reachability / fix-PRs may
+  be worthwhile beyond osv-scanner + Dependabot. CodeFactor secondary (grade /
+  badge). If adopted: record in pigify's `.claude/` QA doc, non-required first.
+- [ ] **scripturestudy-app (Ruby/Gollum):** same assessment for the Ruby
+  (bundler) dependency tree — Snyk supports Ruby; weigh worthwhile results vs.
+  the OSS lane (osv-scanner covers `Gemfile.lock`).
+
+### 🏅 Research credibility signals / badges worth adopting across public repos
+
+A public badge (CI status, coverage, code-quality grade, security) is **social
+proof** — it can nudge a visitor to take a repo more seriously. Research which
+external signals/badges are worth adopting across my public repos, weighing the
+per-repo cost (SaaS surface, version drift, the §4 bar) against the credibility
+payoff. Feed results back into the `security-scan` §4 escape hatch and per-repo
+QA docs.
+
+- [ ] Enumerate candidate signals/badges (CI status, Codecov/coverage,
+  CodeFactor / Code Climate grade, Snyk / known-vulns, OpenSSF Scorecard,
+  license, release/version, …) and what each signals to a visitor.
+- [ ] Decide which earn their surface per repo type (app vs library vs
+  dotfiles) and which are pure vanity. Record the shortlist + rationale.
 
 ### 🔭 Document the kept-branch-after-squash sync mechanic (LOW PRIORITY)
 

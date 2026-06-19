@@ -9,14 +9,16 @@ paths:
 
 # OWASP ZAP (DAST) Rules
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 OWASP ZAP is the **DAST** layer — Dynamic Application Security Testing: it
 scans the **running** app over HTTP for issues that static analysis can't see
 (missing security headers, injection, XSS, auth/cookie problems, info leaks).
 Complements SAST (`semgrep.md`), dependency/image CVE scans (`trivy.md`),
 and malicious-package detection (`osv-scanner.md`). Run the **pinned OSS image
-directly** — no marketplace action, no SaaS (same posture as the others).
+directly** — no marketplace action, no SaaS (same posture as the others). This
+is the default, not an absolute ban: a repo may adopt a hosted scanner when its
+results are worthwhile (`security-scan` §4).
 
 ## Two modes
 
