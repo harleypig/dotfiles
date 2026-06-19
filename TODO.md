@@ -50,10 +50,11 @@ manifest instead; per `rules/poetry.md` the lockfile MUST be committed.
   poetry 2.4.1): 49 packages pinned, `cryptography` resolved to 49.0.0
   (≥ 48.0.1), `poetry check --lock` consistent. Transitive deps are now pinned
   and Dependabot's pip ecosystem can cover them.
-- [ ] Follow-up (optional): the direct `cryptography = ">=48.0.1"` pin in the
-  manifest is now redundant (the lock pins it transitively and Dependabot can
-  update it) — consider dropping it back to transitive and re-locking. Its own
-  small change; left in place for now.
+- [x] Dropped the direct `cryptography = ">=48.0.1"` pin and re-locked: it's
+  transitive again (via `secretstorage`), still resolved to 49.0.0, and the
+  lock now correctly scopes the cryptography/cffi/pycparser chain to
+  `sys_platform == "linux"` instead of forcing it everywhere. No other package
+  versions changed; `poetry check --lock` consistent.
 
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
