@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.4.0
+**Version:** v1.5.0
 
 ## Purpose
 
@@ -178,6 +178,16 @@ which **blocks** a `gh pr merge` / `ship.sh merge` while any completed `- [x]`
 items still remain in the planning docs. See
 `config/claude/skills/ship-pr/SKILL.md` and `config/claude/rules/git.md`.
 
+The agent-config **audit backlog** is an equivalent planning list, so it is
+pruned the same way (completed items removed at merge, their record kept in
+[`audit/decisions-log.md`](../config/claude/audit/decisions-log.md)). It is
+declared as an extra planning doc the hook also enforces — repo-relative paths
+beyond the generic defaults, kept out of the global hook:
+
+```text
+merge-finalization-docs: config/claude/audit/BACKLOG.md
+```
+
 ### TODO Routing
 
 This repo splits its task tracking by **scope**, so each list stays focused.
@@ -303,7 +313,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.4.0)
+* `WORKFLOW.md` - Versioned (this file, v1.5.0)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 

@@ -21,6 +21,11 @@ its ``.claude/WORKFLOW.md`` or ``.claude/CONVENTIONS.md``:
     **allow**, injecting the finalization checklist as a reminder so the
     not-statically-checkable step (refresh the changelog) isn't forgotten.
 
+A repo can extend the pruned set beyond the generic defaults (TODO.md /
+ROADMAP.md / docs/ROADMAP.md) with a ``merge-finalization-docs:`` line in the
+same opt-in docs — keeping repo-specific paths out of this global hook (e.g.
+the dotfiles repo adds its audit ``BACKLOG.md``).
+
 Fail-safe: any error exits 0 silently so a hook bug can never block a merge.
 """
 
@@ -47,6 +52,13 @@ PLANNING_DOCS = ("TODO.md", "ROADMAP.md", "docs/ROADMAP.md", "docs/TODO.md")
 ENFORCE_MARKER = "merge-finalization: enforce"
 OPT_IN_DOCS = (".claude/WORKFLOW.md", ".claude/CONVENTIONS.md")
 
+# A repo may extend the pruned planning docs beyond the generic defaults with a
+# line in its opt-in docs (keeps repo-specific paths out of this global hook):
+#   merge-finalization-docs: config/claude/audit/BACKLOG.md, docs/OTHER.md
+EXTRA_DOCS_RE = re.compile(
+  r"^[ \t]*merge-finalization-docs:[ \t]*(.+?)[ \t]*$", re.M
+)
+
 CHECKLIST = (
   "Merge-time finalization (ship-pr Step 4.5 / repo WORKFLOW.md), docs-only:\n"
   " - Prune completed items from TODO.md / ROADMAP.md per the repo's "
@@ -69,11 +81,27 @@ def _enforces(repo: Path) -> bool:
   return False
 
 
+def _extra_docs(repo: Path) -> tuple[str, ...]:
+  """Repo-declared extra planning docs (comma-separated, repo-relative) from a
+  `merge-finalization-docs:` line in the opt-in docs. Empty if none."""
+  for rel in OPT_IN_DOCS:
+    doc = repo / rel
+    try:
+      if not doc.is_file():
+        continue
+      m = EXTRA_DOCS_RE.search(doc.read_text(encoding="utf-8"))
+      if m:
+        return tuple(p.strip() for p in m.group(1).split(",") if p.strip())
+    except Exception:
+      continue
+  return ()
+
+
 def _done_items(repo: Path) -> list[str]:
   """Planning docs under `repo` that still carry completed `- [x]` items,
   reported as "file (N)"."""
   hits: list[str] = []
-  for rel in PLANNING_DOCS:
+  for rel in PLANNING_DOCS + _extra_docs(repo):
     doc = repo / rel
     try:
       if not doc.is_file():
