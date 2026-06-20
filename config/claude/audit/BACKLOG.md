@@ -206,15 +206,6 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
   per-language rules files extend. Decide structure: one general
   best-practices doc + per-language extensions, vs. keeping `code-style.md`
   as the shared base that the language rules reference.
-- [ ] When creating/modifying a rule or skill, check known sources for an
-  existing implementation to adapt (vendor with a `SOURCE.md` and audit to
-  fit) rather than authoring from scratch:
-  - GitHub (search repos/topics)
-  - <https://github.com/VoltAgent/awesome-agent-skills>
-  - <https://officialskills.sh/>
-  - other locations as discovered
-  Ties into the vendored file/skill update checker (see Configuration
-  Enhancements → Dependency Management).
 
 ### 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
 

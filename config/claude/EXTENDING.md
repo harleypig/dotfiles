@@ -1,6 +1,6 @@
 # Claude Code Extension Primitives
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 A reference for the building blocks used to customize Claude Code — what
 each one is and when to reach for it. They are **not** interchangeable;
@@ -25,14 +25,24 @@ Claude Code itself, not any one repo.
 
 ## Grounding & sourcing (author from docs, not memory)
 
-Before authoring **any** primitive below — and when editing one — two
+Before authoring **any** primitive below — and when editing one — three
 requirements:
 
 1. **Check it doesn't already exist.** Search `config/claude/` (and the
    built-in skills/commands) for a rule/skill/hook that already covers this.
    Authoring a duplicate on the false premise that none existed is a real
    past failure mode.
-2. **Ground the content in authoritative sources where they exist** — the
+2. **Prefer adapting prior art to authoring from scratch.** Before writing a
+   new rule/skill, check known sources for an existing implementation to
+   **vendor-and-adapt** (audit it to fit; keep a `SOURCE.md`, ADR-0002)
+   rather than build blind — a GitHub repo/topic search, the skill
+   aggregators (`VoltAgent/awesome-agent-skills`,
+   <https://officialskills.sh/>), and the running
+   [`audit/idea-sources.md`](audit/idea-sources.md) registry. This is the
+   reactive, at-authoring counterpart to `claude-audit`'s *Mining repos for
+   ideas*; a vendored artifact then needs keeping current with upstream (the
+   dotfiles `TODO.md` *Vendored file / skill update checker*).
+3. **Ground the content in authoritative sources where they exist** — the
    tool/library/API's **official documentation**, its **man page**
    (`man <tool>`, `<tool> --help`), or **local package docs**
    (`/usr/share/doc/<pkg>`) — **not memory**, which goes stale. (Context7, if

@@ -6,6 +6,18 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Folded the "check prior art before authoring" guidance into
+  `EXTENDING.md` (PR #133).** A BACKLOG bullet ("when creating/modifying a
+  rule or skill, check known sources for an existing implementation to vendor
+  rather than author from scratch") was standing policy, not a task — so it
+  belonged
+  in the authoring doc, not the todo. Added it as a third requirement in
+  `EXTENDING.md` *Grounding & sourcing* (v1.1.0): prefer adapting prior art
+  (GitHub search, the `awesome-agent-skills` / officialskills.sh aggregators,
+  the `idea-sources.md` registry; vendor-and-adapt with a `SOURCE.md`), the
+  reactive counterpart to `claude-audit`'s *Mining repos for ideas*, with the
+  pointer to the dotfiles `TODO.md` *Vendored file / skill update checker*
+  preserved. Removed the bullet from BACKLOG.
 - 2026-06-19 — **Added `audit/ICEBOX.md`; made BACKLOG a pure will-do todo
   (PR #132).** The user wanted the backlog treated strictly as a todo — icebox
   / wait-until-needed entries don't belong in it. **Structure (user chose "two
