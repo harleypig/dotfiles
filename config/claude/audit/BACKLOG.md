@@ -115,16 +115,6 @@ comfortably. Make it less sprawling without losing the relationships it maps.
 - [ ] Verify the rendered result in Brave, not the user's Chrome (Chrome
   blocks GitHub's mermaid sandbox).
 
-### 🔎 CodeFactor & Snyk — evaluated & resolved (2026-06-19)
-
-Evaluation done and the policy landed (the `security-scan` §4 escape hatch;
-decision recorded in `.claude/QA.md`; see decisions-log 2026-06-19). One manual
-action remains:
-
-- [x] **User action (web UI, not scriptable here):** uninstall the **Snyk**
-  GitHub App from `harleypig/dotfiles` and remove the repo's projects from
-  app.snyk.io, so the advisory `security/snyk` check stops posting.
-
 ### 🌐 Per-repo SaaS-scanner evaluation (escape hatch, 2026-06-19)
 
 Spawned by the new `security-scan` §4 escape hatch (OSS-pinned default + a
