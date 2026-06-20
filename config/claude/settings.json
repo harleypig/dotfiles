@@ -39,6 +39,18 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/compact-snapshot.py",
+            "timeout": 15
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

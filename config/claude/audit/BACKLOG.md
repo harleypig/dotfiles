@@ -65,6 +65,17 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   workaround. Decide a convention (or a tiny mechanism) for cross-repo
   follow-ups so they aren't lost or mis-homed. Likely a short addition to the
   `WORKFLOW.md` TODO-routing section.
+- [ ] **Delegated research can over-claim — demand exact doc quotes (LOW —
+  retrospective, PRs #126/#127).** Twice in one session a delegated research
+  agent asserted a plausible-but-false feature: a name "must not contain
+  `claude`/`anthropic`" rule (#126) and a `# Compact instructions` CLAUDE.md
+  heading (#127). Both were caught by re-verifying against primary docs before
+  acting — but only because the claims happened to be high-stakes. Sharpen the
+  `claude-audit` skill's grounding guidance: when a research agent reports a
+  **feature/behavior claim** that would drive an action (a rename, a new
+  CLAUDE.md block, wiring a hook), require an **exact quote + doc URL** and
+  treat unsourced specifics as unconfirmed. Small wording add to the skill's
+  *Check grounding* / *Verify currency* notes; not a new artifact.
 - [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
   rule/skill, also check whether a plugin provides it or should be added.
   Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a
@@ -462,33 +473,6 @@ entries; `.pr.number` in the **stdin** JSON), they just can't replace the
 native display. Open upstream requests: anthropics/claude-code **#27916**,
 **#48246**. Revisit if either lands a hide option; until then, only the vim
 indicator was controllable (and is done).
-
-### Claude Code compaction control (moved from TODO.md)
-
-Can we steer *when* and *how* Claude Code compacts context? Two
-`claude-code-guide` lookups on 2026-06-19 conflicted on the central question
-below, so it needs settling against current official docs (not memory) before
-acting.
-
-- [ ] **Verify the `# Compact instructions` CLAUDE.md feature.** One lookup
-  asserted a special heading in CLAUDE.md steers what compaction preserves; a
-  second, more thorough search of `code.claude.com/docs` found **no documented
-  heading-matching feature** of that name. Settle which is true. If real → add
-  the block to global `config/claude/CLAUDE.md`. If not → it's only ordinary
-  guidance text the model happens to see (CLAUDE.md is in context during
-  compaction; project-root CLAUDE.md is re-injected from disk after), with no
-  dedicated engine — don't oversell it.
-- [ ] **Evaluate a `SessionStart`/`compact` hook** as the documented, reliable
-  lever for "make X survive compaction": its stdout is injected into context
-  after a compaction. Decide whether it's worth wiring for this setup.
-
-Confirmed (not in question): there is **no** config to change the auto-compact
-*threshold*; `autoCompactEnabled: false` (or `DISABLE_AUTO_COMPACT=1`) disables
-it entirely; the statusline script is the only programmatic read of context
-fullness (`context_window.used_percentage` etc. — hooks can't read it); and
-`/compact` cannot be triggered programmatically (user-only). The statusline
-already color-codes context %, so the current workflow is manual `/compact`
-(see "Statusline Coordination").
 
 ### New rule/skill candidates
 

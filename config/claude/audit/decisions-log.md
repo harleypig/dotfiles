@@ -6,6 +6,29 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Settled Claude Code compaction control; wired a
+  `SessionStart`/`compact` snapshot hook.** Worked the BACKLOG item, grounded
+  in current official docs (claude-code-guide). **Q1 — the `# Compact
+  instructions` CLAUDE.md heading feature is REFUTED:** no such heading-matching
+  feature is documented; the earlier claim was wrong (the more thorough prior
+  lookup was right). What is real is that project-root `CLAUDE.md` + global
+  `CLAUDE.md` + `MEMORY.md` are **auto-reinjected** after a compaction — no
+  magic heading filters what's kept. So **nothing added to `CLAUDE.md`** (and
+  recorded here so the heading idea isn't re-attempted). **Q2/Q3/Q4 confirmed:**
+  `/compact [instructions]` takes free-text focus; no threshold knob;
+  `autoCompactEnabled:false` / `DISABLE_AUTO_COMPACT=1` disable; `/compact` is
+  user-only; and the **`SessionStart` hook fires after compaction with
+  `source: "compact"`**, its `additionalContext` injected into the rebuilt
+  context — the documented lever for surviving compaction. **Decision (user
+  chose the git/session-state option):** built `config/claude/hooks/
+  compact-snapshot.py` (matcher `compact`) — it injects a short deterministic
+  snapshot (repo, branch + protected-default warning, the branch's open PR via
+  `gh`, working-tree status) that the auto-reinjection does **not** cover.
+  Read-only, fail-safe (non-git/detached/non-compact → emits nothing), gh
+  best-effort with a short timeout. Tested via `tests/python/
+  test_compact_snapshot.py` (pytest, matching the existing Python-hook test
+  convention — *not* bats). Cost is near-zero: it runs only on compaction, not
+  per turn. Hook count 4 → 5 (`SETUP-AUDIT.md`).
 - 2026-06-19 — **Investigated the agentskills.io skill-format standard;
   confirmed we're already conformant.** Worked the BACKLOG item, grounded in
   current sources (three research agents). **`agentskills.io` is the real,
