@@ -258,8 +258,6 @@ duplicates / similar setups). Chart each in
   - <https://github.com/JoasASantos/ClaudeAdvancedPlugins>
 - [ ] **`ykdojo/claude-code-tips`** — a tips collection (not skills); codify any
   into a rule/skill. <https://github.com/ykdojo/claude-code-tips>
-- [ ] **`ruvnet/ruflo`** — evaluate whether worth exploring (not a
-  plugin/skill). <https://github.com/ruvnet/ruflo>
 
 ### Claude statusline enhancements (claude-hud candidates)
 

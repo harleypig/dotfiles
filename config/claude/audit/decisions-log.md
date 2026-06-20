@@ -6,6 +6,26 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-20 — **Evaluated `ruvnet/ruflo` (mining queue): SKIP the runtime,
+  register the corpus as a low-yield source (PR #138).** Researched from
+  primary sources (60k★, 7k forks, daily-active, MIT; it is the **renamed
+  `claude-flow`**). It's a Claude-Code-native multi-agent **swarm** harness —
+  `npx ruflo init` installs 98 agents / 60+ commands / 30 skills / an MCP
+  server / a hooks daemon / a Rust memory engine. **Verdict: SKIP the
+  framework** — its heavyweight, auto-routing, self-learning-swarm +
+  always-on MCP/daemon philosophy is the **opposite** of our curated,
+  minimal-context, audit-driven setup; adopting it would fight our whole
+  approach. Its `.claude/` corpus is the largest real-world reference, but
+  **low-yield to mine**: the patterns (hook dispatcher, skill-builder spec,
+  SessionStart-restore, frontmatter rules) overlap what we already have
+  (`EXTENDING.md`, `test_skill_frontmatter.bats`, `compact-snapshot` /
+  `audit-cadence`), and the repo is marketing-heavy (1,500+ releases, volume ≠
+  quality). **Recorded, not mined:** registered in `idea-sources.md` so a
+  future audit doesn't re-evaluate cold; the one forward idea — **session
+  checkpoint/restore** (its PreCompact + context-persistence hooks, beyond our
+  `compact-snapshot`) — parked on the mining-census Watch list. No deep mining
+  pass, no adoption. (Per the delegated-research grounding rule, the research
+  agent returned primary-source facts + URLs, not impressions.)
 - 2026-06-20 — **Text re-mined the Anthropic official `code-simplifier` +
   `commit-commands` plugins (PR #137).** Both were dropped at *capability*
   level on 2026-06-10 without reading their prompt/command text; this is the
