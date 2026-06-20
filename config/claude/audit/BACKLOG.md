@@ -31,6 +31,17 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   **Risk:** false positives on exactly those exemptions — evaluate whether a
   reliable check is even feasible before building; it may not be worth it.
 
+- [ ] **Audit the permission allow-list for risky auto-approved commands
+  (CANDIDATE — mined from `claude-code-tips` Tip 31 / the `cc-safe` idea,
+  2026-06-20).** We have no check that scans `settings.json`
+  `permissions.allow` for dangerous auto-approved patterns — `sudo`,
+  `rm -rf`, `chmod 777`, `curl | sh`, `git reset --hard`, broad bare `Bash`.
+  Generic and security-positive. Best home: a **new `claude-audit` dimension**
+  (the audit already inspects `settings.json` for plugins/hooks, so add a
+  "scan the allow-list" pass), or a small standalone check. The idea is
+  adopted, not the external `cc-safe` npm tool — we'd write our own scan.
+  Decide kind + scope when worked.
+
 ## Skill ideas & future categories (not from mining)
 
 - [ ] **Rule eval / optimization (analogous to `skill-creator`)** — `skill-
@@ -256,8 +267,6 @@ duplicates / similar setups). Chart each in
   - <https://github.com/Jeffallan/claude-skills>
   - <https://github.com/team-attention/plugins-for-claude-natives/tree/main/plugins/clarify>
   - <https://github.com/JoasASantos/ClaudeAdvancedPlugins>
-- [ ] **`ykdojo/claude-code-tips`** — a tips collection (not skills); codify any
-  into a rule/skill. <https://github.com/ykdojo/claude-code-tips>
 
 ### Claude statusline enhancements (claude-hud candidates)
 
@@ -294,7 +303,12 @@ standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
      (e.g. reverse-search, word-delete/word-move, line edits, history) and
      the supported **NORMAL-mode (vim) keys/motions**. Note which are real
      Claude Code bindings vs. terminal/readline defaults that merely pass
-     through.
+     through. **Secondary cross-check source** (mined 2026-06-20):
+     `claude-code-tips` Tip 36 lists `Ctrl+A/E` (line start/end),
+     `Alt+←/→` (word nav), `Ctrl+W/U/K` (word/line deletes), `Ctrl+G`
+     (open `$EDITOR`), `` ` ``+Enter (newline), paste-image — Mac-leaning and
+     **not authoritative**, so verify each against the official docs per the
+     over-claim guard above; useful as a starter checklist only.
   2. **Pick + display.** Select the subset worth memorizing and render them as
      a compact reference on a new line beneath the current statusline. Verify
      the statusline `command` can emit multiple lines (newline in stdout) and

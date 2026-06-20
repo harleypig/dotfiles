@@ -6,6 +6,30 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-20 — **Mined `ykdojo/claude-code-tips` (mining queue): 41/43 SKIP,
+  two CANDIDATEs surfaced (PR #139).** A 43-tip prose README (hybrid — also a
+  `dx` plugin + 6 skills) by a Claude-Code YouTuber, ~8.9k★, actively
+  maintained, but **non-OSS** (proprietary contributor grant to YK Sugi) so
+  **ideas only, no impl reuse**. Most tips skew to **personal interactive
+  workflow** (voice, terminal tabs, Notion, Mac clipboard) or are already
+  covered by our (more developed) tooling — worktrees →
+  `git-worktree-workflow`;
+  CLAUDE.md-vs-skills → `EXTENDING.md`; TDD → `testing.md`; simplify →
+  `/simplify`; CI root-cause → `github-actions.md` + `ci-watch` +
+  `debug-assistant`; periodic CLAUDE.md review → `claude-audit`. Two were
+  **counter to our posture** and explicitly SKIP: disable-attribution (we keep
+  `Co-Authored-By`) and `--dangerously-skip-permissions` containers (we don't
+  skip permissions). **Two CANDIDATEs** recorded on `BACKLOG.md`: (1) **audit
+  the permission allow-list** for risky auto-approved commands (the `cc-safe`
+  idea, Tip 31 — `sudo`/`rm -rf`/`chmod 777`/`curl | sh`/`git reset --hard`);
+  a real security gap, natural fold into `claude-audit` (it already inspects
+  `settings.json`); the *idea* adopted, not the npm tool. (2) **input-box
+  keybindings** (Tip 36) — exact bindings folded into the open *statusline
+  keybinding cheat-sheet* item as a **secondary, non-authoritative** source to
+  cross-check against the official docs. Full matrix:
+  `audit/mining/claude-code-tips.md`; registered in `idea-sources.md`. (Census
+  fanned out to a read-only research agent per the grounding rule; primary
+  sources + URLs.)
 - 2026-06-20 — **Evaluated `ruvnet/ruflo` (mining queue): SKIP the runtime,
   register the corpus as a low-yield source (PR #138).** Researched from
   primary sources (60k★, 7k forks, daily-active, MIT; it is the **renamed
