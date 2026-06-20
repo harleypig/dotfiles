@@ -189,9 +189,10 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
 - [ ] **Conformance sweep for the language/tool layering** (follow-up to the
   codification above). Bring existing artifacts into line with `EXTENDING.md`
   *The language & tool stacks*: each language rule (`typescript.md`,
-  `perl.md`, `powershell.md`, `html.md`, `css.md`, `react.md`, `bats.md`, …)
-  should **reference up** to `code-style.md` / `EXTENDING.md` (several don't
-  yet); and audit **language-agnostic tool** rules for any link to a language
+  `powershell.md`, `html.md`, `css.md`, `react.md`, `bats.md`, …) should
+  **reference up** to `code-style.md` / `EXTENDING.md` (several don't yet —
+  `perl.md` now does, done 2026-06-20); and audit **language-agnostic tool**
+  rules for any link to a language
   *file* (replace with a by-name "applies to <lang>" applicability).
   **Keep the framework distinction:** a single-language framework/library —
   `fastapi.md`, `sqlalchemy.md`, `react.md`, and their `*-patterns` skills —
@@ -243,17 +244,6 @@ duplicates / similar setups). Chart each in
 [`mining-census.md`](mining-census.md) and promote useful sources to
 [`idea-sources.md`](idea-sources.md). None below are mined yet.
 
-- [ ] **Anthropic official plugins — text re-mine of `code-simplifier` +
-  `commit-commands`.** Both were dropped at *capability* level (decisions log
-  2026-06-10) **without** a text-level review, and both have our equivalents
-  (`/simplify`; the git rules + `ship-pr` / `git-worktree-workflow`). Review
-  their actual prompt/command text for wording / sectioning worth folding into
-  ours. The other three (`pr-review-toolkit`, `feature-dev`,
-  `security-guidance`) were already content-reviewed — their extractable bits
-  are the vendor-when-needed items under *Plugin-audit follow-ups*; not
-  re-opened.
-  - <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/code-simplifier>
-  - <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/commit-commands>
 - [ ] **Plugin/skill collection repos (big — one at a time).**
   - <https://github.com/ComposioHQ/awesome-claude-plugins>
   - <https://github.com/jeremylongshore/claude-code-plugins-plus-skills>
