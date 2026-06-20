@@ -120,6 +120,16 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   `code-style.md` Rule of Three), promote the `gh api` detection command into
   `git.md` as the canonical method and have `new-project` reference it instead
   of carrying its own copy. Small edit; not a new artifact.
+- [ ] **Prose-wrap check for agent-config Markdown (LOW — retrospective, PR
+  #130).** The 78-col prose-wrap convention (`CONVENTIONS.md`) is enforced
+  only by eye — markdownlint's `line_length` is set to 200 (tables/code),
+  so 79–80-col prose slips through; this session hand-fixed several such lines
+  (em-dashes also fool `awk length`, so the check must count *characters*).
+  Consider a small pre-commit/meta check that flags >78-col **prose** lines in
+  `config/claude/**` and `.claude/**` Markdown while exempting table rows,
+  fenced code, frontmatter `description:`, and reference-link/URL lines.
+  **Risk:** false positives on exactly those exemptions — evaluate whether a
+  reliable check is even feasible before building; it may not be worth it.
 
 ## Plugin-audit follow-ups (from the 2026-06-10/-11 passes)
 
