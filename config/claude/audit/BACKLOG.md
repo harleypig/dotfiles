@@ -23,29 +23,41 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   records decisions here. Expect the **global** config to be re-evaluated from
   many repos — possibly several times a day; that repetition is by design (see
   the claude-audit skill, *Global is re-evaluated from every repo*).
-- [ ] **Context-load tiering.** Classify every artifact by *when* it loads:
+- [x] **Context-load tiering.** *Folded into the `claude-audit` skill
+  (Procedure step 1–2: "classify every artifact by load tier — always-on /
+  on-demand / isolated"). Checkbox closed; this is now a standing dimension of
+  every run, not open work.* Classify every artifact by *when* it loads:
   always-on (every turn: global CLAUDE.md, unscoped rules, enabled MCP tool
   schemas — the expensive tier), on-demand (path-scoped rules, skills, deferred
   MCP tools), isolated (agents — ~free to the main thread). Highest-leverage
   lever: push always-on content down a tier.
-- [ ] **Recategorize / split / merge.** For each artifact ask whether it is the
+- [x] **Recategorize / split / merge.** *Folded into the `claude-audit` skill
+  (Procedure step 2: assess right-fit / "is it the correct kind" + "has a
+  category grown too big and need splitting"). Checkbox closed; standing
+  dimension now.* For each artifact ask whether it is the
   right *kind*: a "rule" that is really a procedure → skill; one that must
   happen every time → hook; a bloated multi-tool rule → split per tool;
   duplicated content → dedupe to one canonical source.
-- [ ] **Enforce always-on intent: flag rules with no frontmatter** (LOW —
-  retrospective, PR #122). Both `trufflehog.md` and `claude-code-auth.md` were
+- [x] **Enforce always-on intent: flag rules with no frontmatter** (LOW —
+  retrospective, PR #122). **DONE:** built it as a **meta-test**
+  (`tests/shell/test_rule_frontmatter.bats`), mirroring the skills guard
+  (`test_skill_frontmatter.bats`) rather than a `PostToolUse` hook — rules are
+  added rarely, so a CI gate suffices and costs nothing per edit. It flags any
+  `config/claude/rules/*.md` whose frontmatter has neither `paths:` nor a
+  `# No paths` comment. `rule-TEMPLATE.md` and `.claude/TESTS.md` updated to
+  match. Both `trufflehog.md` and `claude-code-auth.md` were
   added *always-on by omission* (no `paths:` and no `# No paths` comment) — only
-  an audit caught it. Now every `rules/*.md` is either `paths:`-scoped or
-  carries a `# No paths — <why>` comment. A tiny **meta-test or `PostToolUse`
-  hook** could keep it that way: flag any `config/claude/rules/*.md` whose
-  frontmatter has neither `paths:` nor a documenting comment, so a new rule
-  can't silently join the per-turn tier. Decide kind (meta-test vs hook) and
-  whether the leverage justifies the check.
-- [ ] **Plugins / MCP dimension.** Inventory every enabled plugin (what it
+  an audit caught it; now a new rule can't silently join the per-turn tier.
+- [x] **Plugins / MCP dimension.** *Folded into the `claude-audit` skill
+  (Procedure step 3 + `rules/mcp.md`: plugin/MCP inventory and cull). Checkbox
+  closed; standing dimension now.* Inventory every enabled plugin (what it
   does/bundles, whether used); cull duplicates of the `gh` CLI / existing
   rules+skills and unused ones; remember plugins carry context cost. MCP
   servers here come *from* plugins (no hand-maintained `mcp.json`).
-- [ ] **Build vs. adopt.** For each capability weigh a maintained plugin/skill
+- [x] **Build vs. adopt.** *Folded into the `claude-audit` skill (mining/
+  "Judging": score generic value, then overlap with built-ins, vendor-with-
+  `SOURCE.md` vs write-our-own). Checkbox closed; standing dimension now.* For
+  each capability weigh a maintained plugin/skill
   against our own: adopt when good and lean (vendor-and-modify with a
   `SOURCE.md`); write our own when the plugin is bloated/over-scoped for the
   context it costs. Weigh context cost vs maintenance burden explicitly.
@@ -80,8 +92,12 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   rule/skill, also check whether a plugin provides it or should be added.
   Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a
   Skill* and the `rule-coverage.py` hook. Bias to surfacing in the moment.
-- [ ] **Canonicalize protected-branch detection in `git.md` (LOW —
-  retrospective, PR #129).** The `new-project` rule/skill needed to detect
+- [x] **Canonicalize protected-branch detection in `git.md` (LOW —
+  retrospective, PR #129). DONE:** promoted the concrete `gh api
+  rules/branches` / `.../protection` detection commands into `git.md` *Never
+  Work Directly on a Protected Branch* as the numbered canonical method
+  (git.md v1.11.0); `new-project.md` now references it instead of carrying its
+  own copy. The `new-project` rule/skill needed to detect
   branch protection for a *brownfield* repo that lacks the local
   `no-commit-to-branch` hook, so it spelled out the concrete
   `gh api repos/{owner}/{repo}/rules/branches/<branch>` (and `.../protection`)

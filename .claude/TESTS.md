@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.4.0
+**Version:** v2.5.0
 
 ## Purpose
 
@@ -79,7 +79,10 @@ the same gating suite without breaking docker-less environments.
 - Repo-structure invariants get a guard test too: `test_skill_frontmatter.bats`
   holds every `config/claude/skills/*/SKILL.md` to the Agent Skills
   open-standard frontmatter rules (see `config/claude/EXTENDING.md` Skill ›
-  *Format*).
+  *Format*), and `test_rule_frontmatter.bats` holds every
+  `config/claude/rules/*.md` to declaring its load tier — a `paths:` key or a
+  `# No paths — <why>` comment — so a rule can't silently join the always-on
+  per-turn tier by omission (see `config/claude/rule-TEMPLATE.md`).
 
 ## Coverage priorities (incremental)
 

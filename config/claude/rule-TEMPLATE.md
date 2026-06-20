@@ -1,7 +1,12 @@
 ---
-# List glob patterns for files this tool applies to.
-# Omit the paths key entirely for tools that are not file-type-specific
-# (e.g. git, gh).
+# Declare the load tier — a conformance guard (test_rule_frontmatter.bats)
+# enforces that this block has one or the other, so a rule can't silently
+# join the expensive always-on tier by omission:
+#  - Path-scoped (on-demand): keep `paths:` with the globs this rule applies
+#    to.
+#  - Always-on (every turn): for a rule not tied to a file type (e.g. git,
+#    gh), DELETE the `paths:` key and replace it with a documenting
+#    `# No paths — <why>` comment. Do NOT leave the block empty.
 paths:
   - "**/*.ext"  # replace .ext with actual extension(s)
 ---
