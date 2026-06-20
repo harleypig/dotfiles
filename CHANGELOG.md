@@ -10,6 +10,25 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-20
+
+### Changed
+
+- **Writing-repo watch-list trigger** — `config/claude/audit/mining-census.md`
+  gains a trigger row: when working a `gollum` wiki repo or any non-code
+  "writing"/prose repo, author a dedicated `rules/writing.md` covering the
+  drafting/revising/structural/consistency/gardening modes, grounded in
+  `claude-code-tips` Tips 16 (writing assistant), 25 (research tool /
+  `paper-search`), 17 (markdown as medium), and 26 (verify every claim).
+  The trigger also activates the Gollum Wiki rule, Ruby rule, and Essay
+  Helper skill backlog candidates. Decisions log updated; prior per-tip
+  SKIPs in the mining log left intact. (PR #141)
+- **BACKLOG.md tidy** — pruned the resolved Snyk/CodeFactor evaluation
+  subsection (decision already landed in `QA.md`); promoted three orphaned
+  `###` headings to `##` sections (Mining queue, Claude statusline
+  enhancements, New rule/skill candidates); added a trigger-gated note to
+  the three writing-repo candidates. (PR #141)
+
 ## 2026-06-19
 
 ### Added
