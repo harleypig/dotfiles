@@ -6,8 +6,37 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
-- 2026-06-19 — **Adopted prune-at-merge for the audit BACKLOG, fixed the
-  doc/enforcement gap, and cleaned out 25 stale `[x]` items (PR #131).** The
+- 2026-06-19 — **Added `audit/ICEBOX.md`; made BACKLOG a pure will-do todo
+  (PR #132).** The user wanted the backlog treated strictly as a todo — icebox
+  / wait-until-needed entries don't belong in it. **Structure (user chose "two
+  homes by shape"):** three non-overlapping registers — `BACKLOG.md`
+  (actionable will-do), `ICEBOX.md` (**our own** deferred "not now" decisions,
+  free-form, each with a revisit condition: a trigger or "on request"), and
+  the `mining-census.md` Watch list (**mined external** `SKIP-until`
+  candidates, a
+  terse trigger→adopt table). `ICEBOX.md` is the audit-scope home for the
+  in-code `ICEBOX:` marker (`code-style.md`) when a decision has no code
+  location to pin a comment to. **Moved** out of BACKLOG into ICEBOX.md: the
+  "native statusline indicators can't be hidden" finding (revisit if
+  anthropics/claude-code #27916 / #48246 lands a hide option) and the
+  heavier/transcript-driven statusline candidates (revisit if plain `X%` stops
+  being enough). Wired it in: `claude-audit` skill scans `ICEBOX.md` + the
+  Watch list for fired triggers each run and routes follow-ups by kind;
+  `SETUP-AUDIT.md` and the BACKLOG header index the boundary.
+- 2026-06-19 — **Re-homed the "Plugin-audit follow-ups" items to the
+  mining-census Watch list; removed the BACKLOG section (PR #132).** After
+  the #131 prune, that section held only **trigger-gated `SKIP-until`** items
+  (do nothing until a repo needs them / until we build `pydantic_ai` agents) —
+  not actionable work, so they read as confusing open tasks. Worse, the
+  `pydantic_ai` deferred-rule item **duplicated** the existing Watch-list row,
+  and the claude-audit skill's own rule says *every `SKIP-until` lives on the
+  census Watch list*. **Fix:** deleted the BACKLOG `pydantic_ai` item (already
+  on the Watch list) and added the three vendor-when-needed items
+  (`pr-review-toolkit` lenses, `feature-dev` phased flow, a GH-Actions
+  PreToolUse hook) as Watch-list rows with triggers — their drop rationale
+  already lives in this log (2026-06-10). Removed the now-empty "Plugin-audit
+  follow-ups" section. Net: BACKLOG holds only actionable open work;
+  trigger-gated items sit where the re-promote-on-trigger mechanism is.
   user noticed completed items weren't removed at merge and asked whether the
   skill/rule covers the backlog. **Diagnosis:** two of three sources already
   said *prune* — the `claude-audit` Finalize step ("remove the item from

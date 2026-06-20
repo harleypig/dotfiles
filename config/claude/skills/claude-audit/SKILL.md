@@ -58,8 +58,10 @@ repo** for global changes — but **only audit-relevant files**:
 This procedure **is** the canonical methodology (it used to live in
 `SETUP-AUDIT.md`'s "How to run"; that file is now only the record's index). The
 living record is in `config/claude/audit/` — `decisions-log.md` (the "why"),
-`BACKLOG.md` (open follow-ups), `idea-sources.md` (mined repos) — indexed by
-`SETUP-AUDIT.md`. In short:
+`BACKLOG.md` (open *will-do* follow-ups), `ICEBOX.md` (our deferred "not now"
+decisions — revisit on a trigger or on request), `mining-census.md`
+(mined-item dispositions + the `SKIP-until` Watch list), `idea-sources.md`
+(mined repos) — indexed by `SETUP-AUDIT.md`. In short:
 
 1. **Measure first** — `/context` for the live baseline, then a **read-only
    inventory agent** (rules + sizes, MCP tool counts, plugins, hooks) so the
@@ -83,9 +85,14 @@ living record is in `config/claude/audit/` — `decisions-log.md` (the "why"),
    global → a dotfiles branch (audit files only) → PR; local → in this repo as
    needed.
 5. **Record** decisions in `audit/decisions-log.md` (global) and surface
-   per-repo findings. Convert audit-only "evaluate later" items into
-   `audit/BACKLOG.md`; route repo-specific follow-ups to that repo's `TODO.md`,
-   surfaced by the repo that needs them.
+   per-repo findings. Route follow-ups **by kind**: **will-do** →
+   `audit/BACKLOG.md`; **deferred / "not now" (ours)** → `audit/ICEBOX.md`
+   with a revisit condition (a trigger, or "on request"); **mined
+   `SKIP-until`** →
+   the `mining-census.md` Watch list. Repo-specific follow-ups go to that
+   repo's `TODO.md`, surfaced by the repo that needs them. **Each run, scan
+   `ICEBOX.md` and the Watch list for fired triggers** and re-promote what a
+   trigger unlocks into `BACKLOG.md`.
 
 ## Working the backlog
 
