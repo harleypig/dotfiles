@@ -159,6 +159,18 @@ convention**: its claims may be memory-based and already stale. This pairs
 with the currency check above (Context7) — grounding is *whether* a source
 exists; currency is *whether* it is still current.
 
+**Delegated research can over-claim — demand exact doc quotes.** When a
+spawned research agent (a `claude-code-guide` lookup, a doc-mining subagent)
+reports a **feature or behaviour claim** that would drive an action — a
+rename, a new `CLAUDE.md`/rule block, wiring a hook, adopting an API — do
+**not** act on the summary alone. Require an **exact quote plus the doc URL**
+backing that specific claim, and treat an unsourced specific as
+**unconfirmed** until checked against the primary source. Plausible-but-false
+specifics have slipped through twice (a skill-name charset rule not in the
+spec; a `# Compact instructions` CLAUDE.md heading that doesn't exist), caught
+only because they were high-stakes — make the quote-or-it-didn't-happen check
+routine, not luck.
+
 ## Mining repos for ideas
 
 An audit improves the **whole** dev environment, not just the current repo —

@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.3.0
+**Version:** v1.4.0
 
 ## Purpose
 
@@ -196,6 +196,17 @@ When capturing any follow-up, decide where it belongs before writing it:
   primary file and add an inline scope note pointing at the other — and, for an
   embedded config deliverable, either author it as part of the parent task or
   move it to `BACKLOG.md` when the parent completes, so it isn't stranded.
+* **Cross-repo** → a follow-up that belongs to a **different repo than the one
+  you're in** (e.g. a global-config change that spawns a per-repo evaluation
+  for pigify / scripturestudy-app). You usually can't write it into the target
+  repo's `TODO.md` from here, so don't lose it or mis-home it: **capture
+  it where the originating work lives** (the dotfiles `BACKLOG.md` for
+  config-spawned items, else the current repo's `TODO.md`), tag it with the
+  **target repo** and a **migrate-on-next-visit trigger** — e.g. "→ pigify:
+  migrate to its `TODO.md` when next working it". The reciprocal: when you
+  **start work in a repo**, scan the dotfiles `BACKLOG.md` (and any other
+  parking spot) for items tagged to it and migrate them into its `TODO.md`.
+  The **github-tasks** sweep is the natural place to run that inbound check.
 
 The reciprocal pointers live in each file's header and in `TODO.md`'s *Audit
 the Claude Code Setup* section.
@@ -292,7 +303,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.3.0)
+* `WORKFLOW.md` - Versioned (this file, v1.4.0)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 

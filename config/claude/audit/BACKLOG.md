@@ -61,24 +61,27 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   against our own: adopt when good and lean (vendor-and-modify with a
   `SOURCE.md`); write our own when the plugin is bloated/over-scoped for the
   context it costs. Weigh context cost vs maintenance burden explicitly.
-- [ ] **External validation (GitHub Apps).** Evaluate third-party App checks as
-  outside quality signals: what is wired (CodeFactor, Snyk) vs candidates
-  (Codecov for coverage, Codacy / SonarCloud) — what each adds, its noise/cost,
-  whether it earns its place. *(Partly advanced 2026-06-19: CodeFactor/Snyk
-  resolved via the `security-scan` §4 escape hatch; the broader candidate sweep
-  now lives in the "🏅 credibility signals / badges" research task below — keep
-  them in sync.)*
-- [ ] **Cross-repo follow-up routing (LOW — retrospective, PR #123).** The
-  TODO-routing convention (`WORKFLOW.md`) routes a follow-up to *its* repo's
-  `TODO.md` — but a global-config change can spawn a follow-up **for a different
-  repo I'm not currently in** (here: per-repo Snyk evals for pigify /
-  scripturestudy-app). There's no first-class capture for that; they were
-  parked in this BACKLOG with a "migrate when next in that repo" flag — a
-  workaround. Decide a convention (or a tiny mechanism) for cross-repo
-  follow-ups so they aren't lost or mis-homed. Likely a short addition to the
-  `WORKFLOW.md` TODO-routing section.
-- [ ] **Delegated research can over-claim — demand exact doc quotes (LOW —
-  retrospective, PRs #126/#127).** Twice in one session a delegated research
+- [x] **External validation (GitHub Apps). DONE (resolved + redirected):**
+  CodeFactor/Snyk were resolved via the `security-scan` §4 escape hatch
+  (2026-06-19), and the broader candidate sweep (Codecov, Codacy, SonarCloud,
+  OpenSSF Scorecard, …) now lives in the open "🏅 credibility signals /
+  badges" research task below — that task is the single home for the
+  outstanding work. Closing this design-dimension entry to avoid a duplicate
+  tracker; the badges task carries it forward.
+- [x] **Cross-repo follow-up routing (LOW — retrospective, PR #123). DONE:**
+  added a **Cross-repo** case to `WORKFLOW.md`'s *TODO Routing* section
+  (v1.4.0) — capture the follow-up where the originating work lives, tag it
+  with the target repo + a "migrate to its `TODO.md` when next working it"
+  trigger, and scan the parking spot for inbound items at the start of work in
+  a repo (the **github-tasks** sweep runs that check). This formalizes the
+  workaround the per-repo Snyk evals (pigify / scripturestudy-app) were parked
+  under.
+- [x] **Delegated research can over-claim — demand exact doc quotes (LOW —
+  retrospective, PRs #126/#127). DONE:** added a *Delegated research can
+  over-claim* paragraph to the `claude-audit` skill's grounding notes —
+  require an exact quote + doc URL for any feature/behaviour claim that drives
+  an action, treat unsourced specifics as unconfirmed. Twice in one session a
+  delegated research
   agent asserted a plausible-but-false feature: a name "must not contain
   `claude`/`anthropic`" rule (#126) and a `# Compact instructions` CLAUDE.md
   heading (#127). Both were caught by re-verifying against primary docs before
@@ -88,10 +91,12 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   CLAUDE.md block, wiring a hook), require an **exact quote + doc URL** and
   treat unsourced specifics as unconfirmed. Small wording add to the skill's
   *Check grounding* / *Verify currency* notes; not a new artifact.
-- [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
-  rule/skill, also check whether a plugin provides it or should be added.
-  Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a
-  Skill* and the `rule-coverage.py` hook. Bias to surfacing in the moment.
+- [x] **Plugin-aware proposals (behavior rule). DONE:** added a plugin-check
+  to `CLAUDE.md`'s *Missing or Conflicting Tool Rules* and *When to Propose a
+  Skill* (consider whether a plugin already provides it / should be added —
+  adopt-vs-build per `EXTENDING.md`, `rules/mcp.md`), and extended the
+  `rule-coverage.py` reminder message with the same nudge. Bias to surfacing
+  in the moment.
 - [x] **Canonicalize protected-branch detection in `git.md` (LOW —
   retrospective, PR #129). DONE:** promoted the concrete `gh api
   rules/branches` / `.../protection` detection commands into `git.md` *Never
