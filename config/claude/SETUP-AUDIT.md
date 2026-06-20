@@ -39,5 +39,5 @@ rules) are all resolved — see [`audit/decisions-log.md`](audit/decisions-log.m
 | Always-on rules | 8 unscoped: the 7 cross-cutting (`code-style`, `documentation`, `gh`, `git`, `qa`, `testing`, `troubleshooting`) plus `claude-code-auth` (a conversational-trigger guardrail with no file glob — kept always-on by design). `trufflehog` was scoped to `.github/workflows/**` (2026-06-19). 43 rules are `paths:`-scoped (on-demand, incl. `new-project` added 2026-06-19). |
 | MCP tool schemas | context7 only, via `mymcp` at user scope. terraform / serena dropped (2026-06-10). |
 | Plugins | 1 enabled (`skill-creator`); all other marketplace plugins disabled. |
-| Hooks | 5 bespoke (`branch-protection`, `merge-finalization`, `rule-coverage`, `shell-check`, `compact-snapshot`). |
+| Hooks | 6 bespoke (`branch-protection`, `merge-finalization`, `rule-coverage`, `shell-check`, `compact-snapshot`, `audit-cadence`). |
 | Always-on memory | global `CLAUDE.md` + the repo's `.claude/` (WORKFLOW / CONVENTIONS / TESTS). |

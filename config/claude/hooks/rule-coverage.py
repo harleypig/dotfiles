@@ -272,8 +272,9 @@ def main() -> int:
     f"{rules_dir}/<name>.md —\n - " + "\n - ".join(lines)
     + '\n\nPer the global CLAUDE.md "Missing or Conflicting Tool Rules" '
     "policy, surface this to the user and propose creating the rule(s) "
-    "(decide scope via the three-tier model). Skip genuinely trivial "
-    "utilities. This reminder will not repeat for the same items in "
+    "(decide scope via the three-tier model; also consider whether a plugin "
+    "already provides it — EXTENDING.md Build vs adopt). Skip genuinely "
+    "trivial utilities. This reminder will not repeat for the same items in "
     "this project."
   )
 

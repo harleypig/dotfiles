@@ -17,56 +17,77 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   dotfiles PR and sets up the local repo.
   (`claude-code-setup:claude-automation-recommender` can help gap-finding
   within a run.)
-- [ ] **Cadence.** Run `claude-audit` on a cadence — a quick pass *often*
+- [x] **Cadence. DONE (SessionStart hook nudge):** added
+  `config/claude/hooks/audit-cadence.py`, a SessionStart hook
+  (startup/resume/clear) that injects a once-a-day nudge to run a
+  `/claude-audit` pass — deduped via an `XDG_STATE_HOME/claude-audit-cadence`
+  date marker so it reminds without nagging every session. Fail-safe (exit 0
+  on any error). Tested by `tests/python/test_audit_cadence.py`. Run
+  `claude-audit` on a cadence — a quick pass *often*
   (enabled plugins/MCP, obvious always-on bloat) and a deeper audit
-  *periodically*. Wire it to a reminder / `/schedule`. Each detailed run
+  *periodically*. Each detailed run
   records decisions here. Expect the **global** config to be re-evaluated from
   many repos — possibly several times a day; that repetition is by design (see
   the claude-audit skill, *Global is re-evaluated from every repo*).
-- [ ] **Context-load tiering.** Classify every artifact by *when* it loads:
+- [x] **Context-load tiering.** *Folded into the `claude-audit` skill
+  (Procedure step 1–2: "classify every artifact by load tier — always-on /
+  on-demand / isolated"). Checkbox closed; this is now a standing dimension of
+  every run, not open work.* Classify every artifact by *when* it loads:
   always-on (every turn: global CLAUDE.md, unscoped rules, enabled MCP tool
   schemas — the expensive tier), on-demand (path-scoped rules, skills, deferred
   MCP tools), isolated (agents — ~free to the main thread). Highest-leverage
   lever: push always-on content down a tier.
-- [ ] **Recategorize / split / merge.** For each artifact ask whether it is the
+- [x] **Recategorize / split / merge.** *Folded into the `claude-audit` skill
+  (Procedure step 2: assess right-fit / "is it the correct kind" + "has a
+  category grown too big and need splitting"). Checkbox closed; standing
+  dimension now.* For each artifact ask whether it is the
   right *kind*: a "rule" that is really a procedure → skill; one that must
   happen every time → hook; a bloated multi-tool rule → split per tool;
   duplicated content → dedupe to one canonical source.
-- [ ] **Enforce always-on intent: flag rules with no frontmatter** (LOW —
-  retrospective, PR #122). Both `trufflehog.md` and `claude-code-auth.md` were
+- [x] **Enforce always-on intent: flag rules with no frontmatter** (LOW —
+  retrospective, PR #122). **DONE:** built it as a **meta-test**
+  (`tests/shell/test_rule_frontmatter.bats`), mirroring the skills guard
+  (`test_skill_frontmatter.bats`) rather than a `PostToolUse` hook — rules are
+  added rarely, so a CI gate suffices and costs nothing per edit. It flags any
+  `config/claude/rules/*.md` whose frontmatter has neither `paths:` nor a
+  `# No paths` comment. `rule-TEMPLATE.md` and `.claude/TESTS.md` updated to
+  match. Both `trufflehog.md` and `claude-code-auth.md` were
   added *always-on by omission* (no `paths:` and no `# No paths` comment) — only
-  an audit caught it. Now every `rules/*.md` is either `paths:`-scoped or
-  carries a `# No paths — <why>` comment. A tiny **meta-test or `PostToolUse`
-  hook** could keep it that way: flag any `config/claude/rules/*.md` whose
-  frontmatter has neither `paths:` nor a documenting comment, so a new rule
-  can't silently join the per-turn tier. Decide kind (meta-test vs hook) and
-  whether the leverage justifies the check.
-- [ ] **Plugins / MCP dimension.** Inventory every enabled plugin (what it
+  an audit caught it; now a new rule can't silently join the per-turn tier.
+- [x] **Plugins / MCP dimension.** *Folded into the `claude-audit` skill
+  (Procedure step 3 + `rules/mcp.md`: plugin/MCP inventory and cull). Checkbox
+  closed; standing dimension now.* Inventory every enabled plugin (what it
   does/bundles, whether used); cull duplicates of the `gh` CLI / existing
   rules+skills and unused ones; remember plugins carry context cost. MCP
   servers here come *from* plugins (no hand-maintained `mcp.json`).
-- [ ] **Build vs. adopt.** For each capability weigh a maintained plugin/skill
+- [x] **Build vs. adopt.** *Folded into the `claude-audit` skill (mining/
+  "Judging": score generic value, then overlap with built-ins, vendor-with-
+  `SOURCE.md` vs write-our-own). Checkbox closed; standing dimension now.* For
+  each capability weigh a maintained plugin/skill
   against our own: adopt when good and lean (vendor-and-modify with a
   `SOURCE.md`); write our own when the plugin is bloated/over-scoped for the
   context it costs. Weigh context cost vs maintenance burden explicitly.
-- [ ] **External validation (GitHub Apps).** Evaluate third-party App checks as
-  outside quality signals: what is wired (CodeFactor, Snyk) vs candidates
-  (Codecov for coverage, Codacy / SonarCloud) — what each adds, its noise/cost,
-  whether it earns its place. *(Partly advanced 2026-06-19: CodeFactor/Snyk
-  resolved via the `security-scan` §4 escape hatch; the broader candidate sweep
-  now lives in the "🏅 credibility signals / badges" research task below — keep
-  them in sync.)*
-- [ ] **Cross-repo follow-up routing (LOW — retrospective, PR #123).** The
-  TODO-routing convention (`WORKFLOW.md`) routes a follow-up to *its* repo's
-  `TODO.md` — but a global-config change can spawn a follow-up **for a different
-  repo I'm not currently in** (here: per-repo Snyk evals for pigify /
-  scripturestudy-app). There's no first-class capture for that; they were
-  parked in this BACKLOG with a "migrate when next in that repo" flag — a
-  workaround. Decide a convention (or a tiny mechanism) for cross-repo
-  follow-ups so they aren't lost or mis-homed. Likely a short addition to the
-  `WORKFLOW.md` TODO-routing section.
-- [ ] **Delegated research can over-claim — demand exact doc quotes (LOW —
-  retrospective, PRs #126/#127).** Twice in one session a delegated research
+- [x] **External validation (GitHub Apps). DONE (resolved + redirected):**
+  CodeFactor/Snyk were resolved via the `security-scan` §4 escape hatch
+  (2026-06-19), and the broader candidate sweep (Codecov, Codacy, SonarCloud,
+  OpenSSF Scorecard, …) now lives in the open "🏅 credibility signals /
+  badges" research task below — that task is the single home for the
+  outstanding work. Closing this design-dimension entry to avoid a duplicate
+  tracker; the badges task carries it forward.
+- [x] **Cross-repo follow-up routing (LOW — retrospective, PR #123). DONE:**
+  added a **Cross-repo** case to `WORKFLOW.md`'s *TODO Routing* section
+  (v1.4.0) — capture the follow-up where the originating work lives, tag it
+  with the target repo + a "migrate to its `TODO.md` when next working it"
+  trigger, and scan the parking spot for inbound items at the start of work in
+  a repo (the **github-tasks** sweep runs that check). This formalizes the
+  workaround the per-repo Snyk evals (pigify / scripturestudy-app) were parked
+  under.
+- [x] **Delegated research can over-claim — demand exact doc quotes (LOW —
+  retrospective, PRs #126/#127). DONE:** added a *Delegated research can
+  over-claim* paragraph to the `claude-audit` skill's grounding notes —
+  require an exact quote + doc URL for any feature/behaviour claim that drives
+  an action, treat unsourced specifics as unconfirmed. Twice in one session a
+  delegated research
   agent asserted a plausible-but-false feature: a name "must not contain
   `claude`/`anthropic`" rule (#126) and a `# Compact instructions` CLAUDE.md
   heading (#127). Both were caught by re-verifying against primary docs before
@@ -76,12 +97,18 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   CLAUDE.md block, wiring a hook), require an **exact quote + doc URL** and
   treat unsourced specifics as unconfirmed. Small wording add to the skill's
   *Check grounding* / *Verify currency* notes; not a new artifact.
-- [ ] **Plugin-aware proposals (behavior rule).** When proposing a new
-  rule/skill, also check whether a plugin provides it or should be added.
-  Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a
-  Skill* and the `rule-coverage.py` hook. Bias to surfacing in the moment.
-- [ ] **Canonicalize protected-branch detection in `git.md` (LOW —
-  retrospective, PR #129).** The `new-project` rule/skill needed to detect
+- [x] **Plugin-aware proposals (behavior rule). DONE:** added a plugin-check
+  to `CLAUDE.md`'s *Missing or Conflicting Tool Rules* and *When to Propose a
+  Skill* (consider whether a plugin already provides it / should be added —
+  adopt-vs-build per `EXTENDING.md`, `rules/mcp.md`), and extended the
+  `rule-coverage.py` reminder message with the same nudge. Bias to surfacing
+  in the moment.
+- [x] **Canonicalize protected-branch detection in `git.md` (LOW —
+  retrospective, PR #129). DONE:** promoted the concrete `gh api
+  rules/branches` / `.../protection` detection commands into `git.md` *Never
+  Work Directly on a Protected Branch* as the numbered canonical method
+  (git.md v1.11.0); `new-project.md` now references it instead of carrying its
+  own copy. The `new-project` rule/skill needed to detect
   branch protection for a *brownfield* repo that lacks the local
   `no-commit-to-branch` hook, so it spelled out the concrete
   `gh api repos/{owner}/{repo}/rules/branches/<branch>` (and `.../protection`)
@@ -93,6 +120,16 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   `code-style.md` Rule of Three), promote the `gh api` detection command into
   `git.md` as the canonical method and have `new-project` reference it instead
   of carrying its own copy. Small edit; not a new artifact.
+- [ ] **Prose-wrap check for agent-config Markdown (LOW — retrospective, PR
+  #130).** The 78-col prose-wrap convention (`CONVENTIONS.md`) is enforced
+  only by eye — markdownlint's `line_length` is set to 200 (tables/code),
+  so 79–80-col prose slips through; this session hand-fixed several such lines
+  (em-dashes also fool `awk length`, so the check must count *characters*).
+  Consider a small pre-commit/meta check that flags >78-col **prose** lines in
+  `config/claude/**` and `.claude/**` Markdown while exempting table rows,
+  fenced code, frontmatter `description:`, and reference-link/URL lines.
+  **Risk:** false positives on exactly those exemptions — evaluate whether a
+  reliable check is even feasible before building; it may not be worth it.
 
 ## Plugin-audit follow-ups (from the 2026-06-10/-11 passes)
 

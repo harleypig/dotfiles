@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.10.0
+**Version:** v1.11.0
 
 ## Commit Messages
 
@@ -127,12 +127,25 @@ though uncommitted changes carry across `git checkout -b`, accumulating work
 on the protected branch is exactly the habit this rule forbids (one slip and
 the change is committed where it must never land).
 
-To tell whether a branch is protected: a server-side ruleset / branch
-protection, a local `no-commit-to-branch` hook (above), or the repo's
-`.claude/` docs name it. When in doubt, treat the default branch as
-protected. In a repo that configures `no-commit-to-branch`, the edit-time
-`branch-protection.py` hook enforces this rule for the agent automatically
-(see *Protecting the Default Branch*).
+To tell whether a branch is protected, check the available signals **in
+order** — this is the canonical detection method other rules/skills reference:
+
+1. **Server-side ruleset / branch protection** (authoritative) — query the
+   host's API. For GitHub,
+   `gh api repos/{owner}/{repo}/rules/branches/<branch>` lists the rules that
+   apply to a branch (ruleset-aware), and
+   `gh api repos/{owner}/{repo}/branches/<branch>/protection` reports classic
+   branch protection. (`gh` fills `{owner}`/`{repo}` from the current repo.)
+2. **Local `no-commit-to-branch` hook** args (above), if the repo configures
+   it.
+3. The repo's **`.claude/` docs** naming the protected branch.
+
+When in doubt, treat the **default branch as protected**. When **none** of
+these resolve it — common for a freshly cloned or not-yet-configured repo that
+lacks the local hook — **ask the user** before authoring on the branch rather
+than assuming it is safe. In a repo that configures `no-commit-to-branch`, the
+edit-time `branch-protection.py` hook enforces this rule for the agent
+automatically (see *Protecting the Default Branch*).
 
 ## Worktrees
 

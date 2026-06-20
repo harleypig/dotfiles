@@ -6,6 +6,33 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Cleared the *Audit dimensions / design* backlog section
+  (batch, PR #130).** Took the section to zero open items. The four
+  design-checklist items (context-load tiering, recategorize/split/merge,
+  plugins/MCP, build-vs-adopt) were marked done as **folded into the
+  `claude-audit` skill** — standing dimensions of every run, retained in
+  BACKLOG with a pointer (this section keeps `[x]` for continuity, like the
+  `[x] Form` item). Seven build items: (1) **rule-frontmatter guard**
+  `tests/shell/test_rule_frontmatter.bats` — flags any `rules/*.md` lacking
+  `paths:` or a `# No paths` comment; a CI gate, not a hook (rules are added
+  rarely); `rule-TEMPLATE.md` + `.claude/TESTS.md` (v2.5.0) updated. (2)
+  **Canonical protected-branch detection** in `git.md` (v1.11.0) — the
+  `gh api rules/branches` / `.../protection` commands as the numbered method;
+  `new-project.md` now references it (resolves the PR #129 retrospective). (3)
+  **Plugin-aware proposals** — CLAUDE.md's *Missing or Conflicting Tool Rules*
+  and *When to Propose a Skill* + the `rule-coverage.py` reminder now add an
+  adopt-vs-build plugin check. (4) **Cross-repo follow-up routing** —
+  WORKFLOW.md (v1.4.0) gains a *Cross-repo* TODO-routing case. (5)
+  **Delegated-research over-claim** — claude-audit grounding notes demand an
+  exact quote + doc URL for any feature claim driving an action. (6)
+  **External validation** closed as resolved+redirected to the badges task.
+  (7) **Cadence
+  (user chose the SessionStart hook nudge):** `config/claude/hooks/
+  audit-cadence.py` injects a once-a-day `/claude-audit` nudge on
+  startup/resume/clear, deduped via an `XDG_STATE_HOME/claude-audit-cadence`
+  date marker, fail-safe; `tests/python/test_audit_cadence.py` (5 cases); hook
+  count 5→6. Retrospective filed (LOW): a prose-wrap check for agent-config
+  Markdown.
 - 2026-06-19 — **Authored the "new project setup" item as both a rule and a
   skill.** Worked the long-standing BACKLOG item (under *Claude Rules Files*).
   **Kind decision:** by `EXTENDING.md`'s primitive guidance a multi-step init
