@@ -258,8 +258,13 @@ duplicates / similar setups). Chart each in
   - <https://github.com/JoasASantos/ClaudeAdvancedPlugins>
 - [ ] **`ykdojo/claude-code-tips`** — a tips collection (not skills); codify any
   into a rule/skill. <https://github.com/ykdojo/claude-code-tips>
-- [ ] **`ruvnet/ruflo`** — evaluate whether worth exploring (not a
-  plugin/skill). <https://github.com/ruvnet/ruflo>
+- [x] **`ruvnet/ruflo` — evaluated 2026-06-20: not worth a mining pass.** The
+  renamed `claude-flow` — a 60k★ Claude-Code-native multi-agent **swarm**
+  harness. Runtime **SKIP** (auto-routing-swarm + always-on MCP/daemon
+  conflicts with our curated minimal-context approach); its `.claude/` corpus
+  is **low-yield** (patterns overlap ours; marketing-heavy). Registered in
+  `idea-sources.md`; the one forward idea (session checkpoint/restore) parked
+  on the mining-census Watch list. See decisions-log.
 
 ### Claude statusline enhancements (claude-hud candidates)
 

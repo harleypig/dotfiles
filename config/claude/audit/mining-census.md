@@ -53,6 +53,7 @@ new dependency or tool; the audit checks it each run.
 | **A code-review lens `qa.md` lacks** (silent-failure / comment-rot / type-design) | `pr-review-toolkit` lenses → vendor as a skill, or fold into the qa code-style audit (drop rationale: decisions log 2026-06-10) |
 | **A phased feature-dev flow wanted** (Explore→Plan→build in a repo) | `feature-dev` → vendor `/feature-dev` as a skill driving built-in Explore/Plan agents (drop rationale: decisions log 2026-06-10) |
 | **A GH-Actions-injection guard needed** (beyond `github-actions.md` awareness) | a tiny path-only GH-Actions PreToolUse hook — likely unnecessary (drop rationale: decisions log 2026-06-10) |
+| **Wanting session checkpoint/restore** (beyond `compact-snapshot`) | `ruvnet/ruflo` `.claude/helpers` context-persistence + PreCompact / SessionStart hooks — mine the *pattern*, not the runtime (eval: decisions log 2026-06-20) |
 
 (Tier-3 "build on first use" items are already watch-like by definition; listed
 here so there's one place to scan.)
