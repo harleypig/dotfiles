@@ -6,6 +6,23 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Added `audit/ICEBOX.md`; made BACKLOG a pure will-do todo
+  (PR #132).** The user wanted the backlog treated strictly as a todo — icebox
+  / wait-until-needed entries don't belong in it. **Structure (user chose "two
+  homes by shape"):** three non-overlapping registers — `BACKLOG.md`
+  (actionable will-do), `ICEBOX.md` (**our own** deferred "not now" decisions,
+  free-form, each with a revisit condition: a trigger or "on request"), and
+  the `mining-census.md` Watch list (**mined external** `SKIP-until`
+  candidates, a
+  terse trigger→adopt table). `ICEBOX.md` is the audit-scope home for the
+  in-code `ICEBOX:` marker (`code-style.md`) when a decision has no code
+  location to pin a comment to. **Moved** out of BACKLOG into ICEBOX.md: the
+  "native statusline indicators can't be hidden" finding (revisit if
+  anthropics/claude-code #27916 / #48246 lands a hide option) and the
+  heavier/transcript-driven statusline candidates (revisit if plain `X%` stops
+  being enough). Wired it in: `claude-audit` skill scans `ICEBOX.md` + the
+  Watch list for fired triggers each run and routes follow-ups by kind;
+  `SETUP-AUDIT.md` and the BACKLOG header index the boundary.
 - 2026-06-19 — **Re-homed the "Plugin-audit follow-ups" items to the
   mining-census Watch list; removed the BACKLOG section (PR #132).** After
   the #131 prune, that section held only **trigger-gated `SKIP-until`** items

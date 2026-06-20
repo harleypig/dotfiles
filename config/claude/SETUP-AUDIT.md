@@ -22,11 +22,14 @@ The living record lives in sibling files under [`audit/`](audit/):
 
 - [`decisions-log.md`](audit/decisions-log.md) — chronological decisions (the
   "why"), append-only.
-- [`BACKLOG.md`](audit/BACKLOG.md) — open audit follow-ups; a todo file,
-  separate from the repo's own `TODO.md`.
+- [`BACKLOG.md`](audit/BACKLOG.md) — open, **will-do** audit follow-ups; a
+  todo file, separate from the repo's own `TODO.md`.
+- [`ICEBOX.md`](audit/ICEBOX.md) — our **deferred "not now"** decisions
+  (revisit on a trigger or on request); scanned each audit run.
 - [`idea-sources.md`](audit/idea-sources.md) — repos mined for ideas.
 - [`mining-census.md`](audit/mining-census.md) — full per-item
-  ADOPT/CANDIDATE/SKIP disposition of mined repos.
+  ADOPT/CANDIDATE/SKIP disposition of mined repos, plus the `SKIP-until`
+  **Watch list** (mined deferrals, re-promoted on a fired trigger).
 
 ## Baseline — 2026-06-19
 

@@ -6,11 +6,17 @@ to avoid confusion. Includes both audit-process follow-ups and config tasks
 migrated from `TODO.md`. **Routing:** a config task lands here; a dotfiles task
 in `TODO.md`; a mixed task is split with a cross-reference unless its parts are
 merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
-`/claude-audit`. Audit-only (not context-loaded). Completed items are
-recorded in [`decisions-log.md`](decisions-log.md) (the durable record) and
-**pruned from here once the PR that completes them goes green** — this file
-holds only *open* work. Mined-repo provenance lives in
-[`idea-sources.md`](idea-sources.md) / [`mining-census.md`](mining-census.md).
+`/claude-audit`. Audit-only (not context-loaded). This file holds only
+**actionable, will-do** work — *not* deferred or trigger-gated items:
+
+- **Completed** items are recorded in [`decisions-log.md`](decisions-log.md)
+  (the durable record) and **pruned from here once the PR that completes them
+  goes green**.
+- **Deferred / "not now"** decisions of our own go to
+  [`ICEBOX.md`](ICEBOX.md) (revisit on a trigger or on request) — not here.
+- **Mined external** candidates deferred `SKIP-until <trigger>` live on the
+  [`mining-census.md`](mining-census.md) *Watch list*; mined-repo provenance
+  is in [`idea-sources.md`](idea-sources.md) / `mining-census.md`.
 
 ## Audit dimensions / design
 
@@ -306,11 +312,6 @@ standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
   native one, it would **duplicate** output — not what we want, so skip.
   Ground the answer in the docs + a quick trial (fire a background subagent and
   watch the row) before wiring anything.
-- [ ] **Heavier candidates** (transcript-driven — defer): the tools/agents
-  lines and todos `(2/5)`. *(2026-06-19: project path, session duration, output
-  speed, and token totals were skipped by the user; the context progress-bar
-  glyph is `SKIP-until` on the census watch list — revisit if the plain `X%`
-  stops being enough.)*
 - [ ] **Keybinding cheat-sheet statusline line** (research → build). The user
   wants a second statusline line *below* the current one that displays the
   prompt-input shortcuts worth memorizing. Two parts:
@@ -330,25 +331,6 @@ standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
      the line could show NORMAL keys vs INSERT keys per the active mode).
      Target: `config/claude/bin/statusline.sh`. Keep it terse — a cheat-sheet,
      not a manual; weigh the vertical space it costs against its value.
-
-**`ICEBOX:` cannot hide the native below-prompt indicator lines** — the
-**auto-accept / permission-mode** indicator (`⏵⏵ auto mode on`), the
-**running-subagent / task** line, and the **`· PR #N`** badge have **no
-off-switch** (settings, env, or flag) as of 2026-06-19 — verified against the
-Claude Code docs and by re-examining `claude-hud` (which sets no suppression
-key, can't even read the permission mode, and only stacks a transcript-parsed
-agents line *on top of* the native one). The only documented `statusLine` hide
-field is `hideVimModeIndicator`; the full set of `statusLine` sub-fields is
-`type` / `command` / `padding` / `refreshInterval` / `hideVimModeIndicator` /
-`subagentStatusLine` (the last **formats** subagent rows — it does **not** hide
-the native line). Consequence: reconstructing any of these (PR#, permission
-mode, agents) in our own statusline would only **duplicate** the un-hideable
-native badge, so it isn't worth it — the permission mode and PR# are both in
-the data (permission mode in the **transcript** `permission-mode`/`mode`
-entries; `.pr.number` in the **stdin** JSON), they just can't replace the
-native display. Open upstream requests: anthropics/claude-code **#27916**,
-**#48246**. Revisit if either lands a hide option; until then, only the vim
-indicator was controllable (and is done).
 
 ### New rule/skill candidates
 
