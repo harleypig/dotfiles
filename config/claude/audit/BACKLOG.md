@@ -454,6 +454,25 @@ standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
   speed, and token totals were skipped by the user; the context progress-bar
   glyph is `SKIP-until` on the census watch list — revisit if the plain `X%`
   stops being enough.)*
+- [ ] **Keybinding cheat-sheet statusline line** (research → build). The user
+  wants a second statusline line *below* the current one that displays the
+  prompt-input shortcuts worth memorizing. Two parts:
+  1. **Research the keys.** This setup runs `editorMode: vim`
+     (`settings.json`), so the prompt has both modes. Enumerate, grounded in
+     the **Claude Code docs** (via the `claude-code-guide` agent — demand
+     exact doc references per the *delegated-research over-claim* guard above,
+     don't trust memory): the useful **INSERT-mode `Ctrl`/`Alt` bindings**
+     (e.g. reverse-search, word-delete/word-move, line edits, history) and
+     the supported **NORMAL-mode (vim) keys/motions**. Note which are real
+     Claude Code bindings vs. terminal/readline defaults that merely pass
+     through.
+  2. **Pick + display.** Select the subset worth memorizing and render them as
+     a compact reference on a new line beneath the current statusline. Verify
+     the statusline `command` can emit multiple lines (newline in stdout) and
+     that the cheat-sheet can be mode-aware (it already reads `.vim.mode` —
+     the line could show NORMAL keys vs INSERT keys per the active mode).
+     Target: `config/claude/bin/statusline.sh`. Keep it terse — a cheat-sheet,
+     not a manual; weigh the vertical space it costs against its value.
 
 **`ICEBOX:` cannot hide the native below-prompt indicator lines** — the
 **auto-accept / permission-mode** indicator (`⏵⏵ auto mode on`), the
