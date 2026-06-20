@@ -186,15 +186,6 @@ agent how to use each tool. Already have, among others: bash, perl,
 powershell, pre-commit, python, shellcheck, shfmt, yamllint, markdownlint,
 yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
 
-- [ ] Remaining rules to author:
-  - [ ] commitizen — rule and/or skill for conventional commit message
-    formatting; evaluate whether a rule (policy + invocation) is sufficient
-    or whether the multi-step workflow warrants a skill
-  - [ ] changelog generation — rule and/or skill for producing changelogs
-    from git history on version changes; evaluate tools (git-cliff,
-    conventional-changelog, keep-a-changelog manual pattern) and whether
-    changelog generation should be part of a broader release skill alongside
-    tagging and commitizen
 - [ ] **Conformance sweep for the language/tool layering** (follow-up to the
   codification above). Bring existing artifacts into line with `EXTENDING.md`
   *The language & tool stacks*: each language rule (`typescript.md`,

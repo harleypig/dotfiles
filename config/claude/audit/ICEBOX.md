@@ -55,3 +55,26 @@ path, session duration, output speed, and token totals were skipped by the
 user; the context progress-bar glyph is the `SKIP-until` item on the
 [`mining-census.md`](mining-census.md) Watch list — revisit there if the plain
 `X%` stops being enough.)*
+
+## Commit & changelog tooling (commitizen, git-cliff, conventional-changelog)
+
+**Revisit when** a repo wants tool-driven conventional-commit authoring or
+`cz`-style version bumping (→ commitizen), or a changelog **generated** from
+git history rather than hand-written (→ git-cliff / conventional-changelog).
+
+Evaluated 2026-06-20 and **not adopted** — the agent and the dotfiles repo
+already cover the need without these tools:
+
+- **Conventional commits** are mandated in `rules/git.md` *Commit Messages*
+  and authored directly by the agent; no `commitizen` (`cz`) CLI, config, or
+  hook is used or needed.
+- **The changelog** is **manual** keep-a-changelog, written at merge-time
+  (`ship-pr` Step 4.5), grouped by date because the dotfiles repo isn't
+  release-versioned. `.claude/QA.md` records *Generated changelog: N/A*.
+
+If a repo *does* adopt one — a release-versioned component repo wanting a
+git-history changelog, or a team wanting enforced `cz` commits / `cz bump` —
+author the tool rule **then**, global and on first use (ADR-0003): a
+`commitizen.md` and/or a generator rule (weigh **git-cliff** vs
+**conventional-changelog**), wired into `qa.md` dim 13 (a generated changelog
+is a Format-class prep step) and the release flow (the `release-tag` skill).
