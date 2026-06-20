@@ -54,6 +54,11 @@ new dependency or tool; the audit checks it each run.
 | **A phased feature-dev flow wanted** (Explore→Plan→build in a repo) | `feature-dev` → vendor `/feature-dev` as a skill driving built-in Explore/Plan agents (drop rationale: decisions log 2026-06-10) |
 | **A GH-Actions-injection guard needed** (beyond `github-actions.md` awareness) | a tiny path-only GH-Actions PreToolUse hook — likely unnecessary (drop rationale: decisions log 2026-06-10) |
 | **Wanting session checkpoint/restore** (beyond `compact-snapshot`) | `ruvnet/ruflo` `.claude/helpers` context-persistence + PreCompact / SessionStart hooks — mine the *pattern*, not the runtime (eval: decisions log 2026-06-20) |
+| **Running a service/infra with reliability needs** (SRE) | reliability/observability/IR cluster — chaos-engineering, SLO/error-budget, incident-commander, runbook + monitoring (4-repo signal); fills the acknowledged `qa.md` dim 10/11 gap (plugin-collection sweep, 2026-06-20) |
+| **Building our own MCP server** | mcp-server-builder / mcp-developer skills (scaffold from an OpenAPI spec) — `mcp.md` covers consuming, not authoring (sweep 2026-06-20) |
+| **Owning a public/external API contract** | `api-design-reviewer` / `openapi-expert` — REST linting + breaking-change detection (sweep 2026-06-20) |
+| **Authorized pentest / CTF / security-research work** | security-domain agents — red/blue-team, pentest, RE, exploit, threat-modeling (`JoasASantos`, VoltAgent `penetration-tester`); our `security-scan` is defensive SAST/SCA (sweep 2026-06-20) |
+| **Wanting context economy beyond removal + snapshot** | context-economy-by-*compression* — compress large tool outputs + MCP tool descriptions + memory files (`caveman`/`headroom`/`context-mode`); we do economy by removal (`claude-audit`) + snapshot (`compact-snapshot`) (sweep 2026-06-20) |
 
 (Tier-3 "build on first use" items are already watch-like by definition; listed
 here so there's one place to scan.)
@@ -121,6 +126,28 @@ counter to our posture — disable-attribution,
 - **Input-box keybindings (Tip 36)** — exact bindings feeding the open
   *Keybinding cheat-sheet statusline line* item; secondary source, cross-check
   against official docs.
+
+---
+
+## Round 2026-06-20 — plugin/skill collection repos (11-repo sweep)
+
+The *Mining queue* "big collection repos" item — 11 aggregator/marketplace
+repos mined at once (fanned out to read-only census agents, net-new only).
+Per-repo table + deduped theme analysis:
+[`mining/plugin-collection-repos.md`](mining/plugin-collection-repos.md).
+**Heavy duplication confirmed** (as the queue predicted); all 11 repos are
+SKIP as adopt-sources. The value is the **cross-repo theme signal**:
+
+- **One CANDIDATE → `BACKLOG.md`:** agent supply-chain / install-safety audit
+  (scan an external skill/plugin before install; lint a repo for
+  agent-readiness) — **pairs with the `cc-safe` permission-allow-list
+  CANDIDATE** into one "harden the agent's attack surface" theme.
+- **Five Watch-list triggers** added above: reliability/SRE, MCP-server
+  building, API-contract review, security-domain agents,
+  context-economy-by-compression. All build-on-first-use (ADR-0003).
+- **Reconfirmed held:** the spec→plan→onboarding *workflow* cluster (future
+  workflow/planning category); standard language/domain-expert agent sets
+  (already charted via `claude-tools`).
 
 ---
 
