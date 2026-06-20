@@ -17,9 +17,15 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   dotfiles PR and sets up the local repo.
   (`claude-code-setup:claude-automation-recommender` can help gap-finding
   within a run.)
-- [ ] **Cadence.** Run `claude-audit` on a cadence — a quick pass *often*
+- [x] **Cadence. DONE (SessionStart hook nudge):** added
+  `config/claude/hooks/audit-cadence.py`, a SessionStart hook
+  (startup/resume/clear) that injects a once-a-day nudge to run a
+  `/claude-audit` pass — deduped via an `XDG_STATE_HOME/claude-audit-cadence`
+  date marker so it reminds without nagging every session. Fail-safe (exit 0
+  on any error). Tested by `tests/python/test_audit_cadence.py`. Run
+  `claude-audit` on a cadence — a quick pass *often*
   (enabled plugins/MCP, obvious always-on bloat) and a deeper audit
-  *periodically*. Wire it to a reminder / `/schedule`. Each detailed run
+  *periodically*. Each detailed run
   records decisions here. Expect the **global** config to be re-evaluated from
   many repos — possibly several times a day; that repetition is by design (see
   the claude-audit skill, *Global is re-evaluated from every repo*).
