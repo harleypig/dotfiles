@@ -6,6 +6,34 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Authored the "new project setup" item as both a rule and a
+  skill.** Worked the long-standing BACKLOG item (under *Claude Rules Files*).
+  **Kind decision:** by `EXTENDING.md`'s primitive guidance a multi-step init
+  is skill-shaped, but the user chose **both** — a thin **policy** rule plus
+  the **procedure** skill, the `bats-setup → bats.md` pattern. **Context
+  economy:** the rule is **path-scoped** to manifest/scaffold files
+  (`pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `Gemfile`, the
+  pre-commit configs, `DEVELOPER.md`) so it never joins the always-on tier — a
+  setup rule has no natural glob and would otherwise be per-turn bloat
+  (scoped-rule count 42→43; always-on stays 8). The backlog's
+  "points-from-experience" became the rule's policy; **language bootstrapping
+  is delegated to the per-language rules**, not inlined (the split the item
+  flagged), per *Layer the generic over the specific*. **Brownfield mode:**
+  the skill also **converts an existing repo to the claude setup**
+  (inventory → gap-analyze → wire missing layers non-destructively → the
+  `.claude/` decision → promote repo-local rules to global) — folding in a
+  convert-existing idea
+  the user expected captured separately but that only existed implicitly here.
+  **Protected-branch detection fix:** the "never author on a protected branch"
+  guidance originally leaned on the local `no-commit-to-branch` hook, which a
+  not-yet-converted repo lacks (circular); reworked to detect via the host
+  ruleset/branch-protection **API** (`gh api .../rules/branches/<branch>`) →
+  `.claude/` docs → local hook args, default-protected when unsure, and **ask
+  the user** if nothing resolves it. Grounding: house convention (no external
+  source). Retrospective filed (BACKLOG, LOW): promote that concrete detection
+  command into `git.md` as the canonical source so it doesn't drift. Shipped
+  PR #129. Files: `rules/new-project.md`, `skills/new-project/SKILL.md`,
+  `SETUP-AUDIT.md`.
 - 2026-06-19 — **Settled Claude Code compaction control; wired a
   `SessionStart`/`compact` snapshot hook.** Worked the BACKLOG item, grounded
   in current official docs (claude-code-guide). **Q1 — the `# Compact
