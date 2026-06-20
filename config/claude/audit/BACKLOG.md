@@ -80,6 +80,19 @@ continuity; mined-repo provenance in [`idea-sources.md`](idea-sources.md).
   rule/skill, also check whether a plugin provides it or should be added.
   Extend `CLAUDE.md`'s *Missing or Conflicting Tool Rules* + *When to Propose a
   Skill* and the `rule-coverage.py` hook. Bias to surfacing in the moment.
+- [ ] **Canonicalize protected-branch detection in `git.md` (LOW —
+  retrospective, PR #129).** The `new-project` rule/skill needed to detect
+  branch protection for a *brownfield* repo that lacks the local
+  `no-commit-to-branch` hook, so it spelled out the concrete
+  `gh api repos/{owner}/{repo}/rules/branches/<branch>` (and `.../protection`)
+  query **inline**. But the canonical home for "how to tell whether a branch
+  is protected" is `git.md` (*Protecting the Default Branch* / *Never Work
+  Directly on a Protected Branch*), which lists the *sources* (ruleset, local
+  hook, `.claude/` docs, default-when-in-doubt) but **not** the concrete API
+  command. To stop the method drifting across two files (dedupe-the-fact,
+  `code-style.md` Rule of Three), promote the `gh api` detection command into
+  `git.md` as the canonical method and have `new-project` reference it instead
+  of carrying its own copy. Small edit; not a new artifact.
 
 ## Plugin-audit follow-ups (from the 2026-06-10/-11 passes)
 
@@ -296,34 +309,6 @@ powershell, pre-commit, python, shellcheck, shfmt, yamllint, markdownlint,
 yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
 
 - [ ] Remaining rules to author:
-  - [ ] new project setup — rule covering the general checklist for
-    initializing a project (git init, pre-commit, .claude/ scaffold,
-    DEVELOPER.md, TODO.md, etc.); evaluate splitting language-specific
-    bootstrapping steps (e.g. NeoForge MDK, Poetry, npm init) into the
-    relevant per-language rules file rather than bloating the general rule.
-    Points to consider from experience:
-    - Investigate actual storage/file formats before designing around them;
-      official docs may describe outdated formats (e.g. JourneyMap switched
-      from per-waypoint JSON to a binary DAT in 6.x without updating docs)
-    - Check whether related/foreign repos are already cloned as siblings
-      before suggesting clone locations (../reponame convention)
-    - Defer .claude/ scaffold until project-specific conventions emerge;
-      Phase 0 setup rarely produces enough repo-specific content to justify it
-    - Editor config belongs in the editor's own config repo, not the project;
-      DEVELOPER.md should note the maintainer's editor but not prescribe setup
-    - When adding language support to an editor config, verify that
-      indentation and formatting settings match the chosen formatter's output
-      rather than blindly following language community conventions (e.g.
-      google-java-format uses 2-space, not the traditional 4-space Java style)
-    - New project setup frequently exposes gaps in existing global config
-      (missing docs, redundant settings, stale paths); capture these as
-      follow-up items in the relevant repo's TODO rather than blocking setup
-    - DEVELOPER.md should cover the full build/test workflow including
-      platform-specific quirks (e.g. build in WSL2, test in Windows Minecraft)
-    - Pin pre-commit hook versions to current stable at time of setup;
-      note that versions need periodic review as hooks release updates
-    - Document the rationale for non-obvious decisions (e.g. why 2-space
-      Java indent) so future sessions don't relitigate them
   - [ ] commitizen — rule and/or skill for conventional commit message
     formatting; evaluate whether a rule (policy + invocation) is sufficient
     or whether the multi-step workflow warrants a skill
