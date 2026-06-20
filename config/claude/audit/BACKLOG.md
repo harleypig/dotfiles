@@ -25,27 +25,6 @@ holds only *open* work. Mined-repo provenance lives in
   **Risk:** false positives on exactly those exemptions — evaluate whether a
   reliable check is even feasible before building; it may not be worth it.
 
-## Plugin-audit follow-ups (from the 2026-06-10/-11 passes)
-
-- [ ] **`pydantic_ai` agent-framework rule (deferred).** Write a path-scoped
-  `rules/pydantic-ai.md` only **when actually building agents with
-  `pydantic_ai`** — the agent framework (provider-prefixed model strings,
-  `@agent.tool`, `TestModel`, Logfire); distinct from pydantic *validation*
-  work, which the `fastapi-patterns` / `sqlalchemy-patterns` skills already
-  cover. Source: `pydantic/skills` `building-pydantic-ai-agents` (+ Logfire).
-  Idea-level until then.
-- [ ] **Vendor-when-needed plugin bits.** From the dropped `pr-review-toolkit`
-  / `feature-dev` / `security-guidance` evaluation (all redundant with
-  built-ins / `qa.md` / `security-scan`) — surface these only when a repo
-  actually needs them, don't build proactively:
-  - [ ] vendor the unique pr-review lenses (silent-failure, comment-rot,
-    type-design) when a repo's review needs them — or fold into `qa.md`'s
-    code-style audit.
-  - [ ] vendor `/feature-dev` as a **skill** driving built-in Explore/Plan
-    agents when a repo wants the phased flow.
-  - [ ] add a tiny path-only GH-Actions-injection hook only if a repo needs
-    it (likely unnecessary — `github-actions.md` covers awareness).
-
 ## Skill ideas & future categories (not from mining)
 
 - [ ] **Rule eval / optimization (analogous to `skill-creator`)** — `skill-
