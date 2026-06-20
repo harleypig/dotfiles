@@ -6,6 +6,22 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-20 — **Resolved commitizen + changelog-generation as deliberate
+  non-adoptions; closed "Remaining rules to author" (PR #136).** Worked the
+  last two items of the *Claude Rules Files* list together (they're coupled —
+  `commitizen` is the one tool that spans conventional-commit *authoring* +
+  `cz bump` + `cz changelog`). An inventory found **no functional gap**:
+  conventional commits are mandated in `git.md` *Commit Messages* and authored
+  by the agent (no `cz` CLI/config/hook anywhere), and the changelog is
+  **manual** keep-a-changelog at merge-time (`ship-pr` 4.5), grouped by date
+  since dotfiles isn't release-versioned (`.claude/QA.md` already records
+  *Generated changelog: N/A*). **Decision (user picked the lean path):** do
+  **not** author `commitizen.md` / `git-cliff.md` for tools nothing uses —
+  build-on-first-use (ADR-0003) — and defer them to `ICEBOX.md` with triggers
+  (a repo wanting `cz`-driven commits/bump, or a git-history-generated
+  changelog). With these resolved, the *Remaining rules to author* list is
+  **empty** and closed. No new artifact authored — the right outcome was the
+  evaluation + a recorded deferral, exercising the ICEBOX structure.
 - 2026-06-20 — **Completed the git-tagging rule item; added the missing
   definitions to `git.md` (PR #135).** The core was already covered (`git.md`
   *Versioning & tags*: semver, annotated-only hygiene, repo/subdir methods +
