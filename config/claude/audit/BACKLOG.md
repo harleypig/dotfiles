@@ -55,6 +55,18 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   check — decide if it earns its own artifact. Ideas only (mixed/non-OSS
   sources); we'd write our own. Decide kind + scope when worked.
 
+- [ ] **Refine the mining method for aggregator/marketplace repos
+  (retrospective, PR #140).** `claude-audit` *Mining repos for ideas* mandates
+  enumerating the **entire** surface (no shortlist) — correct for a single
+  coherent tool, but impractical for an aggregator/awesome-list/marketplace of
+  hundreds–thousands of skills/plugins (`antigravity-awesome-skills` ≈ 1,678
+  skills; `claude-code-plugins-plus-skills` ≈ 432 plugins). The 11-repo sweep
+  used a **net-new-only census + theme-dedup** approach instead (fan out one
+  read-only agent per repo reporting only items novel vs. our tooling, then
+  cluster by cross-repo theme). Codify this as the **aggregator exception** in
+  the skill's mining section so the full-census rule and this approach don't
+  conflict. Global; `config/claude/skills/claude-audit/SKILL.md`. Low cost.
+
 ## Skill ideas & future categories (not from mining)
 
 - [ ] **Rule eval / optimization (analogous to `skill-creator`)** — `skill-
@@ -268,12 +280,6 @@ duplicates / similar setups). Chart each in
 [`mining-census.md`](mining-census.md) and promote useful sources to
 [`idea-sources.md`](idea-sources.md).
 
-- [x] **Plugin/skill collection repos (11, big).** Mined 2026-06-20 as a
-  single sweep (matrix:
-  [`mining/plugin-collection-repos.md`](mining/plugin-collection-repos.md)).
-  All 11 SKIP as adopt-sources (heavy duplication, as predicted); one
-  CANDIDATE (agent supply-chain / install-safety audit — see *Audit
-  dimensions / design*) + 5 Watch triggers on the census Watch list.
 - [ ] **Claude Code official documentation** (first-party source — ranks
   *highest* in the source-discovery method). Much is how-to-use-Claude that
   won't fit our config, but the **config surface is mineable**: hooks (events,
