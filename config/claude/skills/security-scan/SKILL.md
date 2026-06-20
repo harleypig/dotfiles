@@ -5,7 +5,7 @@ description: Run and wire up source/dependency security scanning (SAST + depende
 
 # Security Scan
 
-**Version:** v1.0.0
+**Version:** v1.2.0
 
 Drive source and dependency security through its rules. Security tooling is
 periodic, so the rules are easy to forget — this skill is the forcing
@@ -22,6 +22,10 @@ truth.
 - **`rules/trivy.md`** — dependency/secret scanning of the source tree
   (`trivy fs`) and the supply-chain pinning posture. (Image scanning lives in
   the **containerize** skill.)
+- **`rules/trufflehog.md`** — PR-time **verified** secret scanning in CI (the
+  digest-pinned image, run directly). Distinct lane from the commit-time
+  `gitleaks` pre-commit guard — keep them separate; don't make trufflehog a
+  dev-local/pre-commit hook (it makes network calls to verify).
 
 ## Scope to the repo
 
@@ -41,16 +45,46 @@ triage step; "set up scanning" is the wiring steps.
 1. **SAST (semgrep)** — run the `p/...` packs for the languages present,
    gating on `--severity ERROR --error` (widen later). Fix ERROR findings;
    a true false positive gets `# nosemgrep: <rule-id>` + reason.
-2. **Dependencies / supply chain** — ensure `.github/dependabot.yml` covers
-   every manifest (incl. `docker` + `github-actions`), weekly + grouped. For
-   an ad-hoc check, `trivy fs .` surfaces dependency CVEs + secrets now.
+2. **Dependencies / supply chain** — **reconcile `.github/dependabot.yml` to
+   full coverage** per `rules/dependabot.md` (the source of truth for ecosystems
+   + conventions): scan the repo for every manifest / Dockerfile / workflow, map
+   each to its ecosystem, **consult current official Dependabot docs before
+   authoring** (schema keys + supported ecosystems change), add an `updates`
+   entry for each (incl. `docker` + `github-actions`), apply the conventions
+   (weekly, group minor/patch, `chore(deps)` messages), then **verify**
+   (yamllint). This is dependabot *setup* — triaging the resulting PRs is the
+   next step. For an ad-hoc check, `trivy fs .` surfaces dependency CVEs +
+   secrets now.
 3. **Triage Dependabot PRs** — green grouped minor/patch is usually safe to
    merge; review **major** bumps individually. Never blanket-auto-merge
    majors or silence an advisory without justification.
-4. **Wire into CI (when setting up)** — add the scan as a job running the
-   **digest-pinned image directly** (never a marketplace action / vendor
-   cloud). Introduce a new SAST gate **non-required first**, promote to
-   required once clean (see `semgrep.md`).
+4. **Wire into CI (when setting up)** — add the scan as a job. **Default:
+   run the digest-pinned OSS image directly** — no marketplace action, no
+   vendor cloud, no token. It is reproducible, free, offline-capable, and
+   Dependabot-bumpable, so it is the first choice wherever good OSS covers the
+   dimension. Introduce a new gate **non-required first**, promote to required
+   once clean (see `semgrep.md`).
+
+   **Exception — a hosted SaaS / marketplace scanner, per repo, recorded.**
+   The OSS-pinned default is a strong preference, not an absolute ban. A repo
+   *may* adopt a hosted scanner (Snyk, CodeFactor, …) when it clears this bar:
+   - it delivers results the OSS lane genuinely can't for *that* repo — a real
+     dependency tree with curated vuln intel / reachability / one-click fix
+     PRs, or a public maintainability grade/badge that signals repo health;
+   - overlap with existing tools is acceptable — *some is fine; the test is
+     whether the added results are worthwhile*, not whether they are unique;
+   - the owner accepts the costs: a managed token/secret, an external account,
+     engine versions outside the pin, SaaS read access, and (for token
+     actions) that GitHub withholds secrets from fork PRs;
+   - it is recorded in **that repo's** `.claude/` QA doc (per tool: what it
+     adds, why the overlap is justified) and starts **non-required**, promoted
+     only after a clean track record.
+
+   An untraditional repo with no real dependency tree (e.g. this dotfiles
+   repo) typically won't clear the bar — its dimensions are already covered by
+   the OSS lane, so a hosted scanner only adds overlap without worthwhile
+   results. A conventional app repo (a genuine Python / Ruby / JS dependency
+   tree) is where the exception earns its place.
 
 ## Report
 

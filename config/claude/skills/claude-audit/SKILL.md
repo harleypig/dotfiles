@@ -55,8 +55,13 @@ repo** for global changes — but **only audit-relevant files**:
 
 ## Procedure
 
-Follow `$DOTFILES/config/claude/SETUP-AUDIT.md` ("How to run" + the Decisions
-log) — the canonical methodology and living record. In short:
+This procedure **is** the canonical methodology (it used to live in
+`SETUP-AUDIT.md`'s "How to run"; that file is now only the record's index). The
+living record is in `config/claude/audit/` — `decisions-log.md` (the "why"),
+`BACKLOG.md` (open *will-do* follow-ups), `ICEBOX.md` (our deferred "not now"
+decisions — revisit on a trigger or on request), `mining-census.md`
+(mined-item dispositions + the `SKIP-until` Watch list), `idea-sources.md`
+(mined repos) — indexed by `SETUP-AUDIT.md`. In short:
 
 1. **Measure first** — `/context` for the live baseline, then a **read-only
    inventory agent** (rules + sizes, MCP tool counts, plugins, hooks) so the
@@ -70,7 +75,15 @@ log) — the canonical methodology and living record. In short:
    flavored "generic" agent that would mislead a Go-only repo. Also check the
    **categories themselves**: has a top-level category grown **too big or too
    spread out** and need **splitting** (e.g. `qa` shedding `documentation` /
-   `troubleshooting`)? Splitting is the counter-move to over-folding.
+   `troubleshooting`)? Splitting is the counter-move to over-folding. Verify
+   the **language/tool layering** specifically (`EXTENDING.md` *The language &
+   tool stacks*): the generic layer (`code-style.md` / `EXTENDING.md`) names
+   **no** language or tool; every language/tool rule references **up** to it;
+   a **language-agnostic** tool rule declares its applicable language(s) by
+   name
+   and never links a language *file* (but a **single-language framework** like
+   `fastapi.md` *may* build on its language rule — not a violation); optional
+   skills/patterns are wired where they exist.
 3. **Recommend** by **cost × (1 − relevance)** — trim weight, never
    guardrails. Apply the placement ladder from `EXTENDING.md` (global+lazy >
    per-repo) and the plugin/MCP rules from `rules/mcp.md` (plugins are global
@@ -79,9 +92,42 @@ log) — the canonical methodology and living record. In short:
 4. **Confirm** drops/moves with the user (never silent), then **apply**:
    global → a dotfiles branch (audit files only) → PR; local → in this repo as
    needed.
-5. **Record** decisions in `SETUP-AUDIT.md` (global) and surface per-repo
-   findings. Convert "evaluate later" items into `TODO.md` follow-ups,
-   surfaced by the repo that needs them.
+5. **Record** decisions in `audit/decisions-log.md` (global) and surface
+   per-repo findings. Route follow-ups **by kind**: **will-do** →
+   `audit/BACKLOG.md`; **deferred / "not now" (ours)** → `audit/ICEBOX.md`
+   with a revisit condition (a trigger, or "on request"); **mined
+   `SKIP-until`** →
+   the `mining-census.md` Watch list. Repo-specific follow-ups go to that
+   repo's `TODO.md`, surfaced by the repo that needs them. **Each run, scan
+   `ICEBOX.md` and the Watch list for fired triggers** and re-promote what a
+   trigger unlocks into `BACKLOG.md`.
+
+## Working the backlog
+
+The audit *assesses* and *feeds* `audit/BACKLOG.md` (above + the `retrospective`
+skill); this is how it also *works it down*. Invoke explicitly — "work the
+backlog", "/claude-audit work" — or offer it at the end of an assessment run
+when the backlog is non-empty. It is **not** part of the default assess pass;
+working an item ships real config changes, so keep it a deliberate, separate
+action.
+
+1. **Pick** — read `audit/BACKLOG.md`, present the open `- [ ]` items as a
+   ranked worklist (priority × cost × leverage), and confirm which to work. One
+   item (or one coherent cluster) at a time.
+2. **Decide kind + scope** — for the chosen item, apply the placement ladder in
+   `EXTENDING.md` (rule vs skill vs hook vs patterns vs command vs MCP; global
+   vs repo-local) and the three-tier model. Verify currency (Context7) and
+   grounding before authoring, per the checks below.
+3. **Implement** — author/modify the artifact. Run the reference-consistency
+   grep (below) for anything renamed/moved/dropped.
+4. **Land** — global changes via a dotfiles PR (audit + affected files; squash;
+   watch CI; merge on explicit approval) using **ship-pr**.
+5. **Finalize** — once green, **remove** the item from `audit/BACKLOG.md` and
+   record the outcome in `audit/decisions-log.md` (the same prune-at-merge
+   discipline the repo uses for `TODO.md`).
+
+A config task that arrived from the repo `TODO.md` (the "Repo-config follow-ups"
+section) is worked the same way — it is now a backlog item like any other.
 
 **Verify currency with live docs (Context7, if available).** Rules and skills
 go stale as tools change — deprecations, renamed flags, shifted best practice.
@@ -95,14 +141,59 @@ Resolve the library id, then query the specific question. It is **second-class**
 dependency the resulting rules/skills rely on, and the audit must work
 without it. Fall back to official docs or a shallow clone when it's absent.
 
+**Evaluate skills with `skill-creator`.** When the audit questions a skill's
+quality or whether its `description` triggers on the right requests, use the
+**skill-creator** skill — its evals / benchmarks and description-trigger
+optimizer *measure* triggering and behaviour rather than eyeballing the
+frontmatter. This is the audit's standing tool for the skills dimension; the
+more it is used, the sooner we learn whether to leave skill-creator enabled,
+vendor it, borrow its ideas, or drop it (`audit/decisions-log.md`). **Caveat (CC
+2.1.x):** skill-creator's automated **trigger eval** (`run_eval.py`) is
+currently broken — it returns 0% regardless of the description (upstream
+issue #2003 plus a command-vs-`Skill` detection gap; verified, see
+`audit/decisions-log.md`). Until upstream fixes it, judge triggering **manually**;
+skill-creator's value here is its `SKILL.md` *writing* guidance and the
+instruction-review pass, not the eval scripts.
+
+**Check reference consistency (cross-impact).** Artifacts cross-reference each
+other by greppable name — rules by filename (`git.md`), skills by name, hooks
+by path, `[[links]]` in docs. When the audit recommends **changing, moving, or
+deleting** an artifact, `grep config/claude/` for references to it and confirm
+each referrer is still accurate: a renamed flag, moved section, dropped skill,
+or bumped version silently leaves its referrers stale. **Fix or flag the
+ripple — never change the target in isolation.** (Where the repo has a
+structure map — e.g. a `STRUCTURE.md` of rule/skill/hook edges — it charts
+this for humans; the grep is the actual check regardless.)
+
+**Check grounding (author-from-docs).** Each rule/skill should be grounded in,
+and cite, an authoritative source where one exists — official docs / man page
+(a rule's **Sources** section) or an adapted-from `SOURCE.md` (a skill) — per
+`EXTENDING.md` *Grounding & sourcing*. Flag any artifact that asserts a
+tool/library/API's behaviour with **no source and not marked a house
+convention**: its claims may be memory-based and already stale. This pairs
+with the currency check above (Context7) — grounding is *whether* a source
+exists; currency is *whether* it is still current.
+
+**Delegated research can over-claim — demand exact doc quotes.** When a
+spawned research agent (a `claude-code-guide` lookup, a doc-mining subagent)
+reports a **feature or behaviour claim** that would drive an action — a
+rename, a new `CLAUDE.md`/rule block, wiring a hook, adopting an API — do
+**not** act on the summary alone. Require an **exact quote plus the doc URL**
+backing that specific claim, and treat an unsourced specific as
+**unconfirmed** until checked against the primary source. Plausible-but-false
+specifics have slipped through twice (a skill-name charset rule not in the
+spec; a `# Compact instructions` CLAUDE.md heading that doesn't exist), caught
+only because they were high-stakes — make the quote-or-it-didn't-happen check
+routine, not luck.
+
 ## Mining repos for ideas
 
 An audit improves the **whole** dev environment, not just the current repo —
 so the strongest finds are *generic* tools that spread everywhere. When the
 audit looks to external repos for ideas:
 
-**Finding a source.** If the *Idea sources* registry (`SETUP-AUDIT.md`) has no
-repo covering an aspect of the current repo, go find one. Rank by:
+**Finding a source.** If the *Idea sources* registry (`audit/idea-sources.md`)
+has no repo covering an aspect of the current repo, go find one. Rank by:
 
 1. **Official / first-party first** — the tool's or framework's own org (e.g.
    `pydantic/skills`, `fastapi/.agents`). Authoritative; tracks the tool's

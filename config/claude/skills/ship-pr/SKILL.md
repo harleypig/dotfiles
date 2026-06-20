@@ -1,14 +1,14 @@
 ---
 name: ship-pr
-description: Commit a finished feature branch and push it, then — each only with explicit approval — open a pull request, watch CI to green, merge it, tag the release if it ships an artifact, and clean up — using this user's gh credential fallback and the repo's branch-protection merge policy. Use whenever the user wants to land work via a PR: "ship this", "ship it", "land this branch", "commit push and PR", "open a PR and merge", "put up a PR", "get this merged", "create the PR and merge after CI", or any request to take a ready branch through the PR-and-merge sequence. Starts where git-worktree-workflow's "prep for PR" ends; works for plain feature branches too (no worktree required).
+description: Commit a finished feature branch, push it, and open a pull request, then watch CI to green and — with explicit approval — merge it, tag the release if it ships an artifact, and clean up — using this user's gh credential fallback and the repo's branch-protection merge policy. Use whenever the user wants to land work via a PR: "ship this", "ship it", "land this branch", "commit push and PR", "open a PR and merge", "put up a PR", "get this merged", "create the PR and merge after CI", or any request to take a ready branch through the PR-and-merge sequence. Starts where git-worktree-workflow's "prep for PR" ends; works for plain feature branches too (no worktree required).
 ---
 
 # Ship PR
 
-**Version:** v1.8.0
+**Version:** v1.9.4
 
 Take a finished branch through the standard landing sequence: **QA check** →
-commit → push → (approval) open PR → watch CI → (approval) merge →
+commit → push → open PR → watch CI → (approval) merge →
 (if it ships an artifact) tag → clean up.
 
 The deterministic mechanics live in the bundled **`scripts/ship.sh`** (in
@@ -39,20 +39,20 @@ auto-retries with the env tokens cleared on a PAT scope error, so the
 |------------|------|
 | `default-branch` | Print the repo's default branch. |
 | `pr-create --title T --body B [--base BR]` | Open the PR from the current branch; prints the URL. |
-| `ci-watch [BRANCH]` | Poll the latest run to completion; print job results **and any warning/error annotations**. Exit `0` clean, `1` failed, `2` passed-with-warnings. |
+| `ci-watch [BRANCH]` | Poll **every** workflow run for the branch tip SHA to completion (a push can trigger several, e.g. tests + secret-scan); print per-workflow job results **and any warning/error annotations**. Exit `0` clean, `1` any run failed, `2` passed-with-warnings. |
 | `merge-methods` | Print the merge methods the repo/ruleset allows. |
 | `merge NUMBER --squash\|--merge\|--rebase` | Merge and delete the branch. |
 | `cleanup BRANCH` | Switch to default, pull, prune the merged branch. |
 
 ## Guardrails (do not violate)
 
-- **Never** open or merge a PR without explicit approval (per `rules/gh.md`).
-  Invoking this skill is consent to run qa-check, commit, and push the branch
-  only. **Opening the PR requires an explicit instruction** ("open the PR",
-  "ship it", "put up a PR", etc.), and **merging requires a separate explicit
-  "merge" instruction** for this branch. If the user only said "commit and
-  push", stop after the push and ask before opening. If they only said "open
-  a PR", stop after CI and ask before merging.
+- **Never** merge or close a PR without explicit approval (per `rules/gh.md`).
+  **Invoking this skill is consent to run the flow through opening the PR** —
+  qa-check → commit → push → **open the PR** → watch CI. **Merging requires a
+  separate explicit instruction** for this branch ("merge it", "merge if CI
+  passes", etc.): stop after CI is green and ask before merging. (If the user
+  explicitly scoped the request narrower — "just commit and push" — honor that
+  and stop before opening.)
 - **Never** push to or merge directly into the default branch.
 - **Never** force-push without `--force-with-lease --force-if-includes`,
   and warn first.
@@ -78,9 +78,12 @@ to the change, per the repo's QA doc) and reports each dimension's status.
 (qa-check's CI stage is Step 4 here, not part of this local pass.) This
 includes the **Documentation** dimension — update the docs, `TODO`/roadmap,
 and any rules/skills (global *and* local) this change touches before
-committing. (Here you **mark** progress / add new items; **removing** the
-completed `TODO`/`ROADMAP` items is deferred to the merge-time finalization,
-Step 4.5, so they're pruned only once the PR is proven green.)
+committing. **Mark each completed `TODO`/`ROADMAP` item `[x]` in the commit
+that completes it** (the *mark-as-you-go* rule in `git.md`; this skill runs
+once at the end, so the rule lives there to be in context at every commit) and
+add newly-surfaced follow-ups as open `- [ ]`. *Removing* the `[x]` items is
+deferred to the merge-time finalization (Step 4.5), so they're pruned only
+once the PR is proven green.
 
 qa-check's format/lint/test stages are the pre-commit sequence — run it ONCE
 (per `rules/pre-commit.md`): the fix config, then the check config.
@@ -102,9 +105,8 @@ git push -u origin "$CUR"
 
 ## Step 3 — Open the PR (model writes the body)
 
-Compose the title (< 72 chars) and a body per `rules/gh.md` (`## Summary`
-
-+ `## Test plan`), then:
+Compose the title (< 72 chars) and a body per `rules/gh.md`
+(`## Summary` + `## Test plan`), then:
 
 ```bash
 ship.sh pr-create --title "<title>" --body "<body>"
@@ -136,21 +138,41 @@ Once CI is green and the branch is judged ready to merge, perform the
 **merge-time documentation finalization** — and **only** this. No code lands
 at merge time; the only changes here are documentation.
 
-- **Remove the completed items** from `TODO.md` and `ROADMAP.md` (and any
-  equivalent planning list). Delete them outright — do **not** leave them
+- **Remove the completed items** from `TODO.md` and `ROADMAP.md` (and **any
+  equivalent planning list** — e.g. this repo's agent-config audit backlog,
+  `config/claude/audit/BACKLOG.md`, whose completion record lives in
+  `audit/decisions-log.md`). Delete them outright — do **not** leave them
   marked `[x]`. Do this **now**, not earlier: an item is pruned exactly when
   the PR that completes it has gone **green**, so the planning docs always
-  track only open work and nothing is removed for a PR that never lands.
+  track only open work and nothing is removed for a PR that never lands. The
+  merge-finalization hook enforces this for any planning doc a repo declares
+  (the generic defaults plus any `merge-finalization-docs:` extras).
 - **Changelog management** — regenerate / write the changelog per the repo (a
   generated changelog mutates the tree, so it is committed here, never in CI;
   see `qa.md` dim 13 and the repo's QA doc), plus any related doc updates.
 
-Commit these doc-only changes, push, and **re-watch CI** (Step 4) — quick,
-since only documentation changed. Proceed to merge only after that is green.
+Run the **Step 4.6 retrospective** next, then commit these doc-only changes —
+**together with any open `- [ ]` TODOs the retrospective adds** — push, and
+**re-watch CI** (Step 4) — quick, since only documentation changed. Proceed to
+merge only after that is green.
 
 This separates *progress tracking* (Step 1 marks items done / adds new ones as
 you work) from *finalization* (here, completed items are pruned once the PR is
 proven green).
+
+## Step 4.6 — Retrospective (agent tooling, advisory)
+
+Run the **retrospective** skill: a short reflection on whether the work hit
+friction with the agent's **own tooling** — a missing/stale rule, a procedure
+worth a skill, a rule worth enforcing with a hook, recipe depth worth a
+patterns file, an awkward command or MCP entry. Each finding becomes a
+**detailed, open** `- [ ]` TODO (routed global vs repo-local), **not** an edit
+— capturing it keeps this PR focused; `claude-audit` works the backlog later.
+
+It is **advisory, never a gate**. Its TODO additions ride along in the Step
+4.5 finalization commit (the two steps are one doc-only phase, committed
+once), so there's no extra CI cycle. A clean retrospective ("nothing to
+change") is a valid outcome — say so and move on.
 
 ## Step 5 — Merge (only with explicit approval)
 

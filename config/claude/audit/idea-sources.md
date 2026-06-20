@@ -1,0 +1,38 @@
+# Idea sources
+
+Repos mined for ideas during setup audits — re-check on each audit. Audit-only
+(not context-loaded). The full per-item disposition census lives in
+[`mining-census.md`](mining-census.md); the open CANDIDATE backlog in
+[`BACKLOG.md`](BACKLOG.md); decisions in [`decisions-log.md`](decisions-log.md).
+
+This registry is **broader** than any per-skill
+`SOURCE.md`: it lists every repo we have looked to for inspiration, **whether
+or not we reused its implementation**, so a future audit knows where to look
+again. The two are distinct by design:
+
+- **This registry** — "places worth picking the brains of." Idea-level. A repo
+  appears here even if we liked a concept but wrote our own implementation.
+- **Per-artifact `SOURCE.md`** — provenance for a *specific* skill/command.
+  A repo is cited there **only when we reused implementation details** from it
+  (so there is something concrete to track for upstream updates). Liked the
+  idea but used none of the code → it stays here, not in a `SOURCE.md`.
+
+| Repo | Mined for | License | Last mined | Reused impl? |
+|------|-----------|---------|-----------|--------------|
+| `ruslan-korneev/claude-plugins` | FastAPI/Pydantic DTO+repository+exception patterns; Alembic enum-handling; python `lint-explain`/`test-first`/`clean-review` commands; `tech-lead` ADR/arch-review/modernize commands | MIT | 2026-06-11 | Yes → fastapi-patterns, sqlalchemy-patterns |
+| `fastapi/fastapi` (official `.agents/skills`) | FastAPI best-practice concepts (Annotated, return-type serialization, async-vs-sync); maintained with new versions, so re-mine on FastAPI upgrades | MIT | 2026-06-11 | No (concepts only) |
+| `rafaelkamimura/claude-tools` | Layered-architecture ideas; candidate commands (`adr`, `tech-debt`, `debug-assistant`) and agents (`database-optimizer`, `api-documenter`) | MIT | 2026-06-11 | No (ideas only) |
+| `pydantic/skills` (official) | Pydantic AI **agent-framework** + Logfire skills — relevant only if we adopt LLM agents or Logfire observability; not used today | MIT (check) | 2026-06-11 | No |
+| `fabioc-aloha/spotify-skill` | Spotify Web API skill — endpoint/scope/error inventory, auto-refresh pattern, `ugc-image-upload`→401, cover-art + playlist strategies; refs are stale (pre-2024-11-27, no PKCE) so official docs win | Apache-2.0 | 2026-06-12 | Ideas → `spotify-audit` + `rules/spotify.md` (SOURCE.md) |
+| `jarrodwatts/claude-hud` | Statusline/HUD ideas — rate-limit/usage segment, git ahead/behind, reasoning-effort, progress-bar glyph, and transcript-derived segments (tools/agents/todos/tokens/speed). Top picks all gated on JSON-field verification or the shared `git-status`. Full matrix: [`mining/claude-hud.md`](mining/claude-hud.md) | MIT | 2026-06-19 | No (ideas only; TS plugin, wrong form for our bash line) |
+| `ruvnet/ruflo` (renamed `claude-flow`) | Largest real-world Claude-Code `.claude/` corpus (98 agents / 60+ commands / 30 skills / lifecycle hooks). **Runtime = SKIP** — heavyweight auto-routing *swarm* + always-on MCP/daemon conflicts with our curated, minimal-context approach. Corpus **low-yield to mine**: hook-dispatcher, skill-builder spec, SessionStart-restore, frontmatter rules all overlap ours (`EXTENDING.md`, `test_skill_frontmatter.bats`, `compact-snapshot`/`audit-cadence`); also marketing-heavy (1,500+ releases, volume ≠ quality). One forward idea parked on the Watch list: session checkpoint/restore. | MIT | 2026-06-20 | No (evaluated; not mined/adopted) |
+| `ykdojo/claude-code-tips` | 43-tip prose collection by a Claude-Code YouTuber (hybrid: also a `dx` plugin + 6 skills). Tips skew to **personal interactive workflow** (voice, terminal tabs, Notion, Mac clipboard), mostly **SKIP** (covered or not config). Two CANDIDATEs surfaced: **audit the permission allow-list for risky auto-approved commands** (the `cc-safe` idea, Tip 31) and **input-box keybindings** (Tip 36 → feeds the open statusline cheat-sheet item). Full matrix: [`mining/claude-code-tips.md`](mining/claude-code-tips.md). | **non-OSS** (proprietary grant to YK Sugi) | 2026-06-20 | No (ideas only; license bars impl reuse) |
+| **Plugin/skill collection repos** (11-repo sweep): `ComposioHQ/awesome-claude-plugins`, `jeremylongshore/claude-code-plugins-plus-skills`, `ccplugins/awesome-claude-code-plugins`, `alirezarezvani/claude-skills`, `JuliusBrussee/caveman`, `sickn33/antigravity-awesome-skills`, `chopratejas/headroom`, `VoltAgent/awesome-claude-code-subagents`, `Jeffallan/claude-skills`, `team-attention/plugins-for-claude-natives`, `JoasASantos/ClaudeAdvancedPlugins` | Aggregator/marketplace repos — **heavy duplication** as expected. After dedup, one CANDIDATE (**agent supply-chain / install-safety audit**, pairs with the `cc-safe` allow-list idea) + Watch-list triggers (reliability/SRE, context-compression, MCP-builder, API-contract review, security-domain agents). Full per-repo + theme matrix: [`mining/plugin-collection-repos.md`](mining/plugin-collection-repos.md). | mixed (mostly MIT/Apache; some non-OSS) | 2026-06-20 | No (ideas only; no single repo worth impl reuse) |
+
+The **full disposition census** of every item in these repos (every agent /
+command / hook / skill considered, ADOPT/CANDIDATE/SKIP + reason) is in
+[`mining-census.md`](mining-census.md). The open CANDIDATE backlog lives there
+too. The
+source-discovery method (official-first → stars+recency+health; the >1yr
+staleness gate) and the full-census/generic-lens practice are documented in the
+**claude-audit** skill (*Mining repos for ideas*).

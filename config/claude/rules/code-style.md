@@ -4,7 +4,7 @@
 
 # Code Style
 
-**Version:** v1.5.0
+**Version:** v1.7.0
 
 ## General Style
 
@@ -274,11 +274,17 @@ When a chain grows to four or more branches testing the same variable,
 consider refactoring: a `case`/`switch` statement for discrete values,
 a threshold table with a loop, or a small helper function.
 
+**Don't compress a conditional into a nested ternary** (a stacked `?:`) or a
+dense one-liner to save lines — that trades clarity for brevity, the wrong
+direction. A reader should be able to scan the branches: prefer an explicit
+`if`/`else` (or `case`/`switch`) chain over a clever one-liner.
+
 ### Language-Specific Notes
 
-The general rule above applies to all languages. Per-language tooling
-details — whether auto-formatters enforce or fight this style, and how to
-handle it — live in each language's rules file:
-
-- Bash → `bash.md`
-- Python → `python.md`
+The general rules above apply to **every** language; this document names
+none. A language's own style and tooling specifics — including whether an
+auto-formatter enforces or fights this style — live in its path-scoped
+`rules/<language>.md`, which references back here. The full layering (generic
+→ language/tool rule → optional skill → optional patterns, referenced one way,
+specific → generic) is codified in `EXTENDING.md` *The language & tool
+stacks*.

@@ -8,10 +8,6 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "3.12.3"
-poetry = "2.3.4"
+poetry = "2.4.1"
 idna = ">=3.15"
 dulwich = ">=1.2.5"
-# Pin to resolve Dependabot alert #6 (GHSA — vulnerable OpenSSL in
-# cryptography wheels, < 48.0.1). Promoted from a transitive dep to a
-# direct constraint so it can be remediated without a committed lockfile.
-cryptography = ">=48.0.1"

@@ -1,7 +1,12 @@
 ---
-# List glob patterns for files this tool applies to.
-# Omit the paths key entirely for tools that are not file-type-specific
-# (e.g. git, gh).
+# Declare the load tier — a conformance guard (test_rule_frontmatter.bats)
+# enforces that this block has one or the other, so a rule can't silently
+# join the expensive always-on tier by omission:
+#  - Path-scoped (on-demand): keep `paths:` with the globs this rule applies
+#    to.
+#  - Always-on (every turn): for a rule not tied to a file type (e.g. git,
+#    gh), DELETE the `paths:` key and replace it with a documenting
+#    `# No paths — <why>` comment. Do NOT leave the block empty.
 paths:
   - "**/*.ext"  # replace .ext with actual extension(s)
 ---
@@ -21,6 +26,15 @@ Brief description of what the command does and when to use it.
 ## Configuration File
 
 Where the config lives, how it is resolved, and any Docker wrapper notes.
+
+## Sources
+
+What this rule is grounded in (per `EXTENDING.md` *Grounding & sourcing*) —
+the official docs / man page(s) it is built on, so it can be re-checked when
+the tool changes. State "house convention — no external source" if none
+applies.
+
+- <official doc URL, or `man <tool>` / `<tool> --help` / `/usr/share/doc/<pkg>`>
 
 ## Agent Behavior
 

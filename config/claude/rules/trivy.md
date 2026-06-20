@@ -11,7 +11,7 @@ paths:
 
 # trivy Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 trivy is an all-in-one scanner: image vulnerabilities, filesystem/dependency
 CVEs, IaC/Dockerfile misconfigurations, and exposed secrets. It complements
@@ -35,7 +35,9 @@ Consequences for how we run it:
   `aquasec/trivy` by digest.
 - **In CI, run the pinned image directly — do NOT use the marketplace
   Actions.** If an action is unavoidable, only `trivy-action@0.35.0` and
-  `setup-trivy@v0.2.6`, each **SHA-pinned**, are known-good.
+  `setup-trivy@v0.2.6`, each **SHA-pinned**, are known-good. (This is the
+  default, not an absolute ban: a repo may adopt a hosted scanner when its
+  results are worthwhile — `security-scan` §4.)
 - Current clean release line is **v0.71.0+**.
 
 ## Invocation

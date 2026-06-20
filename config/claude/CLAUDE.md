@@ -127,6 +127,8 @@ conflicts with how the repo actually uses the tool, or the rule has
 gone stale relative to current best practice:
 
 - Stop and surface the gap before silently working around it.
+- Ground the new or updated rule in official docs / man pages and cite the
+  source, never memory (see `EXTENDING.md` *Grounding & sourcing*).
 - Propose creating or updating the rule, and decide its scope using the
   three-tier model in *Configuration Migration*:
   - Generally useful across repos → new or updated global
@@ -137,6 +139,11 @@ gone stale relative to current best practice:
   single-repo need. The repo override belongs in `.claude/`; the global
   rule changes only when the new behavior is genuinely better for all
   consumers.
+- Consider a **plugin** too: before authoring, check whether an installed or
+  available plugin already provides the capability (or should be added) —
+  decide adopt-vs-build per `EXTENDING.md` *Build vs adopt* and `rules/mcp.md`
+  (plugins are global-only and always-on, so only a good global fit earns
+  one).
 
 ## When to Propose a Skill
 
@@ -159,6 +166,11 @@ using the three-tier model in *Configuration Migration*:
 
 - Generally useful across repos → propose a global skill.
 - Repo-specific workflow → propose a repo-level skill (or a script).
+
+Before building one, also check whether a **plugin** already packages this (a
+marketplace skill/command) — adopt-vs-build per `EXTENDING.md` *Build vs
+adopt*; prefer our own lean skill when the plugin is bloated for the context
+it costs.
 
 Do not invent skills for one-shot tool invocations — those belong in a
 rule. The threshold is "this is a procedure I would write up for a new

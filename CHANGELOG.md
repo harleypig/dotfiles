@@ -10,6 +10,185 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-20
+
+### Changed
+
+- **Writing-repo watch-list trigger** — `config/claude/audit/mining-census.md`
+  gains a trigger row: when working a `gollum` wiki repo or any non-code
+  "writing"/prose repo, author a dedicated `rules/writing.md` covering the
+  drafting/revising/structural/consistency/gardening modes, grounded in
+  `claude-code-tips` Tips 16 (writing assistant), 25 (research tool /
+  `paper-search`), 17 (markdown as medium), and 26 (verify every claim).
+  The trigger also activates the Gollum Wiki rule, Ruby rule, and Essay
+  Helper skill backlog candidates. Decisions log updated; prior per-tip
+  SKIPs in the mining log left intact. (PR #141)
+- **BACKLOG.md tidy** — pruned the resolved Snyk/CodeFactor evaluation
+  subsection (decision already landed in `QA.md`); promoted three orphaned
+  `###` headings to `##` sections (Mining queue, Claude statusline
+  enhancements, New rule/skill candidates); added a trigger-gated note to
+  the three writing-repo candidates. (PR #141)
+
+## 2026-06-19
+
+### Added
+
+- **`tests/shell/test_ship.bats`** — behavioural tests for the ship-pr
+  `ship.sh` helper via a faithful `gh`/`git` stub (canned JSON applied through
+  real `jq`, as `gh --jq` does): `ci-watch` selecting the run for the branch
+  tip SHA (regression for the #114 latest-run bug) and `merge-methods` ruleset
+  parse with repo-settings fallback. (PR #116)
+- **`config/pypoetry/poetry.lock`** — committed the Poetry tool-env lockfile
+  (49 packages; `cryptography` 49.0.0 ≥ 48.0.1), so transitive deps are pinned
+  and Dependabot's pip ecosystem can open security PRs for them. (PR #116)
+- **PR-time verified secret scanning** — `.github/workflows/secret-scan.yml`
+  runs **trufflehog** on `pull_request`, scanning the PR diff with the
+  digest-pinned image run directly (per the security-scan skill, not a
+  marketplace action), gating via `--fail`. Complements the commit-time
+  `gitleaks` guard; **non-required** for now. Adds `rules/trufflehog.md` and
+  updates the security-scan skill + `.claude/QA.md`. (Checkmarx was also
+  evaluated and **declined** — commercial, no free tier; `semgrep` covers
+  SAST.) (PR #116)
+- **`PostToolUse` shellcheck hook** — `config/claude/hooks/shell-check.py`
+  (wired on `Edit|Write|MultiEdit`) runs `shellcheck` on a shell file right
+  after it's edited and surfaces findings to the agent, so "run shellcheck
+  after editing" is enforced, not just remembered. Check-only, shellcheck-only,
+  fail-open. Tested by `tests/python/test_shell_check.py` (7 cases); documented
+  in `rules/shellcheck.md` (v1.1.0). (PR #117)
+- **`config/claude/rules/claude-code-auth.md`** — documents this user's three
+  Claude Code auth methods, the full six-method precedence, and the
+  never-export-`ANTHROPIC_API_KEY`-globally rule. Grounded in the official auth
+  docs. (PR #117)
+
+### Changed
+
+- **Dropped the redundant direct `cryptography` pin** (`config/pypoetry`) and
+  re-locked — `cryptography` is transitive again via `secretstorage`, no
+  version churn, and the lock now correctly scopes the
+  cryptography/cffi/pycparser chain to `sys_platform == "linux"` instead of
+  forcing it on every platform. (PR #116)
+- **`security-scan` skill (v1.1.0): dependabot reconcile made explicit** —
+  evaluated a standalone dependabot skill and **declined** it (would duplicate
+  step 2 + `rules/dependabot.md`); instead spelled out the reconcile-and-verify
+  procedure in step 2 (scan manifests → consult docs → reconcile → yamllint).
+  (PR #117)
+
+### Fixed
+
+- **`ship.sh ci-watch` watches every workflow run for the tip SHA** — it took
+  `.[0]` of the SHA-matched runs, so with two workflows per PR (`tests` +
+  `secret-scan`) it could watch the wrong one. Now collects all runs for the
+  SHA, reports per-workflow, and aggregates the exit code (any failed → 1).
+  Regression-tested via `test_ship.bats`. (PR #117)
+
+## 2026-06-18
+
+### Added
+
+- **`config/claude/hooks/branch-protection.py`** — a `PreToolUse` hook on
+  `Edit`/`Write`/`MultiEdit` that blocks an agent edit while a protected
+  branch is checked out, enforcing git.md's "Never Work Directly on a
+  Protected Branch" at edit time (the earliest of three layers, below the
+  commit-time `no-commit-to-branch` hook and the push-time server ruleset).
+  It reads the protected set from the repo's `no-commit-to-branch` args, so
+  it activates only where that hook is configured (silent in repos without
+  it, e.g. cloned upstreams/forks); plan-mode edits are whitelisted and any
+  error fails safe. Wired into `settings.json`, covered by
+  `tests/python/test_branch_protection.py` (the first python test, which
+  self-activates the python CI job). (PR #108)
+- **`config/claude/skills/retrospective/`** — a pre-merge skill (wired as
+  ship-pr Step 4.6) that reflects on friction with the agent's own tooling
+  (rules / skills / hooks / patterns / commands / MCP) and captures each
+  finding as a detailed TODO, routed global vs repo-local. Idea borrowed from
+  the dropped claude-md-management plugin. (PR #109)
+- **Grounding & sourcing authoring rule** — `EXTENDING.md` now requires a new
+  or edited rule/skill to be grounded in official docs / man pages (not
+  memory) and to cite the source; `rule-TEMPLATE.md` gains a **Sources** slot
+  and `CLAUDE.md` a pointer. (PR #109)
+- **`claude-audit` cross-impact + grounding lenses** — when changing / moving
+  / deleting an artifact, grep for referrers and fix/flag the ripple; and flag
+  rules/skills that assert a tool's behaviour with no cited source. (PR #109)
+- **Mark-as-you-go tracking rule** (`git.md` v1.7.0) — mark a `TODO`/`ROADMAP`
+  item `[x]` in the commit that completes it, so merge-time finalization is a
+  mechanical prune. Placed in always-on `git.md` so it is in context at every
+  commit (a skill at PR-end cannot be). (PR #109)
+- **`config/claude/skills/github-tasks/`** — a repo-agnostic GitHub
+  housekeeping skill: one sweep that gathers a repo's open GitHub state (open
+  Dependabot PRs, untriaged issues, failing required checks, stale/gone
+  branches, release/tag hygiene, unresolved review threads), triages it, and
+  presents a single ranked worklist — asking before acting on anything
+  ambiguous. It orchestrates rather than duplicates: gather/triage/label is
+  the only default-scope action; the heavy lifting routes to existing skills
+  (security-scan, qa-check, ship-pr, git-worktree-workflow, release-tag,
+  debug-assistant). Wired as the forcing function for `gh.md`'s "start of
+  git/gh work, and daily" cadence (`gh.md` v1.3.0). (PR #111)
+
+### Changed
+
+- **Documented the edit-time protection layer** — `config/claude/rules/git.md`
+  now describes **three** protection layers (v1.6.0) and `.claude/WORKFLOW.md`
+  notes the hook for `master` (v1.2.0). (PR #108)
+- **context7 MCP: marketplace plugin → `mymcp`** — `bin/mymcp` gained a
+  `context7` case that reads the API key from the private store and passes
+  `CONTEXT7_API_KEY`; the global export was removed from `api-keys.cfg`.
+  Registered globally at user scope (`claude mcp add context7 --scope user --
+  mymcp context7`); verified via the MCP `initialize` handshake (Context7
+  v3.2.1). (PR #109)
+- **Kept `skill-creator` and put it to work** — the one non-redundant
+  marketplace plugin; wired into `claude-audit` (the skills dimension) and
+  `EXTENDING.md` (use it when authoring a skill). (PR #109)
+- **Refined the `ship-pr` approval model + finalization** (skill v1.9.1) —
+  invoking the skill now consents through *opening the PR* (qa-check → commit
+  → push → open PR → watch CI); merge and close still require a separate
+  explicit instruction (`gh.md` updated to match). Step 4.5/4.6 reframed as a
+  single doc-only finalization phase committed once. Also recorded
+  skill-creator dogfooding findings — its automated trigger eval returns 0% on
+  CC 2.1.x (upstream #2003 + a command-vs-`Skill` detection gap), so triggering
+  is judged manually meanwhile (caveat in `claude-audit`, decisions-log entry
+  in `SETUP-AUDIT.md`, follow-ups in `TODO.md`). (PR #112)
+- **Worktree creation is explicit-request-only** (`git.md` v1.8.0) — never an
+  automatic prelude to editing and never on a background-job/system-prompt
+  nudge; the **git-worktree-workflow** skill is the only path, never the
+  built-in `EnterWorktree` tool (hardcoded `worktree-*` names, no config knob);
+  and a session launched already inside a worktree never creates another. Added
+  to *Worktrees* plus an Agent Rules NEVER line. Resolves the PR #111
+  retrospective follow-up (forbid, not reconcile; homed in `git.md`, not
+  `CLAUDE.md`). (PR #113)
+- **`test-review` absorbs the test-audit role** (skill v1.1.0) — reconciled the
+  planned `/test-audit` skill against `test-review` and decided **not** to
+  build it (it would duplicate `test-review`, already qa.md's Tests-dimension
+  tool that `qa-check` composes). Extended `test-review` instead with an
+  untested-unit **coverage census** and a **staleness/drift** lens, and named
+  it in the repo QA doc's dim-6 row. (PR #115)
+- **Meta-test generator covers skill helper scripts** — `build-meta-tests`
+  default roots `bin lib` → `bin lib config/claude/skills`, so scripts like
+  `ship-pr`'s `ship.sh` get the static checks (shebang, `bash -n`, shellcheck,
+  shfmt) the suite never ran on them; no debt imported. `TESTS.md` scope
+  updated. (PR #115)
+
+### Removed
+
+- **Four redundant marketplace plugins** — `claude-code-setup`,
+  `claude-md-management`, `hookify` (+ ICEBOX: revisit a declarative guard
+  engine only on Rule-of-Three), and `ralph-loop` (+ ICEBOX: extend `/loop`,
+  don't rebuild). `enabledPlugins` 6 → 1; per-plugin rationale in
+  `SETUP-AUDIT.md`. (PR #109)
+
+### Fixed
+
+- **Stopped exporting `ANTHROPIC_API_KEY` globally** (`api-keys.cfg`). Per
+  Claude Code's auth precedence it overrode the Max subscription *and* the
+  long-lived `CLAUDE_CODE_OAUTH_TOKEN`, forcing a re-login every ~12h (the
+  OAuth access-token lifetime, which Claude Code doesn't auto-refresh). Tools
+  that need the key now read it from `private_dotfiles/api-key/anthropic`
+  directly (the `mymcp` pattern). (PR #110)
+- **`ship.sh ci-watch` pins to the branch tip SHA** (`ship-pr` v1.9.2) — it
+  watched the *latest run for the branch*, so a re-watch right after a push
+  could latch onto the previous commit's already-green run before the new run
+  registered (masking an in-progress run). Now resolves the run by the branch
+  tip SHA — polls until that run appears (~60s), then falls back to the latest
+  run only on timeout. (PR #114)
+
 ## 2026-06-17
 
 ### Security

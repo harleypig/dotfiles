@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.4.0
+**Version:** v2.5.0
 
 ## Purpose
 
@@ -76,6 +76,13 @@ the same gating suite without breaking docker-less environments.
   test that sources them and asserts the resulting environment.
 - Multi-call dispatchers (e.g. `bin/docker_wrapper`) are tested once at the
   real file; their tool symlinks are not (the generator skips symlinks).
+- Repo-structure invariants get a guard test too: `test_skill_frontmatter.bats`
+  holds every `config/claude/skills/*/SKILL.md` to the Agent Skills
+  open-standard frontmatter rules (see `config/claude/EXTENDING.md` Skill ›
+  *Format*), and `test_rule_frontmatter.bats` holds every
+  `config/claude/rules/*.md` to declaring its load tier — a `paths:` key or a
+  `# No paths — <why>` comment — so a rule can't silently join the always-on
+  per-turn tier by omission (see `config/claude/rule-TEMPLATE.md`).
 
 ## Coverage priorities (incremental)
 
@@ -86,10 +93,13 @@ the same gating suite without breaking docker-less environments.
 
 The generated **meta suite** runs language-specific static checks per file:
 bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
-`perl -c`; python → shebang + `compile()`. It currently surfaces pre-existing
-debt (legacy bash lint/format + one perl module dependency) — tracked in
-`TODO.md` ("Lint/format Debt in Legacy Scripts"), not ignored and not
-auto-fixed. Until those are clean, only the hand-written suite is gated.
+`perl -c`; python → shebang + `compile()`. It scans `bin lib` **plus
+`config/claude/skills`** (the last covers skill helper scripts such as
+`config/claude/skills/*/scripts/*`, e.g. `ship-pr`'s `ship.sh`; non-script
+files are skipped). It currently surfaces pre-existing debt (legacy bash
+lint/format + one perl module dependency) — tracked in `TODO.md`
+("Lint/format Debt in Legacy Scripts"), not ignored and not auto-fixed. Until
+those are clean, only the hand-written suite is gated.
 
 ## Running
 

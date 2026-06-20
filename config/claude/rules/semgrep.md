@@ -9,7 +9,7 @@ paths:
 
 # Semgrep Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 Semgrep is the SAST layer: pattern-based static analysis for security bugs
 across languages. It complements dependency scanning (`dependabot.md`) and
@@ -26,6 +26,14 @@ semgrep finds *insecure code you wrote*.
   account).
 - Do **not** use `semgrep ci` (needs a Semgrep App token) or `--config auto`
   (phones home to tailor rules). Both pull the project toward the SaaS.
+
+> The OSS-pinned-direct default has a documented per-repo exception for hosted
+> scanners (`security-scan` skill §4 — adopt one when its results are
+> worthwhile and the overlap is acceptable). It rarely applies to semgrep
+> itself: the OSS engine + public rule packs match Semgrep Cloud for our use,
+> so there's no worthwhile result the SaaS adds here. The carve-out is for
+> tools like Snyk on a real dependency tree, not for switching semgrep to its
+> cloud.
 
 ## Invocation
 

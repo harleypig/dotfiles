@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.1.0
+**Version:** v1.5.0
 
 ## Purpose
 
@@ -150,6 +150,13 @@ advisory — the remote enforces it:
 * A local `no-commit-to-branch` pre-commit hook also blocks a direct commit
   to `master` at commit time (early guard; the server ruleset is what
   actually enforces it). See `config/claude/rules/git.md`.
+* The global `branch-protection.py` `PreToolUse` hook blocks an agent
+  `Edit`/`Write`/`MultiEdit` while `master` is checked out — the earliest
+  guard, at edit time (it allows plan files and gitignored, untracked files —
+  local-only state that can't be committed). It derives the protected branch
+  from the `no-commit-to-branch` args above, so this repo activates it
+  automatically. See `config/claude/rules/git.md` *Protecting the Default
+  Branch*.
 
 To change the ruleset, edit the JSON and re-apply with the OAuth token (the
 narrow PAT lacks admin):
@@ -170,6 +177,49 @@ activates the `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`),
 which **blocks** a `gh pr merge` / `ship.sh merge` while any completed `- [x]`
 items still remain in the planning docs. See
 `config/claude/skills/ship-pr/SKILL.md` and `config/claude/rules/git.md`.
+
+The agent-config **audit backlog** is an equivalent planning list, so it is
+pruned the same way (completed items removed at merge, their record kept in
+[`audit/decisions-log.md`](../config/claude/audit/decisions-log.md)). It is
+declared as an extra planning doc the hook also enforces — repo-relative paths
+beyond the generic defaults, kept out of the global hook:
+
+```text
+merge-finalization-docs: config/claude/audit/BACKLOG.md
+```
+
+### TODO Routing
+
+This repo splits its task tracking by **scope**, so each list stays focused.
+When capturing any follow-up, decide where it belongs before writing it:
+
+* **Dotfiles work** → root [`TODO.md`](../TODO.md). Anything about the broader
+  repo: `bin/`, `lib/`, `config/` (except `config/claude/`), shell-startup,
+  tests, CI, packaging, the OS/$HOME setup.
+* **Claude-agent-config work** → [`config/claude/audit/BACKLOG.md`](../config/claude/audit/BACKLOG.md).
+  Anything under `config/claude/`: rules, skills, hooks, the agent-config docs
+  (`CLAUDE.md`, `EXTENDING.md`, `SETUP-AUDIT.md`), plugin/MCP setup. This is the
+  audit's todo file; `claude-audit` reads it.
+* **Mixed** → split into both files with a cross-reference **unless** the parts
+  are merely coupled (added together, or the config piece can't be authored
+  until the dotfiles piece lands). When coupled, keep the item whole in its
+  primary file and add an inline scope note pointing at the other — and, for an
+  embedded config deliverable, either author it as part of the parent task or
+  move it to `BACKLOG.md` when the parent completes, so it isn't stranded.
+* **Cross-repo** → a follow-up that belongs to a **different repo than the one
+  you're in** (e.g. a global-config change that spawns a per-repo evaluation
+  for pigify / scripturestudy-app). You usually can't write it into the target
+  repo's `TODO.md` from here, so don't lose it or mis-home it: **capture
+  it where the originating work lives** (the dotfiles `BACKLOG.md` for
+  config-spawned items, else the current repo's `TODO.md`), tag it with the
+  **target repo** and a **migrate-on-next-visit trigger** — e.g. "→ pigify:
+  migrate to its `TODO.md` when next working it". The reciprocal: when you
+  **start work in a repo**, scan the dotfiles `BACKLOG.md` (and any other
+  parking spot) for items tagged to it and migrate them into its `TODO.md`.
+  The **github-tasks** sweep is the natural place to run that inbound check.
+
+The reciprocal pointers live in each file's header and in `TODO.md`'s *Audit
+the Claude Code Setup* section.
 
 ## Tool Setup Procedures
 
@@ -263,7 +313,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.1.0)
+* `WORKFLOW.md` - Versioned (this file, v1.5.0)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 

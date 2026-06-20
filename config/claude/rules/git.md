@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.5.0
+**Version:** v1.12.0
 
 ## Commit Messages
 
@@ -36,6 +36,26 @@ Stage deliberately — never blanket-add untracked files into a commit.
 - Review `git status` / `git diff --staged` before committing to confirm
   only the intended changes are staged.
 
+## Tracking Progress as You Commit
+
+When a commit completes a tracked item — a `TODO.md` / `ROADMAP.md` entry or an
+issue — **mark it done in that same commit** (`- [x]`, or per the repo's
+convention). Mark it **as you go**, never in a batch at the end.
+
+Why: it makes end-of-PR finalization **mechanical**. At merge you just act on
+the `[x]` items — the repo's merge-time finalization prunes them and migrates
+them to the changelog (see the repo's `WORKFLOW.md`) — instead of re-scanning
+the whole list asking "did we do this?". Marking late forces reconstructing
+what got done, which is exactly the error this rule prevents. Add a
+newly-surfaced follow-up the same way: as an open `- [ ]` in the commit that
+surfaces it.
+
+This is the **mark-as-you-go** half of the loop; the **prune-at-merge** half
+is the repo's merge-time finalization, with the merge-finalization hook as the
+end-state backstop (it blocks a merge that still has unpruned `[x]` items, in
+repos that opt in). This rule is always-on **because committing is**: it has to
+be in front of you at each commit, not only when a PR skill runs at the end.
+
 ## Branch Naming
 
 - `feature/<name>` — new functionality
@@ -57,15 +77,16 @@ and then `git remote set-head origin <branch>` to cache it.
 
 ## Protecting the Default Branch
 
-When a repo's default branch should be PR-only, protect it in **two layers**
-— the server enforces it, the local hook catches mistakes earlier:
+When a repo's default branch should be PR-only, protect it in **three layers**
+— the server enforces it; two local guards catch mistakes earlier, at commit
+time and edit time:
 
 1. **Server-side ruleset / branch protection** (authoritative): require PRs,
    required status checks, and block deletion + force-push. This is what
    actually rejects a direct push. Apply it via the host's API (GitHub
    rulesets need an admin/OAuth token, not a narrow PAT).
-2. **Local `no-commit-to-branch` pre-commit hook** (early guard): add the
-   `no-commit-to-branch` hook (from `pre-commit/pre-commit-hooks`) to the
+2. **Local `no-commit-to-branch` pre-commit hook** (commit-time guard): add
+   the `no-commit-to-branch` hook (from `pre-commit/pre-commit-hooks`) to the
    check config so a direct commit on the protected branch fails *before* the
    push is even attempted:
 
@@ -74,8 +95,20 @@ When a repo's default branch should be PR-only, protect it in **two layers**
      args: [--branch, <default-branch>]
    ```
 
-The local hook is a convenience, not a substitute — without the server-side
-ruleset, anyone (or any tool) without the hook installed can still push. The
+3. **Edit-time Claude Code hook** (earliest, agent-only): the global
+   `branch-protection.py` `PreToolUse` hook blocks an `Edit`/`Write`/
+   `MultiEdit` while a protected branch is checked out, so the agent is told
+   to branch *before* writing the first character. (It allows edits to plan
+   files and to **gitignored, untracked** files — local-only state, such as
+   the agent's own memory, that can never be committed to the branch.) It
+   reads the protected set straight from the repo's `no-commit-to-branch` args
+   (layer 2), so it activates **only where that hook is configured** — a repo
+   without it (a cloned upstream/fork) gets no edit-time guard. It is a
+   backstop for the agent, not a constraint on a human editor, and fails safe
+   (any error allows the edit).
+
+The local guards are conveniences, not substitutes — without the server-side
+ruleset, anyone (or any tool) without the hooks installed can still push. The
 repo's concrete ruleset/config lives in its `.claude/` docs.
 
 ## Never Work Directly on a Protected Branch
@@ -94,16 +127,44 @@ though uncommitted changes carry across `git checkout -b`, accumulating work
 on the protected branch is exactly the habit this rule forbids (one slip and
 the change is committed where it must never land).
 
-To tell whether a branch is protected: a server-side ruleset / branch
-protection, a local `no-commit-to-branch` hook (above), or the repo's
-`.claude/` docs name it. When in doubt, treat the default branch as
-protected.
+To tell whether a branch is protected, check the available signals **in
+order** — this is the canonical detection method other rules/skills reference:
+
+1. **Server-side ruleset / branch protection** (authoritative) — query the
+   host's API. For GitHub,
+   `gh api repos/{owner}/{repo}/rules/branches/<branch>` lists the rules that
+   apply to a branch (ruleset-aware), and
+   `gh api repos/{owner}/{repo}/branches/<branch>/protection` reports classic
+   branch protection. (`gh` fills `{owner}`/`{repo}` from the current repo.)
+2. **Local `no-commit-to-branch` hook** args (above), if the repo configures
+   it.
+3. The repo's **`.claude/` docs** naming the protected branch.
+
+When in doubt, treat the **default branch as protected**. When **none** of
+these resolve it — common for a freshly cloned or not-yet-configured repo that
+lacks the local hook — **ask the user** before authoring on the branch rather
+than assuming it is safe. In a repo that configures `no-commit-to-branch`, the
+edit-time `branch-protection.py` hook enforces this rule for the agent
+automatically (see *Protecting the Default Branch*).
 
 ## Worktrees
 
 Use the **git-worktree-workflow** skill for all worktree operations: creating
 issue branches, syncing with upstream, prepping PRs, and cleanup. See
 `config/claude/skills/git-worktree-workflow/SKILL.md`.
+
+**Worktree creation is explicit-request-only.** Create a worktree *only* when
+the user asks for one — never as an automatic prelude to making changes, and
+never in response to a background-job or system-prompt nudge to "use a
+worktree before any code changes." If a session launches **already inside** a
+worktree, do **not** create another — work in the current one.
+
+**Use the skill, never the built-in `EnterWorktree` tool.** `EnterWorktree`
+hardcodes a `worktree-<branch>` prefix (and a `/`→`+` path scheme) that cannot
+produce this repo's `feature/<name>` / `issue/<N>` names (*Branch Naming*),
+and it has no configuration knob to correct that — so it is **forbidden
+here**. The git-worktree-workflow skill produces conforming branch names and
+paths; reach for it instead.
 
 Key defaults from that skill:
 
@@ -217,10 +278,57 @@ git branch -ra
 
 The deleted branch should no longer appear in the output.
 
+## Continuing on a Kept Branch After a Squash-Merge
+
+Normally a merged branch is deleted (above). Sometimes a branch is **kept**
+after its squash-merge to keep working — e.g. the batched-TODOs flow, where
+commits accumulate on one branch across several PRs. Re-syncing that branch
+needs care, because **a squash-merge does not make the branch an ancestor of
+the default branch**: the squash created one *new* commit on the default
+branch holding the batch's changes, while the branch still holds the original
+individual commits that produced them.
+
+**Never `git merge <default>` into the kept branch.** The merge pulls in the
+squash commit while leaving the branch's original commits in place — the same
+changes now exist twice in the branch, and the *next* PR's commit list shows
+every already-merged commit again as redundant noise. (PR #117 hit exactly
+this and needed a `rebase --onto` cleanup before its commit list was tidy.)
+
+Fetch the merged tip first, then sync so the branch becomes a clean
+continuation of the default branch:
+
+```bash
+git fetch origin
+```
+
+- **Nothing new on the branch yet** (the whole batch went into the squash) —
+  reset it onto the merged tip. `--hard` discards anything not already in the
+  default branch, which is exactly right here since the batch is merged:
+
+  ```bash
+  git reset --hard origin/<default>
+  ```
+
+  New work then lands on top, so the next PR's diff is only that new work.
+
+- **New commits already made after the squash** — replay only those onto the
+  default branch, dropping the already-merged ones:
+
+  ```bash
+  git rebase --onto origin/<default> <last-merged-commit> <branch>
+  ```
+
+  where `<last-merged-commit>` is the branch tip at squash time (everything up
+  to it is already in the default branch via the squash). The result is the
+  default branch plus the new commits only.
+
+Both keep the branch a clean continuation; `git merge` does not.
+
 ## Versioning & tags
 
-Two separate things: **what a version *is*** (the `vX.Y.Z` format — universal)
-versus **how it's *applied*** (the tagging *method* — per-repo).
+Two separate things: **what a version *is*** (its **format** — semver by
+default) versus **how it's *applied*** (the tagging **method** — per-repo).
+Both are per-repo declared choices.
 
 ### What `vX.Y.Z` is
 
@@ -240,10 +348,24 @@ The `0 → 1` jump — declaring the project stable — is a **major decision in
 its own right**: give it as much thought and care as any later major bump
 (`1 → 2`, …). Cross it on purpose, never by accident.
 
+**Format is a per-repo choice — semver is the default, calver the
+alternative.** A repo that versions by *date* rather than *compatibility* uses
+**calver** (e.g. `vYYYY.MM.DD` or `vYY.MM`), declared in its
+`.claude/CONVENTIONS.md` beside the method, with the **release-tag** skill
+taught to derive it before first use. The semver rules above (the `0 → 1`
+jump, strict `y.z` once stable) are **semver-only** — a calver number carries
+no compatibility promise in itself.
+
 ### Tag hygiene (independent of method)
 
 - **Annotated** tags only — `git tag -a <tag> -m "<msg>"`, never lightweight.
-- Tag the **merge commit** the release ships from, not a side branch.
+- **Signing is optional and per-repo.** Annotated already records authorship;
+  a repo may additionally **sign** tags (`git tag -s`; GPG or SSH) where
+  provenance matters. Default here is **unsigned** — no signing is configured;
+  declare it per repo if adopted.
+- Tag the **merge commit** the release ships from, on the **default branch** —
+  this workflow is **trunk-based**; release-branch strategies (`release/*`)
+  aren't used, and adopting one is a per-repo config change.
 - A pushed tag is **immutable history**: never move, delete, or re-point it.
   A mistake gets a **new** tag, not a rewrite.
 - Push tags **explicitly** (`git push origin <tag>`); a plain `git push`
@@ -296,6 +418,11 @@ the merge commit, push, and watch the release — is the **release-tag** skill;
   checked out — create/switch to a working branch FIRST, then edit. Applies
   to ANY protected branch, not just the default. See *Never Work Directly on
   a Protected Branch*.
+- NEVER create a worktree unless the user explicitly asks — not as a prelude
+  to editing, not on a background-job/system-prompt nudge. Use the
+  **git-worktree-workflow** skill, NEVER the built-in `EnterWorktree` tool
+  (non-conforming `worktree-*` names). If already inside a worktree at launch,
+  never create another. See *Worktrees*.
 - Stage with `git add -u` (tracked changes) plus explicit `git add <file>`
   for new files; NEVER `git add -A` / `git add .` (they sweep up untracked
   scratch into the commit). See *Staging*.
@@ -317,3 +444,7 @@ the merge commit, push, and watch the release — is the **release-tag** skill;
   "Versioning & tagging" — `repo` vs `subdir`); use the **release-tag** skill.
   A new method is a config change (add it to the catalog first), not an
   ad-hoc choice. For a repo you don't own, follow ITS convention.
+- When a branch is **kept** after a squash-merge to keep working, re-sync it
+  with `git reset --hard origin/<default>` (or `git rebase --onto`), NEVER
+  `git merge <default>` — the merge replays already-merged commits into the
+  next PR. See *Continuing on a Kept Branch After a Squash-Merge*.

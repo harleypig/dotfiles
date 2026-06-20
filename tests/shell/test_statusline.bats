@@ -1,0 +1,171 @@
+#!/usr/bin/env bats
+
+# Regression tests for config/claude/bin/statusline.sh.
+#
+# Guards the leading-empty-field bug (parts[0] was an empty mode label, so the
+# line rendered as ' | (dotfiles: …)') and the context-% colour escalation.
+# jq is real; ansi + git-status are stubbed (ansi echoes its args so colour
+# choices are assertable).
+
+load ../helpers/common
+
+setup() {
+  load_bats_libs
+  command -v jq > /dev/null || skip "jq not installed"
+
+  ROOT="$(dotfiles_root)"
+  SL="$ROOT/config/claude/bin/statusline.sh"
+  BASH_BIN="$(command -v bash)"
+  STUB="$(make_stub_dir)"
+
+  cat > "$STUB/ansi" << 'STUBEOF'
+#!/usr/bin/env bash
+printf '<%s>' "$*"
+STUBEOF
+
+  cat > "$STUB/git-status" << 'STUBEOF'
+#!/usr/bin/env bash
+printf 'REPO'
+STUBEOF
+
+  chmod +x "$STUB/ansi" "$STUB/git-status"
+
+  JSON='{"model":{"display_name":"Opus 4.8"},"context_window":{"used_percentage":20},"cost":{"total_cost_usd":10.36},"version":"2.1.183"}'
+}
+
+teardown() {
+  rm -rf "$STUB"
+}
+
+@test "output has no leading empty field / separator" {
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  refute_output --regexp '^[[:space:]]*\|'
+}
+
+@test "all expected fields are present" {
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  assert_output --partial 'REPO'
+  assert_output --partial 'Opus 4.8'
+  assert_output --partial 'Ctx:'
+  assert_output --partial '20%'
+  # shellcheck disable=SC2016  # literal '$' cost prefix, not a variable
+  assert_output --partial '$10.36'
+  assert_output --partial 'code v2.1.183'
+}
+
+@test "an empty git-status leaves no stray separator" {
+  cat > "$STUB/git-status" << 'STUBEOF'
+#!/usr/bin/env bash
+STUBEOF
+  chmod +x "$STUB/git-status"
+
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  refute_output --regexp '^[[:space:]]*\|'
+  refute_output --regexp '\|[[:space:]]+\|'
+}
+
+@test "high context (>=80) uses the alarm colour" {
+  local json='{"model":{"display_name":"X"},"context_window":{"used_percentage":85},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  assert_output --partial '<bg red>'
+}
+
+@test "low context uses the calm cyan colour" {
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  assert_output --partial '<fg cyan>'
+}
+
+@test "effort rides with the model (no pipe between) and is bracketed" {
+  local json='{"model":{"display_name":"Opus"},"effort":{"level":"high"},"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  assert_output --partial '[high]'
+  # no ' | ' separator between the model and the effort segment
+  assert_output --regexp 'Opus[^|]*\[high\]'
+}
+
+@test "effort color escalates by level (high=yellow, max=alarm)" {
+  # ctx held low (cyan) so any warn/alarm color must come from effort
+  local base='"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "{\"model\":{\"display_name\":\"O\"},\"effort\":{\"level\":\"high\"},$base}"
+  assert_success
+  assert_output --partial '<fg bright_yellow>'
+
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "{\"model\":{\"display_name\":\"O\"},\"effort\":{\"level\":\"max\"},$base}"
+  assert_success
+  assert_output --partial '<bg red>'
+}
+
+@test "effort segment is absent (no empty brackets) when the model has none" {
+  # default JSON has no .effort — and an absent field must not shift the line
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  refute_output --partial '[]'
+  refute_output --partial '['
+  assert_output --partial 'Opus 4.8'
+  assert_output --partial 'code v2.1.183'
+}
+
+@test "rate-limit usage rides inside the context segment (no pipe)" {
+  local json='{"model":{"display_name":"O"},"context_window":{"used_percentage":20},"rate_limits":{"five_hour":{"used_percentage":24.5},"seven_day":{"used_percentage":41.2}},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  # label and value are split by a color code, so assert them separately
+  assert_output --partial '5h:'
+  assert_output --partial '24%'
+  assert_output --partial '7d:'
+  assert_output --partial '41%'
+  # no ' | ' between the context % and the usage figures
+  assert_output --regexp 'Ctx:[^|]*5h:[^|]*7d:'
+}
+
+@test "rate-limit usage is absent when rate_limits is missing" {
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  refute_output --partial '5h:'
+  refute_output --partial '7d:'
+}
+
+@test "rate-limit usage color escalates (5h near cap -> alarm)" {
+  # ctx + 7d held low (cyan) so the alarm color must come from the 5h cap
+  local json='{"model":{"display_name":"O"},"context_window":{"used_percentage":20},"rate_limits":{"five_hour":{"used_percentage":92},"seven_day":{"used_percentage":10}},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  assert_output --partial '<bg red>'
+}
+
+@test "vim NORMAL leads the line in bright-yellow on red" {
+  local json='{"vim":{"mode":"NORMAL"},"model":{"display_name":"O"},"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  # leads the line (before the first ' | '), red bg + bright-yellow fg
+  assert_output --regexp '^[^|]*NORMAL'
+  assert_output --partial '<bg red>'
+  assert_output --partial '<fg bright_yellow>'
+}
+
+@test "vim INSERT uses the standard color (no alarm)" {
+  local json='{"vim":{"mode":"INSERT"},"model":{"display_name":"O"},"context_window":{"used_percentage":20},"cost":{"total_cost_usd":1},"version":"1"}'
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$json"
+  assert_success
+  assert_output --regexp '^[^|]*INSERT'
+  refute_output --partial '<bg red>'
+}
+
+@test "vim segment is absent when no vim mode is reported" {
+  run env PATH="$STUB:$PATH" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  refute_output --partial 'NORMAL'
+  refute_output --partial 'INSERT'
+}
+
+@test "missing jq prints a graceful notice and exits 0" {
+  run env PATH="$STUB" "$BASH_BIN" "$SL" <<< "$JSON"
+  assert_success
+  assert_output --partial 'jq not found'
+}

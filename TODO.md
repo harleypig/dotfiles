@@ -7,6 +7,12 @@ This TODO file tracks the modernization effort for the dotfiles repository,
 organized by work area with phase markers. See `WORKFLOW.md` for development
 guidelines and `TESTS.md` for testing strategy.
 
+**Scope:** this file is for **dotfiles** work. Tasks about the **Claude agent
+config** (`config/claude/` — rules, skills, hooks, agent-config docs) live in
+[`config/claude/audit/BACKLOG.md`](config/claude/audit/BACKLOG.md) instead. See
+*Audit the Claude Code Setup* below (and `WORKFLOW.md` → *TODO routing*) for the
+full convention.
+
 ## 📝 Documentation (HIGH PRIORITY)
 
 ### Code Comment Cleanup
@@ -23,18 +29,6 @@ follow-up remains:
 - [ ] Confirm Dependabot / auto-merge interplay once a Dependabot PR appears
   (squash-only + required checks — ensure auto-merge still completes).
 
-## 📦 Commit a poetry.lock for the Poetry tool-env (MEDIUM PRIORITY)
-
-`config/pypoetry/pyproject.toml` has no committed `poetry.lock`, so transitive
-dependencies aren't pinned and Dependabot can't open security-update PRs for
-them. Alert #6 (`cryptography`) was remediated with a **direct** pin in the
-manifest instead; per `rules/poetry.md` the lockfile MUST be committed.
-
-- [ ] Generate and commit `config/pypoetry/poetry.lock` (resolving
-  `cryptography >= 48.0.1`) so transitive deps are pinned and Dependabot
-  security updates can cover them. Larger change than the direct pin — its
-  own fix.
-
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
 We use a single branch ruleset (protect master). Survey what else rulesets
@@ -49,137 +43,22 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🔌 Convert marketplace plugins to in-repo rules/skills (MEDIUM PRIORITY)
+## 🔑 Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
 
-Replace these installed plugins with rules/skills that live in our own
-`config/claude/` and fit our environment (XDG paths, `mymcp`, our QA/git
-workflow), so we own and version the behaviour instead of depending on
-external marketplace plugins:
+Secrets currently live as plaintext files in the sibling `private_dotfiles`
+repo, loaded by `config/shell-startup/000-loadtokens`. Because they sit in a
+*separate* repo that this one references, it's easy to accidentally pull a
+secret value into the dotfiles repo (a hardcoded token while debugging, a
+value leaked into a committed config) — which *raises*, not lowers, the value
+of secret scanning here.
 
-- [ ] **claude-code-setup** (`claude-automation-recommender` skill).
-- [ ] **claude-md-management** (`claude-md-improver` + `revise-claude-md`
-  skills) — overlaps our existing CLAUDE.md/rules discipline; reconcile.
-- [ ] **hookify** (skills + `conversation-analyzer` agent + the hook
-  machinery) — our hooks live under `~/.claude/hooks/`; decide what carries
-  over.
-- [ ] **ralph-loop** (`ralph-loop` / `cancel-ralph` / `help` skills).
-- [ ] **skill-creator** (`skill-creator` skill).
-
-For each: extract the useful behaviour into a `config/claude/rules/<name>.md`
-or `config/claude/skills/<name>/` per the three-tier model in `CLAUDE.md`,
-drop anything redundant with what we already have, then disable/remove the
-plugin in `settings.json` + `installed_plugins.json`. Record the outcome in
-`SETUP-AUDIT.md`.
-
-## 🔁 Point the context7 plugin at `mymcp` (MEDIUM PRIORITY)
-
-**Investigation done:** the `context7` plugin contains **nothing besides the
-MCP server** — just `.mcp.json` (`npx -y @upstash/context7-mcp`) and a
-`plugin.json` manifest. No skills, commands, rules, agents, or hooks. So there
-is nothing to convert to a rule/skill; it only needs to run through our own
-MCP launcher.
-
-- [ ] Add a `context7` case to `bin/mymcp`:
-  `context7() { npx_run '@upstash/context7-mcp'; }` + `known_cmd['context7']=1`
-  (`npx_run` already prepends `-y`, so pass only the package).
-- [ ] Register context7 as an `mcpServers` entry running `mymcp context7`
-  (stdio) the way `github`/`snyk` are, instead of the marketplace plugin.
-- [ ] Disable the plugin: drop `"context7@claude-plugins-official": true` from
-  both `config/claude/settings.json` and `~/.claude/settings.json` (they
-  mirror).
-- [ ] Verify the context7 MCP tools still resolve after the switch; record in
-  `SETUP-AUDIT.md`.
-
-## 🐙 `/github-tasks` skill — recurring GitHub housekeeping (MEDIUM PRIORITY)
-
-Create a `/github-tasks` skill that sweeps the repo's GitHub state and drives
-the routine maintenance, then presents a prioritized worklist to the user.
-Scope:
-
-- [ ] **Dependabot PRs** — find open Dependabot PRs and work through any that
-  exist (review, compat-gate via `qa-check`, land per the merge policy).
-  Ties into the existing "Confirm Dependabot / auto-merge interplay" item
-  under *Protect the master Branch*.
-- [ ] **Issue triage** — list open issues and auto-triage them, applying the
-  right labels (`bug`, `docs`, `feature`, etc.); fold actionable issues into
-  the repo's TODO triage queue per `rules/gh.md` *Issues & triage*.
-- [ ] **Present a worklist** — surface the gathered issues/PRs as a ranked
-  list of candidates to work on, and **ask the requestor clarifying
-  questions** before acting on ambiguous items.
-- [ ] **Whatever else comes up** — leave room for other recurring GitHub
-  chores (stale branches, failing required checks, release/tag hygiene,
-  open review threads).
-- [ ] **Reconcile with existing rules/skills** — `rules/gh.md` already
-  defines the issue-triage cadence ("at the start of git/gh work, and
-  daily") and the credential fallback; `ship-pr` lands PRs;
-  `git-worktree-workflow` manages branches; `security-scan` triages
-  Dependabot/CVE findings. Decide what `/github-tasks` orchestrates vs.
-  delegates, and whether any of that content should roll into the skill or
-  the skill should defer to it — avoid duplicating per the Rule of Three.
-- [ ] **Recurring, not scheduled** — this must run on a regular basis but
-  **not** on a cron. Wire it to the natural trigger already in `rules/gh.md`
-  (start of git/gh work + daily) rather than a scheduled job; decide if that
-  rule should *name* the skill as its forcing function.
-
-## 🧪 `/test-audit` skill — flag missing/outdated tests, hook into qa-check (MEDIUM PRIORITY)
-
-Create a `/test-audit` skill that checks for **missing or outdated tests**
-(scripts/functions with no test, bug fixes without a regression test, tests
-that have drifted from the code they cover) and wire it into the `qa-check`
-skill's Tests dimension (`qa.md` dimension 6).
-
-- [ ] **First reconcile with the existing `test-review` skill** — it already
-  covers "Tests dimension (quality, not execution): success AND failure
-  paths, regression-test-per-bug, edge-case gaps." Decide whether
-  `/test-audit` is a new skill or whether this is just *wiring `test-review`
-  into `qa-check`* (and possibly renaming/extending it). Avoid duplicating
-  what `test-review` already does — see the Rule of Three in `code-style.md`.
-- [ ] Define what "outdated" means concretely for this repo (e.g. a
-  `bin/`/`lib/` file newer than its `tests/shell/test_<name>.bats`, or a test
-  referencing removed code) per `TESTS.md`'s coverage rules.
-- [ ] Hook the chosen skill into `qa-check` for the Tests dimension; record
-  the status in the repo QA doc per `qa.md`.
-
-## 🔎 CodeFactor & Snyk: Use Their Output? Rule/Skill? (MEDIUM PRIORITY)
-
-Both run as PR checks (alongside `bats`), but we don't yet act on their
-findings. Research how to actually use each and whether to formalize it.
-
-- [ ] **CodeFactor**: what it analyzes, where findings surface (PR inline
-  comments, the codefactor.io dashboard, the badge), how to configure it
-  (`.codefactor.yml`), and how to triage/suppress. Decide if it earns a
-  required status check.
-- [ ] **Snyk** (`security/snyk`): what the check scans (deps / code / IaC?),
-  where findings live (app.snyk.io, PR annotations), its auth/config, and how
-  it overlaps with Dependabot and the existing security rules
-  (`semgrep`/`trivy`/`osv-scanner`) plus the `security-scan` skill.
-- [ ] Decide **per tool**: a `config/claude/rules/<tool>.md` (how to read and
-  act on its output), a skill, folding into the existing `security-scan` skill
-  / `qa.md` security dimension, or nothing — without duplicating what those
-  already cover.
-- [ ] If a tool adds no actionable value, consider disabling its check to cut
-  PR-check noise; if it does, document the triage workflow.
-
-## 🔐 Evaluate trufflehog & Checkmarx scanners (MEDIUM PRIORITY)
-
-Two candidate security scanners to weigh for pre-commit and/or GitHub
-Actions. For each, determine what it scans, how it overlaps with the tools
-already in play (gitleaks/detect-private-key, the `security-scan` skill,
-`semgrep`/`trivy`/`osv-scanner`), and where it belongs — then fold any
-adoption into the `security-scan` skill / `qa.md` security dimension rather
-than wiring it as a one-off.
-
-- [ ] **trufflehog** (secret scanning): evaluate adding it to pre-commit and
-  GitHub Actions, and how it complements the existing secret-scanning story —
-  gitleaks is the commit-time guard (Pre-commit Phase 2) and full-repo/history
-  scanning is the `security-scan` skill's job. Decide whether trufflehog's
-  verified-secret detection augments or replaces either, and where it runs
-  (commit-time hook vs CI vs the skill).
-- [ ] **Checkmarx** (SAST): evaluate adding it to pre-commit and/or GitHub
-  Actions; compare against the existing SAST layer (`semgrep`) and decide
-  whether it earns a place. Ties into the perl-SAST investigation under "Perl
-  quality tooling → Security scanning", which already flags Checkmarx for its
-  believed perl support.
+- [ ] Investigate whether GitHub can serve as a secrets vault to replace (or
+  back) the plaintext `private_dotfiles/api-key/*` files — e.g. Actions /
+  Codespaces / Dependabot secrets, `gh secret`, or a runtime fetch of an
+  encrypted store via the `gh` API. Key constraint to assess: Actions secrets
+  are only exposed *inside* Actions runs, not in a local login shell, so weigh
+  what is actually reachable from the `shell-startup` path. Goal: shrink the
+  accidental-ingestion surface.
 
 ## 🧹 shell-startup Follow-ups (LOW PRIORITY)
 
@@ -191,44 +70,6 @@ Deferred from the shell-startup trim (PR #16):
   make that obvious. Do this before the containerized startup tests are done
   so they target the final names. Update `load_files`, the pre-setup hook
   path, `run_hook`'s default `$dfdir`, and the directories themselves.
-
-## 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
-
-Review every repo under `$PROJECTS_DIR` and decide, per the three-tier model
-in `CLAUDE.md`, whether anything repo-local in its `.claude/` should be
-promoted to the global config (`config/claude/rules/` or `.../skills/`).
-
-- [ ] Enumerate projects with a `.claude/`:
-  `find "$PROJECTS_DIR" -maxdepth 2 -name .claude -type d`.
-- [ ] For each, compare its `rules/`, `skills/`, and CONVENTIONS/WORKFLOW/
-  TESTS against the global set; flag anything language- or repo-agnostic
-  (tier 1/2) that's repo-local or duplicated.
-- [ ] Promote tier-1/2 items to global `config/claude/rules/<name>.md` or
-  `config/claude/skills/`; leave truly repo-specific bits in place.
-- [ ] Consolidate drift: the same rule copied (and diverging) across repos
-  should become one global source that repos reference.
-- [ ] Note any project that lacks a `.claude/` but should have one.
-
-## 📓 Rule/skill-authoring doc-sourcing; evaluate a Dependabot skill (MEDIUM PRIORITY)
-
-`config/claude/rules/dependabot.md` already exists (since 2026-06-03) and now
-carries a doc-consultation instruction (v1.1.0). What remains is cross-cutting:
-
-- [ ] **Rule/skill-authoring must source docs** — whatever governs creating
-  rules/skills (`config/claude/EXTENDING.md`, `config/claude/CLAUDE.md`,
-  `config/claude/rule-TEMPLATE.md`) should state that a new rule/skill must
-  first **check whether the rule already exists**, **consult official
-  documentation**, and refer to any **man page / local package-installed
-  docs** (`man <tool>`, `<tool> --help`, `/usr/share/doc/<pkg>`) — not memory.
-  Motivating incident: a `dependabot.yml` was authored on the false premise
-  that `rules/dependabot.md` didn't exist (it did). Add once to the canonical
-  authoring doc and reference it; don't duplicate.
-- [ ] **Evaluate a `dependabot` skill** — a forcing function that scans the
-  repo for every manifest / Dockerfile / workflow, consults current official
-  docs, generates/reconciles `dependabot.yml` to full coverage + conventions
-  (per `rules/dependabot.md`), and verifies (yamllint). Decide scope vs the
-  existing `security-scan` skill (which *triages* Dependabot findings) — setup
-  vs triage; avoid duplication (Rule of Three).
 
 ## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
 
@@ -249,6 +90,10 @@ shared/versioned independently and carries **no dotfiles-specific references**
   steps and any hardcoded paths.
 - [ ] Reconcile with the "Break tmux config into its own repo" item (same
   extraction question: submodule vs sibling).
+
+*Scope note (TODO-routing):* the subject is `config/claude`, but the work is
+repo packaging / deployment — a dotfiles concern, not agent behavior — so it
+stays here, not in `audit/BACKLOG.md`.
 
 ## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
 
@@ -363,7 +208,8 @@ config rather than depend on the global `dot-general/.markdownlintrc`
 - [ ] Remove `dot-general/.markdownlintrc` and its dotlinks entry once no repo
   relies on the global fallback.
 - [ ] Update `config/claude/rules/markdownlint.md` to drop the global once
-  it's gone.
+  it's gone. *(Claude-config step — fine as part of this task; if deferred,
+  track it in `audit/BACKLOG.md`. TODO-routing.)*
 
 ## 🧹 Meta-suite Gating Debt (MEDIUM PRIORITY)
 
@@ -430,7 +276,8 @@ catches.
 
 Build out perl QA across **both the test suite and the CLI scripts** (where
 CLIs exist — e.g. `bin/parse_params`, `bin/perltidyrc-clean`), and make it as
-strict as practical, in stages.
+strict as practical, in stages. Capture the resulting toolchain in **agent
+rules/skills** (see *Rules & skills* below), not only human setup docs.
 
 ### perlcritic
 
@@ -485,9 +332,11 @@ bundles (OTRS, TryTiny).
 
 ### Security scanning
 
-- [ ] Look into perl SAST: investigate **Checkmarx** (believed to support
-  perl) and open-source alternatives, and fold any perl SAST into the
-  `security-scan` skill / `qa.md` security dimension rather than a one-off.
+- [ ] Look into perl SAST: **Checkmarx was evaluated and declined** (commercial,
+  no free tier — see "Evaluate trufflehog & Checkmarx"), so pursue
+  **open-source** options only (e.g. `perlcritic` security policies, or other
+  OSS perl analyzers), and fold any perl SAST into the `security-scan` skill /
+  `qa.md` security dimension rather than a one-off.
 
 ### Setup / documentation
 
@@ -498,6 +347,37 @@ bundles (OTRS, TryTiny).
   Prerequisites). Use the repo's standard install path — perlbrew + cpanm (see
   *Tool/Version Manager Setup*) or pinned docker wrappers — so a fresh machine
   reproduces the whole perl QA toolchain from one documented place.
+
+### Rules & skills (agent config)
+
+*Claude-config note (TODO-routing):* these deliverables are `config/claude`
+work (rules / a skill), kept here because they're coupled to the perl-tooling
+stages above (each rule lands as its tool does). Author them as part of that
+work, or move this subsection to `audit/BACKLOG.md` when the tooling lands —
+don't leave it stranded in the dotfiles `TODO.md`.
+
+These stages adopt several tools the **agent** must know how to drive — capture
+each as agent config, not only human setup docs, per `CLAUDE.md` *Missing or
+Conflicting Tool Rules* and *When to Propose a Skill*. Today only a thin
+`rules/perl.md` exists (a one-line `perltidy` + `perlcritic --severity 4`
+mention) and there is **no** perl-QA skill (cf. `bats-setup`,
+`pytest-patterns`).
+
+- [ ] **Per-tool rules.** As each tool lands, create or extend its
+  `rules/<tool>.md`, **grounded in current official docs with a Sources cite**
+  (`EXTENDING.md` *Grounding & sourcing*) — never memory. Likely a dedicated
+  **`rules/perlcritic.md`** (the curated profile, policy-selection judgement,
+  staged severity ratchet, and docker-pinned-policy-set angle are far more than
+  `perl.md`'s one-liner), plus shorter rules or `perl.md` sections for
+  `perltidy`, `Devel::Cover`, and `Test::Pod::Coverage`. Wire each into the
+  tool-detection table and the `qa.md` / repo QA-doc dimension mapping.
+- [ ] **A perl-QA skill?** Decide whether the multi-step procedures here
+  (scaffold the toolchain → curate the perlcritic profile → ratchet severity in
+  stages → wire Test::Perl::Critic + coverage + POD gates) warrant a skill — a
+  perl analog of **`bats-setup`** (scaffolding) and/or **`pytest-patterns`**
+  (depth recipes). Weigh against `qa-check` (which *runs* QA) and the existing
+  skills; fold into one rather than duplicate if it already fits (Rule of
+  Three).
 
 ## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
 
@@ -683,117 +563,47 @@ shim), `show-unicode` (static table), `bash-colors` (color-var defs),
   (mostly covered by the integration tests) and any scripts elsewhere.
 - [ ] Regenerate the meta suite after adding scripts; keep Phase 3 in sync.
 
-## 🧠 Claude Rules Files (MEDIUM PRIORITY)
+## 🪝 branch-protection hook: exempt gitignored paths (LOW PRIORITY)
 
-Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the
-agent how to use each tool. Already have, among others: bash, perl,
-powershell, pre-commit, python, shellcheck, shfmt, yamllint, markdownlint,
-yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
+**Pain (PR #118 retrospective):** writing an auto-memory note — under the
+gitignored `config/claude/projects/*/memory/` dir, a path that can *never*
+land in a commit — was blocked by the edit-time `branch-protection.py`
+`PreToolUse` hook because `master` was checked out, forcing an unnecessary
+throwaway branch just to satisfy the guard. A write that cannot be committed
+cannot violate branch protection, so this is a false-positive in a
+forcing-function hook (the memory system is meant to be written directly at
+any time).
 
-- [ ] Remaining rules to author:
-  - [ ] new project setup — rule covering the general checklist for
-    initializing a project (git init, pre-commit, .claude/ scaffold,
-    DEVELOPER.md, TODO.md, etc.); evaluate splitting language-specific
-    bootstrapping steps (e.g. NeoForge MDK, Poetry, npm init) into the
-    relevant per-language rules file rather than bloating the general rule.
-    Points to consider from experience:
-    - Investigate actual storage/file formats before designing around them;
-      official docs may describe outdated formats (e.g. JourneyMap switched
-      from per-waypoint JSON to a binary DAT in 6.x without updating docs)
-    - Check whether related/foreign repos are already cloned as siblings
-      before suggesting clone locations (../reponame convention)
-    - Defer .claude/ scaffold until project-specific conventions emerge;
-      Phase 0 setup rarely produces enough repo-specific content to justify it
-    - Editor config belongs in the editor's own config repo, not the project;
-      DEVELOPER.md should note the maintainer's editor but not prescribe setup
-    - When adding language support to an editor config, verify that
-      indentation and formatting settings match the chosen formatter's output
-      rather than blindly following language community conventions (e.g.
-      google-java-format uses 2-space, not the traditional 4-space Java style)
-    - New project setup frequently exposes gaps in existing global config
-      (missing docs, redundant settings, stale paths); capture these as
-      follow-up items in the relevant repo's TODO rather than blocking setup
-    - DEVELOPER.md should cover the full build/test workflow including
-      platform-specific quirks (e.g. build in WSL2, test in Windows Minecraft)
-    - Pin pre-commit hook versions to current stable at time of setup;
-      note that versions need periodic review as hooks release updates
-    - Document the rationale for non-obvious decisions (e.g. why 2-space
-      Java indent) so future sessions don't relitigate them
-  - [ ] commitizen — rule and/or skill for conventional commit message
-    formatting; evaluate whether a rule (policy + invocation) is sufficient
-    or whether the multi-step workflow warrants a skill
-  - [ ] git tagging — rule and/or skill for version tag conventions (semver
-    vs calver, signed vs unsigned, when to tag vs branch, how tags relate
-    to release branches); likely a rule unless the tagging+push+release
-    sequence is complex enough to warrant a skill
-  - [ ] changelog generation — rule and/or skill for producing changelogs
-    from git history on version changes; evaluate tools (git-cliff,
-    conventional-changelog, keep-a-changelog manual pattern) and whether
-    changelog generation should be part of a broader release skill alongside
-    tagging and commitizen
-  - [ ] Any other tools discovered during pre-commit or CI work
-- [ ] Add a "best practices" rules/skills layer. The current
-  `rules/code-style.md` may be better recast as a general best-practices
-  document with language-specific subdocuments — i.e. a shared core that
-  per-language rules files extend. Decide structure: one general
-  best-practices doc + per-language extensions, vs. keeping `code-style.md`
-  as the shared base that the language rules reference.
-- [ ] When creating/modifying a rule or skill, check known sources for an
-  existing implementation to adapt (vendor with a `SOURCE.md` and audit to
-  fit) rather than authoring from scratch:
-  - GitHub (search repos/topics)
-  - <https://github.com/VoltAgent/awesome-agent-skills>
-  - <https://officialskills.sh/>
-  - other locations as discovered
-  Ties into the vendored file/skill update checker (see Configuration
-  Enhancements → Dependency Management).
-
-## 🪝 Claude Code PostToolUse Hooks (MEDIUM PRIORITY)
-
-Rules files instruct the agent to run shellcheck/shfmt, but only if the agent
-remembers. `PostToolUse` hooks in `settings.json` enforce this automatically
-after every `Edit` or `Write` on a shell file.
-
-- [ ] Decide hook approach:
-  - Option A: inline command in `settings.json` (simple, but not version-controlled
-    separately from settings)
-  - Option B: `config/claude/bin/post-edit-shell.sh` script invoked by the hook
-    (keeps logic in a file, easier to maintain)
-- [ ] Implement hook in `config/claude/settings.json`:
-  - Match on `Edit` and `Write` tool use
-  - Detect if the modified file is a shell file (by path pattern or shebang)
-  - Run `shfmt -i 2 -s -bn -ci -sr -w <file>` then `shellcheck <file>`
-  - Output failures so Claude sees them and can fix before continuing
-- [ ] Research Claude Code hook input format: what env vars / stdin does a
-  `PostToolUse` hook receive? (need file path of edited file)
-- [ ] Document hook setup in this repo's WORKFLOW.md once stable
+- [ ] **Artifact:** update the existing hook
+  `config/claude/hooks/branch-protection.py` (global; symlinked to
+  `~/.claude/hooks/`) to **allow** an `Edit`/`Write`/`MultiEdit` whose target
+  path is gitignored (e.g. `git check-ignore -q <path>`), since such a write
+  can't reach a commit on the protected branch. Keep failing safe (any error →
+  allow). Scope: **global** dotfiles agent-config. Confirm it doesn't weaken
+  the guard for tracked files.
 
 ## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
 
-The Claude Code setup audit — its methodology, dimensions, idea sources,
-backlog, and decisions log — lives in `config/claude/SETUP-AUDIT.md`, which is
-read only when running `/claude-audit` (it is **not** context-loaded). Audit
-follow-ups (e.g. the deferred `pydantic_ai` framework rule, repo-mining
-shortlists) are tracked there, not here, so this repo's `TODO.md` stays about
+The Claude Code setup audit's *methodology* is the `claude-audit` skill; its
+*record* lives under `config/claude/audit/` — `decisions-log.md` (the "why"),
+`BACKLOG.md` (open audit follow-ups), `idea-sources.md` + `mining-census.md`
+(mined repos) — indexed by `config/claude/SETUP-AUDIT.md`. None of it is
+context-loaded; it is read only when running `/claude-audit`. Audit follow-ups
+(e.g. the deferred `pydantic_ai` framework rule, repo-mining shortlists) are
+tracked in `audit/BACKLOG.md`, not here, so this repo's `TODO.md` stays about
 actual dotfiles work.
 
-## ⌨️ Custom slash commands: /push and /push-pr (MEDIUM PRIORITY)
+**TODO routing convention.** When capturing a follow-up, route it by scope: a
+task about the **Claude agent config** (anything under `config/claude/` —
+rules, skills, hooks, the agent-config docs) goes in
+[`config/claude/audit/BACKLOG.md`](config/claude/audit/BACKLOG.md); a task about
+the **broader dotfiles setup** stays in this `TODO.md`. A genuinely **mixed**
+task is split into both with a cross-reference — *unless* the parts are merely
+coupled (added together, or one can't be done until the other lands), in which
+case keep it whole in its primary file and note the other scope inline. Also in
+`WORKFLOW.md` → *TODO routing*.
 
-Shortcuts for the common ship flow:
-
-- `/push` — commit (if needed) and push the current branch.
-- `/push-pr` — commit, push, and open a PR.
-
-**First evaluate workability.** A slash command is a prompt the model
-executes, so it *can* run git/`gh` (commit → push → `gh pr create`) — but it
-**suggests**, it does not guarantee, and it must respect the protected-branch
-rule (never author on master), the staging discipline (`git add -u` + explicit
-paths, never `-A`/`.`), and the gh approval gates (never open/merge a PR
-without explicit approval — `gh.md`). These largely duplicate the **ship-pr**
-skill, so the real question is whether a thin command that **delegates to
-ship-pr** (or a subset) beats just typing the request. Decide: command vs.
-skill-trigger, the exact scope of each (`/push` = commit+push only), and where
-it lives (global `commands/`).
+## 🪝 Pre-commit hooks: phased rollout (MEDIUM PRIORITY)
 
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
 Pre-commit can progress independently. CI/CD cannot lead pre-commit.
@@ -806,6 +616,10 @@ wired into CI (`pre-commit run --all-files`), and the CI `pre-commit` check is
 required in the master ruleset alongside `bats`.
 
 ### Proposed: pre-commit skill, used by qa-check
+
+*Claude-config note (TODO-routing):* a `config/claude` skill. Author it as part
+of this work, or move it to `audit/BACKLOG.md` when the pre-commit rollout
+completes — don't leave it stranded here.
 
 - [ ] Evaluate a `pre-commit` **skill** packaging the operational workflow
   (fix → check → commit prep; `install` variants; `autoupdate` on suspected
@@ -1012,6 +826,13 @@ Context detection: use `$TMUX`, `$VIM`/`$VIMRUNTIME`, and
 
 ### Task 1: Claude Statusline Script (MEDIUM PRIORITY)
 
+*Scope note (TODO-routing):* `config/claude/bin/statusline.sh` is
+Claude-agent config, but this stays here because it's one surface of a four-way
+coordination (bash / tmux / vim / Claude) — kept whole, not split to
+`audit/BACKLOG.md`. **The urgent display bug** in that script (malformed
+layout, context-% prominence) is tracked separately in `audit/BACKLOG.md` →
+*Claude statusline fix*; this Task 1 is the longer-horizon coordination work.
+
 Docs: <https://code.claude.com/docs/en/statusline>
 
 Built: `config/claude/bin/statusline.sh` (`model | ctx N% | $cost`; context %
@@ -1086,35 +907,6 @@ we can stay current.
   - [ ] Install via: `pipx install pyscn`
 - [ ] Document bash changes resource:
   <https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges>
-
-## 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
-
-**Importance: high** (cost, privacy, and actually leveraging the dedicated
-AI box, `beaker`). **Priority: low** (exploratory; depends on beaker's GPU
-stack being finished and on finding the right integration point).
-
-Idea: route the simpler, high-volume Claude Code subtasks to a locally
-hosted model served from my own OpenWebUI/Ollama on `beaker` (see
-`bin/openwebui`, `bin/ollama`), keeping the heavy reasoning on Claude.
-Start with cheap, well-bounded work — qa-check triage, running and
-evaluating test output, summaries — then generalize.
-
-- [ ] Find the integration surface. Claude Code's main loop is
-  Anthropic-only, so investigate the realistic hook points:
-  - a **hook** (`PostToolUse`, etc.) that shells out to a local-LLM
-    script for a specific check;
-  - a **subagent** or **MCP server** that wraps the local endpoint;
-  - the **Claude Agent SDK** for a custom delegating agent.
-- [ ] Pick the API: OpenWebUI exposes an OpenAI-compatible endpoint;
-  Ollama serves its own API on `:11434`. Decide which to target.
-- [ ] Choose local model(s) sized for beaker's RTX 4080 (~12 GB VRAM) and
-  capable enough for the offloaded tier (code-aware small/mid models).
-- [ ] Define the task split: what is safe to delegate (triage, test-output
-  evaluation, summarization) vs. what stays on Claude.
-- [ ] Evaluate quality / cost / latency on real tasks before adopting; keep
-  a fallback to Claude when the local model is unsure.
-- [ ] Depends on: beaker GPU setup (driver + NVIDIA Container Toolkit) and
-  ollama/openwebui running.
 
 ## 📋 Template Creation (LOW PRIORITY - FUTURE WORK)
 

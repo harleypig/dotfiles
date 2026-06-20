@@ -11,7 +11,7 @@ paths:
 
 # shellcheck Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 ## Invocation
 
@@ -63,6 +63,26 @@ precedence over the global config for all files in that repo.
 must be relative to the current directory; passing a file outside `$PWD` exits
 with an error before docker runs. Run shellcheck from the repo root or the
 directory containing the files.
+
+## Enforcement (PostToolUse hook)
+
+A global **`PostToolUse` hook** — `config/claude/hooks/shell-check.py`, wired
+into `settings.json` on `Edit|Write|MultiEdit` — runs `shellcheck` on a shell
+file **right after the agent edits it** and surfaces any findings (via
+`additionalContext`), so the "run shellcheck" rule below is *enforced*, not
+merely remembered. It is:
+
+- **Check-only** — never modifies the file; fix what it reports with a normal
+  edit (formatting / `shfmt` is **not** in the hook — that stays at commit
+  time, per `pre-commit.md`'s fix-once discipline).
+- **shellcheck-only** — the bug-catching linter, not the formatter (one
+  container per edit via the docker wrapper).
+- **Fail-open** — skips silently for a non-shell file, a file outside the
+  project, or when `shellcheck` is absent; it can never block an edit.
+
+A shell file is detected by a `.sh`/`.bash` extension or a shell shebang
+(so extension-less `bin/`, `lib/`, `config/shell-startup/` scripts are
+covered). Tested by `tests/python/test_shell_check.py`.
 
 ## Agent Behavior
 
