@@ -214,10 +214,13 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
   *The language & tool stacks*: each language rule (`typescript.md`,
   `perl.md`, `powershell.md`, `html.md`, `css.md`, `react.md`, `bats.md`, …)
   should **reference up** to `code-style.md` / `EXTENDING.md` (several don't
-  yet); and audit **tool** rules for any link to a language *file* (replace
-  with a by-name "applies to <lang>" applicability in the tool rule).
-  Mechanical but multi-file; the `claude-audit` framework check now flags
-  these.
+  yet); and audit **language-agnostic tool** rules for any link to a language
+  *file* (replace with a by-name "applies to <lang>" applicability).
+  **Keep the framework distinction:** a single-language framework/library —
+  `fastapi.md`, `sqlalchemy.md`, `react.md`, and their `*-patterns` skills —
+  is language-axis and **may** reference its language rule; do **not** strip
+  those. Mechanical but multi-file; the `claude-audit` framework check now
+  flags real violations only.
 
 ### 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
 

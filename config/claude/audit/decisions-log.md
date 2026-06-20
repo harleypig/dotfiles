@@ -21,7 +21,13 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   **tool rule** declares the language(s) it applies to, by name (its
   Detection/applicability; a tool skill defers to the rule). References flow
   one way, **specific → generic** (and tool → language-by-name, never tool →
-  language file), to avoid circular drift-prone coupling.
+  language file), to avoid circular drift-prone coupling. **Caveat caught in
+  review:** the "no language-file reference" rule is only for
+  *language-agnostic* tools — a **single-language framework/library**
+  (`fastapi.md` building on `python.md`, `react.md` on `typescript.md`, the
+  `*-patterns` skills) is language-axis and *may* reference its language; the
+  policy, the `claude-audit` check, and the sweep task all carry that
+  distinction so the sweep doesn't strip legitimate framework references.
   `code-style.md` *Language-Specific Notes* was stripped of its (stale,
   Bash/Python-only) language list and now points to the codified policy;
   `claude-audit` step 2 verifies the layering. Follow-up filed: a conformance

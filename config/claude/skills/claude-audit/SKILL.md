@@ -79,8 +79,11 @@ decisions — revisit on a trigger or on request), `mining-census.md`
    the **language/tool layering** specifically (`EXTENDING.md` *The language &
    tool stacks*): the generic layer (`code-style.md` / `EXTENDING.md`) names
    **no** language or tool; every language/tool rule references **up** to it;
-   a **tool** rule declares its applicable language(s) by name and never links
-   a language *file*; optional skills/patterns are wired where they exist.
+   a **language-agnostic** tool rule declares its applicable language(s) by
+   name
+   and never links a language *file* (but a **single-language framework** like
+   `fastapi.md` *may* build on its language rule — not a violation); optional
+   skills/patterns are wired where they exist.
 3. **Recommend** by **cost × (1 − relevance)** — trim weight, never
    guardrails. Apply the placement ladder from `EXTENDING.md` (global+lazy >
    per-repo) and the plugin/MCP rules from `rules/mcp.md` (plugins are global
