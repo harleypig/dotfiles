@@ -10,6 +10,22 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-20 (continued)
+
+### Changed
+
+- **`config/claude/STRUCTURE.md`** — replaced the mermaid flowchart with a
+  dual-audience prose + table reference: a layered-design explanation for
+  learners and scannable tables with relative file links for experienced
+  devs. Added a "Calls / see also" column to always-on rules and all
+  skills tables. Added `↗ companion-skill` notes on detection-activated
+  rules. Filled in all entries from the master sync: `claude-code-auth.md`,
+  `trufflehog.md`, `new-project.md` rules; `github-tasks`, `new-project`,
+  `retrospective` skills; four new hooks. (PR #142)
+- **`config/claude/CLAUDE.md`** — added "adding/modifying/removing a rule,
+  skill, or hook → update `STRUCTURE.md`" to the concrete-trigger list, so
+  the agent sees the maintenance reminder during the relevant work. (PR #142)
+
 ## 2026-06-20
 
 ### Changed
