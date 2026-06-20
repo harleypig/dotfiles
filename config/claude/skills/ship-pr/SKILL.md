@@ -5,7 +5,7 @@ description: Commit a finished feature branch, push it, and open a pull request,
 
 # Ship PR
 
-**Version:** v1.9.3
+**Version:** v1.9.4
 
 Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → open PR → watch CI → (approval) merge →
@@ -138,11 +138,15 @@ Once CI is green and the branch is judged ready to merge, perform the
 **merge-time documentation finalization** — and **only** this. No code lands
 at merge time; the only changes here are documentation.
 
-- **Remove the completed items** from `TODO.md` and `ROADMAP.md` (and any
-  equivalent planning list). Delete them outright — do **not** leave them
+- **Remove the completed items** from `TODO.md` and `ROADMAP.md` (and **any
+  equivalent planning list** — e.g. this repo's agent-config audit backlog,
+  `config/claude/audit/BACKLOG.md`, whose completion record lives in
+  `audit/decisions-log.md`). Delete them outright — do **not** leave them
   marked `[x]`. Do this **now**, not earlier: an item is pruned exactly when
   the PR that completes it has gone **green**, so the planning docs always
-  track only open work and nothing is removed for a PR that never lands.
+  track only open work and nothing is removed for a PR that never lands. The
+  merge-finalization hook enforces this for any planning doc a repo declares
+  (the generic defaults plus any `merge-finalization-docs:` extras).
 - **Changelog management** — regenerate / write the changelog per the repo (a
   generated changelog mutates the tree, so it is committed here, never in CI;
   see `qa.md` dim 13 and the repo's QA doc), plus any related doc updates.

@@ -6,6 +6,32 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-19 — **Adopted prune-at-merge for the audit BACKLOG, fixed the
+  doc/enforcement gap, and cleaned out 25 stale `[x]` items (PR #131).** The
+  user noticed completed items weren't removed at merge and asked whether the
+  skill/rule covers the backlog. **Diagnosis:** two of three sources already
+  said *prune* — the `claude-audit` Finalize step ("remove the item from
+  `audit/BACKLOG.md`") and ship-pr Step 4.5 ("any equivalent planning list") —
+  but (a) the `merge-finalization.py` hook only scanned `TODO.md`/`ROADMAP.md`
+  (BACKLOG not in `PLANNING_DOCS`), so nothing enforced it; (b) the BACKLOG
+  **header said "retained for continuity,"** contradicting the prune rule; and
+  (c) I leaned on that header and skipped it in #130 — inconsistent with #129,
+  where I *did* prune. **Decision (user chose prune-at-merge):** BACKLOG
+  behaves like `TODO.md` — done items removed at merge, the record kept in
+  this log / ADRs / `mining-census.md`. **Cleanup:** rewrote the header;
+  deleted the 25 `[x]` items; because the hook can't tell a done item from a
+  *parent of open children*, **promoted** the open children to standalone
+  `[ ]` items (the deferred `pydantic_ai` agent-framework rule; the
+  pr-review-toolkit / feature-dev / GH-Actions vendor-when-needed bits) and
+  reworded the *Future top-level categories* item so it doesn't dangle a
+  now-empty list — leaving **zero `[x]`** so the hook enforcement is coherent.
+  **Enforcement:** added a generic `merge-finalization-docs:` mechanism in the
+  hook (a repo declares extra planning docs in its opt-in `.claude/` docs,
+  keeping repo-specific paths out of the global hook); dotfiles `WORKFLOW.md`
+  (v1.5.0) declares `config/claude/audit/BACKLOG.md`; ship-pr Step 4.5
+  (v1.9.4) names it explicitly; `tests/python/test_merge_finalization.py`
+  covers the new path (block on a declared doc with `[x]`, allow when clean,
+  ignore when undeclared).
 - 2026-06-19 — **Cleared the *Audit dimensions / design* backlog section
   (batch, PR #130).** Took the section to zero open items. The four
   design-checklist items (context-load tiering, recategorize/split/merge,
