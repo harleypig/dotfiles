@@ -189,9 +189,10 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
 - [ ] **Conformance sweep for the language/tool layering** (follow-up to the
   codification above). Bring existing artifacts into line with `EXTENDING.md`
   *The language & tool stacks*: each language rule (`typescript.md`,
-  `perl.md`, `powershell.md`, `html.md`, `css.md`, `react.md`, `bats.md`, …)
-  should **reference up** to `code-style.md` / `EXTENDING.md` (several don't
-  yet); and audit **language-agnostic tool** rules for any link to a language
+  `powershell.md`, `html.md`, `css.md`, `react.md`, `bats.md`, …) should
+  **reference up** to `code-style.md` / `EXTENDING.md` (several don't yet —
+  `perl.md` now does, done 2026-06-20); and audit **language-agnostic tool**
+  rules for any link to a language
   *file* (replace with a by-name "applies to <lang>" applicability).
   **Keep the framework distinction:** a single-language framework/library —
   `fastapi.md`, `sqlalchemy.md`, `react.md`, and their `*-patterns` skills —

@@ -22,7 +22,12 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   `commit-push-pr`, `clean_gone`) all SKIP — `git.md` *Commit Messages* +
   `ship-pr` + `git-worktree-workflow` Op 7 are richer and **safer** (ours
   confirms each branch / skips dirty; the plugin force-deletes). Net: the
-  capability-level drops stand; one small wording fold gained.
+  capability-level drops stand; one small wording fold gained. **Follow-up
+  (user request):** the new no-nested-ternary rule's **Perl exception** was
+  added to `rules/perl.md` — idiomatic terseness (single-line ternaries,
+  statement modifiers) is Perl's character and relaxes the rule, short of
+  golf; perl.md also gained its `code-style.md` reference-up, so it now
+  conforms to the language layering (removed from the conformance-sweep list).
 - 2026-06-20 — **Resolved commitizen + changelog-generation as deliberate
   non-adoptions; closed "Remaining rules to author" (PR #136).** Worked the
   last two items of the *Claude Rules Files* list together (they're coupled —
