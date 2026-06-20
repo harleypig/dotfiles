@@ -4,8 +4,10 @@ A navigable reference for the Claude Code agent configuration in this
 dotfiles repo. If you're new to this setup, start with *Design* below. If
 you know what you're looking for, jump straight to the relevant table.
 
-**This file is hand-maintained.** It describes what exists; it is not
-auto-loaded into the agent context.
+**This file is hand-maintained** — update it whenever a rule, skill, or
+hook is added, modified, or removed. It is not auto-loaded into the agent
+context; the trigger lives in `CLAUDE.md` *Missing or Conflicting Tool
+Rules*.
 
 ## Design: generic to specific
 
