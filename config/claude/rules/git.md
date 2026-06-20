@@ -4,7 +4,7 @@
 
 # Git Rules
 
-**Version:** v1.11.0
+**Version:** v1.12.0
 
 ## Commit Messages
 
@@ -326,8 +326,9 @@ Both keep the branch a clean continuation; `git merge` does not.
 
 ## Versioning & tags
 
-Two separate things: **what a version *is*** (the `vX.Y.Z` format — universal)
-versus **how it's *applied*** (the tagging *method* — per-repo).
+Two separate things: **what a version *is*** (its **format** — semver by
+default) versus **how it's *applied*** (the tagging **method** — per-repo).
+Both are per-repo declared choices.
 
 ### What `vX.Y.Z` is
 
@@ -347,10 +348,24 @@ The `0 → 1` jump — declaring the project stable — is a **major decision in
 its own right**: give it as much thought and care as any later major bump
 (`1 → 2`, …). Cross it on purpose, never by accident.
 
+**Format is a per-repo choice — semver is the default, calver the
+alternative.** A repo that versions by *date* rather than *compatibility* uses
+**calver** (e.g. `vYYYY.MM.DD` or `vYY.MM`), declared in its
+`.claude/CONVENTIONS.md` beside the method, with the **release-tag** skill
+taught to derive it before first use. The semver rules above (the `0 → 1`
+jump, strict `y.z` once stable) are **semver-only** — a calver number carries
+no compatibility promise in itself.
+
 ### Tag hygiene (independent of method)
 
 - **Annotated** tags only — `git tag -a <tag> -m "<msg>"`, never lightweight.
-- Tag the **merge commit** the release ships from, not a side branch.
+- **Signing is optional and per-repo.** Annotated already records authorship;
+  a repo may additionally **sign** tags (`git tag -s`; GPG or SSH) where
+  provenance matters. Default here is **unsigned** — no signing is configured;
+  declare it per repo if adopted.
+- Tag the **merge commit** the release ships from, on the **default branch** —
+  this workflow is **trunk-based**; release-branch strategies (`release/*`)
+  aren't used, and adopting one is a per-repo config change.
 - A pushed tag is **immutable history**: never move, delete, or re-point it.
   A mistake gets a **new** tag, not a rewrite.
 - Push tags **explicitly** (`git push origin <tag>`); a plain `git push`
