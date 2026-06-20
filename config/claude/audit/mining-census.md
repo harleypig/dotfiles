@@ -103,6 +103,27 @@ Per-repo matrices:
 
 ---
 
+## Round 2026-06-20 — ykdojo/claude-code-tips
+
+A 43-tip prose collection (hybrid — also a `dx` plugin + skills) by a
+Claude-Code YouTuber; non-OSS license (ideas only). Matrix:
+[`mining/claude-code-tips.md`](mining/claude-code-tips.md). **41/43 SKIP**
+(covered by our more-developed tooling, personal interactive workflow, or
+counter to our posture — disable-attribution,
+`--dangerously-skip-permissions`).
+**Two CANDIDATEs**, both on `BACKLOG.md`:
+
+- **Audit the permission allow-list (the `cc-safe` idea, Tip 31)** — scan
+  `settings.json` `permissions.allow` for risky auto-approved patterns
+  (`sudo`, `rm -rf`, `chmod 777`, `curl | sh`, `git reset --hard`). Generic +
+  security-positive; natural fold into **claude-audit** (it already inspects
+  `settings.json`).
+- **Input-box keybindings (Tip 36)** — exact bindings feeding the open
+  *Keybinding cheat-sheet statusline line* item; secondary source, cross-check
+  against official docs.
+
+---
+
 ## Open CANDIDATE backlog (triage)
 
 Not built — surfaced for the user to choose. Adopt as skills (ADR-0001),
