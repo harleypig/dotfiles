@@ -41,6 +41,31 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   "scan the allow-list" pass), or a small standalone check. The idea is
   adopted, not the external `cc-safe` npm tool — we'd write our own scan.
   Decide kind + scope when worked.
+- [ ] **Audit external skills/plugins for install-safety (CANDIDATE — mined
+  from the plugin-collection sweep, 2026-06-20).** Companion to the allow-list
+  audit above — together they form one **"harden the agent's own attack
+  surface"** theme. We adopt external skills/plugins (the mining queue
+  itself!) with **no pre-install scan**. Two sub-ideas surfaced in the sweep:
+  (1) **scan a third-party skill/plugin for malicious code before install**
+  (`skill-security-auditor`, alirezarezvani) — a real gate we lack; (2) **lint
+  a repo for agent-readiness** (`AgentLint`, ComposioHQ — 33 checks on
+  CLAUDE.md quality/structure), distinct from `claude-audit` (which audits the
+  *config*, not the target repo). Best home: fold (1) into
+  `security-scan`/`claude-audit`; (2) is a separate "is this repo agent-ready"
+  check — decide if it earns its own artifact. Ideas only (mixed/non-OSS
+  sources); we'd write our own. Decide kind + scope when worked.
+
+- [ ] **Refine the mining method for aggregator/marketplace repos
+  (retrospective, PR #140).** `claude-audit` *Mining repos for ideas* mandates
+  enumerating the **entire** surface (no shortlist) — correct for a single
+  coherent tool, but impractical for an aggregator/awesome-list/marketplace of
+  hundreds–thousands of skills/plugins (`antigravity-awesome-skills` ≈ 1,678
+  skills; `claude-code-plugins-plus-skills` ≈ 432 plugins). The 11-repo sweep
+  used a **net-new-only census + theme-dedup** approach instead (fan out one
+  read-only agent per repo reporting only items novel vs. our tooling, then
+  cluster by cross-repo theme). Codify this as the **aggregator exception** in
+  the skill's mining section so the full-census rule and this approach don't
+  conflict. Global; `config/claude/skills/claude-audit/SKILL.md`. Low cost.
 
 ## Skill ideas & future categories (not from mining)
 
@@ -253,20 +278,17 @@ helps.
 Mine one repo at a time; **don't decide until all are mined** (expect
 duplicates / similar setups). Chart each in
 [`mining-census.md`](mining-census.md) and promote useful sources to
-[`idea-sources.md`](idea-sources.md). None below are mined yet.
+[`idea-sources.md`](idea-sources.md).
 
-- [ ] **Plugin/skill collection repos (big — one at a time).**
-  - <https://github.com/ComposioHQ/awesome-claude-plugins>
-  - <https://github.com/jeremylongshore/claude-code-plugins-plus-skills>
-  - <https://github.com/ccplugins/awesome-claude-code-plugins>
-  - <https://github.com/alirezarezvani/claude-skills>
-  - <https://github.com/JuliusBrussee/caveman>
-  - <https://github.com/sickn33/antigravity-awesome-skills>
-  - <https://github.com/chopratejas/headroom>
-  - <https://github.com/VoltAgent/awesome-claude-code-subagents>
-  - <https://github.com/Jeffallan/claude-skills>
-  - <https://github.com/team-attention/plugins-for-claude-natives/tree/main/plugins/clarify>
-  - <https://github.com/JoasASantos/ClaudeAdvancedPlugins>
+- [ ] **Claude Code official documentation** (first-party source — ranks
+  *highest* in the source-discovery method). Much is how-to-use-Claude that
+  won't fit our config, but the **config surface is mineable**: hooks (events,
+  matchers, exit codes), `settings.json` (permissions, env, statusline,
+  model), slash commands, the skills/plugins spec, MCP config, statusline JSON
+  fields, output styles, memory/`CLAUDE.md` semantics. Mine the
+  config-relevant sections; SKIP the interactive how-to. Captured 2026-06-20
+  at the user's request (the "steel sieve" — point here if it resurfaces).
+  <https://docs.claude.com/en/docs/claude-code>
 
 ### Claude statusline enhancements (claude-hud candidates)
 

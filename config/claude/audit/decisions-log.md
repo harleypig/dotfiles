@@ -6,6 +6,41 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-20 — **Mined the plugin/skill collection queue (11 repos at once):
+  heavy duplication, 1 CANDIDATE + 5 Watch triggers (PR #140).** Worked the
+  *Mining queue* "big collection repos" item — `awesome-claude-plugins`
+  (ComposioHQ), `claude-code-plugins-plus-skills` (jeremylongshore),
+  `awesome-claude-code-plugins` (ccplugins), `claude-skills` (alirezarezvani),
+  `caveman`, `antigravity-awesome-skills`, `headroom`,
+  `awesome-claude-code-subagents` (VoltAgent), `claude-skills` (Jeffallan),
+  `plugins-for-claude-natives` (clarify), `ClaudeAdvancedPlugins`. Fanned out
+  to **11 read-only census agents** (net-new only, to spare audit context),
+  then deduped. **All 11 SKIP as adopt-sources** (curated link-lists,
+  domain/SaaS marketplaces, single-idea products); the queue's "expect
+  duplicates" premise held. The value is the **cross-repo theme signal** — a
+  theme surfaced by several independent repos. **One CANDIDATE** →
+  `BACKLOG.md`: **agent supply-chain / install-safety audit** (scan an
+  external skill/plugin for malicious code *before* install —
+  `skill-security-auditor`; lint a repo for agent-readiness — `AgentLint`);
+  directly relevant since we adopt external skills with no gate, and it
+  **pairs with the `cc-safe` permission-allow-list
+  CANDIDATE** into one "harden the agent's own attack surface" theme.
+  **Five Watch-list triggers** (all build-on-first-use, ADR-0003):
+  reliability/observability/SRE (chaos/SLO/incident/runbook — a **4-repo
+  signal** that fills the acknowledged `qa.md` dim 10/11 gap), MCP-server
+  building (4-repo), API-contract review, security-domain agents
+  (red/blue-team/pentest — on authorized security work), and
+  context-economy-by-compression (compress tool outputs / MCP descriptions /
+  memory — vs our economy-by-removal+snapshot). **Reconfirmed held:** the
+  spec→plan→onboarding *workflow* cluster (future workflow/planning category)
+  and the standard language/domain-expert agent sets (already charted via
+  `claude-tools`). Full per-repo + theme matrix:
+  `audit/mining/plugin-collection-repos.md`; sweep registered in
+  `idea-sources.md` as one grouped entry. **Also queued (user request):** the
+  **Claude Code official documentation** as a first-party mining source — much
+  is how-to-use-Claude that won't fit, but the config surface (hooks,
+  settings, permissions, slash commands, skills, plugins, statusline) is
+  mineable.
 - 2026-06-20 — **Mined `ykdojo/claude-code-tips` (mining queue): 41/43 SKIP,
   two CANDIDATEs surfaced (PR #139).** A 43-tip prose README (hybrid — also a
   `dx` plugin + 6 skills) by a Claude-Code YouTuber, ~8.9k★, actively
