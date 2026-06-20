@@ -267,10 +267,6 @@ duplicates / similar setups). Chart each in
   - <https://github.com/Jeffallan/claude-skills>
   - <https://github.com/team-attention/plugins-for-claude-natives/tree/main/plugins/clarify>
   - <https://github.com/JoasASantos/ClaudeAdvancedPlugins>
-- [x] **`ykdojo/claude-code-tips`** — mined 2026-06-20 (matrix:
-  [`mining/claude-code-tips.md`](mining/claude-code-tips.md)). 41/43 SKIP; two
-  CANDIDATEs surfaced — the permission-allow-list audit (below) and Tip 36
-  keybindings (folded into the statusline cheat-sheet item below).
 
 ### Claude statusline enhancements (claude-hud candidates)
 
