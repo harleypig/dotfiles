@@ -244,18 +244,6 @@ duplicates / similar setups). Chart each in
 [`mining-census.md`](mining-census.md) and promote useful sources to
 [`idea-sources.md`](idea-sources.md). None below are mined yet.
 
-- [x] **Anthropic official plugins — text re-mine of `code-simplifier` +
-  `commit-commands`. DONE (2026-06-20).** Read both from the local marketplace
-  cache. **One fold:** `code-simplifier`'s "avoid nested ternaries / dense
-  one-liners; clarity over brevity" — added to `code-style.md` *Prefer elif*
-  (v1.7.0). **Everything else SKIP** — its stack-specifics (ES modules, React,
-  arrow fns) violate our generic-layer-names-no-language rule; its
-  auto-refine-on-every-edit mode contradicts our scope discipline (don't
-  improve adjacent code). `commit-commands` (`commit`, `commit-push-pr`,
-  `clean_gone`) all SKIP: `git.md` *Commit Messages* + `ship-pr` +
-  `git-worktree-workflow` Op 7 are richer and safer (ours confirms each /
-  skips dirty vs. the plugin's force-delete). Verdict recorded in
-  decisions-log.
 - [ ] **Plugin/skill collection repos (big — one at a time).**
   - <https://github.com/ComposioHQ/awesome-claude-plugins>
   - <https://github.com/jeremylongshore/claude-code-plugins-plus-skills>
