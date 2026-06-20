@@ -296,12 +296,18 @@ powershell, pre-commit, python, shellcheck, shfmt, yamllint, markdownlint,
 yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
 
 - [ ] Remaining rules to author:
-  - [ ] new project setup — rule covering the general checklist for
-    initializing a project (git init, pre-commit, .claude/ scaffold,
-    DEVELOPER.md, TODO.md, etc.); evaluate splitting language-specific
-    bootstrapping steps (e.g. NeoForge MDK, Poetry, npm init) into the
-    relevant per-language rules file rather than bloating the general rule.
-    Points to consider from experience:
+  - [x] new project setup — **DONE:** built **both** a thin path-scoped
+    `rules/new-project.md` (policy + the experience notes below) and the
+    on-demand **`new-project` skill** (greenfield init **and** brownfield
+    "convert an existing repo to the claude setup" modes). Language
+    bootstrapping is **delegated** to the per-language rules (not inlined),
+    per the split this item flagged. The points-from-experience were folded
+    into the rule's policy. *(decisions-log + prune at merge.)*
+    Original framing — general checklist for initializing a project (git
+    init, pre-commit, .claude/ scaffold, DEVELOPER.md, TODO.md, etc.);
+    evaluate splitting language-specific bootstrapping steps (e.g. NeoForge
+    MDK, Poetry, npm init) into the relevant per-language rules file rather
+    than bloating the general rule. Points considered from experience:
     - Investigate actual storage/file formats before designing around them;
       official docs may describe outdated formats (e.g. JourneyMap switched
       from per-waypoint JSON to a binary DAT in 6.x without updating docs)
