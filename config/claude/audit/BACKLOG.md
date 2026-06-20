@@ -186,14 +186,6 @@ agent how to use each tool. Already have, among others: bash, perl,
 powershell, pre-commit, python, shellcheck, shfmt, yamllint, markdownlint,
 yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
 
-- [x] **Remaining rules to author — DONE.** The last two (commitizen,
-  changelog generation) were evaluated 2026-06-20 and resolved as **deliberate
-  non-adoptions**: conventional commits are in `git.md` *Commit Messages*; the
-  changelog is manual keep-a-changelog (generation N/A, per `.claude/QA.md`).
-  Both tools (commitizen; the git-cliff / conventional-changelog generators)
-  are deferred to [`ICEBOX.md`](ICEBOX.md) with triggers, to author on first
-  use (ADR-0003). (Earlier sub-items — new-project, git-tagging — landed in
-  their own PRs.)
 - [ ] **Conformance sweep for the language/tool layering** (follow-up to the
   codification above). Bring existing artifacts into line with `EXTENDING.md`
   *The language & tool stacks*: each language rule (`typescript.md`,
