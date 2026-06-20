@@ -6,6 +6,22 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-20 — **Added a Watch-list trigger for writing/non-code repos
+  (user request).** Folded the `claude-code-tips` writing tips — previously
+  plain SKIP as "personal workflow" — into a single SKIP-until trigger keyed
+  on **repo type**: a `gollum` wiki repo (specific) or, generally, any
+  non-code "writing"/prose repo (the simplified code-vs-writing split, to be
+  refined when it matters). When it fires, author a dedicated **writing rule**
+  (`rules/writing.md`, "disabled until then") covering the
+  drafting/revising/structural/consistency/gardening modes, grounded in Tip 16
+  ("Claude as a writing assistant") **and Tip 25** ("Claude as a research
+  tool" — research-assisted writing, `paper-search` for academic papers), plus
+  Tip 17 (markdown medium) and Tip 26 (verify *every* claim — critical for
+  scholarly/scriptural accuracy). The trigger also activates the backlog
+  **Gollum Wiki rule** / **Ruby rule** / **Essay Helper skill** candidates,
+  now marked trigger-gated rather than do-now. Per the mining rule, the
+  original per-tip SKIPs in `mining/claude-code-tips.md` are left intact —
+  this adds the resurfacing trigger, it doesn't rewrite them.
 - 2026-06-20 — **Mined the plugin/skill collection queue (11 repos at once):
   heavy duplication, 1 CANDIDATE + 5 Watch triggers (PR #140).** Worked the
   *Mining queue* "big collection repos" item — `awesome-claude-plugins`

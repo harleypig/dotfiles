@@ -121,7 +121,7 @@ Evaluation done and the policy landed (the `security-scan` §4 escape hatch;
 decision recorded in `.claude/QA.md`; see decisions-log 2026-06-19). One manual
 action remains:
 
-- [ ] **User action (web UI, not scriptable here):** uninstall the **Snyk**
+- [x] **User action (web UI, not scriptable here):** uninstall the **Snyk**
   GitHub App from `harleypig/dotfiles` and remove the repo's projects from
   app.snyk.io, so the advisory `security/snyk` check stops posting.
 
@@ -265,15 +265,7 @@ evaluating test output, summaries — then generalize.
 - [ ] Depends on: beaker GPU setup (driver + NVIDIA Container Toolkit) and
   ollama/openwebui running.
 
-## tmptodo intake (2026-06-19)
-
-Captured from a scratch `tmptodo.txt` and routed here per the TODO-routing
-convention — every item proved to be Claude-agent-config work. Guiding
-principle the user attached: keep rules/skills small and focused, breaking a
-topic into sub-areas (e.g. api-testing vs optimization vs refactor) when that
-helps.
-
-### Mining queue
+## Mining queue
 
 Mine one repo at a time; **don't decide until all are mined** (expect
 duplicates / similar setups). Chart each in
@@ -290,7 +282,7 @@ duplicates / similar setups). Chart each in
   at the user's request (the "steel sieve" — point here if it resurfaces).
   <https://docs.claude.com/en/docs/claude-code>
 
-### Claude statusline enhancements (claude-hud candidates)
+## Claude statusline enhancements (claude-hud candidates)
 
 Done 2026-06-19 (fixed + regression-tested; see the decisions log): the display
 bug (leading empty field + a field-shift from the empty `.vim.mode` column —
@@ -339,7 +331,14 @@ standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
      Target: `config/claude/bin/statusline.sh`. Keep it terse — a cheat-sheet,
      not a manual; weigh the vertical space it costs against its value.
 
-### New rule/skill candidates
+## New rule/skill candidates
+
+These three are **trigger-gated** — build-on-first-use when you next work a
+`gollum` / non-code "writing" repo. They are activated by the
+[`mining-census.md`](mining-census.md) Watch-list trigger *"A `gollum` wiki
+repo … or any non-code writing/prose repo"*, which also calls for a dedicated
+**writing rule** grounded in the related mined resources (`claude-code-tips`
+Tips 16/25/17/26).
 
 - [ ] **Gollum Wiki** rule (wiki engine).
 - [ ] **Ruby** rule — especially as it relates to the Gollum wiki.
