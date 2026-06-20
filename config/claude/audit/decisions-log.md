@@ -6,8 +6,21 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
-- 2026-06-20 — **Codified the code-style / language / tool layering in
-  `EXTENDING.md` (PR #134).** Worked the "best-practices layer" BACKLOG item.
+- 2026-06-20 — **Completed the git-tagging rule item; added the missing
+  definitions to `git.md` (PR #135).** The core was already covered (`git.md`
+  *Versioning & tags*: semver, annotated-only hygiene, repo/subdir methods +
+  the `release-tag` skill), so the item was largely done. Filled the gaps the
+  backlog listed — kept brief because `git.md` is **always-on**. **Added (user
+  chose the lean set):** (1) **calver** as the declared **format** alternative
+  to semver (date-based, e.g. `vYYYY.MM.DD`; format is now a per-repo axis
+  separate from the repo/subdir method; release-tag taught to derive it before
+  first use); (2) **signing** is optional and per-repo — annotated is the
+  baseline, `git tag -s` (GPG/SSH) optional, **default unsigned** (no signing
+  configured); (3) a **trunk-based** note — tag the merge commit on the
+  default branch; release-branch (`release/*`) strategies aren't used.
+  **Deliberately NOT added:** a full release-branch / gitflow model —
+  speculative (trunk-based workflow) and it would bloat always-on `git.md`.
+  git.md → v1.12.0.
   **Naming decision:** rejected recasting `code-style.md` to a
   "best-practices" doc — too broad (not just code) — and kept it as the
   generic shared style layer. **Placement (user chose EXTENDING canonical):**
