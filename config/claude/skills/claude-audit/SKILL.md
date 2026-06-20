@@ -75,7 +75,15 @@ decisions — revisit on a trigger or on request), `mining-census.md`
    flavored "generic" agent that would mislead a Go-only repo. Also check the
    **categories themselves**: has a top-level category grown **too big or too
    spread out** and need **splitting** (e.g. `qa` shedding `documentation` /
-   `troubleshooting`)? Splitting is the counter-move to over-folding.
+   `troubleshooting`)? Splitting is the counter-move to over-folding. Verify
+   the **language/tool layering** specifically (`EXTENDING.md` *The language &
+   tool stacks*): the generic layer (`code-style.md` / `EXTENDING.md`) names
+   **no** language or tool; every language/tool rule references **up** to it;
+   a **language-agnostic** tool rule declares its applicable language(s) by
+   name
+   and never links a language *file* (but a **single-language framework** like
+   `fastapi.md` *may* build on its language rule — not a violation); optional
+   skills/patterns are wired where they exist.
 3. **Recommend** by **cost × (1 − relevance)** — trim weight, never
    guardrails. Apply the placement ladder from `EXTENDING.md` (global+lazy >
    per-repo) and the plugin/MCP rules from `rules/mcp.md` (plugins are global

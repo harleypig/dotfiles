@@ -4,7 +4,7 @@
 
 # Code Style
 
-**Version:** v1.5.0
+**Version:** v1.6.0
 
 ## General Style
 
@@ -276,9 +276,10 @@ a threshold table with a loop, or a small helper function.
 
 ### Language-Specific Notes
 
-The general rule above applies to all languages. Per-language tooling
-details — whether auto-formatters enforce or fight this style, and how to
-handle it — live in each language's rules file:
-
-- Bash → `bash.md`
-- Python → `python.md`
+The general rules above apply to **every** language; this document names
+none. A language's own style and tooling specifics — including whether an
+auto-formatter enforces or fights this style — live in its path-scoped
+`rules/<language>.md`, which references back here. The full layering (generic
+→ language/tool rule → optional skill → optional patterns, referenced one way,
+specific → generic) is codified in `EXTENDING.md` *The language & tool
+stacks*.
