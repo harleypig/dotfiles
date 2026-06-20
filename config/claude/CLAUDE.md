@@ -116,6 +116,9 @@ coverage, and act *as they happen* — do not wait to be asked:
   etc.) for a library that has no `rules/<name>.md`.
 - First authoring a file in a language/framework that has no
   `rules/<language>.md`.
+- Adding, modifying, or removing a **rule, skill, or hook** →
+  update `config/claude/STRUCTURE.md` (the hand-maintained reference
+  map; see *When to Propose a Skill* for the skill threshold).
 
 A `PostToolUse` hook (`~/.claude/hooks/rule-coverage.py`) also flags these
 as a backstop, but the hook is a reminder — the responsibility to surface
