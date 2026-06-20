@@ -4,7 +4,7 @@
 
 # Code Style
 
-**Version:** v1.6.0
+**Version:** v1.7.0
 
 ## General Style
 
@@ -273,6 +273,11 @@ whatever the language spells it.)*
 When a chain grows to four or more branches testing the same variable,
 consider refactoring: a `case`/`switch` statement for discrete values,
 a threshold table with a loop, or a small helper function.
+
+**Don't compress a conditional into a nested ternary** (a stacked `?:`) or a
+dense one-liner to save lines — that trades clarity for brevity, the wrong
+direction. A reader should be able to scan the branches: prefer an explicit
+`if`/`else` (or `case`/`switch`) chain over a clever one-liner.
 
 ### Language-Specific Notes
 

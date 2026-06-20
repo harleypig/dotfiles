@@ -243,17 +243,18 @@ duplicates / similar setups). Chart each in
 [`mining-census.md`](mining-census.md) and promote useful sources to
 [`idea-sources.md`](idea-sources.md). None below are mined yet.
 
-- [ ] **Anthropic official plugins — text re-mine of `code-simplifier` +
-  `commit-commands`.** Both were dropped at *capability* level (decisions log
-  2026-06-10) **without** a text-level review, and both have our equivalents
-  (`/simplify`; the git rules + `ship-pr` / `git-worktree-workflow`). Review
-  their actual prompt/command text for wording / sectioning worth folding into
-  ours. The other three (`pr-review-toolkit`, `feature-dev`,
-  `security-guidance`) were already content-reviewed — their extractable bits
-  are the vendor-when-needed items under *Plugin-audit follow-ups*; not
-  re-opened.
-  - <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/code-simplifier>
-  - <https://github.com/anthropics/claude-plugins-official/tree/main/plugins/commit-commands>
+- [x] **Anthropic official plugins — text re-mine of `code-simplifier` +
+  `commit-commands`. DONE (2026-06-20).** Read both from the local marketplace
+  cache. **One fold:** `code-simplifier`'s "avoid nested ternaries / dense
+  one-liners; clarity over brevity" — added to `code-style.md` *Prefer elif*
+  (v1.7.0). **Everything else SKIP** — its stack-specifics (ES modules, React,
+  arrow fns) violate our generic-layer-names-no-language rule; its
+  auto-refine-on-every-edit mode contradicts our scope discipline (don't
+  improve adjacent code). `commit-commands` (`commit`, `commit-push-pr`,
+  `clean_gone`) all SKIP: `git.md` *Commit Messages* + `ship-pr` +
+  `git-worktree-workflow` Op 7 are richer and safer (ours confirms each /
+  skips dirty vs. the plugin's force-delete). Verdict recorded in
+  decisions-log.
 - [ ] **Plugin/skill collection repos (big — one at a time).**
   - <https://github.com/ComposioHQ/awesome-claude-plugins>
   - <https://github.com/jeremylongshore/claude-code-plugins-plus-skills>

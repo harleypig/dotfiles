@@ -6,6 +6,23 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-20 — **Text re-mined the Anthropic official `code-simplifier` +
+  `commit-commands` plugins (PR #137).** Both were dropped at *capability*
+  level on 2026-06-10 without reading their prompt/command text; this is the
+  text-level pass (read from the local marketplace cache, no fetch). **One
+  fold:** `code-simplifier`'s "avoid nested ternaries / dense one-liners,
+  clarity over brevity" — a concrete, generic readability rule we lacked —
+  added to `code-style.md` *Prefer elif Over Sequential if Blocks* (v1.7.0).
+  **Rest SKIP, with reasons:** code-simplifier's stack-specifics (ES modules,
+  React, arrow functions) violate the generic-layer-names-no-language rule
+  (`EXTENDING.md`); its "auto-refine proactively after every edit" mode
+  contradicts our scope discipline (`CLAUDE.md` — don't improve adjacent
+  code); "focus on recently-modified code" / "preserve functionality" are
+  already how our review skills work. `commit-commands` (`commit`,
+  `commit-push-pr`, `clean_gone`) all SKIP — `git.md` *Commit Messages* +
+  `ship-pr` + `git-worktree-workflow` Op 7 are richer and **safer** (ours
+  confirms each branch / skips dirty; the plugin force-deletes). Net: the
+  capability-level drops stand; one small wording fold gained.
 - 2026-06-20 — **Resolved commitizen + changelog-generation as deliberate
   non-adoptions; closed "Remaining rules to author" (PR #136).** Worked the
   last two items of the *Claude Rules Files* list together (they're coupled —
