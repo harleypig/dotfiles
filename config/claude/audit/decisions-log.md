@@ -6,6 +6,27 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-20 — **Codified the code-style / language / tool layering in
+  `EXTENDING.md` (PR #134).** Worked the "best-practices layer" BACKLOG item.
+  **Naming decision:** rejected recasting `code-style.md` to a
+  "best-practices" doc — too broad (not just code) — and kept it as the
+  generic shared style layer. **Placement (user chose EXTENDING canonical):**
+  stated the policy once in a new `EXTENDING.md` *The language & tool stacks*
+  subsection under *Layer the generic over the specific*. **The policy:** the
+  generic layer (`code-style.md` / `EXTENDING.md`) names **no** specific
+  language or tool; a language gets a `rules/<lang>.md` rule, plus a **skill**
+  and **patterns** skill *only where it makes sense / is available*; a
+  **tool** mirrors that shape but **must not reference a language file** —
+  instead the
+  **tool rule** declares the language(s) it applies to, by name (its
+  Detection/applicability; a tool skill defers to the rule). References flow
+  one way, **specific → generic** (and tool → language-by-name, never tool →
+  language file), to avoid circular drift-prone coupling.
+  `code-style.md` *Language-Specific Notes* was stripped of its (stale,
+  Bash/Python-only) language list and now points to the codified policy;
+  `claude-audit` step 2 verifies the layering. Follow-up filed: a conformance
+  sweep (several language rules don't yet reference up; audit tool rules for
+  language-file links). code-style.md → v1.6.0, EXTENDING.md → v1.2.0.
 - 2026-06-19 — **Folded the "check prior art before authoring" guidance into
   `EXTENDING.md` (PR #133).** A BACKLOG bullet ("when creating/modifying a
   rule or skill, check known sources for an existing implementation to vendor

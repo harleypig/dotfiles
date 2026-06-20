@@ -200,12 +200,24 @@ yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
     changelog generation should be part of a broader release skill alongside
     tagging and commitizen
   - [ ] Any other tools discovered during pre-commit or CI work
-- [ ] Add a "best practices" rules/skills layer. The current
-  `rules/code-style.md` may be better recast as a general best-practices
-  document with language-specific subdocuments — i.e. a shared core that
-  per-language rules files extend. Decide structure: one general
-  best-practices doc + per-language extensions, vs. keeping `code-style.md`
-  as the shared base that the language rules reference.
+- [x] **Codify the code-style / language / tool layering. DONE:** decided
+  **against** the "best-practices" recast (too broad; not just code) — kept
+  `code-style.md` as the generic shared layer. Codified the layering in
+  `EXTENDING.md` *The language & tool stacks* (generic names no
+  language/tool; language gets rule [+ skill] [+ patterns]; tools mirror the
+  shape but declare their applicable language(s) on the **tool rule**, never
+  linking a language file; references flow specific → generic).
+  `code-style.md` *Language-Specific Notes* now names no language and points
+  there; `claude-audit` verifies the layering.
+- [ ] **Conformance sweep for the language/tool layering** (follow-up to the
+  codification above). Bring existing artifacts into line with `EXTENDING.md`
+  *The language & tool stacks*: each language rule (`typescript.md`,
+  `perl.md`, `powershell.md`, `html.md`, `css.md`, `react.md`, `bats.md`, …)
+  should **reference up** to `code-style.md` / `EXTENDING.md` (several don't
+  yet); and audit **tool** rules for any link to a language *file* (replace
+  with a by-name "applies to <lang>" applicability in the tool rule).
+  Mechanical but multi-file; the `claude-audit` framework check now flags
+  these.
 
 ### 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
 

@@ -1,6 +1,6 @@
 # Claude Code Extension Primitives
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 A reference for the building blocks used to customize Claude Code — what
 each one is and when to reach for it. They are **not** interchangeable;
@@ -262,6 +262,36 @@ whole**. Lift the generic intent into a thin rule/skill, and re-home (or newly
 write) the stack-specific half as a path-scoped pattern. Often the right form
 is *not* the original's — adopt the idea, then choose the kind (rule/skill)
 that fits, rather than copying the agent verbatim.
+
+### The language & tool stacks (style and tooling layering)
+
+The standing application of the two-layer model is how **style and tooling**
+are organized. Keep the generic layer free of any specific language or tool,
+and let specifics extend it — references flowing one way, **specific →
+generic**:
+
+- **Generic layer — names nothing specific.** `rules/code-style.md`
+  (always-on, language-agnostic style) and this doc carry **no** language- or
+  tool-specific content. A guideline that has to name a language or tool does
+  not belong here.
+- **A language** gets a path-scoped `rules/<language>.md` (its
+  language-specific style + idioms), and — *only where it makes sense / is
+  available* — a language **skill** (a multi-step procedure, e.g. a test
+  scaffolder) and/or a **patterns** skill (recipe depth). Every language
+  rule/skill **references up** to `code-style.md` / this doc; the generic
+  layer never lists languages.
+- **A tool** gets the same shape — `rules/<tool>.md`, plus an optional tool
+  **skill** and **patterns**, under the same "only if it makes sense / is
+  available" condition. A tool artifact **must not reference a language file**
+  (tools are language-independent). Instead the tool's **rule declares the
+  language(s) it applies to**, by name, in its *Detection* / applicability
+  section — so the coupling lives on the tool side, pointing out. A tool skill
+  may restate this but defers to the rule.
+
+Why one-way: a generic doc that enumerates languages, or a tool that points at
+a language file, creates circular, drift-prone coupling — the generic layer
+stops being reusable, and a language/tool can't be added or removed without
+editing the other side. `/claude-audit` verifies this layering.
 
 ### Foreign to the repo → global, and front-loaded
 
