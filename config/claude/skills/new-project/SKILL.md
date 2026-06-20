@@ -86,7 +86,10 @@ claude setup **incrementally and non-destructively**.
    branch + protection, `.pre-commit-config*.yaml`, test layout + runner, CI
    workflows, `README` / `DEVELOPER.md` / `TODO.md`, and any `CLAUDE.md` /
    `.claude/`. Read what's there; a working setup that differs from ours is a
-   reconcile, not a rip-and-replace.
+   reconcile, not a rip-and-replace. **Detect branch protection deliberately**
+   — a not-yet-converted repo usually lacks the local `no-commit-to-branch`
+   signal, so use the API / `.claude/` sources in `rules/new-project.md` and
+   **ask the user if it's undetermined** before authoring on the branch.
 
 2. **Gap-analyze** against Mode A's layers. List what's missing, what's stale,
    and what already conforms. Surface conflicts (e.g. a different test layout)

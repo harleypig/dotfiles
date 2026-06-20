@@ -70,10 +70,21 @@ rather than restating them; defer to each on its specifics.
   audit backlog for agent-config gaps) rather than letting it stall the
   setup.
 
-- **Never author on a protected branch.** A conversion lands through the
-  repo's normal workflow — branch first, PR, approval — never direct commits
-  to a protected default (`git.md` *Never Work Directly on a Protected
-  Branch*).
+- **Never author on a protected branch — for a conversion, detect protection
+  deliberately.** A setup lands through the repo's normal workflow (branch
+  first, PR, approval) — never direct commits to a protected default
+  (`git.md` *Never Work Directly on a Protected Branch*). The usual local
+  signal is the `no-commit-to-branch` pre-commit hook (what the edit-time
+  `branch-protection.py` guard reads), but an **existing repo being converted
+  likely hasn't configured it yet** — so don't rely on that signal alone.
+  Determine protection from whatever sources exist, in order: (1) the host's
+  branch-protection / ruleset **API**, authoritative — `gh api
+  repos/{owner}/{repo}/rules/branches/<branch>` for the rules applying to a
+  branch, or `.../branches/<branch>/protection` for classic protection; (2)
+  the repo's `.claude/` docs, if any name the protected branch; (3) the local
+  `no-commit-to-branch` hook args, if configured. Treat the **default branch
+  as protected when in doubt**, and if **none of these resolve it, ask the
+  user** before authoring on the branch rather than assuming it is safe.
 
 ## Sources
 
