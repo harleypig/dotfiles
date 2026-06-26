@@ -89,6 +89,7 @@ done
 # Generate a meta test per shell script.
 
 declare -i count=0
+declare -A generated=()
 for f in "${files[@]}"; do
   rel=${f#"$root"/}
 
@@ -120,7 +121,24 @@ for f in "${files[@]}"; do
   out="$out_dir/${name}.meta.bats"
 
   printf '%s\n' "${template//'{{REL_PATH}}'/$rel}" > "$out"
+  generated["${name}.meta.bats"]=1
   ((++count))
 done
 
-warn "generated $count meta test(s) into ${out_dir#"$root"/}"
+#------------------------------------------------------------------------------
+# Prune stale meta tests: any *.meta.bats in out_dir that we did NOT (re)generate
+# this run — its source was renamed, deleted, added to meta-ignore, or is no
+# longer a recognized script. Only *.meta.bats are matched, so hand-written
+# test_*.bats are never touched.
+
+declare -i pruned=0
+shopt -s nullglob
+for existing in "$out_dir"/*.meta.bats; do
+  [[ -n ${generated[${existing##*/}]-} ]] && continue
+
+  rm -f "$existing"
+  ((++pruned))
+done
+shopt -u nullglob
+
+warn "generated $count meta test(s), pruned $pruned stale, into ${out_dir#"$root"/}"
