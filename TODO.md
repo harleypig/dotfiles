@@ -68,26 +68,6 @@ shared/versioned independently and carries **no dotfiles-specific references**
 repo packaging / deployment — a dotfiles concern, not agent behavior — so it
 stays here, not in `audit/BACKLOG.md`.
 
-## 📝 bin/markdownlint docker wrapper (MEDIUM PRIORITY)
-
-markdownlint is the only linter in the toolset without a `bin/` docker
-wrapper (shellcheck, shfmt, yamllint, prettier, hadolint, trivy, dive all
-have one), so `markdownlint` is "command not found" locally. Add it to the
-`docker_wrapper` dispatcher using the official image
-`ghcr.io/igorshubovych/markdownlint-cli` (versioned tags, e.g. `:v0.48.0`).
-
-- [x] Add a `markdownlint()` function (mount `$PWD`; the repo-local
-  `.markdownlint.json` is auto-discovered from the mounted CWD) registered
-  via `image[markdownlint]` (the post-refactor registry replaces the old
-  `IMG_*`/`known_tool[]` pair), plus the `bin/markdownlint` symlink created
-  with `bin/docker_wrapper-links --fix`.
-- [x] Pin the image tag (`:v0.48.0`) and refresh it alongside the
-  markdownlint-cli pre-commit hook rev so the CLI and the hook stay in
-  lock-step — cross-referenced with SYNC comments in both pre-commit configs
-  and the `docker_wrapper` function.
-- [x] Note: independent of pre-commit — the remote-pinned markdownlint hook
-  uses its own node install, not this wrapper (see Pre-commit Configuration).
-
 ## 🐳 Research: run more linters/formatters via Docker (MEDIUM PRIORITY)
 
 Today only some tools have a `bin/` docker wrapper (shellcheck, shfmt,

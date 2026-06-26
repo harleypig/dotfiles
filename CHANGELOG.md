@@ -23,6 +23,12 @@ goes green (see the merge-time finalization in
   consistency in CI. (PR #146)
 - **`docker_wrapper --images`** — list each registered tool with its docker
   image. (PR #146)
+- **`bin/markdownlint` docker wrapper** — markdownlint (the last linter
+  without a `bin/` wrapper) now runs via `docker_wrapper`
+  (`ghcr.io/igorshubovych/markdownlint-cli`, pinned to `v0.48.0` in lock-step
+  with the pre-commit hook rev, with reciprocal `SYNC:` comments). The
+  repo-local `.markdownlint.json` is auto-discovered from the mounted CWD.
+  (PR #147)
 
 ### Fixed
 
