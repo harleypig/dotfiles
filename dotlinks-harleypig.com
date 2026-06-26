@@ -1,3 +1,3 @@
+# dotvim symlinks (~/.vim, ~/.vimrc) are owned by bin/check-dotvim, not
+# dotlinks — see config/shell-startup/zzz-check-dotvim.
 $DOTFILES/dot-general/.bash_logout
-$PROJECTS_DIR/dotvim_new/.vim
-$PROJECTS_DIR/dotvim_new/.vimrc

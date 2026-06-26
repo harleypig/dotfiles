@@ -1,0 +1,9 @@
+# shellcheck shell=bash
+
+# Verify the companion dotvim repo is present and its ~/.vim / ~/.vimrc
+# symlinks are correct. Named zzz-* so it loads after config/shell-startup/vim
+# (which exports XDG_DOTVIM); check-dotvim reads that to locate dotvim. Skip
+# the check by touching ~/.nocheckdotvim, or set it up with `check-dotvim
+# --setup`.
+
+havecmd check-dotvim && check-dotvim
