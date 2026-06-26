@@ -66,7 +66,7 @@ formats.
 
 **findword**
 Wordle solver/cheat. Builds a per-position character-class regex from
-constraints (`--length`, `--exclude`, `--include`, `--posN`, `--not_posN`),
+constraints (`--length`, `--exclude`, `--include`, `--posN`, `--not-posN`),
 searches the system dictionary, and ranks matches by vowel richness. Run
 `findword --help` for the full flag list.
 

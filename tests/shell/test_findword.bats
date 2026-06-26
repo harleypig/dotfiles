@@ -61,9 +61,9 @@ require_dict() {
   done
 }
 
-@test "--not_posN forbids letters at that position only" {
+@test "--not-posN forbids letters at that position only" {
   require_dict
-  run findword --pos1 a --not_pos2 b
+  run findword --pos1 a --not-pos2 b
   assert_success
   for w in $output; do
     assert [ "${w:1:1}" != b ]
