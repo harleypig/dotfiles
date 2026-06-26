@@ -67,6 +67,19 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   the skill's mining section so the full-census rule and this approach don't
   conflict. Global; `config/claude/skills/claude-audit/SKILL.md`. Low cost.
 
+- [ ] **`shell-check.py` PostToolUse hook is stricter than repo gates
+  (LOW — retrospective, PR #153).** The global hook
+  (`config/claude/hooks/shell-check.py`) runs plain `shellcheck`, but repos
+  that gate with `--external-sources` (dotfiles does) — or that suppress
+  false positives via a dir-scoped `.shellcheckrc` — make the hook *over*-flag:
+  it nagged about `shell-startup:83` sourcing `$DOTFILES/lib/debug`, which the
+  pre-commit gate resolves cleanly. The hook is fail-open and advisory so this
+  is only noise, but it recurs on any `--external-sources` repo. Consider
+  forwarding `SHELLCHECK_OPTS` and/or passing `--external-sources` (and
+  confirm it picks up a repo `.shellcheckrc` from the file's directory) so the
+  hook matches what the repo actually enforces. Global;
+  `config/claude/hooks/shell-check.py` (+ note in `rules/shellcheck.md`).
+
 ## Skill ideas & future categories (not from mining)
 
 - [ ] **`ship-pr`: document "PR already open" resume path (2026-06-20)** —

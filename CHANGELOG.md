@@ -14,6 +14,15 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **pre-commit now lints extensionless sourced shell** — `shell-startup`,
+  `config/shell-startup/*`, and `lib/*` were skipped because `identify` only
+  tags executable files as shell via shebang. Added path-selected
+  `shellcheck-sourced` / `shfmt-sourced` hook entries (check + fix configs) and
+  cleaned the debt they surfaced: 7 files reformatted, sourced-file false
+  positives scoped into a new `config/shell-startup/.shellcheckrc`, genuine
+  findings fixed across 16 files. Two real bugs fixed in passing — `ansible`
+  created dirs literally named `{tmp,galaxy}` (brace lists were inside the
+  quotes) and `AIDER_COMMIT_PROMPT` was never exported. (PR #153)
 - **`meta` is now a required status check** — promoted on `master` alongside
   `bats`/`perl`/`pre-commit` (applied to the ruleset via the OAuth admin
   token), so the generated static-check suite gates merges. And

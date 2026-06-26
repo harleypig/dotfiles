@@ -165,34 +165,6 @@ worth adopting.
   `dot-general/.proselintrc` + its `dotlinks-default` entry if proselint is
   dropped (mirrors the markdownlintrc retirement above).
 
-## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
-
-The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip
-`shell-startup`** and likely the extensionless `config/shell-startup/*`
-modules — pre-commit's `identify` isn't tagging them as shell, so they get
-no lint/format gating (and the meta generator only scans `bin lib`).
-`shell-startup` in fact has pre-existing shfmt debt that nothing currently
-catches. This also covers extensionless `bin/`/`lib/` files: the CI `meta`
-job (a required check) lints them, but locally nothing does — fixing this
-gives fast, no-docker local coverage of all of them.
-
-- [x] Make the shfmt + shellcheck hooks cover extensionless shell files —
-  added a second, path-selected entry of each hook (`shellcheck-sourced` /
-  `shfmt-sourced`, `types: [text]` + a `files:` regex for `shell-startup`,
-  `config/shell-startup/[^./]+`, `lib/[^./]+`). Root cause: identify only
-  reads a shebang for *executable* files, so non-executable sourced shell is
-  untagged.
-- [x] Clean up the debt those files surface — shfmt (7 files) auto-fixed;
-  shellcheck cleaned across 16 files. Sourced-file false positives
-  (SC1090/1091/2317/2329) suppressed via a scoped `config/shell-startup/
-  .shellcheckrc`; genuine issues fixed (quoting, `declare`/`export` split,
-  `mapfile`, plus a real `ansible` bug where quoted brace lists never
-  expanded, and exporting `AIDER_COMMIT_PROMPT`).
-- [x] Meta-test generator roots — **decided not to add** `shell-startup` /
-  `config/shell-startup`. pre-commit now covers them (fast, local + CI), and
-  the generator classifies by shebang/extension so it would skip the many
-  no-shebang modules anyway; double-linting the rest adds nothing.
-
 ## 🐫 Perl quality tooling (MEDIUM PRIORITY)
 
 Build out perl QA across **both the test suite and the CLI scripts** (where
