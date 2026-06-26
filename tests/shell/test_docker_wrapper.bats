@@ -51,6 +51,21 @@ teardown() {
   assert_output --partial "-d script.sh"
 }
 
+@test "markdownlint dispatch assembles the expected docker run command" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf '# Title\n' > doc.md
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/markdownlint" doc.md
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "run"
+  assert_output --partial "--workdir /mnt"
+  assert_output --partial "ghcr.io/igorshubovych/markdownlint-cli:v0.48.0"
+  assert_output --partial "doc.md"
+}
+
 @test "the path guard blocks a file outside PWD before docker runs" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"

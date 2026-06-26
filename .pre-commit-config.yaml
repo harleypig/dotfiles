@@ -57,6 +57,9 @@ repos:
         args: [-c, config/yamllint/config]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
+    # SYNC: keep this rev in lock-step with image[markdownlint] in
+    # bin/docker_wrapper (the bin/markdownlint docker wrapper) and the rev in
+    # .pre-commit-config-fix.yaml; bump all three together.
     rev: v0.48.0
     hooks:
       # Uses the repo-local .markdownlint.json (auto-discovered at the root).
