@@ -164,13 +164,15 @@ The generated meta suite (`tests/shell/*.meta.bats`) is now clean across
 `tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to check
 status locally.
 
-- [x] Confirm the meta suite is clean (fixed `lib/debug`'s shfmt debt — the
-  last item; pre-commit had missed it because its hooks skip extensionless
-  files, see below) and add a CI **`meta`** job that regenerates and runs it
-  with `shellcheck`/`shfmt` pinned to the repo's versions.
 - [ ] Promote the `meta` job to a **required status check** in the master
   ruleset after a clean track record (ruleset change needs the OAuth admin
   token — see `.claude/WORKFLOW.md`). Until then it runs non-gating on PRs.
+- [ ] Make `tests/scaffold/build-meta-tests` **prune stale** `*.meta.bats`
+  whose source file no longer exists. It currently only adds/overwrites, so a
+  renamed/deleted script (e.g. `lib/parse_params`, `bin/CleanPath.tmp`) leaves
+  a dangling generated test that fails locally with a confusing "No such file"
+  (CI dodges it via a clean clone). Remove orphaned meta tests during
+  generation.
 - Local coverage of these (extensionless `bin/`/`lib/`) files is **not** added
   to pre-commit here — the meta suite via the docker wrappers is too slow for a
   commit-time hook. The fast path is to make pre-commit's existing pinned

@@ -14,6 +14,14 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **CI meta-suite gate** — a new `meta` job in `tests.yml` regenerates and runs
+  the generated static-check suite (`tests/shell/*.meta.bats` — shebang +
+  `bash -n` + shellcheck + shfmt over `bin/`, `lib/`, and skill helpers) with
+  `shellcheck`/`shfmt` installed as native binaries pinned to the repo's
+  versions (v0.11.0 / v3.13.1), so CI matches local. **Non-required first** —
+  to be promoted to a required ruleset check after a clean track record. Fixed
+  the last debt item (`lib/debug` shfmt, missed by pre-commit because its hooks
+  skip extensionless files). (PR #151)
 - **parse_params cross-option constraints** — definition lines whose OPTION
   field is `%` declare a rule relating two or more options by VARNAME:
   `exclusive` (at most one), `require-one` (at least one), `together`
