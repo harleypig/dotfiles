@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.5.1
+**Version:** v1.5.2
 
 ## Purpose
 
@@ -31,6 +31,9 @@ and `CLAUDE.md` for test-related operations.
 ### Special Files
 
 * **`shell-startup`** - Main shell initialization orchestrator
+* **`shell-startup.md5`** - Blessed checksum of `shell-startup`, used by the
+  `shell-startup-guard` skill to detect out-of-band changes (see
+  *Shell-startup integrity guard*)
 * **`ps-startup.ps1`** - PowerShell initialization for Windows
 * **`CLAUDE.md`** - AI agent behavior specification
 * **`WORKFLOW.md`** - This file
@@ -117,6 +120,33 @@ in the pre-commit configuration.
 * Regenerate meta tests: `tests/scaffold/build-meta-tests`
 * Tests MUST pass before merging to master
 * New functionality MUST include tests
+
+### Shell-startup integrity guard
+
+`shell-startup` is what `~/.bash_profile` and `~/.bashrc` symlink to, so any
+tool installer that "adds itself to your shell profile" writes **into
+`shell-startup`** without going through git or the agent. The grok (xAI) CLI
+installer is the known case — its target file is hardcoded to `~/.bashrc` (no
+override), so it re-adds its `>>> grok installer >>>` block whenever the
+marker is absent. Its PATH + completion lines now live in
+`config/shell-startup/grok` instead, but the installer will still
+re-pollute `shell-startup` on reinstall.
+
+A committed **`shell-startup.md5`** at the repo root records the blessed
+checksum, and the **`shell-startup-guard`** skill
+(`.claude/skills/shell-startup-guard/`) detects drift against it. Wiring:
+
+* **Run the guard during ship-pr's first half** (Step 1, before commit) and
+  again at **merge-finalization** (Step 4.5) — invoke the
+  `shell-startup-guard` skill, which on drift shows the diff since the last
+  blessed state and offers approve / restore / relocate / defer.
+* **The agent's own edits stay blessed automatically.** The global
+  `md5-guard.py` `PostToolUse` hook regenerates `shell-startup.md5`
+  whenever the agent edits `shell-startup` through Edit/Write — so only
+  *un-managed* changes leave the checksum stale. **Always stage
+  `shell-startup` and `shell-startup.md5` together** in the same commit;
+  if you ever edit `shell-startup` outside the tools, run the skill's
+  `bless` step.
 
 ### Git Workflow
 
@@ -313,7 +343,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.5.0)
+* `WORKFLOW.md` - Versioned (this file, v1.5.2)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 

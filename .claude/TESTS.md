@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.2
+**Version:** v2.6.3
 
 ## Purpose
 
@@ -103,7 +103,11 @@ bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
 `perl -c`; python → shebang + `compile()`. It scans `bin lib` **plus
 `config/claude/skills`** (the last covers skill helper scripts such as
 `config/claude/skills/*/scripts/*`, e.g. `ship-pr`'s `ship.sh`; non-script
-files are skipped). The `bin/` + `lib/` + skill-helper debt is clean, so the
+files are skipped). It does **not** scan repo-local `.claude/skills/` — that
+helper (`shell-startup-guard`'s `guard.sh`) is covered by the repo-wide
+pre-commit `shellcheck`/`shfmt` hooks plus its hand-written
+`test_shell_startup_md5_guard.bats`. The `bin/` + `lib/` + skill-helper debt is
+clean, so the
 meta suite **gates in CI** — the `meta` job in `tests.yml` is a **required
 status check** on `master` (alongside `bats`, `perl`, `pre-commit`). Its
 `shellcheck`/`shfmt` are pinned to the repo's versions (matching the docker

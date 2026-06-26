@@ -14,6 +14,18 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **`shell-startup` integrity guard + grok block relocated** — moved the grok
+  (xAI CLI) installer's `>>> grok installer >>>` PATH+completion block out of
+  `shell-startup` into a guarded `config/shell-startup/grok` module. Since the
+  installer hardcodes its target to `~/.bashrc` (which symlinks to
+  `shell-startup`) and re-adds the block on reinstall, added a tripwire: a
+  committed `shell-startup.md5` checksum, the repo-local
+  **`shell-startup-guard`** skill (check → diff-since-last-blessed →
+  approve/restore/relocate/defer), and a global `md5-guard.py` `PostToolUse`
+  hook that auto-blesses the checksum when the agent edits `shell-startup` (so
+  only out-of-band changes look like drift). Wired into ship-pr's first half
+  and merge-finalization via `.claude/WORKFLOW.md`. Covered by
+  `test_shell_startup_md5_guard.bats` and `test_md5_guard.py`. (PR #154)
 - **pre-commit now lints extensionless sourced shell** — `shell-startup`,
   `config/shell-startup/*`, and `lib/*` were skipped because `identify` only
   tags executable files as shell via shebang. Added path-selected

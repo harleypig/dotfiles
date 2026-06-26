@@ -298,12 +298,15 @@ shell-init path per manager — XDG-aware where possible, lazy-loaded in
 > the original profile was an xtrace artifact (tracing its 4,545-line
 > completion function). This is now purely a cleanliness item.
 
-- [ ] **Move the grok installer block out of `shell-startup`.** The
-  `>>> grok installer >>>` block (PATH + completion) at the end of
-  `shell-startup` runs *after* Cleanup and isn't a pre-load global — move it to
-  a `config/shell-startup/grok` module (guarded like the others). First decide
-  how to stop the grok installer re-appending it to `shell-startup` (retarget
-  it, or accept periodic cleanup). *[needs thought]*
+- [x] **Move the grok installer block out of `shell-startup`.** Moved the
+  `>>> grok installer >>>` block (PATH + completion) to a guarded
+  `config/shell-startup/grok` module. **Retarget is impossible** — the xAI
+  installer hardcodes its config-file target to `~/.bashrc` (no override;
+  `GROK_BIN_DIR` only moves the binaries), so it will re-add its block to
+  `shell-startup` on reinstall (ICEBOXed in the module). We accept that and
+  rely on the new **`shell-startup-guard`** skill + `shell-startup.md5`
+  checksum to detect the drift and prune it. See *Shell-startup integrity
+  guard* in `.claude/WORKFLOW.md`.
 
 ## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
 
@@ -393,7 +396,7 @@ Known offenders to investigate (as of 2026-05-20):
 | `~/.docker` | Docker | `DOCKER_CONFIG` — already set in `010-general` but dir still in `$HOME` |
 | `~/.gradle` | Gradle | `GRADLE_USER_HOME` env var |
 | `~/.gradle-mcp` | gradle-mcp | likely follows `GRADLE_USER_HOME` or its own config |
-| `~/.grok` | grok (xAI CLI) | check XDG / config-dir support; also relocate the installer block out of `shell-startup` (see the **grok** section) |
+| `~/.grok` | grok (xAI CLI) | check XDG / config-dir support (installer block already relocated to `config/shell-startup/grok`) |
 | `~/.java` | Java/JVM | `java.util.prefs.userRoot` system property |
 | `~/.jbang` | jbang | `JBANG_DIR` env var |
 | `~/.kivy` | Kivy | `KIVY_HOME` env var |
