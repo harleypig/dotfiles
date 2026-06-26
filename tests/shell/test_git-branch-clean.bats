@@ -57,7 +57,7 @@ init_gone_repo() {
   cd "$REPO"
   run "$GBC" -n -f
   assert_failure
-  assert_output --partial 'mutually exclusive'
+  assert_output --partial 'only one of'
 }
 
 @test "requires -f or -n to do anything" {
@@ -65,7 +65,7 @@ init_gone_repo() {
   cd "$REPO"
   run "$GBC" -a
   assert_failure
-  assert_output --partial '-f required'
+  assert_output --partial 'is required'
 }
 
 @test "-n dry-run reports a gone branch without deleting it" {
@@ -97,10 +97,10 @@ init_gone_repo() {
   assert_output ''
 }
 
-@test "-h prints usage" {
+@test "-h prints usage (exit 0 via parse_params)" {
   init_repo
   cd "$REPO"
   run "$GBC" -h
-  assert_failure
+  assert_success
   assert_output --partial 'Usage:'
 }

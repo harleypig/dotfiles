@@ -166,19 +166,27 @@ updates that script's bats test.
 
 Conversion candidates (dotfiles `bin/`; opportunistic, low priority):
 
-- [ ] `bin/git-branch-clean` — `getopts nfah`; flags fit. The `-f`/`-n`
-  exclusion + "require one of them" is now expressible directly in
-  parse_params via `%` constraint lines (`exclusive` + `require-one`), so the
-  earlier "mutual-exclusion stays manual" blocker is lifted. A clean
-  demonstration target for the constraint feature; convert when convenient.
-- [ ] `bin/git-all` — `getopts :Sv` (two bool flags + positional); small, low
-  payoff.
-- [ ] `bin/proj` — `case $1` with `-h|--help` plus subcommand dispatch; only
-  the option part maps, subcommands stay.
-- [ ] `bin/yesno` — small `case $1` (`-h` + warn-suppress); marginal.
+- [x] `bin/git-branch-clean` — converted to parse_params: `-n`/`-f`/`-a` plus
+  `%,exclusive` + `%,require-one` over `dry_run`/`force` enforce "exactly one
+  of -n/-f", replacing the hand-written getopts loop and the manual
+  mutual-exclusion / require checks. Doubles as the worked example of the `%`
+  constraint feature; test updated.
+
+The remaining candidates are **deliberately not converted** (decision, not a
+gap) — each is a tiny helper where a zero-cost `getopts`/`case` already does
+the job and a per-call perl subprocess would be net-negative. Revisit only if
+one grows more options:
+
+- `bin/proj` — only `-h`/`--help` plus one positional; nothing to validate.
+- `bin/yesno` — one bool (`-q`) on a tiny, frequently-called interactive
+  helper.
 
 Not a fit (skip, with reason):
 
+- `bin/git-all` — `getopts :Sv` then **passes a git command line through**
+  (`do_all_action "$@"` → `git "$@"`); parse_params would mis-parse the
+  sub-command's own flags (e.g. `git-all -v pull --rebase`), so it belongs
+  here with the variadic-stream cases below.
 - `bin/ansi` — its `while` consumes tput *commands* (fg/bg/off…), a variadic
   command stream, not getopt options.
 - `bin/where` — variadic list of command names (positional stream), not fixed
