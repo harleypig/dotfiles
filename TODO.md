@@ -118,21 +118,6 @@ main dotfiles checkout.
   execution trace to stderr on every tmux status render (almost certainly a
   debugging leftover). Can be fixed independently of the extraction.
 
-## 📐 Retire global ~/.markdownlintrc — per-repo configs (MEDIUM PRIORITY)
-
-This repo now uses a repo-local `.markdownlint.json` (authoritative, auto-
-discovered by the markdownlint hooks). Each repo should own its markdown
-config rather than depend on the global `dot-general/.markdownlintrc`
-(symlinked to `~/.markdownlintrc`).
-
-- [x] Add a repo-local markdownlint config to each other repo that needs one.
-  Seeded the retired global rc (verbatim, to preserve each repo's current
-  behaviour) into all 16 config-less sibling repos **uncommitted** — each repo
-  now owns and manages its own copy/setup going forward.
-- [x] Remove `dot-general/.markdownlintrc` and its dotlinks entry. The live
-  `~/.markdownlintrc` symlink was removed too; there is no global fallback now.
-- [x] Update `config/claude/rules/markdownlint.md` to drop the global.
-
 ## 🖋️ Research: is proselint still alive? modern alternative? (MEDIUM PRIORITY)
 
 proselint is queued for pre-commit **Phase 4 (Docs)** (see *Pre-commit hooks:
