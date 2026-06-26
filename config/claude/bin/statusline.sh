@@ -2,8 +2,9 @@
 # Claude Code statusline — reads JSON session data from stdin, outputs one line.
 # Docs: https://code.claude.com/docs/en/statusline
 
-# XXX: Does tput support OSC 8 escape codes for clickable links? If so,
-# consider modifying bin/ansi to support that for more global support.
+# TODO: check whether tput / terminals support OSC 8 hyperlink escapes; if
+# so, extend bin/ansi to emit them for clickable links repo-wide. See
+# TODO.md.
 
 command -v jq &> /dev/null || {
   printf 'claude | jq not found\n'
