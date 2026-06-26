@@ -157,26 +157,6 @@ worth adopting.
   `dot-general/.proselintrc` + its `dotlinks-default` entry if proselint is
   dropped (mirrors the markdownlintrc retirement above).
 
-## 🧹 Meta-suite Gating Debt (MEDIUM PRIORITY)
-
-The generated meta suite (`tests/shell/*.meta.bats`) is now clean across
-`bin/`, `lib/`, and skill helpers and runs in CI. Run
-`tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to check
-status locally.
-
-- [x] Promote the `meta` job to a **required status check** in the master
-  ruleset (applied via the OAuth admin token; `required_status_checks` now
-  `bats, meta, perl, pre-commit`).
-- [x] Make `tests/scaffold/build-meta-tests` **prune stale** `*.meta.bats`
-  whose source no longer exists (renamed/deleted/ignored) — orphaned meta
-  tests are removed during generation; covered by
-  `tests/shell/test_build-meta-tests.bats`.
-- Local coverage of these (extensionless `bin/`/`lib/`) files is **not** added
-  to pre-commit here — the meta suite via the docker wrappers is too slow for a
-  commit-time hook. The fast path is to make pre-commit's existing pinned
-  `shellcheck`/`shfmt` hooks cover extensionless files — tracked in
-  *pre-commit doesn't lint extensionless shell files* below.
-
 ## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
 
 The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip
@@ -185,9 +165,8 @@ modules — pre-commit's `identify` isn't tagging them as shell, so they get
 no lint/format gating (and the meta generator only scans `bin lib`).
 `shell-startup` in fact has pre-existing shfmt debt that nothing currently
 catches. This also covers extensionless `bin/`/`lib/` files: the CI `meta`
-job currently lints them, but locally nothing does (see *Meta-suite Gating
-Debt* above) — fixing this gives fast, no-docker local coverage of all of
-them.
+job (a required check) lints them, but locally nothing does — fixing this
+gives fast, no-docker local coverage of all of them.
 
 - [ ] Make the shfmt + shellcheck hooks cover extensionless shell files —
   add `files:` patterns (e.g. `^(shell-startup|config/shell-startup/)`) or

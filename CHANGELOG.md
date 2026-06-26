@@ -14,6 +14,14 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **`meta` is now a required status check** — promoted on `master` alongside
+  `bats`/`perl`/`pre-commit` (applied to the ruleset via the OAuth admin
+  token), so the generated static-check suite gates merges. And
+  `tests/scaffold/build-meta-tests` now **prunes stale** `*.meta.bats` whose
+  source was renamed/deleted/ignored (reporting the count; hand-written
+  `test_*.bats` untouched), fixing confusing local "No such file" failures
+  from leftover generated tests. Covered by
+  `tests/shell/test_build-meta-tests.bats`. (PR #152)
 - **CI meta-suite gate** — a new `meta` job in `tests.yml` regenerates and runs
   the generated static-check suite (`tests/shell/*.meta.bats` — shebang +
   `bash -n` + shellcheck + shfmt over `bin/`, `lib/`, and skill helpers) with
