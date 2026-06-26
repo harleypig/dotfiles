@@ -363,6 +363,35 @@ Beyond correctness/security, audit each module for **improve / add / remove**:
   commented-out blocks (e.g. perl's `wtf_am_i_doing_here` early-`return`
   function); stale host assumptions.
 
+## 🧳 Move env-polluting shell-startup setup into bin wrappers (MEDIUM PRIORITY)
+
+Some `config/shell-startup/` modules export tool-specific environment into
+*every* interactive shell for a tool that's rarely run — the setup belongs in
+an on-demand `bin/` wrapper (set the env, then `exec <tool> "$@"`) so it stops
+polluting the global environment. This is the "should this even live in the
+shell?" lens on the *config/shell-startup Audit* section above.
+
+- [ ] **aider** — move `config/shell-startup/aider` into a `bin/aider`
+  wrapper. It currently parses `$DOTFILES/aider.env` and exports `AIDER_*`
+  (plus `AIDER_EDITOR`, `AIDER_COMMIT_PROMPT`) into every shell, though only
+  aider needs them. A wrapper that builds that env and `exec`s the real
+  `aider` scopes it to invocation; remove the shell-startup module once moved
+  (its new `shellcheck-sourced` / `shfmt-sourced` pre-commit coverage follows
+  it to `bin/`, where the executable shebang makes it tagged automatically).
+
+- [ ] **Audit every `config/shell-startup/` module** for the same opportunity
+  and **report on each one** — including the ones that should *stay*. For each,
+  classify:
+  - **move** — purely tool-only env/config, safe to lazy-load via a wrapper;
+  - **keep** — a genuine interactive-shell feature (e.g. `git`'s aliases and
+    functions, prompt/`less`/completion wiring) that *must* live in the
+    environment;
+  - **partial** — split the tool-only env into a wrapper but keep the
+    shell-facing bits in the module.
+
+  Partial moves are expected and fine. The deliverable is the per-module
+  report (move / keep / partial, with the reason); acting on it is follow-up.
+
 ## 🏠 $HOME Dotfile Audit (MEDIUM PRIORITY)
 
 Reduce $HOME clutter by moving dotfiles to XDG directories where supported
