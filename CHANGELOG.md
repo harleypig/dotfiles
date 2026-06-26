@@ -14,6 +14,14 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **parse_params cross-option constraints** — definition lines whose OPTION
+  field is `%` declare a rule relating two or more options by VARNAME:
+  `exclusive` (at most one), `require-one` (at least one), `together`
+  (all-or-none), `implies` (first member ⇒ the rest). Judged on what the user
+  actually provided (a default never trips one; `--no-x` is not "active"); a
+  violation is an input error (exit 1, honoring `--auto`), a bad KIND/VARNAME a
+  definition error (exit 2). Documented in the POD + `rules/bash.md`, covered
+  by `tests/shell/test_parse_params.bats`. (PR #150)
 - **docker_wrapper symlink automation** — `bin/docker_wrapper-links` checks
   the `bin/<tool>` symlinks against the dispatcher's registry (exit 1 on
   drift) and `--fix` creates any missing ones / reports stray ones (compared
@@ -49,6 +57,17 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **`bin/git-branch-clean`** — converted from a hand-written `getopts` loop to
+  parse_params, with `%,exclusive` + `%,require-one` over `dry_run`/`force`
+  enforcing "exactly one of -n/-f" (the manual mutual-exclusion / require
+  checks are gone). A bad combination now exits 2 and `-h` exits 0. This
+  concludes the arg-loop→parse_params audit: the remaining candidates are
+  deliberately **not** converted — `bin/proj` (only `-h` + a positional) and
+  `bin/yesno` (one bool on a tiny interactive helper) are marginal, and
+  `bin/git-all` is not a fit (it passes a git sub-command line through, which
+  parse_params would mis-parse). (PR #150)
+- **`bin/findword`** — renamed the `--not_posN` flags to `--not-posN` (hyphen,
+  matching the other long options); varnames unchanged. (PR #150)
 - **Code marker comments** — reclassified stale `XXX:` markers to the
   `code-style.md` taxonomy: `ICEBOX:` for deferred enhancements
   (`bin/motd`, `lib/bash_prompt`), `NOTE:` for a known venv-color heuristic
