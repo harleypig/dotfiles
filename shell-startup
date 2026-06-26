@@ -172,7 +172,7 @@ unsetfuncs 'havecmd'
 # run_hook() {
 #   # Sources an optional hook named $1 from $dfdir, defaulting to the
 #   # dotfiles hook directory when a caller has not set one.
-#   local hook="${dfdir:-$DOTFILES/shell_startup.d}/$1"
+#   local hook="${dfdir:-$DOTFILES/shell_startup_hooks.d}/$1"
 #   debug "running hook: $hook"
 #   [[ -r $hook ]] || {
 #     debug "hook not readable: $hook"
@@ -212,7 +212,7 @@ unsetvars 'bin_dirs'
 load_files() {
   declare -a load_dirs
   load_dirs+=("$XDG_CONFIG_HOME/shell-startup")
-  load_dirs+=("$HOME/.shell_startup.d")
+  load_dirs+=("$HOME/.shell_startup_hooks.d")
 
   # Run each directory instead of doing a find on all directories at once
   # because we want these files loaded in this particular order.
@@ -233,8 +233,8 @@ load_files() {
 unsetvars 'load_files'
 
 # shellcheck disable=SC1091
-[[ -r "$DOTFILES/shell_startup.d/pre-setup" ]] \
-  && source "$DOTFILES/shell_startup.d/pre-setup"
+[[ -r "$DOTFILES/shell_startup_hooks.d/pre-setup" ]] \
+  && source "$DOTFILES/shell_startup_hooks.d/pre-setup"
 
 #-----------------------------------------------------------------------------
 set_bin_dirs

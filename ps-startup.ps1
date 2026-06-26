@@ -21,7 +21,7 @@ function Import-Files {
     # Define the directories to load files from
     $loadDirs = @(
         Join-Path $DOTFILES "powershell/startup"
-        Join-Path $HOME ".psshell_startup.d"
+        Join-Path $HOME ".psshell_startup_hooks.d"
     )
 
     # Iterate over each directory separately to ensure files are loaded in

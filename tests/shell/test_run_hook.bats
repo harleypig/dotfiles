@@ -50,10 +50,10 @@ teardown() {
   assert_file_exist "$TEST_TEMP_DIR/ran"
 }
 
-@test 'run_hook falls back to $DOTFILES/shell_startup.d when $dfdir unset' {
-  mkdir -p "$TEST_TEMP_DIR/shell_startup.d"
+@test 'run_hook falls back to $DOTFILES/shell_startup_hooks.d when $dfdir unset' {
+  mkdir -p "$TEST_TEMP_DIR/shell_startup_hooks.d"
   printf 'touch "%s/ran"\n' "$TEST_TEMP_DIR" \
-    > "$TEST_TEMP_DIR/shell_startup.d/deflt"
+    > "$TEST_TEMP_DIR/shell_startup_hooks.d/deflt"
 
   unset dfdir
   DOTFILES="$TEST_TEMP_DIR" run run_hook deflt
