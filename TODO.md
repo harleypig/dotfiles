@@ -25,19 +25,6 @@ full convention.
   - Remaining: PowerShell parity markers, tracked under "PowerShell ↔ Bash
     Feature Parity" below.
 
-## 🛡️ Protect the master Branch — follow-up
-
-`master` is protected (ruleset 17364459: PR-only, squash-only, required
-`bats` + `pre-commit`, no bypass; local `no-commit-to-branch` guard).
-
-- [x] Confirm Dependabot interplay with the ruleset — done via the first
-  Dependabot PR (#143, actions/checkout 6→7): all required checks (`bats`,
-  `perl`, `pre-commit`) passed and the PR is `MERGEABLE`/`CLEAN` under
-  squash-only, so the ruleset does not block Dependabot. The "auto-merge"
-  clause is N/A by design — `.github/dependabot.yml` deliberately opts out
-  of auto-merge; Dependabot PRs land through the normal manual ship-pr
-  flow, which this confirms is unobstructed.
-
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
 We use a single branch ruleset (protect master). Survey what else rulesets
@@ -779,19 +766,6 @@ research:
 - [ ] Whether a Windows container is needed to test true Windows PowerShell
   5.1 behavior, and whether that's practical (requires a Windows host for
   Windows containers).
-
-### Configuration File Issues
-
-- [x] config/git/config - renamed force-delete `bD` to `bdf` so it no
-  longer collides with safe-delete `bd` (git config keys are
-  case-insensitive); `git bd` now safe-deletes as documented.
-- [x] config/git/config - fixed swapped `unstage` / `unadd` semantics:
-  both now unstage (`reset HEAD`); added `uncommit` (`reset HEAD^`) for
-  undo-last-commit. Documented inline.
-
-(The former `config/bash_prompt:131,137` poetry/venv detection item moved
-to an in-code `ICEBOX:`/`NOTE:` at `lib/bash_prompt` — deferred, revisit on
-request — per the comment-cleanup pass.)
 
 ### Surfaced from comment cleanup (LOW PRIORITY)
 

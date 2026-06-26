@@ -10,6 +10,32 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-26
+
+### Fixed
+
+- **`config/git/config`** — fixed two case-insensitive alias collisions.
+  Renamed force-delete `bD` to `bdf` (it had silently overridden safe-delete
+  `bd`, so `git bd` actually force-deleted). Corrected the swapped
+  `unstage`/`unadd` semantics so `unstage` truly unstages (`reset HEAD`),
+  adding `uncommit` (`reset HEAD^`) for undo-last-commit. (PR #144)
+
+### Changed
+
+- **Code marker comments** — reclassified stale `XXX:` markers to the
+  `code-style.md` taxonomy: `ICEBOX:` for deferred enhancements
+  (`bin/motd`, `lib/bash_prompt`), `NOTE:` for a known venv-color heuristic
+  limitation, and `TODO:` (now tracked in `TODO.md`) for the tmux
+  multi-session chooser and OSC 8 clickable-link ideas. Resolved a
+  dead-code marker in `bin/ansi`. PowerShell parity markers left with the
+  PowerShell↔Bash parity task. (PR #144)
+- **master branch protection** — confirmed the squash-only + required-checks
+  ruleset does not block Dependabot. The first Dependabot PR (#143,
+  actions/checkout 6→7) passed all required checks (`bats`, `perl`,
+  `pre-commit`) and was `MERGEABLE`/`CLEAN` under the ruleset. Auto-merge
+  remains off by design (`.github/dependabot.yml` opts out; PRs land via the
+  manual ship-pr flow). (PR #144)
+
 ## 2026-06-20 (continued)
 
 ### Changed
