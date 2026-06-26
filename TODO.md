@@ -44,19 +44,6 @@ of secret scanning here.
   what is actually reachable from the `shell-startup` path. Goal: shrink the
   accidental-ingestion surface.
 
-## 🧹 shell-startup Follow-ups (LOW PRIORITY)
-
-Deferred from the shell-startup trim (PR #16):
-
-- [x] **Rename the hook dirs — before the startup tests are finalized.**
-  `{,.}shell_startup.d` hold *hooks* while `config/shell-startup` holds
-  always-loaded files; rename the hook dirs to `{,.}shell_startup_hooks.d` to
-  make that obvious. Done in `shell-startup` (`load_files` dir, pre-setup
-  hook path, commented-out `run_hook` `$dfdir` default), `ps-startup.ps1`
-  (`.psshell_startup_hooks.d`, for cross-shell consistency), and
-  `tests/shell/test_run_hook.bats`. The dirs are optional runtime paths
-  (none committed), so this is a code-reference rename only.
-
 ## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
 
 The agent config under `config/claude/` (rules, skills, `CLAUDE.md`,

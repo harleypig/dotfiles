@@ -35,6 +35,14 @@ goes green (see the merge-time finalization in
   `pre-commit`) and was `MERGEABLE`/`CLEAN` under the ruleset. Auto-merge
   remains off by design (`.github/dependabot.yml` opts out; PRs land via the
   manual ship-pr flow). (PR #144)
+- **shell-startup hook directories** — renamed the optional hook dirs
+  `{,.}shell_startup.d` to `{,.}shell_startup_hooks.d` so they read
+  distinctly from the always-loaded `config/shell-startup/` tree. Updated
+  `shell-startup` (`load_files` dir, pre-setup hook path, commented-out
+  `run_hook` `$dfdir` default), `ps-startup.ps1` (`.psshell_startup_hooks.d`,
+  for cross-shell consistency), and `tests/shell/test_run_hook.bats`. A
+  code-reference rename only — the dirs are optional runtime paths, none
+  committed. (PR #145)
 
 ## 2026-06-20 (continued)
 
