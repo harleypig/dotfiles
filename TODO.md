@@ -75,19 +75,20 @@ symlink to it, and the tool list lives in the `known_tool` registrations
 inside the script. The symlinks are created by hand today, so a newly added
 tool — or a fresh checkout — can silently lack its symlink.
 
-- [ ] Add a check that every registered tool has a matching `bin/<tool>`
+- [x] Add a check that every registered tool has a matching `bin/<tool>`
   symlink pointing at `docker_wrapper`, and that no stray wrapper symlink
-  points at it without a registration. Drive it from the `known_tool` keys
-  (grep the `known_tool[...]=1` lines, or source the script in a guarded
-  mode).
-- [ ] Wire that check in as a meta-test (`tests/scaffold/build-meta-tests` /
-  `meta_*.bats`, per `TESTS.md`'s symlink validation) so CI flags a missing
-  or stray symlink.
-- [ ] Add a create/repair mode (a `--fix` flag or a small maintenance
-  command) that creates any missing `bin/<tool>` symlinks and reports stale
-  ones, so adding a tool or setting up a fresh clone is one command.
-- [ ] Assert the link *target* (`docker_wrapper`), not file contents —
-  symlink mode is 120000 and unaffected by `core.filemode=false`.
+  points at it without a registration. Driven from the registry via a new
+  `docker_wrapper --known-tools` interface (rather than grepping the
+  source), consumed by `bin/docker_wrapper-links`.
+- [x] Wire that check in as a CI gate — done as the hand-written
+  `tests/shell/test_docker_wrapper_links.bats` (the gated suite), not a
+  meta-test (the generated meta suite is not gated yet; see the debt note),
+  following the `test_*_frontmatter.bats` repo-invariant pattern.
+- [x] Add a create/repair mode — `bin/docker_wrapper-links --fix` creates
+  any missing `bin/<tool>` symlinks and reports stray/conflicting ones, so
+  adding a tool or setting up a fresh clone is one command.
+- [x] Assert the link *target* (`docker_wrapper`) via `readlink`, not file
+  contents — symlink mode is 120000 and unaffected by `core.filemode=false`.
 
 ## 📝 bin/markdownlint docker wrapper (MEDIUM PRIORITY)
 

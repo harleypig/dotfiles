@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+
+# docker_wrapper-links — verify, and optionally repair, the bin/<tool>
+# symlinks that drive the bin/docker_wrapper multi-call dispatcher.
+#
+# docker_wrapper selects a tool from the basename it is invoked as, so each
+# registered tool needs a bin/<tool> -> docker_wrapper symlink. Those are
+# created by hand, so a newly registered tool — or a fresh checkout — can
+# silently lack its link. This checks the bin/<tool> symlinks against the
+# registry (docker_wrapper --known-tools) and reports drift:
+#
+#   missing   — a registered tool with no bin/<tool> symlink
+#   conflict  — bin/<tool> exists but is not a docker_wrapper symlink
+#   stray     — a bin/* symlink to docker_wrapper whose name is unregistered
+#
+# Modes:
+#   (default)  check only; exit 1 if any drift is found, 0 if consistent.
+#   --fix      create missing symlinks; report conflicts/stray (never deletes).
+#
+# Links are compared by target (readlink), not file contents: a symlink is
+# mode 120000 and unaffected by core.filemode. No dependency on parse_params
+# or PATH, so it is safe to run on a fresh clone before shell-startup has run.
+
+set -uo pipefail
+
+prog=${0##*/}
+
+#------------------------------------------------------------------------------
+show_usage() {
+  cat << EOF
+Usage: $prog [--fix]
+
+Check (default) or repair the bin/<tool> -> docker_wrapper symlinks against
+docker_wrapper's registry (docker_wrapper --known-tools).
+
+  --fix    create any missing bin/<tool> symlinks; report conflicts/stray.
+  -h       show this help.
+EOF
+}
+
+#------------------------------------------------------------------------------
+# True when $1 is a symlink whose target is the docker_wrapper beside us.
+links_to_wrapper() {
+  local link=$1
+
+  [[ -L $link ]] || return 1
+  [[ $(readlink -- "$link") == docker_wrapper ]] && return 0
+
+  # Fall back to a resolved-path match for an unconventional link form.
+  [[ $(readlink -f -- "$link") == "$(readlink -f -- "$wrapper")" ]]
+}
+
+#------------------------------------------------------------------------------
+# Print a labelled drift list to stderr and flag the run as failed.
+report() {
+  local label=$1 hint=$2
+  shift 2
+  (($#)) || return 0
+
+  printf '%s:\n' "$label" >&2
+  printf '  %s\n' "$@" >&2
+  [[ -n $hint ]] && printf '  (%s)\n' "$hint" >&2
+
+  status=1
+}
+
+#------------------------------------------------------------------------------
+# Argument parsing (a single boolean; kept dependency-free for fresh clones).
+fix=0
+
+while (($#)); do
+  case $1 in
+    --fix) fix=1 ;;
+
+    -h | --help)
+      show_usage
+      exit 0
+      ;;
+
+    *)
+      printf '%s: unknown option %q\n' "$prog" "$1" >&2
+      show_usage >&2
+      exit 2
+      ;;
+  esac
+
+  shift
+done
+
+# Resolve our own bin/ directory and the dispatcher beside us.
+bindir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+wrapper="$bindir/docker_wrapper"
+
+[[ -x $wrapper ]] || {
+  printf '%s: cannot find docker_wrapper at %s\n' "$prog" "$wrapper" >&2
+  exit 1
+}
+
+# The registry is the single source of truth.
+readarray -t tools < <("$wrapper" --known-tools) || {
+  printf '%s: failed to read the tool registry\n' "$prog" >&2
+  exit 1
+}
+
+((${#tools[@]} > 0)) || {
+  printf '%s: docker_wrapper reported no known tools\n' "$prog" >&2
+  exit 1
+}
+
+declare -A is_tool=()
+for t in "${tools[@]}"; do
+  is_tool[$t]=1
+done
+
+# Classify each registered tool's bin/<tool> entry.
+declare -a missing=() conflict=()
+
+for t in "${tools[@]}"; do
+  link="$bindir/$t"
+
+  if links_to_wrapper "$link"; then
+    continue
+
+  elif [[ -e $link || -L $link ]]; then
+    conflict+=("$t")
+
+  else
+    missing+=("$t")
+  fi
+done
+
+# Find stray symlinks: point at the dispatcher but name an unregistered tool.
+declare -a stray=()
+
+for link in "$bindir"/*; do
+  name=${link##*/}
+
+  [[ $name == docker_wrapper ]] && continue
+  links_to_wrapper "$link" || continue
+  [[ -v is_tool[$name] ]] || stray+=("$name")
+done
+
+# Repair the missing links when asked; conflicts/stray are reported, never
+# touched (overwriting or deleting a file is the user's call).
+if ((fix)) && ((${#missing[@]})); then
+  for t in "${missing[@]}"; do
+    ln -s docker_wrapper "$bindir/$t" \
+      && printf 'created bin/%s -> docker_wrapper\n' "$t"
+  done
+
+  missing=()
+fi
+
+status=0
+
+report 'missing bin/<tool> symlinks' "run '$prog --fix' to create them" "${missing[@]}"
+report 'bin/<tool> exists but is not a docker_wrapper symlink' 'resolve by hand' "${conflict[@]}"
+report 'stray symlinks to docker_wrapper (unregistered)' 'remove by hand or register the tool' "${stray[@]}"
+
+((status == 0)) \
+  && printf 'docker_wrapper symlinks are consistent (%d tools).\n' "${#tools[@]}"
+
+exit "$status"
