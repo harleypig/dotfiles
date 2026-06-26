@@ -12,6 +12,18 @@ goes green (see the merge-time finalization in
 
 ## 2026-06-26
 
+### Added
+
+- **docker_wrapper symlink automation** — `bin/docker_wrapper-links` checks
+  the `bin/<tool>` symlinks against the dispatcher's registry (exit 1 on
+  drift) and `--fix` creates any missing ones / reports stray ones (compared
+  by `readlink` target, never byte-compared). A new `docker_wrapper
+  --known-tools` interface exposes the registry, and
+  `tests/shell/test_docker_wrapper_links.bats` gates symlink↔registry
+  consistency in CI. (PR #146)
+- **`docker_wrapper --images`** — list each registered tool with its docker
+  image. (PR #146)
+
 ### Fixed
 
 - **`config/git/config`** — fixed two case-insensitive alias collisions.
@@ -43,6 +55,11 @@ goes green (see the merge-time finalization in
   for cross-shell consistency), and `tests/shell/test_run_hook.bats`. A
   code-reference rename only — the dirs are optional runtime paths, none
   committed. (PR #145)
+- **docker_wrapper registry** — replaced the `IMG_<tool>` variables and the
+  parallel `known_tool` array with a single `image` associative array: its
+  keys are the dispatchable-tool registry, its values the docker images, one
+  registration line per function. Dispatch, `--known-tools`, and `--images`
+  all read the one array. (PR #146)
 
 ## 2026-06-20 (continued)
 
