@@ -3,13 +3,14 @@ name: tests
 
 # Run the test suites on pushes to master and on PRs:
 #   - bats:   the hand-written shell suite (tests/shell/test_*.bats) — gates
+#   - meta:   the generated static-check suite (tests/shell/*.meta.bats) over
+#             bin/, lib/, and skill helpers — shebang + bash -n + shellcheck +
+#             shfmt per file. Non-required first; promote to a required check
+#             once it has a clean track record (see TODO.md / WORKFLOW.md).
 #   - perl:   prove over tests/perl/ — gates (assertions are version-robust)
 #   - python: pytest over tests/python/ (activates once tests exist)
 #   - pre-commit: the check config (lint/format/secret hooks) via
 #                 `pre-commit run --all-files`
-# The generated meta suite is not run here yet (it surfaces pre-existing
-# legacy lint/format + dependency debt — see TODO.md "Lint/format Debt in
-# Legacy Scripts").
 
 on:
   push:
@@ -34,6 +35,43 @@ jobs:
 
       - name: Run hand-written suite
         run: bats tests/shell/test_*.bats
+
+  # The generated meta suite: static checks (shebang, bash -n, shellcheck,
+  # shfmt) over bin/, lib/, and skill helpers. shellcheck + shfmt are pinned to
+  # the SAME versions the repo uses locally — the docker wrappers
+  # (koalaman/shellcheck:stable, mvdan/shfmt:v3) and the pre-commit hooks
+  # (shellcheck v0.11.0, shfmt v3.13.1) — so results match what runs locally,
+  # no version skew. Installed as native binaries (no docker) to stay fast and
+  # avoid Docker Hub pull flakiness.
+  # SYNC: keep SC_VER/SHFMT_VER below in step with the .pre-commit-config.yaml
+  # shellcheck/shfmt revs (and bin/docker_wrapper's image[] tags).
+  meta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install bats and helper libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats bats-support bats-assert bats-file
+
+      - name: Install pinned shellcheck and shfmt
+        run: |
+          SC_VER=v0.11.0
+          SHFMT_VER=v3.13.1
+          curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/${SC_VER}/shellcheck-${SC_VER}.linux.x86_64.tar.xz" | tar -xJ
+          sudo install -m 0755 "shellcheck-${SC_VER}/shellcheck" /usr/local/bin/shellcheck
+          sudo curl -fsSL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/${SHFMT_VER}/shfmt_${SHFMT_VER}_linux_amd64"
+          sudo chmod 0755 /usr/local/bin/shfmt
+          shellcheck --version
+          shfmt --version
+
+      # Generate the gitignored *.meta.bats from the templates, then run them.
+      - name: Generate and run the meta suite
+        run: |
+          tests/scaffold/build-meta-tests
+          bats tests/shell/*.meta.bats
 
   # Gating: the perltidyrc-clean + parse_params assertions are version-robust
   # (they assert that a problem was reported, not a specific Perl::Tidy wording

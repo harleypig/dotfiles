@@ -159,15 +159,23 @@ worth adopting.
 
 ## 🧹 Meta-suite Gating Debt (MEDIUM PRIORITY)
 
-The shellcheck/shfmt debt across `bin/` and `lib/` is cleared (the pre-commit
-check config passes `--all-files`), and the `gmailfilter_toyaml` `perl -c`
-(XML::LibXML) debt is gone now that it moved to private_dotfiles. What remains
-is gating the generated meta suite. Run `tests/scaffold/build-meta-tests &&
-bats tests/shell/*.meta.bats` to see status.
+The generated meta suite (`tests/shell/*.meta.bats`) is now clean across
+`bin/`, `lib/`, and skill helpers and runs in CI. Run
+`tests/scaffold/build-meta-tests && bats tests/shell/*.meta.bats` to check
+status locally.
 
-- [ ] Confirm the meta suite is clean across `bin/` + `lib/`, then add it to
-  CI and run it in pre-commit. (CI today gates only the hand-written
-  `tests/shell/test_*`.)
+- [x] Confirm the meta suite is clean (fixed `lib/debug`'s shfmt debt — the
+  last item; pre-commit had missed it because its hooks skip extensionless
+  files, see below) and add a CI **`meta`** job that regenerates and runs it
+  with `shellcheck`/`shfmt` pinned to the repo's versions.
+- [ ] Promote the `meta` job to a **required status check** in the master
+  ruleset after a clean track record (ruleset change needs the OAuth admin
+  token — see `.claude/WORKFLOW.md`). Until then it runs non-gating on PRs.
+- Local coverage of these (extensionless `bin/`/`lib/`) files is **not** added
+  to pre-commit here — the meta suite via the docker wrappers is too slow for a
+  commit-time hook. The fast path is to make pre-commit's existing pinned
+  `shellcheck`/`shfmt` hooks cover extensionless files — tracked in
+  *pre-commit doesn't lint extensionless shell files* below.
 
 ## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
 
@@ -176,7 +184,10 @@ The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip
 modules — pre-commit's `identify` isn't tagging them as shell, so they get
 no lint/format gating (and the meta generator only scans `bin lib`).
 `shell-startup` in fact has pre-existing shfmt debt that nothing currently
-catches.
+catches. This also covers extensionless `bin/`/`lib/` files: the CI `meta`
+job currently lints them, but locally nothing does (see *Meta-suite Gating
+Debt* above) — fixing this gives fast, no-docker local coverage of all of
+them.
 
 - [ ] Make the shfmt + shellcheck hooks cover extensionless shell files —
   add `files:` patterns (e.g. `^(shell-startup|config/shell-startup/)`) or
