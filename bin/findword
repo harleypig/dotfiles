@@ -10,14 +10,14 @@
 # (which only took a raw regex). Argument handling is driven by parse_params.
 #
 # Parameters (the per-position flags are length-dependent and generated from
-# -l, so a 5-letter word exposes --pos1..--pos5 and --not_pos1..--not_pos5):
+# -l, so a 5-letter word exposes --pos1..--pos5 and --not-pos1..--not-pos5):
 #
 #   -l, --length N       word length (default 5)
 #   -x, --exclude STR    letters that do not appear anywhere in the word
 #   -i, --include STR    letters that appear, position unknown
 #       --posN C         position N is exactly letter C (overrides --exclude
-#                        there; any --not_posN for that position is ignored)
-#       --not_posN STR   letters that are invalid at position N
+#                        there; any --not-posN for that position is ignored)
+#       --not-posN STR   letters that are invalid at position N
 #
 # Deliberately no `set -euo pipefail` (bash.md's default): an over-constrained
 # query legitimately matches nothing, and pipefail/-e would turn that valid
@@ -30,7 +30,7 @@ bindir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 parse_params=$bindir/parse_params
 
 ##############################################################################
-# Pre-scan the length so we know how many --posN / --not_posN flags to define.
+# Pre-scan the length so we know how many --posN / --not-posN flags to define.
 # parse_params can't size its own definition, so length is read manually first;
 # the value is re-validated by parse_params below.
 ##############################################################################
@@ -54,7 +54,7 @@ size=$length
 
 ##############################################################################
 # Build the parse_params definition: the fixed flags plus one --posN /
-# --not_posN pair per letter position.
+# --not-posN pair per letter position.
 ##############################################################################
 
 def='
@@ -65,7 +65,7 @@ i|include,string,include
 
 for ((n = 1; n <= size; n++)); do
   def+="pos$n,char,p$n"$'\n'
-  def+="not_pos$n,string,np$n"$'\n'
+  def+="not-pos$n,string,np$n"$'\n'
 done
 
 # shellcheck disable=SC2154  # length/exclude/include/pN/npN are set by the eval
@@ -98,7 +98,7 @@ for ((n = 1; n <= length; n++)); do
   not=${not,,}
   not=${not//[^a-z]/}
 
-  # A pinned position overrides --exclude and ignores --not_posN there.
+  # A pinned position overrides --exclude and ignores --not-posN there.
   if [[ -n $pin ]]; then
     regex+="[$pin]"
 

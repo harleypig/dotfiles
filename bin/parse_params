@@ -419,6 +419,15 @@ if ( !$defined_flag{h} && !$defined_flag{help} ) {
   }
 }
 
+# ICEBOX: optional minimal/prefix matching + single-dash long options
+# (abbreviation, shorthand, fuzzy/partial flags). Idea: let unambiguous
+# prefixes resolve (--pri for --print, --pro for --profile) and accept a long
+# option with one OR two dashes (-print == --print), enabling shorthands like
+# `findword -np1` for `--not-pos1`. Getopt::Long already supports most of this
+# via 'auto_abbrev' (drop the 'no_' here) and its single-dash handling; the
+# work is opt-in control (a leading parse_params flag, since silent
+# abbreviation is surprising for some tools), ambiguity reporting, and tests.
+# Deferred — revisit on request.
 Getopt::Long::Configure( 'no_auto_abbrev', 'no_ignore_case', 'permute' );
 {
   # Getopt::Long warns to STDERR on a bad option; let that through, then fail.
