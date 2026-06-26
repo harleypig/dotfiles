@@ -100,7 +100,7 @@ debug() {
     el+=("$prefix")
   done
 
-  local trace_start=$((${#el[@]}-${DBG_TRACE_LEN:-3}))
+  local trace_start=$((${#el[@]} - ${DBG_TRACE_LEN:-3}))
 
   #for ((ix = ${#el[@]} - 1; ix >= 0; ix--)); do
   for ((ix = trace_start; ix < ${#el[@]}; ix++)); do

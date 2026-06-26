@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.5.0
+**Version:** v2.6.0
 
 ## Purpose
 
@@ -103,10 +103,15 @@ bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
 `perl -c`; python → shebang + `compile()`. It scans `bin lib` **plus
 `config/claude/skills`** (the last covers skill helper scripts such as
 `config/claude/skills/*/scripts/*`, e.g. `ship-pr`'s `ship.sh`; non-script
-files are skipped). It currently surfaces pre-existing debt (legacy bash
-lint/format + one perl module dependency) — tracked in `TODO.md`
-("Lint/format Debt in Legacy Scripts"), not ignored and not auto-fixed. Until
-those are clean, only the hand-written suite is gated.
+files are skipped). The `bin/` + `lib/` + skill-helper debt is now clean, so
+the meta suite **runs in CI** (the `meta` job in `tests.yml`) — **non-required
+first**, to be promoted to a required check after a clean track record. Its
+`shellcheck`/`shfmt` are pinned to the repo's versions (matching the docker
+wrappers and the pre-commit hooks), so CI results match what runs locally.
+Note: pre-commit's `shellcheck`/`shfmt` hooks still **skip extensionless**
+`bin/`/`lib/` files, so the meta suite is currently the only linter covering
+them — closing that gap (so the existing fast hooks cover them locally) is a
+separate `TODO.md` item.
 
 ## Running
 
@@ -121,13 +126,13 @@ pre-commit / CI.
 
 ## CI
 
-`.github/workflows/tests.yml` runs three jobs on pushes to `master` and on
-PRs: **bats** (`tests/shell/test_*.bats`, the gate), **perl**
-(`prove tests/perl/`, installing `libtest-cmd-perl` + `perltidy`; **non-gating
-for now** via `continue-on-error`, pending a Perl::Tidy version-robustness fix
-— see `TODO.md`), and **python** (`pytest tests/python`, self-activating once
-`tests/python/test_*.py` exist). The generated meta suite is **not** gated yet
-(see the debt note above); add it once its target scripts pass.
+`.github/workflows/tests.yml` runs these jobs on pushes to `master` and on
+PRs: **bats** (`tests/shell/test_*.bats`, the gate), **meta** (regenerates and
+runs `tests/shell/*.meta.bats` with pinned `shellcheck`/`shfmt` — non-required
+first, see the meta-suite note above), **perl** (`prove tests/perl/`,
+installing `libtest-cmd-perl` + `perltidy`), **python** (`pytest tests/python`,
+self-activating once `tests/python/test_*.py` exist), and **pre-commit** (the
+check config via `pre-commit run --all-files`).
 
 ## Test development
 
