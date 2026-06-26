@@ -151,6 +151,14 @@ worth adopting.
   (`errata-ai/vale`) — actively maintained, config-driven style rules,
   supports Markdown; compare its rule model and CI/pre-commit story to
   proselint's.
+- [ ] **Investigate Grammarly** as a source for this. Does it expose anything
+  usable from a CLI / pre-commit / CI context — a "Grammarly for Developers" /
+  public API, an official or community CLI? (Note: Grammarly retired its Text
+  Editor SDK in 2024, so it may be editor-plugin-only.) If there's no
+  first-party headless interface, assess whether we can **hack one together**
+  (e.g. drive a documented API, or wrap an unofficial client) and whether
+  that's worth it versus Vale — weigh SaaS/network/auth cost against a local
+  linter like Vale.
 - [ ] Decide: keep proselint for Phase 4, swap in the alternative, or drop
   prose-linting from the plan. Record the outcome in the Phase 4 item and
   `.claude/QA.md` (Documentation dimension), and retire
@@ -168,13 +176,22 @@ catches. This also covers extensionless `bin/`/`lib/` files: the CI `meta`
 job (a required check) lints them, but locally nothing does — fixing this
 gives fast, no-docker local coverage of all of them.
 
-- [ ] Make the shfmt + shellcheck hooks cover extensionless shell files —
-  add `files:` patterns (e.g. `^(shell-startup|config/shell-startup/)`) or
-  `types_or: [shell, file]`, and confirm via `pre-commit run --files
-  shell-startup`.
-- [ ] Then clean up the shfmt debt those files surface.
-- [ ] Consider adding `shell-startup` + `config/shell-startup` to the
-  meta-test generator roots too.
+- [x] Make the shfmt + shellcheck hooks cover extensionless shell files —
+  added a second, path-selected entry of each hook (`shellcheck-sourced` /
+  `shfmt-sourced`, `types: [text]` + a `files:` regex for `shell-startup`,
+  `config/shell-startup/[^./]+`, `lib/[^./]+`). Root cause: identify only
+  reads a shebang for *executable* files, so non-executable sourced shell is
+  untagged.
+- [x] Clean up the debt those files surface — shfmt (7 files) auto-fixed;
+  shellcheck cleaned across 16 files. Sourced-file false positives
+  (SC1090/1091/2317/2329) suppressed via a scoped `config/shell-startup/
+  .shellcheckrc`; genuine issues fixed (quoting, `declare`/`export` split,
+  `mapfile`, plus a real `ansible` bug where quoted brace lists never
+  expanded, and exporting `AIDER_COMMIT_PROMPT`).
+- [x] Meta-test generator roots — **decided not to add** `shell-startup` /
+  `config/shell-startup`. pre-commit now covers them (fast, local + CI), and
+  the generator classifies by shebang/extension so it would skip the many
+  no-shebang modules anyway; double-linting the rest adds nothing.
 
 ## 🐫 Perl quality tooling (MEDIUM PRIORITY)
 
