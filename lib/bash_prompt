@@ -119,13 +119,17 @@ _venv() {
   curpwd="$(readlink -ne "$PWD")"
 
   if [[ -n $POETRY_ACTIVE ]]; then
-    # XXX: Figure out a way to detect true hostname directory
-    #      Look into setting virtualenvs.in-project with poetry config
+    # ICEBOX: can't detect the true project directory for a poetry venv
+    #         (poetry venvs live outside the project tree). Look into
+    #         `poetry config virtualenvs.in-project true` so the venv path
+    #         reveals its project. Deferred. Revisit on request.
     color=$venv_poetry_color
     dir="poetry venv"
 
   else
-    # XXX: If manually starting a poetry venv, this will be permanently red
+    # NOTE: a venv activated manually (outside its in-project layout) won't
+    #       match $PWD against $VIRTUAL_ENV, so it falls through to the "bad"
+    #       color below even when valid — a known limit of this heuristic.
     color=$venv_ok_color
     dir="venv"
 

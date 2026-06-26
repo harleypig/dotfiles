@@ -38,7 +38,8 @@ tmux_winidx_circled() {
 # We want user to be expanded when defined.
 # havecmd (command -v) reports an existing ta alias/function too, so an
 # already-defined ta is not clobbered.
-# XXX: Detect multiple sessions and give opportunity to choose
+# TODO: when multiple tmux sessions exist, have `ta` list them and let the
+# user choose, instead of always attaching the $USER session. See TODO.md.
 if havecmd ta; then
   #echo 'alias ta already exists'
   :

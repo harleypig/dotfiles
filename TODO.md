@@ -18,16 +18,12 @@ full convention.
 ### Code Comment Cleanup
 
 - [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
-  - See "Code Improvements (LOW PRIORITY)" section for detailed list
-
-## 🛡️ Protect the master Branch — follow-up
-
-`master` is protected (ruleset 17364459: PR-only, squash-only, required
-`bats` + `pre-commit`, no bypass; local `no-commit-to-branch` guard). One
-follow-up remains:
-
-- [ ] Confirm Dependabot / auto-merge interplay once a Dependabot PR appears
-  (squash-only + required checks — ensure auto-merge still completes).
+  - Active bash/shell markers done: reclassified to `ICEBOX:`/`NOTE:` per
+    `code-style.md`, dead-code marker resolved, git-alias bugs fixed
+    (`bd`/`bdf`, `unstage`/`uncommit`). The `tmux` and `statusline.sh`
+    markers became tracked TODOs (see "Surfaced from comment cleanup").
+  - Remaining: PowerShell parity markers, tracked under "PowerShell ↔ Bash
+    Feature Parity" below.
 
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
@@ -771,19 +767,17 @@ research:
   5.1 behavior, and whether that's practical (requires a Windows host for
   Windows containers).
 
-### Configuration File Issues
+### Surfaced from comment cleanup (LOW PRIORITY)
 
-- [ ] config/bash_prompt:131,137 - Fix poetry/venv detection and colors (XXX)
-- [ ] config/git/config:239-240 - `bd` / `bD` aliases collide because git
-  config keys are case-insensitive. `bD` overwrites `bd`, so `git bd`
-  force-deletes instead of safe-deleting. Rename `bD` to a case-distinct
-  key (e.g. `bdf` for force-delete) so both intents are reachable. See
-  XXX comment in file.
-- [ ] config/git/config:199-200 - `unstage` / `unadd` have swapped
-  semantics relative to common terminology: `unstage` resets to HEAD^
-  (undoes last commit), `unadd` resets to HEAD (actual unstage). Either
-  rename for clarity or document the convention in docs/git_aliases.md.
-  See XXX comment in file.
+In-code `TODO:` markers promoted to tracked items by the comment-cleanup
+pass:
+
+- [ ] `config/shell-startup/tmux` - when multiple tmux sessions exist, have
+  `ta` list them and let the user choose, instead of always attaching the
+  `$USER` session. (Marker at the `ta` definition.)
+- [ ] `config/claude/bin/statusline.sh` + `bin/ansi` - check whether tput /
+  terminals support OSC 8 hyperlink escapes; if so, extend `bin/ansi` to
+  emit them for clickable links repo-wide. (Markers in both files.)
 
 ## ⚙️ Configuration Enhancements (LOW PRIORITY)
 

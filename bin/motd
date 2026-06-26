@@ -68,8 +68,9 @@ show_load() {
 show_disk() {
   printf '\n%s\n' "$(lbl 'Disk usage:')"
 
-  # XXX: Too much information ... need to trim it to minimal pertinent
-  # information. I'm just not sure how this should done. Revisit this later.
+  # ICEBOX: show_disk / df output is too verbose — trim the disk-usage
+  # listing to the minimal pertinent filesystems (drop noise). Deferred:
+  # no clear policy yet for which mounts matter. Revisit on request.
 
   mapfile -t disk_lines < <(
     df -h --output=target,size,used,avail,pcent 2> /dev/null \
@@ -97,8 +98,10 @@ show_disk() {
 #-----------------------------------------------------------------------------
 
 show_ips() {
-  # XXX: On some systems (like linode) this reporting a lot of spurious ip's.
-  # Need to revisit.
+  # ICEBOX: show_ips lists spurious / extra IP addresses on some hosts
+  # (e.g. linode) — filter to the real / primary interface address.
+  # Deferred until a reliable interface-selection heuristic is chosen.
+  # Revisit on request.
 
   mapfile -t ips < <(
     ip -o addr show scope global 2> /dev/null \
