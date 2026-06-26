@@ -62,6 +62,20 @@ vars `local` first to scope them); a function with many parameters is usually
 better as its own script. Run `parse_params --help` for the full reference, and
 see **`bin/hr`** for a worked example (options + `--auto` + a slurp positional).
 
+It also enforces **cross-option constraints** declared on `%` lines, so rules
+that relate several options live in the definition instead of hand-written
+checks: `exclusive` (mutually exclusive), `require-one` (at least one),
+`together` (all-or-none), and `implies` (A requires B). Members are referenced
+by VARNAME, multiple groups are just multiple lines, and they are judged on
+what the user actually provided (a default never trips one). `exclusive` +
+`require-one` over a pair gives an exactly-one toggle (e.g. a `--dry-run` /
+`--force` pair):
+
+```text
+%,exclusive,dry_run,force
+%,require-one,dry_run,force
+```
+
 **Scope caveat:** `parse_params` ships in the dotfiles repo (`bin/parse_params`)
 and is only on `PATH` in that environment. Do **not** depend on it in a
 portable/standalone script that may run elsewhere — there, use `getopts` or a

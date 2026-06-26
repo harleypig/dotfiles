@@ -27,6 +27,11 @@ my $PROG = 'parse_params';
 my @TYPES   = qw(boolean char date filename integer string varname);
 my %IS_TYPE = map { $_ => 1 } @TYPES;
 
+# Cross-option constraint kinds (declared on '%' lines; see CONSTRAINTS in the
+# POD). Each relates two or more option VARNAMEs.
+my @CONSTRAINTS   = qw(exclusive require-one together implies);
+my %IS_CONSTRAINT = map { $_ => 1 } @CONSTRAINTS;
+
 # Set from leading options in main; read by the error/usage helpers below.
 my $AUTO      = 0;                     # --auto: handle errors itself (usage + emit `exit 2`)
 my $PROG_NAME = '';                    # --prog NAME: shown in the generated usage header
@@ -116,7 +121,7 @@ sub valid_value {
 sub parse_definition {
   my $def = shift;
 
-  my ( @opts, @positionals, @optspec, %values );
+  my ( @opts, @positionals, @optspec, %values, @constraints );
   my ( %seen_short, %seen_long );
 
   for my $raw ( split /\n/, $def ) {
@@ -127,6 +132,25 @@ sub parse_definition {
     my ( $opt, $type, $var, $default, $req ) = @f;
 
     def_err("missing OPTION in: $line") unless defined $opt && length $opt;
+
+    # Constraint line. OPTION '%' declares a cross-option rule:
+    #   %, KIND, VARNAME, VARNAME[, ...]
+    # KIND is one of @CONSTRAINTS; the members are option VARNAMEs (validated
+    # against the parsed options once the whole definition is read, below).
+    if ( $opt eq '%' ) {
+      my ( $kind, @vars ) = @f[ 1 .. $#f ];
+      def_err("constraint needs a KIND in: $line")
+        unless defined $kind && length $kind;
+      $kind = lc $kind;
+      def_err("unknown constraint kind ($kind) in: $line")
+        unless $IS_CONSTRAINT{$kind};
+      @vars = grep { defined && length } @vars;
+      def_err("constraint ($kind) needs at least two VARNAMEs in: $line")
+        unless @vars >= 2;
+
+      push @constraints, { kind => $kind, vars => \@vars, line => $line };
+      next;
+    }
 
     # Positional parameter. OPTION '#' is one fixed positional; '#@' is a
     # slurp that collects ALL remaining args into a shell array. A slurp must
@@ -218,7 +242,17 @@ sub parse_definition {
   def_err('definition has no options or positionals')
     unless @opts || @positionals;
 
-  return ( \@opts, \@positionals, \@optspec, \%values );
+  # Resolve constraint members against the defined options now that every
+  # option is known (so a '%' line may appear before the options it names).
+  my %opt_by_var = map { $_->{var} => 1 } @opts;
+  for my $c (@constraints) {
+    for my $v ( @{ $c->{vars} } ) {
+      def_err("constraint ($c->{kind}) references unknown option ($v) in: $c->{line}")
+        unless $opt_by_var{$v};
+    }
+  }
+
+  return ( \@opts, \@positionals, \@optspec, \%values, \@constraints );
 } ## end sub parse_definition
 
 #----------------------------------------------------------------------------
@@ -260,6 +294,67 @@ sub build_usage {
   return join( "\n", @lines ) . "\n";
 } ## end sub build_usage
 
+#----------------------------------------------------------------------------
+# Cross-option constraint checking. Constraints are judged on what the user
+# actually PROVIDED, not on post-default values: %values holds undef-until-given
+# (defaults fold in later, in the value loop), so a defaulted option never
+# trips a constraint.
+
+# Was this option supplied by the user? boolean -> set to a true value (1);
+# repeatable -> at least one value; otherwise -> a non-empty value.
+sub opt_active {
+  my ( $o, $values ) = @_;
+  my $v = $values->{ $o->{var} };
+
+  return ( defined $v        && $v )        ? 1 : 0 if $o->{type} eq 'boolean';
+  return ( ref $v eq 'ARRAY' && @$v )       ? 1 : 0 if $o->{repeat};
+  return ( defined $v        && length $v ) ? 1 : 0;
+}
+
+# The flag a user types, for messages: prefer the long form, else the short.
+sub opt_label {
+  my $o = shift;
+  return defined $o->{long} ? "--$o->{long}" : "-$o->{short}";
+}
+
+# Return the list of user-facing violation messages for all constraints.
+sub check_constraints {
+  my ( $constraints, $opts, $values ) = @_;
+
+  my %by_var = map { $_->{var} => $_ } @$opts;
+  my @errors;
+
+  for my $c (@$constraints) {
+    my @os     = map { $by_var{$_} } @{ $c->{vars} };
+    my @labels = map { opt_label($_) } @os;
+    my $set    = '(' . join( ', ', @labels ) . ')';
+    my @active = grep { opt_active( $os[$_], $values ) } 0 .. $#os;
+
+    if ( $c->{kind} eq 'exclusive' ) {
+      push @errors,
+        "only one of $set may be given (got " . join( ', ', map { $labels[$_] } @active ) . ')'
+        if @active > 1;
+
+    } elsif ( $c->{kind} eq 'require-one' ) {
+      push @errors, "one of $set is required" unless @active;
+
+    } elsif ( $c->{kind} eq 'together' ) {
+      push @errors, "$set must be given together (all or none)"
+        if @active && @active < @os;
+
+    } elsif ( $c->{kind} eq 'implies' ) {
+      if ( opt_active( $os[0], $values ) ) {
+        my @missing = grep { !opt_active( $os[$_], $values ) } 1 .. $#os;
+        push @errors,
+          "$labels[0] requires (" . join( ', ', map { $labels[$_] } @missing ) . ')'
+          if @missing;
+      }
+    }
+  } ## end for my $c (@$constraints)
+
+  return @errors;
+} ## end sub check_constraints
+
 #############################################################################
 # Main.
 
@@ -296,8 +391,8 @@ while ( @ARGV && substr( $ARGV[0], 0, 1 ) eq '-' ) {
 my $def  = shift @ARGV;
 my @args = @ARGV;
 
-my ( $optspec, $values );
-( $OPTS, $POSITIONALS, $optspec, $values ) = parse_definition($def);
+my ( $optspec, $values, $constraints );
+( $OPTS, $POSITIONALS, $optspec, $values, $constraints ) = parse_definition($def);
 
 if ($usage_mode) {
   print build_usage( $OPTS, $POSITIONALS );
@@ -401,6 +496,9 @@ for my $p (@$POSITIONALS) {
   push @out, "$p->{var}=" . shq($v);
 } ## end for my $p (@$POSITIONALS)
 
+# Cross-option constraints, judged on what the user provided (see opt_active).
+push @errors, check_constraints( $constraints, $OPTS, $values );
+
 bail_input(@errors) if @errors;
 
 print "$_\n" for @out;
@@ -488,7 +586,9 @@ is trimmed):
 
 Short (C<a>), long (C<app>), both (C<a|app>), C<#> for a fixed positional, or
 C<#@> for a slurp positional that collects all remaining args into a shell
-array. A slurp must be the last positional, and there can be only one.
+array. A slurp must be the last positional, and there can be only one. C<%>
+begins a B<constraint> line that relates several options (see
+L</CONSTRAINTS>).
 
 =item B<TYPE>
 
@@ -510,6 +610,59 @@ Optional; C<required> or C<optional> (default C<optional>; boolean is always
 optional).
 
 =back
+
+=head1 CONSTRAINTS
+
+A line whose OPTION field is C<%> declares a B<cross-option constraint> — a
+rule relating two or more options that a single per-option field cannot
+express:
+
+  %, KIND, VARNAME, VARNAME[, ...]
+
+The members are option B<VARNAME>s (the resolved variable — the long option,
+else the short, else an explicit VARNAME field), not flag letters. A C<%> line
+may appear anywhere in the definition, before or after the options it names.
+Multiple groups are just multiple lines, and an option may appear in several.
+
+Constraints are judged on what the user actually B<provided>, not on
+post-default values: a boolean counts when set to a true value (C<--no-x> does
+not), a repeatable when given at least once, any other option when given a
+non-empty value. So a default never trips a constraint. A violation is an
+input error (exit 1, or the usual C<--auto> handling); naming an unknown KIND
+or VARNAME is a definition error (exit 2).
+
+=over 4
+
+=item B<exclusive>
+
+At most one of the members may be provided ("mutually exclusive").
+
+=item B<require-one>
+
+At least one of the members must be provided.
+
+=item B<together>
+
+All or none — if any member is provided, every member must be.
+
+=item B<implies>
+
+Directional: if the B<first> member is provided, the remaining members are
+required.
+
+=back
+
+C<exclusive> + C<require-one> over the same pair means "exactly one," e.g. a
+dry-run/force toggle that must be chosen:
+
+  n|dry-run,boolean,dry_run
+  f|force,boolean
+  a|all,boolean
+  %,exclusive,dry_run,force
+  %,require-one,dry_run,force
+
+(C<dry-run> needs the explicit C<dry_run> VARNAME because a hyphenated long
+option is not a valid shell variable.)
 
 =head1 ARGUMENT ORDER
 

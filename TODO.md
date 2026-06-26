@@ -166,8 +166,11 @@ updates that script's bats test.
 
 Conversion candidates (dotfiles `bin/`; opportunistic, low priority):
 
-- [ ] `bin/git-branch-clean` — `getopts nfah`; flags fit, but the `-f`/`-n`
-  **mutual-exclusion** check stays manual.
+- [ ] `bin/git-branch-clean` — `getopts nfah`; flags fit. The `-f`/`-n`
+  exclusion + "require one of them" is now expressible directly in
+  parse_params via `%` constraint lines (`exclusive` + `require-one`), so the
+  earlier "mutual-exclusion stays manual" blocker is lifted. A clean
+  demonstration target for the constraint feature; convert when convenient.
 - [ ] `bin/git-all` — `getopts :Sv` (two bool flags + positional); small, low
   payoff.
 - [ ] `bin/proj` — `case $1` with `-h|--help` plus subcommand dispatch; only
