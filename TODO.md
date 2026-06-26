@@ -68,27 +68,6 @@ shared/versioned independently and carries **no dotfiles-specific references**
 repo packaging / deployment — a dotfiles concern, not agent behavior — so it
 stays here, not in `audit/BACKLOG.md`.
 
-## 🔗 docker_wrapper Symlink Automation (MEDIUM PRIORITY)
-
-`bin/docker_wrapper` is a multi-call dispatcher: each tool is a `bin/<tool>`
-symlink to it, and the tool list lives in the `known_tool` registrations
-inside the script. The symlinks are created by hand today, so a newly added
-tool — or a fresh checkout — can silently lack its symlink.
-
-- [ ] Add a check that every registered tool has a matching `bin/<tool>`
-  symlink pointing at `docker_wrapper`, and that no stray wrapper symlink
-  points at it without a registration. Drive it from the `known_tool` keys
-  (grep the `known_tool[...]=1` lines, or source the script in a guarded
-  mode).
-- [ ] Wire that check in as a meta-test (`tests/scaffold/build-meta-tests` /
-  `meta_*.bats`, per `TESTS.md`'s symlink validation) so CI flags a missing
-  or stray symlink.
-- [ ] Add a create/repair mode (a `--fix` flag or a small maintenance
-  command) that creates any missing `bin/<tool>` symlinks and reports stale
-  ones, so adding a tool or setting up a fresh clone is one command.
-- [ ] Assert the link *target* (`docker_wrapper`), not file contents —
-  symlink mode is 120000 and unaffected by `core.filemode=false`.
-
 ## 📝 bin/markdownlint docker wrapper (MEDIUM PRIORITY)
 
 markdownlint is the only linter in the toolset without a `bin/` docker
@@ -636,6 +615,18 @@ scanning remains the **security-scan** skill's job (separate from this hook).
 Current state: `tests.yml` runs bats (gating), perl (non-gating), and python
 (self-activating), plus a `pre-commit` job (`--all-files`). The phased plan
 below is the remaining buildout.
+
+### CI reliability
+
+- [ ] **Harden the `pre-commit` job against Docker Hub pull flakiness.** The
+  `shellcheck` hook (koalaman/shellcheck image) and any other docker-based
+  hooks pull from Docker Hub on every CI run; an anonymous-pull timeout
+  failed PR #146's `pre-commit` job (`exit 125`, registry `Client.Timeout`)
+  and needed a manual `gh run rerun --failed`. Mitigate so it doesn't recur:
+  cache the pre-commit environments (`actions/cache` on `~/.cache/pre-commit`),
+  and/or authenticate to Docker Hub (`docker/login-action`) to lift the
+  anonymous rate limit, and/or switch the shellcheck hook to an apt-installed
+  binary in CI. Pick the lightest reliable option.
 
 ### Phase 1: Basic CI (requires Pre-commit Phase 1)
 

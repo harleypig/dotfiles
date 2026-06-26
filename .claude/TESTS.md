@@ -76,13 +76,20 @@ the same gating suite without breaking docker-less environments.
   test that sources them and asserts the resulting environment.
 - Multi-call dispatchers (e.g. `bin/docker_wrapper`) are tested once at the
   real file; their tool symlinks are not (the generator skips symlinks).
+  Their symlink-vs-registry *consistency* is guarded separately —
+  `test_docker_wrapper_links.bats` asserts every tool from `docker_wrapper
+  --known-tools` has a matching `bin/<tool>` symlink (by `readlink` target,
+  not contents) and that no stray wrapper symlink exists; `bin/docker_wrapper-links
+  --fix` repairs missing links.
 - Repo-structure invariants get a guard test too: `test_skill_frontmatter.bats`
   holds every `config/claude/skills/*/SKILL.md` to the Agent Skills
   open-standard frontmatter rules (see `config/claude/EXTENDING.md` Skill ›
-  *Format*), and `test_rule_frontmatter.bats` holds every
+  *Format*), `test_rule_frontmatter.bats` holds every
   `config/claude/rules/*.md` to declaring its load tier — a `paths:` key or a
   `# No paths — <why>` comment — so a rule can't silently join the always-on
-  per-turn tier by omission (see `config/claude/rule-TEMPLATE.md`).
+  per-turn tier by omission (see `config/claude/rule-TEMPLATE.md`) — and
+  `test_docker_wrapper_links.bats` (above) holds the docker_wrapper symlinks
+  to its registry.
 
 ## Coverage priorities (incremental)
 

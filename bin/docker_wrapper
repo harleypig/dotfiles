@@ -8,8 +8,18 @@
 #
 # Add a tool:
 #   1. write a <tool>() function below (build args, exec docker run)
-#   2. add its name to the known_tool list near the bottom
-#   3. ln -s docker_wrapper bin/<tool>
+#   2. register its image next to the function:
+#      image[<tool>]='<repo>/<image>:<tag>' — the image[] keys ARE the
+#      dispatchable-tool registry, so this one line registers the tool.
+#   3. create the bin/<tool> symlink — `docker_wrapper-links --fix` creates
+#      it for every registered-but-unlinked tool, or by hand:
+#      ln -s docker_wrapper bin/<tool>
+#
+# Introspection (only when run by the real name, not a tool symlink):
+#   docker_wrapper --known-tools   list registered tool names
+#   docker_wrapper --images        list each tool and its docker image
+# bin/docker_wrapper-links checks/repairs the bin/<tool> symlinks against
+# --known-tools.
 #
 # Families (how each function is shaped):
 #   pwd-mounted linters  shellcheck shfmt yamllint prettier hadolint
@@ -19,8 +29,9 @@
 # IMAGE PINNING: trivy/hadolint/dive are pinned by digest per
 # rules/docker.md (trivy was supply-chain compromised twice in 03/2026 —
 # pin + run the image directly, never the marketplace actions). The
-# linter images below still use rolling tags; pinning them is queued in
-# TODO.md. Bump a tag + digest together with:
+# linter images still use rolling tags; pinning them is queued in TODO.md.
+# Each tool's image lives in the image[] array beside its function. Bump a
+# tag + digest together with:
 #   docker buildx imagetools inspect <image>:<tag>
 
 set -uo pipefail
@@ -35,23 +46,13 @@ source "$libdir/docker_helpers"
 tool=${0##*/}
 export DW_TAG="${tool}: "
 
-# Registry of dispatchable tool names. Each function registers itself
-# immediately after its definition, so removing a tool is one local edit
-# (comment out the function, its registration, and the symlink) with no
-# dangling reference left in the dispatcher below.
-declare -A known_tool=()
-
-###############################################################################
-# Image references (see IMAGE PINNING note above).
-IMG_shellcheck="koalaman/shellcheck:stable"
-IMG_shfmt="mvdan/shfmt:v3"
-IMG_yamllint="cytopia/yamllint:latest"
-IMG_prettier="prettier:latest"
-IMG_hadolint="hadolint/hadolint:v2.14.0-alpine@sha256:7aba693c1442eb31c0b015c129697cb3b6cb7da589d85c7562f9deb435a6657c"
-IMG_trivy="aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95d7c0907a221d080a996f556500"
-IMG_dive="wagoodman/dive:v0.13.1@sha256:f1886e6c32c094fc41a623c1989f5cb3e48aa766da5f0be233f911fc1d85ce10"
-IMG_ollama="ollama/ollama:latest"
-IMG_openwebui="ghcr.io/open-webui/open-webui:main"
+# Registry of dispatchable tools, keyed by tool name -> its docker image.
+# Each function registers its image immediately after its definition, so a
+# tool is dispatchable iff it has an image entry; removing a tool is one
+# local edit (the function, its image[] line, and the symlink) with no
+# dangling reference left in the dispatcher below. `--known-tools` and
+# `--images` print this registry.
+declare -A image=()
 
 ###############################################################################
 # Tool functions. Each is invoked as `"$tool" "$@"`, so the function name
@@ -75,9 +76,9 @@ shellcheck() {
     dw_mount args "$cfg" /home/shellcheck/.shellcheckrc ro
   fi
 
-  exec docker run "${args[@]}" "$IMG_shellcheck" "$@"
+  exec docker run "${args[@]}" "${image[shellcheck]}" "$@"
 }
-known_tool[shellcheck]=1
+image[shellcheck]="koalaman/shellcheck:stable"
 
 #------------------------------------------------------------------------------
 shfmt() {
@@ -88,9 +89,9 @@ shfmt() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
-  exec docker run "${args[@]}" "$IMG_shfmt" "$@"
+  exec docker run "${args[@]}" "${image[shfmt]}" "$@"
 }
-known_tool[shfmt]=1
+image[shfmt]="mvdan/shfmt:v3"
 
 #------------------------------------------------------------------------------
 yamllint() {
@@ -108,9 +109,9 @@ yamllint() {
     args+=(--env "XDG_CONFIG_HOME=/config")
   fi
 
-  exec docker run "${args[@]}" "$IMG_yamllint" "$@"
+  exec docker run "${args[@]}" "${image[yamllint]}" "$@"
 }
-known_tool[yamllint]=1
+image[yamllint]="cytopia/yamllint:latest"
 
 #------------------------------------------------------------------------------
 prettier() {
@@ -121,9 +122,9 @@ prettier() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
-  exec docker run "${args[@]}" "$IMG_prettier" "$@"
+  exec docker run "${args[@]}" "${image[prettier]}" "$@"
 }
-known_tool[prettier]=1
+image[prettier]="prettier:latest"
 
 #------------------------------------------------------------------------------
 hadolint() {
@@ -144,9 +145,9 @@ hadolint() {
 
   # The -alpine image has no ENTRYPOINT (its CMD reads stdin), so name
   # the binary explicitly to pass file arguments through.
-  exec docker run "${args[@]}" "$IMG_hadolint" hadolint "$@"
+  exec docker run "${args[@]}" "${image[hadolint]}" hadolint "$@"
 }
-known_tool[hadolint]=1
+image[hadolint]="hadolint/hadolint:v2.14.0-alpine@sha256:7aba693c1442eb31c0b015c129697cb3b6cb7da589d85c7562f9deb435a6657c"
 
 #------------------------------------------------------------------------------
 trivy() {
@@ -189,9 +190,9 @@ trivy() {
   dw_mount args "$cache" /cache
   dw_docker_socket args
 
-  exec docker run "${args[@]}" "$IMG_trivy" "$@"
+  exec docker run "${args[@]}" "${image[trivy]}" "$@"
 }
-known_tool[trivy]=1
+image[trivy]="aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95d7c0907a221d080a996f556500"
 
 #------------------------------------------------------------------------------
 dive() {
@@ -203,9 +204,9 @@ dive() {
   # A repo-local .dive-ci configures the --ci efficiency thresholds.
   [[ -f $PWD/.dive-ci ]] && dw_mount args "$PWD/.dive-ci" /.dive-ci ro
 
-  exec docker run "${args[@]}" "$IMG_dive" "$@"
+  exec docker run "${args[@]}" "${image[dive]}" "$@"
 }
-known_tool[dive]=1
+image[dive]="wagoodman/dive:v0.13.1@sha256:f1886e6c32c094fc41a623c1989f5cb3e48aa766da5f0be233f911fc1d85ce10"
 
 #------------------------------------------------------------------------------
 ollama() {
@@ -229,9 +230,9 @@ ollama() {
     --restart always
   )
 
-  docker run "${args[@]}" "$IMG_ollama" > /dev/null
+  docker run "${args[@]}" "${image[ollama]}" > /dev/null
 }
-known_tool[ollama]=1
+image[ollama]="ollama/ollama:latest"
 
 #------------------------------------------------------------------------------
 openwebui() {
@@ -250,14 +251,36 @@ openwebui() {
     --restart always
   )
 
-  exec docker run "${args[@]}" "$IMG_openwebui"
+  exec docker run "${args[@]}" "${image[openwebui]}"
 }
-known_tool[openwebui]=1
+image[openwebui]="ghcr.io/open-webui/open-webui:main"
 
 ###############################################################################
-# Dispatch: only names registered above may be invoked (a stray symlink
-# must not be able to call an arbitrary shell function).
-[[ -v known_tool[$tool] ]] \
-  || dw_die 2 "unknown tool '${tool}' — symlink bin/docker_wrapper as one of: ${!known_tool[*]}"
+# Management interface — only when invoked by the real name (docker_wrapper),
+# never via a tool symlink, so a stray symlink can't reach it. These print the
+# registry as the single source of truth for external tooling (the
+# bin/docker_wrapper-links symlink maintainer and the tests read them instead
+# of parsing this file).
+if [[ $tool == docker_wrapper ]]; then
+  case ${1-} in
+    --known-tools)
+      printf '%s\n' "${!image[@]}" | sort
+      exit 0
+      ;;
+    --images)
+      while IFS= read -r _t; do
+        printf '%-12s %s\n' "$_t" "${image[$_t]}"
+      done < <(printf '%s\n' "${!image[@]}" | sort)
+      exit 0
+      ;;
+  esac
+fi
+
+###############################################################################
+# Dispatch: only registered tools (those with an image[] entry) may be
+# invoked — a stray symlink must not be able to call an arbitrary shell
+# function.
+[[ -v image[$tool] ]] \
+  || dw_die 2 "unknown tool '${tool}' — symlink bin/docker_wrapper as one of: ${!image[*]}"
 
 "$tool" "$@"
