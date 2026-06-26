@@ -29,6 +29,15 @@ repos:
       - id: shfmt
         args: [-w, -i, '2', -s, -bn, -ci, -sr]
         exclude: '\.bats$'
+      # Extensionless sourced shell files (shell-startup, config/shell-startup/*,
+      # lib/*) aren't tagged `shell` by identify (non-executable, so no shebang
+      # read), so select them by path — mirrors .pre-commit-config.yaml.
+      - id: shfmt
+        alias: shfmt-sourced
+        name: shfmt (sourced shell)
+        args: [-w, -i, '2', -s, -bn, -ci, -sr]
+        types: [text]
+        files: '^(shell-startup|config/shell-startup/[^./]+|lib/[^./]+)$'
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
     # SYNC: keep this rev in lock-step with image[markdownlint] in

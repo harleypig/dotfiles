@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2154  # $vim_bundles is provided from the user's environment
+
 # Aliases and functions for git
 
 # Check the following for more ideas:
@@ -170,15 +172,15 @@ if [[ -r "$XDG_CONFIG_HOME/completions/git" ]]; then
 
   source "$XDG_CONFIG_HOME/completions/git"
 
-  __git_complete ga  _git_add
-  __git_complete gc  _git_commit
+  __git_complete ga _git_add
+  __git_complete gc _git_commit
   __git_complete gco _git_checkout
   __git_complete gcp _git_cherry_pick
   __git_complete gdc _git_diff
-  __git_complete gd  _git_diff
-  __git_complete gl  _git_pull
+  __git_complete gd _git_diff
+  __git_complete gl _git_pull
   __git_complete gmv _git_mv
-  __git_complete gp  _git_push
+  __git_complete gp _git_push
   __git_complete grm _git_rm
 
 fi

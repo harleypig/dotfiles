@@ -21,7 +21,8 @@ lessopts+=('--tabs=2')
 lessopts+=('--jump-target=3')
 lessopts+=('--QUIET')
 
-# If this text appears in the output, incsearch isn't supported
+# If this text appears in the output, incsearch isn't supported.
+# shellcheck disable=SC1007  # `LESS=` clears LESS for this one command (intentional)
 LESS= less --incsearch -V | grep -q 'There is no incsearch option' \
   || lessopts+=('--incsearch')
 

@@ -7,7 +7,7 @@ if havecmd aider; then
     readarray -t config_lines < "$config_file"
 
     for line in "${config_lines[@]}"; do
-      [[ "$line" =~ ^[[:space:]]*# || ! "$line" =~ = ]] && continue
+      [[ $line =~ ^[[:space:]]*# || ! $line =~ = ]] && continue
 
       IFS='=' read -r varName varValue <<< "$line"
 
@@ -15,14 +15,16 @@ if havecmd aider; then
     done
   fi
 
-  if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+  if [[ $OSTYPE == "msys" || $OSTYPE == "cygwin" ]]; then
     export AIDER_EDITOR="code --wait"
   else
     export AIDER_EDITOR="vim"
   fi
 
   commit_prompt="$DOTFILES/aider.commit_prompt"
-  [[ -r $commit_prompt ]] && AIDER_COMMIT_PROMPT="$(<$commit_prompt)"
+  [[ -r $commit_prompt ]] \
+    && AIDER_COMMIT_PROMPT="$(< "$commit_prompt")" \
+    && export AIDER_COMMIT_PROMPT
 
   unset config_file config_lines line varName varValue commit_prompt
 fi

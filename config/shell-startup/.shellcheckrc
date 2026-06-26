@@ -1,0 +1,22 @@
+# shellcheck configuration for the shell-startup modules.
+#
+# Every file in this directory is *sourced* into the interactive shell, never
+# executed standalone. shellcheck analyses each as a self-contained script, so
+# a handful of its checks are categorical false positives here. Disable just
+# those; genuine issues (quoting, unsafe expansion, masked returns, ...) are
+# still reported and fixed.
+#
+# This rc is the first one shellcheck finds for these files (it stops at the
+# nearest .shellcheckrc), so it also carries the repo default `shell=bash`.
+#
+# Reference: https://www.shellcheck.net/wiki/Directive
+
+shell=bash
+
+# SC1090/SC1091 — `source <path>` targets are tool completion / venv scripts
+#   resolved at runtime; they do not exist at lint time.
+# SC2317 — "command appears unreachable": reached via indirect/interactive
+#   invocation (completion callbacks, aliases), which shellcheck can't see.
+# SC2329 — "function never invoked": these functions are called later by the
+#   interactive shell / aliases, not within the sourced file.
+disable=SC1090,SC1091,SC2317,SC2329

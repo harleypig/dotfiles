@@ -2,6 +2,7 @@
 
 #-----------------------------------------------------------------------------
 export XDG_DOTVIM="$PROJECTS_DIR/dotvim"
+# shellcheck disable=SC2016  # vim (not the shell) expands $XDG_DOTVIM in VIMINIT
 export VIMINIT='source $XDG_DOTVIM/.vimrc'
 export VIMCONFIG="$XDG_DOTVIM/.vim"
 

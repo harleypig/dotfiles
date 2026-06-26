@@ -151,30 +151,19 @@ worth adopting.
   (`errata-ai/vale`) — actively maintained, config-driven style rules,
   supports Markdown; compare its rule model and CI/pre-commit story to
   proselint's.
+- [ ] **Investigate Grammarly** as a source for this. Does it expose anything
+  usable from a CLI / pre-commit / CI context — a "Grammarly for Developers" /
+  public API, an official or community CLI? (Note: Grammarly retired its Text
+  Editor SDK in 2024, so it may be editor-plugin-only.) If there's no
+  first-party headless interface, assess whether we can **hack one together**
+  (e.g. drive a documented API, or wrap an unofficial client) and whether
+  that's worth it versus Vale — weigh SaaS/network/auth cost against a local
+  linter like Vale.
 - [ ] Decide: keep proselint for Phase 4, swap in the alternative, or drop
   prose-linting from the plan. Record the outcome in the Phase 4 item and
   `.claude/QA.md` (Documentation dimension), and retire
   `dot-general/.proselintrc` + its `dotlinks-default` entry if proselint is
   dropped (mirrors the markdownlintrc retirement above).
-
-## 🧹 pre-commit doesn't lint extensionless shell files (MEDIUM PRIORITY)
-
-The shfmt and shellcheck pre-commit hooks (`types: [shell]`) **skip
-`shell-startup`** and likely the extensionless `config/shell-startup/*`
-modules — pre-commit's `identify` isn't tagging them as shell, so they get
-no lint/format gating (and the meta generator only scans `bin lib`).
-`shell-startup` in fact has pre-existing shfmt debt that nothing currently
-catches. This also covers extensionless `bin/`/`lib/` files: the CI `meta`
-job (a required check) lints them, but locally nothing does — fixing this
-gives fast, no-docker local coverage of all of them.
-
-- [ ] Make the shfmt + shellcheck hooks cover extensionless shell files —
-  add `files:` patterns (e.g. `^(shell-startup|config/shell-startup/)`) or
-  `types_or: [shell, file]`, and confirm via `pre-commit run --files
-  shell-startup`.
-- [ ] Then clean up the shfmt debt those files surface.
-- [ ] Consider adding `shell-startup` + `config/shell-startup` to the
-  meta-test generator roots too.
 
 ## 🐫 Perl quality tooling (MEDIUM PRIORITY)
 
@@ -345,6 +334,35 @@ Beyond correctness/security, audit each module for **improve / add / remove**:
 - [ ] **Remove / retire**: modules for tools no longer used; dead or
   commented-out blocks (e.g. perl's `wtf_am_i_doing_here` early-`return`
   function); stale host assumptions.
+
+## 🧳 Move env-polluting shell-startup setup into bin wrappers (MEDIUM PRIORITY)
+
+Some `config/shell-startup/` modules export tool-specific environment into
+*every* interactive shell for a tool that's rarely run — the setup belongs in
+an on-demand `bin/` wrapper (set the env, then `exec <tool> "$@"`) so it stops
+polluting the global environment. This is the "should this even live in the
+shell?" lens on the *config/shell-startup Audit* section above.
+
+- [ ] **aider** — move `config/shell-startup/aider` into a `bin/aider`
+  wrapper. It currently parses `$DOTFILES/aider.env` and exports `AIDER_*`
+  (plus `AIDER_EDITOR`, `AIDER_COMMIT_PROMPT`) into every shell, though only
+  aider needs them. A wrapper that builds that env and `exec`s the real
+  `aider` scopes it to invocation; remove the shell-startup module once moved
+  (its new `shellcheck-sourced` / `shfmt-sourced` pre-commit coverage follows
+  it to `bin/`, where the executable shebang makes it tagged automatically).
+
+- [ ] **Audit every `config/shell-startup/` module** for the same opportunity
+  and **report on each one** — including the ones that should *stay*. For each,
+  classify:
+  - **move** — purely tool-only env/config, safe to lazy-load via a wrapper;
+  - **keep** — a genuine interactive-shell feature (e.g. `git`'s aliases and
+    functions, prompt/`less`/completion wiring) that *must* live in the
+    environment;
+  - **partial** — split the tool-only env into a wrapper but keep the
+    shell-facing bits in the module.
+
+  Partial moves are expected and fine. The deliverable is the per-module
+  report (move / keep / partial, with the reason); acting on it is follow-up.
 
 ## 🏠 $HOME Dotfile Audit (MEDIUM PRIORITY)
 

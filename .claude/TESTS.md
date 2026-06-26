@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.1
+**Version:** v2.6.2
 
 ## Purpose
 
@@ -109,10 +109,11 @@ status check** on `master` (alongside `bats`, `perl`, `pre-commit`). Its
 `shellcheck`/`shfmt` are pinned to the repo's versions (matching the docker
 wrappers and the pre-commit hooks), so CI results match what runs locally; the
 generator prunes stale `*.meta.bats` so a renamed/deleted source can't leave a
-dangling test. Note: pre-commit's `shellcheck`/`shfmt` hooks still **skip
-extensionless** `bin/`/`lib/` files, so the meta suite is currently the only
-linter covering them — closing that gap (so the existing fast hooks cover them
-locally) is a separate `TODO.md` item.
+dangling test. The extensionless sourced shell files (`shell-startup`,
+`config/shell-startup/*`, `lib/*`) — which `identify` won't tag as shell
+because they're non-executable — are covered locally by dedicated
+path-selected pre-commit entries (`shellcheck-sourced` / `shfmt-sourced`), with
+sourced-file false positives scoped out via `config/shell-startup/.shellcheckrc`.
 
 ## Running
 
