@@ -19,6 +19,13 @@ Wait for user to press any key to continue. Useful in interactive scripts.
 **check-dotfiles**
 Verify dotfiles setup and configuration integrity.
 
+**check-dotvim**
+Verify the companion dotvim repo is present at `$XDG_DOTVIM`
+(default `$PROJECTS_DIR/dotvim`) and that the `~/.vim` / `~/.vimrc` symlinks
+point at it; warns/links at login via `config/shell-startup/zzz-check-dotvim`.
+`--setup` clones dotvim (with submodules) and creates the links for a fresh
+machine.
+
 **cleanpath**
 Clean and deduplicate PATH variable entries. Removes duplicate directories from
 colon-separated paths.

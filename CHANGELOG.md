@@ -29,6 +29,15 @@ goes green (see the merge-time finalization in
   with the pre-commit hook rev, with reciprocal `SYNC:` comments). The
   repo-local `.markdownlint.json` is auto-discovered from the mounted CWD.
   (PR #147)
+- **`bin/check-dotvim`** — presence/link check + setup automation for the
+  companion dotvim repo. The check (run at login via
+  `config/shell-startup/zzz-check-dotvim`, opt out with `~/.nocheckdotvim`)
+  warns when dotvim is absent, creates missing `~/.vim`/`~/.vimrc` symlinks,
+  and warns on a mismatch/real-file conflict; `--setup` clones dotvim (with
+  submodules) and links it for a one-step fresh-machine setup. dotvim's
+  location is `${XDG_DOTVIM:-$PROJECTS_DIR/dotvim}`, and check-dotvim is now
+  the single owner of the dotvim symlinks (the stale `dotvim_new` entries
+  were removed from `dotlinks-harleypig.com`). (PR #148)
 
 ### Fixed
 

@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+
+# check-dotvim — verify (and optionally set up) the companion dotvim repo.
+#
+# dotvim (the vim configuration) lives at a sibling clone $XDG_DOTVIM
+# (default $PROJECTS_DIR/dotvim, matching config/shell-startup/vim). vim finds
+# it through VIMINIT/VIMCONFIG, but the ~/.vim and ~/.vimrc symlinks are a
+# fallback for vim invocations that don't inherit the shell environment.
+#
+# Default (check): when dotvim is present, create any missing ~/.vim / ~/.vimrc
+# symlink and warn on a mismatched or conflicting one; when dotvim is absent,
+# warn (run `check-dotvim --setup`). Run at login by
+# config/shell-startup/zzz-check-dotvim; skip it by touching ~/.nocheckdotvim.
+#
+# --setup: clone dotvim into $XDG_DOTVIM (with submodules) if missing, then
+# create the symlinks — one-step setup for a fresh machine.
+#
+# Idempotent and safe to re-run. Symlinks are compared by target (readlink),
+# and a real (non-symlink) ~/.vim / ~/.vimrc is never overwritten.
+
+set -uo pipefail
+
+prog=${0##*/}
+dotvim_url="git@github.com:harleypig/dotvim.git"
+
+# Resolve dotvim's location consistently with config/shell-startup/vim.
+dotvim="${XDG_DOTVIM:-${PROJECTS_DIR:-}/dotvim}"
+
+status=0
+
+#-----------------------------------------------------------------------------
+warn() {
+  printf '%s: %s\n' "$prog" "$1" >&2
+  status=1
+}
+
+#-----------------------------------------------------------------------------
+show_usage() {
+  cat << EOF
+Usage: $prog [--setup]
+
+Check (default) or set up the companion dotvim repo and its ~/.vim / ~/.vimrc
+symlinks. dotvim is expected at \$XDG_DOTVIM (default \$PROJECTS_DIR/dotvim).
+
+  --setup   clone dotvim (with submodules) if missing, then create the
+            symlinks — one-step setup for a fresh machine.
+  -h        show this help.
+
+Touch ~/.nocheckdotvim to skip the login check (config/shell-startup).
+EOF
+}
+
+#-----------------------------------------------------------------------------
+# Create $link -> $target if missing, warn on a mismatch, and refuse to
+# clobber a real (non-symlink) file.
+link_dotvim() {
+  local target=$1 link=$2
+  local disp=${link/#"$HOME"/\~}
+
+  [[ -e $target ]] || {
+    warn "dotvim is missing $target"
+    return 0
+  }
+
+  if [[ -L $link ]]; then
+    [[ $(readlink -f -- "$link") == "$(readlink -f -- "$target")" ]] && return 0
+
+    warn "$disp is linked elsewhere ($(readlink -- "$link")), not $target"
+
+  elif [[ -e $link ]]; then
+    warn "$disp exists and is not a symlink; leaving it alone"
+
+  else
+    ln -s "$target" "$link" \
+      && printf 'linked %s -> %s\n' "$disp" "$target"
+  fi
+}
+
+#-----------------------------------------------------------------------------
+# Argument parsing (a single boolean mode; dependency-free for fresh clones).
+setup=0
+
+while (($#)); do
+  case $1 in
+    --setup) setup=1 ;;
+
+    -h | --help)
+      show_usage
+      exit 0
+      ;;
+
+    *)
+      printf '%s: unknown option %q\n' "$prog" "$1" >&2
+      show_usage >&2
+      exit 2
+      ;;
+  esac
+
+  shift
+done
+
+# A manual --setup is an explicit request; the login check honours the opt-out.
+((setup)) || [[ ! -f "$HOME/.nocheckdotvim" ]] || exit 0
+
+[[ -n ${XDG_DOTVIM:-} || -n ${PROJECTS_DIR:-} ]] || {
+  printf '%s: neither XDG_DOTVIM nor PROJECTS_DIR is set; cannot locate dotvim\n' \
+    "$prog" >&2
+  exit 1
+}
+
+#-----------------------------------------------------------------------------
+if [[ ! -d $dotvim ]]; then
+  if ((setup)); then
+    printf 'cloning dotvim into %s\n' "$dotvim"
+    git clone --recurse-submodules "$dotvim_url" "$dotvim" || {
+      warn "failed to clone dotvim from $dotvim_url"
+      exit 1
+    }
+
+  else
+    warn "dotvim is not present at $dotvim — run '$prog --setup' to clone it"
+    exit 1
+  fi
+fi
+
+link_dotvim "$dotvim/.vim" "$HOME/.vim"
+link_dotvim "$dotvim/.vimrc" "$HOME/.vimrc"
+
+exit "$status"
