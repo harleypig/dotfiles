@@ -25,7 +25,6 @@
 # Use show-unicode to see what symbols are available on your current terminal.
 PROMPT_CHARS=("$" "●" "★" "➤" "❯" "❔" "⚡" "✸" "♠" "♦" "✱" "⚓" "⛳" "☿" ">"
   "⇨" "✷" "⚫" "→" "✶" "♣" "❓" "❱")
-PROMPT_CHAR_INDEX=0
 
 #----------------------------------------------------------------------------
 function join_array() {
@@ -114,7 +113,7 @@ function _exit_status() {
 _venv() {
   [[ -z $VIRTUAL_ENV ]] && [[ -z $POETRY_ACTIVE ]] && return 0
 
-  local color curpwd dir name
+  local color curpwd dir
 
   curpwd="$(readlink -ne "$PWD")"
 
@@ -172,7 +171,7 @@ _update_prompt() {
   fi
 
   # Build the prompt.
-  local pacman_status finalchr loadavg
+  local finalchr loadavg
 
   PS1="\n$color_off$prompt_color"
 

@@ -39,7 +39,7 @@ addpath "$HOME/.jbang/bin"
 #-----------------------------------------------------------------------------
 # rust/rustup
 
-if [[ -d "$XDG_DATA_HOME" ]]; then
+if [[ -d $XDG_DATA_HOME ]]; then
   export CARGO_HOME="$XDG_DATA_HOME/cargo"
   export RUSTUP_HOME="$XDG_CONFIG_HOME/rustup"
   # The env file hard codes the location and is wrong
@@ -210,7 +210,7 @@ if havecmd gcloud; then
 
   gcpath="$(gcloud info --format='value(installation.sdk_root)')"
   completion_file="$gcpath/completion.bash.inc"
-  [[ -f $completion_file ]] && source $completion_file
+  [[ -f $completion_file ]] && source "$completion_file"
   unset gcpath completion_file
 fi
 

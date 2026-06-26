@@ -78,7 +78,7 @@ export LC_ALL=en_US.UTF-8
 # Set a default debug and, if set, check if debug is available and source it.
 
 debug() { true; }
-[[ -n "${DEBUG:-}" ]] \
+[[ -n ${DEBUG:-} ]] \
   && [[ -f "$DOTFILES/lib/debug" ]] \
   && source "$DOTFILES/lib/debug"
 
@@ -101,8 +101,14 @@ addpath() {
 
   while [[ ${1-} == -* ]]; do
     case $1 in
-      --first | -f) position="first"; shift ;;
-      --last  | -l) position="last";  shift ;;
+      --first | -f)
+        position="first"
+        shift
+        ;;
+      --last | -l)
+        position="last"
+        shift
+        ;;
       *) break ;;
     esac
   done
@@ -200,7 +206,7 @@ unsetfuncs 'havecmd'
 set_bin_dirs() {
   bin_dirs_file="$DOTFILES/bin-dirs-defaults"
   [[ -r "$HOME/.bin-dirs" ]] && bin_dirs_file="$HOME/.bin-dirs"
-  [[ -r "$bin_dirs_file" ]] && {
+  [[ -r $bin_dirs_file ]] && {
     readarray -t bin_dirs < <(grep -v '^[[:space:]]*#' "$bin_dirs_file" | envsubst)
     addpath "${bin_dirs[@]}"
   }
@@ -269,5 +275,6 @@ unset _unset_vars _unset_funcs
 
 # >>> grok installer >>>
 export PATH="$HOME/.grok/bin:$PATH"
+# shellcheck disable=SC1091  # grok completion is installed at runtime, absent at lint
 [[ -r "$HOME/.grok/completions/bash/grok.bash" ]] && source "$HOME/.grok/completions/bash/grok.bash"
 # <<< grok installer <<<

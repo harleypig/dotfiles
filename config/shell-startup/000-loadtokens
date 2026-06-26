@@ -8,14 +8,14 @@ if [[ -d $private_dotfiles && -r $config_file ]]; then
   readarray -t config_lines < "$config_file"
 
   for line in "${config_lines[@]}"; do
-    [[ "$line" =~ ^[[:space:]]*# || ! "$line" =~ = ]] && continue
+    [[ $line =~ ^[[:space:]]*# || ! $line =~ = ]] && continue
 
     IFS='=' read -r varName fileName <<< "$line"
 
     filePath="$private_dotfiles/$fileName"
 
     [[ -r $filePath ]] \
-      && export "$varName"="$(<"$filePath")"
+      && export "$varName"="$(< "$filePath")"
   done
 
   unset config_lines line filePath varName fileName

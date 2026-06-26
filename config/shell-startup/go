@@ -6,12 +6,13 @@ type -P go &> /dev/null || return 0
 
 #----------------------------------------------------------------------
 if [ -z "$GOBIN" ]; then
-    if [ -n "$(go env GOBIN)" ]; then
-        export GOBIN="$(go env GOBIN)"
-    else
-        export GOBIN="$GOPATH/bin"
-    fi
+  if [ -n "$(go env GOBIN)" ]; then
+    GOBIN="$(go env GOBIN)"
+    export GOBIN
+  else
+    export GOBIN="$GOPATH/bin"
+  fi
 
-    mkdir -p "$GOBIN"
-    addpath "$GOBIN"
+  mkdir -p "$GOBIN"
+  addpath "$GOBIN"
 fi
