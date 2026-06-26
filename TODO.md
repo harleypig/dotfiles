@@ -13,18 +13,6 @@ config** (`config/claude/` — rules, skills, hooks, agent-config docs) live in
 *Audit the Claude Code Setup* below (and `WORKFLOW.md` → *TODO routing*) for the
 full convention.
 
-## 📝 Documentation (HIGH PRIORITY)
-
-### Code Comment Cleanup
-
-- [ ] Address XXX/TODO/FIXME comments (convert to documentation or fix)
-  - Active bash/shell markers done: reclassified to `ICEBOX:`/`NOTE:` per
-    `code-style.md`, dead-code marker resolved, git-alias bugs fixed
-    (`bd`/`bdf`, `unstage`/`uncommit`). The `tmux` and `statusline.sh`
-    markers became tracked TODOs (see "Surfaced from comment cleanup").
-  - Remaining: PowerShell parity markers, tracked under "PowerShell ↔ Bash
-    Feature Parity" below.
-
 ## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
 
 We use a single branch ruleset (protect master). Survey what else rulesets
@@ -60,12 +48,14 @@ of secret scanning here.
 
 Deferred from the shell-startup trim (PR #16):
 
-- [ ] **Rename the hook dirs — before the startup tests are finalized.**
+- [x] **Rename the hook dirs — before the startup tests are finalized.**
   `{,.}shell_startup.d` hold *hooks* while `config/shell-startup` holds
   always-loaded files; rename the hook dirs to `{,.}shell_startup_hooks.d` to
-  make that obvious. Do this before the containerized startup tests are done
-  so they target the final names. Update `load_files`, the pre-setup hook
-  path, `run_hook`'s default `$dfdir`, and the directories themselves.
+  make that obvious. Done in `shell-startup` (`load_files` dir, pre-setup
+  hook path, commented-out `run_hook` `$dfdir` default), `ps-startup.ps1`
+  (`.psshell_startup_hooks.d`, for cross-shell consistency), and
+  `tests/shell/test_run_hook.bats`. The dirs are optional runtime paths
+  (none committed), so this is a code-reference rename only.
 
 ## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
 
