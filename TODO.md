@@ -118,25 +118,6 @@ main dotfiles checkout.
   execution trace to stderr on every tmux status render (almost certainly a
   debugging leftover). Can be fixed independently of the extraction.
 
-## 🧩 dotvim check + clone/link automation (LOW PRIORITY)
-
-dotfiles has no check or setup automation for the companion **dotvim** repo
-(vim configuration). Add a check (à la `check-dotfiles`) that dotvim is
-present and linked, and ideally a small script to automate cloning it and
-creating the symlinks.
-
-- [x] Add a presence/link check for dotvim — `bin/check-dotvim` warns when
-  the repo is absent, creates missing `~/.vim`/`~/.vimrc` symlinks, and warns
-  on a mismatched/real-file conflict; wired to run at login via
-  `config/shell-startup/zzz-check-dotvim` (opt out with `~/.nocheckdotvim`).
-- [x] Script the clone + symlink setup — `check-dotvim --setup` clones dotvim
-  (with submodules) if missing and creates the links, so a fresh machine is
-  one command.
-- [x] Decide dotvim's expected location — `$XDG_DOTVIM` (default
-  `$PROJECTS_DIR/dotvim`, matching `config/shell-startup/vim`), referenced
-  consistently; the stale `dotvim_new` entries were removed from
-  `dotlinks-harleypig.com` (check-dotvim now owns the symlinks).
-
 ## 📐 Retire global ~/.markdownlintrc — per-repo configs (MEDIUM PRIORITY)
 
 This repo now uses a repo-local `.markdownlint.json` (authoritative, auto-
