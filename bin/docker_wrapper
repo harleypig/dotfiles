@@ -23,6 +23,7 @@
 #
 # Families (how each function is shaped):
 #   pwd-mounted linters  shellcheck shfmt yamllint prettier hadolint
+#                        markdownlint
 #   scanners             trivy (pwd + socket)  dive (socket only)
 #   daemons              ollama openwebui (host-gated, detached)
 #
@@ -148,6 +149,24 @@ hadolint() {
   exec docker run "${args[@]}" "${image[hadolint]}" hadolint "$@"
 }
 image[hadolint]="hadolint/hadolint:v2.14.0-alpine@sha256:7aba693c1442eb31c0b015c129697cb3b6cb7da589d85c7562f9deb435a6657c"
+
+#------------------------------------------------------------------------------
+markdownlint() {
+  dw_guard_pwd_paths markdownlint "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # The image entrypoint is markdownlint; the repo-local .markdownlint.json
+  # is auto-discovered from /mnt (= $PWD).
+  exec docker run "${args[@]}" "${image[markdownlint]}" "$@"
+}
+# SYNC: keep this tag in lock-step with the markdownlint-cli `rev:` in
+# .pre-commit-config.yaml and .pre-commit-config-fix.yaml; bump all three
+# together so the wrapper CLI and the pre-commit hook stay identical.
+image[markdownlint]="ghcr.io/igorshubovych/markdownlint-cli:v0.48.0"
 
 #------------------------------------------------------------------------------
 trivy() {

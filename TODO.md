@@ -76,22 +76,25 @@ have one), so `markdownlint` is "command not found" locally. Add it to the
 `docker_wrapper` dispatcher using the official image
 `ghcr.io/igorshubovych/markdownlint-cli` (versioned tags, e.g. `:v0.48.0`).
 
-- [ ] Add `IMG_MARKDOWNLINT`, a `markdownlint()` function (mount `$PWD`; the
-  repo-local `.markdownlint.json` is auto-discovered from the mounted CWD)
-  and `known_tool[markdownlint]=1`, plus the `bin/markdownlint` symlink (the
-  symlink-automation `--fix` above can create it once registered).
-- [ ] Pin the image tag and refresh it alongside the markdownlint-cli
-  pre-commit hook rev so the CLI and the hook stay in lock-step.
-- [ ] Note: independent of pre-commit — the remote-pinned markdownlint hook
+- [x] Add a `markdownlint()` function (mount `$PWD`; the repo-local
+  `.markdownlint.json` is auto-discovered from the mounted CWD) registered
+  via `image[markdownlint]` (the post-refactor registry replaces the old
+  `IMG_*`/`known_tool[]` pair), plus the `bin/markdownlint` symlink created
+  with `bin/docker_wrapper-links --fix`.
+- [x] Pin the image tag (`:v0.48.0`) and refresh it alongside the
+  markdownlint-cli pre-commit hook rev so the CLI and the hook stay in
+  lock-step — cross-referenced with SYNC comments in both pre-commit configs
+  and the `docker_wrapper` function.
+- [x] Note: independent of pre-commit — the remote-pinned markdownlint hook
   uses its own node install, not this wrapper (see Pre-commit Configuration).
 
 ## 🐳 Research: run more linters/formatters via Docker (MEDIUM PRIORITY)
 
 Today only some tools have a `bin/` docker wrapper (shellcheck, shfmt,
-yamllint, prettier, hadolint, trivy, dive — via `bin/docker_wrapper`). Others
-(yapf, isort, flake8, perltidy, perlcritic, markdownlint) are "command not
-found" unless installed on the host, so a fresh machine is inconsistent and
-pre-commit's isolated envs are the only thing that runs them.
+yamllint, prettier, hadolint, trivy, dive, markdownlint — via
+`bin/docker_wrapper`). Others (yapf, isort, flake8, perltidy, perlcritic) are
+"command not found" unless installed on the host, so a fresh machine is
+inconsistent and pre-commit's isolated envs are the only thing that runs them.
 
 - [ ] **Per-tool wrappers**: identify which remaining tools have a trustworthy
   official/pinned image and add them to the `docker_wrapper` dispatcher (yapf,
