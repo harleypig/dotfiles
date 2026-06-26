@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.0
+**Version:** v2.6.1
 
 ## Purpose
 
@@ -103,15 +103,16 @@ bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
 `perl -c`; python → shebang + `compile()`. It scans `bin lib` **plus
 `config/claude/skills`** (the last covers skill helper scripts such as
 `config/claude/skills/*/scripts/*`, e.g. `ship-pr`'s `ship.sh`; non-script
-files are skipped). The `bin/` + `lib/` + skill-helper debt is now clean, so
-the meta suite **runs in CI** (the `meta` job in `tests.yml`) — **non-required
-first**, to be promoted to a required check after a clean track record. Its
+files are skipped). The `bin/` + `lib/` + skill-helper debt is clean, so the
+meta suite **gates in CI** — the `meta` job in `tests.yml` is a **required
+status check** on `master` (alongside `bats`, `perl`, `pre-commit`). Its
 `shellcheck`/`shfmt` are pinned to the repo's versions (matching the docker
-wrappers and the pre-commit hooks), so CI results match what runs locally.
-Note: pre-commit's `shellcheck`/`shfmt` hooks still **skip extensionless**
-`bin/`/`lib/` files, so the meta suite is currently the only linter covering
-them — closing that gap (so the existing fast hooks cover them locally) is a
-separate `TODO.md` item.
+wrappers and the pre-commit hooks), so CI results match what runs locally; the
+generator prunes stale `*.meta.bats` so a renamed/deleted source can't leave a
+dangling test. Note: pre-commit's `shellcheck`/`shfmt` hooks still **skip
+extensionless** `bin/`/`lib/` files, so the meta suite is currently the only
+linter covering them — closing that gap (so the existing fast hooks cover them
+locally) is a separate `TODO.md` item.
 
 ## Running
 
@@ -128,8 +129,8 @@ pre-commit / CI.
 
 `.github/workflows/tests.yml` runs these jobs on pushes to `master` and on
 PRs: **bats** (`tests/shell/test_*.bats`, the gate), **meta** (regenerates and
-runs `tests/shell/*.meta.bats` with pinned `shellcheck`/`shfmt` — non-required
-first, see the meta-suite note above), **perl** (`prove tests/perl/`,
+runs `tests/shell/*.meta.bats` with pinned `shellcheck`/`shfmt` — a required
+check, see the meta-suite note above), **perl** (`prove tests/perl/`,
 installing `libtest-cmd-perl` + `perltidy`), **python** (`pytest tests/python`,
 self-activating once `tests/python/test_*.py` exist), and **pre-commit** (the
 check config via `pre-commit run --all-files`).
