@@ -5,7 +5,7 @@ paths:
 
 # markdownlint Rules
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 ## Invocation
 
@@ -31,10 +31,10 @@ is the default `~/.config`.
 
 **This repo:** uses a **repo-local `.markdownlint.json`** at the repo root —
 authoritative for this repo and auto-discovered by the pre-commit
-`markdownlint` / `markdownlint-fix` hooks (it wins over `~/.markdownlintrc`
-per the discovery order above). The legacy global `dot-general/.markdownlintrc`
-(symlinked to `~/.markdownlintrc`) is being retired in favour of per-repo
-configs (see `TODO.md`). Active rule overrides:
+`markdownlint` / `markdownlint-fix` hooks. The legacy global
+`dot-general/.markdownlintrc` (formerly symlinked to `~/.markdownlintrc`) has
+been **retired**: there is no global fallback anymore — every repo owns its
+own markdown config. Active rule overrides:
 
 | Rule | Setting | Reason |
 |------|---------|--------|

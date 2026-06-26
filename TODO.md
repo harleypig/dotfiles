@@ -118,20 +118,28 @@ main dotfiles checkout.
   execution trace to stderr on every tmux status render (almost certainly a
   debugging leftover). Can be fixed independently of the extraction.
 
-## 📐 Retire global ~/.markdownlintrc — per-repo configs (MEDIUM PRIORITY)
+## 🖋️ Research: is proselint still alive? modern alternative? (MEDIUM PRIORITY)
 
-This repo now uses a repo-local `.markdownlint.json` (authoritative, auto-
-discovered by the markdownlint hooks). Each repo should own its markdown
-config rather than depend on the global `dot-general/.markdownlintrc`
-(symlinked to `~/.markdownlintrc`).
+proselint is queued for pre-commit **Phase 4 (Docs)** (see *Pre-commit hooks:
+phased rollout* below and `.claude/WORKFLOW.md`) and is the other global
+prose-config still shipped from `dot-general/.proselintrc` (via
+`dotlinks-default`). Before investing in wiring it into Phase 4, confirm it's
+worth adopting.
 
-- [ ] Add a repo-local markdownlint config to each other repo that needs one
-  (start from this repo's `.markdownlint.json`).
-- [ ] Remove `dot-general/.markdownlintrc` and its dotlinks entry once no repo
-  relies on the global fallback.
-- [ ] Update `config/claude/rules/markdownlint.md` to drop the global once
-  it's gone. *(Claude-config step — fine as part of this task; if deferred,
-  track it in `audit/BACKLOG.md`. TODO-routing.)*
+- [ ] Check whether **proselint** is still actively maintained (last release,
+  commit activity, open-issue backlog on `amperser/proselint`). It had long
+  stale stretches historically — verify current status against the repo, not
+  memory.
+- [ ] If it's effectively unmaintained, find the **modern equivalent of the
+  idea** (a maintained prose/style linter). Lead to evaluate first: **Vale**
+  (`errata-ai/vale`) — actively maintained, config-driven style rules,
+  supports Markdown; compare its rule model and CI/pre-commit story to
+  proselint's.
+- [ ] Decide: keep proselint for Phase 4, swap in the alternative, or drop
+  prose-linting from the plan. Record the outcome in the Phase 4 item and
+  `.claude/QA.md` (Documentation dimension), and retire
+  `dot-general/.proselintrc` + its `dotlinks-default` entry if proselint is
+  dropped (mirrors the markdownlintrc retirement above).
 
 ## 🧹 Meta-suite Gating Debt (MEDIUM PRIORITY)
 

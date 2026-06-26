@@ -76,6 +76,16 @@ goes green (see the merge-time finalization in
   registration line per function. Dispatch, `--known-tools`, and `--images`
   all read the one array. (PR #146)
 
+### Removed
+
+- **global `~/.markdownlintrc` fallback** — retired `dot-general/.markdownlintrc`
+  and its `dotlinks-default` entry (and the dangling `~/.markdownlintrc`
+  symlink). There is no global markdownlint fallback anymore: a repo uses its
+  own config or markdownlint's stock defaults. The 16 config-less sibling
+  repos were seeded with a verbatim, uncommitted copy of the retired rc so
+  their current linting behaviour is preserved, each repo owning its setup
+  going forward. `rules/markdownlint.md` updated to v1.2.0. (PR #149)
+
 ## 2026-06-20 (continued)
 
 ### Changed
