@@ -208,11 +208,9 @@ manager; `rustup` is already used). One documented, idempotent install +
 shell-init path per manager — XDG-aware where possible, lazy-loaded in
 `config/shell-startup/<lang>` to keep shell startup fast.
 
-- [ ] perlbrew: install a pinned Perl + cpanm, then the toolchain the repo
-  needs (notably **Perl::Tidy**). A controlled Perl::Tidy that's identical
-  across machines **and CI** removes the version drift behind the non-gating
-  perl job (see "perl CI: make perltidyrc-clean tests version-robust" above —
-  pinning fixes the wording drift; the tests should still be hardened too).
+- **perlbrew** (Perl) — the Perl toolchain install is tracked under *Perl
+  Setup* › *Toolchain install*; apply the same documented, idempotent,
+  XDG-aware install + shell-init pattern below to it.
 - [ ] nvm: install + lazy-load; pin a default Node.
 - [ ] Evaluate/standardize the rest (Python, Ruby; rustup already in use)
   under one consistent pattern, documented in each
@@ -277,12 +275,25 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
   Documentation dimension. *(The `config/claude` parts route to
   `audit/BACKLOG.md` per the TODO convention when authored.)*
 
-## 🐫 Perl quality tooling (MEDIUM PRIORITY)
+## 🐫 Perl Setup (MEDIUM PRIORITY)
 
-Build out perl QA across **both the test suite and the CLI scripts** (where
-CLIs exist — e.g. `bin/parse_params`, `bin/perltidyrc-clean`), and make it as
+Everything for standing up Perl in this repo, end to end: the toolchain
+install, QA tooling (perlcritic, coverage, POD, deeper analysis, SAST), the
+pre-commit/CI gate integration, setup docs, and the agent rules/skills that
+capture it. Build it out across **both the test suite and the CLI scripts**
+(where CLIs exist — e.g. `bin/parse_params`, `bin/perltidyrc-clean`), as
 strict as practical, in stages. Capture the resulting toolchain in **agent
 rules/skills** (see *Rules & skills* below), not only human setup docs.
+
+### Toolchain install (perlbrew)
+
+- [ ] **perlbrew**: install a pinned Perl + cpanm, then the toolchain the repo
+  needs (notably **Perl::Tidy**, plus the perlcritic policy dists chosen
+  below). A controlled Perl::Tidy identical across machines **and CI** removes
+  the version drift behind the non-gating `perl` job; pinning fixes the
+  wording drift, though the `perltidyrc-clean` tests should still be hardened
+  to be version-robust. Follow the one documented, idempotent, XDG-aware
+  install + shell-init pattern from *Tool/Version Manager Setup*.
 
 ### perlcritic
 
@@ -314,8 +325,6 @@ bundles (OTRS, TryTiny).
   policy dists) gives a **controlled** policy set — no stray third-party
   bundles — removing most noise by construction. No official image exists, so
   it'd be a small custom pinned `docker_wrapper` entry.
-- [ ] Once perlcritic is clean + enforced, it **unblocks the deferred Perl
-  pre-commit hook** (Pre-commit → Phase 3).
 
 ### Coverage and POD
 
@@ -342,6 +351,25 @@ bundles (OTRS, TryTiny).
   **open-source** options only (e.g. `perlcritic` security policies, or other
   OSS perl analyzers), and fold any perl SAST into the `security-scan` skill /
   `qa.md` security dimension rather than a one-off.
+
+### Pre-commit & CI integration
+
+Gating Perl in the commit/CI pipeline. Both depend on a clean, enforced
+perlcritic profile (above) and a pinned toolchain (*Toolchain install*) — that
+keystone is what unblocks them.
+
+- [ ] **Pre-commit hook** (Pre-commit rollout → Phase 3) — DEFERRED; the
+  `perlcritic` and `perltidy` hooks are staged commented in both configs
+  (`.pre-commit-config.yaml` / `-fix.yaml`). Blocked on: the existing
+  `perlcritic --severity 4` debt; `config/perl/perlcriticrc` referencing
+  uninstalled policy bundles (OTRS, TryTiny); perltidy version drift; and the
+  perl tools not being installed in the CI pre-commit job. Enable after
+  perlbrew pinning + perlcriticrc rebuild + debt cleanup.
+- [ ] **CI linting job** (CI/CD rollout → Phase 3) — wire perl linting
+  (perlcritic/perltidy) into `tests.yml`, gating once the pre-commit hooks are
+  enabled and the perl tools are installed in the CI job. Today the `perl`
+  prove job is **non-gating** (perltidy version drift); pinning via perlbrew
+  is what lets it gate.
 
 ### Setup / documentation
 
@@ -395,11 +423,8 @@ CI/CD side lives in its own section below.)
 - [ ] **Python** (mypy/pyright) — stay CI/on-demand (per `python.md`), not in
   pre-commit. The `yapf` + `isort` + `flake8` hooks and `config/flake8` are
   done (see CHANGELOG); Rust is N/A for this repo.
-- [ ] **Perl** — DEFERRED; staged commented in both configs. Blocked on:
-  existing `perlcritic --severity 4` debt; `config/perl/perlcriticrc`
-  referencing uninstalled policy bundles (OTRS, TryTiny); perltidy version
-  drift; and needing perl tools installed in the CI pre-commit job. Enable
-  after perlbrew pinning + perlcriticrc trim + debt cleanup.
+- **Perl** → moved to *Perl Setup* › *Pre-commit & CI integration* (the
+  deferred `perlcritic`/`perltidy` hooks and their blockers live there).
 
 ### Phase 4: Documentation Linting
 
@@ -448,8 +473,8 @@ below is the remaining buildout.
 
 - [ ] Add language-specific jobs:
   - [ ] Python testing and linting
-  - [ ] Perl linting
   - [ ] Rust checks (if applicable)
+  - (Perl linting → moved to *Perl Setup* › *Pre-commit & CI integration*)
 - [ ] Matrix testing for multiple bash versions (optional)
 - [ ] Test language-specific jobs
 - [ ] Document language workflows
