@@ -49,7 +49,7 @@ names as its forcing function (`skill-name`), rules it cross-references
 | [claude-code-auth.md](rules/claude-code-auth.md) | Claude Code auth methods, precedence order, the never-export-`ANTHROPIC_API_KEY` rule, diagnosing auth problems | — |
 | [code-style.md](rules/code-style.md) | Naming, 78-col Markdown / 72-col comment wrap, paragraph spacing, section separators, Rule of Three, efficiency by default | — |
 | [documentation.md](rules/documentation.md) | The documentation bar — when to update docs, what form fits each audience, inline-first philosophy | `write-documentation` · `adr` |
-| [gh.md](rules/gh.md) | GitHub CLI usage: PR conventions, dual-credential auth fallback, issue triage cadence | `git-worktree-workflow` · `ship-pr` · `github-tasks` · `security-scan` · `release-tag` |
+| [gh.md](rules/gh.md) | GitHub CLI usage: PR conventions, dual-credential auth fallback, issue triage cadence | `git-worktree-workflow` · `ship-pr` · `github-tasks` · `security-scan` · `release-tag` · `github-rulesets.md` |
 | [git.md](rules/git.md) | Commit messages, branch naming, staging discipline, protected-branch rules, worktrees, versioning & tags | `git-worktree-workflow` · `release-tag` · `ship-pr` · `branch-protection.py` |
 | [qa.md](rules/qa.md) | The full QA pipeline from format through CI — 15 dimensions, ordering, fix/check discipline | `qa-check` · `security-scan` · `containerize` · `deps-update` · `arch-review` · `test-review` · `a11y-review` · `perf-review` · `pytest-patterns` · `typing-patterns` · `write-documentation` · `adr` · `code-style.md` · `testing.md` · `documentation.md` |
 | [testing.md](rules/testing.md) | The test bar (success + failure paths, regression per bug) and be-idiomatic-per-language stance | — |
@@ -139,6 +139,7 @@ rule name.
 | Rule | Activates on |
 |------|-------------|
 | [github-actions.md](rules/github-actions.md) | `.github/workflows/*.yml` |
+| [github-rulesets.md](rules/github-rulesets.md) | `**/github-rulesets/**`, `*ruleset*.json` |
 | [dependabot.md](rules/dependabot.md)<br>↗ `security-scan` · `github-tasks` | `.github/dependabot.yml` |
 | [pre-commit.md](rules/pre-commit.md) | `.pre-commit-config.yaml` |
 | [mcp.md](rules/mcp.md) | MCP server / tool context |

@@ -189,3 +189,8 @@ running the `gh issue list` calls above piecemeal.
   to `GH_TOKEN= GITHUB_TOKEN= gh ...` when a call fails with a
   scope/permission error the env-var PAT can't satisfy. See
   *Authentication* above.
+- For **branch/tag protection rulesets** — the rule-type catalog, the
+  three ruleset kinds, availability constraints (push/file rules need a
+  private/internal repo; org rulesets need an org), and the decision lens
+  for which rules actually add value — see `github-rulesets.md`. Concrete
+  ruleset JSON lives in `../private_dotfiles/github-rulesets/`.
