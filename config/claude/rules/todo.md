@@ -32,11 +32,13 @@ existing doc into this structure and routes new items.
 A `TODO.md` / `ROADMAP.md` / `BACKLOG.md` contains **only active, open
 tasks** — what is still to do. It is **not** a record of finished work:
 
-- **No done-list, no retained `[x]` items.** Completed work is *removed*; its
-  record lives in the **changelog** (user-facing) and/or a **decisions log**
-  (the "why"), per the prune-at-merge half of the lifecycle in `git.md`. A
-  `[x]` marks an item *in the commit that completes it* and is pruned when
-  that PR merges — never kept as a "Done" archive.
+- **No done-list, no retained `[x]` items.** Completed work is *removed*. Its
+  record lives in the **changelog** (what shipped); the **why** of a notable
+  decision goes to the right decision record — an **ADR** (the `adr` skill)
+  for an architectural choice, or a repo's **decisions log** — per
+  `documentation.md`'s form-per-audience guidance. A `[x]` marks an item *in
+  the commit that completes it* and is pruned when that PR merges (`git.md`) —
+  never kept as a "Done" archive.
 - **No header / preamble block.** No `**Last Updated:**` line (it is stale the
   moment the next edit lands), no "what this file is / how it is structured"
   boilerplate. That explanatory and routing content belongs in this rule and
@@ -53,8 +55,9 @@ the nearest relevant **code**, revisited only on request (the agent scans for
 
 - **Deferred with a code anchor** → an `ICEBOX:` comment at that code, *not* a
   "someday / maybe / later" pile in the TODO.
-- **Declined outright** ("evaluated, won't do") → a **decisions-log** entry,
-  not a TODO item.
+- **Declined outright** ("evaluated, won't do") → a **decision record**, not a
+  TODO item: an **ADR** (the `adr` skill) for an architectural decision, else
+  the repo's **decisions log** (`documentation.md` owns which form fits).
 
 The TODO never becomes a parking lot for work nobody has committed to doing.
 
@@ -141,8 +144,9 @@ lifecycle/doc/QA concerns to `git.md`, `documentation.md`, and `qa.md`.
   changelog / decisions log (`git.md`).
 - A deferred **"not now / maybe-someday"** item is **not** a TODO item: record
   it as an `ICEBOX:` marker at the relevant code (`code-style.md`), or — if
-  declined outright — as a decisions-log entry. Don't keep a someday pile in
-  the TODO.
+  declined outright — as a decision record (an **ADR** via the `adr` skill, or
+  the decisions log; see `documentation.md`). Don't keep a someday pile in the
+  TODO.
 - Strip any **header / preamble** (a `**Last Updated:**` line, a
   description / scope / structure boilerplate block) when authoring or
   reorganizing a planning doc, in **any** repo — routing and explanatory
