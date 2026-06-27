@@ -91,6 +91,24 @@ the same gating suite without breaking docker-less environments.
   `test_docker_wrapper_links.bats` (above) holds the docker_wrapper symlinks
   to its registry.
 
+## Deliberately not unit-tested
+
+A handful of `bin/` scripts are intentionally left without unit tests —
+recorded here so the absence reads as a decision, not a gap. They are pure
+display, interactive reads, or thin wrappers with no branching logic worth
+pinning (the generated meta suite still static-checks them):
+
+- `anykey` — interactive single-key read.
+- `dateh` — date-format display; non-deterministic output.
+- `lwhich` / `vimwhich` — thin `which` / vim wrappers.
+- `run-help` — 9-line readline shim.
+- `show-unicode` — static table.
+- `bash-colors` — color-variable definitions.
+- `motd` — large pure-display system summary.
+- `tmux_edit_buffer` — 5-line tmux glue.
+- `tmux_mode_indicator` — tmux format-string assembly only tmux evaluates
+  (its leftover `set -ex` cleanup is tracked separately in `TODO.md`).
+
 ## Coverage priorities (incremental)
 
 1. Critical scripts (anything that can lose data or break the shell).

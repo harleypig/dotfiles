@@ -144,28 +144,12 @@ done.
 
 ### Comprehensive BATS Test Coverage Audit
 
-`bin/` + `lib/` audited for both existence and **failure-path** coverage
-(quality-reviewed 2026-06-27). Every script with real logic or external
-interaction is tested, and the existing tests exercise failure paths — not
-just the happy path — so the suite meets the testing bar. The 9
-`docker_wrapper` tool symlinks are tested once at the dispatcher
-(`test_docker_wrapper`); `perltidyrc-clean` is Perl (covered under
-`tests/perl/`); `config/shell-startup` logic is covered by the integration
-tests plus the function-level `test_havecmd` / `test_shell_startup_git` /
-`test_tmux`.
-
-- [ ] `showvars` success path — a docker-harness integration test for the
-  `shfmt -tojson | jq` variable extraction (needs the shfmt wrapper + jq; low
-  value, deferred).
-
-**Trivial / skip (documented decisions, not gaps):** `anykey` (interactive
-single-key read), `dateh` (date-format display, non-deterministic output),
-`lwhich` / `vimwhich` (thin `which` / vim wrappers), `run-help` (9-line
-readline shim), `show-unicode` (static table), `bash-colors` (color-var
-defs), `motd` (large pure-display summary), `tmux_edit_buffer` (5-line tmux
-glue), `tmux_mode_indicator` (tmux format-string assembly only tmux
-evaluates — its leftover `set -ex` cleanup is tracked under the tmux
-repo-extraction item).
+- [x] `showvars` success path — added a docker-gated integration test
+  (`test_showvars.bats`) for the `shfmt -tojson | jq` extraction. Surfaced and
+  fixed a real bug: `docker_wrapper`'s `shfmt()` dropped piped stdin, so
+  `shfmt -tojson < file` returned an empty AST and showvars silently emitted
+  nothing; it now forwards stdin (`-i`) when not a TTY. The test fails before
+  the fix and passes after.
 
 ### Test Infrastructure
 

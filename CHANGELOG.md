@@ -138,6 +138,20 @@ goes green (see the merge-time finalization in
   invocation otherwise. Decision recorded in
   `config/claude/audit/decisions-log.md`. (PR #162)
 
+### Fixed
+
+- **`docker_wrapper` dropped piped stdin for `shfmt`** — the `shfmt()` wrapper
+  ran `docker run` without `-i`, so `shfmt … < file` reached the container as
+  an empty stream. `bin/showvars` (which does `shfmt -tojson < script`) was
+  silently broken by this — it printed no variables. The wrapper now forwards
+  stdin (`-i`) when it is piped (not a TTY); file-argument usage (the
+  pre-commit hooks) is unaffected. Added a docker-gated success-path test to
+  `test_showvars.bats` that regression-guards both the wrapper fix and
+  showvars' extraction (it fails before the fix, passes after). Closes the
+  last open item of the bash BATS coverage audit. (Note: showvars' jq query
+  still lists only direct assignments, not `export`/`declare` forms — a
+  pre-existing limitation, left as-is.)
+
 ## 2026-06-26
 
 ### Added
