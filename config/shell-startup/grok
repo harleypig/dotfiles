@@ -10,7 +10,7 @@
 # the profile block). So the block is kept here as a normal guarded
 # module instead.
 #
-# ICEBOX (2026-06-26, keyword-dense: grok installer retarget, redirect
+# ICEBOX: grok installer retarget (2026-06-26; keyword-dense: redirect
 # install.sh shell profile, GROK_BIN_DIR, stop re-appending to
 # shell-startup): the installer cannot be pointed at a different rc
 # file, so a reinstall/update will re-add the `>>> grok installer >>>`
