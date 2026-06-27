@@ -139,12 +139,14 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 
 ## 🐍 Python Setup
 
-- [ ] **Python** (mypy/pyright) — stay CI/on-demand (per `python.md`), not in
-  pre-commit. The `yapf` + `isort` + `flake8` hooks and `config/flake8` are
-  done (see CHANGELOG); Rust is N/A for this repo. *(Pre-commit Phase 3.)*
-- [ ] Add language-specific CI jobs *(CI/CD Phase 3)*:
-  - [ ] Python testing and linting
-  - [ ] Rust checks (if applicable)
+- [x] **Python type-check (`pyright`)** wired into pre-commit (so it runs in
+  the required `pre-commit` CI job), scoped to `config/claude/hooks` via
+  `pyrightconfig.json`; `mypy` deliberately not used. The `yapf` + `isort` +
+  `flake8` hooks and `config/flake8` were already done. *(Pre-commit Phase 3.)*
+- [x] Add language-specific CI jobs *(CI/CD Phase 3)*:
+  - [x] Python testing (pytest job) and linting/type-check (`flake8` +
+    `pyright` via the `pre-commit` job)
+  - [x] Rust checks — N/A (no Rust source in this repo)
   - (Perl linting → see *Perl Setup* › *Pre-commit & CI integration*)
 
 ## 🐚 Bash Setup

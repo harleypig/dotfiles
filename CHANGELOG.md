@@ -14,6 +14,18 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Python type-checking via `pyright`** — wired `pyright`
+  (`RobertCraigie/pyright-python`, pinned `v1.1.411`) as a pre-commit hook, so
+  it runs locally at commit time **and** in the required `pre-commit` CI job —
+  the same wiring pattern as `flake8`/`isort`/`yapf`. A root `pyrightconfig.json`
+  scopes the run to `config/claude/hooks` (the first-party agent hooks, which
+  are fully typed and clean) in `standard` mode. **mypy was deliberately not
+  adopted** (small, fully-typed surface; second checker not worth the cost —
+  matching pigify's pyright-only choice). Added the grounded global rule
+  `config/claude/rules/pyright.md` (invocation + `pyrightconfig.json` config),
+  cross-linked from `python.md` / `pre-commit.md` / `STRUCTURE.md`, and flipped
+  QA dimension 3 (Type-check) from **Off** to **Active**. Completes the Python
+  *Pre-commit Phase 3* and *CI/CD Phase 3* items.
 - **Global TODO / planning-doc organization rule** — added
   `config/claude/rules/todo.md` (path-scoped to `TODO.md` / `ROADMAP.md` /
   `BACKLOG.md`). It codifies: organize **by subject, not activity**

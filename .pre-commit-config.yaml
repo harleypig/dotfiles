@@ -103,6 +103,18 @@ repos:
       - id: flake8
         args: [--config, config/flake8]
 
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.411
+    hooks:
+      # Type-check the first-party hooks. pyrightconfig.json scopes the run to
+      # config/claude/hooks (standard mode); pass_filenames=false so pyright
+      # uses that project config rather than per-file args. Lint-only, like
+      # flake8 — no fix-config variant. pyright is this repo's sole type
+      # checker; mypy is deliberately NOT used (see pyright.md / decisions-log).
+      - id: pyright
+        pass_filenames: false
+        files: ^config/claude/hooks/.*\.py$
+
   # Phase 3 (Language) — Perl: DEFERRED (intentionally not enabled). Enabling
   # either tool in this *gating* config would currently break the gate:
   #   - perlcritic --severity 4 reports substantial debt on existing code, and

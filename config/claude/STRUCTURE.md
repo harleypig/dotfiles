@@ -85,6 +85,7 @@ rule name.
 | [black.md](rules/black.md) | `*.py` |
 | [isort.md](rules/isort.md) | `*.py` |
 | [yapf.md](rules/yapf.md) | `*.py` |
+| [pyright.md](rules/pyright.md) | `*.py`, `*.pyi` |
 | [tox.md](rules/tox.md) | `tox.ini`, `pyproject.toml` |
 | [poetry.md](rules/poetry.md) | `pyproject.toml`, `poetry.lock` |
 
