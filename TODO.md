@@ -144,9 +144,20 @@ done.
 
 ### Phase 4: Extended Coverage
 
-- [ ] Completion tests for config/completions/
-- [ ] Integration tests for tool configurations
-- [ ] Performance tests for PATH building
+- [x] Completion tests for config/completions/ — added
+  `test_proj_completion.bats` for the first-party `_proj` completion
+  (top-level, prefix, nested, and unset/missing `PROJECTS_DIR`). The other
+  completions (`git`, `packwiz`, `poetry`) are vendored upstream and not
+  unit-tested here.
+- [x] Integration tests for tool configurations — already covered: the docker
+  integration harness (`test_integration_startup` +
+  `test_integration_context`) brings up the running dotfiles and asserts
+  tool-config loading. No separate suite needed.
+- [x] Performance tests for PATH building — **not added** (measure-first, per
+  `qa.md`). Startup/PATH perf was already measured and resolved ad hoc
+  (`cleanpath` parallelized — see CHANGELOG *Login shell startup
+  performance*); a wall-clock regression test would be brittle and
+  machine-dependent.
 
 ### Test Infrastructure
 
@@ -204,7 +215,8 @@ shim), `show-unicode` (static table), `bash-colors` (color-var defs),
 
 - [ ] Enable bash completion for available but unconfigured tools
 - [ ] Document completion setup in dedicated section or inline
-- [ ] Create completion tests
+- [x] Create completion tests — first-party `_proj` completion covered by
+  `test_proj_completion.bats`; vendored completions left to upstream.
 
 ## 🪟 PowerShell Setup
 
