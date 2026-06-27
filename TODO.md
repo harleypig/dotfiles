@@ -142,16 +142,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
 done.
 
-### Test Infrastructure
-
-- [x] **Extract a shared "source-functions-from-a-non-sourceable-file" test
-  helper** — added `source_funcs <file> <fn>...` to
-  `tests/helpers/common.bash` (awk-extracts the named function blocks,
-  matching both `name()` and `function name()`), and refactored `test_havecmd`
-  and `test_shell_startup_git` onto it. `test_tmux` (needs a non-function
-  `circled_digits` var) and `test_bash_prompt` (strips a guard from the
-  middle) keep their bespoke extraction.
-
 ### Comprehensive BATS Test Coverage Audit
 
 `bin/` audited (2026-06-07). The 9 `docker_wrapper` tool symlinks (dive,
