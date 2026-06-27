@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.5.0
+**Version:** v1.5.1
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -218,8 +218,8 @@ with what the gate enforces.
   any hook. The per-tool rules document those direct commands and flags.
 
 The per-tool rules (`shellcheck.md`, `shfmt.md`, `yamllint.md`,
-`markdownlint.md`, `yapf.md`, `isort.md`, `flake8.md`, `bash.md`, `perl.md`,
-…) point back here for this policy.
+`markdownlint.md`, `yapf.md`, `isort.md`, `flake8.md`, `pyright.md`,
+`bash.md`, `perl.md`, …) point back here for this policy.
 
 ## Agent Rules
 

@@ -6,6 +6,29 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-27 — **Adopted `pyright` for type-checking; `mypy` declined
+  (user-confirmed).** Worked the `## 🐍 Python Setup` TODO items. The
+  first-party Python surface is the seven agent hooks under
+  `config/claude/hooks/` — all fully return-annotated and stdlib-only, and
+  **clean under `pyright` standard mode** (0/0/0; strict adds 34 unavoidable
+  `Unknown`/`Any` diagnostics from `json.load`, so standard is the right
+  mode). Checked the sibling `pigify` repo to confirm the user's recollection:
+  it is **pyright-only, no mypy anywhere** (`pyright` in pre-commit + CI; ruff
+  for lint/format). Followed that precedent here — **`mypy` not adopted**: a
+  second checker would add tooling + CI cost without catching anything on a
+  small, fully-typed, pyright-clean surface (`python.md` keeps mypy as an
+  optional CI second pass for repos whose plugin ecosystem needs it; this repo
+  isn't one). Wired `pyright` **into pre-commit** (not a standalone CI step):
+  the required `pre-commit` CI job runs `pre-commit run --all-files`, so the
+  hook gives both commit-time and CI coverage with no double-run — the exact
+  pattern `flake8`/`isort`/`yapf` already use, so no `tests.yml` change was
+  needed. This **reverses** the prior TODO note ("type-check stays out of
+  pre-commit") — superseded because the surface is now typed and clean, which
+  it wasn't when that note was written. Authored the missing global rule
+  `rules/pyright.md` (grounded in the official pyright config + CI docs, per
+  `CLAUDE.md` *Missing or Conflicting Tool Rules*); `pyrightconfig.json` scopes
+  the run to `config/claude/hooks` so pyright never recurses into vendored
+  Python (`rustup`/`nvm`/`coc`/plugins). QA dim 3 flipped Off → Active.
 - 2026-06-27 — **Evaluated a `pre-commit` skill — declined; clarified
   qa-check instead (user-confirmed).** Worked the root-`TODO.md` "Proposed:
   pre-commit skill, used by qa-check" item. Mapped every operational workflow

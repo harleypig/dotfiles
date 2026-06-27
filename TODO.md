@@ -137,16 +137,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
   skills; fold into one rather than duplicate if it already fits (Rule of
   Three).
 
-## 🐍 Python Setup
-
-- [ ] **Python** (mypy/pyright) — stay CI/on-demand (per `python.md`), not in
-  pre-commit. The `yapf` + `isort` + `flake8` hooks and `config/flake8` are
-  done (see CHANGELOG); Rust is N/A for this repo. *(Pre-commit Phase 3.)*
-- [ ] Add language-specific CI jobs *(CI/CD Phase 3)*:
-  - [ ] Python testing and linting
-  - [ ] Rust checks (if applicable)
-  - (Perl linting → see *Perl Setup* › *Pre-commit & CI integration*)
-
 ## 🐚 Bash Setup
 
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
@@ -501,8 +491,8 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 
 ### Phase 3: Language Checks (requires Pre-commit Phase 3)
 
-→ Python jobs see *Python Setup*; Perl linting → *Perl Setup* › *Pre-commit &
-CI integration*; Rust is N/A.
+→ Python jobs are done (see CHANGELOG); Perl linting → *Perl Setup* ›
+*Pre-commit & CI integration*; Rust is N/A.
 
 - [ ] Matrix testing for multiple bash versions (optional)
 - [ ] Test language-specific jobs

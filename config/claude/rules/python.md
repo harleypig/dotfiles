@@ -6,7 +6,7 @@ paths:
 
 # Python Rules
 
-**Version:** v2.4.0
+**Version:** v2.4.1
 
 For concrete depth beyond these conventions — pytest technique (fixtures,
 mocking discipline, async, flakiness) and typing technique (TypedDict,
@@ -91,7 +91,7 @@ Two type checkers are supported, each in its preferred role:
 
 - **pyright** — primary checker for local development. Faster, stricter
   by default, native to Pylance / VS Code. Run during edit cycles and
-  before commit.
+  before commit. Invocation and `pyrightconfig.json` config: `pyright.md`.
 - **mypy** — runs in CI (GitHub Actions) as a second pass. Catches issues
   pyright may miss and integrates with framework plugins (Django,
   SQLAlchemy, attrs) when needed.
