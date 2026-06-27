@@ -18,8 +18,7 @@ setup() {
   ROOT="$(dotfiles_root)"
 
   STUB="$(make_stub_dir)"
-  printf '#!/usr/bin/env bash\n' > "$STUB/ansi"
-  chmod +x "$STUB/ansi"
+  make_script_stub "$STUB" ansi ''
 
   REPO="$BATS_TEST_TMPDIR/sample"
   make_test_repo "$REPO"

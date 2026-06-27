@@ -36,8 +36,7 @@ setup() {
   [[ $EUID -eq 0 ]] && skip "root bypasses the -w writability check"
   local stub
   stub="$(make_stub_dir)"
-  printf '#!/usr/bin/env bash\necho -n "[ansi:$*]"\n' > "$stub/ansi"
-  chmod +x "$stub/ansi"
+  make_script_stub "$stub" ansi 'echo -n "[ansi:$*]"'
 
   local dir="$BATS_TEST_TMPDIR/rw"
   mkdir -p "$dir"
@@ -51,8 +50,7 @@ setup() {
   [[ $EUID -eq 0 ]] && skip "root bypasses the -w writability check"
   local stub
   stub="$(make_stub_dir)"
-  printf '#!/usr/bin/env bash\necho -n "[ansi:$*]"\n' > "$stub/ansi"
-  chmod +x "$stub/ansi"
+  make_script_stub "$stub" ansi 'echo -n "[ansi:$*]"'
 
   local dir="$BATS_TEST_TMPDIR/ro"
   mkdir -p "$dir"

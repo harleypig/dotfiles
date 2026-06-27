@@ -88,6 +88,14 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **`make_script_stub` test helper (Bash Setup test infra).** Added
+  `make_script_stub <dir> <name> <body>` to `tests/helpers/common.bash` —
+  sibling to the spy-style `make_stub`, it writes an executable bash stub with
+  a caller-supplied body, DRYing the `printf '#!/usr/bin/env bash\n…' > file;
+  chmod +x` boilerplate that had recurred across three test files
+  (`test_git-status`, `test_dir-readable`, `test_loadavg`). Refactored all
+  three onto it; passing the body as a parameter keeps the differing stub
+  bodies decoupled.
 - **Shared `source_funcs` test helper (Bash Setup test infra).** Added
   `source_funcs <file> <fn>...` to `tests/helpers/common.bash` — it
   awk-extracts the named function definitions from a file that isn't

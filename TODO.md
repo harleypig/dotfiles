@@ -142,19 +142,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
 done.
 
-### Test Infrastructure
-
-- [ ] **(watch — Rule of Three at 2/3) A "stub that emits output" helper.**
-  `make_stub` (in `tests/helpers/common.bash`) records args and exits a code
-  but can't emit custom stdout, so tests that need a stub to *print* something
-  hand-roll a `printf '#!/usr/bin/env bash\n...' > "$dir/<name>"`. The
-  "`ansi` stub that echoes its args" form now recurs in `test_dir-readable`
-  and `test_loadavg` (2 instances); `test_loadavg` also hand-rolls an
-  env-var-emitting `awk` stub. On a **third** instance, extract a small
-  `make_echo_stub <dir> <name> <body>` (or `make_arg_echo_stub`) helper. Don't
-  build before then — the current two stubs differ enough that a premature
-  abstraction would be the wrong one.
-
 ### Bash Completion
 
 - [ ] Enable bash completion for available but unconfigured tools

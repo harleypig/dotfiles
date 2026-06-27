@@ -21,12 +21,10 @@ setup() {
   # awk stub: emit $LA_STUB regardless of program/input, so each test controls
   # the load value the script sees.
   # shellcheck disable=SC2016  # $LA_STUB must stay literal — read at stub runtime
-  printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$LA_STUB"\n' > "$STUB/awk"
-  chmod +x "$STUB/awk"
+  make_script_stub "$STUB" awk 'printf "%s\n" "$LA_STUB"'
 
   # ansi stub: echo its args verbatim so the color markers are assertable.
-  printf '#!/usr/bin/env bash\nprintf "[ansi:%%s]" "$*"\n' > "$STUB/ansi"
-  chmod +x "$STUB/ansi"
+  make_script_stub "$STUB" ansi 'printf "[ansi:%s]" "$*"'
 
   PATH="$STUB:$(dotfiles_root)/bin:$PATH"
 }
