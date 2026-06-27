@@ -61,6 +61,11 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **`pyrightconfig.json` normalized to prettier.** The file was untracked
+  during PR #168's fix-config run, so prettier never formatted it; ran the
+  fixer once (collapsing the `include` array to one line) so
+  `.pre-commit-config-fix.yaml` no longer flags it every run. No semantic
+  change — pyright reads it identically.
 - **`lib/bash_prompt` `_exit_status` — no separator between codes (by
   preference).** The test-review noticed the `join_array ' | '` call was a
   no-op (`status` was built with string-append, so the array only ever had
