@@ -142,12 +142,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
 done.
 
-### Phase 4: Extended Coverage
-
-- [ ] Completion tests for config/completions/
-- [ ] Integration tests for tool configurations
-- [ ] Performance tests for PATH building
-
 ### Test Infrastructure
 
 - [ ] tests/scaffold/build-meta-tests:5,6,71 - Add tests for sh compilation,
@@ -204,7 +198,6 @@ shim), `show-unicode` (static table), `bash-colors` (color-var defs),
 
 - [ ] Enable bash completion for available but unconfigured tools
 - [ ] Document completion setup in dedicated section or inline
-- [ ] Create completion tests
 
 ## 🪟 PowerShell Setup
 

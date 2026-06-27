@@ -14,6 +14,15 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Bash completion test (Bash Setup Phase 4)** — added
+  `test_proj_completion.bats` for the first-party `_proj` completion
+  (top-level projects, prefix match, nested subdirectories, and unset/missing
+  `PROJECTS_DIR`). Closed the rest of Phase 4 as already-covered or out of
+  scope: integration of tool configs is exercised by the docker integration
+  harness (`test_integration_startup`/`_context`), and a PATH-building
+  performance test was declined (measure-first per `qa.md`; startup perf was
+  already resolved ad hoc — `cleanpath` parallelization). Vendored completions
+  (`git`/`packwiz`/`poetry`) are left to upstream. Suite: 257 tests.
 - **Bash test coverage (Bash Setup Phase 3)** — a coverage census confirmed
   bin/ (every real-logic script tested; rest documented skip/deferred) and
   lib/ (`bash_prompt`, `debug`, `docker_helpers`) are complete. For
