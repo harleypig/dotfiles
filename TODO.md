@@ -1,11 +1,12 @@
 # TODO - Dotfiles Repository Modernization
 
-**Last Updated:** 2026-06-07
-**Plan Version:** Based on Dotfiles Repository Modernization Plan
+**Last Updated:** 2026-06-26
 
 This TODO file tracks the modernization effort for the dotfiles repository,
-organized by work area with phase markers. See `WORKFLOW.md` for development
-guidelines and `TESTS.md` for testing strategy.
+organized by work area with phase markers. Completed work moves to
+[`CHANGELOG.md`](CHANGELOG.md) — TODO's counterpart — once its PR goes green.
+See `WORKFLOW.md` for development guidelines and `TESTS.md` for testing
+strategy.
 
 **Scope:** this file is for **dotfiles** work. Tasks about the **Claude agent
 config** (`config/claude/` — rules, skills, hooks, agent-config docs) live in
@@ -13,7 +14,35 @@ config** (`config/claude/` — rules, skills, hooks, agent-config docs) live in
 *Audit the Claude Code Setup* below (and `WORKFLOW.md` → *TODO routing*) for the
 full convention.
 
-## 🧭 Explore other GitHub rulesets (LOW PRIORITY)
+**Structure:** `##` headers collect a related work area; `###` are the tasks
+within it; `####` breaks a large task into digestible chunks where that helps.
+Items carry **HIGH / MEDIUM / LOW** priority tags — do high-priority work
+first; low-priority items can wait.
+
+## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
+
+The Claude Code setup audit's *methodology* is the `claude-audit` skill; its
+*record* lives under `config/claude/audit/` — `decisions-log.md` (the "why"),
+`BACKLOG.md` (open audit follow-ups), `idea-sources.md` + `mining-census.md`
+(mined repos) — indexed by `config/claude/SETUP-AUDIT.md`. None of it is
+context-loaded; it is read only when running `/claude-audit`. Audit follow-ups
+(e.g. the deferred `pydantic_ai` framework rule, repo-mining shortlists) are
+tracked in `audit/BACKLOG.md`, not here, so this repo's `TODO.md` stays about
+actual dotfiles work.
+
+**TODO routing convention.** When capturing a follow-up, route it by scope: a
+task about the **Claude agent config** (anything under `config/claude/` —
+rules, skills, hooks, the agent-config docs) goes in
+[`config/claude/audit/BACKLOG.md`](config/claude/audit/BACKLOG.md); a task about
+the **broader dotfiles setup** stays in this `TODO.md`. A genuinely **mixed**
+task is split into both with a cross-reference — *unless* the parts are merely
+coupled (added together, or one can't be done until the other lands), in which
+case keep it whole in its primary file and note the other scope inline. Also in
+`WORKFLOW.md` → *TODO routing*.
+
+## 🐙 GitHub (platform configuration)
+
+### Explore other GitHub rulesets (LOW PRIORITY)
 
 We use a single branch ruleset (protect master). Survey what else rulesets
 offer and whether any help this repo:
@@ -27,7 +56,7 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-## 🔑 Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
+### Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
 
 Secrets currently live as plaintext files in the sibling `private_dotfiles`
 repo, loaded by `config/shell-startup/000-loadtokens`. Because they sit in a
@@ -44,7 +73,13 @@ of secret scanning here.
   what is actually reachable from the `shell-startup` path. Goal: shrink the
   accidental-ingestion surface.
 
-## 🧰 Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
+## 🧰 Repository extraction (carve subtrees into their own repos)
+
+Both items below are the same question — extract a subtree into a standalone
+repo and decide how dotfiles consumes it (submodule vs sibling clone vs
+symlink). Reconcile their consumption decisions together.
+
+### Extract `config/claude/` into its own generic repo (MEDIUM PRIORITY)
 
 The agent config under `config/claude/` (rules, skills, `CLAUDE.md`,
 `EXTENDING.md`, hooks, …) is language- and repo-agnostic and is consumed by
@@ -68,7 +103,157 @@ shared/versioned independently and carries **no dotfiles-specific references**
 repo packaging / deployment — a dotfiles concern, not agent behavior — so it
 stays here, not in `audit/BACKLOG.md`.
 
-## 🐳 Research: run more linters/formatters via Docker (MEDIUM PRIORITY)
+### Break tmux config into its own repo (MEDIUM PRIORITY)
+
+Move the tmux configuration (or at least enough of it to support the
+`tmux-plugins` repos via **git submodules**) into its own dedicated repo.
+The submodule setup is what was causing trouble inside this dotfiles repo —
+isolating tmux + its plugin submodules avoids tangling submodules into the
+main dotfiles checkout.
+
+- [ ] Carve out the tmux config (`config/tmux/`, `bin/tmux_*`, related
+  completions) into a standalone repo.
+- [ ] Wire `tmux-plugins/*` (e.g. tpm) as submodules in that repo.
+- [ ] Decide how dotfiles references it (submodule of dotfiles, sibling
+  clone, or independent) and update the deploy/symlink steps accordingly.
+- [ ] Clean up `bin/tmux_mode_indicator`'s `set -ex` — the `-x` prints an
+  execution trace to stderr on every tmux status render (almost certainly a
+  debugging leftover). Can be fixed independently of the extraction.
+
+## 🐚 Shell startup & $HOME environment
+
+### config/shell-startup Audit (MEDIUM PRIORITY)
+
+Review all files in `config/shell-startup/` for correctness and security:
+
+- [ ] Variables set at module scope but never unset (temporary/setup vars
+  that pollute the shell environment)
+- [ ] Sensitive values (tokens, keys, paths to secrets) that should be
+  handled more carefully or not exported at all
+- [ ] Variables exported unnecessarily (does the child process actually
+  need it, or should it be local?)
+- [ ] Patterns like `source`/`.` that execute arbitrary files without
+  checking ownership or permissions
+- [ ] Files read without checking they're not world-writable
+- [ ] Missing `command -v ... || return 0` guards where a tool may not
+  be installed
+- [ ] Inconsistent guard style (`if command -v` vs `command -v || return 0`)
+  — standardize to `|| return 0` pattern per `000-loadtokens` fix
+- [ ] Any other shellcheck warnings not already suppressed with justification
+
+Beyond correctness/security, audit each module for **improve / add / remove**:
+
+- [ ] **Improve**: modernize patterns; fix the lint findings the
+  extensionless-files coverage gap currently hides (e.g. terraform's
+  `COMPREPLY=($(compgen …))` SC2207, perl's SC1003); cut per-startup cost
+  (subprocesses that run at every login).
+- [ ] **Add**: tools/integrations worth their own module that aren't covered.
+- [ ] **Remove / retire**: modules for tools no longer used; dead or
+  commented-out blocks (e.g. perl's `wtf_am_i_doing_here` early-`return`
+  function); stale host assumptions.
+
+### Move env-polluting shell-startup setup into bin wrappers (MEDIUM PRIORITY)
+
+Some `config/shell-startup/` modules export tool-specific environment into
+*every* interactive shell for a tool that's rarely run — the setup belongs in
+an on-demand `bin/` wrapper (set the env, then `exec <tool> "$@"`) so it stops
+polluting the global environment. This is the "should this even live in the
+shell?" lens on the *config/shell-startup Audit* section above.
+
+- [ ] **aider** — move `config/shell-startup/aider` into a `bin/aider`
+  wrapper. It currently parses `$DOTFILES/aider.env` and exports `AIDER_*`
+  (plus `AIDER_EDITOR`, `AIDER_COMMIT_PROMPT`) into every shell, though only
+  aider needs them. A wrapper that builds that env and `exec`s the real
+  `aider` scopes it to invocation; remove the shell-startup module once moved
+  (its new `shellcheck-sourced` / `shfmt-sourced` pre-commit coverage follows
+  it to `bin/`, where the executable shebang makes it tagged automatically).
+- [ ] **Audit every `config/shell-startup/` module** for the same opportunity
+  and **report on each one** — including the ones that should *stay*. For each,
+  classify:
+  - **move** — purely tool-only env/config, safe to lazy-load via a wrapper;
+  - **keep** — a genuine interactive-shell feature (e.g. `git`'s aliases and
+    functions, prompt/`less`/completion wiring) that *must* live in the
+    environment;
+  - **partial** — split the tool-only env into a wrapper but keep the
+    shell-facing bits in the module.
+
+  Partial moves are expected and fine. The deliverable is the per-module
+  report (move / keep / partial, with the reason); acting on it is follow-up.
+
+### $HOME Dotfile Audit (MEDIUM PRIORITY)
+
+Reduce $HOME clutter by moving dotfiles to XDG directories where supported
+and removing unused ones.
+
+Reference: <https://wiki.archlinux.org/title/XDG_Base_Directory>
+(comprehensive list of which apps support XDG and how to configure them)
+
+#### Migration steps
+
+- [ ] Inventory all dotfiles/dotdirs in $HOME (`ls -la ~ | grep '^\.'`)
+- [ ] For each, check the Arch wiki XDG page:
+  - If XDG is supported: move file/dir to appropriate XDG location and
+    configure the app (env var, config option, symlink, etc.)
+  - If XDG is not supported: determine if the app is still in use; remove
+    the dotfile if not
+- [ ] Update `config/shell-startup/` modules to set any required env vars
+  for apps migrated to XDG paths
+- [ ] Update dotlinks if any of these were previously managed there
+- [ ] After migration, verify apps still work correctly
+
+#### Known offenders to investigate (as of 2026-05-20)
+
+| Path | Tool | Notes |
+| --- | --- | --- |
+| `~/.aider` | aider AI | check if `--config-dir` or `AIDER_CONFIG` supports XDG |
+| `~/.cpan` | CPAN | `CPAN::Config` supports custom dirs |
+| `~/.cpanm` | cpanm | `PERL_CPANM_HOME` env var |
+| `~/.docker` | Docker | `DOCKER_CONFIG` — already set in `010-general` but dir still in `$HOME` |
+| `~/.gradle` | Gradle | `GRADLE_USER_HOME` env var |
+| `~/.gradle-mcp` | gradle-mcp | likely follows `GRADLE_USER_HOME` or its own config |
+| `~/.grok` | grok (xAI CLI) | check XDG / config-dir support (installer block already relocated to `config/shell-startup/grok`) |
+| `~/.java` | Java/JVM | `java.util.prefs.userRoot` system property |
+| `~/.jbang` | jbang | `JBANG_DIR` env var |
+| `~/.kivy` | Kivy | `KIVY_HOME` env var |
+| `~/.lesshst` | less | `LESSHISTFILE` env var — set to `$XDG_CACHE_HOME/less/history` |
+| `~/.m2` | Maven | `settings.xml` `<localRepository>` or `MAVEN_OPTS` |
+| `~/.npm` | npm | `NPM_CONFIG_CACHE` or `.npmrc` `cache=` |
+| `~/.redhat` | Red Hat tools | investigate; may not be movable |
+| `~/.serena` | Serena AI | check if config path is configurable |
+| `~/.sqlite_history` | SQLite | `SQLITE_HISTORY` env var |
+| `~/.wget-hsts` | wget | already handled via alias in `010-general` |
+| `~/.zshrc` | Zsh | not primary shell; remove if unused |
+
+**Note:** Consider symlinking `~/.config -> $DOTFILES/config` to handle apps
+that hardcode `$HOME/.config` rather than respecting `$XDG_CONFIG_HOME`. This
+would make both paths resolve to the same location without needing per-app
+symlinks. Risk: `~/.config` becomes the canonical store for all XDG config,
+so anything the OS or other tools write there lands directly in the repo
+working tree — evaluate carefully before implementing.
+
+### Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
+
+Goal: dotfiles should install and configure per-language version/tool
+managers consistently, replacing the ad-hoc setup that's accreted over time.
+Cover at least **perlbrew** (Perl) and **nvm** (Node), and evaluate the
+equivalents for the other languages in play (pyenv/uv for Python, a Ruby
+manager; `rustup` is already used). One documented, idempotent install +
+shell-init path per manager — XDG-aware where possible, lazy-loaded in
+`config/shell-startup/<lang>` to keep shell startup fast.
+
+- [ ] perlbrew: install a pinned Perl + cpanm, then the toolchain the repo
+  needs (notably **Perl::Tidy**). A controlled Perl::Tidy that's identical
+  across machines **and CI** removes the version drift behind the non-gating
+  perl job (see "perl CI: make perltidyrc-clean tests version-robust" above —
+  pinning fixes the wording drift; the tests should still be hardened too).
+- [ ] nvm: install + lazy-load; pin a default Node.
+- [ ] Evaluate/standardize the rest (Python, Ruby; rustup already in use)
+  under one consistent pattern, documented in each
+  `config/shell-startup/<lang>` module.
+
+## 🐳 Linting & formatting tooling
+
+### Research: run more linters/formatters via Docker (MEDIUM PRIORITY)
 
 Today only some tools have a `bin/` docker wrapper (shellcheck, shfmt,
 yamllint, prettier, hadolint, trivy, dive, markdownlint — via
@@ -101,40 +286,7 @@ inconsistent and pre-commit's isolated envs are the only thing that runs them.
   this interacts with pre-commit (which already runs tools in isolated envs —
   a host wrapper is mainly for ad-hoc CLI use outside a commit).
 
-## 🪟 Break tmux config into its own repo (MEDIUM PRIORITY)
-
-Move the tmux configuration (or at least enough of it to support the
-`tmux-plugins` repos via **git submodules**) into its own dedicated repo.
-The submodule setup is what was causing trouble inside this dotfiles repo —
-isolating tmux + its plugin submodules avoids tangling submodules into the
-main dotfiles checkout.
-
-- [ ] Carve out the tmux config (`config/tmux/`, `bin/tmux_*`, related
-  completions) into a standalone repo.
-- [ ] Wire `tmux-plugins/*` (e.g. tpm) as submodules in that repo.
-- [ ] Decide how dotfiles references it (submodule of dotfiles, sibling
-  clone, or independent) and update the deploy/symlink steps accordingly.
-- [ ] Clean up `bin/tmux_mode_indicator`'s `set -ex` — the `-x` prints an
-  execution trace to stderr on every tmux status render (almost certainly a
-  debugging leftover). Can be fixed independently of the extraction.
-
-## 🧰 parse_params consumer ergonomics (LOW PRIORITY)
-
-Surfaced while converting `bin/git-branch-clean` to parse_params (PR #150) —
-two small polish items for consumers:
-
-- [ ] **Error prefix should honour `--prog`.** Input/constraint errors print
-  `parse_params: ...` even when the caller passed `--prog git-branch-clean`,
-  leaking the tool name into the consumer's output (`--prog` only changes the
-  generated *usage* header). Use the `--prog` name (falling back to
-  `parse_params`) as the `bail_input`/`def_err` prefix too.
-- [ ] **Document the `SC2154` pattern.** Vars set via `eval
-  "$(parse_params …)"` are invisible to shellcheck, so every consumer needs a
-  file-scope `# shellcheck disable=SC2154` (see `bin/hr`, `bin/findword`,
-  `bin/git-branch-clean`). Add a one-line note to `bash.md` *Argument Parsing*
-  so the next converter doesn't rediscover it.
-
-## 🖋️ Research: is proselint still alive? modern alternative? (MEDIUM PRIORITY)
+### Research: is proselint still alive? modern alternative? (MEDIUM PRIORITY)
 
 proselint is queued for pre-commit **Phase 4 (Docs)** (see *Pre-commit hooks:
 phased rollout* below and `.claude/WORKFLOW.md`) and is the other global
@@ -272,250 +424,11 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
   skills; fold into one rather than duplicate if it already fits (Rule of
   Three).
 
-## 🧰 Tool/Version Manager Setup (perlbrew, nvm, …) (MEDIUM PRIORITY)
-
-Goal: dotfiles should install and configure per-language version/tool
-managers consistently, replacing the ad-hoc setup that's accreted over time.
-Cover at least **perlbrew** (Perl) and **nvm** (Node), and evaluate the
-equivalents for the other languages in play (pyenv/uv for Python, a Ruby
-manager; `rustup` is already used). One documented, idempotent install +
-shell-init path per manager — XDG-aware where possible, lazy-loaded in
-`config/shell-startup/<lang>` to keep shell startup fast.
-
-- [ ] perlbrew: install a pinned Perl + cpanm, then the toolchain the repo
-  needs (notably **Perl::Tidy**). A controlled Perl::Tidy that's identical
-  across machines **and CI** removes the version drift behind the non-gating
-  perl job (see "perl CI: make perltidyrc-clean tests version-robust" above —
-  pinning fixes the wording drift; the tests should still be hardened too).
-- [ ] nvm: install + lazy-load; pin a default Node.
-- [ ] Evaluate/standardize the rest (Python, Ruby; rustup already in use)
-  under one consistent pattern, documented in each
-  `config/shell-startup/<lang>` module.
-
-## 🔍 config/shell-startup Audit (MEDIUM PRIORITY)
-
-Review all files in `config/shell-startup/` for correctness and security:
-
-- [ ] Variables set at module scope but never unset (temporary/setup vars
-  that pollute the shell environment)
-- [ ] Sensitive values (tokens, keys, paths to secrets) that should be
-  handled more carefully or not exported at all
-- [ ] Variables exported unnecessarily (does the child process actually
-  need it, or should it be local?)
-- [ ] Patterns like `source`/`.` that execute arbitrary files without
-  checking ownership or permissions
-- [ ] Files read without checking they're not world-writable
-- [ ] Missing `command -v ... || return 0` guards where a tool may not
-  be installed
-- [ ] Inconsistent guard style (`if command -v` vs `command -v || return 0`)
-  — standardize to `|| return 0` pattern per `000-loadtokens` fix
-- [ ] Any other shellcheck warnings not already suppressed with justification
-
-Beyond correctness/security, audit each module for **improve / add / remove**:
-
-- [ ] **Improve**: modernize patterns; fix the lint findings the
-  extensionless-files coverage gap currently hides (e.g. terraform's
-  `COMPREPLY=($(compgen …))` SC2207, perl's SC1003); cut per-startup cost
-  (subprocesses that run at every login).
-- [ ] **Add**: tools/integrations worth their own module that aren't covered.
-- [ ] **Remove / retire**: modules for tools no longer used; dead or
-  commented-out blocks (e.g. perl's `wtf_am_i_doing_here` early-`return`
-  function); stale host assumptions.
-
-## 🧳 Move env-polluting shell-startup setup into bin wrappers (MEDIUM PRIORITY)
-
-Some `config/shell-startup/` modules export tool-specific environment into
-*every* interactive shell for a tool that's rarely run — the setup belongs in
-an on-demand `bin/` wrapper (set the env, then `exec <tool> "$@"`) so it stops
-polluting the global environment. This is the "should this even live in the
-shell?" lens on the *config/shell-startup Audit* section above.
-
-- [ ] **aider** — move `config/shell-startup/aider` into a `bin/aider`
-  wrapper. It currently parses `$DOTFILES/aider.env` and exports `AIDER_*`
-  (plus `AIDER_EDITOR`, `AIDER_COMMIT_PROMPT`) into every shell, though only
-  aider needs them. A wrapper that builds that env and `exec`s the real
-  `aider` scopes it to invocation; remove the shell-startup module once moved
-  (its new `shellcheck-sourced` / `shfmt-sourced` pre-commit coverage follows
-  it to `bin/`, where the executable shebang makes it tagged automatically).
-
-- [ ] **Audit every `config/shell-startup/` module** for the same opportunity
-  and **report on each one** — including the ones that should *stay*. For each,
-  classify:
-  - **move** — purely tool-only env/config, safe to lazy-load via a wrapper;
-  - **keep** — a genuine interactive-shell feature (e.g. `git`'s aliases and
-    functions, prompt/`less`/completion wiring) that *must* live in the
-    environment;
-  - **partial** — split the tool-only env into a wrapper but keep the
-    shell-facing bits in the module.
-
-  Partial moves are expected and fine. The deliverable is the per-module
-  report (move / keep / partial, with the reason); acting on it is follow-up.
-
-## 🏠 $HOME Dotfile Audit (MEDIUM PRIORITY)
-
-Reduce $HOME clutter by moving dotfiles to XDG directories where supported
-and removing unused ones.
-
-Reference: <https://wiki.archlinux.org/title/XDG_Base_Directory>
-(comprehensive list of which apps support XDG and how to configure them)
-
-- [ ] Inventory all dotfiles/dotdirs in $HOME (`ls -la ~ | grep '^\.'`)
-- [ ] For each, check the Arch wiki XDG page:
-  - If XDG is supported: move file/dir to appropriate XDG location and
-    configure the app (env var, config option, symlink, etc.)
-  - If XDG is not supported: determine if the app is still in use; remove
-    the dotfile if not
-- [ ] Update `config/shell-startup/` modules to set any required env vars
-  for apps migrated to XDG paths
-- [ ] Update dotlinks if any of these were previously managed there
-- [ ] After migration, verify apps still work correctly
-
-Known offenders to investigate (as of 2026-05-20):
-
-| Path | Tool | Notes |
-| --- | --- | --- |
-| `~/.aider` | aider AI | check if `--config-dir` or `AIDER_CONFIG` supports XDG |
-| `~/.cpan` | CPAN | `CPAN::Config` supports custom dirs |
-| `~/.cpanm` | cpanm | `PERL_CPANM_HOME` env var |
-| `~/.docker` | Docker | `DOCKER_CONFIG` — already set in `010-general` but dir still in `$HOME` |
-| `~/.gradle` | Gradle | `GRADLE_USER_HOME` env var |
-| `~/.gradle-mcp` | gradle-mcp | likely follows `GRADLE_USER_HOME` or its own config |
-| `~/.grok` | grok (xAI CLI) | check XDG / config-dir support (installer block already relocated to `config/shell-startup/grok`) |
-| `~/.java` | Java/JVM | `java.util.prefs.userRoot` system property |
-| `~/.jbang` | jbang | `JBANG_DIR` env var |
-| `~/.kivy` | Kivy | `KIVY_HOME` env var |
-| `~/.lesshst` | less | `LESSHISTFILE` env var — set to `$XDG_CACHE_HOME/less/history` |
-| `~/.m2` | Maven | `settings.xml` `<localRepository>` or `MAVEN_OPTS` |
-| `~/.npm` | npm | `NPM_CONFIG_CACHE` or `.npmrc` `cache=` |
-| `~/.redhat` | Red Hat tools | investigate; may not be movable |
-| `~/.serena` | Serena AI | check if config path is configurable |
-| `~/.sqlite_history` | SQLite | `SQLITE_HISTORY` env var |
-| `~/.wget-hsts` | wget | already handled via alias in `010-general` |
-| `~/.zshrc` | Zsh | not primary shell; remove if unused |
-
-**Note:** Consider symlinking `~/.config -> $DOTFILES/config` to handle apps
-that hardcode `$HOME/.config` rather than respecting `$XDG_CONFIG_HOME`. This
-would make both paths resolve to the same location without needing per-app
-symlinks. Risk: `~/.config` becomes the canonical store for all XDG config,
-so anything the OS or other tools write there lands directly in the repo
-working tree — evaluate carefully before implementing.
-
-## 🧪 Testing (HIGH PRIORITY)
-
-### Phase 2: Test Infrastructure
-
-- [ ] Review and enhance existing BATS tests
-- [ ] Ensure meta-tests are up to date (`tests/scaffold/build-meta-tests`)
-- [ ] Create test fixtures in `tests/fixtures/` if needed
-
-### Phase 3: Core Test Coverage
-
-- [ ] Add tests for critical bin/ scripts
-- [ ] Add tests for lib/ libraries
-  - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
-        munging). Constraint: core perl modules only — no CPAN (keeps it
-        runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
-  - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
-    factored into `bin/git-status` — not tested.)
-- [ ] Add tests for config/shell-startup/ modules
-  - The rest are guarded tool-setup (`command -v`/interactive) already
-    exercised in aggregate by the docker integration tests
-    (`test_integration_startup` + `test_integration_context`); add a focused
-    unit test only when a module grows real conditional logic.
-
-### Phase 4: Extended Coverage
-
-- [ ] Completion tests for config/completions/
-- [ ] Integration tests for tool configurations
-- [ ] Performance tests for PATH building
-
-### Test Infrastructure
-
-- [ ] tests/scaffold/build-meta-tests:5,6,71 - Add tests for sh compilation,
-  improve shebang check, handle symbolic links (XXX)
-
-### Comprehensive BATS Test Coverage Audit (MEDIUM PRIORITY)
-
-`bin/` audited (2026-06-07). The 9 `docker_wrapper` tool symlinks (dive,
-hadolint, ollama, openwebui, prettier, shellcheck, shfmt, trivy, yamllint) are
-tested once at the dispatcher (`test_docker_wrapper`). Real scripts classified:
-
-**Tested:** cleanpath, check-dotfiles, docker_wrapper, envsubstitute,
-git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
-(`test_duration.bats`), **dir-readable** (`test_dir-readable.bats`).
-
-**Unit-testable (pure logic) — to do:**
-
-- [ ] (reclassified to integration) `showvars` — needs `shfmt` (docker
-  wrapper) + `jq`; covered under the integration group, not pure-unit.
-- [ ] (marginal) `loadavg` (output depends on real load), `dateh` (date-format
-  table — mostly display).
-
-**Integration (external tools / state) — to do:**
-
-- [ ] (low value) `motd` (large system-summary display), `tmux_mode_indicator`
-  (tmux display; also has the `set -ex` leftover to clean — see tmux section),
-  `loadavg` / `dateh` (load-dependent / display), `showvars` (needs the shfmt
-  docker wrapper + jq). These are display/integration-heavy; deferred.
-
-**Net:** every bin/ script with real logic or external interaction is now
-tested (duration, dir-readable, where, creds-helper, git-branch-clean,
-git-all, proj, ansi + the earlier set); the bin/ coverage pass is
-substantively complete. The above are the remaining display/heavy stragglers.
-
-**Trivial / skip (documented):** `anykey` (interactive single-key read),
-`lwhich` / `vimwhich` (thin `which`/vim wrappers), `run-help` (9-line readline
-shim), `show-unicode` (static table), `bash-colors` (color-var defs),
-`tmux_edit_buffer` (5-line tmux glue).
-
-- [ ] Also evaluate beyond `bin/`: remaining `config/shell-startup/` modules
-  (mostly covered by the integration tests) and any scripts elsewhere.
-- [ ] Regenerate the meta suite after adding scripts; keep Phase 3 in sync.
-
-## 🪝 branch-protection hook: exempt gitignored paths (LOW PRIORITY)
-
-**Pain (PR #118 retrospective):** writing an auto-memory note — under the
-gitignored `config/claude/projects/*/memory/` dir, a path that can *never*
-land in a commit — was blocked by the edit-time `branch-protection.py`
-`PreToolUse` hook because `master` was checked out, forcing an unnecessary
-throwaway branch just to satisfy the guard. A write that cannot be committed
-cannot violate branch protection, so this is a false-positive in a
-forcing-function hook (the memory system is meant to be written directly at
-any time).
-
-- [ ] **Artifact:** update the existing hook
-  `config/claude/hooks/branch-protection.py` (global; symlinked to
-  `~/.claude/hooks/`) to **allow** an `Edit`/`Write`/`MultiEdit` whose target
-  path is gitignored (e.g. `git check-ignore -q <path>`), since such a write
-  can't reach a commit on the protected branch. Keep failing safe (any error →
-  allow). Scope: **global** dotfiles agent-config. Confirm it doesn't weaken
-  the guard for tracked files.
-
-## 🔭 Audit the Claude Code Setup (MEDIUM PRIORITY)
-
-The Claude Code setup audit's *methodology* is the `claude-audit` skill; its
-*record* lives under `config/claude/audit/` — `decisions-log.md` (the "why"),
-`BACKLOG.md` (open audit follow-ups), `idea-sources.md` + `mining-census.md`
-(mined repos) — indexed by `config/claude/SETUP-AUDIT.md`. None of it is
-context-loaded; it is read only when running `/claude-audit`. Audit follow-ups
-(e.g. the deferred `pydantic_ai` framework rule, repo-mining shortlists) are
-tracked in `audit/BACKLOG.md`, not here, so this repo's `TODO.md` stays about
-actual dotfiles work.
-
-**TODO routing convention.** When capturing a follow-up, route it by scope: a
-task about the **Claude agent config** (anything under `config/claude/` —
-rules, skills, hooks, the agent-config docs) goes in
-[`config/claude/audit/BACKLOG.md`](config/claude/audit/BACKLOG.md); a task about
-the **broader dotfiles setup** stays in this `TODO.md`. A genuinely **mixed**
-task is split into both with a cross-reference — *unless* the parts are merely
-coupled (added together, or one can't be done until the other lands), in which
-case keep it whole in its primary file and note the other scope inline. Also in
-`WORKFLOW.md` → *TODO routing*.
-
 ## 🪝 Pre-commit hooks: phased rollout (MEDIUM PRIORITY)
 
 **Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
-Pre-commit can progress independently. CI/CD cannot lead pre-commit.
+Pre-commit can progress independently. CI/CD cannot lead pre-commit. (The
+CI/CD side lives in its own section below.)
 
 ### Phase 1: Core Hooks (DONE)
 
@@ -629,15 +542,79 @@ below is the remaining buildout.
 - [ ] Test update workflow
 - [ ] Document update process
 
-## 💻 Code Improvements (LOW PRIORITY)
+## 🧪 Testing (HIGH PRIORITY)
 
-### bin/cleanpath: extend to other path vars (OPTIONAL)
+### Phase 2: Test Infrastructure
 
-`bin/cleanpath` is fixed, tested (`tests/shell/test_cleanpath.bats`), and
-integrated into `shell-startup` (guarded so a failure can't blank PATH).
+- [ ] Review and enhance existing BATS tests
+- [ ] Ensure meta-tests are up to date (`tests/scaffold/build-meta-tests`)
+- [ ] Create test fixtures in `tests/fixtures/` if needed
 
-- [ ] (Optional) Extend to other path vars (`LD_LIBRARY_PATH`, `MANPATH`) if
-  duplicates show up there too.
+### Phase 3: Core Test Coverage
+
+- [ ] Add tests for critical bin/ scripts
+- [ ] Add tests for lib/ libraries
+  - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
+        munging). Constraint: core perl modules only — no CPAN (keeps it
+        runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
+  - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
+    factored into `bin/git-status` — not tested.)
+- [ ] Add tests for config/shell-startup/ modules
+  - The rest are guarded tool-setup (`command -v`/interactive) already
+    exercised in aggregate by the docker integration tests
+    (`test_integration_startup` + `test_integration_context`); add a focused
+    unit test only when a module grows real conditional logic.
+
+### Phase 4: Extended Coverage
+
+- [ ] Completion tests for config/completions/
+- [ ] Integration tests for tool configurations
+- [ ] Performance tests for PATH building
+
+### Test Infrastructure
+
+- [ ] tests/scaffold/build-meta-tests:5,6,71 - Add tests for sh compilation,
+  improve shebang check, handle symbolic links (XXX)
+
+### Comprehensive BATS Test Coverage Audit (MEDIUM PRIORITY)
+
+`bin/` audited (2026-06-07). The 9 `docker_wrapper` tool symlinks (dive,
+hadolint, ollama, openwebui, prettier, shellcheck, shfmt, trivy, yamllint) are
+tested once at the dispatcher (`test_docker_wrapper`). Real scripts classified:
+
+**Tested:** cleanpath, check-dotfiles, docker_wrapper, envsubstitute,
+git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
+(`test_duration.bats`), **dir-readable** (`test_dir-readable.bats`).
+
+**Unit-testable (pure logic) — to do:**
+
+- [ ] (reclassified to integration) `showvars` — needs `shfmt` (docker
+  wrapper) + `jq`; covered under the integration group, not pure-unit.
+- [ ] (marginal) `loadavg` (output depends on real load), `dateh` (date-format
+  table — mostly display).
+
+**Integration (external tools / state) — to do:**
+
+- [ ] (low value) `motd` (large system-summary display), `tmux_mode_indicator`
+  (tmux display; also has the `set -ex` leftover to clean — see tmux section),
+  `loadavg` / `dateh` (load-dependent / display), `showvars` (needs the shfmt
+  docker wrapper + jq). These are display/integration-heavy; deferred.
+
+**Net:** every bin/ script with real logic or external interaction is now
+tested (duration, dir-readable, where, creds-helper, git-branch-clean,
+git-all, proj, ansi + the earlier set); the bin/ coverage pass is
+substantively complete. The above are the remaining display/heavy stragglers.
+
+**Trivial / skip (documented):** `anykey` (interactive single-key read),
+`lwhich` / `vimwhich` (thin `which`/vim wrappers), `run-help` (9-line readline
+shim), `show-unicode` (static table), `bash-colors` (color-var defs),
+`tmux_edit_buffer` (5-line tmux glue).
+
+- [ ] Also evaluate beyond `bin/`: remaining `config/shell-startup/` modules
+  (mostly covered by the integration tests) and any scripts elsewhere.
+- [ ] Regenerate the meta suite after adding scripts; keep Phase 3 in sync.
+
+## 🪟 PowerShell
 
 ### PowerShell ↔ Bash Feature Parity (MEDIUM PRIORITY)
 
@@ -691,37 +668,6 @@ research:
 - [ ] Whether a Windows container is needed to test true Windows PowerShell
   5.1 behavior, and whether that's practical (requires a Windows host for
   Windows containers).
-
-### Surfaced from comment cleanup (LOW PRIORITY)
-
-In-code `TODO:` markers promoted to tracked items by the comment-cleanup
-pass:
-
-- [ ] `config/shell-startup/tmux` - when multiple tmux sessions exist, have
-  `ta` list them and let the user choose, instead of always attaching the
-  `$USER` session. (Marker at the `ta` definition.)
-- [ ] `config/claude/bin/statusline.sh` + `bin/ansi` - check whether tput /
-  terminals support OSC 8 hyperlink escapes; if so, extend `bin/ansi` to
-  emit them for clickable links repo-wide. (Markers in both files.)
-
-## ⚙️ Configuration Enhancements (LOW PRIORITY)
-
-### Bash Completion
-
-- [ ] Enable bash completion for available but unconfigured tools
-- [ ] Document completion setup in dedicated section or inline
-- [ ] Create completion tests
-
-### Shell Helpers
-
-- [ ] Evaluate creating a reusable `select`/menu helper (sibling to
-  `yesno`) for enumerated-option prompts
-  - Survey existing callers in `bin/` and `config/shell-startup/` that
-    roll their own selection logic or use bare `select`
-  - Decide: dedicated `bin/` script (like `yesno`, `anykey`) vs. shell
-    function in `config/shell-startup/`
-  - Required behavior: numbered options, re-prompt on invalid input,
-    optional default, quiet mode, return selected value on stdout
 
 ## 🖥️ Statusline Coordination (MEDIUM PRIORITY)
 
@@ -778,19 +724,9 @@ Once the Claude statusline exists, audit all four surfaces together:
 - [ ] Update `bin/git-status` to respect context flags
 - [ ] Document the ownership split in a comment block or inline README
 
-### Tool Configurations
+## 🔄 Upstream / update tracking
 
-- [ ] Look into lesshst/lesskey configuration
-- [ ] Look into taskwarrior scripts from /usr/share/doc/task/scripts/
-- [ ] Look into colorized columns tool:
-  <https://github.com/LukeSavefrogs/column_ansi.git>
-
-### Dependency Management
-
-- [ ] Create check4update script for git completion files:
-  - git-prompt.sh
-  - git-completion.bash
-- [ ] Set up automated or manual update process
+How the repo stays current with files and tools that originate elsewhere.
 
 ### Vendored file / skill update checker
 
@@ -814,10 +750,79 @@ we can stay current.
     `config/claude/bin/` entry that scopes it to skills.
 - [ ] Generalize the `SOURCE.md` provenance convention (repo / path / SHA /
   local-edits) and document it (WORKFLOW.md or a rules file).
-- [ ] Consider folding the git-completion `check4update` item above into
+- [ ] Consider folding the git-completion `check4update` item below into
   this same mechanism (give those files a `SOURCE.md` too).
 - [ ] Optional: wire it to a periodic nudge (Claude `/schedule` or a CI
   `update-deps.yml` job — see CI/CD "Dependency Updates").
+
+### Git-completion dependency checker
+
+- [ ] Create check4update script for git completion files:
+  - git-prompt.sh
+  - git-completion.bash
+- [ ] Set up automated or manual update process
+
+## 💻 Code & config improvements (LOW PRIORITY)
+
+### parse_params consumer ergonomics
+
+Surfaced while converting `bin/git-branch-clean` to parse_params (PR #150) —
+two small polish items for consumers:
+
+- [ ] **Error prefix should honour `--prog`.** Input/constraint errors print
+  `parse_params: ...` even when the caller passed `--prog git-branch-clean`,
+  leaking the tool name into the consumer's output (`--prog` only changes the
+  generated *usage* header). Use the `--prog` name (falling back to
+  `parse_params`) as the `bail_input`/`def_err` prefix too.
+- [ ] **Document the `SC2154` pattern.** Vars set via `eval
+  "$(parse_params …)"` are invisible to shellcheck, so every consumer needs a
+  file-scope `# shellcheck disable=SC2154` (see `bin/hr`, `bin/findword`,
+  `bin/git-branch-clean`). Add a one-line note to `bash.md` *Argument Parsing*
+  so the next converter doesn't rediscover it.
+
+### bin/cleanpath: extend to other path vars (OPTIONAL)
+
+`bin/cleanpath` is fixed, tested (`tests/shell/test_cleanpath.bats`), and
+integrated into `shell-startup` (guarded so a failure can't blank PATH).
+
+- [ ] (Optional) Extend to other path vars (`LD_LIBRARY_PATH`, `MANPATH`) if
+  duplicates show up there too.
+
+### Bash Completion
+
+- [ ] Enable bash completion for available but unconfigured tools
+- [ ] Document completion setup in dedicated section or inline
+- [ ] Create completion tests
+
+### Shell Helpers
+
+- [ ] Evaluate creating a reusable `select`/menu helper (sibling to
+  `yesno`) for enumerated-option prompts
+  - Survey existing callers in `bin/` and `config/shell-startup/` that
+    roll their own selection logic or use bare `select`
+  - Decide: dedicated `bin/` script (like `yesno`, `anykey`) vs. shell
+    function in `config/shell-startup/`
+  - Required behavior: numbered options, re-prompt on invalid input,
+    optional default, quiet mode, return selected value on stdout
+
+### Surfaced from comment cleanup
+
+In-code `TODO:` markers promoted to tracked items by the comment-cleanup
+pass:
+
+- [ ] `config/shell-startup/tmux` - when multiple tmux sessions exist, have
+  `ta` list them and let the user choose, instead of always attaching the
+  `$USER` session. (Marker at the `ta` definition.)
+- [ ] `config/claude/bin/statusline.sh` + `bin/ansi` - check whether tput /
+  terminals support OSC 8 hyperlink escapes; if so, extend `bin/ansi` to
+  emit them for clickable links repo-wide. (Markers in both files.)
+
+### Tool Configurations
+
+- [ ] Look into lesshst/lesskey configuration
+- [ ] Look into taskwarrior scripts from /usr/share/doc/task/scripts/
+- [ ] Look into colorized columns tool:
+  <https://github.com/LukeSavefrogs/column_ansi.git>
 
 ## 🔍 Research and Exploration (LOW PRIORITY)
 
@@ -849,45 +854,3 @@ we can stay current.
 
 See original TODO.md (archived) for detailed template specifications if needed
 in the future.
-
-## 📊 Progress Tracking
-
-- **Documentation:** ~85% complete (foundation laid, XXX cleanup remaining)
-- **Testing:** ~70% complete (docker harness + context matrix + parse_params,
-  docker_helpers, 000-loadtokens, hr, …; a broad per-script coverage audit and
-  Phase 4 remain)
-- **Pre-commit:** Phases 1–2 done (core + security, in CI + required); Phases
-  3–4 (language, docs) remain
-- **CI/CD:** `tests.yml` (bats/perl/python) + `pre-commit` job live; phased
-  expansion remains
-- **Code Improvements:** ongoing (XXX cleanup cataloged)
-- **Config Enhancements:** cataloged, addressed opportunistically
-
-## 🎯 Next Actions (Priority Order)
-
-1. **Perl quality tooling** — curated perlcritic + Test::Perl::Critic,
-   Devel::Cover, Pod::Coverage, … (see that section)
-2. **Comprehensive BATS coverage audit** — full pass over the remaining bin/
-   scripts (Phase 3 wrap-up)
-3. **Pre-commit Phase 4** (docs linting) and the phased CI/CD expansion
-
-## Notes
-
-- **HIGH PRIORITY** items should be completed first
-- **LOW PRIORITY** items can be deferred or completed incrementally
-- Pre-commit phases can progress independently
-- CI/CD phases MUST NOT lead pre-commit phases (dependencies enforced)
-- Code improvements and config enhancements are cataloged but can be addressed
-  opportunistically
-- Template creation is extensive future work, deferred for now
-
-## References
-
-- **[CHANGELOG.md](CHANGELOG.md)**: Finalized (completed) work — TODO's
-  counterpart; items land there once their PR goes green
-- **[WORKFLOW.md](.claude/WORKFLOW.md)**: Development guidelines and conventions
-- **[TESTS.md](.claude/TESTS.md)**: Testing framework and strategy
-- **[CLAUDE.md](config/claude/CLAUDE.md)**: AI agent behavior specification
-- **[config/claude/rules/pre-commit.md](config/claude/rules/pre-commit.md)**:
-  Pre-commit agent policy
-- **Modernization Plan**: Full plan available in conversation transcript
