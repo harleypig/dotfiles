@@ -95,6 +95,17 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   `deps-update` (project manifests). Best home: a new `claude-audit`
   dimension.
 
+- [ ] **Verify subagent file-writes for leaked tool-call markup
+  (retrospective, PR #166).** When a subagent is delegated a full-file
+  write/rewrite, its tool-call closing tags can bleed into the file content
+  (`</content>`, `</invoke>`, `<parameter …>`) — and **no linter catches
+  them** (they are valid text). PR #166's `TODO.md` reorg leaked
+  `</content>` / `</invoke>` at EOF, caught only by eye. Make it a standard
+  post-delegation step to `grep` the written file for stray tool-call markup,
+  and consider a small check (a pre-commit/meta scan for
+  `</?(invoke|parameter|content|function_calls|antml)` in tracked text files).
+  Generic — applies to any repo where a subagent writes files.
+
 ## Skill ideas & future categories (not from mining)
 
 - [ ] **`ship-pr`: document "PR already open" resume path (2026-06-20)** —
