@@ -121,6 +121,25 @@ These were tracked in the dotfiles `TODO.md` but are Claude-agent-config
 work (rules, skills, plugins, agent-config docs) — moved here per the TODO
 routing convention (see the header). Provenance preserved verbatim.
 
+### 🧹 Two rule refinements from the shell-startup-guard PR (#154) (LOW PRIORITY)
+
+Surfaced while shipping PR #154; small doc-rule additions, not edits yet.
+
+- [ ] **`pre-commit.md`: note that `--all-files` skips *untracked* files.**
+  `pre-commit run --all-files` runs only over git-tracked files, so newly
+  authored (not-yet-`git add`ed) files pass a green `--all-files` run yet still
+  get caught by the commit hooks (which run on the staged set). In #154 this
+  meant SC2016/yapf findings on new files surfaced only at commit time. Add a
+  one-liner: to lint brand-new files before committing, stage them or pass
+  `pre-commit run --files <paths>`.
+- [ ] **`python.md`: non-cryptographic `hashlib` hashes pass
+  `usedforsecurity=False`.** GitHub's default code scanning (Bandit) flags
+  `hashlib.md5`/`sha1` as **B324** "weak hash for security". When the hash is
+  for integrity/drift detection (not security), pass `usedforsecurity=False`
+  (Python 3.9+) — it both documents intent and clears B324. #154 hit this on
+  the `md5-guard.py` hook and its test. (Note this is GitHub *default* code
+  scanning, separate from the repo's in-house SAST posture in `semgrep.md`.)
+
 ### 📊 Slim down the STRUCTURE.md mermaid diagram (HIGH PRIORITY / LOW IMPORTANCE — IN PROGRESS)
 
 **Status:** in progress — pick-at-it. High priority (surface it when the repo
