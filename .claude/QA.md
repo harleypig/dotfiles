@@ -55,7 +55,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 10 | Performance & load | **Off** | Not a service. Login-shell startup perf is handled ad hoc, measure-first (resolved — see `CHANGELOG.md`). |
 | 11 | Reliability & observability | **N/A** | Not a deployed service. |
 | 12 | Build | **N/A** | Nothing compiles / bundles. The test docker harness image is test infra, not a product artifact. |
-| 13 | Documentation | **Active** | `markdownlint` (prose); inline-first doc philosophy (`WORKFLOW.md`); changelog is **hand-written** (`CHANGELOG.md`). `proselint` / link-validation **Planned** — TODO *Pre-commit Phase 4*. |
+| 13 | Documentation | **Active** | `markdownlint` (prose); inline-first doc philosophy (`WORKFLOW.md`); changelog is **hand-written** (`CHANGELOG.md`). `Vale` (prose; chosen over proselint) / link-validation **Planned** — TODO *Pre-commit Phase 4*. |
 | 14 | Code review | **Active (solo)** | `master` ruleset requires a PR (no bypass) with review-thread resolution; **0 required approvals** (solo repo) — review is self-review. |
 | 15 | CI | **Active** | `tests.yml` jobs bats / perl / python / pre-commit; required checks bats + perl + pre-commit gate merges. Watch via the `ship-pr` skill's `ci-watch`. |
 

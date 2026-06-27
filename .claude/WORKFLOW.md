@@ -99,7 +99,8 @@ When creating new configurations or modifying existing ones, agents MUST:
 1. **Phase 1 (Core):** shellcheck, yamllint, markdownlint, trailing-whitespace
 2. **Phase 2 (Security):** gitleaks, detect-private-key
 3. **Phase 3 (Language):** Python, Perl, Rust hooks
-4. **Phase 4 (Docs):** proselint, additional documentation linting
+4. **Phase 4 (Docs):** Vale (prose; chosen over proselint — see `TODO.md`),
+   additional documentation linting
 
 Agents MUST complete each phase before implementing the next. GitHub Actions
 CI workflows MUST NOT include hooks from a phase until that phase is complete
