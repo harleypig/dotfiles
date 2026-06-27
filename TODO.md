@@ -142,31 +142,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
 done.
 
-### Comprehensive BATS Test Coverage Audit
-
-`bin/` + `lib/` audited for both existence and **failure-path** coverage
-(quality-reviewed 2026-06-27). Every script with real logic or external
-interaction is tested, and the existing tests exercise failure paths — not
-just the happy path — so the suite meets the testing bar. The 9
-`docker_wrapper` tool symlinks are tested once at the dispatcher
-(`test_docker_wrapper`); `perltidyrc-clean` is Perl (covered under
-`tests/perl/`); `config/shell-startup` logic is covered by the integration
-tests plus the function-level `test_havecmd` / `test_shell_startup_git` /
-`test_tmux`.
-
-- [ ] `showvars` success path — a docker-harness integration test for the
-  `shfmt -tojson | jq` variable extraction (needs the shfmt wrapper + jq; low
-  value, deferred).
-
-**Trivial / skip (documented decisions, not gaps):** `anykey` (interactive
-single-key read), `dateh` (date-format display, non-deterministic output),
-`lwhich` / `vimwhich` (thin `which` / vim wrappers), `run-help` (9-line
-readline shim), `show-unicode` (static table), `bash-colors` (color-var
-defs), `motd` (large pure-display summary), `tmux_edit_buffer` (5-line tmux
-glue), `tmux_mode_indicator` (tmux format-string assembly only tmux
-evaluates — its leftover `set -ex` cleanup is tracked under the tmux
-repo-extraction item).
-
 ### Test Infrastructure
 
 - [ ] **(watch — Rule of Three at 2/3) A "stub that emits output" helper.**
@@ -384,6 +359,16 @@ Once the Claude statusline exists, audit all four surfaces together:
 - [ ] Document the ownership split in a comment block or inline README
 
 ## 🐳 Docker tooling Setup
+
+### Audit other wrappers for the piped-stdin gap (LOW PRIORITY)
+
+- [ ] PR #175 fixed `docker_wrapper`'s `shfmt()` dropping piped stdin (it ran
+  `docker run` without `-i`, so `shfmt … < file` saw an empty stream). The
+  same latent bug exists in any other wrapper that a caller might pipe into —
+  `shellcheck -`, `prettier` via stdin, etc. Nothing in the repo pipes to them
+  today, so it's theoretical, but a one-line `[[ -t 0 ]] || args+=(-i)` per
+  affected `<tool>()` would make the dispatcher uniformly stdin-safe. Audit
+  the wrappers, decide which genuinely accept stdin, and add `-i` to those.
 
 ### Research: run more linters/formatters via Docker
 

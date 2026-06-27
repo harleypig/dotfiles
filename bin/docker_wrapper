@@ -90,6 +90,11 @@ shfmt() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
+  # Forward stdin when it is piped (not a TTY), so `shfmt ... < file` reaches
+  # the container instead of an empty stream. bin/showvars relies on this with
+  # `shfmt -tojson < script`; without -i the AST comes back empty.
+  [[ -t 0 ]] || args+=(-i)
+
   exec docker run "${args[@]}" "${image[shfmt]}" "$@"
 }
 image[shfmt]="mvdan/shfmt:v3"
