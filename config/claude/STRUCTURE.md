@@ -156,6 +156,7 @@ rule name.
 |------|-------------|
 | [markdownlint.md](rules/markdownlint.md) | `*.md` |
 | [yamllint.md](rules/yamllint.md) | `*.yml`, `*.yaml` |
+| [todo.md](rules/todo.md)<br>↗ `todo-organize` · `qa-check` | `TODO.md`, `ROADMAP.md`, `BACKLOG.md` |
 
 ### Domain-specific
 

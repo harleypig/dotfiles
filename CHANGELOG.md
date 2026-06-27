@@ -12,6 +12,19 @@ goes green (see the merge-time finalization in
 
 ## 2026-06-27
 
+### Added
+
+- **Global TODO / planning-doc organization rule** — added
+  `config/claude/rules/todo.md` (path-scoped to `TODO.md` / `ROADMAP.md` /
+  `BACKLOG.md`). It codifies: organize **by subject, not activity**
+  (`## <Subject> Setup` for maintained languages/domains; descriptive sections
+  for bounded projects/audits; a work-type section for features/fixes); a
+  planning doc holds **only open tasks** (completed work is pruned to the
+  changelog / decisions log, deferred "not now" work becomes an `ICEBOX:`
+  marker); and it carries **no stale header/preamble**. Listed in
+  `STRUCTURE.md`. First of three PRs (rule → `todo-organize` skill + qa-check
+  wiring → dogfood the dotfiles `TODO.md`). (PR #164)
+
 ### Changed
 
 - **`pre-commit` skill evaluated and declined; qa-check delegation made
