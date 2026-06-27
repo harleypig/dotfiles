@@ -141,6 +141,37 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   top-level category only when it genuinely doesn't fit. (`documentation` and
   `troubleshooting` were opened 2026-06-11 — see the decisions log.)
 
+- [ ] **UI/UX design skills (CLI / windowed / web), beyond `frontend-design`
+  (2026-06-27).** `frontend-design` (vendored, Apache-2.0) covers **web** UI
+  *visual design* only — its triggers are web components / pages / React /
+  HTML-CSS, and it's aesthetics-focused, not UX (flows, information
+  architecture, usability). UI/UX differs by **surface**; the major ones: a
+  **CLI** (terminal output formatting, prompts, progress, color, TUI layout),
+  a **windowed / desktop app** (native GUI), and a **web app** (covered by
+  `frontend-design`). Evaluate whether to add design skills for the uncovered
+  surfaces — likely a **CLI-design** skill (high value here: this repo is
+  CLI-heavy) and a **desktop/windowed-design** skill — and whether a thin,
+  surface-agnostic **UX layer** (design thinking / flows / usability) should
+  sit over the surface-specific skills, per the two-layer model in
+  `EXTENDING.md` *Layer the generic over the specific*. Keep `frontend-design`
+  as the web instance; don't duplicate its coverage. Relates to `a11y-review`
+  (accessibility *review*) and `qa.md` dim 7 (UI/UX & accessibility).
+
+- [ ] **Sub-agent usage / definition / effort-level research (2026-06-27).**
+  Questions the current setup doesn't answer systematically: (1) **how to
+  use** sub-agents well (when to delegate vs do inline — `EXTENDING.md`
+  *Agent* gives the principle, not a routine); (2) **how to define** them
+  (custom agent types, tool restrictions, system prompts); (3) **effort
+  levels** — the Agent/Workflow tooling exposes an `effort` knob
+  (low/medium/high/…), but there's no guidance on *which* level a task
+  warrants. Investigate whether we can **estimate a task's effort and
+  auto-assign the right sub-agent** (model tier + effort + agent type) from
+  the task description, and — the harder half — whether a sub-agent can
+  **recognize when the effort/agent was mis-guessed and kick the task back**
+  ("this is bigger/smaller than scoped; re-route") instead of grinding at the
+  wrong level. Output: a rule and/or routine (possibly a skill) for effort
+  estimation + agent selection + kick-back. Generic (global).
+
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
 
 These were tracked in the dotfiles `TODO.md` but are Claude-agent-config
