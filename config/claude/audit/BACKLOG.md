@@ -80,6 +80,21 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   hook matches what the repo actually enforces. Global;
   `config/claude/hooks/shell-check.py` (+ note in `rules/shellcheck.md`).
 
+- [ ] **Detect upstream drift in every `## <X> Setup` → flag stale
+  rules/skills (2026-06-27).** During a config audit (`claude-audit` now; a
+  future repo-audit for repo-local pinned setup), enumerate **every rule/skill
+  that documents a setup — language *or* subject alike** — and, via their
+  **Sources** sections and pinned versions, check whether the grounded
+  upstream has moved. Anchor on the **config inventory (rules/skills +
+  Sources/pins), *not* the TODO** — a finished setup has no TODO section, so
+  the TODO can't be the coverage list. Drift sources differ by setup
+  (language: version / version-manager / toolchain / frameworks; subject:
+  pinned image tags, action SHAs, lint styles, wired tools) but the re-check
+  is uniform. The *pull/refresh* complement to the existing *push* trigger
+  (`rule-coverage.py` nags when a *new* tool lacks a rule); distinct from
+  `deps-update` (project manifests). Best home: a new `claude-audit`
+  dimension.
+
 ## Skill ideas & future categories (not from mining)
 
 - [ ] **`ship-pr`: document "PR already open" resume path (2026-06-20)** —
