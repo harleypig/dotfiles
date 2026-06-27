@@ -144,9 +144,17 @@ done.
 
 ### Phase 2: Test Infrastructure
 
-- [ ] Review and enhance existing BATS tests
-- [ ] Ensure meta-tests are up to date (`tests/scaffold/build-meta-tests`)
-- [ ] Create test fixtures in `tests/fixtures/` if needed
+- [x] Review and enhance existing BATS tests (test-review pass): added
+  `test_bash_prompt.bats` for the untested `lib/bash_prompt` helpers;
+  consolidated the duplicate `test_git_status`/`test_git-status` into one;
+  added missing failure/edge cases (`duration` invalid date, `dir-readable`
+  writable/non-writable color, `ansi` unknown token).
+- [x] Ensure meta-tests are up to date (`tests/scaffold/build-meta-tests`) —
+  regenerated, 0 stale.
+- [x] Create test fixtures in `tests/fixtures/` — **not needed**: the repeated
+  setup is *generated* state (git repos, stubs), not stored data; DRY'd the
+  git-repo init into a `make_test_repo` helper in `tests/helpers/common.bash`
+  instead.
 
 ### Phase 3: Core Test Coverage
 

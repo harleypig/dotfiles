@@ -34,3 +34,12 @@ setup() {
   run duration "now"
   assert_output ''
 }
+
+@test "duration surfaces the date error for an unparseable argument" {
+  # bin/duration does not validate its argument: an unparseable date makes the
+  # underlying `date --date=...` fail and emit "invalid date" (on stderr, which
+  # `run` captures). LC_ALL=C pins the English wording. This pins the
+  # visible-error behavior, not validation the script doesn't (yet) do.
+  LC_ALL=C run duration "not a real date"
+  assert_output --partial 'invalid date'
+}
