@@ -154,12 +154,6 @@ just the happy path — so the suite meets the testing bar. The 9
 tests plus the function-level `test_havecmd` / `test_shell_startup_git` /
 `test_tmux`.
 
-- [x] `loadavg` — threshold/color logic now unit-tested
-  (`test_loadavg.bats`): the strict `> 2.0` branch and the script's inversion
-  of `bc`'s result, via an injected load value (real `bc`, stubbed
-  `awk`/`ansi`).
-- [x] `showvars` — its three pure-bash guard paths (no-arg usage, missing
-  dependency, unreadable file) now tested (`test_showvars.bats`).
 - [ ] `showvars` success path — a docker-harness integration test for the
   `shfmt -tojson | jq` variable extraction (needs the shfmt wrapper + jq; low
   value, deferred).
@@ -172,6 +166,19 @@ defs), `motd` (large pure-display summary), `tmux_edit_buffer` (5-line tmux
 glue), `tmux_mode_indicator` (tmux format-string assembly only tmux
 evaluates — its leftover `set -ex` cleanup is tracked under the tmux
 repo-extraction item).
+
+### Test Infrastructure
+
+- [ ] **(watch — Rule of Three at 2/3) A "stub that emits output" helper.**
+  `make_stub` (in `tests/helpers/common.bash`) records args and exits a code
+  but can't emit custom stdout, so tests that need a stub to *print* something
+  hand-roll a `printf '#!/usr/bin/env bash\n...' > "$dir/<name>"`. The
+  "`ansi` stub that echoes its args" form now recurs in `test_dir-readable`
+  and `test_loadavg` (2 instances); `test_loadavg` also hand-rolls an
+  env-var-emitting `awk` stub. On a **third** instance, extract a small
+  `make_echo_stub <dir> <name> <body>` (or `make_arg_echo_stub`) helper. Don't
+  build before then — the current two stubs differ enough that a premature
+  abstraction would be the wrong one.
 
 ### Bash Completion
 
