@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.5.2
+**Version:** v1.5.3
 
 ## Purpose
 
@@ -22,6 +22,9 @@ and `CLAUDE.md` for test-related operations.
 
 * **`bin/`** - Executable scripts and utilities
 * **`lib/`** - Shared shell libraries (sourced, not executed)
+* **`snippets/`** - Reusable code fragments for copy-paste reference (not
+  loaded); organized by type (`bash/`, `pre-commit/`). See
+  `snippets/README.md`
 * **`config/`** - Configuration files organized by tool/application
 * **`config/shell-startup/`** - Modular shell initialization files
 * **`tests/`** - Test files using BATS framework
@@ -345,7 +348,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.5.2)
+* `WORKFLOW.md` - Versioned (this file, v1.5.3)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 

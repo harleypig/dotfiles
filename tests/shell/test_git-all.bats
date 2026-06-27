@@ -16,11 +16,7 @@ setup() {
 }
 
 make_repo() {
-  local d="$REPOHOME/$1"
-  git init -q "$d"
-  git -C "$d" config user.email t@example.com
-  git -C "$d" config user.name test
-  git -C "$d" commit --allow-empty -q -m init
+  make_test_repo "$REPOHOME/$1"
 }
 
 @test "no command prints usage and exits 1" {

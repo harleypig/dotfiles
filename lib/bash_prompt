@@ -27,22 +27,6 @@ PROMPT_CHARS=("$" "●" "★" "➤" "❯" "❔" "⚡" "✸" "♠" "♦" "✱" "�
   "⇨" "✷" "⚫" "→" "✶" "♣" "❓" "❱")
 
 #----------------------------------------------------------------------------
-function join_array() {
-  (($# != 2)) && die "must pass delimiter and array name"
-
-  local delim="$1"
-  local -n _array_="$2"
-
-  #eval "_array_=(\"\${$2[@]}\")"
-
-  first="${_array_[0]}"
-  rest=("${_array_[@]:1}")
-
-  printf '%s' "$first"
-  printf '%s' "${rest[@]/#/$delim}"
-}
-
-#----------------------------------------------------------------------------
 # The _parent function is called once during the .bash_prompt startup to
 # determine the parent processes for the current shell session. The result is
 # stored in the 'parent_output' variable and used in every prompt update. This
@@ -83,7 +67,7 @@ parent=$(_parent)
 
 #----------------------------------------------------------------------------
 function _exit_status() {
-  local -a status
+  local status
 
   for s in "$@"; do
 
@@ -102,9 +86,7 @@ function _exit_status() {
     esac
   done
 
-  statuscodes=$(join_array ' | ' 'status')
-
-  printf '%s' "$statuscodes"
+  printf '%s' "$status"
 }
 
 #----------------------------------------------------------------------------

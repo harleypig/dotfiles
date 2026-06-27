@@ -49,3 +49,12 @@ setup() {
   assert_success
   assert_output --partial $'\e['
 }
+
+@test "ansi reports an unknown token without crashing" {
+  # An unrecognized capability name falls through to tput, which complains on
+  # stderr ("unknown terminfo capability") but ansi still exits 0. LC_ALL=C
+  # pins the English wording.
+  TERM=xterm LC_ALL=C run "$ANSI" fg notacolor
+  assert_success
+  assert_output --partial 'unknown terminfo capability'
+}

@@ -55,6 +55,22 @@ EOF
 }
 
 #------------------------------------------------------------------------------
+# Create a throwaway git repo at <dir> with a pinned test identity and one
+# empty initial commit. The git-* test files all need a real repo to run
+# against; this centralizes the init + identity + first-commit boilerplate they
+# would otherwise each repeat.
+#   make_test_repo "$BATS_TEST_TMPDIR/sample"
+
+make_test_repo() {
+  local dir=$1
+
+  git init -q "$dir"
+  git -C "$dir" config user.email t@example.com
+  git -C "$dir" config user.name test
+  git -C "$dir" commit -q --allow-empty -m init
+}
+
+#------------------------------------------------------------------------------
 # Docker integration harness. Build (cached) the dotfiles test image and echo
 # its tag; skip the calling test when docker is unavailable or the build
 # fails. The image is the runtime only — tests mount the repo read-only at

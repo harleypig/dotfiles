@@ -28,7 +28,7 @@ One `tests/` root with per-language subdirs (see
 
 ```text
 tests/
-  helpers/common.bash   # shared bash/bats support (load_bats_libs, dotfiles_root, make_stub, docker harness)
+  helpers/common.bash   # shared bash/bats support (load_bats_libs, dotfiles_root, make_stub, make_test_repo, docker harness)
   scaffold/             # meta-test generator + templates (build-meta-tests)
   docker/               # integration-test harness image (Dockerfile, entrypoint)
   shell/                # bats: *.bats hand-written, *_integration_*.bats, *.meta.bats (generated, gitignored)

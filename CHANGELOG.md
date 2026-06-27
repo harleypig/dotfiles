@@ -14,6 +14,17 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Bash test infrastructure (Bash Setup Phase 2)** — a test-review pass over
+  the BATS suite, then enhancements: added `test_bash_prompt.bats` covering
+  the previously-untested `lib/bash_prompt` helpers (`join_array`,
+  `_exit_status`, `_venv`, `_get_next_prompt_char`, `_parent`) — sourcing the
+  interactive-guarded lib in isolation; consolidated the duplicate
+  `test_git_status` / `test_git-status` files into one; and added missing
+  failure/edge cases (`duration` invalid date, `dir-readable`
+  writable-vs-non-writable color, `ansi` unknown token). DRY'd the repeated
+  git-repo setup into a `make_test_repo` helper (`tests/helpers/common.bash`)
+  rather than a `tests/fixtures/` directory — the repeated state is generated,
+  not stored, so fixtures weren't warranted. Suite: 247 tests, all green.
 - **Python type-checking via `pyright`** — wired `pyright`
   (`RobertCraigie/pyright-python`, pinned `v1.1.411`) as a pre-commit hook, so
   it runs locally at commit time **and** in the required `pre-commit` CI job —
@@ -50,6 +61,15 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **`lib/bash_prompt` `_exit_status` — no separator between codes (by
+  preference).** The test-review noticed the `join_array ' | '` call was a
+  no-op (`status` was built with string-append, so the array only ever had
+  one element). Rather than make the separator work, dropped the `join_array`
+  call and now `printf` `$status` directly — the no-separator look is the
+  preferred one. The now-unused `join_array` helper was moved out to a new
+  `snippets/` reference collection (`snippets/bash/join_array.bash`) rather
+  than left as dead code. `_exit_status` is covered by
+  `test_bash_prompt.bats`.
 - **Dotfiles `TODO.md` reorganized to the new convention (dogfood) + rule
   refinement** — third and final PR of the todo-management arc. Restructured
   `TODO.md` from activity-grouped sections into subject-based `## <X> Setup`

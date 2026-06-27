@@ -1,12 +1,15 @@
 #!/usr/bin/env bats
 
-# Covers bin/git-status's --plain flag (used by the Claude statusline): it drops
-# the leading space + wrapping parens the prompt callers keep.
+# Tests for bin/git-status — renders a colored git prompt fragment. The prompt
+# callers get " (repo: branch …)"; the Claude statusline passes --plain to drop
+# the leading space and wrapping parens.
 #
-# Runs in a throwaway repo with a normal (non-detached) branch and a no-op
-# `ansi` stub, so output is deterministic regardless of CI's detached HEAD or
-# whether `ansi` is on PATH. Skips if __git_ps1 isn't available (git-status
-# then prints nothing).
+# It needs the system git-prompt.sh (which provides __git_ps1); when that isn't
+# installed git-status prints nothing, so the in-repo assertions skip rather
+# than fail. `ansi` is stubbed to a no-op so the paren/space assertions see
+# clean text and git-status's bare `ansi` call doesn't print "command not
+# found" (bin/ isn't on PATH in CI). ansi already degrades to silence in an
+# incomplete terminal — the stub is purely for deterministic test output.
 
 load ../helpers/common
 
@@ -14,24 +17,23 @@ setup() {
   load_bats_libs
   ROOT="$(dotfiles_root)"
 
-  # Stub `ansi` to a no-op — NOT because ansi is broken (it already degrades to
-  # silence in an incomplete terminal: TERM=dumb / no tput). The stub is purely
-  # for the test: bin/ isn't on PATH in CI, so git-status's bare `ansi` call
-  # would print "command not found" to stderr (which `run` captures), and the
-  # stub also strips real color codes so the paren/space assertions see clean
-  # text.
   STUB="$(make_stub_dir)"
   printf '#!/usr/bin/env bash\n' > "$STUB/ansi"
   chmod +x "$STUB/ansi"
 
   REPO="$BATS_TEST_TMPDIR/sample"
-  git init -q "$REPO"
-  git -C "$REPO" -c user.email=t@example.com -c user.name=t \
-    commit -q --allow-empty -m init
+  make_test_repo "$REPO"
 }
 
 teardown() {
   rm -rf "$STUB"
+}
+
+@test "git-status outside a git repo prints nothing and succeeds" {
+  cd "$BATS_TEST_TMPDIR"
+  run env PATH="$STUB:$PATH" "$ROOT/bin/git-status"
+  assert_success
+  assert_output ''
 }
 
 @test "git-status (default) wraps the repo as ' (repo: branch)'" {
@@ -49,4 +51,13 @@ teardown() {
   refute_output --partial ')'
   refute_output --regexp '^ '
   assert_output --partial 'sample: '
+}
+
+@test "git-status marks a bare repository" {
+  local bare="$BATS_TEST_TMPDIR/bare.git"
+  git init -q --bare "$bare"
+  cd "$bare"
+  run env PATH="$STUB:$PATH" "$ROOT/bin/git-status"
+  assert_success
+  assert_output --partial 'BARE'
 }

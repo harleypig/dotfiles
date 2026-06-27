@@ -14,10 +14,7 @@ setup() {
 
 # Minimal repo (no remote) — for the usage / guard tests.
 init_repo() {
-  git init -q "$REPO"
-  git -C "$REPO" config user.email t@example.com
-  git -C "$REPO" config user.name test
-  git -C "$REPO" commit --allow-empty -q -m init
+  make_test_repo "$REPO"
 }
 
 # Repo with a pushed-then-deleted "feature" (gone upstream) and a never-pushed
