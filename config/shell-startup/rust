@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if havecmd rustc; then
-  : # nothing for rust yet
-fi
-
-if havecmd cargo; then
-  export CARGO_HOME="${XDG_DATA_HOME}/cargo"
-fi

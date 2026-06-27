@@ -1,4 +1,8 @@
+# shellcheck shell=bash
+
 # Environment variables for applications without aliases or functions
+# (single-setting tools; anything with more lives in its own module).
+# node/npm env lives in the nodejs module alongside the rest of its setup.
 
 # Check if ELINKS is installed and set ELINKS_CONFDIR if it is
 if havecmd elinks; then
@@ -14,15 +18,4 @@ fi
 # Check if LEDGER is installed and set LEDGER_FILE if it is
 if havecmd ledger; then
   export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
-fi
-
-# Check if NODE is installed and set NODE_REPL_HISTORY if it is
-if havecmd node; then
-  export NODE_REPL_HISTORY="${XDG_CACHE_HOME}/node_repl_history"
-fi
-
-# Check if NPM is installed and set npm related variables if it is
-if havecmd npm; then
-  export npm_config_cache="${XDG_CACHE_HOME}/npm"
-  export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
 fi

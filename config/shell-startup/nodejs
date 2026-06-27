@@ -1,5 +1,15 @@
 # shellcheck shell=bash
 
+# node/npm XDG environment — set whenever the tool is present, independent of
+# the nvm-vs-system PATH branch below. (Consolidated here from app_env_vars so
+# all node/npm setup lives in one module.)
+havecmd node && export NODE_REPL_HISTORY="$XDG_CACHE_HOME/node_repl_history"
+
+if havecmd npm; then
+  export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
+  export npm_config_cache="$XDG_CACHE_HOME/npm"
+fi
+
 if [[ -f $XDG_CONFIG_HOME/nvm/nvm.sh ]]; then
   export NVM_DIR="$XDG_CONFIG_HOME/nvm"
   [[ -s $NVM_DIR/nvm.sh ]] && source "$NVM_DIR/nvm.sh"
@@ -8,7 +18,6 @@ if [[ -f $XDG_CONFIG_HOME/nvm/nvm.sh ]]; then
   addpath "$XDG_DATA_HOME/npm/bin"
 
 elif havecmd npm; then
-  export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
   mkdir -p "$XDG_DATA_HOME/npm/bin"
   mkdir -p "$XDG_DATA_HOME/npm/lib/node_modules"
   addpath "$XDG_DATA_HOME/npm/bin"

@@ -44,8 +44,11 @@ function gtl() {
 }
 
 #-----------------------------------------------------------------------------
-## Go to current git toplevel directory, perform the git command and return
-## to the original directory.
+# ICEBOX: git_cmd_return — run a git command from the repo toplevel, then
+# return (2026-06-26; keyword-dense: run git from root regardless of cwd,
+# gtl wrapper, root-relative paths, git toplevel helper). Kept intentionally
+# but unwired; revisit only on request if a root-relative git wrapper is
+# wanted.
 #function git_cmd_return() {
 #  gtl || return 1
 #  git "$@"
