@@ -286,36 +286,29 @@ inconsistent and pre-commit's isolated envs are the only thing that runs them.
   this interacts with pre-commit (which already runs tools in isolated envs —
   a host wrapper is mainly for ad-hoc CLI use outside a commit).
 
-### Research: is proselint still alive? modern alternative? (MEDIUM PRIORITY)
+### Prose linting: adopt Vale for Phase 4 (MEDIUM PRIORITY)
 
-proselint is queued for pre-commit **Phase 4 (Docs)** (see *Pre-commit hooks:
-phased rollout* below and `.claude/WORKFLOW.md`) and is the other global
-prose-config still shipped from `dot-general/.proselintrc` (via
-`dotlinks-default`). Before investing in wiring it into Phase 4, confirm it's
-worth adopting.
+**Research complete (2026-06-26) — decision: adopt Vale.** proselint is
+maintained again but **superseded** by Vale here: Vale is a single Go binary
+(no Python dep — fits the docker-wrapper/pinned-binary pattern), markup-aware
+(Markdown scoping), config-driven, and can even **run proselint's own ruleset**
+as a package — so the two overlap and running both is redundant. **Grammarly is
+ruled out** (no CLI/headless/CI interface; current offering is an enterprise
+B2B REST API). The stale global `dot-general/.proselintrc` is retired in this
+change (mirrors the markdownlintrc retirement, PR #149). Full research record
+in [`CHANGELOG.md`](CHANGELOG.md).
 
-- [ ] Check whether **proselint** is still actively maintained (last release,
-  commit activity, open-issue backlog on `amperser/proselint`). It had long
-  stale stretches historically — verify current status against the repo, not
-  memory.
-- [ ] If it's effectively unmaintained, find the **modern equivalent of the
-  idea** (a maintained prose/style linter). Lead to evaluate first: **Vale**
-  (`errata-ai/vale`) — actively maintained, config-driven style rules,
-  supports Markdown; compare its rule model and CI/pre-commit story to
-  proselint's.
-- [ ] **Investigate Grammarly** as a source for this. Does it expose anything
-  usable from a CLI / pre-commit / CI context — a "Grammarly for Developers" /
-  public API, an official or community CLI? (Note: Grammarly retired its Text
-  Editor SDK in 2024, so it may be editor-plugin-only.) If there's no
-  first-party headless interface, assess whether we can **hack one together**
-  (e.g. drive a documented API, or wrap an unofficial client) and whether
-  that's worth it versus Vale — weigh SaaS/network/auth cost against a local
-  linter like Vale.
-- [ ] Decide: keep proselint for Phase 4, swap in the alternative, or drop
-  prose-linting from the plan. Record the outcome in the Phase 4 item and
-  `.claude/QA.md` (Documentation dimension), and retire
-  `dot-general/.proselintrc` + its `dotlinks-default` entry if proselint is
-  dropped (mirrors the markdownlintrc retirement above).
+Implementation follow-up (do when Pre-commit **Phase 4** lands):
+
+- [ ] **Wire Vale into Phase 4.** Add Vale as the prose linter — a pinned
+  `docker_wrapper` entry and/or the official pre-commit hook + GitHub Action;
+  a repo-local `.vale.ini` selecting curated styles (start minimal — e.g.
+  `proselint` and/or `write-good`, scoped to skip code blocks/links so
+  technical docs stay quiet); run `vale sync` in setup/CI. Ground a new
+  **`config/claude/rules/vale.md`** in Vale's current docs at that point
+  (build-on-first-use) and wire it into the tool-detection table + the `qa.md`
+  Documentation dimension. *(The `config/claude` parts route to
+  `audit/BACKLOG.md` per the TODO convention when authored.)*
 
 ## 🐫 Perl quality tooling (MEDIUM PRIORITY)
 
@@ -473,7 +466,7 @@ scanning remains the **security-scan** skill's job (separate from this hook).
 ### Phase 4: Documentation Linting
 
 - [ ] Add documentation quality hooks:
-  - [ ] proselint (prose linting)
+  - [ ] Vale (prose linting) — see *Prose linting: adopt Vale*
   - [ ] Additional markdown checks
   - [ ] Link validation
 - [ ] Test on repository documentation

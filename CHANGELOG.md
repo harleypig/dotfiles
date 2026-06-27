@@ -94,6 +94,17 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **Prose linting: adopt Vale, retire the global `.proselintrc`** — researched
+  the deferred proselint question. proselint is maintained again (v0.16.0,
+  Nov 2025) but **superseded** by **Vale** for this repo: a single Go binary
+  (no Python dep), markup-aware with rule scoping, config-driven, and able to
+  run proselint's own ruleset as a package — so running both is redundant.
+  **Grammarly was ruled out** (Text Editor SDK deprecated Jan 2024; the current
+  offering is an enterprise B2B REST API with no CLI/CI path). Pre-commit/CI
+  **Phase 4** now targets Vale (`TODO.md`, `.claude/QA.md`, `.claude/WORKFLOW.md`
+  updated), and the malformed, unused global `dot-general/.proselintrc` + its
+  `dotlinks-default` entry are retired (the `~/.proselintrc` symlink is now
+  dangling — remove it), mirroring the markdownlintrc retirement (PR #149). (PR #156)
 - **`bin/git-branch-clean`** — converted from a hand-written `getopts` loop to
   parse_params, with `%,exclusive` + `%,require-one` over `dry_run`/`force`
   enforcing "exactly one of -n/-f" (the manual mutual-exclusion / require
