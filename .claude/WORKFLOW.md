@@ -249,8 +249,9 @@ When capturing any follow-up, decide where it belongs before writing it:
   parking spot) for items tagged to it and migrate them into its `TODO.md`.
   The **github-tasks** sweep is the natural place to run that inbound check.
 
-The reciprocal pointers live in each file's header and in `TODO.md`'s *Audit
-the Claude Code Setup* section.
+This section is the canonical routing home; the reciprocal pointer also lives
+in `BACKLOG.md`'s header. `TODO.md` itself carries no routing preamble — only
+open tasks — per the global `rules/todo.md`.
 
 ## Tool Setup Procedures
 

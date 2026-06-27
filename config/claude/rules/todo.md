@@ -7,7 +7,7 @@ paths:
 
 # TODO / Planning-Doc Organization
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 How a planning doc (`TODO.md`, `ROADMAP.md`, `BACKLOG.md`) is **structured
 and routed** — the section taxonomy every item lands in, and the test for
@@ -124,6 +124,11 @@ activity section.
 - Section heading: `## <emoji?> <Subject> Setup` — match the repo's existing
   heading style (an emoji prefix if the file uses them). Project/audit
   sections keep a plain descriptive name.
+- **No priority tag on a heading.** A `##`/`###` heading names a subject; it
+  carries no `(HIGH/MEDIUM/LOW PRIORITY)`. Priority is a property of an
+  individual item, not a section — tag a `- [ ]` item with one **only when it
+  matters**, never the heading. (A *descriptive* parenthetical — e.g. `(do
+  after Task 1)` — is fine; it's the priority level that doesn't belong.)
 - **When you hoist an item out of a cross-cutting area** into its subject
   section, leave a one-line **pointer** where it was (`→ see <Subject>
   Setup`), so the originating task doesn't silently lose the dependency.
