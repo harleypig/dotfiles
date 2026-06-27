@@ -5,7 +5,7 @@ description: Run the full quality-assurance pipeline on a change (format, lint, 
 
 # QA Check
 
-**Version:** v2.3.0
+**Version:** v2.3.1
 
 Run the quality-assurance pipeline for **this** repo and route every stage
 through its rule. QA spans many tools that are individually easy to forget;
@@ -51,6 +51,13 @@ skips build/tests; a backend change runs its cycle.
 
 Only the qa-check-specific operational notes (the rest is in `qa.md`):
 
+- **Format + Lint via pre-commit** — when `.pre-commit-config.yaml` is
+  present, drive these stages **through pre-commit** rather than invoking
+  `shfmt`/`shellcheck`/etc. directly: run the fix config, then the check
+  config (the config is the single source of truth for tool/version/flags —
+  see *Prefer pre-commit Over Direct Tool Invocation* in `pre-commit.md`).
+  Fall back to direct per-tool invocation only when pre-commit is not
+  configured or the file is not covered by any hook.
 - **Format** is the one auto-fix stage — run it once (the fix config), then
   the check-only pass; never fix-and-recommit per failure.
 - **Documentation prep (generated changelog)** — if the repo's QA doc lists a

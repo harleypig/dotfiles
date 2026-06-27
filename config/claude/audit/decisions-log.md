@@ -6,6 +6,29 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-27 — **Evaluated a `pre-commit` skill — declined; clarified
+  qa-check instead (user-confirmed).** Worked the root-`TODO.md` "Proposed:
+  pre-commit skill, used by qa-check" item. Mapped every operational workflow
+  the skill would package against existing forcing functions: **fix → check →
+  commit-prep** is already driven by `ship-pr` Step 1 (runs the fix config
+  then the check config) and `qa-check`'s Format/Lint stages; **repo
+  scaffolding** (both configs + `pre-commit install`, the analogue to
+  `bats-setup`) lives in `new-project` Step 3; the **cross-cutting-hook
+  audit** is `qa-check`'s pre-commit-coverage note; and the one-shot
+  maintenance commands (`install` variants, `autoupdate`, `validate-config`,
+  `gc`) plus the **Hook & Repo Verification** procedure are already documented
+  in the path-scoped `rules/pre-commit.md` (which loads on-demand when a
+  config file is edited). The "cf. qa-check" framing doesn't transfer:
+  `qa-check` earns its place orchestrating **many** easily-forgotten tools
+  across **many** dimensions, whereas **pre-commit is a single,
+  self-orchestrating tool** — `pre-commit run` *is* the pipeline, so there is
+  no multi-tool sequence for a skill to force. A new skill would only
+  duplicate trigger surface and drift against four existing artifacts. **Acted
+  on the companion item** ("have qa-check delegate Format+Lint to pre-commit
+  when present") by making the delegation **explicit** in `qa-check`'s
+  `SKILL.md` (a new bullet: prefer pre-commit fix-then-check over direct
+  `shfmt`/`shellcheck`, fall back when unconfigured) — it was previously only
+  implied. Both root-`TODO.md` bullets pruned.
 - 2026-06-20 — **Added a Watch-list trigger for writing/non-code repos
   (user request).** Folded the `claude-code-tips` writing tips — previously
   plain SKIP as "personal workflow" — into a single SKIP-until trigger keyed
