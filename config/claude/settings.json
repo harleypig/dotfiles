@@ -36,6 +36,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/shell-check.py",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/md5-guard.py",
+            "timeout": 10
           }
         ]
       }

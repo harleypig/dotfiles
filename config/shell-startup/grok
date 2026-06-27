@@ -1,0 +1,28 @@
+# shellcheck shell=bash
+
+# grok (xAI CLI): put its install dir on PATH and load bash completion.
+#
+# This was originally a `>>> grok installer >>>` block the xAI installer
+# appended to the end of `shell-startup` (after Cleanup). Because
+# ~/.bash_profile and ~/.bashrc symlink to `shell-startup`, the
+# installer writes there — its config-file target is hardcoded to
+# ~/.bashrc with no override (GROK_BIN_DIR only moves the binaries, not
+# the profile block). So the block is kept here as a normal guarded
+# module instead.
+#
+# ICEBOX (2026-06-26, keyword-dense: grok installer retarget, redirect
+# install.sh shell profile, GROK_BIN_DIR, stop re-appending to
+# shell-startup): the installer cannot be pointed at a different rc
+# file, so a reinstall/update will re-add the `>>> grok installer >>>`
+# block to `shell-startup`. We accept that and rely on the
+# shell-startup-guard skill to flag the drift so it can be pruned again
+# (this module already supplies the same behaviour). Revisit only if a
+# future installer gains a config-file override.
+
+[[ -d "$HOME/.grok/bin" ]] || return 0
+
+addpath --first "$HOME/.grok/bin"
+
+# shellcheck disable=SC1091  # installed at runtime, absent at lint
+[[ -r "$HOME/.grok/completions/bash/grok.bash" ]] \
+  && source "$HOME/.grok/completions/bash/grok.bash"

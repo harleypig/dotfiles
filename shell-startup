@@ -272,9 +272,3 @@ unset -f "${_unset_funcs[@]}"
 unset "${_unset_vars[@]}"
 unset -f unsetvars unsetfuncs
 unset _unset_vars _unset_funcs
-
-# >>> grok installer >>>
-export PATH="$HOME/.grok/bin:$PATH"
-# shellcheck disable=SC1091  # grok completion is installed at runtime, absent at lint
-[[ -r "$HOME/.grok/completions/bash/grok.bash" ]] && source "$HOME/.grok/completions/bash/grok.bash"
-# <<< grok installer <<<
