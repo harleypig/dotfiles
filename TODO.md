@@ -142,17 +142,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
 done.
 
-### Test Infrastructure
-
-- [x] **A "stub that emits output" helper.** Added `make_script_stub <dir>
-  <name> <body>` to `tests/helpers/common.bash` (sibling to the spy-style
-  `make_stub`): it writes an executable bash stub with a caller-supplied body,
-  DRYing the `printf '#!/usr/bin/env bash\n...' > file; chmod +x` boilerplate.
-  The recount found it in **three** files — `test_git-status` (no-op `ansi`),
-  `test_dir-readable` (`ansi` echoes args), `test_loadavg` (`awk` value +
-  `ansi`) — Rule of Three met. Refactored all three onto it; the helper takes
-  the body as a parameter, so the differing stub bodies stay decoupled.
-
 ### Bash Completion
 
 - [ ] Enable bash completion for available but unconfigured tools
