@@ -24,6 +24,17 @@ goes green (see the merge-time finalization in
   marker); and it carries **no stale header/preamble**. Listed in
   `STRUCTURE.md`. First of three PRs (rule → `todo-organize` skill + qa-check
   wiring → dogfood the dotfiles `TODO.md`). (PR #164)
+- **`todo-organize` skill + qa-check planning-doc audit** — added the
+  `todo-organize` skill (`config/claude/skills/todo-organize/`), the forcing
+  function that reorganizes a planning doc into `rules/todo.md`'s structure
+  (inventory → classify → hoist with pointers → strip header → prune to open
+  work → drop empty sections) and routes single new items. Wired a
+  **Planning-doc structure** audit into `qa-check`'s Documentation dimension
+  (flags activity-grouping / smeared subjects / stale headers / lingering
+  `[x]` / empty `## <X> Setup` shells, and suggests `todo-organize`). Logged
+  two follow-ups: an **upstream-drift audit dimension** (`BACKLOG.md`) and a
+  **deferred TODO-file hook** (`ICEBOX.md`). Second of the three PRs.
+  (PR #165)
 
 ### Changed
 

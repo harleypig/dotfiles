@@ -5,7 +5,7 @@ description: Run the full quality-assurance pipeline on a change (format, lint, 
 
 # QA Check
 
-**Version:** v2.3.1
+**Version:** v2.3.2
 
 Run the quality-assurance pipeline for **this** repo and route every stage
 through its rule. QA spans many tools that are individually easy to forget;
@@ -64,6 +64,12 @@ Only the qa-check-specific operational notes (the rest is in `qa.md`):
   changelog-regeneration command (a generate-then-commit prep action, same
   mutating class as Format), run it once when preparing the PR and commit the
   result; never in CI. Get the concrete command from the repo's QA doc.
+- **Planning-doc structure** — audit the repo's `TODO.md` / `ROADMAP.md` /
+  `BACKLOG.md` against `rules/todo.md`: items grouped by activity instead of
+  subject, a subject smeared across sections, a stale `Last Updated:` /
+  preamble header, completed `[x]` items not pruned, or empty `## <X> Setup`
+  shells. Flag any drift and suggest the **todo-organize** skill to fix it
+  (that skill is the forcing function; this is the audit half).
 - **Pre-commit hook coverage** — when the repo uses pre-commit, audit its
   config against the *Recommended Cross-Cutting Hooks* in `pre-commit.md`
   (secret detection, large-file / merge-conflict / case-conflict guards,

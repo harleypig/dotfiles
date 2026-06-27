@@ -78,3 +78,21 @@ author the tool rule **then**, global and on first use (ADR-0003): a
 `commitizen.md` and/or a generator rule (weigh **git-cliff** vs
 **conventional-changelog**), wired into `qa.md` dim 13 (a generated changelog
 is a Format-class prep step) and the release flow (the `release-tag` skill).
+
+## TODO-file structure hook (enforce/remind `rules/todo.md` on edits)
+
+**Revisit if** planning-doc structure drift becomes a *recurring* problem that
+the `rules/todo.md` + `todo-organize` skill + `qa-check` audit half does not
+catch in practice.
+
+Considered during the todo-management build (PRs #164–#165) and **deferred by
+decision.** A hook is for *deterministic, must-happen* enforcement, but TODO
+routing is a **judgment** call — a hook can't reliably tell whether an item is
+in the *right* `## <X> Setup` section. The most a hook could do is *inject a
+routing reminder* when a `TODO.md` / `ROADMAP.md` / `BACKLOG.md` is edited
+(the way `merge-finalization.py` injects its checklist) — cheap, but likely
+noise once the rule + skill exist. A structural *validator* (warn on a `##`
+heading that is neither `<X> Setup` nor a known project/audit) was also
+weighed but risks false positives from per-repo project names. Build the
+reminder and/or validator only if drift recurs despite the rule and the
+qa-check audit.

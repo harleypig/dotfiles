@@ -213,6 +213,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 |-------|-------------|-----------------|
 | [write-documentation](skills/write-documentation/SKILL.md) | Author or refresh a doc: pick the right form, derive from code, lint, wire into index + changelog | `adr` · `documentation.md` · `code-style.md` · `markdownlint.md` |
 | [adr](skills/adr/SKILL.md) | Record an Architecture Decision Record — what, why, alternatives rejected, consequences | — |
+| [todo-organize](skills/todo-organize/SKILL.md) | Reorganize a planning doc (TODO/ROADMAP/BACKLOG) into the subject-based structure of `todo.md`, and route new items | `todo.md` · `qa-check` · `code-style.md` |
 | [plan-review](skills/plan-review/SKILL.md) | Poke holes in a plan *before* building: risky assumptions, missing edge cases, simpler alternatives | `testing.md` |
 | [retrospective](skills/retrospective/SKILL.md) | After completing work, reflect on agent-tooling friction and capture each finding as an open TODO — feeds the `claude-audit` backlog | — |
 
