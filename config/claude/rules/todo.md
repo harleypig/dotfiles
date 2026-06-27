@@ -127,8 +127,10 @@ activity section.
 - **When you hoist an item out of a cross-cutting area** into its subject
   section, leave a one-line **pointer** where it was (`→ see <Subject>
   Setup`), so the originating task doesn't silently lose the dependency.
-- Don't create a `## <Subject> Setup` section with no items just to have one;
-  add the section when the first item for that subject arrives.
+- A section's lifetime tracks its items: **add** a `## <Subject> Setup`
+  section when its first item arrives, and **remove** it when its last item is
+  completed/pruned. Never leave an empty section, and never create one
+  speculatively — a subject with no open work simply has no section.
 
 ## Sources
 
@@ -141,7 +143,9 @@ lifecycle/doc/QA concerns to `git.md`, `documentation.md`, and `qa.md`.
 
 - A planning doc holds **only open tasks**. Never add a "Done" / "Completed"
   section or keep `[x]` items as an archive — completed work is pruned to the
-  changelog / decisions log (`git.md`).
+  changelog / decisions log (`git.md`). When you prune the **last** item from
+  a section, remove the now-empty section too — no empty `## <X> Setup`
+  shells.
 - A deferred **"not now / maybe-someday"** item is **not** a TODO item: record
   it as an `ICEBOX:` marker at the relevant code (`code-style.md`), or — if
   declined outright — as a decision record (an **ADR** via the `adr` skill, or
