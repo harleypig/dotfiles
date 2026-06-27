@@ -390,22 +390,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Pre-commit can progress independently. CI/CD cannot lead pre-commit. (The
 CI/CD side lives in its own section below.)
 
-### Proposed: pre-commit skill, used by qa-check
-
-*Claude-config note (TODO-routing):* a `config/claude` skill. Author it as part
-of this work, or move it to `audit/BACKLOG.md` when the pre-commit rollout
-completes — don't leave it stranded here.
-
-- [ ] Evaluate a `pre-commit` **skill** packaging the operational workflow
-  (fix → check → commit prep; `install` variants; `autoupdate` on suspected
-  drift; `validate-config`; `gc`) now documented in
-  `.claude/rules/pre-commit.md`. The rule is policy/reference; a skill is the
-  forcing function that runs it (cf. qa-check).
-- [ ] Have **qa-check** delegate its Format + Lint stages to pre-commit when
-  `.pre-commit-config.yaml` is present (run the fix config, then the check
-  config) instead of invoking shfmt/shellcheck/etc. directly; fall back to
-  direct invocation when pre-commit is not configured.
-
 ### Phase 3: Language-Specific Hooks
 
 - [ ] **Python** (mypy/pyright) — stay CI/on-demand (per `python.md`), not in

@@ -10,6 +10,24 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-27
+
+### Changed
+
+- **`pre-commit` skill evaluated and declined; qa-check delegation made
+  explicit** — assessed packaging the `pre-commit` operational workflow as a
+  skill and decided against it: every slice it would wrap already has a
+  forcing function (`ship-pr`/`qa-check` for fix→check→commit-prep,
+  `new-project` for repo scaffolding, the path-scoped `rules/pre-commit.md`
+  for the one-shot maintenance commands and hook-verification procedure), and
+  unlike the multi-tool `qa-check` pipeline, pre-commit is a single
+  self-orchestrating tool with no sequence left to force. Acted on the
+  companion item instead: `qa-check`'s `SKILL.md` now states explicitly that
+  Format + Lint delegate to pre-commit (fix config, then check config) when
+  `.pre-commit-config.yaml` is present, falling back to direct tool
+  invocation otherwise. Decision recorded in
+  `config/claude/audit/decisions-log.md`. (PR #162)
+
 ## 2026-06-26
 
 ### Added
