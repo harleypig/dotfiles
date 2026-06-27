@@ -550,12 +550,6 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
 
 ## ✨ Features & fixes
 
-- [x] **Normalize `pyrightconfig.json` to prettier.** It was untracked during
-  PR #168's fix-config run, so prettier never formatted it; now every
-  `.pre-commit-config-fix.yaml` run flags it (collapse the `include` array to
-  one line). The CI check config doesn't gate prettier, so it's cosmetic — run
-  the fixer once and commit, separately from feature work.
-
 ### parse_params consumer ergonomics
 
 Surfaced while converting `bin/git-branch-clean` to parse_params (PR #150) —
