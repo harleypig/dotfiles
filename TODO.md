@@ -275,6 +275,19 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
   Documentation dimension. *(The `config/claude` parts route to
   `audit/BACKLOG.md` per the TODO convention when authored.)*
 
+### Prose line-width check (78-col) (LOW PRIORITY)
+
+- [ ] **Add a char-aware 78-col Markdown prose width check.**
+  `code-style.md` requires 78-col prose wrap, but nothing enforces it:
+  markdownlint's MD013 is set to `line_length: 200` (so long table rows /
+  code lines don't trip it), and the ad-hoc `awk length` method is
+  **byte-based** — it miscounts lines with multibyte characters (em-dashes,
+  …), under- or over-reporting width. Add a check that counts **display
+  columns** (`perl -CSD` / `wc -L`) over prose lines only — excluding code
+  fences, tables, and unbreakable URLs — as a pre-commit hook (and CI).
+  Surfaced building `rules/todo.md` (PR #164), where a real 79-col line
+  slipped past the byte-based check.
+
 ## 🐫 Perl Setup (MEDIUM PRIORITY)
 
 Everything for standing up Perl in this repo, end to end: the toolchain
