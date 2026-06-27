@@ -390,13 +390,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Pre-commit can progress independently. CI/CD cannot lead pre-commit. (The
 CI/CD side lives in its own section below.)
 
-### Phase 1: Core Hooks (DONE)
-
-Core (`.pre-commit-config.yaml`) + fix (`.pre-commit-config-fix.yaml`) configs
-are in place, tested, documented (README + `.claude/rules/pre-commit.md`),
-wired into CI (`pre-commit run --all-files`), and the CI `pre-commit` check is
-required in the master ruleset alongside `bats`.
-
 ### Proposed: pre-commit skill, used by qa-check
 
 *Claude-config note (TODO-routing):* a `config/claude` skill. Author it as part
@@ -412,12 +405,6 @@ completes — don't leave it stranded here.
   `.pre-commit-config.yaml` is present (run the fix config, then the check
   config) instead of invoking shfmt/shellcheck/etc. directly; fall back to
   direct invocation when pre-commit is not configured.
-
-### Phase 2: Security Hooks (DONE)
-
-gitleaks + detect-private-key are in the check config and both pass
-`--all-files`. gitleaks here is a commit-time guard; full-repo/history secret
-scanning remains the **security-scan** skill's job (separate from this hook).
 
 ### Phase 3: Language-Specific Hooks
 
