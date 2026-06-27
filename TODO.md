@@ -56,23 +56,6 @@ offer and whether any help this repo:
   release tags; a commit-message pattern enforcing Conventional Commits) and
   capture their configs in `../private_dotfiles/github-rulesets/`.
 
-### Investigate GitHub as a secrets vault (MEDIUM PRIORITY)
-
-Secrets currently live as plaintext files in the sibling `private_dotfiles`
-repo, loaded by `config/shell-startup/000-loadtokens`. Because they sit in a
-*separate* repo that this one references, it's easy to accidentally pull a
-secret value into the dotfiles repo (a hardcoded token while debugging, a
-value leaked into a committed config) — which *raises*, not lowers, the value
-of secret scanning here.
-
-- [ ] Investigate whether GitHub can serve as a secrets vault to replace (or
-  back) the plaintext `private_dotfiles/api-key/*` files — e.g. Actions /
-  Codespaces / Dependabot secrets, `gh secret`, or a runtime fetch of an
-  encrypted store via the `gh` API. Key constraint to assess: Actions secrets
-  are only exposed *inside* Actions runs, not in a local login shell, so weigh
-  what is actually reachable from the `shell-startup` path. Goal: shrink the
-  accidental-ingestion surface.
-
 ## 🧰 Repository extraction (carve subtrees into their own repos)
 
 Both items below are the same question — extract a subtree into a standalone

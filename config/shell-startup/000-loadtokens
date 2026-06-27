@@ -1,6 +1,29 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2155,SC2086
 
+# ICEBOX: secrets vault / encrypt-at-rest for these tokens — considered
+# and declined (2026-06-26; keyword-dense: secrets vault, secrets
+# manager, encryption at rest, age, SOPS, gpg, pass, GitHub Actions
+# secrets, Codespaces secrets, Bitwarden, Vaultwarden, bw, bws,
+# HashiCorp Vault, encrypt api-key files). Decided to KEEP the plaintext
+# files in private_dotfiles. Reasons:
+#   - GitHub secrets (Actions/Codespaces/Dependabot) are write-only: no
+#     read API, decrypted only inside a workflow, so they cannot reach a
+#     login shell or back this loader.
+#   - Hosted/paid vaults excluded: no new self-host (Vault out);
+#     Vaultwarden lacks Bitwarden Secrets Manager (bws out); the free bw
+#     CLI couples every login to a running server.
+#   - age/gpg at-rest does not fit the topology (~5 systems, 7 accounts,
+#     hands-off login): the key must be shared to every account next to
+#     the ciphertext, so a compromised machine has both halves (no real
+#     protection), and every new machine/account needs a key-provision
+#     bootstrap that breaks "clone and go". Its only gain — a leaked
+#     secrets repo being useless ciphertext — is already DETECTED by
+#     gitleaks + trufflehog. Net cost > benefit.
+# Cheaper hardening if ever revisited: give private_dotfiles its own
+# secret scanning + push-protection + a guaranteed-private remote.
+# And a CI-only secret belongs in GitHub Actions secrets, not here.
+
 private_dotfiles="$PROJECTS_DIR/private_dotfiles/api-key"
 config_file="$PROJECTS_DIR/dotfiles/api-keys.cfg"
 
