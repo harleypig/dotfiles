@@ -144,16 +144,13 @@ done.
 
 ### Test Infrastructure
 
-- [ ] tests/scaffold/build-meta-tests:5,6,71 - Add tests for sh compilation,
-  improve shebang check, handle symbolic links (XXX)
-- [ ] **Extract a shared "source-functions-from-a-non-sourceable-file" test
-  helper** into `tests/helpers/common.bash`. The extract-and-eval pattern
-  (awk/sed a named function block out of a shell-startup module or guarded
-  lib, then `eval` it) now recurs in `test_havecmd`, `test_shell_startup_git`,
-  `test_tmux`, and (as a guard-strip variant) `test_bash_prompt` — Rule of
-  Three met. A `source_funcs <file> <fn>...` helper would DRY the by-name
-  case; the guard-strip case may stay bespoke. Consider a short `bats.md`
-  recipe for testing non-independently-sourceable shell too.
+- [x] **Extract a shared "source-functions-from-a-non-sourceable-file" test
+  helper** — added `source_funcs <file> <fn>...` to
+  `tests/helpers/common.bash` (awk-extracts the named function blocks,
+  matching both `name()` and `function name()`), and refactored `test_havecmd`
+  and `test_shell_startup_git` onto it. `test_tmux` (needs a non-function
+  `circled_digits` var) and `test_bash_prompt` (strips a guard from the
+  middle) keep their bespoke extraction.
 
 ### Comprehensive BATS Test Coverage Audit
 

@@ -79,6 +79,16 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **Shared `source_funcs` test helper (Bash Setup test infra).** Added
+  `source_funcs <file> <fn>...` to `tests/helpers/common.bash` — it
+  awk-extracts the named function definitions from a file that isn't
+  sourceable on its own (a shell-startup module, a guarded lib), matching both
+  `name()` and `function name()`. Refactored `test_havecmd` and
+  `test_shell_startup_git` onto it (Rule of Three); `test_tmux` and
+  `test_bash_prompt` keep their bespoke extraction (a non-function var / a
+  mid-file guard strip). Also pruned a stale `build-meta-tests` TODO whose
+  concerns are already resolved (symlinks excluded, no POSIX-sh scripts exist,
+  shebang check present).
 - **`pyrightconfig.json` normalized to prettier.** The file was untracked
   during PR #168's fix-config run, so prettier never formatted it; ran the
   fixer once (collapsing the `include` array to one line) so
