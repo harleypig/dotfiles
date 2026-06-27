@@ -12,19 +12,11 @@
 
 load ../helpers/common
 
-# Extract just the gtoplevel and gtl function blocks (skipping the aliases and
-# the separator comments between them).
-extract_git_nav() {
-  awk '
-    /^function (gtoplevel|gtl)\(\)/ { capture = 1 }
-    capture                         { print }
-    capture && /^\}/                { capture = 0 }
-  ' "$(dotfiles_root)/config/shell-startup/git"
-}
-
 setup() {
   load_bats_libs
-  eval "$(extract_git_nav)"
+  # Eval just gtoplevel + gtl out of the module (it also defines ~9 thin git
+  # aliases and sets config we don't want sourced here).
+  eval "$(source_funcs "$(dotfiles_root)/config/shell-startup/git" gtoplevel gtl)"
 
   REPO="$BATS_TEST_TMPDIR/sample"
   make_test_repo "$REPO"

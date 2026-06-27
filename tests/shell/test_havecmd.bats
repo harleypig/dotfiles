@@ -10,19 +10,11 @@
 
 load ../helpers/common
 
-# Extract havecmd's definition from shell-startup so the real body can be
-# eval'd and exercised in isolation.
-extract_havecmd() {
-  awk '
-    /^havecmd\(\)[[:space:]]*\{/ { capture = 1 }
-    capture { print }
-    capture && /^\}/ { capture = 0 }
-  ' "$(dotfiles_root)/shell-startup"
-}
-
 setup() {
   load_bats_libs
-  eval "$(extract_havecmd)"
+  # havecmd isn't independently sourceable (it lives inside the shell-startup
+  # orchestrator), so eval just its definition in isolation.
+  eval "$(source_funcs "$(dotfiles_root)/shell-startup" havecmd)"
   setup_temp_dir
 }
 

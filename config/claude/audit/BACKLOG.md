@@ -197,6 +197,26 @@ Surfaced while shipping PR #154; small doc-rule additions, not edits yet.
   the `md5-guard.py` hook and its test. (Note this is GitHub *default* code
   scanning, separate from the repo's in-house SAST posture in `semgrep.md`.)
 
+### 🧪 `bats.md`: recipe for testing non-sourceable shell (LOW PRIORITY)
+
+Surfaced shipping PR #173 (dotfiles `source_funcs` helper). The
+extract-and-eval pattern — awk a named function block out of a file that
+isn't sourceable on its own (a shell-startup orchestrator, an
+interactive-guarded lib), then `eval` it in isolation — now recurs across
+four dotfiles test files and has been factored into a `source_funcs <file>
+<fn>...` helper in `tests/helpers/common.bash`. That helper is dotfiles-local,
+but the *technique* is repo-agnostic bats knowledge.
+
+- [ ] **`bats.md`: add a short "testing non-independently-sourceable shell"
+  recipe.** Document the extract-and-eval approach (awk/`sed` the function
+  block, `eval` it under test), the two gotchas a future implementer hits —
+  bats aborts a test on any non-zero intermediate command, so completion /
+  early-out returns need `|| true` when asserting state; and a function that
+  is a guard-strip or needs a non-function var stays bespoke (outside a
+  by-name helper's scope) — and point at the dotfiles `source_funcs` helper as
+  a reference implementation. Scope: **global** `rules/bats.md`. Ground any
+  added claim in the bats docs per the grounding convention.
+
 ### 🪝 branch-protection hook: exempt gitignored paths (LOW PRIORITY)
 
 *(Moved from the dotfiles `TODO.md` 2026-06-26 during a TODO reorg — it is

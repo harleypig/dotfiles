@@ -71,6 +71,33 @@ make_test_repo() {
 }
 
 #------------------------------------------------------------------------------
+# Print the definitions of the named shell functions found in <file>, so a test
+# can exercise functions from a file that is not sourceable on its own (a
+# shell-startup module, or a lib guarded by an interactive check):
+#   eval "$(source_funcs config/shell-startup/git gtoplevel gtl)"
+# Matches both `name() {` and `function name() {` header styles. (A test that
+# also needs a non-function definition from the file, or that must strip a
+# guard out of the middle, extracts that part itself — see test_tmux /
+# test_bash_prompt.)
+
+source_funcs() {
+  local file=$1
+  shift
+
+  local names
+  names=$(
+    IFS='|'
+    printf '%s' "$*"
+  )
+
+  awk -v names="$names" '
+    $0 ~ "^(function[[:space:]]+)?(" names ")\\(\\)" { capture = 1 }
+    capture                                          { print }
+    capture && /^\}/                                 { capture = 0 }
+  ' "$file"
+}
+
+#------------------------------------------------------------------------------
 # Docker integration harness. Build (cached) the dotfiles test image and echo
 # its tag; skip the calling test when docker is unavailable or the build
 # fails. The image is the runtime only — tests mount the repo read-only at
