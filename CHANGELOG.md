@@ -14,6 +14,15 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Bash BATS coverage audit closed (Bash Setup)** — a quality review of the
+  bash suite (existence + failure-path coverage) confirmed every `bin/`/`lib`
+  unit with real logic is tested and exercises a failure path, so the suite
+  meets the testing bar. Closed the two genuine gaps it surfaced: added
+  `test_loadavg.bats` (the `> 2.0` threshold branch and `bc`-result inversion,
+  via an injected load value with real `bc`) and `test_showvars.bats` (the
+  three pure-bash guard paths — usage, missing dependency, unreadable file).
+  Corrected the stale audit notes (`perltidyrc-clean` is Perl-tested) and kept
+  the skip-list as documented decisions. Suite: 265 tests, all green.
 - **Bash completion test (Bash Setup Phase 4)** — added
   `test_proj_completion.bats` for the first-party `_proj` completion
   (top-level projects, prefix match, nested subdirectories, and unset/missing
