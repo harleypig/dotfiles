@@ -295,23 +295,8 @@ maintained again but **superseded** by Vale here: Vale is a single Go binary
 as a package — so the two overlap and running both is redundant. **Grammarly is
 ruled out** (no CLI/headless/CI interface; current offering is an enterprise
 B2B REST API). The stale global `dot-general/.proselintrc` is retired in this
-change (mirrors the markdownlintrc retirement, PR #149).
-
-- [x] Confirmed **proselint** is maintained again — `amperser/proselint` not
-  archived; v0.16.0 (2025-11), commit within the last week, ~84 commits/year
-  (it had the 2021→2024 stale stretch, since revived). Not a "drop because
-  dead" case.
-- [x] Evaluated **Vale** (`errata-ai/vale`, v3.15.x, MIT, very active): Go
-  binary, no deps, markup-aware with rule scoping, style marketplace
-  (Microsoft/Google/write-good/alex/**proselint**), custom YAML rules. Better
-  fit and more flexible than proselint.
-- [x] Investigated **Grammarly** — Text Editor SDK deprecated Jan 2024, dev
-  portal paused; current "Grammarly APIs" are enterprise B2B REST (Contact
-  Sales, OAuth) with no CLI/CI path. Ruled out; not worth hacking an unofficial
-  client.
-- [x] Decision recorded here, in the Phase 4 item, `.claude/QA.md`, and
-  `.claude/WORKFLOW.md`; global `.proselintrc` + `dotlinks-default` entry
-  retired.
+change (mirrors the markdownlintrc retirement, PR #149). Full research record
+in [`CHANGELOG.md`](CHANGELOG.md).
 
 Implementation follow-up (do when Pre-commit **Phase 4** lands):
 
