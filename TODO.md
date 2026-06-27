@@ -40,27 +40,6 @@ coupled (added together, or one can't be done until the other lands), in which
 case keep it whole in its primary file and note the other scope inline. Also in
 `WORKFLOW.md` → *TODO routing*.
 
-## 🐙 GitHub (platform configuration)
-
-### Explore other GitHub rulesets (LOW PRIORITY)
-
-We use a single branch ruleset (protect master). Survey what else rulesets
-offer and whether any help this repo:
-
-- [x] Review the available rule types — surveyed against current GitHub docs;
-  captured as a reusable global report,
-  `config/claude/rules/github-rulesets.md` (the three ruleset *kinds*, the
-  full rule-type catalog, availability constraints, and a decision lens).
-- [x] Decide which add value here — **none new now.** Push/file rules need a
-  private/internal repo (this repo is public). A **tag** ruleset is premature
-  (zero release tags; versioned via `CHANGELOG`) — defer until tagging begins,
-  coupled to `release-tag`. `required_linear_history` is redundant under
-  squash-only; `required_signatures` waits on the future gpg signing rollout;
-  a Conventional-Commits `commit_message_pattern` gates feature-branch WIP
-  while not gating the squash message that lands (net friction). The base
-  master ruleset stays as-is. A ready-to-apply tag-ruleset template is in the
-  global report for whenever tagging starts.
-
 ## 🧰 Repository extraction (carve subtrees into their own repos)
 
 Both items below are the same question — extract a subtree into a standalone

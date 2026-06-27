@@ -14,6 +14,16 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **GitHub rulesets reference + survey closed** — surveyed GitHub's
+  repository-ruleset rule types against current official docs and captured the
+  result as a reusable, repo-agnostic global rule,
+  `config/claude/rules/github-rulesets.md` (the three ruleset *kinds* —
+  branch/tag/push, the full rule-type catalog, availability constraints, and a
+  decision lens). Decision for this repo: adopt nothing new — push/file rules
+  need a private/internal repo (this one is public), a tag ruleset is premature
+  (zero release tags), linear-history is redundant under squash-only, and
+  signed-commits / Conventional-Commits patterns are deferred or net friction.
+  Pointed to from `gh.md`; rows added to `STRUCTURE.md`. (PR #159)
 - **`shell-startup` integrity guard + grok block relocated** — moved the grok
   (xAI CLI) installer's `>>> grok installer >>>` PATH+completion block out of
   `shell-startup` into a guarded `config/shell-startup/grok` module. Since the
