@@ -142,20 +142,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
 done.
 
-### Phase 2: Test Infrastructure
-
-- [x] Review and enhance existing BATS tests (test-review pass): added
-  `test_bash_prompt.bats` for the untested `lib/bash_prompt` helpers;
-  consolidated the duplicate `test_git_status`/`test_git-status` into one;
-  added missing failure/edge cases (`duration` invalid date, `dir-readable`
-  writable/non-writable color, `ansi` unknown token).
-- [x] Ensure meta-tests are up to date (`tests/scaffold/build-meta-tests`) —
-  regenerated, 0 stale.
-- [x] Create test fixtures in `tests/fixtures/` — **not needed**: the repeated
-  setup is *generated* state (git repos, stubs), not stored data; DRY'd the
-  git-repo init into a `make_test_repo` helper in `tests/helpers/common.bash`
-  instead.
-
 ### Phase 3: Core Test Coverage
 
 - [ ] Add tests for critical bin/ scripts
@@ -563,6 +549,12 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
 - [ ] Update documentation
 
 ## ✨ Features & fixes
+
+- [ ] **Normalize `pyrightconfig.json` to prettier.** It was untracked during
+  PR #168's fix-config run, so prettier never formatted it; now every
+  `.pre-commit-config-fix.yaml` run flags it (collapse the `include` array to
+  one line). The CI check config doesn't gate prettier, so it's cosmetic — run
+  the fixer once and commit, separately from feature work.
 
 ### parse_params consumer ergonomics
 
