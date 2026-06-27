@@ -89,38 +89,6 @@ main dotfiles checkout.
 
 ## 🐚 Shell startup & $HOME environment
 
-### config/shell-startup Audit (MEDIUM PRIORITY)
-
-Review all files in `config/shell-startup/` for correctness and security:
-
-- [x] Variables set at module scope but never unset — reviewed; modules unset
-  their temporaries (`000-loadtokens`, `less`, `010-general`). `tmux`'s
-  `circled_digits` is the one leak → tmux follow-up below.
-- [x] Sensitive values — reviewed; only `000-loadtokens`, already settled in
-  its secrets-vault ICEBOX.
-- [x] Variables exported unnecessarily — reviewed; `tmux`'s `export -f` →
-  tmux follow-up below.
-- [x] `source`/`.` without ownership/permission checks — reviewed; every
-  target is under `$HOME`/`$XDG_*`/`$DOTFILES` (user-owned). Fixed `python`'s
-  unguarded poetry-completion source.
-- [x] Files read without world-writable check — reviewed; none read from an
-  untrusted location.
-- [x] Missing guards — reviewed; `python` poetry source guarded.
-- [x] Inconsistent guard style — `go` standardized to `havecmd … || return 0`
-  and given a `# shellcheck shell=bash` header (matched in `app_env_vars`).
-- [x] Other shellcheck warnings — clean (already gated by `shellcheck-sourced`).
-
-Beyond correctness/security, audit each module for **improve / add / remove**:
-
-- [x] **Improve** — `python` guard; node/npm env consolidated into `nodejs`;
-  `rust` (redundant with `010-general`) and `ruby` (≤2 settings) folded; the
-  per-startup-cost subprocesses (`less`, `ruby`, gcloud) captured as follow-ups
-  below.
-- [x] **Add** — nothing missing flagged.
-- [x] **Remove / retire** — `rust`/`ruby` modules deleted, `taskwarrior`
-  renamed `*_inactive` (loader skips it), perl `wtf_am_i_doing_here` removed,
-  dead `rd`/`v`/`f` aliases removed, `git_cmd_return` kept as an `ICEBOX:`.
-
 ### Shell-startup colors & helpers to get working (from audit)
 
 Long-standing "I've been trying to get this working for years" items, parked
@@ -145,6 +113,11 @@ from the audit. Each is its own task:
   their checks even in a non-interactive shell. Verify nothing prints to
   stdout on a non-interactive source (would corrupt `scp`/`rsync` if `BASH_ENV`
   ever points here); guard with `[[ $- == *i* ]]` if so.
+- [ ] **Document the module-placement convention** in `.claude/` (retrospective
+  from the audit): a tool with only 1–2 settings goes in `010-general` or
+  `app_env_vars`; more than that earns its own module; tool-only on-demand
+  commands belong in a `bin/` wrapper, not shell-startup (the env-vs-bin
+  split). It drove several audit decisions but is written down nowhere.
 
 ### Move env-polluting shell-startup setup into bin wrappers (MEDIUM PRIORITY)
 

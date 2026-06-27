@@ -104,6 +104,17 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **`config/shell-startup` audited — fixed, consolidated, retired** — reviewed
+  all 26 modules for correctness and security (clean: every `source` target is
+  user-owned; secrets are only `000-loadtokens`). Fixed `python`'s unguarded
+  poetry-completion source and standardized `go`'s guard/header. Consolidated
+  per the ≤2-settings rule: node/npm env pulled into `nodejs` (deduped), `rust`
+  deleted (redundant with `010-general`), `ruby` folded into `010-general`.
+  Retired dead code: disabled `taskwarrior` → `taskwarrior_inactive`, removed
+  perl `wtf_am_i_doing_here` and the dead `rd`/`v`/`f` aliases, kept
+  `git_cmd_return` as an `ICEBOX:`. Split the gcloud-auth convenience out to a
+  new `bin/gcloud-auth` (with bats tests), leaving only the sourced completion
+  in the module. (PR #160)
 - **Prose linting: adopt Vale, retire the global `.proselintrc`** — researched
   the deferred proselint question. proselint is maintained again (v0.16.0,
   Nov 2025) but **superseded** by **Vale** for this repo: a single Go binary
