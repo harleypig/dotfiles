@@ -14,6 +14,15 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Bash test coverage (Bash Setup Phase 3)** — a coverage census confirmed
+  bin/ (every real-logic script tested; rest documented skip/deferred) and
+  lib/ (`bash_prompt`, `debug`, `docker_helpers`) are complete. For
+  `config/shell-startup/` modules, added focused unit tests for the two with
+  genuinely testable logic: `test_tmux.bats` (`tmux_winidx_circled`'s
+  index→glyph mapping and the `>20 → "(N)"` boundary) and
+  `test_shell_startup_git.bats` (`gtoplevel`/`gtl` success + failure). The
+  remaining modules are guarded tool-setup covered in aggregate by the docker
+  integration tests, per the `TESTS.md` policy. Suite: 252 tests, all green.
 - **Bash test infrastructure (Bash Setup Phase 2)** — a test-review pass over
   the BATS suite, then enhancements: added `test_bash_prompt.bats` covering
   the previously-untested `lib/bash_prompt` helpers (`join_array`,

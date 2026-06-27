@@ -144,18 +144,19 @@ done.
 
 ### Phase 3: Core Test Coverage
 
-- [ ] Add tests for critical bin/ scripts
-- [ ] Add tests for lib/ libraries
-  - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
-        munging). Constraint: core perl modules only — no CPAN (keeps it
-        runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
-  - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
-    factored into `bin/git-status` — not tested.)
-- [ ] Add tests for config/shell-startup/ modules
-  - The rest are guarded tool-setup (`command -v`/interactive) already
-    exercised in aggregate by the docker integration tests
-    (`test_integration_startup` + `test_integration_context`); add a focused
-    unit test only when a module grows real conditional logic.
+- [x] Add tests for critical bin/ scripts — complete; every bin/ script with
+  real logic is tested (see *Comprehensive BATS Test Coverage Audit*); the
+  rest are documented trivial-skip or deferred display/heavy stragglers.
+- [x] Add tests for lib/ libraries — complete; `bash_prompt`, `debug`, and
+  `docker_helpers` each have a `test_*.bats`. (`is`, `Arrays`, `strings`
+  archived to `archive/lib/`; `git-prompt` factored into `bin/git-status`.)
+- [x] Add tests for config/shell-startup/ modules — added focused unit tests
+  for the modules with real logic: `test_tmux.bats` (`tmux_winidx_circled`
+  index→glyph boundary) and `test_shell_startup_git.bats` (`gtoplevel`/`gtl`
+  success + failure). The rest are guarded tool-setup
+  (`command -v`/interactive) exercised in aggregate by the docker integration
+  tests (`test_integration_startup` + `test_integration_context`); per
+  `TESTS.md`, unit-test a module only when it grows real conditional logic.
 
 ### Phase 4: Extended Coverage
 
@@ -549,6 +550,10 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
 - [ ] Update documentation
 
 ## ✨ Features & fixes
+
+- [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
+  munging). Constraint: core perl modules only — no CPAN (keeps it runnable
+  anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
 
 ### parse_params consumer ergonomics
 
