@@ -55,6 +55,23 @@ EOF
 }
 
 #------------------------------------------------------------------------------
+# Write an executable bash stub <dir>/<name> with <body> as its body — for a
+# stand-in command whose custom behaviour or output make_stub (which only
+# records args and exits a code) can't express:
+#   make_script_stub "$dir" ansi 'echo -n "[ansi:$*]"'   # echo args back
+#   make_script_stub "$dir" awk  'printf "%s\n" "$VAL"'   # emit a value
+# <body> is written verbatim, so single-quote it to keep $vars literal — they
+# expand when the stub runs, not when it is created (shellcheck SC2016 on the
+# call is expected for that case; disable it with a reason there).
+
+make_script_stub() {
+  local dir=$1 name=$2 body=$3
+
+  printf '#!/usr/bin/env bash\n%s\n' "$body" > "$dir/$name"
+  chmod +x "$dir/$name"
+}
+
+#------------------------------------------------------------------------------
 # Create a throwaway git repo at <dir> with a pinned test identity and one
 # empty initial commit. The git-* test files all need a real repo to run
 # against; this centralizes the init + identity + first-commit boilerplate they
