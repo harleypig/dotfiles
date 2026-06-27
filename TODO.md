@@ -142,22 +142,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
 done.
 
-### Phase 3: Core Test Coverage
-
-- [x] Add tests for critical bin/ scripts — complete; every bin/ script with
-  real logic is tested (see *Comprehensive BATS Test Coverage Audit*); the
-  rest are documented trivial-skip or deferred display/heavy stragglers.
-- [x] Add tests for lib/ libraries — complete; `bash_prompt`, `debug`, and
-  `docker_helpers` each have a `test_*.bats`. (`is`, `Arrays`, `strings`
-  archived to `archive/lib/`; `git-prompt` factored into `bin/git-status`.)
-- [x] Add tests for config/shell-startup/ modules — added focused unit tests
-  for the modules with real logic: `test_tmux.bats` (`tmux_winidx_circled`
-  index→glyph boundary) and `test_shell_startup_git.bats` (`gtoplevel`/`gtl`
-  success + failure). The rest are guarded tool-setup
-  (`command -v`/interactive) exercised in aggregate by the docker integration
-  tests (`test_integration_startup` + `test_integration_context`); per
-  `TESTS.md`, unit-test a module only when it grows real conditional logic.
-
 ### Phase 4: Extended Coverage
 
 - [ ] Completion tests for config/completions/
@@ -168,6 +152,14 @@ done.
 
 - [ ] tests/scaffold/build-meta-tests:5,6,71 - Add tests for sh compilation,
   improve shebang check, handle symbolic links (XXX)
+- [ ] **Extract a shared "source-functions-from-a-non-sourceable-file" test
+  helper** into `tests/helpers/common.bash`. The extract-and-eval pattern
+  (awk/sed a named function block out of a shell-startup module or guarded
+  lib, then `eval` it) now recurs in `test_havecmd`, `test_shell_startup_git`,
+  `test_tmux`, and (as a guard-strip variant) `test_bash_prompt` — Rule of
+  Three met. A `source_funcs <file> <fn>...` helper would DRY the by-name
+  case; the guard-strip case may stay bespoke. Consider a short `bats.md`
+  recipe for testing non-independently-sourceable shell too.
 
 ### Comprehensive BATS Test Coverage Audit
 
