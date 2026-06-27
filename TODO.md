@@ -40,22 +40,6 @@ coupled (added together, or one can't be done until the other lands), in which
 case keep it whole in its primary file and note the other scope inline. Also in
 `WORKFLOW.md` → *TODO routing*.
 
-## 🐙 GitHub (platform configuration)
-
-### Explore other GitHub rulesets (LOW PRIORITY)
-
-We use a single branch ruleset (protect master). Survey what else rulesets
-offer and whether any help this repo:
-
-- [ ] Review the available rule types — **tag** rulesets (protect release
-  tags from deletion/force-push), **push** rulesets (block large files or
-  secrets at push time), required linear history, required deployments /
-  code-scanning results, commit-metadata patterns (e.g. enforce Conventional
-  Commits subjects), restricted file-path changes, required workflows.
-- [ ] Decide which add value here (likely candidates: a tag ruleset for
-  release tags; a commit-message pattern enforcing Conventional Commits) and
-  capture their configs in `../private_dotfiles/github-rulesets/`.
-
 ## 🧰 Repository extraction (carve subtrees into their own repos)
 
 Both items below are the same question — extract a subtree into a standalone
