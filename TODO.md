@@ -144,42 +144,41 @@ done.
 
 ### Comprehensive BATS Test Coverage Audit
 
-`bin/` audited (2026-06-07). The 9 `docker_wrapper` tool symlinks (dive,
-hadolint, ollama, openwebui, prettier, shellcheck, shfmt, trivy, yamllint) are
-tested once at the dispatcher (`test_docker_wrapper`). Real scripts classified:
+`bin/` + `lib/` audited for both existence and **failure-path** coverage
+(quality-reviewed 2026-06-27). Every script with real logic or external
+interaction is tested, and the existing tests exercise failure paths — not
+just the happy path — so the suite meets the testing bar. The 9
+`docker_wrapper` tool symlinks are tested once at the dispatcher
+(`test_docker_wrapper`); `perltidyrc-clean` is Perl (covered under
+`tests/perl/`); `config/shell-startup` logic is covered by the integration
+tests plus the function-level `test_havecmd` / `test_shell_startup_git` /
+`test_tmux`.
 
-**Tested:** cleanpath, check-dotfiles, docker_wrapper, envsubstitute,
-git-status, hr, mymcp, parse_params, perltidyrc-clean, yesno, **duration**
-(`test_duration.bats`), **dir-readable** (`test_dir-readable.bats`).
+- [ ] `showvars` success path — a docker-harness integration test for the
+  `shfmt -tojson | jq` variable extraction (needs the shfmt wrapper + jq; low
+  value, deferred).
 
-**Unit-testable (pure logic) — to do:**
+**Trivial / skip (documented decisions, not gaps):** `anykey` (interactive
+single-key read), `dateh` (date-format display, non-deterministic output),
+`lwhich` / `vimwhich` (thin `which` / vim wrappers), `run-help` (9-line
+readline shim), `show-unicode` (static table), `bash-colors` (color-var
+defs), `motd` (large pure-display summary), `tmux_edit_buffer` (5-line tmux
+glue), `tmux_mode_indicator` (tmux format-string assembly only tmux
+evaluates — its leftover `set -ex` cleanup is tracked under the tmux
+repo-extraction item).
 
-- [ ] (reclassified to integration) `showvars` — needs `shfmt` (docker
-  wrapper) + `jq`; covered under the integration group, not pure-unit.
-- [ ] (marginal) `loadavg` (output depends on real load), `dateh` (date-format
-  table — mostly display).
+### Test Infrastructure
 
-**Integration (external tools / state) — to do:**
-
-- [ ] (low value) `motd` (large system-summary display), `tmux_mode_indicator`
-  (tmux display; also has the `set -ex` leftover to clean — see tmux section)
-  (`set -ex` cleanup → see *Repository extraction* › tmux item),
-  `loadavg` / `dateh` (load-dependent / display), `showvars` (needs the shfmt
-  docker wrapper + jq). These are display/integration-heavy; deferred.
-
-**Net:** every bin/ script with real logic or external interaction is now
-tested (duration, dir-readable, where, creds-helper, git-branch-clean,
-git-all, proj, ansi + the earlier set); the bin/ coverage pass is
-substantively complete. The above are the remaining display/heavy stragglers.
-
-**Trivial / skip (documented):** `anykey` (interactive single-key read),
-`lwhich` / `vimwhich` (thin `which`/vim wrappers), `run-help` (9-line readline
-shim), `show-unicode` (static table), `bash-colors` (color-var defs),
-`tmux_edit_buffer` (5-line tmux glue).
-
-- [ ] Also evaluate beyond `bin/`: remaining `config/shell-startup/` modules
-  (mostly covered by the integration tests) and any scripts elsewhere.
-- [ ] Regenerate the meta suite after adding scripts; keep Phase 3 in sync.
+- [ ] **(watch — Rule of Three at 2/3) A "stub that emits output" helper.**
+  `make_stub` (in `tests/helpers/common.bash`) records args and exits a code
+  but can't emit custom stdout, so tests that need a stub to *print* something
+  hand-roll a `printf '#!/usr/bin/env bash\n...' > "$dir/<name>"`. The
+  "`ansi` stub that echoes its args" form now recurs in `test_dir-readable`
+  and `test_loadavg` (2 instances); `test_loadavg` also hand-rolls an
+  env-var-emitting `awk` stub. On a **third** instance, extract a small
+  `make_echo_stub <dir> <name> <body>` (or `make_arg_echo_stub`) helper. Don't
+  build before then — the current two stubs differ enough that a premature
+  abstraction would be the wrong one.
 
 ### Bash Completion
 
