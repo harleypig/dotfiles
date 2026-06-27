@@ -142,21 +142,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
 Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
 done.
 
-### Phase 3: Core Test Coverage
-
-- [ ] Add tests for critical bin/ scripts
-- [ ] Add tests for lib/ libraries
-  - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
-        munging). Constraint: core perl modules only — no CPAN (keeps it
-        runnable anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
-  - (`is`, `Arrays`, `strings` archived to `archive/lib/`; `git-prompt`
-    factored into `bin/git-status` — not tested.)
-- [ ] Add tests for config/shell-startup/ modules
-  - The rest are guarded tool-setup (`command -v`/interactive) already
-    exercised in aggregate by the docker integration tests
-    (`test_integration_startup` + `test_integration_context`); add a focused
-    unit test only when a module grows real conditional logic.
-
 ### Phase 4: Extended Coverage
 
 - [ ] Completion tests for config/completions/
@@ -167,6 +152,14 @@ done.
 
 - [ ] tests/scaffold/build-meta-tests:5,6,71 - Add tests for sh compilation,
   improve shebang check, handle symbolic links (XXX)
+- [ ] **Extract a shared "source-functions-from-a-non-sourceable-file" test
+  helper** into `tests/helpers/common.bash`. The extract-and-eval pattern
+  (awk/sed a named function block out of a shell-startup module or guarded
+  lib, then `eval` it) now recurs in `test_havecmd`, `test_shell_startup_git`,
+  `test_tmux`, and (as a guard-strip variant) `test_bash_prompt` — Rule of
+  Three met. A `source_funcs <file> <fn>...` helper would DRY the by-name
+  case; the guard-strip case may stay bespoke. Consider a short `bats.md`
+  recipe for testing non-independently-sourceable shell too.
 
 ### Comprehensive BATS Test Coverage Audit
 
@@ -549,6 +542,10 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
 - [ ] Update documentation
 
 ## ✨ Features & fixes
+
+- [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
+  munging). Constraint: core perl modules only — no CPAN (keeps it runnable
+  anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
 
 ### parse_params consumer ergonomics
 
