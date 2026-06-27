@@ -38,6 +38,18 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **Dotfiles `TODO.md` reorganized to the new convention (dogfood) + rule
+  refinement** — third and final PR of the todo-management arc. Restructured
+  `TODO.md` from activity-grouped sections into subject-based `## <X> Setup`
+  sections (languages, maintained subjects, a `Features & fixes` work-type
+  section, and descriptively-named bounded projects/audits), stripped the
+  stale header/preamble, and removed the duplicated *Audit the Claude Code
+  Setup* block (its content already lives in `SETUP-AUDIT.md` and
+  `WORKFLOW.md` → *TODO Routing*; the WORKFLOW back-reference was updated).
+  All 150 open items preserved. Refined `rules/todo.md` to **v1.1.0**: a
+  heading carries **no priority tag** — priority is an optional per-item
+  property (surfaced by the dogfood). (PR #166)
+
 - **`pre-commit` skill evaluated and declined; qa-check delegation made
   explicit** — assessed packaging the `pre-commit` operational workflow as a
   skill and decided against it: every slice it would wrap already has a
