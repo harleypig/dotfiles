@@ -27,4 +27,6 @@ function mkvenv() {
     && pip install -r dev-requirements.txt
 }
 
-havecmd poetry && source "$XDG_CONFIG_HOME/completions/poetry"
+havecmd poetry \
+  && [[ -r "$XDG_CONFIG_HOME/completions/poetry" ]] \
+  && source "$XDG_CONFIG_HOME/completions/poetry"

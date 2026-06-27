@@ -68,41 +68,6 @@ setup_prove() {
 }
 
 #-----------------------------------------------------------------------------
-wtf_am_i_doing_here() {
-  return 0
-
-  ### bash completion related setup
-  if [[ -f /home/harleypig/.config/shcompgen.bashrc ]]; then
-    # shellcheck disable=SC1091
-    source /home/harleypig/.config/shcompgen.bashrc
-  else
-
-    COMPLETION_UTIL="$COMPLETION_UTIL pmbin"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmcat"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmchkver"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmcore"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmcost"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmdoc"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmedit"
-    COMPLETION_UTIL="$COMPLETION_UTIL pminfo"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmless"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmlines"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmlist"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmman"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmpath"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmstripper"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmuninst"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmversion"
-    COMPLETION_UTIL="$COMPLETION_UTIL pmxs"
-    COMPLETION_UTIL="$COMPLETION_UTIL podpath"
-
-    for CU in $COMPLETION_UTIL; do
-      havecmd "$CU" && complete -C "$CU" "$CU"
-    done
-  fi
-}
-
-#-----------------------------------------------------------------------------
 # perlbrew sets PATH / PERL5LIB / PERLBREW_* — needed in any shell, so run it
 # before the interactive guard.
 setup_perlbrew

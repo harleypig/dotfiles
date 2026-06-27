@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# gcloud-auth - run both gcloud logins back to back (user + application
+# default), each with --no-launch-browser for headless/SSH sessions.
+#
+# Extracted from config/shell-startup/010-general, where it was a shell alias
+# loaded into every interactive shell. It is an on-demand command, not shell
+# state, so it lives here instead.
+
+set -euo pipefail
+
+case "${1-}" in
+  -h | --help)
+    cat << 'EOF'
+Usage: gcloud-auth
+
+Authenticates gcloud for both the CLI and application-default credentials,
+using --no-launch-browser so it works over SSH / on a headless host.
+EOF
+    exit 0
+    ;;
+esac
+
+command -v gcloud > /dev/null 2>&1 || {
+  echo "gcloud-auth: gcloud is not installed or not on PATH" >&2
+  exit 1
+}
+
+gcloud auth login --no-launch-browser
+gcloud auth application-default login --no-launch-browser

@@ -1,7 +1,0 @@
-#!/bin/bash
-
-havecmd ruby || return 0
-
-GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
-export GEM_HOME
-export PATH="$PATH:$GEM_HOME/bin"

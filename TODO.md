@@ -93,31 +93,58 @@ main dotfiles checkout.
 
 Review all files in `config/shell-startup/` for correctness and security:
 
-- [ ] Variables set at module scope but never unset (temporary/setup vars
-  that pollute the shell environment)
-- [ ] Sensitive values (tokens, keys, paths to secrets) that should be
-  handled more carefully or not exported at all
-- [ ] Variables exported unnecessarily (does the child process actually
-  need it, or should it be local?)
-- [ ] Patterns like `source`/`.` that execute arbitrary files without
-  checking ownership or permissions
-- [ ] Files read without checking they're not world-writable
-- [ ] Missing `command -v ... || return 0` guards where a tool may not
-  be installed
-- [ ] Inconsistent guard style (`if command -v` vs `command -v || return 0`)
-  — standardize to `|| return 0` pattern per `000-loadtokens` fix
-- [ ] Any other shellcheck warnings not already suppressed with justification
+- [x] Variables set at module scope but never unset — reviewed; modules unset
+  their temporaries (`000-loadtokens`, `less`, `010-general`). `tmux`'s
+  `circled_digits` is the one leak → tmux follow-up below.
+- [x] Sensitive values — reviewed; only `000-loadtokens`, already settled in
+  its secrets-vault ICEBOX.
+- [x] Variables exported unnecessarily — reviewed; `tmux`'s `export -f` →
+  tmux follow-up below.
+- [x] `source`/`.` without ownership/permission checks — reviewed; every
+  target is under `$HOME`/`$XDG_*`/`$DOTFILES` (user-owned). Fixed `python`'s
+  unguarded poetry-completion source.
+- [x] Files read without world-writable check — reviewed; none read from an
+  untrusted location.
+- [x] Missing guards — reviewed; `python` poetry source guarded.
+- [x] Inconsistent guard style — `go` standardized to `havecmd … || return 0`
+  and given a `# shellcheck shell=bash` header (matched in `app_env_vars`).
+- [x] Other shellcheck warnings — clean (already gated by `shellcheck-sourced`).
 
 Beyond correctness/security, audit each module for **improve / add / remove**:
 
-- [ ] **Improve**: modernize patterns; fix the lint findings the
-  extensionless-files coverage gap currently hides (e.g. terraform's
-  `COMPREPLY=($(compgen …))` SC2207, perl's SC1003); cut per-startup cost
-  (subprocesses that run at every login).
-- [ ] **Add**: tools/integrations worth their own module that aren't covered.
-- [ ] **Remove / retire**: modules for tools no longer used; dead or
-  commented-out blocks (e.g. perl's `wtf_am_i_doing_here` early-`return`
-  function); stale host assumptions.
+- [x] **Improve** — `python` guard; node/npm env consolidated into `nodejs`;
+  `rust` (redundant with `010-general`) and `ruby` (≤2 settings) folded; the
+  per-startup-cost subprocesses (`less`, `ruby`, gcloud) captured as follow-ups
+  below.
+- [x] **Add** — nothing missing flagged.
+- [x] **Remove / retire** — `rust`/`ruby` modules deleted, `taskwarrior`
+  renamed `*_inactive` (loader skips it), perl `wtf_am_i_doing_here` removed,
+  dead `rd`/`v`/`f` aliases removed, `git_cmd_return` kept as an `ICEBOX:`.
+
+### Shell-startup colors & helpers to get working (from audit)
+
+Long-standing "I've been trying to get this working for years" items, parked
+from the audit. Each is its own task:
+
+- [ ] **`less` colors** — get the `LESS_TERMCAP_*` coloring reliable; while
+  here, revisit the commented `LESSKEY` (`less`:7) and `LESS_TERMCAP_mh` dim
+  (`less`:79–80), and the per-login `less --incsearch -V | grep` capability
+  probe (`less`:26) — cache the result instead of running it every login.
+- [ ] **`grep` colors** — get `GREP_COLORS` (and the commented `GREP_COLOR`,
+  `010-general`:21) producing the intended highlight.
+- [ ] **`run-help`** — get the Alt+h "help for word under cursor" binding
+  working (commented in `010-general`:184; needs the inputrc macro).
+
+### Shell-startup follow-ups (from audit)
+
+- [ ] **gcloud completion cost** — `010-general`'s gcloud block runs
+  `gcloud info --format=…` every login to locate `completion.bash.inc`. Cache
+  the resolved `sdk_root` path so the subprocess doesn't run on every shell.
+- [ ] **non-interactive startup** — `shell-startup` runs to completion
+  regardless of interactivity; `zzz-check-dotfiles` / `zzz-check-dotvim` run
+  their checks even in a non-interactive shell. Verify nothing prints to
+  stdout on a non-interactive source (would corrupt `scp`/`rsync` if `BASH_ENV`
+  ever points here); guard with `[[ $- == *i* ]]` if so.
 
 ### Move env-polluting shell-startup setup into bin wrappers (MEDIUM PRIORITY)
 
@@ -773,6 +800,10 @@ pass:
 - [ ] `config/shell-startup/tmux` - when multiple tmux sessions exist, have
   `ta` list them and let the user choose, instead of always attaching the
   `$USER` session. (Marker at the `ta` definition.)
+  - From the shell-startup audit: trim env pollution — `export -f ta`
+    (and `set_title`/`unset_title`) pushes interactive helpers into every
+    child process, and `circled_digits` is set at module scope but never
+    unset. Scope or unset them while reworking `ta`.
 - [ ] `config/claude/bin/statusline.sh` + `bin/ansi` - check whether tput /
   terminals support OSC 8 hyperlink escapes; if so, extend `bin/ansi` to
   emit them for clickable links repo-wide. (Markers in both files.)

@@ -1,8 +1,8 @@
-#!bash
+# shellcheck shell=bash
 
 export GOPATH="${XDG_DATA_HOME}/go"
 
-type -P go &> /dev/null || return 0
+havecmd go || return 0
 
 #----------------------------------------------------------------------
 if [ -z "$GOBIN" ]; then

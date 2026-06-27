@@ -48,6 +48,16 @@ if [[ -d $XDG_DATA_HOME ]]; then
 fi
 
 #-----------------------------------------------------------------------------
+# ruby (gems install under the user dir; only GEM_HOME + PATH, so it lives
+# here rather than in its own module)
+
+if havecmd ruby; then
+  GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
+  export GEM_HOME
+  addpath "$GEM_HOME/bin"
+fi
+
+#-----------------------------------------------------------------------------
 # cygwin specific stuff
 
 if [[ "$(uname -o)" == "Cygwin" ]]; then
@@ -105,9 +115,6 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias df='df -h'
 alias h='history'
-#alias rd=rmdir
-#alias v='vim'
-#alias f='find'
 
 #-----------------------------------------------------------------------------
 alias dumppath='echo -e ${PATH//:/\\n}'
@@ -204,10 +211,10 @@ alias j!=jbang
 #-----------------------------------------------------------------------------
 # gcloud stuff
 
+# The gcloud-auth convenience command lives in bin/gcloud-auth; only the
+# shell-facing completion (which must be sourced) stays here.
 # shellcheck disable=SC1091
 if havecmd gcloud; then
-  alias gcloud-auth='gcloud auth login --no-launch-browser && gcloud auth application-default login --no-launch-browser'
-
   gcpath="$(gcloud info --format='value(installation.sdk_root)')"
   completion_file="$gcpath/completion.bash.inc"
   [[ -f $completion_file ]] && source "$completion_file"
