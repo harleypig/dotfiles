@@ -1,2 +1,7 @@
-internal-cmdline-history.txt
-saved-breakpoints-3.10
+# Deny everything; allow only tracked config. Each config/ subdir owns its
+# own allowlist in this format (deny all, then re-include specifics).
+# See config/.gitignore.
+
+*
+!.gitignore
+!pudb.cfg

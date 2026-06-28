@@ -1,0 +1,34 @@
+# Deny everything; allow only tracked config. Each config/ subdir owns its
+# own allowlist in this format (deny all, then re-include specifics).
+# See config/.gitignore.
+
+*
+!.gitignore
+!000-loadtokens
+!010-general
+!aider
+!ansible
+!app_env_vars
+!bash_prompt
+!binenv
+!calibre
+!claude
+!cuda
+!docker
+!gh
+!git
+!go
+!grok
+!less
+!nodejs
+!perl
+!python
+!rust
+!.shellcheckrc
+!ssh-config-completion
+!taskwarrior_inactive
+!terraform
+!tmux
+!vim
+!zzz-check-dotfiles
+!zzz-check-dotvim
