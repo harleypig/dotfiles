@@ -1,0 +1,193 @@
+#!/usr/bin/env bash
+
+# vmgr - orchestrate per-language version/toolchain managers.
+#
+# Wraps each language's NATIVE manager (nvm, perlbrew, pipx, uv, ...) behind a
+# single verb-based entry point, rather than adopting an off-the-shelf unified
+# tool. See docs/adr/0001-custom-polyglot-version-manager.md for the why.
+#
+# Usage:
+#   vmgr <action> [language ...]
+#
+#   actions: install | update | remove
+#            list | help
+#
+#   vmgr install node          install node's manager(s)
+#   vmgr update perl           update perl's manager(s)
+#   vmgr remove node           remove node's manager(s)
+#   vmgr install               (no language) list what's available
+#   vmgr list                  list available languages and their managers
+#
+# A language whose module defines more than one manager (e.g. python -> pipx,
+# uv) is ambiguous on its own: vmgr lists that language's managers instead of
+# acting, so you can pick.
+#
+# Each language is a sourced module in lib/version-managers/<language> that
+# declares `vmgr_managers=(...)` and a <manager>_<action> function per manager.
+# Override the module directory with VMGR_LIB_DIR (used by the test suite).
+
+set -uo pipefail
+
+###############################################################################
+# Setup
+
+# Resolve our real path through any invoking symlink to locate lib/.
+self=$(readlink -f "${BASH_SOURCE[0]}")
+bindir=$(dirname "$self")
+
+: "${VMGR_LIB_DIR:=$bindir/../lib/version-managers}"
+
+PROG=${0##*/}
+
+readonly VALID_ACTIONS=" install update remove "
+
+###############################################################################
+# Utility functions
+
+#------------------------------------------------------------------------------
+# Print an error to stderr and exit with the given code (default 1).
+
+die() {
+  local code=1
+
+  if [[ $1 == -* ]]; then
+    code=${1#-}
+    shift
+  fi
+
+  printf '%s: %s\n' "$PROG" "$*" >&2
+  exit "$code"
+}
+
+#------------------------------------------------------------------------------
+# Print usage to stdout.
+
+usage() {
+  sed -n '3,28p' "$self" | sed 's/^# \{0,1\}//'
+}
+
+#------------------------------------------------------------------------------
+# Echo the managers a language module declares, one per line. Sourced in a
+# subshell so the module's definitions never leak into the dispatcher.
+
+language_managers() {
+  local module=$1
+
+  (
+    unset vmgr_managers
+    # shellcheck disable=SC1090  # module path is resolved at runtime
+    source "$module" > /dev/null 2>&1 || exit 1
+    # shellcheck disable=SC2154  # assigned by the sourced language module
+    printf '%s\n' "${vmgr_managers[@]}"
+  )
+}
+
+#------------------------------------------------------------------------------
+# List every available language and the managers it provides.
+
+list_available() {
+  local -a modules=()
+  mapfile -t modules < <(find "$VMGR_LIB_DIR" -maxdepth 1 -type f | sort)
+
+  if ((${#modules[@]} == 0)); then
+    printf 'No version-manager modules found in %s\n' "$VMGR_LIB_DIR"
+    return 0
+  fi
+
+  printf 'Available version managers (language: managers):\n'
+
+  local module lang
+  for module in "${modules[@]}"; do
+    lang=${module##*/}
+
+    local -a managers=()
+    mapfile -t managers < <(language_managers "$module")
+
+    printf '  %s: %s\n' "$lang" "${managers[*]:-(none)}"
+  done
+}
+
+###############################################################################
+# Dispatch
+
+#------------------------------------------------------------------------------
+# Run <action> for one <language>. Sources the language module in this
+# (sub)shell, then either acts on its single manager or, when the language is
+# ambiguous (more than one manager), lists the managers so the user can pick.
+# Returns non-zero on any error.
+
+handle_language() {
+  local action=$1 lang=$2
+
+  local module="$VMGR_LIB_DIR/$lang"
+  [[ -f $module ]] || {
+    printf '%s: unknown language (no module %s)\n' "$PROG" "$lang" >&2
+    return 1
+  }
+
+  unset vmgr_managers
+  # shellcheck disable=SC1090  # module path is resolved at runtime
+  source "$module" || {
+    printf '%s: failed to load %s module\n' "$PROG" "$lang" >&2
+    return 1
+  }
+
+  local -a managers=("${vmgr_managers[@]:-}")
+  ((${#managers[@]} && ${#managers[0]})) || {
+    printf '%s: %s module declares no managers\n' "$PROG" "$lang" >&2
+    return 1
+  }
+
+  if ((${#managers[@]} > 1)); then
+    printf '%s has multiple managers; specify one:\n' "$lang"
+    printf '  %s\n' "${managers[@]}"
+    return 0
+  fi
+
+  local mgr=${managers[0]}
+  local fn="${mgr}_${action}"
+  declare -F "$fn" > /dev/null || {
+    printf '%s: %s/%s does not support %s\n' "$PROG" "$lang" "$mgr" "$action" >&2
+    return 1
+  }
+
+  "$fn"
+}
+
+###############################################################################
+# Main
+
+main() {
+  local action=${1:-list}
+  shift || true
+
+  case $action in
+    help | -h | --help)
+      usage
+      exit 0
+      ;;
+
+    list)
+      list_available
+      exit 0
+      ;;
+  esac
+
+  [[ $VALID_ACTIONS == *" $action "* ]] \
+    || die -2 "unknown action '$action' (expected: install, update, remove, list)"
+
+  # An action with no languages lists what's available rather than acting.
+  if (($# == 0)); then
+    list_available
+    exit 0
+  fi
+
+  local lang rc=0
+  for lang in "$@"; do
+    (handle_language "$action" "$lang") || rc=1
+  done
+
+  exit "$rc"
+}
+
+main "$@"

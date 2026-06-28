@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+
+# lib/version-managers/node - vmgr module wrapping nvm (Node Version Manager).
+#
+# Sourced by bin/vmgr (never executed). Declares the managers this language
+# provides and a <manager>_<action> function per manager. As a sourced library
+# it uses no `set -e` and calls no `exit` - it surfaces errors via return codes
+# (see config/claude/rules/bash.md).
+#
+# nvm itself is installed via the PINNED git-clone method: controllable,
+# reproducible, and free of any curl/wget dependency for nvm proper. Node
+# versions are then fetched through nvm (which does need a downloader at run
+# time). Shell-init (lazy-load at login) is deliberately NOT handled here - it
+# lives in config/shell-startup/node, a separate concern - so nvm's profile
+# editing is bypassed entirely.
+
+# shellcheck disable=SC2034  # read by bin/vmgr after it sources this module
+vmgr_managers=(nvm)
+
+# Pinned versions. Bump deliberately (see docs/adr/0001 + TODO.md "Tool/Version
+# Manager Setup"); nvm v0.40.5 verified against the upstream README 2026-06-28.
+NVM_PIN=v0.40.5
+NODE_DEFAULT=22
+
+###############################################################################
+# Internal helpers
+
+#------------------------------------------------------------------------------
+# Echo the XDG-compliant nvm install dir (honouring a caller-set NVM_DIR).
+
+_node_nvm_dir() {
+  printf '%s' "${NVM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nvm}"
+}
+
+#------------------------------------------------------------------------------
+# Load nvm into the current shell so `nvm` is callable. --no-use avoids
+# selecting a version as a side effect. Returns non-zero if nvm isn't present.
+
+_node_load_nvm() {
+  local dir
+  dir=$(_node_nvm_dir)
+
+  [[ -s $dir/nvm.sh ]] || return 1
+
+  export NVM_DIR=$dir
+  # shellcheck disable=SC1091  # provided by the nvm install at runtime
+  \. "$dir/nvm.sh" --no-use
+}
+
+###############################################################################
+# Manager: nvm
+
+#------------------------------------------------------------------------------
+# Install nvm (pinned) into an XDG dir, then install + default a pinned Node.
+# Idempotent: an existing checkout is left in place (use `update` to move it).
+
+nvm_install() {
+  local dir
+  dir=$(_node_nvm_dir)
+
+  if [[ -d $dir/.git ]]; then
+    printf "nvm already present at %s (use 'vmgr update node' to move it)\n" \
+      "$dir" >&2
+
+  else
+    printf 'installing nvm %s into %s\n' "$NVM_PIN" "$dir" >&2
+
+    git clone -q https://github.com/nvm-sh/nvm.git "$dir" \
+      || {
+        printf 'nvm clone failed\n' >&2
+        return 1
+      }
+
+    git -C "$dir" checkout -q "$NVM_PIN" \
+      || {
+        printf 'nvm checkout %s failed\n' "$NVM_PIN" >&2
+        return 1
+      }
+  fi
+
+  _node_load_nvm \
+    || {
+      printf 'nvm.sh not loadable after install\n' >&2
+      return 1
+    }
+
+  printf 'installing Node %s and setting it default\n' "$NODE_DEFAULT" >&2
+
+  nvm install "$NODE_DEFAULT" \
+    || {
+      printf 'node %s install failed\n' "$NODE_DEFAULT" >&2
+      return 1
+    }
+
+  nvm alias default "$NODE_DEFAULT" \
+    || {
+      printf 'setting default node failed\n' >&2
+      return 1
+    }
+}
+
+#------------------------------------------------------------------------------
+# Move the nvm checkout to the pinned tag (fetch tags, checkout pin).
+
+nvm_update() {
+  local dir
+  dir=$(_node_nvm_dir)
+
+  [[ -d $dir/.git ]] || {
+    printf "nvm not installed at %s (run 'vmgr install node')\n" "$dir" >&2
+    return 1
+  }
+
+  printf 'updating nvm to %s\n' "$NVM_PIN" >&2
+
+  git -C "$dir" fetch -q --tags origin \
+    || {
+      printf 'nvm fetch failed\n' >&2
+      return 1
+    }
+
+  git -C "$dir" checkout -q "$NVM_PIN" \
+    || {
+      printf 'nvm checkout %s failed\n' "$NVM_PIN" >&2
+      return 1
+    }
+}
+
+#------------------------------------------------------------------------------
+# Remove nvm and everything it installed (the whole NVM_DIR). Idempotent:
+# a missing install is a successful no-op.
+
+nvm_remove() {
+  local dir
+  dir=$(_node_nvm_dir)
+
+  if [[ ! -d $dir ]]; then
+    printf 'nvm not installed at %s; nothing to remove\n' "$dir" >&2
+    return 0
+  fi
+
+  printf 'removing nvm (and its Node installs) at %s\n' "$dir" >&2
+  rm -rf "$dir"
+}

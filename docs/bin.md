@@ -136,6 +136,21 @@ Edit tmux buffer contents in an editor. Used with tmux key bindings.
 **tmux_mode_indicator**
 Display current tmux mode (copy mode, etc.) in status line or prompt.
 
+### Version / Toolchain Management
+
+**vmgr**
+Polyglot version-manager orchestrator. Accepts `install` / `update` / `remove`
+plus a list of languages (e.g. `vmgr install node`), or lists what's available
+(`vmgr list`, or any action with no language). Wraps each language's *native*
+manager (nvm, perlbrew, pipx, uv, …) — defined as a sourced module in
+`lib/version-managers/<language>` — rather than adopting an off-the-shelf
+unified tool; see
+[docs/adr/0001-custom-polyglot-version-manager.md](adr/0001-custom-polyglot-version-manager.md)
+for the rationale. A language with more than one manager lists them instead
+of acting, so you can pick. Owns only the install/update/remove lifecycle;
+runtime lazy-load stays in `config/shell-startup/<language>`. Run `vmgr help`
+for usage.
+
 ### MCP and Integration
 
 **mymcp**
