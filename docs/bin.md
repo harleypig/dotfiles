@@ -139,17 +139,31 @@ Display current tmux mode (copy mode, etc.) in status line or prompt.
 ### Version / Toolchain Management
 
 **vmgr**
-Polyglot version-manager orchestrator. Accepts `install` / `update` / `remove`
-plus a list of languages (e.g. `vmgr install node`), or lists what's available
-(`vmgr list`, or any action with no language). Wraps each language's *native*
-manager (nvm, perlbrew, pipx, uv, …) — defined as a sourced module in
-`lib/version-managers/<language>` — rather than adopting an off-the-shelf
-unified tool; see
+Polyglot version-manager orchestrator. Accepts the standard verbs
+`install` / `update` / `remove` / `report` plus a list of languages (e.g.
+`vmgr install node`, `vmgr report node`), or lists what's available
+(`vmgr list`, or any action with no language). `report` shows expected
+(what vmgr would install / where) vs. current state and flags drift —
+suggesting migration but leaving the *how* to you. `vmgr help <language>`
+(e.g. `vmgr help node`) prints that language's own help — its verbs, pin
+semantics, and install location — while a bare `vmgr help` is the general
+usage. Wraps each language's *native* manager (nvm, perlbrew, pipx, uv, …) —
+defined as a sourced module in `lib/version-managers/<language>` that
+implements one function per standard
+verb and manager (`<manager>_install`, `…_update`, `…_remove`, `…_report`) —
+rather than adopting an off-the-shelf unified tool; see
 [docs/adr/0001-custom-polyglot-version-manager.md](adr/0001-custom-polyglot-version-manager.md)
 for the rationale. A language with more than one manager lists them instead
-of acting, so you can pick. Owns only the install/update/remove lifecycle;
-runtime lazy-load stays in `config/shell-startup/<language>`. Run `vmgr help`
-for usage.
+of acting, so you can pick. Pinned versions live in `config/vmgr/<language>`
+(e.g. `config/vmgr/node` sets `NVM_PIN` / `NODE_PIN`) — in config, not code —
+so they are set in one place and sourceable by anything that needs them. The
+pins govern *only* what vmgr installs and sets as the default; the native
+manager stays usable directly. `install` and `update` both reconcile the
+toolchain to the pins (`install` also clones the manager on a fresh machine;
+`update` requires it present) — re-asserting the pinned default, resetting it
+even if newer versions were installed through the manager (intentional, so the
+default is deterministic). Owns the install/update/remove lifecycle; runtime
+lazy-load stays in `config/shell-startup/<language>`. Run `vmgr help` for usage.
 
 ### MCP and Integration
 

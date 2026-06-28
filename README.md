@@ -202,7 +202,7 @@ for specific tools:
 - **`binenv`**: Binary environment manager
 - **`git`**: Git configuration and aliases
 - **`go`**: Go language environment
-- **`nodejs`**: Node.js and NVM configuration
+- **`node`**: Node.js and NVM configuration
 - **`perl`**: Perl environment and configuration
 - **`python`**: Python environment and poetry setup
 - **`ruby`**: Ruby environment and configuration

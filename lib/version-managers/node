@@ -3,9 +3,10 @@
 # lib/version-managers/node - vmgr module wrapping nvm (Node Version Manager).
 #
 # Sourced by bin/vmgr (never executed). Declares the managers this language
-# provides and a <manager>_<action> function per manager. As a sourced library
-# it uses no `set -e` and calls no `exit` - it surfaces errors via return codes
-# (see config/claude/rules/bash.md).
+# provides and a <manager>_<verb> function per manager - the verbs are install,
+# update, remove, report, and help (see bin/vmgr). As a sourced library it uses
+# no `set -e` and calls no `exit` - it surfaces errors via return codes (see
+# config/claude/rules/bash.md).
 #
 # nvm itself is installed via the PINNED git-clone method: controllable,
 # reproducible, and free of any curl/wget dependency for nvm proper. Node
@@ -17,10 +18,9 @@
 # shellcheck disable=SC2034  # read by bin/vmgr after it sources this module
 vmgr_managers=(nvm)
 
-# Pinned versions. Bump deliberately (see docs/adr/0001 + TODO.md "Tool/Version
-# Manager Setup"); nvm v0.40.5 verified against the upstream README 2026-06-28.
-NVM_PIN=v0.40.5
-NODE_DEFAULT=22
+# The pinned versions (NVM_PIN, NODE_PIN) are NOT hardcoded here - they live in
+# config/vmgr/node and are loaded by _node_load_pins, so the numbers are set in
+# one place and sourceable by anything that needs them. Bump them there.
 
 ###############################################################################
 # Internal helpers
@@ -30,6 +30,48 @@ NODE_DEFAULT=22
 
 _node_nvm_dir() {
   printf '%s' "${NVM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nvm}"
+}
+
+#------------------------------------------------------------------------------
+# Echo the path to this language's pins config. Defaults to the repo's
+# config/vmgr/node (resolved from this module's own location, so it works
+# however the module is sourced); override the dir with VMGR_CONFIG_DIR.
+
+_node_conf() {
+  local dir
+
+  if [[ -n ${VMGR_CONFIG_DIR:-} ]]; then
+    dir=$VMGR_CONFIG_DIR
+
+  else
+    local self
+    self=$(readlink -f "${BASH_SOURCE[0]}")
+    dir="$(dirname "$(dirname "$(dirname "$self")")")/config/vmgr"
+  fi
+
+  printf '%s/node' "$dir"
+}
+
+#------------------------------------------------------------------------------
+# Source the pins config, populating NVM_PIN and NODE_PIN. Returns non-zero
+# (with a message) if the config is missing or does not set both.
+
+_node_load_pins() {
+  local conf
+  conf=$(_node_conf)
+
+  [[ -r $conf ]] || {
+    printf 'node: pins config not found at %s\n' "$conf" >&2
+    return 1
+  }
+
+  # shellcheck disable=SC1090  # config path resolved at runtime
+  source "$conf"
+
+  [[ -n ${NVM_PIN:-} && -n ${NODE_PIN:-} ]] || {
+    printf 'node: NVM_PIN and NODE_PIN must be set in %s\n' "$conf" >&2
+    return 1
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -51,67 +93,15 @@ _node_load_nvm() {
 # Manager: nvm
 
 #------------------------------------------------------------------------------
-# Install nvm (pinned) into an XDG dir, then install + default a pinned Node.
-# Idempotent: an existing checkout is left in place (use `update` to move it).
+# Reconcile an existing nvm checkout and Node to the pins: move nvm to NVM_PIN,
+# then install NODE_PIN and set it the default. Assumes nvm is already cloned.
+# Shared by install and update so both bring the toolchain to the pinned state.
 
-nvm_install() {
+_node_reconcile() {
   local dir
   dir=$(_node_nvm_dir)
 
-  if [[ -d $dir/.git ]]; then
-    printf "nvm already present at %s (use 'vmgr update node' to move it)\n" \
-      "$dir" >&2
-
-  else
-    printf 'installing nvm %s into %s\n' "$NVM_PIN" "$dir" >&2
-
-    git clone -q https://github.com/nvm-sh/nvm.git "$dir" \
-      || {
-        printf 'nvm clone failed\n' >&2
-        return 1
-      }
-
-    git -C "$dir" checkout -q "$NVM_PIN" \
-      || {
-        printf 'nvm checkout %s failed\n' "$NVM_PIN" >&2
-        return 1
-      }
-  fi
-
-  _node_load_nvm \
-    || {
-      printf 'nvm.sh not loadable after install\n' >&2
-      return 1
-    }
-
-  printf 'installing Node %s and setting it default\n' "$NODE_DEFAULT" >&2
-
-  nvm install "$NODE_DEFAULT" \
-    || {
-      printf 'node %s install failed\n' "$NODE_DEFAULT" >&2
-      return 1
-    }
-
-  nvm alias default "$NODE_DEFAULT" \
-    || {
-      printf 'setting default node failed\n' >&2
-      return 1
-    }
-}
-
-#------------------------------------------------------------------------------
-# Move the nvm checkout to the pinned tag (fetch tags, checkout pin).
-
-nvm_update() {
-  local dir
-  dir=$(_node_nvm_dir)
-
-  [[ -d $dir/.git ]] || {
-    printf "nvm not installed at %s (run 'vmgr install node')\n" "$dir" >&2
-    return 1
-  }
-
-  printf 'updating nvm to %s\n' "$NVM_PIN" >&2
+  printf 'setting nvm to %s\n' "$NVM_PIN" >&2
 
   git -C "$dir" fetch -q --tags origin \
     || {
@@ -124,6 +114,71 @@ nvm_update() {
       printf 'nvm checkout %s failed\n' "$NVM_PIN" >&2
       return 1
     }
+
+  _node_load_nvm \
+    || {
+      printf 'nvm.sh not loadable\n' >&2
+      return 1
+    }
+
+  printf 'installing Node %s and setting it default\n' "$NODE_PIN" >&2
+
+  nvm install "$NODE_PIN" \
+    || {
+      printf 'node %s install failed\n' "$NODE_PIN" >&2
+      return 1
+    }
+
+  nvm alias default "$NODE_PIN" \
+    || {
+      printf 'setting default node failed\n' >&2
+      return 1
+    }
+}
+
+#------------------------------------------------------------------------------
+# Ensure nvm is present (clone it if absent), then reconcile the whole toolchain
+# to the pins. Idempotent toward the pins: re-running re-asserts them, including
+# RESETTING the default Node to NODE_PIN even when newer versions were installed
+# via nvm directly. That reset is intentional; vmgr owns only the pinned default
+# - change it with nvm itself, or by bumping NODE_PIN in config/vmgr/node.
+
+nvm_install() {
+  local dir
+  dir=$(_node_nvm_dir)
+
+  _node_load_pins || return 1
+
+  if [[ ! -d $dir/.git ]]; then
+    printf 'cloning nvm into %s\n' "$dir" >&2
+
+    git clone -q https://github.com/nvm-sh/nvm.git "$dir" \
+      || {
+        printf 'nvm clone failed\n' >&2
+        return 1
+      }
+  fi
+
+  _node_reconcile
+}
+
+#------------------------------------------------------------------------------
+# Bring an existing install to the pins (the same reconcile as install, minus
+# the initial clone): move nvm to NVM_PIN and (re)install + default NODE_PIN.
+# Run it after bumping either pin in config/vmgr/node.
+
+nvm_update() {
+  local dir
+  dir=$(_node_nvm_dir)
+
+  _node_load_pins || return 1
+
+  [[ -d $dir/.git ]] || {
+    printf "nvm not installed at %s (run 'vmgr install node')\n" "$dir" >&2
+    return 1
+  }
+
+  _node_reconcile
 }
 
 #------------------------------------------------------------------------------
@@ -141,4 +196,112 @@ nvm_remove() {
 
   printf 'removing nvm (and its Node installs) at %s\n' "$dir" >&2
   rm -rf "$dir"
+}
+
+#------------------------------------------------------------------------------
+# Report expected (what vmgr would install/where) vs. current (what is on the
+# machine now), and flag drift. Read-only: it inspects files and never sources
+# nvm, installs, or moves anything - migrating is left to the user.
+
+nvm_report() {
+  local expected current src installed default_alias
+  local -a node_versions=()
+
+  _node_load_pins || {
+    NVM_PIN='(no pins config)'
+    NODE_PIN='(no pins config)'
+  }
+
+  expected="${XDG_DATA_HOME:-$HOME/.local/share}/nvm"
+  current=$(_node_nvm_dir)
+
+  if [[ -n ${NVM_DIR:-} ]]; then
+    src="from environment (NVM_DIR)"
+  else
+    src="vmgr default"
+  fi
+
+  if [[ -d $current/.git ]]; then
+    installed=$(git -C "$current" describe --tags 2> /dev/null || printf 'unknown')
+  elif [[ -e $current/nvm.sh ]]; then
+    installed="present (not a git checkout)"
+  else
+    installed=""
+  fi
+
+  if [[ -d $current/versions/node ]]; then
+    mapfile -t node_versions < <(
+      find "$current/versions/node" -mindepth 1 -maxdepth 1 -type d \
+        -printf '%f\n' 2> /dev/null | sort -V
+    )
+  fi
+
+  [[ -r $current/alias/default ]] && default_alias=$(< "$current/alias/default")
+
+  printf 'node (manager: nvm)\n\n'
+
+  printf '  Expected (vmgr):\n'
+  printf '    nvm dir : %s\n' "$expected"
+  printf '    nvm ver : %s\n' "$NVM_PIN"
+  printf '    node    : %s (default)\n\n' "$NODE_PIN"
+
+  printf '  Current:\n'
+  printf '    NVM_DIR : %s (%s)\n' "$current" "$src"
+  printf '    nvm ver : %s\n' "${installed:-not installed}"
+  if ((${#node_versions[@]})); then
+    printf '    node    : %s (default alias -> %s)\n' \
+      "${node_versions[*]}" "${default_alias:-none}"
+  else
+    printf '    node    : none installed\n'
+  fi
+
+  printf '\n  Findings:\n'
+
+  if [[ -z $installed ]]; then
+    printf "    - not installed at the current NVM_DIR; run 'vmgr install node'.\n"
+  fi
+
+  if [[ $current != "$expected" ]]; then
+    printf '    - location: nvm is at\n        %s\n      but vmgr expects\n        %s\n' \
+      "$current" "$expected"
+    printf '      Consider migrating to the expected location. How to migrate is\n'
+    printf '      left to you - vmgr does not move it.\n'
+  else
+    printf '    - location: matches the expected vmgr location.\n'
+  fi
+
+  if [[ -n $installed && $installed == v* && $installed != "$NVM_PIN" ]]; then
+    printf "    - nvm version: %s installed vs %s pinned (run 'vmgr update node').\n" \
+      "$installed" "$NVM_PIN"
+  fi
+}
+
+#------------------------------------------------------------------------------
+# Print node-specific help: what vmgr manages, what each verb does, the pin
+# semantics, and where the install lives.
+
+nvm_help() {
+  cat << 'EOF'
+node - managed via nvm (Node Version Manager).
+
+vmgr keeps a pinned nvm plus a pinned default Node. The pinned versions
+(NVM_PIN, NODE_PIN) live in config/vmgr/node - in config, not code - so they
+are set in one place and sourceable by anything that needs them.
+
+Verbs:
+  install   Clone nvm if absent, then reconcile the toolchain to the pins:
+            check out NVM_PIN, install NODE_PIN, and set it the default.
+  update    Reconcile an existing install to the pins (the same as install,
+            minus the initial clone). Run it after bumping a pin.
+  remove    Delete the whole nvm directory (and every Node it installed).
+  report    Show expected (pins / location) vs. current state, and flag drift.
+
+The pins govern ONLY what vmgr installs and sets as the default. nvm stays
+usable directly - install and update RESET the default Node to NODE_PIN on
+every run, even when newer versions are installed (intentional, so the default
+is deterministic). Use nvm itself to pick a different default.
+
+Location: vmgr uses $NVM_DIR if set, otherwise $XDG_DATA_HOME/nvm. Run
+'vmgr report node' to see expected vs. current location and versions.
+EOF
 }

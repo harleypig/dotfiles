@@ -5,7 +5,7 @@
 # These are generated from each tool's official `completion` command and
 # committed, because sourcing a static file is far cheaper than forking the
 # tool on every interactive shell (docker and npm each measured ~300ms). The
-# shell-startup modules that source them (gh, docker, rust, and nodejs for npm)
+# shell-startup modules that source them (gh, docker, rust, and node for npm)
 # are thin `havecmd`-guarded wrappers, exercised in aggregate by the
 # integration startup test; here we guard the vendored content itself — a
 # botched regeneration is the real risk.

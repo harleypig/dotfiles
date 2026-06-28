@@ -31,6 +31,19 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   **Risk:** false positives on exactly those exemptions — evaluate whether a
   reliable check is even feasible before building; it may not be worth it.
 
+- [ ] **Reconcile the 72-col code-comment rule with repo bash reality (LOW —
+  retrospective, PR #180).** `code-style.md` and `.claude/CONVENTIONS.md` say
+  code comments wrap at **72**, but the repo's bash de-facto wraps at **~78**
+  (`bin/docker_wrapper` 27/93, `bin/cleanpath` 32/62,
+  `config/shell-startup/010-general` 41/79 comment lines exceed 72; the
+  function/section separators are 79 wide). New `vmgr` code followed the ~78
+  de-facto for consistency. Decide one way: bump the rule to 78 (matching
+  practice and the 78-col Markdown prose wrap) **or** reflow the bash comments
+  to 72. `shfmt`/`shellcheck` don't enforce comment width, so it's a manual
+  code-style-audit convention either way. Mixed-scope: the rule is global
+  (`config/claude/rules/code-style.md`), any reflow is dotfiles bash — split
+  when actioned.
+
 - [ ] **Audit the permission allow-list for risky auto-approved commands
   (CANDIDATE — mined from `claude-code-tips` Tip 31 / the `cc-safe` idea,
   2026-06-20).** We have no check that scans `settings.json`

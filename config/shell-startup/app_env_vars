@@ -2,7 +2,7 @@
 
 # Environment variables for applications without aliases or functions
 # (single-setting tools; anything with more lives in its own module).
-# node/npm env lives in the nodejs module alongside the rest of its setup.
+# node/npm env lives in the node module alongside the rest of its setup.
 
 # Check if ELINKS is installed and set ELINKS_CONFDIR if it is
 if havecmd elinks; then

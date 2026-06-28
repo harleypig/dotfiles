@@ -35,5 +35,6 @@
 !/shell-startup/
 !/task/
 !/tmux/
+!/vmgr/
 !/yamllint/
 !/yapf/

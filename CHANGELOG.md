@@ -33,6 +33,13 @@ goes green (see the merge-time finalization in
   wraps native managers rather than adopting mise / asdf / proto / vfox / aqua
   / Hermit / pkgx / devbox / Volta (native-manager fidelity over a unified
   CLI).
+- **`vmgr report` and `vmgr help <language>` verbs (Tool/Version Manager
+  Setup).** Added two standard verbs to the module contract (every manager
+  implements `<manager>_report` / `<manager>_help`). `report` shows expected
+  (what vmgr installs / where) vs. current state and flags drift, suggesting
+  migration but leaving the *how* to the user. `vmgr help node` prints that
+  language's own help (verbs, pin semantics, install location); a bare
+  `vmgr help` is the general usage.
 
 ### Changed
 
@@ -47,6 +54,17 @@ goes green (see the merge-time finalization in
   in (notably `gh/` allows only `config.yml`, keeping `hosts.yml`'s token out;
   `rustup/` only `settings.toml`; `ansible/` only `ansible.cfg`). Audited
   every top-level entry: no previously-tracked file is excluded.
+- **vmgr node: pins in config, install/update reconcile, `nodejs`→`node`
+  rename (Node Setup).** The pinned versions (`NVM_PIN`, `NODE_PIN`) moved out
+  of code into `config/vmgr/node` — set in one place, sourceable by anything
+  that needs them — and Node is pinned to an exact version (a floating major
+  re-downloaded a new patch every run). `install` and `update` now both
+  reconcile the toolchain to the pins via a shared helper (`install` also
+  clones nvm on a fresh machine). The pins govern only what vmgr
+  installs/defaults; the native manager stays usable directly, and
+  install/update re-assert the pinned default (intentional, deterministic).
+  Renamed the `config/shell-startup/nodejs` module to `node` to match the
+  vmgr scheme.
 
 ## 2026-06-27
 

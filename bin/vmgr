@@ -9,22 +9,27 @@
 # Usage:
 #   vmgr <action> [language ...]
 #
-#   actions: install | update | remove
+#   actions: install | update | remove | report
 #            list | help
 #
 #   vmgr install node          install node's manager(s)
 #   vmgr update perl           update perl's manager(s)
 #   vmgr remove node           remove node's manager(s)
+#   vmgr report node           report expected vs current state, flag drift
+#   vmgr help node             show node's own help (what vmgr does for it)
 #   vmgr install               (no language) list what's available
 #   vmgr list                  list available languages and their managers
+#   vmgr help                  this general usage
 #
 # A language whose module defines more than one manager (e.g. python -> pipx,
 # uv) is ambiguous on its own: vmgr lists that language's managers instead of
 # acting, so you can pick.
 #
 # Each language is a sourced module in lib/version-managers/<language> that
-# declares `vmgr_managers=(...)` and a <manager>_<action> function per manager.
-# Override the module directory with VMGR_LIB_DIR (used by the test suite).
+# declares `vmgr_managers=(...)` and one function per standard verb and
+# manager: <manager>_install, <manager>_update, <manager>_remove,
+# <manager>_report, and <manager>_help. Override the module dir with
+# VMGR_LIB_DIR (test suite).
 
 set -uo pipefail
 
@@ -39,7 +44,7 @@ bindir=$(dirname "$self")
 
 PROG=${0##*/}
 
-readonly VALID_ACTIONS=" install update remove "
+readonly VALID_ACTIONS=" install update remove report "
 
 ###############################################################################
 # Utility functions
@@ -60,10 +65,12 @@ die() {
 }
 
 #------------------------------------------------------------------------------
-# Print usage to stdout.
+# Print usage to stdout: the leading comment block (from the title line to the
+# first blank line), with the comment markers stripped. Robust to the block
+# growing, unlike a hardcoded line range.
 
 usage() {
-  sed -n '3,28p' "$self" | sed 's/^# \{0,1\}//'
+  sed -n '/^# vmgr - /,/^$/{s/^# \{0,1\}//;p;}' "$self"
 }
 
 #------------------------------------------------------------------------------
@@ -154,6 +161,51 @@ handle_language() {
   "$fn"
 }
 
+#------------------------------------------------------------------------------
+# Show help for one <language>: source its module and print each manager's
+# <manager>_help. Unlike the lifecycle verbs this does not list-on-ambiguity -
+# it prints help for every manager the language provides.
+
+handle_help() {
+  local lang=$1
+
+  local module="$VMGR_LIB_DIR/$lang"
+  [[ -f $module ]] || {
+    printf '%s: unknown language (no module %s)\n' "$PROG" "$lang" >&2
+    return 1
+  }
+
+  unset vmgr_managers
+  # shellcheck disable=SC1090  # module path is resolved at runtime
+  source "$module" || {
+    printf '%s: failed to load %s module\n' "$PROG" "$lang" >&2
+    return 1
+  }
+
+  local -a managers=("${vmgr_managers[@]:-}")
+  ((${#managers[@]} && ${#managers[0]})) || {
+    printf '%s: %s module declares no managers\n' "$PROG" "$lang" >&2
+    return 1
+  }
+
+  local mgr fn rc=0 first=1
+  for mgr in "${managers[@]}"; do
+    fn="${mgr}_help"
+
+    if declare -F "$fn" > /dev/null; then
+      ((first)) || printf '\n'
+      first=0
+      "$fn"
+
+    else
+      printf '%s: %s/%s provides no help\n' "$PROG" "$lang" "$mgr" >&2
+      rc=1
+    fi
+  done
+
+  return "$rc"
+}
+
 ###############################################################################
 # Main
 
@@ -163,8 +215,17 @@ main() {
 
   case $action in
     help | -h | --help)
-      usage
-      exit 0
+      (($#)) || {
+        usage
+        exit 0
+      }
+
+      local lang rc=0
+      for lang in "$@"; do
+        (handle_help "$lang") || rc=1
+      done
+
+      exit "$rc"
       ;;
 
     list)
@@ -174,7 +235,7 @@ main() {
   esac
 
   [[ $VALID_ACTIONS == *" $action "* ]] \
-    || die -2 "unknown action '$action' (expected: install, update, remove, list)"
+    || die -2 "unknown action '$action' (expected: install, update, remove, report, list)"
 
   # An action with no languages lists what's available rather than acting.
   if (($# == 0)); then
