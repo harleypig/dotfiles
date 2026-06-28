@@ -33,6 +33,8 @@ EOF
 vmgr_managers=(uno dos)
 uno_install() { echo "uno ran"; }
 dos_install() { echo "dos ran"; }
+uno_report() { echo "uno report"; }
+dos_report() { echo "dos report"; }
 EOF
 }
 
@@ -101,17 +103,55 @@ EOF
   assert_output --partial 'does not support remove'
 }
 
-@test "one bad language among several yields a non-zero overall exit" {
-  VMGR_LIB_DIR="$FIX" run "$VMGR" install foo nope
+@test "an invalid manager is rejected before acting" {
+  # named managers are validated before any dispatch, so foo must NOT have acted.
+  VMGR_LIB_DIR="$FIX" run "$VMGR" install foo bogus
   assert_failure 1
-  assert_output --partial 'barmgr_install ran'
-  assert_output --partial 'unknown language'
+  assert_output --partial 'bogus is not a manager of foo'
+  refute_output --partial 'barmgr_install ran'
+}
+
+@test "names one manager of a multi-manager language" {
+  VMGR_LIB_DIR="$FIX" run "$VMGR" install baz uno
+  assert_success
+  assert_output --partial 'uno ran'
+  refute_output --partial 'dos ran'
+}
+
+@test "names several managers of a language" {
+  VMGR_LIB_DIR="$FIX" run "$VMGR" install baz uno dos
+  assert_success
+  assert_output --partial 'uno ran'
+  assert_output --partial 'dos ran'
+}
+
+@test "only one language per invocation (a second language is rejected)" {
+  # 'baz' is a language, but here it's in the manager position for 'foo'; foo
+  # has no manager 'baz', so it's rejected (no multi-language batch).
+  VMGR_LIB_DIR="$FIX" run "$VMGR" install foo baz
+  assert_failure 1
+  assert_output --partial 'baz is not a manager of foo'
+  refute_output --partial 'barmgr_install ran'
+}
+
+@test "an informational action on a multi-manager language acts on all" {
+  VMGR_LIB_DIR="$FIX" run "$VMGR" report baz
+  assert_success
+  assert_output --partial 'uno report'
+  assert_output --partial 'dos report'
+}
+
+@test "a named manager that lacks the action fails (exit 1)" {
+  # baz's uno defines install/report but not remove.
+  VMGR_LIB_DIR="$FIX" run "$VMGR" remove baz uno
+  assert_failure 1
+  assert_output --partial 'does not support remove'
 }
 
 @test "help prints usage" {
   run "$VMGR" help
   assert_success
-  assert_output --partial 'vmgr <action> [language ...]'
+  assert_output --partial 'vmgr <action> [language [manager ...]]'
 }
 
 @test "help <language> prints that manager's help" {

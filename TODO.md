@@ -201,17 +201,23 @@ language's specific manager lives in its `## <Language> Setup` (perlbrew →
 *Perl Setup*; nvm → *Node Setup*); this section owns the **cross-language
 pattern** they share.
 
-- [ ] Evaluate/standardize the rest (Python — pipx + uv; Ruby; rustup already
-  in use) under one consistent pattern, documented in each
-  `config/shell-startup/<lang>` module, and add each as a
-  `lib/version-managers/<lang>` module.
+- [ ] Evaluate/standardize **Ruby** and **rustup** (rustup already in use)
+  under the same pattern — a `config/shell-startup/<lang>` module plus a
+  `lib/version-managers/<lang>` module. (Node and Python are done.)
+- [ ] **Extract the shared pins loader** (retrospective, PR #183) — the
+  `_<lang>_conf` / `_<lang>_load_pins` helpers are duplicated in
+  `lib/version-managers/node` and `…/python` (2 of 3). Per the Rule of Three,
+  factor them into one shared helper when the third language module (Ruby or
+  rustup, above) lands.
 - [ ] **Pre-installed global manager** (when first needed): handle a machine
   that already has a manager installed system-wide — detect it and decide
   adopt / skip / coexist rather than blindly re-installing.
-- [ ] **Mutually-exclusive managers within a language** (when a language gains
-  a second manager): the module/dispatch must express exclusivity vs
-  coexistence — e.g. nvm and an alternative Node manager can't be used
-  together, whereas pip / pipx / uv (uvx) coexist fine.
+- [ ] **Mutually-exclusive managers within a language** — the *model* is now
+  settled: managers coexist by default (python's pipx/uv/pip), the dispatcher
+  allows naming several, and a module enforces any mutual exclusivity in its
+  own install logic (not the dispatcher). What remains is the concrete case
+  (e.g. nvm vs an alternative Node manager) plus a regression test, once such
+  a language actually exists.
 
 ## 📦 Package Install Setup
 

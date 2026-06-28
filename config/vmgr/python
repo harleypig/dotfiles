@@ -1,0 +1,15 @@
+# shellcheck shell=bash
+# shellcheck disable=SC2034  # consumed by code that sources this file
+# (lib/version-managers/python, and anything else that needs the pins).
+
+# vmgr - python toolchain pins (uv, pipx). Same model as config/vmgr/node: the
+# version numbers live here, not in code. Bump deliberately. uv and pipx
+# coexist - neither is a Python *version* manager in the nvm sense; they are
+# the python toolchain installers vmgr manages.
+
+# uv release - used verbatim in the standalone-installer URL
+# (https://astral.sh/uv/$UV_PIN/install.sh), so NO leading 'v'.
+UV_PIN=0.11.17
+
+# pipx release - pinned for the `pip install --user pipx==...` / uv install.
+PIPX_PIN=1.4.3
