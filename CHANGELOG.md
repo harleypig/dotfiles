@@ -34,6 +34,20 @@ goes green (see the merge-time finalization in
   / Hermit / pkgx / devbox / Volta (native-manager fidelity over a unified
   CLI).
 
+### Changed
+
+- **`config/.gitignore` inverted to per-directory allowlists.** Flipped
+  `config/`'s ignore model from a blocklist (track all, ignore named junk) to
+  an allowlist: `config/.gitignore` denies everything (`/*`) and re-includes
+  only the tracked top-level files plus each allowed subdirectory. Every
+  allowed subdirectory now owns its own `.gitignore` in the same
+  deny-all/allow-specific format, so each dir manages its own contents (20 new
+  per-dir allowlists; `git/` and `pudb/` converted; `claude/`'s curated one
+  kept). Robust by default — tool-written junk is ignored unless a dir opts it
+  in (notably `gh/` allows only `config.yml`, keeping `hosts.yml`'s token out;
+  `rustup/` only `settings.toml`; `ansible/` only `ansible.cfg`). Audited
+  every top-level entry: no previously-tracked file is excluded.
+
 ## 2026-06-27
 
 ### Added

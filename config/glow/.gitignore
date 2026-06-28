@@ -4,7 +4,4 @@
 
 *
 !.gitignore
-!config
-!gitconfig.user.template
-!gitk
-!ignore
+!glow.yml

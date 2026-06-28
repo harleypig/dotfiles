@@ -1,47 +1,39 @@
-# Convention: rules here cover entire config/ subdirectories or files with no
-# local .gitignore. For directories with tracked files, use a local .gitignore
-# instead (e.g. config/pudb/.gitignore).
+# Allowlist for config/: deny everything, then re-include only what we
+# track. Each allowed subdirectory owns its own .gitignore in the same
+# deny-all/allow-specific format.
 
-ansible/collections/**
-asciinema/**
-audacity/**
-Bitwarden\ CLI/**
-calibre/**
-coc/**
-Code/**
-configstore/**
-dlv/**
-docker/buildx/**
-evolution/**
-gh/**
-github-copilot/**
-google-chrome-for-testing/**
-go/telemetry/**
-gtk-3.0/**
-ibus/**
-koreader/**
-mygnuhealth/**
-nvm/**
-packer/plugins/**
-pulse/**
-rustup/**
-synergy/**
-Synergy/**
-tiling-assistant/**
-tree-sitter/**
-yelp/**
+/*
 
-ansible/galaxy_token
-dconf/user
-docker/config.json
-docker/.token_seed
-docker/.token_seed.lock
-.gsd-keyboard.settings-ported
-linode-cli
-mimeapps.list
-nvm
-packer/checkpoint_cache
-packer/checkpoint_signature
-pgcli/history
-pgcli/log
-user-dirs.locale
+# Tracked top-level files
+!/flake8
+!/.gitignore
+!/gnome-initial-setup-done
+!/hadolint.yaml
+!/shellcheckrc
+!/user-dirs.dirs
+!/.vintrc.yaml
+
+# Allowed subdirectories (each manages its own contents)
+!/claude/
+!/ansible/
+!/binenv/
+!/burn-my-windows/
+!/completions/
+!/gh/
+!/git/
+!/glow/
+!/htop/
+!/npm/
+!/opencode/
+!/perl/
+!/pgcli/
+!/pudb/
+!/pypoetry/
+!/python/
+!/readline/
+!/rustup/
+!/shell-startup/
+!/task/
+!/tmux/
+!/yamllint/
+!/yapf/

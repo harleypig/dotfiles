@@ -4,7 +4,5 @@
 
 *
 !.gitignore
-!config
-!gitconfig.user.template
-!gitk
-!ignore
+!profiles/
+!profiles/1710881242579717.conf

@@ -4,7 +4,13 @@
 
 *
 !.gitignore
-!config
-!gitconfig.user.template
-!gitk
-!ignore
+!cargo
+!docker
+!gh
+!git
+!npm
+!packwiz
+!poetry
+!proj
+!README.md
+!rustup
