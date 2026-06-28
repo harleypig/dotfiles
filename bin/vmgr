@@ -7,29 +7,32 @@
 # tool. See docs/adr/0001-custom-polyglot-version-manager.md for the why.
 #
 # Usage:
-#   vmgr <action> [language ...]
+#   vmgr <action> [language [manager ...]]
 #
 #   actions: install | update | remove | report
 #            list | help
 #
-#   vmgr install node          install node's manager(s)
-#   vmgr update perl           update perl's manager(s)
-#   vmgr remove node           remove node's manager(s)
-#   vmgr report node           report expected vs current state, flag drift
-#   vmgr help node             show node's own help (what vmgr does for it)
-#   vmgr install               (no language) list what's available
-#   vmgr list                  list available languages and their managers
-#   vmgr help                  this general usage
+#   vmgr install node             install node's manager(s)
+#   vmgr install python uv        install just python's uv manager
+#   vmgr install python pipx uv   install both of python's managers
+#   vmgr update python pipx       update one of python's managers
+#   vmgr remove python uv         remove python's uv manager
+#   vmgr report node              report expected vs current state, flag drift
+#   vmgr help python              show python's help (all its managers)
+#   vmgr install                  (no language) list what's available
+#   vmgr list                     list available languages and their managers
+#   vmgr help                     this general usage
 #
-# A language whose module defines more than one manager (e.g. python -> pipx,
-# uv) is ambiguous on its own: vmgr lists that language's managers instead of
-# acting, so you can pick.
+# ONE language per invocation. The args after it are that language's managers;
+# with none named, a multi-manager language (e.g. `vmgr install python`) lists
+# its managers so you can pick (report/help instead act on all of them).
 #
 # Each language is a sourced module in lib/version-managers/<language> that
-# declares `vmgr_managers=(...)` and one function per standard verb and
-# manager: <manager>_install, <manager>_update, <manager>_remove,
-# <manager>_report, and <manager>_help. Override the module dir with
-# VMGR_LIB_DIR (test suite).
+# declares `vmgr_managers=(...)` and one function per verb and manager:
+# <manager>_install, _update, _remove, _report, _help. A language whose
+# managers are mutually exclusive enforces that within the module itself (its
+# install logic), not the dispatcher. Override the module dir with VMGR_LIB_DIR
+# (test suite).
 
 set -uo pipefail
 
@@ -44,7 +47,12 @@ bindir=$(dirname "$self")
 
 PROG=${0##*/}
 
-readonly VALID_ACTIONS=" install update remove report "
+# Verbs that dispatch to a manager (<manager>_<verb>). `list` is handled
+# separately (no per-language dispatch). report/help are "informational" - on a
+# multi-manager language with no manager named, they act on ALL managers rather
+# than listing.
+readonly VALID_ACTIONS=" install update remove report help "
+readonly INFO_ACTIONS=" report help "
 
 ###############################################################################
 # Utility functions
@@ -118,89 +126,88 @@ list_available() {
 # Dispatch
 
 #------------------------------------------------------------------------------
-# Run <action> for one <language>. Sources the language module in this
-# (sub)shell, then either acts on its single manager or, when the language is
-# ambiguous (more than one manager), lists the managers so the user can pick.
-# Returns non-zero on any error.
+# True if <name> is a known language (has a module in VMGR_LIB_DIR).
 
-handle_language() {
-  local action=$1 lang=$2
-
-  local module="$VMGR_LIB_DIR/$lang"
-  [[ -f $module ]] || {
-    printf '%s: unknown language (no module %s)\n' "$PROG" "$lang" >&2
-    return 1
-  }
-
-  unset vmgr_managers
-  # shellcheck disable=SC1090  # module path is resolved at runtime
-  source "$module" || {
-    printf '%s: failed to load %s module\n' "$PROG" "$lang" >&2
-    return 1
-  }
-
-  local -a managers=("${vmgr_managers[@]:-}")
-  ((${#managers[@]} && ${#managers[0]})) || {
-    printf '%s: %s module declares no managers\n' "$PROG" "$lang" >&2
-    return 1
-  }
-
-  if ((${#managers[@]} > 1)); then
-    printf '%s has multiple managers; specify one:\n' "$lang"
-    printf '  %s\n' "${managers[@]}"
-    return 0
-  fi
-
-  local mgr=${managers[0]}
-  local fn="${mgr}_${action}"
-  declare -F "$fn" > /dev/null || {
-    printf '%s: %s/%s does not support %s\n' "$PROG" "$lang" "$mgr" "$action" >&2
-    return 1
-  }
-
-  "$fn"
+is_language() {
+  [[ -f "$VMGR_LIB_DIR/$1" ]]
 }
 
 #------------------------------------------------------------------------------
-# Show help for one <language>: source its module and print each manager's
-# <manager>_help. Unlike the lifecycle verbs this does not list-on-ambiguity -
-# it prints help for every manager the language provides.
+# True if <needle> (first arg) equals one of the remaining args.
 
-handle_help() {
-  local lang=$1
+in_list() {
+  local needle=$1
+  shift
 
-  local module="$VMGR_LIB_DIR/$lang"
-  [[ -f $module ]] || {
-    printf '%s: unknown language (no module %s)\n' "$PROG" "$lang" >&2
-    return 1
-  }
+  local item
+  for item in "$@"; do
+    [[ $item == "$needle" ]] && return 0
+  done
+
+  return 1
+}
+
+#------------------------------------------------------------------------------
+# Run <action> for one language target: the language ($2) plus zero or more
+# explicitly-named managers (the rest). With no manager named, a modifying
+# action on a multi-manager language lists the managers instead of acting,
+# while an informational action (report/help) acts on all of them. Returns
+# non-zero on any error. Sourced in a subshell by the caller so module
+# definitions don't leak between targets.
+
+handle_target() {
+  local action=$1 lang=$2
+  shift 2
+  local -a want=("$@")
 
   unset vmgr_managers
   # shellcheck disable=SC1090  # module path is resolved at runtime
-  source "$module" || {
+  source "$VMGR_LIB_DIR/$lang" || {
     printf '%s: failed to load %s module\n' "$PROG" "$lang" >&2
     return 1
   }
 
-  local -a managers=("${vmgr_managers[@]:-}")
-  ((${#managers[@]} && ${#managers[0]})) || {
+  local -a have=("${vmgr_managers[@]:-}")
+  ((${#have[@]} && ${#have[0]})) || {
     printf '%s: %s module declares no managers\n' "$PROG" "$lang" >&2
     return 1
   }
 
-  local mgr fn rc=0 first=1
-  for mgr in "${managers[@]}"; do
-    fn="${mgr}_help"
+  local -a act=()
+  if ((${#want[@]})); then
+    # Every named manager must belong to this language.
+    local m
+    for m in "${want[@]}"; do
+      in_list "$m" "${have[@]}" || {
+        printf '%s: %s is not a manager of %s (managers: %s)\n' \
+          "$PROG" "$m" "$lang" "${have[*]}" >&2
+        return 1
+      }
+    done
+    act=("${want[@]}")
 
-    if declare -F "$fn" > /dev/null; then
-      ((first)) || printf '\n'
-      first=0
-      "$fn"
+  elif ((${#have[@]} > 1)) && [[ $INFO_ACTIONS != *" $action "* ]]; then
+    printf '%s has multiple managers; name one or more:\n' "$lang"
+    printf '  %s\n' "${have[@]}"
+    return 0
 
-    else
-      printf '%s: %s/%s provides no help\n' "$PROG" "$lang" "$mgr" >&2
+  else
+    act=("${have[@]}")
+  fi
+
+  local rc=0 mgr fn n=0
+  for mgr in "${act[@]}"; do
+    fn="${mgr}_${action}"
+    declare -F "$fn" > /dev/null || {
+      printf '%s: %s/%s does not support %s\n' "$PROG" "$lang" "$mgr" "$action" >&2
       rc=1
-    fi
+      continue
+    }
+
+    # Blank line between successive informational (report/help) outputs.
+    ((n++ > 0)) && [[ $INFO_ACTIONS == *" $action "* ]] && printf '\n'
+
+    "$fn" || rc=1
   done
 
   return "$rc"
@@ -214,41 +221,44 @@ main() {
   shift || true
 
   case $action in
-    help | -h | --help)
-      (($#)) || {
-        usage
-        exit 0
-      }
-
-      local lang rc=0
-      for lang in "$@"; do
-        (handle_help "$lang") || rc=1
-      done
-
-      exit "$rc"
+    -h | --help)
+      usage
+      exit 0
       ;;
 
     list)
       list_available
       exit 0
       ;;
+
+    help)
+      # `vmgr help` with no targets is the general usage; `help <targets>`
+      # falls through to the positional dispatch below (action=help).
+      (($#)) || {
+        usage
+        exit 0
+      }
+      ;;
   esac
 
   [[ $VALID_ACTIONS == *" $action "* ]] \
-    || die -2 "unknown action '$action' (expected: install, update, remove, report, list)"
+    || die -2 "unknown action '$action' (expected: install, update, remove, report, help, list)"
 
-  # An action with no languages lists what's available rather than acting.
-  if (($# == 0)); then
+  # No language -> list what's available.
+  (($#)) || {
     list_available
     exit 0
-  fi
+  }
 
-  local lang rc=0
-  for lang in "$@"; do
-    (handle_language "$action" "$lang") || rc=1
-  done
+  # One language per invocation; the remaining args are its managers.
+  local lang=$1
+  shift
+  is_language "$lang" \
+    || die "unknown language '$lang' (one language per invocation)"
 
-  exit "$rc"
+  # Subshell isolates the module's sourced definitions.
+  (handle_target "$action" "$lang" "$@")
+  exit $?
 }
 
 main "$@"

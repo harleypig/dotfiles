@@ -1,0 +1,307 @@
+#!/usr/bin/env bash
+
+# lib/version-managers/python - vmgr module for the python toolchain managers.
+#
+# Sourced by bin/vmgr (never executed). Declares the managers this language
+# provides - `uv` and `pipx` - and a <manager>_<verb> function per verb
+# (install/update/remove/report/help). As a sourced library it uses no `set -e`
+# and calls no `exit`; it surfaces errors via return codes (rules/bash.md).
+#
+# uv and pipx COEXIST (like pip/pipx/uv) - there is no mutual exclusivity to
+# enforce, so this module declares none. The pins (UV_PIN, PIPX_PIN) live in
+# config/vmgr/python, loaded by _python_load_pins.
+#
+# Install methods are PRIORITY LISTS with fallbacks, because some hosts sit
+# behind a whitelisted firewall:
+#   uv   : standalone installer (astral.sh) first, then pipx if that fails.
+#   pipx : `pip install --user` first, then uv; if neither is available, fail.
+# uv/pipx installed via the fallback are detected at update/remove time so the
+# right path is used.
+
+# shellcheck disable=SC2034  # read by bin/vmgr after it sources this module
+vmgr_managers=(uv pipx)
+
+###############################################################################
+# Internal helpers
+
+#------------------------------------------------------------------------------
+# Path to this language's pins config (overridable via VMGR_CONFIG_DIR).
+
+_python_conf() {
+  local dir
+
+  if [[ -n ${VMGR_CONFIG_DIR:-} ]]; then
+    dir=$VMGR_CONFIG_DIR
+
+  else
+    local self
+    self=$(readlink -f "${BASH_SOURCE[0]}")
+    dir="$(dirname "$(dirname "$(dirname "$self")")")/config/vmgr"
+  fi
+
+  printf '%s/python' "$dir"
+}
+
+#------------------------------------------------------------------------------
+# Source the pins config, populating UV_PIN and PIPX_PIN.
+
+_python_load_pins() {
+  local conf
+  conf=$(_python_conf)
+
+  [[ -r $conf ]] || {
+    printf 'python: pins config not found at %s\n' "$conf" >&2
+    return 1
+  }
+
+  # shellcheck disable=SC1090  # config path resolved at runtime
+  source "$conf"
+
+  [[ -n ${UV_PIN:-} && -n ${PIPX_PIN:-} ]] || {
+    printf 'python: UV_PIN and PIPX_PIN must be set in %s\n' "$conf" >&2
+    return 1
+  }
+}
+
+#------------------------------------------------------------------------------
+# True if a Python pip is usable (pip, pip3, or `python3 -m pip`).
+
+_python_have_pip() {
+  python3 -m pip --version > /dev/null 2>&1
+}
+
+###############################################################################
+# Manager: uv
+
+#------------------------------------------------------------------------------
+# Install uv. Priority: the standalone installer (pinned, no profile edits);
+# fall back to pipx if that fails (e.g. astral.sh blocked by a firewall but
+# pipx is whitelisted). Idempotent: an existing uv is left in place.
+
+uv_install() {
+  _python_load_pins || return 1
+
+  if command -v uv > /dev/null 2>&1; then
+    printf 'uv already present at %s\n' "$(command -v uv)" >&2
+    return 0
+  fi
+
+  printf 'installing uv %s via the standalone installer\n' "$UV_PIN" >&2
+  if curl -LsSf "https://astral.sh/uv/$UV_PIN/install.sh" \
+    | UV_NO_MODIFY_PATH=1 sh; then
+    return 0
+  fi
+
+  printf 'uv: standalone install failed (firewall?); falling back to pipx\n' >&2
+  command -v pipx > /dev/null 2>&1 || {
+    printf 'uv: pipx unavailable for fallback; install pipx first\n' >&2
+    return 1
+  }
+
+  pipx install "uv==$UV_PIN"
+}
+
+#------------------------------------------------------------------------------
+# Update uv. `uv self update` works only for a standalone install; a
+# pipx-installed uv updates via pipx. Try self-update, fall back to pipx.
+
+uv_update() {
+  command -v uv > /dev/null 2>&1 || {
+    printf "uv not installed (run 'vmgr install python uv')\n" >&2
+    return 1
+  }
+
+  uv self update 2> /dev/null && return 0
+
+  printf 'uv: not a standalone install; updating via pipx\n' >&2
+  pipx upgrade uv
+}
+
+#------------------------------------------------------------------------------
+# Remove uv. Standalone -> `uv self uninstall`; pipx-installed -> pipx.
+
+uv_remove() {
+  command -v uv > /dev/null 2>&1 || {
+    printf 'uv not installed; nothing to remove\n' >&2
+    return 0
+  }
+
+  uv self uninstall 2> /dev/null && return 0
+
+  printf 'uv: not a standalone install; removing via pipx\n' >&2
+  pipx uninstall uv
+}
+
+#------------------------------------------------------------------------------
+# Report uv: expected pin vs current install (and how it was installed).
+
+uv_report() {
+  _python_load_pins || UV_PIN='(no pins config)'
+
+  printf 'python / uv\n'
+  printf '  expected : uv %s (standalone installer, pipx fallback)\n' "$UV_PIN"
+
+  local cur
+  cur=$(command -v uv 2> /dev/null)
+  if [[ -n $cur ]]; then
+    # A pipx-installed uv resolves into pipx's venvs; otherwise it's standalone.
+    local how="standalone"
+    [[ "$(readlink -f "$cur")" == */pipx/venvs/* ]] && how="via pipx"
+    printf '  current  : %s at %s [%s]\n' \
+      "$(uv --version 2> /dev/null)" "$cur" "$how"
+  else
+    printf '  current  : not installed\n'
+  fi
+}
+
+#------------------------------------------------------------------------------
+
+uv_help() {
+  cat << 'EOF'
+python / uv - an Astral python package & project manager (also pip/venv and
+Python-version management). vmgr installs it via the standalone installer
+(pinned, UV_NO_MODIFY_PATH so it does not edit your shell profile), falling
+back to `pipx install uv` when astral.sh is unreachable. update/remove use
+`uv self update` / `uv self uninstall` for a standalone install, else pipx.
+Coexists with pipx. Pin: UV_PIN in config/vmgr/python.
+EOF
+}
+
+###############################################################################
+# Manager: pipx
+
+#------------------------------------------------------------------------------
+# Install pipx as a USER install. If a system pipx exists, confirm first (it
+# will be shadowed for this user but `sudo pipx` is unaffected). Priority:
+# `pip install --user` first, then uv; if neither is available, fail with a
+# message.
+
+pipx_install() {
+  _python_load_pins || return 1
+
+  local existing
+  existing=$(command -v pipx 2> /dev/null)
+
+  # A user pipx is already in place -> done.
+  if [[ $existing == "$HOME/.local/bin/pipx" ]]; then
+    printf 'pipx already present (user) at %s\n' "$existing" >&2
+    return 0
+  fi
+
+  # A system pipx exists: a user install shadows it for this user only (not
+  # `sudo pipx`). Confirm interactively; never assume yes non-interactively.
+  if [[ -n $existing ]]; then
+    printf 'A system pipx is installed at %s.\n' "$existing" >&2
+    printf 'A user pipx (~/.local/bin) shadows it for you, but not for sudo.\n' >&2
+
+    if [[ -t 0 ]] && command -v yesno > /dev/null 2>&1; then
+      yesno 'Install a user pipx anyway?' || {
+        printf 'pipx: keeping the system pipx; skipping\n' >&2
+        return 0
+      }
+    else
+      printf 'pipx: re-run interactively to confirm installing a user pipx; skipping\n' >&2
+      return 0
+    fi
+  fi
+
+  # Priority 1: pip (--user).
+  if _python_have_pip; then
+    printf 'installing pipx %s via pip (--user)\n' "$PIPX_PIN" >&2
+    python3 -m pip install --user "pipx==$PIPX_PIN"
+    return
+  fi
+
+  # Priority 2: uv.
+  if command -v uv > /dev/null 2>&1; then
+    printf 'pip unavailable; installing pipx %s via uv\n' "$PIPX_PIN" >&2
+    uv tool install "pipx==$PIPX_PIN"
+    return
+  fi
+
+  printf 'pipx: neither pip nor uv is available to install pipx; install one first\n' >&2
+  return 1
+}
+
+#------------------------------------------------------------------------------
+# Update the USER pipx, via whichever tool installed it (pip or uv). A
+# system/apt pipx is not vmgr's to update.
+
+pipx_update() {
+  _python_load_pins || return 1
+
+  command -v pipx > /dev/null 2>&1 || {
+    printf "pipx not installed (run 'vmgr install python pipx')\n" >&2
+    return 1
+  }
+
+  if _python_have_pip && python3 -m pip show pipx > /dev/null 2>&1; then
+    printf 'updating user pipx to %s via pip\n' "$PIPX_PIN" >&2
+    python3 -m pip install --user --upgrade "pipx==$PIPX_PIN"
+
+  elif command -v uv > /dev/null 2>&1 && uv tool list 2> /dev/null | grep -q '^pipx'; then
+    printf 'updating user pipx via uv\n' >&2
+    uv tool upgrade pipx
+
+  else
+    printf 'pipx: not user-managed by pip or uv (system/apt pipx?); update via your OS\n' >&2
+    return 1
+  fi
+}
+
+#------------------------------------------------------------------------------
+# Remove the USER pipx (pip or uv). A system/apt pipx is left alone.
+
+pipx_remove() {
+  command -v pipx > /dev/null 2>&1 || {
+    printf 'pipx not installed; nothing to remove\n' >&2
+    return 0
+  }
+
+  if _python_have_pip && python3 -m pip show pipx > /dev/null 2>&1; then
+    printf 'removing user pipx via pip\n' >&2
+    python3 -m pip uninstall -y pipx
+
+  elif command -v uv > /dev/null 2>&1 && uv tool list 2> /dev/null | grep -q '^pipx'; then
+    printf 'removing user pipx via uv\n' >&2
+    uv tool uninstall pipx
+
+  else
+    printf 'pipx: system/apt pipx is not vmgr-managed; remove via your OS\n' >&2
+    return 1
+  fi
+}
+
+#------------------------------------------------------------------------------
+# Report pipx: expected pin vs current install (user vs system).
+
+pipx_report() {
+  _python_load_pins || PIPX_PIN='(no pins config)'
+
+  printf 'python / pipx\n'
+  printf '  expected : pipx %s (user install via pip, uv fallback)\n' "$PIPX_PIN"
+
+  local cur
+  cur=$(command -v pipx 2> /dev/null)
+  if [[ -n $cur ]]; then
+    local kind="system"
+    [[ $cur == "$HOME/.local/bin/pipx" ]] && kind="user"
+    printf '  current  : %s at %s [%s]\n' \
+      "$(pipx --version 2> /dev/null)" "$cur" "$kind"
+  else
+    printf '  current  : not installed\n'
+  fi
+}
+
+#------------------------------------------------------------------------------
+
+pipx_help() {
+  cat << 'EOF'
+python / pipx - installs Python applications in isolated venvs. vmgr installs a
+USER pipx (~/.local/bin) - if a system pipx is present it confirms first, since
+the user install shadows it (but not `sudo pipx`). Install priority: pip
+(--user) first, then uv; if neither is available it errors. update/remove act
+only on a user pipx (pip- or uv-managed); a system/apt pipx is left to the OS.
+Coexists with uv. Pin: PIPX_PIN in config/vmgr/python.
+EOF
+}
