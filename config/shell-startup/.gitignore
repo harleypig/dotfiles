@@ -20,7 +20,7 @@
 !go
 !grok
 !less
-!nodejs
+!node
 !perl
 !python
 !rust
