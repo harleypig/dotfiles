@@ -194,11 +194,10 @@ research:
 
 ## 🟢 Node Setup
 
-- [ ] nvm: *truly* lazy-load in `config/shell-startup/node` to keep startup
-  fast — it currently sources `nvm.sh` eagerly every login (slow); defer it
-  behind shims that load nvm on first `nvm`/`node`/`npm` use. (Location is
-  done: `NVM_DIR` points at `$XDG_DATA_HOME/nvm`, where vmgr installs; `vmgr`
-  still owns only install/update/remove, not shell-init.)
+- [x] nvm: truly lazy-load in `config/shell-startup/node` — deferred behind
+  shims for `nvm`/`node`/`npm`/`npx` that source `nvm.sh` on first use, so
+  login no longer pays the eager `nvm use default` cost. (`NVM_DIR` points at
+  `$XDG_DATA_HOME/nvm`; `vmgr` still owns only install/update/remove.)
 
 ## 🔧 Tool/Version Manager Setup
 
