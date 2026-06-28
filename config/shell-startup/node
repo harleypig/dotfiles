@@ -10,8 +10,10 @@ if havecmd npm; then
   export npm_config_cache="$XDG_CACHE_HOME/npm"
 fi
 
-if [[ -f $XDG_CONFIG_HOME/nvm/nvm.sh ]]; then
-  export NVM_DIR="$XDG_CONFIG_HOME/nvm"
+# nvm + its Node versions live under XDG_DATA_HOME (runtime data, not config),
+# where `vmgr install node` puts them. Lazy-load it here at login.
+if [[ -f $XDG_DATA_HOME/nvm/nvm.sh ]]; then
+  export NVM_DIR="$XDG_DATA_HOME/nvm"
   [[ -s $NVM_DIR/nvm.sh ]] && source "$NVM_DIR/nvm.sh"
   [[ -s $NVM_DIR/bash-completion ]] && source "$NVM_DIR/bash-completion"
   [[ -s $DOTFILES/nvm_nodejs_org_mirror ]] && source "$DOTFILES/nvm_nodejs_org_mirror"
