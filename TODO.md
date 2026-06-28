@@ -194,9 +194,6 @@ research:
 
 ## 🟢 Node Setup
 
-- [x] nvm: install + pin a default Node via `vmgr install node`
-  (`bin/vmgr` + `lib/version-managers/node`, pinned nvm + Node, XDG-aware,
-  docker-proven). See ADR-0001.
 - [ ] nvm: lazy-load in `config/shell-startup/node` (the runtime half; `vmgr`
   owns only install/update/remove, not shell-init — keep the two separate).
 
@@ -209,10 +206,6 @@ language's specific manager lives in its `## <Language> Setup` (perlbrew →
 *Perl Setup*; nvm → *Node Setup*); this section owns the **cross-language
 pattern** they share.
 
-- [x] `vmgr` orchestrator + per-language module contract (`bin/vmgr`,
-  `lib/version-managers/<lang>`): `install`/`update`/`remove` + listing, with
-  multi-manager-per-language listing; node (nvm) is the reference module,
-  proven end-to-end in a docker harness. See ADR-0001 and `docs/bin.md`.
 - [ ] Evaluate/standardize the rest (Python — pipx + uv; Ruby; rustup already
   in use) under one consistent pattern, documented in each
   `config/shell-startup/<lang>` module, and add each as a

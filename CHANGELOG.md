@@ -10,6 +10,30 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-28
+
+### Added
+
+- **`vmgr` polyglot version-manager orchestrator + node module (Node Setup /
+  Tool/Version Manager Setup).** New `bin/vmgr` takes `install` / `update` /
+  `remove` plus a language list (or lists what's available), dispatching to
+  sourced per-language modules in `lib/version-managers/<lang>`. It wraps each
+  language's **native** manager rather than adopting an off-the-shelf unified
+  tool; a language with more than one manager lists them instead of acting so
+  the user can pick (`VMGR_LIB_DIR` is the test seam). The first module,
+  `lib/version-managers/node`, wraps `nvm` (pinned v0.40.5, XDG `NVM_DIR`, no
+  shell-profile editing — runtime lazy-load stays a separate concern; installs
+  and defaults a pinned Node). Dispatch logic is covered by
+  `tests/shell/test_vmgr.bats`, and the real install/update/remove lifecycle is
+  proven (no mocking) in a dedicated docker harness
+  (`tests/shell/test_integration_vmgr.bats` + `tests/docker/vmgr/`).
+  Documented in `docs/bin.md`.
+- **ADR process + ADR-0001 (Documentation).** Added the `docs/adr/` area and
+  its index, and recorded ADR-0001: build the custom `vmgr` orchestrator that
+  wraps native managers rather than adopting mise / asdf / proto / vfox / aqua
+  / Hermit / pkgx / devbox / Volta (native-manager fidelity over a unified
+  CLI).
+
 ## 2026-06-27
 
 ### Added
