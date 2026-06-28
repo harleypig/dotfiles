@@ -204,6 +204,11 @@ pattern** they share.
 - [ ] Evaluate/standardize **Ruby** and **rustup** (rustup already in use)
   under the same pattern — a `config/shell-startup/<lang>` module plus a
   `lib/version-managers/<lang>` module. (Node and Python are done.)
+- [ ] **Extract the shared pins loader** (retrospective, PR #183) — the
+  `_<lang>_conf` / `_<lang>_load_pins` helpers are duplicated in
+  `lib/version-managers/node` and `…/python` (2 of 3). Per the Rule of Three,
+  factor them into one shared helper when the third language module (Ruby or
+  rustup, above) lands.
 - [ ] **Pre-installed global manager** (when first needed): handle a machine
   that already has a manager installed system-wide — detect it and decide
   adopt / skip / coexist rather than blindly re-installing.

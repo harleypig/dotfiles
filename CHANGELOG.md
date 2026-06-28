@@ -14,6 +14,18 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **vmgr python module (uv + pipx) + single-language positional dispatch
+  (Tool/Version Manager Setup).** `vmgr` now takes one language per invocation
+  with positional manager selection (`vmgr install python uv`, `… pipx uv`); a
+  multi-manager language named alone lists its managers (report/help act on
+  all). New `lib/version-managers/python` wraps uv and pipx (which coexist),
+  with priority-list installs + fallbacks: uv via the standalone installer
+  then pipx (firewalled hosts); pipx via `pip install --user` then uv
+  (confirming first if a system pipx exists; handling pip absence / PEP 668),
+  erroring if neither is available. update/remove detect the method. Pins in
+  `config/vmgr/python`. Covered by `tests/shell/test_vmgr_python.bats` and a
+  real docker integration (`test_integration_vmgr_python.bats`).
+
 - **nvm is lazy-loaded at login (Node Setup).** `config/shell-startup/node`
   no longer eagerly sources `nvm.sh` (which runs `nvm use default` — the slow
   part); `nvm`/`node`/`npm`/`npx` are light shims that load nvm on first use,
