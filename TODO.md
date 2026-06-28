@@ -144,8 +144,19 @@ done.
 
 ### Bash Completion
 
-- [ ] Enable bash completion for available but unconfigured tools
-- [ ] Document completion setup in dedicated section or inline
+- [x] Enable bash completion for available but unconfigured tools — added the
+  installed-but-unconfigured set: `gh`, `docker`, `npm`, `rustup`, `cargo`.
+  Each tool's **official** completion output is vendored into
+  `config/completions/` and sourced from a small `havecmd`-guarded,
+  interactive-only module (`gh`, `docker`, `rust`; npm via `nodejs`) —
+  vendored rather than `source <(tool completion bash)` because that measured
+  ~700ms of startup forks (docker + npm alone ~300ms each). Guarded by
+  `test_completions.bats`.
+- [x] Document completion setup in dedicated section or inline — refreshed
+  `config/completions/README.md`: corrected drift (git is vendored upstream,
+  not "system integration"; `taskwarrior` → `taskwarrior_inactive`),
+  documented the new completions, the vendored-vs-dynamic rationale, and the
+  regeneration commands.
 
 ## 🪟 PowerShell Setup
 

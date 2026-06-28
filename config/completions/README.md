@@ -25,20 +25,43 @@ loading based on tool availability.
 ### File Organization
 
 ```text
-config/completions/          # Custom completion files
-├── git                      # Git completion (system integration)
-├── packwiz                  # Packwiz completion
-└── poetry                   # Poetry completion
+config/completions/          # Vendored completion files (committed)
+├── git                      # Git (upstream git-completion.bash, ~92KB)
+├── packwiz                  # Packwiz
+├── poetry                   # Poetry
+├── proj                     # proj (first-party)
+├── gh                       # GitHub CLI — `gh completion -s bash`
+├── docker                   # Docker — `docker completion bash`
+├── npm                      # npm — `npm completion`
+├── rustup                   # rustup — `rustup completions bash`
+└── cargo                    # cargo — toolchain etc/bash_completion.d/cargo
 
 config/shell-startup/         # Shell startup files that load completions
 ├── git                      # Loads git completion
+├── gh                       # Loads gh completion
+├── docker                   # Loads docker completion
+├── rust                     # Loads rustup + cargo completion
+├── nodejs                   # Loads NVM + npm completion
 ├── python                   # Loads poetry completion
 ├── ssh-config-completion    # Defines SSH completion
 ├── terraform                # Loads terraform completion
-├── nodejs                   # Loads NVM completion
+├── binenv                   # Loads binenv completion (dynamic)
 ├── perl                     # Loads Perlbrew completion
-└── taskwarrior              # Loads TaskWarrior completion
+└── taskwarrior_inactive     # TaskWarrior completion (currently inactive)
 ```
+
+### Vendored vs. dynamic loading
+
+Most completions are **vendored**: the tool's official `completion` output is
+generated once and committed, then sourced as a static file. Sourcing a file
+is far cheaper than forking the tool at every interactive shell — `docker
+completion bash` and `npm completion` each measured ~300ms. `binenv` is the
+exception: it loads dynamically (`source <(binenv completion bash)`), cheap
+enough to not bother vendoring.
+
+The trade-off is staleness — a vendored completion reflects the tool version
+it was generated from, so regenerate it after a tool upgrade (see
+*Regenerating vendored completions* below).
 
 ## How It Works
 
@@ -57,13 +80,14 @@ When bash starts as a login shell:
 #### Git Completion (`config/shell-startup/git`)
 
 ```bash
-# Loads comprehensive git completion from system bash-completion package
+# Loads the vendored upstream git-completion.bash
 if [[ -r "$XDG_CONFIG_HOME/completions/git" ]]; then
   source "$XDG_CONFIG_HOME/completions/git"
 fi
 ```
 
-- **Source**: System bash-completion package (92KB comprehensive completion)
+- **Source**: Vendored upstream `git-completion.bash` (~92KB), committed in
+  `config/completions/git`
 - **Condition**: Always loads if file is readable
 - **Provides**: Complete git command completion, subcommands, options, branch
   names, etc.
@@ -94,12 +118,38 @@ complete -F _ssh ssh
 - **Condition**: Always loads
 - **Provides**: SSH host completion from `~/.ssh/known_hosts` and `~/.ssh/config`
 
+#### Modern CLI Completions (gh, docker, npm, rustup, cargo)
+
+These tools each emit a completion script from an official subcommand. The
+output is vendored (committed) and sourced from a small `havecmd`-guarded,
+interactive-only module — `gh`, `docker`, and `rust` (rustup + cargo); npm
+loads from the `nodejs` module. See *Regenerating vendored completions* below
+for the exact generator commands.
+
 #### Other Completions
 
 - **Terraform**: Loaded in `config/shell-startup/terraform`
 - **Node.js/NVM**: Loaded in `config/shell-startup/nodejs`
+- **binenv**: Loaded in `config/shell-startup/binenv` (dynamic)
 - **Perl**: Loaded in `config/shell-startup/perl`
-- **TaskWarrior**: Loaded in `config/shell-startup/taskwarrior`
+- **TaskWarrior**: `config/shell-startup/taskwarrior_inactive` (inactive)
+
+## Regenerating vendored completions
+
+A vendored completion reflects the tool version it was generated from. After
+upgrading a tool, regenerate its file from the repo root:
+
+```bash
+gh completion -s bash                          > config/completions/gh
+docker completion bash                         > config/completions/docker
+npm completion                                 > config/completions/npm
+rustup completions bash                        > config/completions/rustup
+cp "$(rustc --print sysroot)/etc/bash_completion.d/cargo" config/completions/cargo
+```
+
+`tests/shell/test_completions.bats` guards these — it parses every vendored
+file and checks each generated one still registers its command — so a botched
+regeneration fails CI rather than silently breaking completion.
 
 ## Adding New Completions
 

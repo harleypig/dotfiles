@@ -1,0 +1,15 @@
+# shellcheck shell=bash
+
+#-----------------------------------------------------------------------------
+# Docker CLI bash completion.
+#
+# Vendored from `docker completion bash` into config/completions/docker
+# (sourcing the static file avoids forking docker on every interactive shell,
+# which measured ~300ms). Regenerate on upgrade — see
+# config/completions/README.md.
+
+[[ $- == *i* ]] || return 0
+
+havecmd docker \
+  && [[ -r "$XDG_CONFIG_HOME/completions/docker" ]] \
+  && source "$XDG_CONFIG_HOME/completions/docker"
