@@ -54,6 +54,10 @@ goes green (see the merge-time finalization in
   in (notably `gh/` allows only `config.yml`, keeping `hosts.yml`'s token out;
   `rustup/` only `settings.toml`; `ansible/` only `ansible.cfg`). Audited
   every top-level entry: no previously-tracked file is excluded.
+- **nvm lazy-loads from its XDG_DATA_HOME location (Node Setup).**
+  `config/shell-startup/node` now points `NVM_DIR` at `$XDG_DATA_HOME/nvm`
+  (where `vmgr install node` installs), not the old `$XDG_CONFIG_HOME/nvm`, so
+  a vmgr-installed nvm loads at login.
 - **vmgr node: pins in config, install/update reconcile, `nodejs`→`node`
   rename (Node Setup).** The pinned versions (`NVM_PIN`, `NODE_PIN`) moved out
   of code into `config/vmgr/node` — set in one place, sourceable by anything
@@ -65,6 +69,15 @@ goes green (see the merge-time finalization in
   install/update re-assert the pinned default (intentional, deterministic).
   Renamed the `config/shell-startup/nodejs` module to `node` to match the
   vmgr scheme.
+
+### Fixed
+
+- **Login no longer sprays "command not found" (Shell-startup Setup).** The
+  startup module loader used `find -type f` with no dotfile filter, so it
+  sourced `config/shell-startup/.gitignore` (added by the gitignore inversion)
+  as a shell script. Exclude dot-prefixed files from the find — they are
+  directory metadata (`.gitignore`, `.shellcheckrc`), never modules. Added a
+  regression test asserting a login shell emits no "command not found".
 
 ## 2026-06-27
 

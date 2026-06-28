@@ -194,8 +194,11 @@ research:
 
 ## 🟢 Node Setup
 
-- [ ] nvm: lazy-load in `config/shell-startup/node` (the runtime half; `vmgr`
-  owns only install/update/remove, not shell-init — keep the two separate).
+- [ ] nvm: *truly* lazy-load in `config/shell-startup/node` to keep startup
+  fast — it currently sources `nvm.sh` eagerly every login (slow); defer it
+  behind shims that load nvm on first `nvm`/`node`/`npm` use. (Location is
+  done: `NVM_DIR` points at `$XDG_DATA_HOME/nvm`, where vmgr installs; `vmgr`
+  still owns only install/update/remove, not shell-init.)
 
 ## 🔧 Tool/Version Manager Setup
 
@@ -424,6 +427,17 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
   and/or authenticate to Docker Hub (`docker/login-action`) to lift the
   anonymous rate limit, and/or switch the shellcheck hook to an apt-installed
   binary in CI. Pick the lightest reliable option.
+
+- [ ] **Decouple the `markdownlint` pre-commit hook from the host Node
+  (retrospective, PR #181).** The `markdownlint-cli@0.48.0` hook uses
+  `language: node` against whatever `node` is on `PATH`; it needs Node ≥ 20.
+  When the nvm Node was removed during the vmgr migration, pre-commit fell
+  back to the system `node v18` and **every commit in the repo was blocked**
+  (`EBADENGINE` rebuilding the hook env) until Node 22 was reinstalled. Pin
+  the hook's Node so it doesn't depend on the ambient version — set
+  `language_version` on the hook (pre-commit installs that Node), or run
+  markdownlint via the pinned `bin/markdownlint` docker wrapper instead (ties
+  into *Docker tooling Setup*). Lightest reliable option wins.
 
 ### Phase 1: Basic CI (requires Pre-commit Phase 1)
 
