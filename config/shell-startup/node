@@ -1,28 +1,64 @@
 # shellcheck shell=bash
 
-# node/npm XDG environment — set whenever the tool is present, independent of
-# the nvm-vs-system PATH branch below. (Consolidated here from app_env_vars so
-# all node/npm setup lives in one module.)
-havecmd node && export NODE_REPL_HISTORY="$XDG_CACHE_HOME/node_repl_history"
+# node/npm XDG environment. Exported unconditionally: these only take effect
+# when node/npm actually run, and with nvm lazy-loaded (below) the tools are
+# not on PATH at login, so a `havecmd` guard here would wrongly skip them.
+export NODE_REPL_HISTORY="$XDG_CACHE_HOME/node_repl_history"
+export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
+export npm_config_cache="$XDG_CACHE_HOME/npm"
 
-if havecmd npm; then
-  export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
-  export npm_config_cache="$XDG_CACHE_HOME/npm"
-fi
+# nvm + its Node versions live under XDG_DATA_HOME, where `vmgr install node`
+# installs them.
+export NVM_DIR="$XDG_DATA_HOME/nvm"
 
-# nvm + its Node versions live under XDG_DATA_HOME (runtime data, not config),
-# where `vmgr install node` puts them. Lazy-load it here at login.
-if [[ -f $XDG_DATA_HOME/nvm/nvm.sh ]]; then
-  export NVM_DIR="$XDG_DATA_HOME/nvm"
-  [[ -s $NVM_DIR/nvm.sh ]] && source "$NVM_DIR/nvm.sh"
-  [[ -s $NVM_DIR/bash-completion ]] && source "$NVM_DIR/bash-completion"
-  [[ -s $DOTFILES/nvm_nodejs_org_mirror ]] && source "$DOTFILES/nvm_nodejs_org_mirror"
-  addpath "$XDG_DATA_HOME/npm/bin"
+# npmrc sets prefix=$XDG_DATA_HOME/npm, so globally-installed CLIs land in
+# its bin/. Put that on PATH at login so they resolve WITHOUT loading nvm.
+addpath "$XDG_DATA_HOME/npm/bin"
 
+# Lazy-load nvm. Sourcing nvm.sh is slow (it runs `nvm use default` to put the
+# default Node on PATH), so don't pay that at every login. Instead define light
+# shims for nvm/node/npm/npx; the first call to any of them loads nvm for real
+# (which removes the shims and puts Node on PATH), then re-runs the original
+# command. Subsequent calls hit the real binaries directly.
+if [[ -s $NVM_DIR/nvm.sh ]]; then
+  _node_lazy_nvm() {
+    unset -f nvm node npm npx _node_lazy_nvm
+
+    # shellcheck disable=SC1091  # provided by the nvm install at runtime
+    source "$NVM_DIR/nvm.sh"
+
+    if [[ -s $NVM_DIR/bash_completion ]]; then
+      # shellcheck disable=SC1091  # provided by the nvm install at runtime
+      source "$NVM_DIR/bash_completion"
+    fi
+
+    if [[ -s $DOTFILES/nvm_nodejs_org_mirror ]]; then
+      # shellcheck disable=SC1091  # optional, user-provided mirror config
+      source "$DOTFILES/nvm_nodejs_org_mirror"
+    fi
+  }
+
+  nvm() {
+    _node_lazy_nvm
+    nvm "$@"
+  }
+  node() {
+    _node_lazy_nvm
+    node "$@"
+  }
+  npm() {
+    _node_lazy_nvm
+    npm "$@"
+  }
+  npx() {
+    _node_lazy_nvm
+    npx "$@"
+  }
+
+# No nvm, but a system npm: ensure its XDG prefix dirs exist (bin already on
+# PATH above).
 elif havecmd npm; then
-  mkdir -p "$XDG_DATA_HOME/npm/bin"
-  mkdir -p "$XDG_DATA_HOME/npm/lib/node_modules"
-  addpath "$XDG_DATA_HOME/npm/bin"
+  mkdir -p "$XDG_DATA_HOME/npm/bin" "$XDG_DATA_HOME/npm/lib/node_modules"
 fi
 
 # npm bash completion — vendored from `npm completion` into

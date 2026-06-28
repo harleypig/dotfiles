@@ -192,14 +192,6 @@ research:
   5.1 behavior, and whether that's practical (requires a Windows host for
   Windows containers).
 
-## 🟢 Node Setup
-
-- [ ] nvm: *truly* lazy-load in `config/shell-startup/node` to keep startup
-  fast — it currently sources `nvm.sh` eagerly every login (slow); defer it
-  behind shims that load nvm on first `nvm`/`node`/`npm` use. (Location is
-  done: `NVM_DIR` points at `$XDG_DATA_HOME/nvm`, where vmgr installs; `vmgr`
-  still owns only install/update/remove, not shell-init.)
-
 ## 🔧 Tool/Version Manager Setup
 
 Install and configure per-language version/tool managers consistently: one
@@ -362,6 +354,17 @@ Once the Claude statusline exists, audit all four surfaces together:
 - [ ] Document the ownership split in a comment block or inline README
 
 ## 🐳 Docker tooling Setup
+
+### Align `bin/shfmt` with the pre-commit shfmt version
+
+- [ ] The docker `bin/shfmt` wrapper and the pre-commit `shfmt (sourced
+  shell)` hook disagree on formatting: `bin/shfmt -d` passed a file whose
+  multi-statement one-line function bodies (`f() { a; b; }`) the pre-commit
+  hook then reformatted to multi-line, failing the commit. TESTS.md says the
+  two are pinned to the same version "so CI results match what runs locally" —
+  so this is drift (a version or flag difference). Reconcile them: pin
+  `bin/shfmt`'s image to the same shfmt version the pre-commit hook uses (and
+  confirm flags match), so a local `bin/shfmt` check predicts the gate.
 
 ### Audit other wrappers for the piped-stdin gap (LOW PRIORITY)
 

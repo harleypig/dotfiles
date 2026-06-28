@@ -14,6 +14,14 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **nvm is lazy-loaded at login (Node Setup).** `config/shell-startup/node`
+  no longer eagerly sources `nvm.sh` (which runs `nvm use default` — the slow
+  part); `nvm`/`node`/`npm`/`npx` are light shims that load nvm on first use,
+  then re-run the real command. The node/npm XDG env vars export
+  unconditionally and the npm global-prefix bin stays on PATH, so
+  globally-installed CLIs resolve without loading nvm. Covered by
+  `tests/shell/test_shell_startup_node.bats`.
+
 - **`vmgr` polyglot version-manager orchestrator + node module (Node Setup /
   Tool/Version Manager Setup).** New `bin/vmgr` takes `install` / `update` /
   `remove` plus a language list (or lists what's available), dispatching to
