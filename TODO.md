@@ -194,8 +194,11 @@ research:
 
 ## 🟢 Node Setup
 
-- [ ] nvm: install + lazy-load; pin a default Node, following the
-  cross-language pattern in *Tool/Version Manager Setup*.
+- [x] nvm: install + pin a default Node via `vmgr install node`
+  (`bin/vmgr` + `lib/version-managers/node`, pinned nvm + Node, XDG-aware,
+  docker-proven). See ADR-0001.
+- [ ] nvm: lazy-load in `config/shell-startup/node` (the runtime half; `vmgr`
+  owns only install/update/remove, not shell-init — keep the two separate).
 
 ## 🔧 Tool/Version Manager Setup
 
@@ -206,9 +209,36 @@ language's specific manager lives in its `## <Language> Setup` (perlbrew →
 *Perl Setup*; nvm → *Node Setup*); this section owns the **cross-language
 pattern** they share.
 
-- [ ] Evaluate/standardize the rest (Python, Ruby; rustup already in use)
-  under one consistent pattern, documented in each
-  `config/shell-startup/<lang>` module.
+- [x] `vmgr` orchestrator + per-language module contract (`bin/vmgr`,
+  `lib/version-managers/<lang>`): `install`/`update`/`remove` + listing, with
+  multi-manager-per-language listing; node (nvm) is the reference module,
+  proven end-to-end in a docker harness. See ADR-0001 and `docs/bin.md`.
+- [ ] Evaluate/standardize the rest (Python — pipx + uv; Ruby; rustup already
+  in use) under one consistent pattern, documented in each
+  `config/shell-startup/<lang>` module, and add each as a
+  `lib/version-managers/<lang>` module.
+- [ ] **Pre-installed global manager** (when first needed): handle a machine
+  that already has a manager installed system-wide — detect it and decide
+  adopt / skip / coexist rather than blindly re-installing.
+- [ ] **Mutually-exclusive managers within a language** (when a language gains
+  a second manager): the module/dispatch must express exclusivity vs
+  coexistence — e.g. nvm and an alternative Node manager can't be used
+  together, whereas pip / pipx / uv (uvx) coexist fine.
+
+## 📦 Package Install Setup
+
+Automate listing and installing the **packages/tools** a fresh machine needs,
+distinct from the version/tool *managers* themselves (*Tool/Version Manager
+Setup*). The managers provide the runtime; this provides the things installed
+*through* them.
+
+- [ ] List + automate installs of the standard package set, idempotently, e.g.
+  `pipx` installs (aider-chat, yamllint, yapf, …) and whatever else the
+  workflow depends on. Decide the manifest format and the entry point
+  (likely a `bin/` tool).
+- [ ] Vim's needs: install what vim requires that isn't self-provided (coc
+  installs most of its own dependencies — scope this to the gaps coc doesn't
+  cover, don't duplicate it).
 
 ## 🐚 Shell-startup Setup
 
