@@ -32,6 +32,17 @@ setup() {
   assert_output --partial 'binpath=yes'
 }
 
+@test "startup sources only modules, not directory metadata (.gitignore)" {
+  # Regression: the loader used `find -type f` with no dotfile filter, so the
+  # per-dir allowlist `config/shell-startup/.gitignore` (added by the gitignore
+  # inversion) got sourced as a script, spraying "command not found" at login.
+  dotfiles_login "$IMAGE" 'echo startup-ok'
+  assert_success
+  assert_output --partial 'startup-ok'
+  refute_output --partial 'command not found'
+  refute_output --partial '.gitignore'
+}
+
 @test "the double-source guard prevents a re-source from changing PATH" {
   dotfiles_login "$IMAGE" '
     before="$PATH"
