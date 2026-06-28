@@ -35,10 +35,17 @@ setup() {
     nvm use default > /dev/null
     echo "NODE=$(node --version)"
 
-    # Re-installing is idempotent (already present, no re-clone).
-    echo "REINSTALL=$(vmgr install node 2>&1 | grep -c "already present")"
+    # report sees the fresh install at the expected location, no drift.
+    echo "REPORT<<"
+    vmgr report node
+    echo ">>REPORT"
 
-    # Update is a no-op move to the same pinned tag, exits clean.
+    # Re-installing is idempotent: it reconciles to the pins without trying to
+    # re-clone (a re-clone into the non-empty NVM_DIR would fail under set -e).
+    vmgr install node
+    echo "REINSTALL=ok"
+
+    # Update reconciles an existing install to the pins; exits clean.
     vmgr update node
     echo "UPDATED=ok"
 
@@ -50,7 +57,8 @@ setup() {
   assert_success
   assert_output --partial 'PIN=v0.40.5'
   assert_output --partial 'NODE=v22'
-  assert_output --partial 'REINSTALL=1'
+  assert_output --partial 'REINSTALL=ok'
+  assert_output --partial 'matches the expected vmgr location'
   assert_output --partial 'UPDATED=ok'
   assert_output --partial 'REMOVED=ok'
 }

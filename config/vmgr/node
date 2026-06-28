@@ -1,0 +1,29 @@
+# shellcheck shell=bash
+# shellcheck disable=SC2034  # consumed by code that sources this file
+# (lib/version-managers/node, and anything else that needs the pins).
+
+# vmgr - node toolchain pins.
+#
+# These pins govern ONLY what `vmgr` installs and sets as the default; they
+# do not constrain nvm itself. You can still run nvm directly to install,
+# switch, or default any Node version you like.
+#
+#   - Fresh machine: `vmgr install node` clones this nvm release, installs
+#     this Node version, and makes it the default.
+#   - Bump a pin: `vmgr update node` brings an existing install to the new
+#     pins (and `install` does too). Either RESETS the default Node to
+#     NODE_PIN even when newer versions are installed - intentional
+#     (idempotent toward the pins). Use nvm directly to set a different
+#     default.
+#
+# The numbers live here (config, $XDG_CONFIG_HOME/vmgr/node) not in
+# lib/version-managers/node, so they are set in ONE place and sourceable by
+# anything that needs them. Bump deliberately.
+
+# nvm release to install / pin to (git tag).
+NVM_PIN=v0.40.5
+
+# Exact Node version vmgr installs and sets as the default. Pinned (NOT a
+# floating major like `22`) so a repeat `vmgr install node` does not pull a
+# newer patch and the default it sets is deterministic.
+NODE_PIN=v22.23.1

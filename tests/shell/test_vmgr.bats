@@ -24,6 +24,8 @@ setup() {
 vmgr_managers=(barmgr)
 barmgr_install() { echo "barmgr_install ran"; }
 barmgr_update() { echo "barmgr_update ran"; }
+barmgr_report() { echo "barmgr_report ran"; }
+barmgr_help() { echo "barmgr_help ran"; }
 EOF
 
   cat > "$FIX/baz" << 'EOF'
@@ -65,6 +67,12 @@ EOF
   assert_output --partial 'barmgr_update ran'
 }
 
+@test "report is a standard action dispatched to <manager>_report" {
+  VMGR_LIB_DIR="$FIX" run "$VMGR" report foo
+  assert_success
+  assert_output --partial 'barmgr_report ran'
+}
+
 @test "an ambiguous multi-manager language lists its managers, does not act" {
   VMGR_LIB_DIR="$FIX" run "$VMGR" install baz
   assert_success
@@ -104,6 +112,25 @@ EOF
   run "$VMGR" help
   assert_success
   assert_output --partial 'vmgr <action> [language ...]'
+}
+
+@test "help <language> prints that manager's help" {
+  VMGR_LIB_DIR="$FIX" run "$VMGR" help foo
+  assert_success
+  assert_output --partial 'barmgr_help ran'
+}
+
+@test "help with an unknown language fails (exit 1)" {
+  VMGR_LIB_DIR="$FIX" run "$VMGR" help nope
+  assert_failure 1
+  assert_output --partial 'unknown language'
+}
+
+@test "help node (real lib) shows node-specific help" {
+  run "$VMGR" help node
+  assert_success
+  assert_output --partial 'managed via nvm'
+  assert_output --partial 'config/vmgr/node'
 }
 
 @test "the real lib dir ships a node module advertising nvm" {
