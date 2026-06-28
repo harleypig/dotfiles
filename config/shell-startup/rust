@@ -1,0 +1,21 @@
+# shellcheck shell=bash
+
+#-----------------------------------------------------------------------------
+# Rust (rustup + cargo) bash completion.
+#
+# Both vendored into config/completions/ from the official generators, so no
+# rustup/rustc fork is paid at startup:
+#   rustup ← `rustup completions bash`
+#   cargo  ← the toolchain's etc/bash_completion.d/cargo (what
+#            `rustup completions bash cargo` sources)
+# Regenerate on toolchain upgrade — see config/completions/README.md.
+
+[[ $- == *i* ]] || return 0
+
+havecmd rustup \
+  && [[ -r "$XDG_CONFIG_HOME/completions/rustup" ]] \
+  && source "$XDG_CONFIG_HOME/completions/rustup"
+
+havecmd cargo \
+  && [[ -r "$XDG_CONFIG_HOME/completions/cargo" ]] \
+  && source "$XDG_CONFIG_HOME/completions/cargo"

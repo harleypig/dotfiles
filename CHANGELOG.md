@@ -14,6 +14,18 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Bash completion for gh, docker, npm, rustup, cargo (Bash Setup).** Enabled
+  completion for these installed-but-unconfigured tools. Each tool's official
+  completion output is vendored into `config/completions/` and sourced from a
+  small `havecmd`-guarded, interactive-only shell-startup module (`gh`,
+  `docker`, `rust`; npm from `nodejs`). Vendored rather than generated at
+  startup because `source <(tool completion bash)` measured ~700ms of forks
+  (docker and npm ~300ms each) — sourcing a static file is near-free.
+  `tests/shell/test_completions.bats` guards the vendored files (parse +
+  registration). Refreshed `config/completions/README.md`: corrected drift
+  (`git` is vendored upstream, not "system integration"; the TaskWarrior
+  module is `taskwarrior_inactive`), and documented the new completions, the
+  vendored-vs-dynamic rationale, and the regeneration commands.
 - **Bash BATS coverage audit closed (Bash Setup)** — a quality review of the
   bash suite (existence + failure-path coverage) confirmed every `bin/`/`lib`
   unit with real logic is tested and exercises a failure path, so the suite

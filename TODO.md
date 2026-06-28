@@ -137,16 +137,6 @@ mention) and there is **no** perl-QA skill (cf. `bats-setup`,
   skills; fold into one rather than duplicate if it already fits (Rule of
   Three).
 
-## 🐚 Bash Setup
-
-Bash language tooling, testing, and QA. `shellcheck` / `shfmt` are largely
-done.
-
-### Bash Completion
-
-- [ ] Enable bash completion for available but unconfigured tools
-- [ ] Document completion setup in dedicated section or inline
-
 ## 🪟 PowerShell Setup
 
 ### PowerShell ↔ Bash Feature Parity

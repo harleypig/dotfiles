@@ -1,0 +1,14 @@
+# shellcheck shell=bash
+
+#-----------------------------------------------------------------------------
+# GitHub CLI (gh) bash completion.
+#
+# Vendored from `gh completion -s bash` into config/completions/gh (sourcing
+# the static file avoids forking gh on every interactive shell). Regenerate on
+# upgrade — see config/completions/README.md.
+
+[[ $- == *i* ]] || return 0
+
+havecmd gh \
+  && [[ -r "$XDG_CONFIG_HOME/completions/gh" ]] \
+  && source "$XDG_CONFIG_HOME/completions/gh"
