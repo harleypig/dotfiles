@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.3
+**Version:** v2.6.4
 
 ## Purpose
 
@@ -63,6 +63,12 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`, and asserts
   the profile comes up (`DOTFILES` set, `powershell/startup/*` modules loaded)
   with no parser errors. Same skip-if-no-docker guard.
+- `tests/docker/vmgr/` + `tests/shell/test_integration_vmgr.bats` — a **second**
+  harness image (Debian slim + git/curl/xz) because `bin/vmgr` installs **real**
+  toolchains: the test actually clones nvm and downloads a Node, then proves the
+  install → expose → update → remove lifecycle. `common.bash` provides
+  `vmgr_harness_image` and `vmgr_run` (same skip-if-no-docker guard). Kept
+  separate from the startup image, which deliberately lacks those download tools.
 
 These run wherever docker exists (CI, dev) and skip otherwise, so they sit in
 the same gating suite without breaking docker-less environments.

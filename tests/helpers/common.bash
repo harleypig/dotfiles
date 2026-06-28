@@ -146,3 +146,29 @@ dotfiles_login_interactive() {
   local image=$1 cmd=$2
   run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" -lic "$cmd"
 }
+
+#------------------------------------------------------------------------------
+# vmgr integration harness. Build (cached) the vmgr test image and echo its
+# tag; skip the calling test when docker is unavailable or the build fails.
+# Unlike dotfiles_harness_image, this image carries git + curl + xz so a real
+# nvm + Node install can be exercised end to end (see tests/docker/vmgr/).
+
+vmgr_harness_image() {
+  command -v docker > /dev/null 2>&1 || skip "docker not available"
+
+  local tag=dotfiles-vmgr-test:latest
+  docker build -q -t "$tag" "$(dotfiles_root)/tests/docker/vmgr" > /dev/null 2>&1 \
+    || skip "could not build the vmgr test image"
+
+  printf '%s' "$tag"
+}
+
+#------------------------------------------------------------------------------
+# Run a command in a throwaway vmgr container with the repo mounted read-only
+# at /dotfiles and /dotfiles/bin on PATH. Sets $output/$status via bats `run`.
+#   vmgr_run "$IMAGE" 'vmgr install node && node --version'
+
+vmgr_run() {
+  local image=$1 cmd=$2
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" bash -c "$cmd"
+}
