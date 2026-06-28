@@ -140,9 +140,10 @@ Display current tmux mode (copy mode, etc.) in status line or prompt.
 
 **vmgr**
 Polyglot version-manager orchestrator. Accepts the standard verbs
-`install` / `update` / `remove` / `report` plus a list of languages (e.g.
-`vmgr install node`, `vmgr report node`), or lists what's available
-(`vmgr list`, or any action with no language). `report` shows expected
+`install` / `update` / `remove` / `report` plus **one** language and
+(optionally) its managers (e.g. `vmgr install node`, `vmgr install python uv`,
+`vmgr install python pipx uv`), or lists what's available (`vmgr list`, or any
+action with no language). `report` shows expected
 (what vmgr would install / where) vs. current state and flags drift —
 suggesting migration but leaving the *how* to you. `vmgr help <language>`
 (e.g. `vmgr help node`) prints that language's own help — its verbs, pin
@@ -153,8 +154,12 @@ implements one function per standard
 verb and manager (`<manager>_install`, `…_update`, `…_remove`, `…_report`) —
 rather than adopting an off-the-shelf unified tool; see
 [docs/adr/0001-custom-polyglot-version-manager.md](adr/0001-custom-polyglot-version-manager.md)
-for the rationale. A language with more than one manager lists them instead
-of acting, so you can pick. Pinned versions live in `config/vmgr/<language>`
+for the rationale. **One language per invocation;** a multi-manager language
+(e.g. python → pipx, uv) lists its managers when named alone so you can pick,
+or you select them positionally (`vmgr install python pipx uv`) — `report`/
+`help` instead act on all. A language whose managers are mutually exclusive
+enforces that within its own module, not the dispatcher. Pinned versions live
+in `config/vmgr/<language>`
 (e.g. `config/vmgr/node` sets `NVM_PIN` / `NODE_PIN`) — in config, not code —
 so they are set in one place and sourceable by anything that needs them. The
 pins govern *only* what vmgr installs and sets as the default; the native

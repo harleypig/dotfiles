@@ -121,15 +121,25 @@ uv_update() {
 # Remove uv. Standalone -> `uv self uninstall`; pipx-installed -> pipx.
 
 uv_remove() {
-  command -v uv > /dev/null 2>&1 || {
+  local bin
+  bin=$(command -v uv 2> /dev/null) || {
     printf 'uv not installed; nothing to remove\n' >&2
     return 0
   }
 
-  uv self uninstall 2> /dev/null && return 0
+  # A pipx-installed uv resolves into pipx's venvs.
+  if [[ "$(readlink -f "$bin")" == */pipx/venvs/* ]]; then
+    printf 'removing uv via pipx\n' >&2
+    pipx uninstall uv
+    return
+  fi
 
-  printf 'uv: not a standalone install; removing via pipx\n' >&2
-  pipx uninstall uv
+  # Standalone: uv has no reliable `self uninstall`, so clear its cache and
+  # delete the binaries. Its data dirs (uv tool/python dir) are left alone -
+  # removing them could delete uv-managed tools.
+  printf 'removing standalone uv (%s)\n' "$bin" >&2
+  uv cache clean > /dev/null 2>&1 || true
+  rm -f "$bin" "$(dirname "$bin")/uvx"
 }
 
 #------------------------------------------------------------------------------
@@ -161,9 +171,10 @@ uv_help() {
 python / uv - an Astral python package & project manager (also pip/venv and
 Python-version management). vmgr installs it via the standalone installer
 (pinned, UV_NO_MODIFY_PATH so it does not edit your shell profile), falling
-back to `pipx install uv` when astral.sh is unreachable. update/remove use
-`uv self update` / `uv self uninstall` for a standalone install, else pipx.
-Coexists with pipx. Pin: UV_PIN in config/vmgr/python.
+back to `pipx install uv` when astral.sh is unreachable. update uses `uv self
+update` for a standalone install (else pipx); remove deletes the standalone
+binaries (uv has no reliable self-uninstall) or uses pipx. Coexists with pipx.
+Pin: UV_PIN in config/vmgr/python.
 EOF
 }
 
@@ -205,21 +216,23 @@ pipx_install() {
     fi
   fi
 
-  # Priority 1: pip (--user).
+  # Priority 1: pip (--user). On PEP 668 ("externally-managed") systems - most
+  # Debian/Ubuntu - this fails even though pip is present, so fall THROUGH to
+  # uv on failure, not just when pip is absent.
   if _python_have_pip; then
     printf 'installing pipx %s via pip (--user)\n' "$PIPX_PIN" >&2
-    python3 -m pip install --user "pipx==$PIPX_PIN"
-    return
+    python3 -m pip install --user "pipx==$PIPX_PIN" && return 0
+    printf 'pipx: pip install failed (externally-managed?); trying uv\n' >&2
   fi
 
   # Priority 2: uv.
   if command -v uv > /dev/null 2>&1; then
-    printf 'pip unavailable; installing pipx %s via uv\n' "$PIPX_PIN" >&2
+    printf 'installing pipx %s via uv\n' "$PIPX_PIN" >&2
     uv tool install "pipx==$PIPX_PIN"
     return
   fi
 
-  printf 'pipx: neither pip nor uv is available to install pipx; install one first\n' >&2
+  printf 'pipx: neither pip nor uv could install pipx; install one first\n' >&2
   return 1
 }
 
