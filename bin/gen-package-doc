@@ -1,0 +1,271 @@
+#!/usr/bin/env bash
+
+# gen-package-doc - render docs/packages.md from config/packages/manifest.json.
+#
+# The manifest is the source of truth for the standard package set installed
+# THROUGH the version managers (pipx/uv); this script regenerates the
+# human-readable catalog from it so the two never drift.
+#
+# Usage:
+#   gen-package-doc            regenerate the doc in place
+#   gen-package-doc --check    exit non-zero if the doc is out of sync (no write)
+#   gen-package-doc --help     this usage
+#
+# Override the manifest / output paths with PKG_MANIFEST / PKG_DOC (test suite).
+
+# This script emits Markdown: backticks inside single-quoted printf formats are
+# literal code spans, not command substitution (double quotes would make the
+# shell try to run them). Silence SC2016 file-wide rather than per printf.
+# shellcheck disable=SC2016
+
+set -uo pipefail
+
+###############################################################################
+# Setup
+
+self=$(readlink -f "${BASH_SOURCE[0]}")
+bindir=$(dirname "$self")
+root=$(readlink -f "$bindir/..")
+
+: "${PKG_MANIFEST:=$root/config/packages/manifest.json}"
+: "${PKG_DOC:=$root/docs/packages.md}"
+
+PROG=${0##*/}
+
+###############################################################################
+# Utility functions
+
+#------------------------------------------------------------------------------
+# Print an error to stderr and exit with the given code (default 1).
+
+die() {
+  local code=1
+
+  if [[ $1 == -* ]]; then
+    code=${1#-}
+    shift
+  fi
+
+  printf '%s: %s\n' "$PROG" "$*" >&2
+  exit "$code"
+}
+
+#------------------------------------------------------------------------------
+# Print usage: the leading comment block, comment markers stripped.
+
+usage() {
+  sed -n '/^# gen-package-doc - /,/^$/{s/^# \{0,1\}//;p;}' "$self"
+}
+
+#------------------------------------------------------------------------------
+# Word-wrap stdin's single paragraph to <width> columns (default 78) with no
+# trailing whitespace. An optional <indent> string prefixes every line after
+# the first (a hanging indent for list-item continuations). Pure bash so output
+# is deterministic across machines.
+
+wrap() {
+  local width=${1:-78} indent=${2:-} line='' word
+
+  while read -r -d ' ' word || [[ -n $word ]]; do
+    [[ -n $word ]] || continue
+
+    if [[ -z $line ]]; then
+      line=$word
+
+    elif ((${#line} + 1 + ${#word} <= width)); then
+      line+=" $word"
+
+    else
+      printf '%s\n' "$line"
+      line="$indent$word"
+    fi
+  done
+
+  [[ -n $line ]] && printf '%s\n' "$line"
+}
+
+#------------------------------------------------------------------------------
+# Human label for a category slug: a known mapping, else capitalize the first
+# letter and turn dashes into spaces so a new category still renders sanely.
+
+cat_label() {
+  case $1 in
+    ai) printf 'AI' ;;
+    tts) printf 'TTS' ;;
+    formatter) printf 'Formatters' ;;
+    linter) printf 'Linters' ;;
+    git-tooling) printf 'Git tooling' ;;
+    packaging) printf 'Packaging' ;;
+    testing) printf 'Testing' ;;
+    utility) printf 'Utilities' ;;
+    *) printf '%s' "${1^} " | sed 's/-/ /g; s/ $//' ;;
+  esac
+}
+
+###############################################################################
+# Rendering
+
+#------------------------------------------------------------------------------
+# Render one package block (heading, apps, docker line, install priority list).
+
+render_package() {
+  local name=$1
+
+  local summary apps language note
+  summary=$(jq -r --arg n "$name" \
+    '.packages[]|select(.name==$n)|.summary' "$PKG_MANIFEST")
+  apps=$(jq -r --arg n "$name" \
+    '.packages[]|select(.name==$n)|.apps|map("`"+.+"`")|join(", ")' "$PKG_MANIFEST")
+  language=$(jq -r --arg n "$name" \
+    '.packages[]|select(.name==$n)|.language // empty' "$PKG_MANIFEST")
+  note=$(jq -r --arg n "$name" \
+    '.packages[]|select(.name==$n)|.note // empty' "$PKG_MANIFEST")
+
+  printf '#### %s — %s\n\n' "$name" "$summary"
+  printf -- '- **Apps:** %s\n' "$apps"
+  [[ -n $language ]] && printf -- '- **Language:** %s\n' "$language"
+
+  # Docker line: image + note when viable, otherwise a plain "no" with reason.
+  local viable image dnote
+  viable=$(jq -r --arg n "$name" \
+    '.packages[]|select(.name==$n)|.docker.viable' "$PKG_MANIFEST")
+  image=$(jq -r --arg n "$name" \
+    '.packages[]|select(.name==$n)|.docker.image // empty' "$PKG_MANIFEST")
+  dnote=$(jq -r --arg n "$name" \
+    '.packages[]|select(.name==$n)|.docker.note // empty' "$PKG_MANIFEST")
+
+  if [[ $viable == true ]]; then
+    printf -- '- **Docker:** yes — `%s`' "$image"
+  else
+    printf -- '- **Docker:** no'
+  fi
+  [[ -n $dnote ]] && printf -- ' — %s' "$dnote"
+  printf '\n'
+
+  [[ -n $note ]] && printf -- '- **Note:** %s\n' "$note"
+
+  printf -- '- **Install (priority order):**\n'
+
+  local -a steps=()
+  mapfile -t steps < <(jq -r --arg n "$name" \
+    '.packages[]|select(.name==$n)|.install[]
+       | .cmd + (if .note then "\t"+.note else "" end)' "$PKG_MANIFEST")
+
+  local i=1 step cmd snote
+  for step in "${steps[@]}"; do
+    cmd=${step%%$'\t'*}
+    snote=''
+    [[ $step == *$'\t'* ]] && snote=${step#*$'\t'}
+
+    printf '  %d. `%s`' "$i" "$cmd"
+    [[ -n $snote ]] && printf -- ' — %s' "$snote"
+    printf '\n'
+
+    ((i++))
+  done
+
+  printf '\n'
+}
+
+#------------------------------------------------------------------------------
+# Print the whole generated document to stdout.
+
+generate() {
+  printf '<!-- GENERATED by bin/gen-package-doc from config/packages/manifest.json. -->\n'
+  printf '<!-- Do not edit directly; edit the manifest and re-run the generator. -->\n\n'
+
+  printf '# Standard Package Set\n\n'
+
+  printf 'These are the packages installed *through* the language version\n'
+  printf 'managers (node → npm, python → pipx / uv), distinct from the managers\n'
+  printf 'themselves (see `vmgr`). It also covers the `bin/docker_wrapper` tools\n'
+  printf 'whose non-Docker fallback is a node/python install. This file is\n'
+  printf 'generated from `config/packages/manifest.json`.\n\n'
+
+  printf '**Install priority.** %s' "$(jq -r '.priority_note' "$PKG_MANIFEST")" | wrap
+  printf '\n'
+
+  printf '**Docker viability.** %s' "$(jq -r '.docker_viable_meaning' "$PKG_MANIFEST")" | wrap
+  printf '\n'
+
+  printf '## Packages\n\n'
+
+  local -a cats=()
+  mapfile -t cats < <(jq -r '.packages[].category' "$PKG_MANIFEST" | sort -u)
+
+  local cat
+  for cat in "${cats[@]}"; do
+    printf '### %s\n\n' "$(cat_label "$cat")"
+
+    local -a names=()
+    mapfile -t names < <(jq -r --arg c "$cat" \
+      '.packages[]|select(.category==$c)|.name' "$PKG_MANIFEST" | sort)
+
+    local name
+    for name in "${names[@]}"; do
+      render_package "$name"
+    done
+  done
+
+  printf '## Excluded (managed elsewhere)\n\n'
+
+  printf 'These live in the repo tooling space but are deliberately not\n'
+  printf 'packages in this manifest — version managers themselves, or services\n'
+  printf 'managed separately (mostly on the Linode server):\n\n'
+
+  local ex_name ex_reason
+  while IFS=$'\t' read -r ex_name ex_reason; do
+    printf -- '- **%s** — %s' "$ex_name" "$ex_reason" | wrap 78 '  '
+  done < <(jq -r '.excluded[] | .name + "\t" + .reason' "$PKG_MANIFEST")
+  printf '\n'
+
+  local npkg nex
+  npkg=$(jq '.packages | length' "$PKG_MANIFEST")
+  nex=$(jq '.excluded | length' "$PKG_MANIFEST")
+
+  printf -- '---\n\n'
+  printf '%s packages, %s excluded. Generated from\n' "$npkg" "$nex"
+  printf '`config/packages/manifest.json` by `bin/gen-package-doc`.\n'
+}
+
+###############################################################################
+# Main
+
+main() {
+  command -v jq > /dev/null || die "jq is required but not found on PATH"
+  [[ -f $PKG_MANIFEST ]] || die "manifest not found: $PKG_MANIFEST"
+  jq -e . "$PKG_MANIFEST" > /dev/null 2>&1 || die "manifest is not valid JSON: $PKG_MANIFEST"
+
+  case ${1:-} in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+
+    --check)
+      [[ -f $PKG_DOC ]] || die "doc not found (run '$PROG' to create it): $PKG_DOC"
+
+      if diff -u "$PKG_DOC" <(generate) > /dev/null; then
+        printf '%s: %s is in sync with the manifest\n' "$PROG" "${PKG_DOC#"$root"/}"
+        exit 0
+      fi
+
+      printf '%s: %s is OUT OF SYNC with the manifest; run %s\n' \
+        "$PROG" "${PKG_DOC#"$root"/}" "$PROG" >&2
+      diff -u "$PKG_DOC" <(generate) >&2 || true
+      exit 1
+      ;;
+
+    '')
+      generate > "$PKG_DOC"
+      printf '%s: wrote %s\n' "$PROG" "${PKG_DOC#"$root"/}"
+      exit 0
+      ;;
+
+    *)
+      die -2 "unknown argument '$1' (expected: --check, --help, or no argument)"
+      ;;
+  esac
+}
+
+main "$@"

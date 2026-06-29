@@ -14,6 +14,23 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Package manifest + generated catalog (Package Install Setup).** New
+  `config/packages/manifest.json` is the source of truth for the standard
+  package set installed *through* the language version managers (node → npm,
+  python → pipx/uv), distinct from the managers themselves. Each entry carries
+  its `language`, a Docker-viability evaluation, and an install-method priority
+  list (Docker where a dedicated/sensible image exists, else the language
+  manager). It covers the pipx-installed tools plus the `bin/docker_wrapper`
+  tools whose non-Docker fallback is a node/python install (`prettier`,
+  `markdownlint`, `yamllint`); `uv`/`pipx` are recorded as excluded
+  (vmgr-managed infrastructure), as are the `ollama`/`openwebui` services
+  (managed separately, mostly on the Linode server). `bin/gen-package-doc`
+  renders
+  [`docs/packages.md`](docs/packages.md) from it (`--check` fails on drift).
+  Covered by `tests/shell/test_gen_package_doc.bats`, which includes a sync
+  guard against the committed doc. Scope is node/python for now (other
+  toolchains and the installer remain open work).
+
 - **vmgr python module (uv + pipx) + single-language positional dispatch
   (Tool/Version Manager Setup).** `vmgr` now takes one language per invocation
   with positional manager selection (`vmgr install python uv`, `… pipx uv`); a

@@ -125,6 +125,14 @@ Wrapper for yamllint YAML linter. May provide project-specific linting rules.
 **perltidyrc-clean**
 Clean or validate perltidyrc configuration files.
 
+**gen-package-doc**
+Render [`docs/packages.md`](packages.md) from `config/packages/manifest.json`,
+the source-of-truth catalog of the standard package set installed *through* the
+version managers (pipx/uv). Run with no argument to regenerate the doc in place,
+or `--check` to fail (non-zero) when the committed doc has drifted from the
+manifest — the latter is wired into the test suite as a sync guard. Edit the
+manifest, never the generated doc.
+
 ### Application-Specific Utilities
 
 **run-help**

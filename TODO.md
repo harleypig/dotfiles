@@ -226,10 +226,20 @@ distinct from the version/tool *managers* themselves (*Tool/Version Manager
 Setup*). The managers provide the runtime; this provides the things installed
 *through* them.
 
-- [ ] List + automate installs of the standard package set, idempotently, e.g.
-  `pipx` installs (aider-chat, yamllint, yapf, …) and whatever else the
-  workflow depends on. Decide the manifest format and the entry point
-  (likely a `bin/` tool).
+- [ ] Build the idempotent **installer** (a `bin/` tool) that consumes
+  `config/packages/manifest.json` and installs each package by its priority
+  list, like vmgr's per-manager fallback — including `taskwarrior-scalpel`'s
+  first-party source install. Needs a docker integration test (real installs,
+  no mocking), per the vmgr precedent.
+- [ ] **Revisit the manifest evaluation for each remaining language.** The
+  catalog currently covers only node- and python-installable apps (so the
+  `bin/docker_wrapper` tools get a non-Docker fallback recorded). Still to
+  evaluate, as each language's vmgr module lands: the docker_wrapper tools
+  built on other toolchains — `shellcheck` + `hadolint` (Haskell),
+  `shfmt` + `trivy` + `dive` (Go). Add a `language` entry + install priority
+  for each when its toolchain is tackled. (Services — `ollama`, `openwebui` —
+  are out of scope: managed separately, mostly on the Linode server; recorded
+  in the manifest's excluded list, not here.)
 - [ ] Vim's needs: install what vim requires that isn't self-provided (coc
   installs most of its own dependencies — scope this to the gaps coc doesn't
   cover, don't duplicate it).
