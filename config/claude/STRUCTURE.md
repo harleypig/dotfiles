@@ -51,7 +51,7 @@ names as its forcing function (`skill-name`), rules it cross-references
 | [documentation.md](rules/documentation.md) | The documentation bar — when to update docs, what form fits each audience, inline-first philosophy | `write-documentation` · `adr` |
 | [gh.md](rules/gh.md) | GitHub CLI usage: PR conventions, dual-credential auth fallback, issue triage cadence | `git-worktree-workflow` · `ship-pr` · `github-tasks` · `security-scan` · `release-tag` · `github-rulesets.md` |
 | [git.md](rules/git.md) | Commit messages, branch naming, staging discipline, protected-branch rules, worktrees, versioning & tags | `git-worktree-workflow` · `release-tag` · `ship-pr` · `branch-protection.py` |
-| [qa.md](rules/qa.md) | The full QA pipeline from format through CI — 15 dimensions, ordering, fix/check discipline | `qa-check` · `security-scan` · `containerize` · `deps-update` · `arch-review` · `test-review` · `a11y-review` · `perf-review` · `pytest-patterns` · `typing-patterns` · `write-documentation` · `adr` · `code-style.md` · `testing.md` · `documentation.md` |
+| [qa.md](rules/qa.md) | The full QA pipeline from format through CI — 15 dimensions, ordering, fix/check discipline | `qa-check` · `security-scan` · `containerize` · `deps-update` · `arch-review` · `test-review` · `a11y-review` · `perf-review` · `terraform-review` · `pytest-patterns` · `typing-patterns` · `write-documentation` · `adr` · `code-style.md` · `testing.md` · `documentation.md` |
 | [testing.md](rules/testing.md) | The test bar (success + failure paths, regression per bug) and be-idiomatic-per-language stance | — |
 | [troubleshooting.md](rules/troubleshooting.md) | Reproduce first, fix the root cause, land a regression test | `debug-assistant` · `qa-check` |
 
@@ -124,7 +124,7 @@ rule name.
 | [hadolint.md](rules/hadolint.md)<br>↗ `containerize` | `Dockerfile*` |
 | [dive.md](rules/dive.md)<br>↗ `containerize` | `Dockerfile*` |
 | [trivy.md](rules/trivy.md)<br>↗ `containerize` · `security-scan` | `Dockerfile*`, security scan context |
-| [terraform.md](rules/terraform.md)<br>↗ `tftest-patterns` | `*.tf`, `*.tfvars`, `*.tftest.hcl` |
+| [terraform.md](rules/terraform.md)<br>↗ `tftest-patterns` · `terraform-review` | `*.tf`, `*.tfvars`, `*.tftest.hcl` |
 | [tflint.md](rules/tflint.md) | `*.tf`, `.tflint.hcl` |
 | [packer.md](rules/packer.md) | `*.pkr.hcl`, `*.pkrvars.hcl` |
 | [nginx.md](rules/nginx.md) | `nginx.conf`, `sites-*/` |
@@ -194,7 +194,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 
 | Skill | What it does | Calls / see also |
 |-------|-------------|-----------------|
-| [qa-check](skills/qa-check/SKILL.md) | Run the full QA pipeline (format → lint → type-check → security → tests → build → docs → CI) using the repo's own QA doc for commands | `security-scan` · `containerize` · `arch-review` · `test-review` · `a11y-review` · `perf-review` · `pytest-patterns` · `typing-patterns` · `/code-review` · `/simplify` · `/security-review` · `qa.md` · `code-style.md` · `pre-commit.md` |
+| [qa-check](skills/qa-check/SKILL.md) | Run the full QA pipeline (format → lint → type-check → security → tests → build → docs → CI) using the repo's own QA doc for commands | `security-scan` · `containerize` · `arch-review` · `test-review` · `a11y-review` · `perf-review` · `terraform-review` · `pytest-patterns` · `typing-patterns` · `/code-review` · `/simplify` · `/security-review` · `qa.md` · `code-style.md` · `pre-commit.md` |
 | [security-scan](skills/security-scan/SKILL.md) | SAST + dependency/supply-chain scanning; wires Semgrep, OSV-Scanner, Dependabot, Trufflehog | `semgrep.md` · `dependabot.md` · `trivy.md` · `trufflehog.md` |
 | [containerize](skills/containerize/SKILL.md) | Author, harden, scan, and size-check Docker images and compose files | `docker.md` · `hadolint.md` · `trivy.md` · `dive.md` |
 | [deps-update](skills/deps-update/SKILL.md) | Deliberate dependency-update sweep: inventory → triage → changelog → batch → compat-gate | `security-scan` · `qa-check` · `debug-assistant` |
@@ -209,6 +209,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 | [test-review](skills/test-review/SKILL.md) | Test-suite quality: coverage, structure, brittleness, missing edge cases (not running the tests) | `testing.md` |
 | [perf-review](skills/perf-review/SKILL.md) | Runtime performance: hotspots, N+1, allocation, sync-in-async, missing caching — measure first | `arch-review` · `qa.md` |
 | [a11y-review](skills/a11y-review/SKILL.md) | WCAG accessibility: semantic markup, keyboard nav, ARIA, contrast, screen-reader labelling | — |
+| [terraform-review](skills/terraform-review/SKILL.md) | Terraform QA sub-pipeline + structural audit (required files, descriptions/validations, pinned providers, CFF shape, docs-currency), honoring documented exceptions | `terraform.md` · `tftest-patterns` · `tflint.md` · `trivy.md` · `qa.md` |
 | [modernize](skills/modernize/SKILL.md) | Phased Strangler-Fig migration roadmap from legacy to target — plans, does not execute | `arch-review` |
 
 ### Documentation & decisions
