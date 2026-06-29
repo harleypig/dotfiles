@@ -69,6 +69,63 @@ def _run(
     return None
 
 
+def _format(tool: str, rel: Path, cwd: str) -> tuple[bool, str | None]:
+  """Run `<tool> fmt` (writes). Return (ran, message): ran=False means the
+  tool/Docker was absent (whole hook should fail-open); message is what to
+  report, or None when there is nothing to say."""
+  fmt = _run([tool, "fmt", str(rel)], cwd, FMT_TIMEOUT_S)
+  if fmt is None:
+    return (False, None)
+
+  if fmt.returncode != 0:
+    err = (fmt.stderr or fmt.stdout or "").strip()
+    return (
+      True, (
+        f"`{tool} fmt` could not format {rel} (just edited) — likely a syntax "
+        f"error it can't parse; fix it:\n\n{err}"
+      )
+    )
+
+  # fmt prints the filename when it rewrites the file
+  if fmt.stdout.strip():
+    return (
+      True, (
+        f"Reformatted {rel} with `{tool} fmt` — the on-disk content changed; "
+        "re-read it before further edits."
+      )
+    )
+
+  return (True, None)
+
+
+def _validate(tool: str, rel: Path, cwd: str) -> str | None:
+  """Cheap, conditional validate. Terraform only when the dir is already
+  initialized; packer is syntax-only (no init/creds). Return a message on
+  failure, else None."""
+  rel_dir = str(rel.parent) if str(rel.parent) else "."
+
+  if tool == "terraform":
+    if not (Path(cwd) / rel.parent / ".terraform").is_dir():
+      return None
+    val = _run(
+      ["terraform", f"-chdir={rel_dir}", "validate", "-no-color"],
+      cwd,
+      VALIDATE_TIMEOUT_S,
+      extra_env=DUMMY_AWS_ENV,
+    )
+    label = "terraform validate"
+  else:
+    val = _run(["packer", "validate", "-syntax-only", rel_dir], cwd,
+               VALIDATE_TIMEOUT_S)
+    label = "packer validate -syntax-only"
+
+  if val is None or val.returncode == 0:
+    return None
+
+  detail = (val.stdout or val.stderr or "").strip()
+  return f"`{label}` failed for {rel_dir}/ (just edited):\n\n{detail}"
+
+
 def main() -> int:
   try:
     event = json.load(sys.stdin)
@@ -87,79 +144,35 @@ def main() -> int:
   if tool is None:
     return 0
 
-  project_dir = (
-    os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd()
-  )
+  cwd = os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd()
 
-  # bin/ wrappers mount $PWD; the target must be relative to (under) it.
+  # The bin/ wrappers mount $PWD; the target must be relative to (under) it.
   try:
-    rel = path.resolve().relative_to(Path(project_dir).resolve())
+    rel = path.resolve().relative_to(Path(cwd).resolve())
   except ValueError:
     return 0
 
-  rel_dir = str(rel.parent) if str(rel.parent) else "."
-  messages: list[str] = []
-
-  # --- format (writes the file) -------------------------------------------
-  fmt = _run([tool, "fmt", str(rel)], project_dir, FMT_TIMEOUT_S)
-  if fmt is None:
+  ran, fmt_msg = _format(tool, rel, cwd)
+  if not ran:
     return 0  # tool/Docker absent — fail-open
 
-  if fmt.returncode != 0:
-    err = (fmt.stderr or fmt.stdout or "").strip()
-    messages.append(
-      f"`{tool} fmt` could not format {rel} (just edited) — likely a syntax "
-      f"error it can't parse; fix it:\n\n{err}"
-    )
-  elif fmt.stdout.strip():
-    # terraform/packer fmt prints the filename when it rewrites it.
-    messages.append(
-      f"Reformatted {rel} with `{tool} fmt` — the on-disk content changed; "
-      "re-read it before further edits."
-    )
-
-  # --- validate (cheap / conditional only) --------------------------------
-  if tool == "terraform":
-    if (Path(project_dir) / rel.parent / ".terraform").is_dir():
-      val = _run(
-        ["terraform", f"-chdir={rel_dir}", "validate", "-no-color"],
-        project_dir,
-        VALIDATE_TIMEOUT_S,
-        extra_env=DUMMY_AWS_ENV,
-      )
-      if val is not None and val.returncode != 0:
-        messages.append(
-          f"`terraform validate` failed for {rel_dir}/ (just edited):\n\n"
-          f"{(val.stdout or val.stderr or '').strip()}"
-        )
-  else:
-    # packer — syntax-only needs no init or credentials
-    val = _run(
-      ["packer", "validate", "-syntax-only", rel_dir],
-      project_dir,
-      VALIDATE_TIMEOUT_S,
-    )
-    if val is not None and val.returncode != 0:
-      messages.append(
-        f"`packer validate -syntax-only` failed for {rel_dir}/ (just "
-        f"edited):\n\n{(val.stdout or val.stderr or '').strip()}"
-      )
-
+  messages = [m for m in (fmt_msg, _validate(tool, rel, cwd)) if m]
   if not messages:
     return 0
 
-  body = "\n\n".join(messages)
   note = (
-    f"{body}\n\n(PostToolUse iac-fmt hook: auto-formats HCL on edit and "
-    "surfaces fmt/validate problems — see terraform.md / packer.md.)"
+    "\n\n".join(messages) + "\n\n(PostToolUse iac-fmt hook: auto-formats HCL "
+    "on edit and surfaces fmt/validate problems — see terraform.md / "
+    "packer.md.)"
   )
-  payload = {
-    "hookSpecificOutput": {
-      "hookEventName": "PostToolUse",
-      "additionalContext": note,
-    }
-  }
-  print(json.dumps(payload))
+  print(
+    json.dumps({
+      "hookSpecificOutput": {
+        "hookEventName": "PostToolUse",
+        "additionalContext": note,
+      }
+    })
+  )
   return 0
 
 
