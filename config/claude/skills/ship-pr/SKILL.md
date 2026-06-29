@@ -147,6 +147,13 @@ at merge time; the only changes here are documentation.
   track only open work and nothing is removed for a PR that never lands. The
   merge-finalization hook enforces this for any planning doc a repo declares
   (the generic defaults plus any `merge-finalization-docs:` extras).
+- **Close the GitHub issues those items resolve** — pruning a completed item
+  and leaving its issue open lets the tracker drift from the docs. When a
+  pruned item maps to an issue (a `github-issues` bidirectional link, or a
+  `Closes #N` in the PR), close it with a brief closing comment. A
+  `Closes`/`Fixes #N` keyword in the PR body/commits **auto-closes** on merge
+  to the default branch — for those, no manual close is needed; close the rest
+  by hand (`gh issue close <N> --comment "…"`, per `gh.md`).
 - **Changelog management** — regenerate / write the changelog per the repo (a
   generated changelog mutates the tree, so it is committed here, never in CI;
   see `qa.md` dim 13 and the repo's QA doc), plus any related doc updates.

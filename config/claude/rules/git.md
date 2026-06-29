@@ -43,8 +43,9 @@ issue — **mark it done in that same commit** (`- [x]`, or per the repo's
 convention). Mark it **as you go**, never in a batch at the end.
 
 Why: it makes end-of-PR finalization **mechanical**. At merge you just act on
-the `[x]` items — the repo's merge-time finalization prunes them and migrates
-them to the changelog (see the repo's `WORKFLOW.md`) — instead of re-scanning
+the `[x]` items — the repo's merge-time finalization prunes them, **closes the
+GitHub issues they resolve**, and migrates them to the changelog (see the
+repo's `WORKFLOW.md`) — instead of re-scanning
 the whole list asking "did we do this?". Marking late forces reconstructing
 what got done, which is exactly the error this rule prevents. Add a
 newly-surfaced follow-up the same way: as an open `- [ ]` in the commit that

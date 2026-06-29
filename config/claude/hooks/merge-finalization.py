@@ -5,8 +5,9 @@
 Fires on a PR-merge command (`gh pr merge ...` / `ship.sh merge ...`) — NOT
 `git merge`, so routine branch syncs are never gated. It backstops the
 merge-time documentation finalization that the ship-pr skill (Step 4.5) and a
-repo's `WORKFLOW.md` describe: completed items pruned from the planning docs
-and the changelog refreshed before the PR lands.
+repo's `WORKFLOW.md` describe: completed items pruned from the planning docs,
+the GitHub issues those items resolve closed, and the changelog refreshed
+before the PR lands.
 
 **Opt-in, because "prune completed `[x]` items" is a repo convention, not a
 universal one** — some repos deliberately keep `[x]` as a done-work record or
@@ -63,6 +64,9 @@ CHECKLIST = (
   "Merge-time finalization (ship-pr Step 4.5 / repo WORKFLOW.md), docs-only:\n"
   " - Prune completed items from TODO.md / ROADMAP.md per the repo's "
   "convention (where it removes them outright, do not leave them `[x]`).\n"
+  " - Close the GitHub issues those completed items resolve (with a "
+  "closing comment), unless a `Closes #N` keyword in the PR already "
+  "auto-closes them.\n"
   " - Refresh the generated changelog per the repo (mutates the tree, so "
   "commit it here, never in CI).\n"
   " - Commit the docs-only change, push, re-watch CI green, then merge."
@@ -150,15 +154,16 @@ def main() -> int:
       "deny",
       "Merge blocked — merge-time finalization not done: completed `- [x]` "
       "items remain in " + ", ".join(hits) + ".\n\n" + CHECKLIST
-      + "\n\nPrune the completed items (and refresh the changelog), commit, "
-      "re-watch CI, then merge. This hook fails safe.",
+      + "\n\nPrune the completed items, close the issues they resolve, "
+      "refresh the changelog, commit, re-watch CI, then merge. This hook "
+      "fails safe.",
     )
   else:
     _emit(
       None,
       "Before merging, confirm this repo's merge-time finalization is done — "
-      "planning docs reflect only open work and the changelog is refreshed. "
-      + CHECKLIST,
+      "planning docs reflect only open work, the issues those items resolve "
+      "are closed, and the changelog is refreshed. " + CHECKLIST,
     )
   return 0
 
