@@ -154,25 +154,46 @@ gh issue list --state open
 gh issue list --state open --label dast   # e.g. auto-filed scan findings
 ```
 
-Fold actionable open issues into the repo's **triage queue** — a section in
-its `TODO.md` (or equivalent) — each with a priority, then resolve or close
-them. Don't let auto-created issues pile up unseen. A closed/empty queue is
-the goal; surface the list to the user when items appear.
+Triage is more than "fold into the TODO." Reconcile each issue **against what
+the repo already has** before routing it:
 
-The **github-tasks** skill is the forcing function for this cadence: it runs
-this issue check as one part of a wider repo sweep (open Dependabot PRs,
-failing required checks, stale branches, release/tag hygiene) and presents a
-single ranked worklist. Reach for it at the start of git/gh work rather than
+- **Reconcile against the planning docs *and* current code** — match it to an
+  existing `TODO`/`ROADMAP`/`ICEBOX` item (cross-reference, don't duplicate;
+  several issues may bunch onto one task), and check whether the code already
+  satisfies it.
+- **Stale/done → close with a comment** saying what satisfied it (never a
+  silent close).
+- **Score complexity** (trivial/small/medium/large) for each open issue —
+  reporting only; it does **not** trigger auto-work.
+- **Detect duplicates/umbrellas** and **blocking chains** (`Blocked by #N`);
+  order the queue so blockers come first.
+- **Recommend labels** — apply the right one; when the right label doesn't
+  exist, recommend creating it rather than forcing a poor fit.
+- **Keep issue ↔ planning-doc references in sync** (issue # in the item; a
+  comment on the issue linking the item/PR).
+- **Never auto-tackle** — present the worklist and ask; acting on an issue is
+  a separate, routed step.
+
+Route each to a disposition (close-done / map-to-TODO / icebox+close / roadmap
+/ features-&-fixes / flag-for-decision). Don't let auto-created issues pile up
+unseen; a closed/empty queue is the goal.
+
+The **github-issues** skill is the procedure for the above (per-issue depth);
+the **github-tasks** skill is the forcing function for the *cadence* — it runs
+the issue check as one part of a wider repo sweep (Dependabot PRs, failing
+checks, stale branches, release/tag hygiene) and **delegates issue triage to
+github-issues**. Reach for github-tasks at the start of git/gh work rather than
 running the `gh issue list` calls above piecemeal.
 
 ## Agent Rules
 
 - After creating a PR, follow the CI monitoring workflow in
   `github-actions.md` if Actions are configured in the repo.
-- In a repo with issue-opening automation, check `gh issue list` at the start
-  of git/gh work (and daily) and add open items to the repo's TODO triage
-  queue (see *Issues & triage*). Prefer the **github-tasks** skill — it runs
-  this check as part of a single repo sweep.
+- Check `gh issue list` at the start of git/gh work (and daily); triage per
+  *Issues & triage* — reconcile against planning docs + code, score complexity,
+  close stale/done with a comment, route the rest, and **never auto-tackle**.
+  Use the **github-issues** skill for the per-issue procedure and the
+  **github-tasks** skill to run it as part of a single repo sweep.
 - Always return the PR URL after creating.
 - Use `gh` for all GitHub operations (issues, PRs, checks, releases).
 - Do not create, merge, or close PRs without explicit user approval.

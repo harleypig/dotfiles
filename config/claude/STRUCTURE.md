@@ -49,7 +49,7 @@ names as its forcing function (`skill-name`), rules it cross-references
 | [claude-code-auth.md](rules/claude-code-auth.md) | Claude Code auth methods, precedence order, the never-export-`ANTHROPIC_API_KEY` rule, diagnosing auth problems | — |
 | [code-style.md](rules/code-style.md) | Naming, 78-col Markdown / 72-col comment wrap, paragraph spacing, section separators, Rule of Three, efficiency by default | — |
 | [documentation.md](rules/documentation.md) | The documentation bar — when to update docs, what form fits each audience, inline-first philosophy | `write-documentation` · `adr` |
-| [gh.md](rules/gh.md) | GitHub CLI usage: PR conventions, dual-credential auth fallback, issue triage cadence | `git-worktree-workflow` · `ship-pr` · `github-tasks` · `security-scan` · `release-tag` · `github-rulesets.md` |
+| [gh.md](rules/gh.md) | GitHub CLI usage: PR conventions, dual-credential auth fallback, issue triage cadence | `git-worktree-workflow` · `ship-pr` · `github-tasks` · `github-issues` · `security-scan` · `release-tag` · `github-rulesets.md` |
 | [git.md](rules/git.md) | Commit messages, branch naming, staging discipline, protected-branch rules, worktrees, versioning & tags | `git-worktree-workflow` · `release-tag` · `ship-pr` · `branch-protection.py` |
 | [qa.md](rules/qa.md) | The full QA pipeline from format through CI — 15 dimensions, ordering, fix/check discipline | `qa-check` · `security-scan` · `containerize` · `deps-update` · `arch-review` · `test-review` · `a11y-review` · `perf-review` · `terraform-review` · `pytest-patterns` · `typing-patterns` · `write-documentation` · `adr` · `code-style.md` · `testing.md` · `documentation.md` |
 | [testing.md](rules/testing.md) | The test bar (success + failure paths, regression per bug) and be-idiomatic-per-language stance | — |
@@ -188,7 +188,8 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 | [ship-pr](skills/ship-pr/SKILL.md) | Full landing pipeline: QA → commit → push → open PR → watch CI → (approval) merge → tag → cleanup | `qa-check` · `git-worktree-workflow` · `release-tag` · `retrospective` · `merge-finalization.py` · `gh.md` · `git.md` · `github-actions.md` · `pre-commit.md` |
 | [git-worktree-workflow](skills/git-worktree-workflow/SKILL.md) | Worktree-based development: create issue branches, sync with upstream, prep PR, cleanup | `git.md` · `gh.md` |
 | [release-tag](skills/release-tag/SKILL.md) | Cut an annotated `vX.Y.Z` tag at the merge commit, push, and watch the release workflow | `git.md` · `github-actions.md` |
-| [github-tasks](skills/github-tasks/SKILL.md) | Sweep a repo's GitHub state (Dependabot PRs, open issues, failing checks, stale branches, release hygiene), triage into a ranked worklist, and route each item to its skill | `security-scan` · `ship-pr` · `git-worktree-workflow` · `release-tag` · `debug-assistant` · `gh.md` · `git.md` |
+| [github-tasks](skills/github-tasks/SKILL.md) | Sweep a repo's GitHub state (Dependabot PRs, open issues, failing checks, stale branches, release hygiene), triage into a ranked worklist, and route each item to its skill | `security-scan` · `ship-pr` · `git-worktree-workflow` · `github-issues` · `release-tag` · `debug-assistant` · `gh.md` · `git.md` |
+| [github-issues](skills/github-issues/SKILL.md) | Deep per-issue triage: reconcile against planning docs + code, complexity, close stale/done with a comment, dedup/umbrella + blocking detection, label recommendations, issue↔doc sync — routes, never auto-tackles | `gh.md` · `todo.md` · `github-tasks` |
 
 ### Quality assurance
 
@@ -285,6 +286,7 @@ this repo. They are invoked as slash commands or by trigger phrase.
 | `skill-creator` | Create, modify, and benchmark skills; run evals; optimize trigger descriptions |
 | `update-config` | Configure the Claude Code harness via `settings.json` (hooks, permissions, env vars) |
 | `github-tasks` | Sweep a repo's GitHub state: Dependabot PRs, open issues, failing checks, stale branches |
+| `github-issues` | Deep issue triage: reconcile vs docs+code, complexity, close stale/done, dedup, blocking, label recs, sync |
 | `new-project` | Initialize or onboard a repo to these dotfiles' conventions |
 | `retrospective` | Pre-merge agent-tooling retrospective: friction points → detailed TODOs for the backlog |
 | `loop` | Run a prompt or slash command on a recurring interval |
