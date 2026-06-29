@@ -124,6 +124,9 @@ rule name.
 | [hadolint.md](rules/hadolint.md)<br>↗ `containerize` | `Dockerfile*` |
 | [dive.md](rules/dive.md)<br>↗ `containerize` | `Dockerfile*` |
 | [trivy.md](rules/trivy.md)<br>↗ `containerize` · `security-scan` | `Dockerfile*`, security scan context |
+| [terraform.md](rules/terraform.md)<br>↗ `tftest-patterns` | `*.tf`, `*.tfvars`, `*.tftest.hcl` |
+| [tflint.md](rules/tflint.md) | `*.tf`, `.tflint.hcl` |
+| [packer.md](rules/packer.md) | `*.pkr.hcl`, `*.pkrvars.hcl` |
 | [nginx.md](rules/nginx.md) | `nginx.conf`, `sites-*/` |
 
 ### Security tools
@@ -231,6 +234,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 
 | Skill | What it does | Calls / see also |
 |-------|-------------|-----------------|
+| [tftest-patterns](skills/tftest-patterns/SKILL.md) | Terraform native-test recipes: plan-only unit tests, mock_provider, assert, expect_failures for variable validation | `terraform.md` · `testing.md` |
 | [spotify-patterns](skills/spotify-patterns/SKILL.md) | Spotify Web API recipes: token refresh, track relinking, pagination, rate limits, playlist cover art | `spotify.md` · `spotify-audit` |
 | [spotify-audit](skills/spotify-audit/SKILL.md) | Audit a Spotify integration for API best practices, deprecated endpoints, auth correctness | `spotify.md` |
 | [frontend-design](skills/frontend-design/SKILL.md) | Create distinctive, production-grade frontend UI — avoids generic AI aesthetics | `react.md` · `typescript.md` · `css.md` · `code-style.md` |

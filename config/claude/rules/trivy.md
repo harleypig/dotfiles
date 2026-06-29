@@ -48,6 +48,12 @@ trivy fs .                    # dependency CVEs + secrets in the repo tree
 trivy config .                # Dockerfile / compose / IaC misconfigurations
 ```
 
+`trivy config` also scans **Terraform** (and other IaC). Scope it to one type
+with `--misconfig-scanners <type>` to avoid noise from the others — e.g.
+`trivy config --misconfig-scanners terraform .` checks only Terraform
+misconfigurations (the IaC successor to the retired `tfsec`; see `terraform.md`
+and `tflint.md`).
+
 Run a relevant scan after building or changing an image, or after changing
 dependency manifests/lockfiles. Default behaviour fails nothing; gate
 explicitly with `--severity HIGH,CRITICAL --exit-code 1` (optionally

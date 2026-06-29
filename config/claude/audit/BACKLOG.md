@@ -121,25 +121,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Skill ideas & future categories (not from mining)
 
-- [ ] **Author IaC rules: `terraform.md` + `packer.md` + `tflint.md` (+ a
-  tftest patterns skill) — MEDIUM, surfaced by the harleydev IaC conversion,
-  2026-06-29.** No Terraform/Packer/tflint rules exist despite harleydev
-  exercising them heavily; the whole conversion derived conventions ad hoc.
-  Per build-on-first-use (ADR-0003), Terraform is now in first/heavy use →
-  author global rules. Promote the generic parts of harleydev's
-  `.claude/CONVENTIONS.md`: `terraform fmt` / `validate -backend=false` (+ dummy
-  AWS env so an s3 backend block doesn't probe IMDS — credential-free CI),
-  plan-only `.tftest.hcl` with `mock_provider` (no token, no real infra), the
-  docker-image-hooks-vs-native tradeoff (antonbabenko/pre-commit-terraform),
-  and `packer fmt`/`validate`. Keep repo-specifics (docker toolchain because
-  tools aren't installed locally) in the repo. `trivy.md` already partly covers
-  IaC (`trivy config`) — extend it to note `--misconfig-scanners terraform`
-  rather than duplicating. Ground each rule in official docs; follow the
-  language/tool layering (`EXTENDING.md`). Also: the `mining-census.md` Watch
-  list anticipated many stacks but **not** IaC/Terraform — add an IaC
-  Watch-trigger when this lands so the gap isn't re-missed. Per `qa.md`'s "qa
-  last," wire the new rules into `qa-check`/`qa.md` after authoring.
-
 - [ ] **`ship-pr`: document "PR already open" resume path (2026-06-20)** —
   When `/ship-pr` is invoked and the PR was already opened in a prior session,
   the skill has no explicit "pick up here" guidance. The agent must reason
