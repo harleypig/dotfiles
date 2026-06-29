@@ -6,6 +6,24 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-29 — **Added the `iac-fmt.py` PostToolUse hook + terraform/packer/
+  tflint docker wrappers (user request).** HCL is whitespace/quote sensitive,
+  so the user wanted fmt to run right after editing a Terraform/Packer file.
+  Built `config/claude/hooks/iac-fmt.py`: on edit it **auto-formats** the one
+  file (`terraform`/`packer fmt`), reports a parse error `fmt` can't fix, and
+  runs a **cheap, conditional** validate — terraform only if `.terraform/`
+  exists (no slow per-edit `init`; dummy AWS env), packer `-syntax-only`.
+  **Deliberate deviation** from `shell-check.py`'s check-only/fix-once stance:
+  this hook *writes* (true format-on-save), user-confirmed, because HCL fmt is
+  deterministic + standard; it reports when it rewrites so the agent re-reads.
+  Fail-open (no tool/Docker → silent), pyright-clean, tested by
+  `tests/python/test_iac_fmt.py`. Tooling: added `bin/terraform`/`bin/packer`/
+  `bin/tflint` **docker wrappers** (the user's tools are dockerized — matches
+  `bin/shellcheck`/`bin/trivy`) so the hook has something to call; `dw_user`
+  keeps rewritten files host-owned. Wired into `settings.json` PostToolUse;
+  documented the Enforcement section in `terraform.md`/`packer.md`; registered
+  in `STRUCTURE.md`. Shipped on the same PR as the IaC rules below.
+
 - 2026-06-29 — **Worked the backlog: authored the IaC rule set (terraform /
   packer / tflint + tftest-patterns skill).** Closed the IaC-rules backlog item
   (added earlier the same day). Authored `rules/terraform.md`,

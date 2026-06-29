@@ -59,6 +59,16 @@ A Packer-built image consumed by Terraform should be referenced by a
 image ID, so a rebuild doesn't require editing Terraform. Document the
 build→reference flow in the repo.
 
+## Enforcement (PostToolUse hook)
+
+The global `config/claude/hooks/iac-fmt.py` `PostToolUse` hook runs **right
+after** the agent edits a `*.pkr.hcl`/`*.pkrvars.hcl` file: it **auto-formats**
+it with `packer fmt`, reports anything `fmt` could not fix, and runs `packer
+validate -syntax-only` (no plugins/credentials). It calls `packer` via the
+`bin/packer` docker wrapper and **fails open**. It **rewrites** the file, so
+re-read after it reports a reformat. (Terraform shares the same hook — see
+`terraform.md`.)
+
 ## Agent Behavior
 
 - `packer fmt -check` and `packer validate -syntax-only` are fine; **never**

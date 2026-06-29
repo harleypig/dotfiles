@@ -85,6 +85,19 @@ write `repo: local` `language: docker_image` hooks pinned to a version tag.
 The repo has **no `packer_*` hooks** (see `packer.md`). Prefer driving these
 through pre-commit (`pre-commit.md`).
 
+## Enforcement (PostToolUse hook)
+
+The global `config/claude/hooks/iac-fmt.py` `PostToolUse` hook runs **right
+after** the agent edits a `*.tf`/`*.tfvars`/`*.tftest.hcl` file: it
+**auto-formats** that file with `terraform fmt` (HCL is whitespace/quote
+sensitive — a one-character slip causes confusing errors), reports anything
+`fmt` could not fix (a parse error), and — **only if the dir is already
+initialized** (`.terraform/` present) — runs `terraform validate` (dummy AWS
+env, no `init`). It calls `terraform` via the `bin/terraform` docker wrapper
+and **fails open** (no terraform/Docker → silent no-op). Unlike the check-only
+`shell-check.py`, this one **rewrites** the file, so re-read after it reports a
+reformat. Packer is handled by the same hook (see `packer.md`).
+
 ## Agent Behavior
 
 - Format-check, validate (credential-free, `-backend=false` + dummy AWS env for

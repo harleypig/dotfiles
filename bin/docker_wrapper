@@ -120,6 +120,45 @@ yamllint() {
 image[yamllint]="cytopia/yamllint:latest"
 
 #------------------------------------------------------------------------------
+# IaC tools (terraform / packer / tflint). Subcommand-driven, so they skip
+# dw_guard_pwd_paths (args are subcommands/flags, not just file paths) — the
+# caller passes pwd-relative targets. dw_user makes files that `terraform fmt` /
+# `packer fmt` rewrite land host-owned, not root; HOME=/tmp gives a writable
+# home under --user for any plugin/cache path.
+terraform() {
+  local -a args=(--rm --env HOME=/tmp)
+  [[ -t 0 ]] || args+=(-i) # forward stdin so `terraform fmt -` works
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  exec docker run "${args[@]}" "${image[terraform]}" "$@"
+}
+image[terraform]="hashicorp/terraform:1.15"
+
+#------------------------------------------------------------------------------
+packer() {
+  local -a args=(--rm --env HOME=/tmp)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  exec docker run "${args[@]}" "${image[packer]}" "$@"
+}
+image[packer]="hashicorp/packer:1.15"
+
+#------------------------------------------------------------------------------
+tflint() {
+  local -a args=(--rm --env HOME=/tmp)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  exec docker run "${args[@]}" "${image[tflint]}" "$@"
+}
+image[tflint]="ghcr.io/terraform-linters/tflint:v0.63.1"
+
+#------------------------------------------------------------------------------
 prettier() {
   dw_guard_pwd_paths prettier "$@" || exit 1
 
