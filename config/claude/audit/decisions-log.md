@@ -6,6 +6,30 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-29 — **Assess pass from harleydev (IaC repo): fixed the `bats-setup`
+  `tests/suite/`→`tests/shell/` drift; backlogged IaC rules (user-confirmed).**
+  Ran `/claude-audit` from harleydev right after converting it (a Terraform/
+  Packer/Docker repo) — a new stack vantage, which surfaced gaps rather than
+  cruft (no ICEBOX/Watch triggers fired; nothing to drop/move). **(1) Drift
+  fixed:** the `bats-setup` skill documented a `tests/suite/` layout, but its
+  own declared source of truth `bats.md` (and `testing.md`'s per-language
+  split, and the dotfiles' actual `tests/shell/`) mandate `tests/shell/`. Hit
+  during the conversion and followed the rule, not the skill. Corrected the
+  skill to `tests/shell/` (5 path refs + the frontmatter), bumped it to v1.0.1,
+  and added a note tying the layout to the per-language split so it can't
+  re-drift. Grep confirmed no other `tests/suite` referrers. **(2) Backlogged**
+  (not authored this run, per the assess/work split): no `terraform.md`/
+  `packer.md`/`tflint.md` exist despite heavy IaC use — added a MEDIUM
+  `BACKLOG.md` item to author them (promoting the generic parts of harleydev's
+  `.claude/CONVENTIONS.md`: `validate -backend=false` + dummy AWS env,
+  plan-only `.tftest.hcl` + `mock_provider`, the docker-vs-native hook tradeoff,
+  `packer fmt/validate`; extend `trivy.md` for `--misconfig-scanners
+  terraform`). Noted the `mining-census.md` Watch list never anticipated an
+  IaC/Terraform stack — to be closed when the rules land. **Not done:** did not
+  path-scope the heavy always-on `git.md`/`code-style.md` (guardrail-dense —
+  trim weight, not guardrails); did not wire harleydev's per-repo `terraform`
+  MCP (second-class; the docker toolchain works without it).
+
 - 2026-06-27 — **Adopted `pyright` for type-checking; `mypy` declined
   (user-confirmed).** Worked the `## 🐍 Python Setup` TODO items. The
   first-party Python surface is the seven agent hooks under

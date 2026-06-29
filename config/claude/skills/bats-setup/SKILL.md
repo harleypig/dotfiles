@@ -1,11 +1,11 @@
 ---
 name: bats-setup
-description: Scaffold bats-core testing into a repository — create the tests/ layout (suite/helpers/scaffold), wire helper libraries via bats_load_library, install the meta-test generator, add a starter test, and set up CI. Use when a repo has no tests yet or an outdated test setup: "set up bats", "add tests to this repo", "scaffold bats testing", "get bats working here", "stand up a test suite", "add a test harness", or when porting another repo to this repo's bats conventions. Follows rules/bats.md.
+description: Scaffold bats-core testing into a repository — create the tests/ layout (shell/helpers/scaffold), wire helper libraries via bats_load_library, install the meta-test generator, add a starter test, and set up CI. Use when a repo has no tests yet or an outdated test setup: "set up bats", "add tests to this repo", "scaffold bats testing", "get bats working here", "stand up a test suite", "add a test harness", or when porting another repo to this repo's bats conventions. Follows rules/bats.md.
 ---
 
 # bats-setup
 
-**Version:** v1.0.0
+**Version:** v1.0.1
 
 Stand up (or modernize) bats-core testing in a repo. This is the procedure;
 **`rules/bats.md` is the source of truth** for conventions — read it first and
@@ -30,11 +30,14 @@ defer to it on any specifics.
    tests/
      helpers/common.bash
      scaffold/{build-meta-tests,templates/file.meta.bats.template,meta-ignore}
-     suite/{.gitignore,test_<first>.bats}
+     shell/{.gitignore,test_<first>.bats}
    ```
 
-   `tests/suite/.gitignore` holds `*.meta.bats` (generated tests are not
-   committed).
+   `tests/shell/` is the **shell-language** subdir per `testing.md`'s
+   per-language split (`bats.md` is the source of truth); a multi-language repo
+   adds sibling `tests/<lang>/` dirs, while `helpers/` and `scaffold/` stay
+   shared at the `tests/` root. `tests/shell/.gitignore` holds `*.meta.bats`
+   (generated tests are not committed).
 
 3. **Helpers.** Drop in `tests/helpers/common.bash` with:
    - `load_bats_libs` — set `BATS_LIB_PATH` to `<repo>/lib/bats:` + the system
@@ -50,16 +53,16 @@ defer to it on any specifics.
    script dirs (e.g. `bin lib`, or `src`). Generated `*.meta.bats` are
    gitignored and produced on demand / in CI.
 
-5. **Starter test.** Write one real `tests/suite/test_<component>.bats`
+5. **Starter test.** Write one real `tests/shell/test_<component>.bats`
    (`load ../helpers/common`; `setup()` calls `load_bats_libs`) so the suite is
    non-empty and the wiring is proven. Cover a success and a failure path.
 
 6. **CI.** Add a workflow that installs bats + libs and runs
-   `bats tests/suite/test_*.bats` (gate the hand-written suite). See this
+   `bats tests/shell/test_*.bats` (gate the hand-written suite). See this
    repo's `.github/workflows/tests.yml`. Optionally add the meta suite once the
    target scripts are clean.
 
-7. **Verify.** `bats tests/suite/` is green; `shellcheck` the `.bats` files and
+7. **Verify.** `bats tests/shell/` is green; `shellcheck` the `.bats` files and
    `shfmt` the `.bash` helpers (shfmt cannot parse `.bats`). Run
    `tests/scaffold/build-meta-tests` and confirm it generates sane tests;
    record any lint/format debt it surfaces in `TODO.md` (don't ignore to hide).
