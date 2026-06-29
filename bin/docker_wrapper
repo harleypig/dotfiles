@@ -159,6 +159,23 @@ tflint() {
 image[tflint]="ghcr.io/terraform-linters/tflint:v0.63.1"
 
 #------------------------------------------------------------------------------
+# terraform-docs generates/injects module READMEs from .tf sources (static
+# parse — no init, no credentials). Subcommand/flag-driven like the other IaC
+# tools, so it skips dw_guard_pwd_paths; dw_user keeps the injected README
+# host-owned, HOME=/tmp gives a writable home under --user.
+terraform-docs() {
+  local -a args=(--rm --env HOME=/tmp)
+  dw_user args
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # Quote the literal key: shfmt would otherwise read the `-` in the
+  # associative-array subscript as arithmetic and mangle it (terraform - docs).
+  exec docker run "${args[@]}" "${image["terraform-docs"]}" "$@"
+}
+image["terraform-docs"]="quay.io/terraform-docs/terraform-docs:0.20.0"
+
+#------------------------------------------------------------------------------
 prettier() {
   dw_guard_pwd_paths prettier "$@" || exit 1
 

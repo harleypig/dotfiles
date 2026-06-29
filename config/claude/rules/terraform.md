@@ -74,6 +74,27 @@ the **tftest-patterns** skill; the success/failure-path bar is `testing.md`.
 Pin the required Terraform version and provider sources/versions in a
 `versions.tf` (or `terraform {}` block) per module — unpinned providers drift.
 
+## terraform-docs (module READMEs)
+
+Generate a module's README reference tables (Inputs/Outputs/Resources) with
+**terraform-docs** rather than hand-writing them — mechanical content that
+otherwise drifts. It **statically parses** `.tf` (no `terraform init`, no
+credentials). Config is a `.terraform-docs.yml` (`formatter: markdown table`,
+`output.mode: inject` between the `<!-- BEGIN_TF_DOCS -->` /
+`<!-- END_TF_DOCS -->` markers); prose around the markers is preserved, so a
+module keeps hand-written usage/notes alongside the generated tables.
+
+- **Run it dockerized** where the toolchain isn't installed locally: the
+  `bin/terraform-docs` docker wrapper, image
+  `quay.io/terraform-docs/terraform-docs` (pin a tag, e.g. `:0.20.0`).
+- **Per-module, not `recursive`**, for a *flat* library of sibling modules
+  (a `tfmods/`-style dir, not a main module with a `modules/` subdir):
+  recursive mode wrongly documents each module's `tests/` dir as a submodule.
+  Loop over modules instead.
+- **Gate with `--output-check`** (non-modifying; non-zero if a README is
+  stale) in pre-commit/CI; the writer (`terraform-docs` without it) stays a
+  manual/dev step, per `pre-commit.md`'s fix-once discipline.
+
 ## pre-commit
 
 `antonbabenko/pre-commit-terraform` provides the hooks: `terraform_fmt`,
@@ -121,3 +142,5 @@ reformat. Packer is handled by the same hook (see `packer.md`).
   <https://developer.hashicorp.com/terraform/language/tests/mocking>
 - `antonbabenko/pre-commit-terraform` —
   <https://github.com/antonbabenko/pre-commit-terraform>
+- terraform-docs (config schema, `--output-check`, docker image, recursive) —
+  <https://terraform-docs.io/> · <https://github.com/terraform-docs/terraform-docs>
