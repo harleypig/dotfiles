@@ -6,6 +6,49 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-06-29 — **Added the `iac-fmt.py` PostToolUse hook + terraform/packer/
+  tflint docker wrappers (user request).** HCL is whitespace/quote sensitive,
+  so the user wanted fmt to run right after editing a Terraform/Packer file.
+  Built `config/claude/hooks/iac-fmt.py`: on edit it **auto-formats** the one
+  file (`terraform`/`packer fmt`), reports a parse error `fmt` can't fix, and
+  runs a **cheap, conditional** validate — terraform only if `.terraform/`
+  exists (no slow per-edit `init`; dummy AWS env), packer `-syntax-only`.
+  **Deliberate deviation** from `shell-check.py`'s check-only/fix-once stance:
+  this hook *writes* (true format-on-save), user-confirmed, because HCL fmt is
+  deterministic + standard; it reports when it rewrites so the agent re-reads.
+  Fail-open (no tool/Docker → silent), pyright-clean, tested by
+  `tests/python/test_iac_fmt.py`. Tooling: added `bin/terraform`/`bin/packer`/
+  `bin/tflint` **docker wrappers** (the user's tools are dockerized — matches
+  `bin/shellcheck`/`bin/trivy`) so the hook has something to call; `dw_user`
+  keeps rewritten files host-owned. Wired into `settings.json` PostToolUse;
+  documented the Enforcement section in `terraform.md`/`packer.md`; registered
+  in `STRUCTURE.md`. Shipped on the same PR as the IaC rules below.
+
+- 2026-06-29 — **Worked the backlog: authored the IaC rule set (terraform /
+  packer / tflint + tftest-patterns skill).** Closed the IaC-rules backlog item
+  (added earlier the same day). Authored `rules/terraform.md`,
+  `rules/packer.md`, `rules/tflint.md` (path-scoped, lean — matching
+  `shfmt.md`/`shellcheck.md`), and a `tftest-patterns` **skill** (matching
+  `pytest-patterns`; with `SOURCE.md`). Extended `trivy.md` with the
+  `--misconfig-scanners terraform` IaC-scoping note (no duplication). Grounded
+  every artifact in **official HashiCorp docs** (verified current, URLs in each
+  rule's *Sources* / the skill's `SOURCE.md`) — promoting the generic parts of
+  harleydev's `.claude/CONVENTIONS.md` (validate `-backend=false` + dummy AWS
+  env, plan-only `.tftest.hcl` + `mock_provider`, the docker-vs-native hook
+  tradeoff, packer `-syntax-only`), leaving repo-specifics in the repo.
+  **Rejected** the mining agent's proposed heavy multi-skill collection
+  (terraform/ + packer/ + tflint/ skills with `references/` trees) — it fights
+  the lean, rule-first house philosophy; rules + one patterns skill is the
+  right weight. **No `qa.md`/`qa-check` change needed**: both are tool-agnostic
+  and detection-activated per-tool rules self-wire (STRUCTURE.md + `paths:`);
+  the "wire into qa" note in the backlog item was over-cautious. Current-doc
+  corrections folded in: `tflint --deep` is removed (now `deep_check = true` in
+  a plugin block, credential-bearing); `terraform_tfsec`→`terraform_trivy`;
+  antonbabenko has **no** packer hooks. Updated `STRUCTURE.md` (3 rules under
+  Docker/Infrastructure + the skill under Domain depth); recorded the mined
+  reference artifacts in `idea-sources.md`. This **closes the IaC anticipation
+  gap** the prior entry noted (the Watch list never expected a Terraform stack).
+
 - 2026-06-29 — **Assess pass from harleydev (IaC repo): fixed the `bats-setup`
   `tests/suite/`→`tests/shell/` drift; backlogged IaC rules (user-confirmed).**
   Ran `/claude-audit` from harleydev right after converting it (a Terraform/

@@ -39,6 +39,11 @@
           },
           {
             "type": "command",
+            "command": "python3 ~/.claude/hooks/iac-fmt.py",
+            "timeout": 120
+          },
+          {
+            "type": "command",
             "command": "python3 ~/.claude/hooks/md5-guard.py",
             "timeout": 10
           }

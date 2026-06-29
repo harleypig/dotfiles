@@ -124,6 +124,9 @@ rule name.
 | [hadolint.md](rules/hadolint.md)<br>↗ `containerize` | `Dockerfile*` |
 | [dive.md](rules/dive.md)<br>↗ `containerize` | `Dockerfile*` |
 | [trivy.md](rules/trivy.md)<br>↗ `containerize` · `security-scan` | `Dockerfile*`, security scan context |
+| [terraform.md](rules/terraform.md)<br>↗ `tftest-patterns` | `*.tf`, `*.tfvars`, `*.tftest.hcl` |
+| [tflint.md](rules/tflint.md) | `*.tf`, `.tflint.hcl` |
+| [packer.md](rules/packer.md) | `*.pkr.hcl`, `*.pkrvars.hcl` |
 | [nginx.md](rules/nginx.md) | `nginx.conf`, `sites-*/` |
 
 ### Security tools
@@ -231,6 +234,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 
 | Skill | What it does | Calls / see also |
 |-------|-------------|-----------------|
+| [tftest-patterns](skills/tftest-patterns/SKILL.md) | Terraform native-test recipes: plan-only unit tests, mock_provider, assert, expect_failures for variable validation | `terraform.md` · `testing.md` |
 | [spotify-patterns](skills/spotify-patterns/SKILL.md) | Spotify Web API recipes: token refresh, track relinking, pagination, rate limits, playlist cover art | `spotify.md` · `spotify-audit` |
 | [spotify-audit](skills/spotify-audit/SKILL.md) | Audit a Spotify integration for API best practices, deprecated endpoints, auth correctness | `spotify.md` |
 | [frontend-design](skills/frontend-design/SKILL.md) | Create distinctive, production-grade frontend UI — avoids generic AI aesthetics | `react.md` · `typescript.md` · `css.md` · `code-style.md` |
@@ -254,6 +258,7 @@ deterministically, without relying on the model remembering.
 | [branch-protection.py](hooks/branch-protection.py) | `PreToolUse` on `Edit` / `Write` / `MultiEdit` | Blocks file edits while a protected branch is checked out; derives the protected branch list from the `no-commit-to-branch` pre-commit args (`git.md`) |
 | [merge-finalization.py](hooks/merge-finalization.py) | `PreToolUse` on `gh pr merge` / `ship.sh merge` | Blocks a merge while completed `- [x]` items remain in planning docs (opt-in per repo via `merge-finalization: enforce` in `WORKFLOW.md`) |
 | [shell-check.py](hooks/shell-check.py) | `PostToolUse` on `Edit` / `Write` / `MultiEdit` | Runs `shellcheck` on a shell file immediately after it is edited, surfacing findings to the agent in-session |
+| [iac-fmt.py](hooks/iac-fmt.py) | `PostToolUse` on `Edit` / `Write` / `MultiEdit` | Auto-formats an edited Terraform/Packer file (`terraform`/`packer fmt` via the bin/ docker wrappers), reports parse errors `fmt` can't fix, and runs a cheap validate (terraform only if `.terraform/` exists; packer `-syntax-only`); fails open (`terraform.md`/`packer.md`) |
 | [md5-guard.py](hooks/md5-guard.py) | `PostToolUse` on `Edit` / `Write` / `MultiEdit` | Auto-regenerates a git-tracked `<name>.md5` checksum after the agent edits its file, so managed edits stay blessed and only out-of-band changes look like drift (dormant where no such sibling exists; powers the dotfiles `shell-startup-guard` skill) |
 | [rule-coverage.py](hooks/rule-coverage.py) | `PostToolUse` on `Edit` / `Write` | Nags when a new dependency or language has no matching `rules/<name>.md` |
 | [compact-snapshot.py](hooks/compact-snapshot.py) | `SessionStart` with source `compact` | Re-injects a git/session-state snapshot after a `/compact`, restoring context the compaction would otherwise drop |
