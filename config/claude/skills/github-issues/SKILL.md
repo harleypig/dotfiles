@@ -85,12 +85,22 @@ Cluster near-identical issues (e.g. several "research tool X" issues) and flag
 TODO — recommend closing/superseding the umbrella in favour of the granular
 items + the planning doc, rather than tracking the same work twice.
 
-### 6. Record blocking
+### 6. Record blocking (native dependencies, not a label)
 
 Parse `Blocked by #N` / `Depends on #N` from bodies, and infer the obvious
 order where it exists (e.g. a module's validation precedes its unit tests).
-Record the chain, **recommend a `blocked`/`blocked-by` label or note**, and
-order the worklist so blockers come first.
+Prefer GitHub's **native issue dependencies** — set the link via the API (the
+*blocking* issue's numeric `id`, not its number); do **not** invent a `blocked`
+label:
+
+```bash
+id=$(gh api repos/{owner}/{repo}/issues/<blocker> --jq .id)
+gh api --method POST \
+  repos/{owner}/{repo}/issues/<blocked>/dependencies/blocked_by -F issue_id="$id"
+```
+
+The native link is the source of truth; fall back to a `Blocked by #N` body
+note only if the API is unavailable. Order the worklist so blockers come first.
 
 ### 7. Recommend labels (create missing ones)
 
@@ -109,6 +119,16 @@ the label-taxonomy gap (e.g. no `security` / `research` / `<subsystem>` label).
 | **Map — ROADMAP** | planned / "in the pipeline" but **no committed date** | add to / point at a ROADMAP track; record the issue's stated intent, **invent no date** |
 | **Map — Features & fixes** | a bug or discrete enhancement | the work-type section of `TODO.md` |
 | **Flag — decide** | genuinely judgment-dependent | **recommend** a home; let the user choose (don't route it yourself) |
+
+**Consolidate formulaic sets.** When many issues are the *same task repeated*
+— one per module/component (e.g. N "variable validation for X", N "unit test
+for X") — prefer **one umbrella issue** over N mappings: create the umbrella,
+list and reference the members in its body, and **close the members** with a
+comment pointing at it (a *close → consolidated* variant of *Close*). Bunching
+them onto a single TODO line (the *Map — TODO* row) handles the planning doc;
+the umbrella handles the tracker. If one umbrella blocks another (a unit-test
+umbrella blocked-by its validation umbrella), link them with native
+dependencies (step 6).
 
 ### 9. Bidirectional sync
 
