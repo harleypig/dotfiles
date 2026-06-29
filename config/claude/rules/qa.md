@@ -159,8 +159,12 @@ diff-level `/code-review` · `/simplify`, and from *running* the suite):
 **arch-review** (4 — code-smell/complexity/maintainability), **test-review** (6
 — test-suite *quality*, vs executing), **a11y-review** (7 — UI/UX &
 accessibility), **perf-review** (10 — performance). Python implementation depth:
-**pytest-patterns**, **typing-patterns**. These are *our* tools, named here as
-the standing ones; per-repo concrete tools still live in the repo's QA doc.
+**pytest-patterns**, **typing-patterns**. **Stack sub-pipelines** run a whole
+language/tool's QA slice rather than one dimension: **terraform-review** (the
+Terraform slice — format/lint/validate/native tests/docs-currency + a
+structural audit, belt-and-suspenders over pre-commit; a **packer-review**
+sibling is planned). These are *our* tools, named here as the standing ones;
+per-repo concrete tools still live in the repo's QA doc.
 
 ## The repo QA doc covers every dimension, with a status
 

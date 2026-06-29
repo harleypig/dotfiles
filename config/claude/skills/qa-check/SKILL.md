@@ -93,6 +93,10 @@ Only the qa-check-specific operational notes (the rest is in `qa.md`):
   and report; they don't mutate. For Python depth invoke **pytest-patterns** /
   **typing-patterns**. Run these when the change (or the request) is about a
   dimension's health, not on every trivial diff.
+- **Stack sub-pipelines** — for a **Terraform** repo, delegate the whole
+  Terraform slice (fmt/validate/tflint/trivy/native tests/docs-currency + the
+  structural audit, belt-and-suspenders over pre-commit) to **terraform-review**
+  rather than wiring those steps here; a **packer-review** sibling is planned.
 - **CI** is the post-push stage — watch it to green; honour required checks.
 - For a dimension with no tooling (UI/UX, e2e), do the manual pass and flag
   the gap rather than skipping it.
