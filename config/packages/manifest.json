@@ -1,0 +1,245 @@
+{
+  "_comment": "Source of truth for the standard package set installed THROUGH the language version managers (node->npm, python->pipx/uv), distinct from the managers themselves (those are vmgr's job). Includes the docker_wrapper tools whose non-docker fallback is a node/python install (prettier, markdownlint, yamllint). docs/packages.md is GENERATED from this file by bin/gen-package-doc; edit here, not there. The version managers themselves (uv, pipx) are intentionally NOT packages here - see the excluded list. SCOPE: only node/python-installable apps are evaluated so far - the docker_wrapper tools built on other toolchains (shellcheck/hadolint = Haskell; shfmt/trivy/dive = Go) still await per-language evaluation - see TODO 'Package Install Setup'. SERVICES (e.g. ollama, openwebui) are deliberately out of scope: they are managed separately, mostly on the Linode server, not this dev machine - see the excluded list.",
+  "_icebox": "ICEBOX: ansible / ansible-core - consider adding ansible to this manifest (python, pipx/pip-installable). Already used for packer image builds in $PROJECTS_DIR/harleydev and $PROJECTS_DIR/ansible-stuff. Deferred (maybe-someday); revisit on request.",
+  "priority_note": "Install methods are listed in priority order. Docker is preferred where a dedicated, sensible image exists (docker.viable); otherwise the language manager (npm for node, pipx then uv for python).",
+  "docker_viable_meaning": "True when a dedicated/official image exists AND running the tool in a container makes sense for normal use; false when there is no dedicated image (run via a generic image or an aggregate linter), when containerizing the tool is awkward (it manages its own environments), or when it is pointless (a per-project dev dependency).",
+  "packages": [
+    {
+      "name": "aider-chat",
+      "apps": ["aider"],
+      "summary": "AI pair-programming assistant in the terminal",
+      "category": "ai",
+      "language": "python",
+      "docker": {
+        "viable": true,
+        "image": "paulgauthier/aider",
+        "note": "Official images (full + core)."
+      },
+      "install": [
+        { "method": "docker", "cmd": "docker pull paulgauthier/aider" },
+        { "method": "pipx", "cmd": "pipx install aider-chat" },
+        { "method": "uv", "cmd": "uv tool install aider-chat" }
+      ]
+    },
+    {
+      "name": "autopep8",
+      "apps": ["autopep8"],
+      "summary": "PEP 8 auto-formatter for Python code",
+      "category": "formatter",
+      "language": "python",
+      "docker": {
+        "viable": false,
+        "image": null,
+        "note": "No dedicated official image; run via a generic python image or an aggregate linter (e.g. MegaLinter)."
+      },
+      "install": [
+        { "method": "pipx", "cmd": "pipx install autopep8" },
+        { "method": "uv", "cmd": "uv tool install autopep8" }
+      ]
+    },
+    {
+      "name": "yapf",
+      "apps": ["yapf", "yapf-diff"],
+      "summary": "Python code formatter (Google style)",
+      "category": "formatter",
+      "language": "python",
+      "docker": {
+        "viable": false,
+        "image": null,
+        "note": "No dedicated official image; a bin/docker_wrapper entry is planned (see TODO 'Docker tooling Setup'), after which Docker becomes the preferred route."
+      },
+      "install": [
+        { "method": "pipx", "cmd": "pipx install yapf" },
+        { "method": "uv", "cmd": "uv tool install yapf" }
+      ]
+    },
+    {
+      "name": "prettier",
+      "apps": ["prettier"],
+      "summary": "Opinionated multi-language code formatter",
+      "category": "formatter",
+      "language": "node",
+      "docker": {
+        "viable": true,
+        "image": "bin/docker_wrapper",
+        "note": "Wrapped in this repo's bin/docker_wrapper (prettier image)."
+      },
+      "install": [
+        {
+          "method": "docker",
+          "cmd": "prettier <file>",
+          "note": "via bin/docker_wrapper"
+        },
+        { "method": "npm", "cmd": "npm install -g prettier" }
+      ]
+    },
+    {
+      "name": "commitizen",
+      "apps": ["cz", "git-cz"],
+      "summary": "Conventional-commit prompt with changelog and version bumping",
+      "category": "git-tooling",
+      "language": "python",
+      "docker": {
+        "viable": true,
+        "image": "commitizen/commitizen",
+        "note": "Official image, auto-published per release."
+      },
+      "install": [
+        { "method": "docker", "cmd": "docker pull commitizen/commitizen" },
+        { "method": "pipx", "cmd": "pipx install commitizen" },
+        { "method": "uv", "cmd": "uv tool install commitizen" }
+      ]
+    },
+    {
+      "name": "pre-commit",
+      "apps": ["pre-commit"],
+      "summary": "Git pre-commit hook framework",
+      "category": "git-tooling",
+      "language": "python",
+      "docker": {
+        "viable": false,
+        "image": null,
+        "note": "No official image; it manages its own (often containerized) hook environments, so running pre-commit itself in Docker is awkward."
+      },
+      "install": [
+        { "method": "pipx", "cmd": "pipx install pre-commit" },
+        { "method": "uv", "cmd": "uv tool install pre-commit" }
+      ]
+    },
+    {
+      "name": "yamllint",
+      "apps": ["yamllint"],
+      "summary": "YAML linter",
+      "category": "linter",
+      "language": "python",
+      "docker": {
+        "viable": true,
+        "image": "bin/docker_wrapper",
+        "note": "Already wrapped in this repo's bin/docker_wrapper (cytopia/yamllint)."
+      },
+      "install": [
+        {
+          "method": "docker",
+          "cmd": "yamllint <file>",
+          "note": "via bin/docker_wrapper"
+        },
+        { "method": "pipx", "cmd": "pipx install yamllint" },
+        { "method": "uv", "cmd": "uv tool install yamllint" }
+      ]
+    },
+    {
+      "name": "markdownlint",
+      "apps": ["markdownlint"],
+      "summary": "Markdown linter (markdownlint-cli)",
+      "category": "linter",
+      "language": "node",
+      "docker": {
+        "viable": true,
+        "image": "bin/docker_wrapper",
+        "note": "Wrapped in this repo's bin/docker_wrapper (ghcr.io/igorshubovych/markdownlint-cli)."
+      },
+      "install": [
+        {
+          "method": "docker",
+          "cmd": "markdownlint <file>",
+          "note": "via bin/docker_wrapper"
+        },
+        { "method": "npm", "cmd": "npm install -g markdownlint-cli" }
+      ]
+    },
+    {
+      "name": "poetry",
+      "apps": ["poetry"],
+      "summary": "Python dependency management and packaging tool",
+      "category": "packaging",
+      "language": "python",
+      "docker": {
+        "viable": false,
+        "image": null,
+        "note": "No canonical CLI-only image; usually layered into a python build image rather than run standalone."
+      },
+      "install": [
+        { "method": "pipx", "cmd": "pipx install poetry" },
+        { "method": "uv", "cmd": "uv tool install poetry" },
+        {
+          "method": "installer",
+          "cmd": "curl -sSL https://install.python-poetry.org | python3 -",
+          "note": "Poetry's official standalone installer."
+        }
+      ]
+    },
+    {
+      "name": "pytest",
+      "apps": ["pytest", "py.test"],
+      "summary": "Python testing framework",
+      "category": "testing",
+      "language": "python",
+      "note": "Normally a per-project dev dependency inside the project's venv, not a global tool; a global install is only for ad-hoc use.",
+      "docker": {
+        "viable": false,
+        "image": null,
+        "note": "Run via a python image in CI; not meaningful as a standalone global container."
+      },
+      "install": [
+        { "method": "pipx", "cmd": "pipx install pytest" },
+        { "method": "uv", "cmd": "uv tool install pytest" }
+      ]
+    },
+    {
+      "name": "piper-tts",
+      "apps": ["piper"],
+      "summary": "Fast local neural text-to-speech engine",
+      "category": "tts",
+      "language": "python",
+      "docker": {
+        "viable": true,
+        "image": "rhasspy/piper",
+        "note": "Official image; downloads voice models on first use."
+      },
+      "install": [
+        { "method": "docker", "cmd": "docker pull rhasspy/piper" },
+        { "method": "pipx", "cmd": "pipx install piper-tts" },
+        { "method": "uv", "cmd": "uv tool install piper-tts" }
+      ]
+    },
+    {
+      "name": "taskwarrior-scalpel",
+      "apps": ["scalpel"],
+      "summary": "First-party Taskwarrior AI-planning toolkit (many scalpel-* entry points)",
+      "category": "utility",
+      "language": "python",
+      "first_party": true,
+      "note": "First-party tool; install from its own source repo, not a public package.",
+      "docker": {
+        "viable": false,
+        "image": null,
+        "note": "First-party tool; not published as an image."
+      },
+      "install": [
+        {
+          "method": "pipx",
+          "cmd": "pipx install <path-or-git-url>",
+          "note": "from the scalpel source repo"
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "name": "uv",
+      "reason": "A language version manager itself - installed and updated by `vmgr install python uv` (lib/version-managers/python), not through this package manifest."
+    },
+    {
+      "name": "pipx",
+      "reason": "A package-manager runtime, not a package - bootstrapped by `vmgr install python pipx` (lib/version-managers/python). It is the primary installer the python entries above use."
+    },
+    {
+      "name": "ollama",
+      "reason": "A self-hosted AI model-runtime service, not a dev package - managed separately (most services run on the Linode server, not this dev machine) and Docker-native. Available locally via `bin/docker_wrapper`."
+    },
+    {
+      "name": "openwebui",
+      "reason": "A self-hosted web-UI service (python-installable, but service-oriented), not a dev package - managed separately (most services run on the Linode server) and Docker-native. Available locally via `bin/docker_wrapper`."
+    }
+  ]
+}
