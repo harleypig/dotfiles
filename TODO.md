@@ -226,12 +226,6 @@ distinct from the version/tool *managers* themselves (*Tool/Version Manager
 Setup*). The managers provide the runtime; this provides the things installed
 *through* them.
 
-- [x] Manifest format + catalog decided and built: JSON manifest at
-  `config/packages/manifest.json` (source of truth), generated catalog
-  `docs/packages.md` via `bin/gen-package-doc` (sync-guarded by a test), with
-  per-package Docker-viability and install-method priority (Docker where a
-  sensible image exists, else pipx then uv). `uv`/`pipx` are excluded as
-  vmgr-managed infrastructure.
 - [ ] Build the idempotent **installer** (a `bin/` tool) that consumes
   `config/packages/manifest.json` and installs each package by its priority
   list, like vmgr's per-manager fallback — including `taskwarrior-scalpel`'s
