@@ -5,7 +5,7 @@ description: Initialize a new repository, or convert an existing one to these do
 
 # new-project
 
-**Version:** v1.0.0
+**Version:** v1.0.1
 
 The procedure for **standing up a new repository** or **converting an existing
 one** to these conventions. `rules/new-project.md` is the standing **policy**
@@ -60,7 +60,11 @@ Run in order; skip a step only with a stated reason.
    wiring, covering a success and a failure path (`testing.md`).
 
 6. **CI.** A minimal workflow that runs pre-commit and gates the test suite.
-   Required checks come later once the suite is green.
+   Required checks come later once the suite is green. **Pin each action to
+   its current major version** — verify the latest on the action's repo
+   (e.g. `actions/checkout`, `actions/setup-python`) instead of carrying a
+   remembered tag forward. A stale pin (the Node-20-era `@v4` / `@v5`) ships
+   a runner-deprecation warning into every repo scaffolded thereafter.
 
 7. **Branch protection** *(if the default branch is PR-only)*. Apply the three
    layers from `git.md` *Protecting the Default Branch* — server-side ruleset
