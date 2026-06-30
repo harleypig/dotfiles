@@ -403,7 +403,7 @@ Once the Claude statusline exists, audit all four surfaces together:
 
 ### `terraform` wrapper: forward cloud creds for `plan`
 
-- [ ] The `docker_wrapper` `terraform()` function mounts `$PWD` and sets
+- [x] The `docker_wrapper` `terraform()` function mounts `$PWD` and sets
   `HOME=/tmp` but forwards **no** environment, so `terraform plan` through the
   wrapper cannot authenticate — the S3 state backend (`AWS_ACCESS_KEY_ID` /
   `AWS_SECRET_ACCESS_KEY` / `AWS_ENDPOINT_URL_S3` plus the checksum vars) and
