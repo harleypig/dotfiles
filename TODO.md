@@ -401,6 +401,20 @@ Once the Claude statusline exists, audit all four surfaces together:
   affected `<tool>()` would make the dispatcher uniformly stdin-safe. Audit
   the wrappers, decide which genuinely accept stdin, and add `-i` to those.
 
+### `terraform` wrapper: forward cloud creds for `plan`
+
+- [ ] The `docker_wrapper` `terraform()` function mounts `$PWD` and sets
+  `HOME=/tmp` but forwards **no** environment, so `terraform plan` through the
+  wrapper cannot authenticate — the S3 state backend (`AWS_ACCESS_KEY_ID` /
+  `AWS_SECRET_ACCESS_KEY` / `AWS_ENDPOINT_URL_S3` plus the checksum vars) and
+  the Linode provider (`LINODE_TOKEN`, or the `config_profile` CLI config) are
+  all invisible inside the container. Today a real plan needs a hand-rolled
+  `docker run` with explicit `--env`/`-v` (hit while verifying the harleydev
+  rdns and swap_size changes against live state). Forward the needed vars
+  (`-e AWS_* -e LINODE_TOKEN …`) and optionally mount the linode CLI config so
+  `terraform -chdir=DIR plan` works through the wrapper. Keep `apply`/`destroy`
+  out of scope — agents never run them (`rules/terraform.md`).
+
 ### Research: run more linters/formatters via Docker
 
 Today only some tools have a `bin/` docker wrapper (shellcheck, shfmt,
