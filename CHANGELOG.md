@@ -32,6 +32,13 @@ goes green (see the merge-time finalization in
   stop shipping the Node-20-era `actions/checkout@v4` / `actions/setup-python@v5`
   deprecation warning into every newly-onboarded repo.
 
+- **`terraform.md` documents `-chdir` for the docker-wrapped CLI (v1.0.1).**
+  The `validate`/`test` guidance now notes that the docker-wrapped `terraform`
+  mounts only CWD, so a root config referencing parent paths (`../modules`
+  sources, a `provider.tf -> ../provider.tf` symlink) must run from the repo
+  root with `-chdir=DIR`, not `cd DIR` — mirroring the existing `terraform-docs`
+  repo-root guidance.
+
 ## 2026-06-28
 
 ### Added
