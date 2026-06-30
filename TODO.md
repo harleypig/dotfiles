@@ -713,6 +713,12 @@ symlinks. Risk: `~/.config` becomes the canonical store for all XDG config,
 so anything the OS or other tools write there lands directly in the repo
 working tree — evaluate carefully before implementing.
 
+## 🐙 GitHub repository audit
+
+- [ ] Go through all my GitHub repositories and decide each one's
+  disposition — **delete**, **make a public archive**, **bring up to date**,
+  or **leave alone**. One-time triage; record the decision per repo.
+
 ## 🔄 Upstream / update tracking
 
 How the repo stays current with files and tools that originate elsewhere.
