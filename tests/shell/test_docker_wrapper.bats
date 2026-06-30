@@ -76,3 +76,104 @@ teardown() {
   # docker must not have been invoked
   assert_file_not_exist "$STUB/docker.args"
 }
+
+@test "terraform plan forwards set cloud credentials by name" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" \
+    AWS_ACCESS_KEY_ID=akid AWS_SECRET_ACCESS_KEY=secret \
+    AWS_ENDPOINT_URL_S3=https://example.com LINODE_TOKEN=tok \
+    "$ROOT/bin/terraform" plan
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "hashicorp/terraform:1.15"
+  # Forwarded by name only — the value never reaches the command line.
+  assert_output --partial "--env AWS_ACCESS_KEY_ID"
+  assert_output --partial "--env AWS_SECRET_ACCESS_KEY"
+  assert_output --partial "--env AWS_ENDPOINT_URL_S3"
+  assert_output --partial "--env LINODE_TOKEN"
+  refute_output --partial "akid"
+  refute_output --partial "tok"
+}
+
+@test "terraform plan does not forward credentials that are unset" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  # Clear any creds inherited from the test environment, then set just one.
+  # The -u flags must precede the first NAME=VALUE, or env treats them as args.
+  run env -u AWS_SECRET_ACCESS_KEY -u AWS_ENDPOINT_URL_S3 \
+    -u AWS_REQUEST_CHECKSUM_CALCULATION -u AWS_RESPONSE_CHECKSUM_VALIDATION \
+    -u LINODE_TOKEN \
+    "PATH=$STUB:$PATH" AWS_ACCESS_KEY_ID=akid \
+    "$ROOT/bin/terraform" plan
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--env AWS_ACCESS_KEY_ID"
+  # The Linode token wasn't set, so it must not be forwarded.
+  refute_output --partial "--env LINODE_TOKEN"
+}
+
+@test "terraform validate stays credential-free even when creds are set" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" \
+    AWS_ACCESS_KEY_ID=akid AWS_SECRET_ACCESS_KEY=secret LINODE_TOKEN=tok \
+    "$ROOT/bin/terraform" validate
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "hashicorp/terraform:1.15"
+  # validate is run with dummy creds on purpose (rules/terraform.md), so the
+  # wrapper must never leak real ones into it.
+  refute_output --partial "--env AWS_ACCESS_KEY_ID"
+  refute_output --partial "--env LINODE_TOKEN"
+}
+
+@test "terraform forwards credentials past a -chdir global flag" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" LINODE_TOKEN=tok \
+    "$ROOT/bin/terraform" -chdir=infra plan
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--env LINODE_TOKEN"
+}
+
+@test "terraform keeps stdin open (-i) and adds no TTY without a terminal" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  # `run` captures stdout (not a tty), so the -t branch must stay off while
+  # -i is unconditional. (The tty-present path is covered below via script.)
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/terraform" plan
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial " -i "
+  refute_output --partial " -t "
+}
+
+@test "terraform adds a TTY (-t) when run under a terminal" {
+  command -v script > /dev/null || skip "no script(1) to allocate a pty"
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  # script(1) gives the wrapper a pseudo-terminal on stdin+stdout so the -t
+  # branch fires; the docker stub only records args, no daemon needed. A
+  # sandboxed environment that can't allocate a pty leaves no args file --
+  # skip there rather than fail.
+  script -qec "env PATH=$STUB:$PATH $ROOT/bin/terraform plan" /dev/null \
+    > /dev/null 2>&1 || true
+  [[ -f "$STUB/docker.args" ]] || skip "pty allocation unavailable here"
+
+  run cat "$STUB/docker.args"
+  assert_output --partial " -t "
+  assert_output --partial " -i "
+}

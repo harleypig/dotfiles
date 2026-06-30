@@ -127,10 +127,47 @@ image[yamllint]="cytopia/yamllint:latest"
 # home under --user for any plugin/cache path.
 terraform() {
   local -a args=(--rm --env HOME=/tmp)
-  [[ -t 0 ]] || args+=(-i) # forward stdin so `terraform fmt -` works
+  # Keep stdin open for piped input (`terraform fmt -`); add a TTY when
+  # attached to a terminal so interactive prompts (apply, console) work.
+  args+=(-i)
+  [[ -t 0 && -t 1 ]] && args+=(-t)
   dw_user args
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
+
+  # Resolve the subcommand: the first non-flag word, since global options
+  # (`-chdir=DIR`, `-help`, `-version`) precede it.
+  local subcmd="" arg
+  for arg in "$@"; do
+    [[ $arg == -* ]] && continue
+    subcmd=$arg
+    break
+  done
+
+  # Forward cloud credentials ONLY for subcommands that reach the state
+  # backend or configure providers (init/plan/apply and kin), so the S3
+  # state backend (Linode Object Storage) and the Linode provider can
+  # authenticate. fmt/validate/version stay credential-free — rules/
+  # terraform.md runs validate with dummy AWS creds on purpose, so real
+  # secrets must never leak into them. Fail closed: an unrecognized
+  # subcommand gets nothing. Each var is forwarded by name (docker reads
+  # the value from the host env), so secrets never appear on the command
+  # line or in the process list. The checksum vars suppress the new AWS
+  # SDK request/response checksums that Linode Object Storage rejects.
+  case $subcmd in
+    init | plan | apply | destroy | refresh | import | console | output | state | taint | untaint | force-unlock | workspace | show)
+      # ICEBOX: the Linode provider's config_profile / linode-cli config-file
+      # auth path is not mounted — LINODE_TOKEN covers the credential need, so
+      # mounting ~/.config/linode under HOME=/tmp was deliberately skipped.
+      local var
+      for var in \
+        AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_ENDPOINT_URL_S3 \
+        AWS_REQUEST_CHECKSUM_CALCULATION AWS_RESPONSE_CHECKSUM_VALIDATION \
+        LINODE_TOKEN; do
+        [[ -n ${!var-} ]] && args+=(--env "$var")
+      done
+      ;;
+  esac
 
   exec docker run "${args[@]}" "${image[terraform]}" "$@"
 }
