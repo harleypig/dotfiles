@@ -23,6 +23,15 @@ goes green (see the merge-time finalization in
   cli/cli#11983), and the Ubuntu 24.04 `add-apt-repository` caveat (write the
   `.list` with `tee`).
 
+### Changed
+
+- **`new-project` skill pins CI action versions (v1.0.1).** Step 6 (CI) now
+  requires pinning each GitHub Action to its current major version — verify
+  the latest on the action's repo (`actions/checkout`, `actions/setup-python`,
+  …) rather than carrying a remembered tag forward — so scaffolded workflows
+  stop shipping the Node-20-era `actions/checkout@v4` / `actions/setup-python@v5`
+  deprecation warning into every newly-onboarded repo.
+
 ## 2026-06-28
 
 ### Added
