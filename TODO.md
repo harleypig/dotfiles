@@ -713,6 +713,12 @@ symlinks. Risk: `~/.config` becomes the canonical store for all XDG config,
 so anything the OS or other tools write there lands directly in the repo
 working tree — evaluate carefully before implementing.
 
+## 🐙 GitHub repository audit
+
+- [ ] Go through all my GitHub repositories and decide each one's
+  disposition — **delete**, **make a public archive**, **bring up to date**,
+  or **leave alone**. One-time triage; record the decision per repo.
+
 ## 🔄 Upstream / update tracking
 
 How the repo stays current with files and tools that originate elsewhere.
@@ -778,6 +784,9 @@ we can stay current.
 - [ ] Language-specific configurations
 - [ ] IDE and editor configurations
 - [ ] CI/CD templates
+- [ ] GitHub issue templates — wire the new-project setup/conversion to
+  scaffold `.github/ISSUE_TEMPLATE/` (bug, test, documentation, enhancement),
+  matching the harleydev naming.
 
 See original TODO.md (archived) for detailed template specifications if needed
 in the future.
