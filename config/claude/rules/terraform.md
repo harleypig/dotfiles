@@ -7,7 +7,7 @@ paths:
 
 # Terraform Rules
 
-**Version:** v1.0.0
+**Version:** v1.0.1
 
 Conventions for Terraform (and OpenTofu) configurations. Terraform is both a
 language (HCL) and a CLI; this rule covers both. Generic style (naming,
@@ -59,6 +59,24 @@ AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_EC2_METADATA_DISABLED=true
 
 `plan`/`apply` against the real backend need credentials and touch
 infrastructure — never a CI gate, never agent-run.
+
+**Docker-wrapped CLI + parent paths.** When `terraform` runs through a
+docker wrapper (the `bin/terraform` image, used where the binary isn't
+installed locally), the container mounts only the **current** directory. A
+root config that references parent paths — `../modules` sources, a
+`provider.tf -> ../provider.tf` symlink — then can't resolve them (`Unable
+to evaluate directory symlink` / `Unreadable module directory`). Run
+`validate`/`test` from the **repo root** with `-chdir=DIR`, not `cd DIR`,
+so the mount spans the parents:
+
+```bash
+terraform -chdir=DIR init -backend=false && \
+  terraform -chdir=DIR validate -no-color
+terraform -chdir=DIR test
+```
+
+(Same reason `terraform-docs` runs from the repo root — see *terraform-docs*
+below.)
 
 ## Test
 
