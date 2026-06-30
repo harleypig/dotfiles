@@ -784,6 +784,9 @@ we can stay current.
 - [ ] Language-specific configurations
 - [ ] IDE and editor configurations
 - [ ] CI/CD templates
+- [ ] GitHub issue templates — wire the new-project setup/conversion to
+  scaffold `.github/ISSUE_TEMPLATE/` (bug, test, documentation, enhancement),
+  matching the harleydev naming.
 
 See original TODO.md (archived) for detailed template specifications if needed
 in the future.
