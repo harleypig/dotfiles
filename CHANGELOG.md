@@ -10,6 +10,19 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-06-30
+
+### Added
+
+- **System-package docs (`docs/system-packages.md`).** New doc for native
+  binaries installed via apt **outside** the language version managers — the
+  sibling of [`docs/packages.md`](docs/packages.md) (version-manager tools).
+  First entry is the **GitHub CLI**: install from GitHub's official apt repo,
+  why it is needed (Ubuntu `universe` pins `gh` at 2.45.0, which still queries
+  the sunset "Projects (classic)" GraphQL field and breaks `gh pr edit` —
+  cli/cli#11983), and the Ubuntu 24.04 `add-apt-repository` caveat (write the
+  `.list` with `tee`).
+
 ## 2026-06-28
 
 ### Added

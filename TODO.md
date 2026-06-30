@@ -243,6 +243,15 @@ Setup*). The managers provide the runtime; this provides the things installed
 - [ ] Vim's needs: install what vim requires that isn't self-provided (coc
   installs most of its own dependencies — scope this to the gaps coc doesn't
   cover, don't duplicate it).
+- [ ] **System/apt packages — rule + installer coverage** (retrospective,
+  PR #193). `docs/system-packages.md` now documents apt-installed native
+  binaries (gh first), but two gaps remain: (a) the manifest-driven installer
+  above covers only version-manager packages — decide whether apt/system
+  packages get a parallel manifest/installer or stay doc-only; (b) the global
+  `rules/gh.md` (v1.3.0) has no install/minimum-version guidance — add a note
+  that `gh` should come from the vendor apt repo, since the distro package can
+  be too old and break on sunset GraphQL fields like `projectCards`
+  (cli/cli#11983).
 
 ## 🐚 Shell-startup Setup
 
