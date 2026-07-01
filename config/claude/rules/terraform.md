@@ -28,6 +28,15 @@ deliberate operator action. CI likewise validates but never applies. The
 credential-free operations below are safe for agents and CI; `plan`/`apply`
 against a real backend need credentials and are out of scope for both.
 
+`terraform import` mutates the **state file**, not infrastructure, so it sits
+between the two: it is agent-safe only when **additive** — the target address
+is **not yet in state** — and confirmed with the user first. Importing onto an
+**already-managed** address (a re-import / overwrite) is **operator-only**: it
+can corrupt real state. When a task mixes both, do the additive addresses and
+hand the already-managed ones to the operator. The
+`terraform-import-safety.py` hook (below) reminds the agent to verify this
+before importing.
+
 ## Format
 
 ```bash
@@ -124,18 +133,30 @@ write `repo: local` `language: docker_image` hooks pinned to a version tag.
 The repo has **no `packer_*` hooks** (see `packer.md`). Prefer driving these
 through pre-commit (`pre-commit.md`).
 
-## Enforcement (PostToolUse hook)
+## Enforcement (hooks)
 
-The global `config/claude/hooks/iac-fmt.py` `PostToolUse` hook runs **right
-after** the agent edits a `*.tf`/`*.tfvars`/`*.tftest.hcl` file: it
-**auto-formats** that file with `terraform fmt` (HCL is whitespace/quote
-sensitive — a one-character slip causes confusing errors), reports anything
-`fmt` could not fix (a parse error), and — **only if the dir is already
-initialized** (`.terraform/` present) — runs `terraform validate` (dummy AWS
-env, no `init`). It calls `terraform` via the `bin/terraform` docker wrapper
-and **fails open** (no terraform/Docker → silent no-op). Unlike the check-only
-`shell-check.py`, this one **rewrites** the file, so re-read after it reports a
-reformat. Packer is handled by the same hook (see `packer.md`).
+**Format/validate (`PostToolUse`).** The global
+`config/claude/hooks/iac-fmt.py` hook runs **right after** the agent edits a
+`*.tf`/`*.tfvars`/`*.tftest.hcl` file: it **auto-formats** that file with
+`terraform fmt` (HCL is whitespace/quote sensitive — a one-character slip
+causes confusing errors), reports anything `fmt` could not fix (a parse
+error), and — **only if the dir is already initialized** (`.terraform/`
+present) — runs `terraform validate` (dummy AWS env, no `init`). It calls
+`terraform` via the `bin/terraform` docker wrapper and **fails open** (no
+terraform/Docker → silent no-op). Unlike the check-only `shell-check.py`, this
+one **rewrites** the file, so re-read after it reports a reformat. Packer is
+handled by the same hook (see `packer.md`).
+
+**Import safety (`PreToolUse`).** The global
+`config/claude/hooks/terraform-import-safety.py` hook fires on a
+`terraform … import` / `bin/tf … import` **command** (it matches the command
+string, so it needs no knowledge of a repo-local `bin/tf`) and injects a
+just-in-time reminder of the additive-vs-overwrite rule above. It is
+**reminder-only, never a block**: a hard "is this address already in state?"
+check would need to query the remote backend (`terraform state list`), which
+needs credentials the hook can't reach — each Bash call sources `. set_env`
+inside its own shell, so those creds never reach the hook's environment. It
+**fails open** on any error.
 
 ## Agent Behavior
 
