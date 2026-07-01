@@ -191,6 +191,41 @@ These were tracked in the dotfiles `TODO.md` but are Claude-agent-config
 work (rules, skills, plugins, agent-config docs) — moved here per the TODO
 routing convention (see the header). Provenance preserved verbatim.
 
+### 🧹 Three rule refinements from the QA linter-gates PR (harleydev #83) (LOW PRIORITY)
+
+Surfaced while shipping harleydev PR #83 (enabling six phased pre-commit
+linters — tflint, hadolint, shfmt, shellcheck, yamllint, markdownlint); small
+doc-rule additions, not edits yet.
+
+- [ ] **`pre-commit.md` (+ `shellcheck.md` / `shfmt.md`): document the
+  non-exec extensionless-shell hook variant.** pre-commit's `identify` tags a
+  file `shell` from a shebang only on an *executable* file, so non-executable
+  extensionless shell (a `# shellcheck shell=bash` lib with no shebang, a
+  sourced `service-config-loader`, non-exec event handlers) is silently
+  ungated under a default `types: [shell]` shellcheck/shfmt hook. The fix is a
+  second hook entry (`alias: *-sourced`, `types: [text]`) with a path-based
+  `files:` regex — which had to be rediscovered from the dotfiles
+  `.pre-commit-config.yaml` `&sourced_shell` anchor. Add a short note plus the
+  two-hook snippet. Scope: **global**. Pointer: harleydev
+  `.pre-commit-config.yaml` (shfmt-sourced / shellcheck-sourced hooks).
+- [ ] **`pre-commit.md` (+ `hadolint.md` / `yamllint.md`): a docker-image or
+  otherwise containerized hook can't see the global `~/.config`, so gate it
+  with a repo-local config mirroring the baseline.** `hadolint-docker` runs in
+  a container and never sees `~/.config/hadolint.yaml`; with no repo-local
+  `.hadolint.yaml` it defaults to failure-threshold `info` (not the global
+  `warning`) and loses the trusted-registries set. Same class of problem for
+  the yamllint hook's relaxations. `hadolint.md` / `yamllint.md` note
+  repo-local *precedence* but not this "you **must** mirror the baseline when
+  gating via a containerized hook" step. Scope: **global**. Pointer: harleydev
+  `.hadolint.yaml`, `.yamllint`.
+- [ ] **`todo.md`: don't bake volatile counts into planning items.** A
+  harleydev TODO item read "markdownlint: ~3715 issues across 61 files"; the
+  real figure was 610 → 58 after `--fix` (a `.markdownlintrc` had landed since
+  the estimate), and the stale count drove initial mis-planning until
+  re-measured. Add guidance: state the task, not a snapshot metric; re-measure
+  at execution time. Scope: **global** `rules/todo.md`. Pointer: harleydev
+  `TODO.md` QA Tooling Setup (pre-PR state).
+
 ### 🧹 Two rule refinements from the shell-startup-guard PR (#154) (LOW PRIORITY)
 
 Surfaced while shipping PR #154; small doc-rule additions, not edits yet.
