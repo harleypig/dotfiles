@@ -226,6 +226,35 @@ doc-rule additions, not edits yet.
   at execution time. Scope: **global** `rules/todo.md`. Pointer: harleydev
   `TODO.md` QA Tooling Setup (pre-PR state).
 
+### 🔎 Prefer a tool's native in-file ignore over a pre-commit `exclude` (MEDIUM PRIORITY)
+
+When a file — or a construct in it — trips a linter, **check the tool's own
+docs for a scoped, in-file ignore before reaching for a pre-commit
+`exclude:`** (or otherwise bypassing the whole file). Most linters make this
+first-class: shellcheck `# shellcheck disable=SCxxxx  # reason`, markdownlint
+`<!-- markdownlint-disable[-line|-next-line] MDxxx -->` (plus a
+`capture`/`restore` pair to exempt a block), hadolint
+`# hadolint ignore=DLxxxx`, yamllint `# yamllint disable-line rule:xxx` — and
+others (each tool's exact directive lives in its docs / `rules/<tool>.md`, to
+be grounded when worked). A native ignore is narrower (one rule, one
+line/block — not the whole file), self-documenting (a reason at the point of
+violation), and keeps the rest of the file linted; a pre-commit `exclude`
+silently drops the file from that hook entirely. shellcheck makes the in-file
+form obvious, but the markdownlint case (block `disable`/`enable`, and
+`capture`/`restore`, around the terraform-docs markers) was not
+top-of-mind and had to be looked up — which is why the step needs emphasizing.
+
+- [ ] **`pre-commit.md`: add the exclude-vs-native-ignore decision.** State
+  the hierarchy: (1) fix the finding; (2) if the construct is intentional,
+  use the tool's native in-file ignore with a reason at the site; (3) reserve
+  a pre-commit `exclude:` for whole files that genuinely should not be linted
+  (generated / vendored / binary / templated), documented. Emphasize: **read
+  the tool's docs for a native ignore before excluding** (per the grounding
+  convention — do not assume from memory). Cross-reference `code-style.md`
+  *Marker comments* (the inline-disable philosophy); each tool's mechanism
+  lives in its `rules/<tool>.md`. Scope: **global**. Pointer: the markdownlint
+  block-ignore investigation (harleydev QA session).
+
 ### 🧹 Two rule refinements from the shell-startup-guard PR (#154) (LOW PRIORITY)
 
 Surfaced while shipping PR #154; small doc-rule additions, not edits yet.
