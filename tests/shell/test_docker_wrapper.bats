@@ -81,9 +81,15 @@ teardown() {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
 
+  # Credential VALUES use distinctive canaries, not short strings. The wrapper
+  # mounts $PWD into docker.args (--volume <PWD>:/mnt), and under bats $PWD is a
+  # random tmpdir (e.g. .../bats-run-a9tokQ3/...). A short sentinel like "tok"
+  # can appear by chance in that path, so refute_output --partial would match
+  # the mount path instead of a real leak — a rare CI flake. A canary can't
+  # collide with a 6-char random path component. See the regression test below.
   run env "PATH=$STUB:$PATH" \
-    AWS_ACCESS_KEY_ID=akid AWS_SECRET_ACCESS_KEY=secret \
-    AWS_ENDPOINT_URL_S3=https://example.com LINODE_TOKEN=tok \
+    AWS_ACCESS_KEY_ID=canary_aws_access_key AWS_SECRET_ACCESS_KEY=canary_aws_secret \
+    AWS_ENDPOINT_URL_S3=https://example.com LINODE_TOKEN=canary_linode_token \
     "$ROOT/bin/terraform" plan
   assert_success
 
@@ -94,8 +100,33 @@ teardown() {
   assert_output --partial "--env AWS_SECRET_ACCESS_KEY"
   assert_output --partial "--env AWS_ENDPOINT_URL_S3"
   assert_output --partial "--env LINODE_TOKEN"
-  refute_output --partial "akid"
-  refute_output --partial "tok"
+  refute_output --partial "canary_aws_access_key"
+  refute_output --partial "canary_aws_secret"
+  refute_output --partial "canary_linode_token"
+}
+
+@test "terraform credential-leak check is not fooled by the mount path" {
+  # Regression for the flake above: the mount path (--volume <PWD>:/mnt) lands
+  # in docker.args, so a short credential sentinel could collide with $PWD and
+  # make the leak check false-positive. Force $PWD to contain the very
+  # substrings a naive check would use ("tok", "akid"); the credential value
+  # must still be absent while the path (with those substrings) is present.
+  make_stub "$STUB" docker
+  local workdir="$BATS_TEST_TMPDIR/tok-akid-secret"
+  mkdir -p "$workdir"
+  cd "$workdir"
+
+  run env "PATH=$STUB:$PATH" LINODE_TOKEN=canary_linode_token \
+    "$ROOT/bin/terraform" plan
+  assert_success
+
+  run cat "$STUB/docker.args"
+  # The mount path — which contains "tok"/"akid" — IS in the args, proving the
+  # collision surface a short sentinel would trip on.
+  assert_output --partial "tok-akid-secret"
+  # The credential is forwarded by name only; its value never leaks.
+  assert_output --partial "--env LINODE_TOKEN"
+  refute_output --partial "canary_linode_token"
 }
 
 @test "terraform plan does not forward credentials that are unset" {
