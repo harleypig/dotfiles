@@ -7,6 +7,50 @@ Distilled from the [Getting started with loops][blog] blog post
 and the official [scheduled-tasks][docs-loop], [routines][docs-schedule],
 and [auto-mode][docs-auto] docs.
 
+## ELI5 — the commands in this doc
+
+Plain-language one-liners for everything named here. Details are in the
+sections below; every doc link is at the bottom.
+
+*Make Claude repeat / keep going:*
+
+- **`/loop`** — do this again every so often until I stop you ("check my PR
+  every 5 minutes").
+- **`/goal`** — keep trying until you hit this target or run out of tries.
+- **`/schedule`** — run this on a timer (or a GitHub event) in the cloud,
+  even with my laptop off.
+- **`/background`** — take this whole session off my screen and keep going;
+  I'll check back.
+- **a background job** — run one command off to the side and ping me when
+  it's done.
+
+*Make many Claudes work at once:*
+
+- **a workflow** — a script that spins up many helper agents to chew through
+  lots of things in parallel.
+- **subagents** — send a helper to do one side task and report back.
+- **agent teams** *(experimental)* — several Claudes that message each other
+  and split the work.
+- **`/batch`** — a ready-made "big change" helper: split a job into pieces,
+  one agent per piece, each opening its own PR.
+
+*Let it run without babysitting:*
+
+- **auto mode / permission modes** — pre-approve the safe stuff so it doesn't
+  stop to ask.
+
+*Watch what's running:*
+
+- **`/tasks`** (all background work), **`/workflows`** (workflow progress +
+  cost), **`claude agents`** (detached sessions), **`/usage`** (spend).
+
+*Drive it from a script / CI:*
+
+- **`claude -p`** (headless) with **`--resume`** / **`--continue`**.
+
+A *different*, event-driven family (react to events instead of repeating) is
+out of scope here — see [hooks][docs-hooks] and [channels][docs-channels].
+
 ## What a loop is
 
 A **loop** is an agent repeating cycles of work until a stop condition is
@@ -16,8 +60,8 @@ a distinct feature. The skill is in **scoping the exit condition** and
 
 ## The primitives at a glance
 
-Four building blocks, distinguished by **whether each iteration restarts a
-fresh agent** and **what paces the repetition**. Everything below is a
+The building blocks of the family, distinguished by **whether each iteration
+restarts a fresh agent** and **what paces the work**. Everything below is a
 combination of these.
 
 | Primitive | Fresh agent per iteration? | Paced by | Runs until | Reach for it when |
@@ -26,6 +70,8 @@ combination of these.
 | **`/loop`** | yes — like a new session each tick | an **interval** (fixed `5m`, or self-paced) | you stop it / 7-day expiry | attended, recurring work where each pass should reassess |
 | **`/goal`** | yes — each turn | a **condition** (back-to-back, no sleep) | goal met **or** max turns | driving to a verifiable outcome, with a try-cap |
 | **Workflow** | spawns many **targeted** agents | a **script**, codified up front | the script completes | one run needs breadth beyond a single agent's context |
+| **`/background`** | no — detaches the current session | n/a (runs once, detached) | it finishes or you stop it | hands-off local work without tying up your terminal |
+| **Agent teams** *(experimental)* | each teammate, own context | peer coordination via a shared task list | the shared goal is met | work where the agents must message each other |
 
 The axis in one line: a **background job** is single-shot; **`/loop`** is
 time-paced ("wake every N and reassess"); **`/goal`** is condition-paced
@@ -35,6 +81,12 @@ backgrounded subagent) — what defines it is *single-shot + notify-on-done*,
 not determinism. Each can embed the others (a `/loop` tick can run a
 workflow; a workflow stage can block on a background job) — but, as the
 sections below show, it does not always make sense to.
+
+Two more members round out the family: **`/background`** detaches the
+session you are already in (local, runs once, frees your terminal), and
+**agent teams** are workflow's peer-coordinated cousin — several Claudes
+that message each other rather than a script driving them (experimental,
+opt-in via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`).
 
 The blog's four *kinds* of loop are framings of these: **turn-based** (no
 loop primitive at all — one prompt), **goal-based** (`/goal`),
@@ -116,6 +168,11 @@ each tool call against a rule set before it runs:
 It is a **gate**, not a task. Without auto mode, a `/loop` or routine would
 stop and ask "run this command?" for every tool call. With it, both run
 unattended.
+
+Auto mode (`auto`) is one of several **permission modes** — alongside
+`acceptEdits` (auto-approve edits + filesystem commands), `dontAsk` (deny
+anything not allowlisted), and a full bypass — that set how much unattended
+work may do without asking. See [permission-modes][docs-perm].
 
 ## How they differ
 
@@ -257,6 +314,28 @@ workflow that invokes `ship-pr` once per branch to ship several independent
 branches in parallel — the workflow does the fan-out, the skill does each
 linear ship.
 
+## Three ways to run many agents
+
+Delegating to *other* agents comes in three shapes — pick by how much the
+agents need to coordinate:
+
+- **Subagents** — you hand a helper one scoped side task; it runs in its own
+  context and **reports back to you**. They don't talk to each other. The
+  lightweight default (`/agents` manages them; `/fork` is a variant that
+  inherits your full context). See [sub-agents][docs-subagents].
+- **Workflows** — a **script** orchestrates the fan-out: dozens of agents,
+  codified control flow, results in script variables. Best for large,
+  homogeneous, parallel work (see *What makes a good workflow fit*). See
+  [workflows][docs-workflows-tool].
+- **Agent teams** *(experimental)* — several Claudes with a **shared task
+  list** who **message each other**, a lead coordinating. For work where the
+  agents genuinely need to coordinate, not just fan out. See
+  [agent-teams][docs-teams].
+
+Rule of thumb: **report-up → subagents; scripted fan-out → workflow; peer
+coordination → agent team.** `/batch` (below) is a ready-made skill built on
+the subagents-in-worktrees pattern.
+
 ## What makes a good workflow fit
 
 A workflow's shape is "many independent items → one agent each, in parallel,
@@ -307,6 +386,12 @@ is batchable — that is the call you make going in.
 module tree has all three by construction; a raw TODO has none reliably — so
 it earns a workflow only after the curation step supplies them.
 
+**A ready-made version:** the bundled **`/batch`** skill *is* this pattern —
+it researches the codebase, decomposes the change into 5–30 units, and
+spawns one worktree-isolated subagent per unit that implements, tests, and
+opens its own PR. Reach for it when the batch is a genuine fit; you still
+hand-curate what goes in, exactly as above.
+
 ## Best practices
 
 - **Define explicit stop/success criteria and turn caps** — vague goals
@@ -322,6 +407,46 @@ it earns a workflow only after the curation step supplies them.
 - **Watch cost** with `/usage` (skills, subagents, MCPs), `/goal` (turns
   and tokens), and `/workflows` (per-agent usage).
 
+## Watching unattended work
+
+Once work runs without you, these show what is happening:
+
+- **`/tasks`** — everything in the background right now (subagents,
+  workflows, background shell commands); attach or stop any of them.
+- **`/workflows`** — running/finished workflows, drill into phases and
+  agents, live token cost; pause/resume a run.
+- **`claude agents`** — your detached `/background` sessions and which ones
+  need input (see [agent-view][docs-agentview]).
+- **`/usage`** — session cost and plan limits, broken down by skill /
+  subagent / plugin / MCP.
+
+## Driving it from scripts (headless)
+
+Everything above can be invoked non-interactively for CI or scripts with
+`claude -p "<prompt>"` (print mode), using `--resume` / `--continue` to
+carry a session across invocations and `--permission-mode` to control what
+runs without a prompt. This is the surface that turns a loop or workflow
+into a scheduled or CI-triggered job. See [headless][docs-headless].
+
+## Adjacent: event-driven automation (a different family)
+
+Loops and workflows are about **repetition and fan-out**. A separate family
+**reacts to events** instead — it fires when something happens, not on a
+timer:
+
+- **Hooks** — shell / HTTP / MCP / LLM actions on lifecycle events
+  (`PreToolUse`, `PostToolUse`, `SessionStart`, task created/completed, …)
+  for validation, gating, and coordination. See [hooks][docs-hooks].
+- **Channels** *(research preview)* — external systems (Telegram, Discord,
+  webhooks) **push** messages into a running session for Claude to react to.
+  See [channels][docs-channels].
+- **GitHub Actions** and **routine triggers** (GitHub / API) fire Claude
+  work from repo events or an HTTP call — the event-driven counterparts to
+  `/schedule`'s timer. See [github-actions][docs-gha].
+
+Each of these deserves its own reference (tracked in the backlog); this doc
+stays on loops and workflows.
+
 ## Choosing a loop type
 
 - **Turn-based** when exploring and deciding.
@@ -336,3 +461,12 @@ overly complex automation from the start.
 [docs-loop]: https://code.claude.com/docs/en/scheduled-tasks
 [docs-schedule]: https://code.claude.com/docs/en/routines
 [docs-auto]: https://code.claude.com/docs/en/auto-mode-config
+[docs-perm]: https://code.claude.com/docs/en/permission-modes
+[docs-subagents]: https://code.claude.com/docs/en/sub-agents
+[docs-workflows-tool]: https://code.claude.com/docs/en/workflows
+[docs-teams]: https://code.claude.com/docs/en/agent-teams
+[docs-agentview]: https://code.claude.com/docs/en/agent-view
+[docs-headless]: https://code.claude.com/docs/en/headless
+[docs-hooks]: https://code.claude.com/docs/en/hooks
+[docs-channels]: https://code.claude.com/docs/en/channels
+[docs-gha]: https://code.claude.com/docs/en/github-actions
