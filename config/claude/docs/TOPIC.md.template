@@ -112,12 +112,15 @@ the table's order.
 
 ## Resources
 
-> "Distilled from …" — name the sources in prose, **using every reference
-> label** so no definition below is unused. Then the link definitions, at
-> the very bottom of the file.
+> A short lead-in line, then a **bullet list** of sources — one bullet per
+> source as `[name][label] — short descriptor`, not a link-heavy paragraph.
+> **Use every reference label** so no definition below is unused. Then the
+> link definitions, at the very bottom of the file.
 
-Distilled from SOURCE ([name][label]) and the official Claude Code
-documentation: [name][label2].
+Distilled from SOURCE and the official Claude Code documentation:
+
+- [name][label] — what it covers
+- [name][label2] — what it covers
 
 [label]: https://example.com/one
 [label2]: https://code.claude.com/docs/en/two

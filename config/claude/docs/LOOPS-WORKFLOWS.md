@@ -541,13 +541,22 @@ stays on loops and workflows.
 
 ## Resources
 
-Distilled from the [Getting started with loops][blog] blog post and the
-official Claude Code documentation: [scheduled-tasks][docs-loop] (`/loop`),
-[routines][docs-schedule] (`/schedule`), [auto-mode][docs-auto],
-[permission-modes][docs-perm], [sub-agents][docs-subagents],
-[workflows][docs-workflows-tool], [agent-teams][docs-teams],
-[agent-view][docs-agentview], [headless][docs-headless], [hooks][docs-hooks],
-[channels][docs-channels], and [github-actions][docs-gha].
+Distilled from the "Getting started with loops" blog post and the official
+Claude Code documentation:
+
+- [Getting started with loops][blog] — the source blog post
+- [scheduled-tasks][docs-loop] — `/loop`
+- [routines][docs-schedule] — `/schedule`
+- [auto-mode][docs-auto] — auto mode
+- [permission-modes][docs-perm] — permission modes
+- [sub-agents][docs-subagents] — subagents
+- [workflows][docs-workflows-tool] — the Workflow tool
+- [agent-teams][docs-teams] — agent teams
+- [agent-view][docs-agentview] — `claude agents`
+- [headless][docs-headless] — `claude -p` / non-interactive
+- [hooks][docs-hooks] — hooks
+- [channels][docs-channels] — channels
+- [github-actions][docs-gha] — GitHub Actions
 
 [blog]: https://claude.com/blog/getting-started-with-loops
 [docs-loop]: https://code.claude.com/docs/en/scheduled-tasks
