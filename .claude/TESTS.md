@@ -126,7 +126,7 @@ The generated **meta suite** runs language-specific static checks per file:
 bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
 `perl -c`; python → shebang + `compile()`. It scans `bin lib` **plus
 `config/claude/skills`** (the last covers skill helper scripts such as
-`config/claude/skills/*/scripts/*`, e.g. `ship-pr`'s `ship.sh`; non-script
+`config/claude/skills/*/scripts/*`, e.g. `push-pr`'s `push.sh`; non-script
 files are skipped). It does **not** scan repo-local `.claude/skills/` — that
 helper (`shell-startup-guard`'s `guard.sh`) is covered by the repo-wide
 pre-commit `shellcheck`/`shfmt` hooks plus its hand-written

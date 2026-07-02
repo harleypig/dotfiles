@@ -47,7 +47,7 @@ MCP is a **second-class** capability the agent must never depend on.
   disconnects). A documented workflow must work with the MCP server
   **absent**.
 - For GitHub specifically the **`gh` CLI is canonical** (see `gh.md`,
-  `git.md`, `github-actions.md`, and the `ship-pr` /
+  `git.md`, `github-actions.md`, and the `push-pr` /
   `git-worktree-workflow` skills). MCP github tools are an **opportunistic
   read convenience** used only when a server happens to be connected —
   never the primary path, and never a fallback chain that ends at

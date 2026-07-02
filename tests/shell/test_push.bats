@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-# Behavioural tests for the ship-pr skill's ship.sh helper — the pure-logic
+# Behavioural tests for the push-pr skill's push.sh helper — the pure-logic
 # paths that a gh/git stub can exercise without a network or a real PR:
 #   - ci-watch resolves the run matching the branch tip SHA (regression for the
 #     PR #114 bug, where it watched the *latest* run instead).
@@ -10,7 +10,7 @@
 # The gh stub is faithful rather than canned: it picks canned JSON per endpoint
 # and applies the requested `--jq`/`-q` expression with real jq, exactly as gh
 # does — so the jq that selects the run / parses the methods is the real one
-# ship.sh ships, not a test reimplementation. jq is required; the suite skips
+# push.sh ships, not a test reimplementation. jq is required; the suite skips
 # without it.
 
 load ../helpers/common
@@ -20,7 +20,7 @@ setup() {
   command -v jq > /dev/null || skip "jq not installed"
 
   ROOT="$(dotfiles_root)"
-  SHIP="$ROOT/config/claude/skills/ship-pr/scripts/ship.sh"
+  PUSH="$ROOT/config/claude/skills/push-pr/scripts/push.sh"
   STUB="$(make_stub_dir)"
 
   write_gh_stub
@@ -104,7 +104,7 @@ EOF
   local run='{"status":"completed","conclusion":"success","workflowName":"tests","headSha":"abc123","jobs":[{"name":"bats","conclusion":"success"}]}'
 
   run env "PATH=$STUB:$PATH" GIT_SHA="abc123" GH_RUNS="$runs" GH_RUN="$run" \
-    "$SHIP" ci-watch some-branch
+    "$PUSH" ci-watch some-branch
 
   assert_success
   assert_output --partial "tests (run 111): success"
@@ -116,7 +116,7 @@ EOF
   local run='{"status":"completed","conclusion":"failure","workflowName":"tests","headSha":"abc123","jobs":[{"name":"bats","conclusion":"failure"}]}'
 
   run env "PATH=$STUB:$PATH" GIT_SHA="abc123" GH_RUNS="$runs" GH_RUN="$run" \
-    "$SHIP" ci-watch some-branch
+    "$PUSH" ci-watch some-branch
 
   assert_failure
   assert_output --partial "tests (run 111): failure"
@@ -132,7 +132,7 @@ EOF
 
   run env "PATH=$STUB:$PATH" GIT_SHA="abc123" GH_RUNS="$runs" \
     GH_RUN_501="$tests_run" GH_RUN_502="$scan_run" \
-    "$SHIP" ci-watch some-branch
+    "$PUSH" ci-watch some-branch
 
   assert_failure
   assert_output --partial "tests (run 501): success"
@@ -148,7 +148,7 @@ EOF
 
   run env "PATH=$STUB:$PATH" \
     GH_REPO='{"nameWithOwner":"o/r"}' GH_RULESETS="$rulesets" GH_RULESET="$ruleset" \
-    "$SHIP" merge-methods
+    "$PUSH" merge-methods
 
   assert_success
   assert_output "squash"
@@ -158,7 +158,7 @@ EOF
   run env "PATH=$STUB:$PATH" \
     GH_REPO='{"nameWithOwner":"o/r"}' GH_RULESETS='[]' \
     GH_REPOINFO='{"allow_squash_merge":true,"allow_merge_commit":true,"allow_rebase_merge":false}' \
-    "$SHIP" merge-methods
+    "$PUSH" merge-methods
 
   assert_success
   assert_line "squash"

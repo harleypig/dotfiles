@@ -197,10 +197,15 @@ running the `gh issue list` calls above piecemeal.
 - Always return the PR URL after creating.
 - Use `gh` for all GitHub operations (issues, PRs, checks, releases).
 - Do not create, merge, or close PRs without explicit user approval.
-  Invoking the **ship-pr** skill (or an explicit "open a PR" / "ship it"
+  Invoking the **push-pr** skill (or an explicit "open a PR" / "ship it"
   request) **is** approval to create and push the PR; **merge and close still
   require their own separate explicit instruction**, never inferred from the
-  create approval.
+  create approval. **Exception — auto-merge opt-in:** a repo may declare
+  `auto-merge: enabled` in its `.claude/WORKFLOW.md` / `.claude/CONVENTIONS.md`
+  (when its server-side guardrails make a manual merge gate redundant); there,
+  invoking **push-pr** is consent through merge on green CI (the merge still
+  obeys the ruleset — the opt-in skips the prompt, not the checks). Closing a
+  PR always needs explicit instruction. See push-pr Step 5.
 - Use `gh pr view`, `gh issue list`, etc. to check state before acting.
 - For full PR prep workflow (sync, push, create), use the
   **git-worktree-workflow** skill (Operation 4).

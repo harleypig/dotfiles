@@ -424,7 +424,7 @@ for our own repos.
 The procedure — read the declared method, pick the changed stream(s) (only
 when a *shipped artifact* changed), decide the bump, cut the annotated tag at
 the merge commit, push, and watch the release — is the **release-tag** skill;
-`ship-pr` Step 6 delegates to it.
+`push-pr` Step 6 delegates to it.
 
 ## Agent Rules
 

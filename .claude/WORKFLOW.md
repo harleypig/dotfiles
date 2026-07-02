@@ -140,7 +140,7 @@ A committed **`shell-startup.md5`** at the repo root records the blessed
 checksum, and the **`shell-startup-guard`** skill
 (`.claude/skills/shell-startup-guard/`) detects drift against it. Wiring:
 
-* **Run the guard during ship-pr's first half** (Step 1, before commit) and
+* **Run the guard during push-pr's first half** (Step 1, before commit) and
   again at **merge-finalization** (Step 4.5) — invoke the
   `shell-startup-guard` skill, which on drift shows the diff since the last
   blessed state and offers approve / restore / relocate / defer.
@@ -202,15 +202,15 @@ GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets/17364459 \
 
 **Merge-time finalization (`merge-finalization: enforce`):**
 
-This repo opts in to the merge-time documentation finalization (ship-pr
+This repo opts in to the merge-time documentation finalization (push-pr
 Step 4.5). Completed items are **pruned outright** from `TODO.md` (and
 `ROADMAP.md` if one exists) once the PR that finishes them goes green —
 finalized work is migrated to [`CHANGELOG.md`](../CHANGELOG.md), not left as
 `[x]` markers. The `merge-finalization: enforce` sentinel in the heading above
 activates the `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`),
-which **blocks** a `gh pr merge` / `ship.sh merge` while any completed `- [x]`
+which **blocks** a `gh pr merge` / `push.sh merge` while any completed `- [x]`
 items still remain in the planning docs. See
-`config/claude/skills/ship-pr/SKILL.md` and `config/claude/rules/git.md`.
+`config/claude/skills/push-pr/SKILL.md` and `config/claude/rules/git.md`.
 
 The agent-config **audit backlog** is an equivalent planning list, so it is
 pruned the same way (completed items removed at merge, their record kept in

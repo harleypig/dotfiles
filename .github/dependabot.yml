@@ -4,7 +4,7 @@
 # Security (alert-driven) updates are enabled separately in the repo's
 # security settings; this file configures scheduled *version*-update PRs.
 # No auto-merge — Dependabot PRs land through the normal protected-master
-# flow (squash-only + required checks), reviewed/merged via the ship-pr
+# flow (squash-only + required checks), reviewed/merged via the push-pr
 # skill like any other PR. Conventions per config/claude/rules/dependabot.md:
 # cover every shipped manifest (incl. docker + github-actions), schedule
 # weekly, group minor/patch (majors stay individual), conventional commits.

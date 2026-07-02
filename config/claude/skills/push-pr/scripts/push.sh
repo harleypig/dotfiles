@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# ship.sh — deterministic mechanics for the ship-pr skill.
+# push.sh — deterministic mechanics for the push-pr skill.
 #
 # Owns only the repetitive, judgment-free parts: the gh credential
 # fallback, default-branch derivation, CI watch (by polling), merge-method
@@ -9,12 +9,12 @@
 # merge stay with the caller (see SKILL.md).
 #
 # Usage:
-#   ship.sh default-branch
-#   ship.sh pr-create --title T --body B [--base BRANCH]
-#   ship.sh ci-watch [BRANCH]              # exits non-zero if CI failed
-#   ship.sh merge-methods                  # prints allowed merge methods
-#   ship.sh merge NUMBER --squash|--merge|--rebase
-#   ship.sh cleanup BRANCH
+#   push.sh default-branch
+#   push.sh pr-create --title T --body B [--base BRANCH]
+#   push.sh ci-watch [BRANCH]              # exits non-zero if CI failed
+#   push.sh merge-methods                  # prints allowed merge methods
+#   push.sh merge NUMBER --squash|--merge|--rebase
+#   push.sh cleanup BRANCH
 
 set -euo pipefail
 
@@ -291,7 +291,7 @@ cmd_cleanup() {
 }
 
 main() {
-  local sub=${1:?usage: ship.sh <subcommand> [args]}
+  local sub=${1:?usage: push.sh <subcommand> [args]}
   shift || true
 
   case "$sub" in
@@ -302,7 +302,7 @@ main() {
     merge) cmd_merge "$@" ;;
     cleanup) cmd_cleanup "$@" ;;
     *)
-      echo "ship.sh: unknown subcommand $sub" >&2
+      echo "push.sh: unknown subcommand $sub" >&2
       return 2
       ;;
   esac

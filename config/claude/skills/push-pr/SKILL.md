@@ -1,9 +1,9 @@
 ---
-name: ship-pr
-description: Commit a finished feature branch, push it, and open a pull request, then watch CI to green and — with explicit approval — merge it, tag the release if it ships an artifact, and clean up — using this user's gh credential fallback and the repo's branch-protection merge policy. Use whenever the user wants to land work via a PR: "ship this", "ship it", "land this branch", "commit push and PR", "open a PR and merge", "put up a PR", "get this merged", "create the PR and merge after CI", or any request to take a ready branch through the PR-and-merge sequence. Starts where git-worktree-workflow's "prep for PR" ends; works for plain feature branches too (no worktree required).
+name: push-pr
+description: Commit a finished feature branch, push it, and open a pull request, then watch CI to green and — with explicit approval — merge it, tag the release if it ships an artifact, and clean up — using this user's gh credential fallback and the repo's branch-protection merge policy. Use whenever the user wants to land work via a PR: "push this PR", "push it", "ship this", "ship it", "land this branch", "commit push and PR", "open a PR and merge", "put up a PR", "get this merged", "create the PR and merge after CI", or any request to take a ready branch through the PR-and-merge sequence. Starts where git-worktree-workflow's "prep for PR" ends; works for plain feature branches too (no worktree required).
 ---
 
-# Ship PR
+# Push PR
 
 **Version:** v1.9.4
 
@@ -11,7 +11,7 @@ Take a finished branch through the standard landing sequence: **QA check** →
 commit → push → open PR → watch CI → (approval) merge →
 (if it ships an artifact) tag → clean up.
 
-The deterministic mechanics live in the bundled **`scripts/ship.sh`** (in
+The deterministic mechanics live in the bundled **`scripts/push.sh`** (in
 this skill's directory). The model owns the judgment: commit messages, PR
 copy, CI-failure diagnosis, and the merge decision. This skill orchestrates
 the existing rules rather than restating them:
@@ -31,7 +31,7 @@ the existing rules rather than restating them:
 
 ## Helper script
 
-`scripts/ship.sh` wraps the judgment-free steps. Every gh call inside it
+`scripts/push.sh` wraps the judgment-free steps. Every gh call inside it
 auto-retries with the env tokens cleared on a PAT scope error, so the
 `rules/gh.md` fallback is handled for you.
 
@@ -46,13 +46,14 @@ auto-retries with the env tokens cleared on a PAT scope error, so the
 
 ## Guardrails (do not violate)
 
-- **Never** merge or close a PR without explicit approval (per `rules/gh.md`).
+- **Never** merge or close a PR without explicit approval (per `rules/gh.md`),
+  **unless the repo opts into auto-merge** (`auto-merge: enabled`; see Step 5).
   **Invoking this skill is consent to run the flow through opening the PR** —
-  qa-check → commit → push → **open the PR** → watch CI. **Merging requires a
-  separate explicit instruction** for this branch ("merge it", "merge if CI
-  passes", etc.): stop after CI is green and ask before merging. (If the user
-  explicitly scoped the request narrower — "just commit and push" — honor that
-  and stop before opening.)
+  qa-check → commit → push → **open the PR** → watch CI. **Merging otherwise
+  requires a separate explicit instruction** for this branch ("merge it",
+  "merge if CI passes", etc.): stop after CI is green and ask before merging.
+  (If the user explicitly scoped the request narrower — "just commit and
+  push" — honor that and stop before opening.)
 - **Never** push to or merge directly into the default branch.
 - **Never** force-push without `--force-with-lease --force-if-includes`,
   and warn first.
@@ -62,7 +63,7 @@ auto-retries with the env tokens cleared on a PAT scope error, so the
 ## Step 0 — Preconditions
 
 ```bash
-DEF=$(ship.sh default-branch)
+DEF=$(push.sh default-branch)
 CUR=$(git branch --show-current)
 ```
 
@@ -109,7 +110,7 @@ Compose the title (< 72 chars) and a body per `rules/gh.md`
 (`## Summary` + `## Test plan`), then:
 
 ```bash
-ship.sh pr-create --title "<title>" --body "<body>"
+push.sh pr-create --title "<title>" --body "<body>"
 ```
 
 The script handles the PAT→OAuth fallback. Report the PR URL.
@@ -117,7 +118,7 @@ The script handles the PAT→OAuth fallback. Report the PR URL.
 ## Step 4 — Watch CI
 
 ```bash
-ship.sh ci-watch "$CUR"
+push.sh ci-watch "$CUR"
 ```
 
 Act on the exit code — it checks **both** the run conclusion **and**
@@ -181,23 +182,34 @@ It is **advisory, never a gate**. Its TODO additions ride along in the Step
 once), so there's no extra CI cycle. A clean retrospective ("nothing to
 change") is a valid outcome — say so and move on.
 
-## Step 5 — Merge (only with explicit approval)
+## Step 5 — Merge (with approval, or the auto-merge opt-in)
 
 A `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`) backstops Step
 4.5. It is **opt-in per repo** — because keeping `[x]` as a done-work record
 is a valid convention in some repos: a repo enables the hard block with the
 sentinel `merge-finalization: enforce` in its `.claude/WORKFLOW.md` or
 `.claude/CONVENTIONS.md`. In an opted-in repo it **blocks** a `gh pr merge` /
-`ship.sh merge` whose working tree still has completed `- [x]` items in
+`push.sh merge` whose working tree still has completed `- [x]` items in
 `TODO.md` / `ROADMAP.md` (the prune was skipped). Otherwise — not opted in, or
 clean — it injects the finalization checklist as a reminder and never blocks.
 The hook is a guard; the responsibility to run Step 4.5 is still yours.
 
-Confirm the user asked to merge this branch. Discover the allowed methods
+**Auto-merge opt-in.** Check the repo's `.claude/WORKFLOW.md` /
+`.claude/CONVENTIONS.md` for the sentinel `auto-merge: enabled` (grep for it).
+When **present**, the repo has judged its guardrails (server-side branch
+protection, required status checks, etc.) sufficient that a manual merge gate
+adds no safety — so **invoking this skill is consent through merge**: once CI
+is green and Step 4.5/4.6 are done, proceed to merge **without** a separate
+approval. When **absent** (the default), **confirm the user explicitly asked
+to merge this branch** before proceeding. Either way the merge still goes
+through `push.sh merge`, which respects the repo's ruleset (allowed methods,
+required checks) — the opt-in skips the human prompt, **never** the guardrails.
+
+Discover the allowed methods
 (rulesets often restrict to squash-only) and choose:
 
 ```bash
-ship.sh merge-methods
+push.sh merge-methods
 ```
 
 | Situation                                   | Flag        |
@@ -212,7 +224,7 @@ report the repo-level allowances, which may be looser than a ruleset
 actually enforces. The merge call is the real authority.
 
 ```bash
-ship.sh merge <number> --squash   # or --merge / --rebase
+push.sh merge <number> --squash   # or --merge / --rebase
 ```
 
 Read the rejection, if any:
@@ -239,7 +251,7 @@ tag.
 ## Step 7 — Post-merge cleanup
 
 ```bash
-ship.sh cleanup "$CUR"
+push.sh cleanup "$CUR"
 ```
 
 Report the merge commit, the tag (if any), and what landed.
@@ -248,9 +260,9 @@ Report the merge commit, the tag (if any), and what landed.
 
 - A workflow that publishes artifacts (images, packages, releases) may
   trigger on the **default-branch push** (the merge) or on the **release tag**
-  pushed in Step 6 — watch whichever applies (`ship.sh ci-watch
-  <default-branch>` or `ship.sh ci-watch <tag>`) if the user cares about the
+  pushed in Step 6 — watch whichever applies (`push.sh ci-watch
+  <default-branch>` or `push.sh ci-watch <tag>`) if the user cares about the
   publish.
 - For upstream/fork PRs, target the upstream repo (`gh repo view --json
   parent`) and prefer rebase for upstream-bound branches (`rules/git.md`).
-- Invoke `ship.sh` by its path in this skill's `scripts/` directory.
+- Invoke `push.sh` by its path in this skill's `scripts/` directory.

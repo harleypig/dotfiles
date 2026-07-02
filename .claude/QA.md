@@ -57,7 +57,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 12 | Build | **N/A** | Nothing compiles / bundles. The test docker harness image is test infra, not a product artifact. |
 | 13 | Documentation | **Active** | `markdownlint` (prose); inline-first doc philosophy (`WORKFLOW.md`); changelog is **hand-written** (`CHANGELOG.md`). `Vale` (prose; chosen over proselint) / link-validation **Planned** — TODO *Pre-commit Phase 4*. |
 | 14 | Code review | **Active (solo)** | `master` ruleset requires a PR (no bypass) with review-thread resolution; **0 required approvals** (solo repo) — review is self-review. |
-| 15 | CI | **Active** | `tests.yml` jobs bats / perl / python / pre-commit; required checks bats + perl + pre-commit gate merges. Watch via the `ship-pr` skill's `ci-watch`. |
+| 15 | CI | **Active** | `tests.yml` jobs bats / perl / python / pre-commit; required checks bats + perl + pre-commit gate merges. Watch via the `push-pr` skill's `ci-watch`. |
 
 ## Optimization stance
 
@@ -69,7 +69,7 @@ code changed (see `CHANGELOG.md`).
 ## Notes
 
 - **Generated changelog: N/A.** `CHANGELOG.md` is maintained by hand at the
-  merge-time finalization step (`WORKFLOW.md`; ship-pr Step 4.5), not
+  merge-time finalization step (`WORKFLOW.md`; push-pr Step 4.5), not
   generated from git history — so there is no regenerate-and-commit prep
   action in the QA pipeline.
 - Deferred Perl QA (`perlcritic` / `perltidy`, commented in both pre-commit

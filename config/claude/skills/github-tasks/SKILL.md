@@ -1,6 +1,6 @@
 ---
 name: github-tasks
-description: Sweep a repo's GitHub state and drive the routine maintenance — open Dependabot PRs, untriaged issues, failing required checks, stale branches, unresolved review threads, release/tag hygiene — then present a ranked worklist and ask before acting on anything ambiguous. The forcing function for rules/gh.md's "start of git/gh work, and daily" cadence. Use for "github tasks", "sweep github", "what needs doing on this repo", "any dependabot PRs / open issues", "triage this repo", "github housekeeping", "check the repo's github state", or at the start of git/gh work in any repo you control. Gathers and triages itself; delegates the heavy lifting to security-scan, ship-pr, git-worktree-workflow, github-issues, and release-tag.
+description: Sweep a repo's GitHub state and drive the routine maintenance — open Dependabot PRs, untriaged issues, failing required checks, stale branches, unresolved review threads, release/tag hygiene — then present a ranked worklist and ask before acting on anything ambiguous. The forcing function for rules/gh.md's "start of git/gh work, and daily" cadence. Use for "github tasks", "sweep github", "what needs doing on this repo", "any dependabot PRs / open issues", "triage this repo", "github housekeeping", "check the repo's github state", or at the start of git/gh work in any repo you control. Gathers and triages itself; delegates the heavy lifting to security-scan, push-pr, git-worktree-workflow, github-issues, and release-tag.
 ---
 
 # github-tasks
@@ -66,7 +66,7 @@ Sort the gathered state into a worklist. For each category, decide and route
 - **Dependabot PRs** — group by bump size. Green grouped **minor/patch** are
   usually safe to land; **major** bumps get individual review. The triage
   judgment and the compat gate are the **security-scan** skill's job (which
-  reads `rules/dependabot.md`); landing is **ship-pr**'s. Never
+  reads `rules/dependabot.md`); landing is **push-pr**'s. Never
   blanket-auto-merge majors. Ties into the repo's Dependabot/auto-merge
   policy if it has one.
 - **Open issues** — delegate to the **github-issues** skill for deep triage:
@@ -106,7 +106,7 @@ hand each chosen item to its skill below.
 | Item | Routed to | Source of truth |
 |------|-----------|-----------------|
 | Dependabot triage / compat gate | **security-scan**, **qa-check** | `rules/dependabot.md`, `rules/qa.md` |
-| Landing a PR (commit→PR→CI→merge) | **ship-pr** | `rules/gh.md`, `rules/github-actions.md` |
+| Landing a PR (commit→PR→CI→merge) | **push-pr** | `rules/gh.md`, `rules/github-actions.md` |
 | Branch cleanup / worktrees | **git-worktree-workflow** | `rules/git.md` |
 | Cutting a release tag | **release-tag** | `rules/git.md` *Versioning & tags* |
 | Fixing a failing check | **debug-assistant** | `rules/troubleshooting.md` |

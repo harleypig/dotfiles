@@ -49,8 +49,8 @@ names as its forcing function (`skill-name`), rules it cross-references
 | [claude-code-auth.md](rules/claude-code-auth.md) | Claude Code auth methods, precedence order, the never-export-`ANTHROPIC_API_KEY` rule, diagnosing auth problems | — |
 | [code-style.md](rules/code-style.md) | Naming, 78-col Markdown / 72-col comment wrap, paragraph spacing, section separators, Rule of Three, efficiency by default | — |
 | [documentation.md](rules/documentation.md) | The documentation bar — when to update docs, what form fits each audience, inline-first philosophy | `write-documentation` · `adr` |
-| [gh.md](rules/gh.md) | GitHub CLI usage: PR conventions, dual-credential auth fallback, issue triage cadence | `git-worktree-workflow` · `ship-pr` · `github-tasks` · `github-issues` · `security-scan` · `release-tag` · `github-rulesets.md` |
-| [git.md](rules/git.md) | Commit messages, branch naming, staging discipline, protected-branch rules, worktrees, versioning & tags | `git-worktree-workflow` · `release-tag` · `ship-pr` · `branch-protection.py` |
+| [gh.md](rules/gh.md) | GitHub CLI usage: PR conventions, dual-credential auth fallback, issue triage cadence | `git-worktree-workflow` · `push-pr` · `github-tasks` · `github-issues` · `security-scan` · `release-tag` · `github-rulesets.md` |
+| [git.md](rules/git.md) | Commit messages, branch naming, staging discipline, protected-branch rules, worktrees, versioning & tags | `git-worktree-workflow` · `release-tag` · `push-pr` · `branch-protection.py` |
 | [qa.md](rules/qa.md) | The full QA pipeline from format through CI — 15 dimensions, ordering, fix/check discipline | `qa-check` · `security-scan` · `containerize` · `deps-update` · `arch-review` · `test-review` · `a11y-review` · `perf-review` · `terraform-review` · `pytest-patterns` · `typing-patterns` · `write-documentation` · `adr` · `code-style.md` · `testing.md` · `documentation.md` |
 | [testing.md](rules/testing.md) | The test bar (success + failure paths, regression per bug) and be-idiomatic-per-language stance | — |
 | [troubleshooting.md](rules/troubleshooting.md) | Reproduce first, fix the root cause, land a regression test | `debug-assistant` · `qa-check` |
@@ -185,10 +185,10 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 
 | Skill | What it does | Calls / see also |
 |-------|-------------|-----------------|
-| [ship-pr](skills/ship-pr/SKILL.md) | Full landing pipeline: QA → commit → push → open PR → watch CI → (approval) merge → tag → cleanup | `qa-check` · `git-worktree-workflow` · `release-tag` · `retrospective` · `merge-finalization.py` · `gh.md` · `git.md` · `github-actions.md` · `pre-commit.md` |
+| [push-pr](skills/push-pr/SKILL.md) | Full landing pipeline: QA → commit → push → open PR → watch CI → (approval) merge → tag → cleanup | `qa-check` · `git-worktree-workflow` · `release-tag` · `retrospective` · `merge-finalization.py` · `gh.md` · `git.md` · `github-actions.md` · `pre-commit.md` |
 | [git-worktree-workflow](skills/git-worktree-workflow/SKILL.md) | Worktree-based development: create issue branches, sync with upstream, prep PR, cleanup | `git.md` · `gh.md` |
 | [release-tag](skills/release-tag/SKILL.md) | Cut an annotated `vX.Y.Z` tag at the merge commit, push, and watch the release workflow | `git.md` · `github-actions.md` |
-| [github-tasks](skills/github-tasks/SKILL.md) | Sweep a repo's GitHub state (Dependabot PRs, open issues, failing checks, stale branches, release hygiene), triage into a ranked worklist, and route each item to its skill | `security-scan` · `ship-pr` · `git-worktree-workflow` · `github-issues` · `release-tag` · `debug-assistant` · `gh.md` · `git.md` |
+| [github-tasks](skills/github-tasks/SKILL.md) | Sweep a repo's GitHub state (Dependabot PRs, open issues, failing checks, stale branches, release hygiene), triage into a ranked worklist, and route each item to its skill | `security-scan` · `push-pr` · `git-worktree-workflow` · `github-issues` · `release-tag` · `debug-assistant` · `gh.md` · `git.md` |
 | [github-issues](skills/github-issues/SKILL.md) | Deep per-issue triage: reconcile against planning docs + code, complexity, close stale/done with a comment, dedup/umbrella + blocking detection, label recommendations, issue↔doc sync — routes, never auto-tackles | `gh.md` · `todo.md` · `github-tasks` |
 
 ### Quality assurance
@@ -200,7 +200,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 | [containerize](skills/containerize/SKILL.md) | Author, harden, scan, and size-check Docker images and compose files | `docker.md` · `hadolint.md` · `trivy.md` · `dive.md` |
 | [deps-update](skills/deps-update/SKILL.md) | Deliberate dependency-update sweep: inventory → triage → changelog → batch → compat-gate | `security-scan` · `qa-check` · `debug-assistant` |
 | [debug-assistant](skills/debug-assistant/SKILL.md) | Structured debugging: reproduce → capture evidence → bisect → fix root cause → regression test | `qa-check` · `testing.md` |
-| [claude-audit](skills/claude-audit/SKILL.md) | Audit the global Claude Code config (rules, skills, hooks, plugins, MCP) for context economy and fit | `ship-pr` · `retrospective` · `qa-check` |
+| [claude-audit](skills/claude-audit/SKILL.md) | Audit the global Claude Code config (rules, skills, hooks, plugins, MCP) for context economy and fit | `push-pr` · `retrospective` · `qa-check` |
 
 ### Codebase review (whole-repo, not diff-level)
 
@@ -245,7 +245,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 
 | Skill | What it does | Calls / see also |
 |-------|-------------|-----------------|
-| [new-project](skills/new-project/SKILL.md) | Initialize a new repo or convert an existing one to these conventions (git, pre-commit, docs, tests, CI, branch protection) — greenfield or brownfield | `bats-setup` · `ship-pr` · `pre-commit.md` · `testing.md` · `git.md` · `gh.md` |
+| [new-project](skills/new-project/SKILL.md) | Initialize a new repo or convert an existing one to these conventions (git, pre-commit, docs, tests, CI, branch protection) — greenfield or brownfield | `bats-setup` · `push-pr` · `pre-commit.md` · `testing.md` · `git.md` · `gh.md` |
 | [bats-setup](skills/bats-setup/SKILL.md) | Scaffold bats-core testing: layout, helper libraries, meta-test generator, starter test, CI | `bats.md` |
 
 ---
@@ -258,7 +258,7 @@ deterministically, without relying on the model remembering.
 | Hook | Event | What it enforces |
 |------|-------|-----------------|
 | [branch-protection.py](hooks/branch-protection.py) | `PreToolUse` on `Edit` / `Write` / `MultiEdit` | Blocks file edits while a protected branch is checked out; derives the protected branch list from the `no-commit-to-branch` pre-commit args (`git.md`) |
-| [merge-finalization.py](hooks/merge-finalization.py) | `PreToolUse` on `gh pr merge` / `ship.sh merge` | Blocks a merge while completed `- [x]` items remain in planning docs (opt-in per repo via `merge-finalization: enforce` in `WORKFLOW.md`) |
+| [merge-finalization.py](hooks/merge-finalization.py) | `PreToolUse` on `gh pr merge` / `push.sh merge` | Blocks a merge while completed `- [x]` items remain in planning docs (opt-in per repo via `merge-finalization: enforce` in `WORKFLOW.md`) |
 | [terraform-import-safety.py](hooks/terraform-import-safety.py) | `PreToolUse` on `terraform … import` / `bin/tf … import` | Reminds the agent to verify the target address isn't already in state before importing (additive OK with confirmation; overwriting a managed address is operator-only); reminder-only — a hard block would need remote-state creds the hook can't reach (`terraform.md`) |
 | [shell-check.py](hooks/shell-check.py) | `PostToolUse` on `Edit` / `Write` / `MultiEdit` | Runs `shellcheck` on a shell file immediately after it is edited, surfacing findings to the agent in-session |
 | [iac-fmt.py](hooks/iac-fmt.py) | `PostToolUse` on `Edit` / `Write` / `MultiEdit` | Auto-formats an edited Terraform/Packer file (`terraform`/`packer fmt` via the bin/ docker wrappers), reports parse errors `fmt` can't fix, and runs a cheap validate (terraform only if `.terraform/` exists; packer `-syntax-only`); fails open (`terraform.md`/`packer.md`) |

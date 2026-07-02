@@ -989,3 +989,18 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   ("per-repo need" → global/build-on-first-use) and documented the principle in
   `EXTENDING.md`. Reconciles with the Rule of Three (which guards *our own*
   code, not stable external libraries).
+- 2026-07-02 — **Renamed the `ship-pr` skill/command to `push-pr`; added an
+  `auto-merge: enabled` opt-in.** Renamed to fit the user's mental model
+  ("push" over "ship"): the skill directory, `scripts/ship.sh` → `push.sh`,
+  `test_ship.bats` → `test_push.bats`, and all **operational** references
+  (rules, other skills, `STRUCTURE.md`, `EXTENDING.md`, the `.claude/` docs,
+  the `merge-finalization.py` merge-detection regex, the dependabot comment).
+  **Dated historical records were left as-is** (this log, `CHANGELOG.md`,
+  ADR-0001, the audit `mining/` census, `ICEBOX.md`) — they name the skill as
+  it was called when written; this entry is the forward pointer. Separately
+  added a per-repo **`auto-merge: enabled`** sentinel (mirroring
+  `merge-finalization: enforce`) that makes invoking push-pr consent through
+  merge on green CI, for a repo whose server-side guardrails make a manual
+  merge gate redundant — the merge still obeys the ruleset (skips the prompt,
+  not the checks). Documented in the push-pr skill (Step 5) and `rules/gh.md`;
+  **not enabled for this repo**.

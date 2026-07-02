@@ -89,7 +89,7 @@ and should quietly shape behavior.
 `SKILL.md` of instructions plus optional scripts/resources. Runs in the
 current context; no separate process.
 **When:** A repeatable multi-step task (three or more steps, with
-decisions or branches) you want done consistently — e.g. `ship-pr`,
+decisions or branches) you want done consistently — e.g. `push-pr`,
 `qa-check`, `bats-setup`. Reach for a skill when you'd write the procedure
 up for a new contributor.
 **Authoring:** when creating or iterating a skill, use the **skill-creator**

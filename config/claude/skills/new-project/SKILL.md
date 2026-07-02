@@ -13,7 +13,7 @@ one** to these conventions. `rules/new-project.md` is the standing **policy**
 orchestrates the existing rules and setup skills rather than restating them:
 
 - Git init / default branch / branch protection / sibling repos → `git.md`.
-- PR flow → `gh.md`, the `ship-pr` skill.
+- PR flow → `gh.md`, the `push-pr` skill.
 - Pre-commit baseline (phased) → `pre-commit.md`.
 - Test harness → `testing.md` + the language's setup skill (`bats-setup`,
   `pytest-patterns`, …).
@@ -115,7 +115,7 @@ claude setup **incrementally and non-destructively**.
    "Audit Project .claude/ Dirs for Promotable Rules/Skills" backlog item.
 
 6. **Land via PR.** All changes go through the repo's normal workflow — branch
-   first, PR, approval (`ship-pr`); never edit a protected branch directly
+   first, PR, approval (`push-pr`); never edit a protected branch directly
    (`git.md`).
 
 ## What this skill does not do
