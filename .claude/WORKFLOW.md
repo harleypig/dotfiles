@@ -209,10 +209,12 @@ gate adds no safety here. This repo therefore opts in: the
 `auto-merge: enabled` sentinel in the heading above tells the **push-pr**
 skill (Step 5) that invoking it is consent through the **whole** flow. Once CI
 is green and the merge-time finalization below (Step 4.5) is done, push-pr
-merges on its own — no separate "merge it" needed. The merge still goes
-through `push.sh merge`, which the ruleset gates (squash-only, required
-checks); the opt-in skips the prompt, **never** the checks. To revert to a
-manual merge gate, delete this sentinel. See
+merges on its own — no separate "merge it" needed. push-pr reads this sentinel
+**from `master`** (the policy already in effect), not the working tree, so the
+PR that *introduces* the sentinel still merges manually — auto-merge applies
+from the **next** PR. The merge still goes through `push.sh merge`, which the
+ruleset gates (squash-only, required checks); the opt-in skips the prompt,
+**never** the checks. To revert to a manual merge gate, delete this sentinel. See
 `config/claude/skills/push-pr/SKILL.md` Step 5 and `config/claude/rules/gh.md`.
 
 **Merge-time finalization (`merge-finalization: enforce`):**
