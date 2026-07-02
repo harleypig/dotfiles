@@ -27,7 +27,24 @@ goes green (see the merge-time finalization in
   doc-creation TODOs (hooks, channels, permission modes, headless, agent
   teams, GitHub Actions, observability). (PR #205)
 
+- **Per-repo `auto-merge: enabled` opt-in for push-pr.** Mirroring
+  `merge-finalization: enforce`: a repo whose server-side guardrails make a
+  manual merge gate redundant may declare `auto-merge: enabled` in its
+  `.claude/WORKFLOW.md` / `CONVENTIONS.md`, making an invocation of push-pr
+  consent through merge on green CI (the merge still obeys the ruleset — the
+  opt-in skips the prompt, not the checks). Wired into push-pr Step 5 and
+  `rules/gh.md`; not enabled for this repo. (PR #206)
+
 ### Changed
+
+- **Renamed the `ship-pr` skill/command to `push-pr`.** Renamed the skill
+  directory, `scripts/ship.sh` → `push.sh`, and `test_ship.bats` →
+  `test_push.bats`, and updated all operational references (rules, other
+  skills, `STRUCTURE`, `EXTENDING`, the `.claude/` docs, `dependabot.yml`, and
+  the loops doc). Dated historical records keep the old name; a
+  `decisions-log` entry is the forward pointer. Also fixed a latent bug where
+  `merge-finalization.py`'s detection regex bare-matched `ship` and so would
+  not have matched `push.sh merge`. (PR #206)
 
 - **pre-commit hooks now run via their `docker_image` variants for CI/local
   parity.** The `shfmt`, `gitleaks`, and `markdownlint` hooks (both the check

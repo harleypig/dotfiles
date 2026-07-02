@@ -1,6 +1,6 @@
 ---
 name: shell-startup-guard
-description: Detect and resolve un-managed (out-of-band) changes to this dotfiles repo's `shell-startup` script — the kind a tool installer makes by writing into ~/.bashrc / ~/.bash_profile, which symlink to `shell-startup` (e.g. the grok/xAI CLI installer re-adding its PATH+completion block). Compares `shell-startup` against a committed `shell-startup.md5` checksum; on drift, shows what changed since the last blessed state and offers to approve, restore, relocate the stray block into a proper module/wrapper, or defer. Use during ship-pr's first half (before commit) and at merge-finalization, or whenever you suspect `shell-startup` was modified outside the repo's own edits.
+description: Detect and resolve un-managed (out-of-band) changes to this dotfiles repo's `shell-startup` script — the kind a tool installer makes by writing into ~/.bashrc / ~/.bash_profile, which symlink to `shell-startup` (e.g. the grok/xAI CLI installer re-adding its PATH+completion block). Compares `shell-startup` against a committed `shell-startup.md5` checksum; on drift, shows what changed since the last blessed state and offers to approve, restore, relocate the stray block into a proper module/wrapper, or defer. Use during push-pr's first half (before commit) and at merge-finalization, or whenever you suspect `shell-startup` was modified outside the repo's own edits.
 ---
 
 # shell-startup Guard
@@ -24,10 +24,10 @@ The model owns the decision about *what the drift is* and *how to resolve it*.
 
 ## When this runs
 
-- **ship-pr Step 1 (first half), before commit** — the primary gate. Wired in
+- **push-pr Step 1 (first half), before commit** — the primary gate. Wired in
   `.claude/WORKFLOW.md`. Catching drift here lets the decision land cleanly in
   the PR's commits.
-- **Merge-time finalization (ship-pr Step 4.5)** — a backstop, in case an
+- **Merge-time finalization (push-pr Step 4.5)** — a backstop, in case an
   installer ran between commit and merge.
 - **On demand** — whenever you suspect `shell-startup` changed out of band.
 

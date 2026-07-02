@@ -49,7 +49,7 @@ repo** for global changes — but **only audit-relevant files**:
 - Resolve the dotfiles repo from `$DOTFILES` (fail clearly if unset).
 - Its `master` is **protected** — branch first, change only audit files, then
   land via PR (squash; watch CI; merge on explicit approval). Use the
-  **ship-pr** skill + `gh.md`. Never edit on `master`.
+  **push-pr** skill + `gh.md`. Never edit on `master`.
 - Local-repo changes happen in the current repo (its `.claude/`, or a
   local-scope `claude mcp add`), separately from the dotfiles PR.
 
@@ -121,7 +121,7 @@ action.
 3. **Implement** — author/modify the artifact. Run the reference-consistency
    grep (below) for anything renamed/moved/dropped.
 4. **Land** — global changes via a dotfiles PR (audit + affected files; squash;
-   watch CI; merge on explicit approval) using **ship-pr**.
+   watch CI; merge on explicit approval) using **push-pr**.
 5. **Finalize** — once green, **remove** the item from `audit/BACKLOG.md` and
    record the outcome in `audit/decisions-log.md` (the same prune-at-merge
    discipline the repo uses for `TODO.md`).

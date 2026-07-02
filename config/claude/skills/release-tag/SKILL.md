@@ -1,6 +1,6 @@
 ---
 name: release-tag
-description: Cut a release version tag (vX.Y.Z) at a merge commit, following the repo's declared tagging method, then watch the release workflow. Use when the user wants to tag/cut/ship a release — "tag the release", "cut a release", "cut frontend/v0.2.0", "release-tag this", "bump the version and tag", "tag v1.2.0". Reads the repo's `.claude/CONVENTIONS.md` "Versioning & tagging" to determine the method (repo-level `vX.Y.Z` vs per-subdir `<component>/vX.Y.Z`), decides the bump (alpha-loose under v0, strict once v1+), creates the annotated tag(s) at the merge commit, pushes (with confirmation, since it publishes), and watches the build/publish. For a repo you don't own, follows ITS convention. This is ship-pr's Step 6 as a standalone skill.
+description: Cut a release version tag (vX.Y.Z) at a merge commit, following the repo's declared tagging method, then watch the release workflow. Use when the user wants to tag/cut/ship a release — "tag the release", "cut a release", "cut frontend/v0.2.0", "release-tag this", "bump the version and tag", "tag v1.2.0". Reads the repo's `.claude/CONVENTIONS.md` "Versioning & tagging" to determine the method (repo-level `vX.Y.Z` vs per-subdir `<component>/vX.Y.Z`), decides the bump (alpha-loose under v0, strict once v1+), creates the annotated tag(s) at the merge commit, pushes (with confirmation, since it publishes), and watches the build/publish. For a repo you don't own, follows ITS convention. This is push-pr's Step 6 as a standalone skill.
 ---
 
 # Release tag
@@ -18,7 +18,7 @@ is **outward-facing**: confirm before pushing, and never move a published tag.
 ## When to use
 
 The user wants to tag/release a finished, **merged** change — "cut a release",
-"tag `frontend/v0.2.0`", "bump and tag". Commonly invoked as `ship-pr` Step 6,
+"tag `frontend/v0.2.0`", "bump and tag". Commonly invoked as `push-pr` Step 6,
 but works standalone for an already-merged commit.
 
 **Skip entirely** when the change ships **no artifact** (docs / CI / compose /

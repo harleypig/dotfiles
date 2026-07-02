@@ -379,13 +379,13 @@ Rule of thumb: **report-up → subagents; scripted fan-out → workflow; peer
 coordination → agent team.** `/batch` (below) is a ready-made skill built on
 the subagents-in-worktrees pattern.
 
-### Skills vs. workflows (why `ship-pr` is a skill)
+### Skills vs. workflows (why `push-pr` is a skill)
 
 "Workflow" in everyday English means "a process with steps," so a
-multi-step **skill** like `ship-pr` feels like a workflow. In the precise
+multi-step **skill** like `push-pr` feels like a workflow. In the precise
 sense used here it is not — the two are different animals:
 
-| | **Skill** (e.g. `ship-pr`) | **Workflow** (the Workflow tool) |
+| | **Skill** (e.g. `push-pr`) | **Workflow** (the Workflow tool) |
 |---|----------------------------|----------------------------------|
 | Written in | Markdown prose (+ optional shell helper) | JavaScript |
 | Who orchestrates | **Claude**, reading the steps, judging each one | **the script**, deterministically |
@@ -393,20 +393,20 @@ sense used here it is not — the two are different animals:
 | Shape | **sequential** procedure with decision points | **fan-out** — many parallel subagents |
 | Executor | the main agent, one thread | spawned subagents |
 
-`ship-pr` is textbook skill: it is inherently **sequential** (commit →
+`push-pr` is textbook skill: it is inherently **sequential** (commit →
 push → open PR → watch CI → merge → tag → cleanup, each step depending on
 the last), it has **human-approval gates** (merge only with explicit
 approval), and it **composes other skills** (`release-tag`,
 `retrospective`, `shell-startup-guard`) — all prose-level, Claude as the
-one executor. Its `ship.sh` helper is just the deterministic git/gh bits
+one executor. Its `push.sh` helper is just the deterministic git/gh bits
 pulled into a script ("use scripts for deterministic work" *within* a
 skill); it orchestrates no agents.
 
 **The litmus:** a workflow's defining move is **spawning targeted
-subagents under codified (scripted) control flow.** `ship-pr` never spawns
+subagents under codified (scripted) control flow.** `push-pr` never spawns
 an agent — it *is* the one agent walking a checklist, so it is a skill. The
 only place a workflow would appear near it is the reverse nesting: a
-workflow that invokes `ship-pr` once per branch to ship several independent
+workflow that invokes `push-pr` once per branch to ship several independent
 branches in parallel — the workflow does the fan-out, the skill does each
 linear ship.
 

@@ -2,9 +2,9 @@
 
 """PreToolUse hook: gate PR merges on the merge-time finalization.
 
-Fires on a PR-merge command (`gh pr merge ...` / `ship.sh merge ...`) — NOT
+Fires on a PR-merge command (`gh pr merge ...` / `push.sh merge ...`) — NOT
 `git merge`, so routine branch syncs are never gated. It backstops the
-merge-time documentation finalization that the ship-pr skill (Step 4.5) and a
+merge-time documentation finalization that the push-pr skill (Step 4.5) and a
 repo's `WORKFLOW.md` describe: completed items pruned from the planning docs,
 the GitHub issues those items resolve closed, and the changelog refreshed
 before the PR lands.
@@ -39,8 +39,8 @@ import sys
 from pathlib import Path
 
 # A PR-merge invocation, but not `git merge` (branch sync). Matches
-# `gh pr merge`, `ship.sh merge`, `ship merge`.
-MERGE_RE = re.compile(r"\b(?:gh\s+pr\s+merge|ship(?:\.sh)?\s+merge)\b")
+# `gh pr merge`, `push.sh merge`, `push merge`.
+MERGE_RE = re.compile(r"\b(?:gh\s+pr\s+merge|push(?:\.sh)?\s+merge)\b")
 
 # A completed Markdown task-list item: `- [x]` / `* [X]` (any indent).
 DONE_ITEM_RE = re.compile(r"^\s*[-*+]\s+\[[xX]\]")
@@ -61,7 +61,7 @@ EXTRA_DOCS_RE = re.compile(
 )
 
 CHECKLIST = (
-  "Merge-time finalization (ship-pr Step 4.5 / repo WORKFLOW.md), docs-only:\n"
+  "Merge-time finalization (push-pr Step 4.5 / repo WORKFLOW.md), docs-only:\n"
   " - Prune completed items from TODO.md / ROADMAP.md per the repo's "
   "convention (where it removes them outright, do not leave them `[x]`).\n"
   " - Close the GitHub issues those completed items resolve (with a "

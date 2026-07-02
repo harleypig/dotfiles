@@ -1,6 +1,6 @@
 ---
 name: retrospective
-description: Run a pre-merge retrospective on the agent's OWN tooling — after a piece of work (typically the last step before merging a PR), evaluate the friction hit with rules, skills, hooks, patterns files, commands, or mymcp/MCP setup, decide whether any need creating or updating, and capture each as a detailed TODO (routed global vs repo-local). Use for "run a retrospective", "retro this", "did any rules/skills/hooks need updating after this", "config retrospective", or as ship-pr's near-final step. It CAPTURES follow-ups; it does not implement them.
+description: Run a pre-merge retrospective on the agent's OWN tooling — after a piece of work (typically the last step before merging a PR), evaluate the friction hit with rules, skills, hooks, patterns files, commands, or mymcp/MCP setup, decide whether any need creating or updating, and capture each as a detailed TODO (routed global vs repo-local). Use for "run a retrospective", "retro this", "did any rules/skills/hooks need updating after this", "config retrospective", or as push-pr's near-final step. It CAPTURES follow-ups; it does not implement them.
 ---
 
 # Retrospective
@@ -19,7 +19,7 @@ the audit here — surface and record.
 
 ## When to run
 
-- As **ship-pr Step 4.6** — a near-final step, after CI is green and after the
+- As **push-pr Step 4.6** — a near-final step, after CI is green and after the
   Step 4.5 doc finalization, before the merge. It is **advisory, not a gate**
   (the only merge gate is the merge-finalization hook).
 - On request: "run a retrospective", "retro this", "any rules/skills/hooks
@@ -91,7 +91,7 @@ Route by scope:
 
 ## Step 4 — Fold into the merge flow
 
-When run as ship-pr Step 4.6, include any TODO additions in the **same
+When run as push-pr Step 4.6, include any TODO additions in the **same
 doc-only finalization commit** as Step 4.5 (or a quick follow-up doc commit),
 then **re-watch CI** once before merging. The additions are documentation, so
 they belong with the finalization, not with code.

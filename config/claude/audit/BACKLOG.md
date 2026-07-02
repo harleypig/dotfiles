@@ -121,8 +121,8 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Skill ideas & future categories (not from mining)
 
-- [ ] **`ship-pr`: document "PR already open" resume path (2026-06-20)** —
-  When `/ship-pr` is invoked and the PR was already opened in a prior session,
+- [ ] **`push-pr`: document "PR already open" resume path (2026-06-20)** —
+  When `/push-pr` is invoked and the PR was already opened in a prior session,
   the skill has no explicit "pick up here" guidance. The agent must reason
   through which steps to skip (no new commit needed; PR exists → skip Step 3;
   jump to Step 1 QA + Step 4 CI-watch). A short note in Step 0 or Step 3 — e.g.
