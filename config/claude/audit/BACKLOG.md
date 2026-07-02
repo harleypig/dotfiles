@@ -184,6 +184,12 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   ("this is bigger/smaller than scoped; re-route") instead of grinding at the
   wrong level. Output: a rule and/or routine (possibly a skill) for effort
   estimation + agent selection + kick-back. Generic (global).
+  Note (2026-07-02): `config/claude/docs/LOOPS.md` now covers the conceptual
+  groundwork this builds on — the four primitives (background job / `/loop`
+  / `/goal` / workflow), their pacing axis, loops-vs-`while`/background, and
+  the skill-vs-workflow boundary — so start from that composition model
+  rather than re-deriving it. (LOOPS.md's own final home — standalone doc
+  vs. a `rules/loops.md` — is still open.)
 
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
 
