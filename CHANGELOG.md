@@ -10,6 +10,22 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-02
+
+### Changed
+
+- **pre-commit hooks now run via their `docker_image` variants for CI/local
+  parity.** The `shfmt`, `gitleaks`, and `markdownlint` hooks (both the check
+  and fix configs) use the upstream `*-docker` hook ids, so each runs the
+  same pinned image at commit time and in CI rather than the host toolchain
+  (`shellcheck` already did). This removes the host-node dependency that made
+  the node-based `markdownlint` hook fail on older node. Hooks with no
+  maintained image — `yamllint`, the Python linters, `prettier`, and
+  pre-commit's own meta-hooks — stay on their native language. The preference
+  is recorded as global policy in `rules/pre-commit.md` (*Prefer docker_image
+  Hooks for Environment Parity*, v1.6.0); `rules/markdownlint.md` was updated
+  to the new hook ids and shared image (v1.2.1). (PR #204)
+
 ## 2026-06-30
 
 ### Added
