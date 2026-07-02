@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.5.1
+**Version:** v1.6.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -87,7 +87,9 @@ node --version
 
 If the latest release requires a newer runtime than is installed, use
 the list from Step 2 to find and pin the most recent compatible
-release instead.
+release instead — or, where the hook offers it, switch to its
+`docker_image` variant so the host runtime no longer matters (see
+*Prefer docker_image Hooks for Environment Parity*).
 
 ### Local hooks (`repo: local`)
 
@@ -101,6 +103,40 @@ which <command>
 If the command is not installed, note the missing dependency in a
 comment on the hook or add `stages: [manual]` so a missing binary
 does not break `git commit` for other contributors.
+
+## Prefer docker_image Hooks for Environment Parity
+
+When a hook offers a **`docker_image`** variant — a `*-docker` hook id, or a
+maintained standalone image — prefer it over the `node` / `golang` /
+`python` / `system` variant. The image runs the **same pinned toolchain at
+commit time and in CI** (GitHub Actions runners have docker), so the
+commit-time environment matches the CI gate and does not depend on the
+host's node / go / python version. This is what prevents a hook that builds
+cleanly in one environment but fails in another on a runtime-version
+mismatch — the Step 3 problem, solved by *delivery* rather than by pinning
+an older release.
+
+Prefer the upstream repo's own `*-docker` hook id over authoring a
+`repo: local` docker_image hook: it keeps rev management on the source repo
+and inherits the maintainer's (often SHA-pinned) image. Verify the `*-docker`
+id exists at the pinned rev before switching (`gh api
+repos/<owner>/<repo>/contents/.pre-commit-hooks.yaml?ref=<rev>`, per *Hook
+and Repo Verification*).
+
+**Trade-offs and limits:**
+
+- Needs docker wherever pre-commit runs (local dev **and** CI). A repo whose
+  contributors may lack docker should not force it.
+- Each invocation is a `docker run` — slightly slower locally than a cached
+  native env; acceptable for the parity it buys.
+- **Not every hook has an image.** pre-commit's own meta-hooks
+  (`trailing-whitespace`, `check-*`, …) and many single-language linters (a
+  Python tool with no official image — yamllint, isort, yapf, flake8,
+  pyright — or a node formatter like prettier) have none; those stay on
+  their native language. Prefer docker **where it exists**, not everywhere.
+
+This is a *preference* weighed per repo: it pays off most where the repo
+already standardizes on docker tooling and values local/CI parity.
 
 ## Recommended Cross-Cutting Hooks
 
@@ -224,6 +260,10 @@ The per-tool rules (`shellcheck.md`, `shfmt.md`, `yamllint.md`,
 ## Agent Rules
 
 * Agents MUST treat `.pre-commit-config.yaml` as **non-modifying checks only**.
+* Prefer a hook's **`docker_image`** variant (a `*-docker` id, or a
+  maintained image) when one exists, for local/CI parity and to avoid
+  host-runtime mismatches; verify the id exists at the pinned rev first. See
+  *Prefer docker_image Hooks for Environment Parity*.
 * If `.pre-commit-config-fix.yaml` exists:
   * It defines optional, modifying hooks.
 * Agents MUST NOT apply auto-fixes mid-session in response to hook
