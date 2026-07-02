@@ -1,8 +1,9 @@
-# Claude Code Loops
+# Claude Code Loops & Workflows
 
-A reference for Claude Code's loop primitives — what a loop is, the four
-kinds, how `/loop` and `/schedule` actually behave, and how "auto mode"
-fits in. Distilled from the [Getting started with loops][blog] blog post
+A reference for Claude Code's loop **and workflow** primitives — what a loop
+is, the four kinds, how `/loop` and `/schedule` actually behave, how "auto
+mode" fits in, and when a workflow (multi-agent fan-out) is the right tool.
+Distilled from the [Getting started with loops][blog] blog post
 and the official [scheduled-tasks][docs-loop], [routines][docs-schedule],
 and [auto-mode][docs-auto] docs.
 
@@ -255,6 +256,56 @@ only place a workflow would appear near it is the reverse nesting: a
 workflow that invokes `ship-pr` once per branch to ship several independent
 branches in parallel — the workflow does the fan-out, the skill does each
 linear ship.
+
+## What makes a good workflow fit
+
+A workflow's shape is "many independent items → one agent each, in parallel,
+orchestrated by a script." But *having* discrete items is a **necessary, not
+sufficient** condition. A good fit clears a higher bar:
+
+- **Real independence, not "usually."** Items must not share files or depend
+  on each other's order — parallel agents writing the same file collide.
+  Where writes overlap, isolate them (the Workflow tool's
+  `isolation: 'worktree'` gives each agent its own git worktree) or partition
+  the shared parts into a final serial stage.
+- **Homogeneity.** Fan-out codifies cleanly when it is *the same operation
+  over similar items*. Wildly different tasks each need bespoke handling —
+  hard to script, easy to get wrong at scale.
+- **Verifiability.** Each item's result should be independently checkable (a
+  verify stage), or the run produces N unreviewed changes at once.
+- **Bounded & specified.** Ambiguous items that need a human decision do not
+  fan out well — you would parallelize guessing.
+
+Two contrasting examples make the bar concrete.
+
+**A directory of Terraform modules — strong fit.** A tree like
+`tfmods/<module>/` is close to ideal: **directory-partitioned** (each agent
+owns one module's mostly-disjoint files), **homogeneous** (create/update a
+module to a shared spec is the same operation N times), and **verifiable**
+(fmt / validate / tflint / trivy / tftest / terraform-docs per module — the
+`terraform-review` skill is a ready verify stage). Design: *fan out per
+module (worktree-isolated) → verify each → a final pass for shared/root
+files*. Mind two things: parallel writes need worktree isolation, and shared
+files (a root `versions.tf`, a modules index) or inter-module dependencies
+break pure parallelism — handle those serially and sequence any dependency
+chains.
+
+**A raw TODO file — weak fit until curated.** A heterogeneous task list is
+*not* a good "point a workflow at it" target: tasks differ in size, type,
+and acceptance criteria (not homogeneous); "usually discrete" hides coupling
+(items sharing a file or assuming another's change); many sit in a TODO
+*because* they need a decision (judgment-heavy); and N parallel changes
+become N things to review at once (parallel authoring, serial review). The
+right pattern is **scout → curate → fan out**, where **curate is a
+deliberate human decision made first** — you (with the agent) go through the
+list, pick a *batch* of genuinely independent, well-specified,
+similar-enough items, and decide how to separate them. Only *then* fan out
+over that curated batch. The workflow runs the batch; it never infers what
+is batchable — that is the call you make going in.
+
+**The discriminator:** real independence + homogeneity + a verify gate. A
+module tree has all three by construction; a raw TODO has none reliably — so
+it earns a workflow only after the curation step supplies them.
 
 ## Best practices
 
