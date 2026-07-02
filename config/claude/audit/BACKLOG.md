@@ -216,6 +216,11 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     work; cross-reference the existing `rules/github-actions.md`.
   - [ ] **Observability.** `/tasks`, `/workflows`, `claude agents`, `/usage`
     — monitoring unattended work.
+  - [ ] **Reflect `config/claude/docs/` in `STRUCTURE.md`** (retrospective,
+    PR #205). The new understandable-docs series and `TOPIC.md.template` are
+    a structural addition to the agent config that the `STRUCTURE.md`
+    reference map does not yet list; decide how the `docs/` tree is
+    represented there and add it.
   Generic (global; docs under `config/claude/docs/`).
 
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
