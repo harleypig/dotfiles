@@ -170,20 +170,58 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   as the web instance; don't duplicate its coverage. Relates to `a11y-review`
   (accessibility *review*) and `qa.md` dim 7 (UI/UX & accessibility).
 
-- [ ] **Sub-agent usage / definition / effort-level research (2026-06-27).**
-  Questions the current setup doesn't answer systematically: (1) **how to
-  use** sub-agents well (when to delegate vs do inline — `EXTENDING.md`
-  *Agent* gives the principle, not a routine); (2) **how to define** them
-  (custom agent types, tool restrictions, system prompts); (3) **effort
-  levels** — the Agent/Workflow tooling exposes an `effort` knob
-  (low/medium/high/…), but there's no guidance on *which* level a task
-  warrants. Investigate whether we can **estimate a task's effort and
-  auto-assign the right sub-agent** (model tier + effort + agent type) from
-  the task description, and — the harder half — whether a sub-agent can
-  **recognize when the effort/agent was mis-guessed and kick the task back**
-  ("this is bigger/smaller than scoped; re-route") instead of grinding at the
-  wrong level. Output: a rule and/or routine (possibly a skill) for effort
-  estimation + agent selection + kick-back. Generic (global).
+- [ ] **Learning about Claude — build understandable, layered docs
+  (2026-06-27, broadened from "sub-agent research" 2026-07-02).** Recreate
+  the Claude Code documentation in a form the user actually absorbs: a plain
+  ELI5 layer over a conceptual model, plus practical usage that follows the
+  three-tier generic→specific philosophy (`CLAUDE.md` *Configuration
+  Migration*). `config/claude/docs/TOPIC.md.template` is the **template** for
+  the shape (abstract → ELI5 + best-practices → overview / at-a-glance →
+  major groups → optional bring-it-together → see-also → resources);
+  `config/claude/docs/LOOPS-WORKFLOWS.md` is the first **worked instance**.
+  Each doc lives in `config/claude/docs/`; the open question per topic is
+  which graduate to a `rules/<x>.md` (agent behaviour) vs. stay a reference
+  doc. The template is a **guide, not a cage** — a specific topic may bypass
+  or bend it where the shape genuinely doesn't fit (note the deviation on
+  that doc), and when the **template itself changes, re-audit the existing
+  docs and reflow them** to the new shape. Topics to document next — each its
+  own doc, same shape:
+  - [ ] **Sub-agents.** How to *use* them well (delegate-vs-inline —
+    `EXTENDING.md` *Agent* gives the principle, not a routine), how to
+    *define* them (custom agent types, tool restrictions, system prompts),
+    and **effort levels**: the Agent/Workflow tooling exposes an `effort`
+    knob (low/medium/high/…) with no guidance on *which* a task warrants.
+    Investigate estimating a task's effort and **auto-assigning** the right
+    sub-agent (model tier + effort + agent type) from the description, and —
+    the harder half — whether a sub-agent can **recognize a mis-guess and
+    kick the task back** ("bigger/smaller than scoped; re-route") instead of
+    grinding at the wrong level. This one's output may be a **rule and/or
+    skill**, not just a doc (the original 2026-06-27 research item). Generic.
+  - [ ] **Hooks.** Event-driven automation (`PreToolUse` / `PostToolUse` /
+    `SessionStart` / task-lifecycle) — the reactive family the loops doc
+    points at; the *understanding* doc over our existing hook rules/hooks.
+  - [ ] **Channels** (research preview). External systems pushing events
+    into a running session — the push counterpart to poll/timer loops.
+  - [ ] **Permission modes & auto mode.** `acceptEdits` / `dontAsk` / `auto`
+    / bypass and the `autoMode` classifier; how unattended work is gated.
+    Consider **extracting the auto-mode section out of
+    `LOOPS-WORKFLOWS.md`** into this dedicated modes doc once it exists (it
+    lives in the loops section there only because it gates loops).
+  - [ ] **Headless / programmatic.** `claude -p`, `--resume` / `--continue`,
+    output formats, the Agent SDK — the surface for driving Claude from
+    scripts / CI.
+  - [ ] **Agent teams** (experimental). Peer-coordinating multi-agent work;
+    the deep-dive the loops doc only summarizes.
+  - [ ] **GitHub Actions integration.** GitHub-native triggers for Claude
+    work; cross-reference the existing `rules/github-actions.md`.
+  - [ ] **Observability.** `/tasks`, `/workflows`, `claude agents`, `/usage`
+    — monitoring unattended work.
+  - [ ] **Reflect `config/claude/docs/` in `STRUCTURE.md`** (retrospective,
+    PR #205). The new understandable-docs series and `TOPIC.md.template` are
+    a structural addition to the agent config that the `STRUCTURE.md`
+    reference map does not yet list; decide how the `docs/` tree is
+    represented there and add it.
+  Generic (global; docs under `config/claude/docs/`).
 
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
 

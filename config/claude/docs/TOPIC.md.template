@@ -1,0 +1,126 @@
+# TOPIC NAME
+
+> **Template** for a "Learning about Claude" reference doc — a slice of the
+> Claude Code docs recast in a form the reader absorbs: a plain ELI5 layer
+> over a conceptual model, plus practical usage, layered generic → specific.
+> Copy to `config/claude/docs/<topic>.md`, then replace every `>` guidance
+> note and `PLACEHOLDER`. `LOOPS-WORKFLOWS.md` is the worked example of
+> every section below.
+>
+> **Conventions:** GitHub-flavored Markdown; wrap prose at 78 columns;
+> reference-style links only, all defined at the **bottom** (no inline URLs,
+> no "distilled from" links in the abstract); markdownlint-clean — every
+> link definition must be **used** (unused ones fail MD053), every used
+> label defined; emphasis uses asterisks (`*italic*`, `**bold**`). Delete
+> any section a topic doesn't need rather than leaving it empty; the ones
+> marked **optional** are the usual candidates.
+>
+> **Abstract** — 3–6 sentences, **link-free**, no command list. What the
+> subject IS and what this doc covers, in plain terms; write it so it can be
+> lifted verbatim into a table of contents. Bold the core term(s) on first
+> use.
+
+## ELI5
+
+> Plain-language one-liners for every command / concept the doc names,
+> grouped by **intent** (what the reader is trying to do) — this doubles as
+> a quick summary, so keep the "ELI5" header even though it is more than an
+> ELI5. End with a one-line, linked pointer to any adjacent, out-of-scope
+> family.
+
+*Intent group A (e.g. "make it do X"):*
+
+- **`/command`** — what it does, in one plain sentence.
+- **concept** — what it is, in one plain sentence.
+
+*Intent group B:*
+
+- ...
+
+### Best practices
+
+> The do / don't guidance for this topic; each bullet an actionable rule of
+> thumb.
+
+- **Rule of thumb** — the why, briefly.
+- ...
+
+## Overview
+
+> The **conceptual model**: what the pieces are and the single axis /
+> distinction that organizes them (the "aha" that makes the rest click).
+> End with the key distinction that sets up the deeper sections — the
+> sentence the reader should remember.
+
+### At a glance
+
+> A table of the pieces with the columns that carry the model (what varies
+> across them). Immediately follow it with prose that walks the rows **in
+> the same order as the table**, one clause each — the table shows the axes,
+> the prose gives the feel.
+
+| Piece | AXIS 1 | AXIS 2 | Reach for it when |
+|-------|--------|--------|-------------------|
+| **piece 1** | ... | ... | ... |
+| **piece 2** | ... | ... | ... |
+
+In table order: **piece 1** ...; **piece 2** ...; one clause per piece, in
+the table's order.
+
+## MAJOR GROUP A
+
+> A major grouping of the pieces (in the example doc: "Loops" and
+> "Workflows"). Open with a one-line framing of what unifies this group,
+> then one `###` per piece that belongs to it, **in the same order as the
+> at-a-glance table**. Keep each piece in exactly one group.
+>
+> Single-topic doc with no natural split? Drop this MAJOR GROUP layer and
+> make each piece a top-level `##` instead.
+
+### Piece — deeper explanation
+
+> What it is, how it behaves, when to use it, and the gotchas. Add
+> sub-tables, examples, and code fences as needed.
+
+### Next piece
+
+...
+
+## MAJOR GROUP B
+
+> Same shape as GROUP A, for the other group. Add more `##` groups only if
+> the topic genuinely has them.
+
+### Piece
+
+...
+
+## Bringing it together
+
+> **Optional** — skip for a simple single-topic doc. Use it when the pieces
+> **compose**: how they combine, the decision of when to reach for which, a
+> worked end-to-end example. This is where the doc earns its keep over the
+> raw reference.
+
+## See also — adjacent, out of scope
+
+> **Optional.** Related families this doc deliberately does **not** cover —
+> one bullet each, a link, and one line on why it is a different thing.
+> Keeps the doc focused while pointing the reader onward.
+
+- **Adjacent thing** — what it is and why it's separate. See [name][label].
+
+## Resources
+
+> A short lead-in line, then a **bullet list** of sources — one bullet per
+> source as `[name][label] — short descriptor`, not a link-heavy paragraph.
+> **Use every reference label** so no definition below is unused. Then the
+> link definitions, at the very bottom of the file.
+
+Distilled from SOURCE and the official Claude Code documentation:
+
+- [name][label] — what it covers
+- [name][label2] — what it covers
+
+[label]: https://example.com/one
+[label2]: https://code.claude.com/docs/en/two

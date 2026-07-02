@@ -12,6 +12,21 @@ goes green (see the merge-time finalization in
 
 ## 2026-07-02
 
+### Added
+
+- **Loops & Workflows reference doc, and a doc template for the series.**
+  New `config/claude/docs/LOOPS-WORKFLOWS.md` — a plain-language reference
+  for Claude Code's loop and workflow primitives (an ELI5 quick-summary plus
+  best practices, a primitive-concepts model, Loops and Workflows sections
+  walking each concept, an operational "bringing it together" layer, the
+  adjacent event-driven family, and bulleted sources). New
+  `config/claude/docs/TOPIC.md.template` captures the reusable shape for a
+  "Learning about Claude" doc series (with `LOOPS-WORKFLOWS.md` as the first
+  worked instance), and the agent-config BACKLOG "sub-agent research" item is
+  broadened into a "Learning about Claude" documentation project with
+  doc-creation TODOs (hooks, channels, permission modes, headless, agent
+  teams, GitHub Actions, observability). (PR #205)
+
 ### Changed
 
 - **pre-commit hooks now run via their `docker_image` variants for CI/local
