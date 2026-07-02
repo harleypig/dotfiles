@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.5.3
+**Version:** v1.6.0
 
 ## Purpose
 
@@ -200,6 +200,23 @@ GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets/17364459 \
   --method PUT --input ../private_dotfiles/github-rulesets/protect-master-solo.json
 ```
 
+**Auto-merge (`auto-merge: enabled`):**
+
+Because the guardrails above are strong — the server-side ruleset requires a
+PR with `bats` / `meta` / `perl` / `pre-commit` green, blocks direct pushes
+and force-push, and admits no bypass actors — a manual "ask before merge"
+gate adds no safety here. This repo therefore opts in: the
+`auto-merge: enabled` sentinel in the heading above tells the **push-pr**
+skill (Step 5) that invoking it is consent through the **whole** flow. Once CI
+is green and the merge-time finalization below (Step 4.5) is done, push-pr
+merges on its own — no separate "merge it" needed. push-pr reads this sentinel
+**from `master`** (the policy already in effect), not the working tree, so the
+PR that *introduces* the sentinel still merges manually — auto-merge applies
+from the **next** PR. The merge still goes through `push.sh merge`, which the
+ruleset gates (squash-only, required checks); the opt-in skips the prompt,
+**never** the checks. To revert to a manual merge gate, delete this sentinel. See
+`config/claude/skills/push-pr/SKILL.md` Step 5 and `config/claude/rules/gh.md`.
+
 **Merge-time finalization (`merge-finalization: enforce`):**
 
 This repo opts in to the merge-time documentation finalization (push-pr
@@ -348,7 +365,7 @@ See individual tool configurations for additional variables.
 ### Versioning
 
 * `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.5.3)
+* `WORKFLOW.md` - Versioned (this file, v1.6.0)
 * `TESTS.md` - Versioned (see that file)
 * `.claude/rules/*.md` - Individual versions
 

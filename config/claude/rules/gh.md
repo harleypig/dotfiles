@@ -204,8 +204,10 @@ running the `gh issue list` calls above piecemeal.
   `auto-merge: enabled` in its `.claude/WORKFLOW.md` / `.claude/CONVENTIONS.md`
   (when its server-side guardrails make a manual merge gate redundant); there,
   invoking **push-pr** is consent through merge on green CI (the merge still
-  obeys the ruleset — the opt-in skips the prompt, not the checks). Closing a
-  PR always needs explicit instruction. See push-pr Step 5.
+  obeys the ruleset — the opt-in skips the prompt, not the checks). The
+  sentinel is read **from the default branch**, so the PR that *adds* it still
+  merges manually — auto-merge applies from the next PR. Closing a PR always
+  needs explicit instruction. See push-pr Step 5.
 - Use `gh pr view`, `gh issue list`, etc. to check state before acting.
 - For full PR prep workflow (sync, push, create), use the
   **git-worktree-workflow** skill (Operation 4).

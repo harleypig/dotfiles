@@ -194,16 +194,27 @@ sentinel `merge-finalization: enforce` in its `.claude/WORKFLOW.md` or
 clean — it injects the finalization checklist as a reminder and never blocks.
 The hook is a guard; the responsibility to run Step 4.5 is still yours.
 
-**Auto-merge opt-in.** Check the repo's `.claude/WORKFLOW.md` /
-`.claude/CONVENTIONS.md` for the sentinel `auto-merge: enabled` (grep for it).
-When **present**, the repo has judged its guardrails (server-side branch
-protection, required status checks, etc.) sufficient that a manual merge gate
-adds no safety — so **invoking this skill is consent through merge**: once CI
-is green and Step 4.5/4.6 are done, proceed to merge **without** a separate
-approval. When **absent** (the default), **confirm the user explicitly asked
-to merge this branch** before proceeding. Either way the merge still goes
-through `push.sh merge`, which respects the repo's ruleset (allowed methods,
-required checks) — the opt-in skips the human prompt, **never** the guardrails.
+**Auto-merge opt-in.** Check for the sentinel `auto-merge: enabled` **as it
+exists on the default branch** — the policy already in effect — **not** in the
+current branch's working tree:
+
+```bash
+git show "origin/$DEF:.claude/WORKFLOW.md" "origin/$DEF:.claude/CONVENTIONS.md" \
+  2>/dev/null | grep -q 'auto-merge: enabled'
+```
+
+Reading the default branch, not the working tree, is deliberate: a PR that
+*introduces* the sentinel must **not** auto-merge itself — it goes through the
+manual gate, and auto-merge takes effect from the **next** PR. A change does
+not grant itself elevated autonomy. When the sentinel **is** in effect, the
+repo has judged its guardrails (server-side branch protection, required
+checks, etc.) sufficient that a manual merge gate adds no safety — so
+**invoking this skill is consent through merge**: once CI is green and Step
+4.5/4.6 are done, proceed to merge **without** a separate approval. When it is
+**not** in effect (the default), **confirm the user explicitly asked to merge
+this branch** before proceeding. Either way the merge still goes through
+`push.sh merge`, which respects the repo's ruleset (allowed methods, required
+checks) — the opt-in skips the human prompt, **never** the guardrails.
 
 Discover the allowed methods
 (rulesets often restrict to squash-only) and choose:

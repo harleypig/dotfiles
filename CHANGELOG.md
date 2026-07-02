@@ -37,6 +37,14 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **Enabled the `auto-merge` opt-in for this repo, and evaluate the sentinel
+  on the default branch.** `master`'s ruleset (PR-only, required checks, no
+  bypass) makes a manual merge gate redundant, so `.claude/WORKFLOW.md`
+  (v1.6.0) now carries `auto-merge: enabled` — future `/push-pr` runs merge on
+  green CI. push-pr Step 5 reads the sentinel from the **default branch** (not
+  the working tree), so the PR that *introduces* it still merges manually and
+  auto-merge applies from the next PR. (PR #207)
+
 - **Renamed the `ship-pr` skill/command to `push-pr`.** Renamed the skill
   directory, `scripts/ship.sh` → `push.sh`, and `test_ship.bats` →
   `test_push.bats`, and updated all operational references (rules, other
