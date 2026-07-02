@@ -175,12 +175,17 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   the Claude Code documentation in a form the user actually absorbs: a plain
   ELI5 layer over a conceptual model, plus practical usage that follows the
   three-tier generic→specific philosophy (`CLAUDE.md` *Configuration
-  Migration*). `config/claude/docs/LOOPS-WORKFLOWS.md` is the first instance
-  **and the template** for the shape: an ELI5 command list → a primitives
-  model → composition/when-to-use → adjacent families → reference links at
-  the bottom. Each doc lives in `config/claude/docs/`; the open question per
-  topic is which graduate to a `rules/<x>.md` (agent behaviour) vs. stay a
-  reference doc. Topics to document next — each its own doc, same shape:
+  Migration*). `config/claude/docs/TOPIC.md.template` is the **template** for
+  the shape (abstract → ELI5 + best-practices → overview / at-a-glance →
+  major groups → optional bring-it-together → see-also → resources);
+  `config/claude/docs/LOOPS-WORKFLOWS.md` is the first **worked instance**.
+  Each doc lives in `config/claude/docs/`; the open question per topic is
+  which graduate to a `rules/<x>.md` (agent behaviour) vs. stay a reference
+  doc. The template is a **guide, not a cage** — a specific topic may bypass
+  or bend it where the shape genuinely doesn't fit (note the deviation on
+  that doc), and when the **template itself changes, re-audit the existing
+  docs and reflow them** to the new shape. Topics to document next — each its
+  own doc, same shape:
   - [ ] **Sub-agents.** How to *use* them well (delegate-vs-inline —
     `EXTENDING.md` *Agent* gives the principle, not a routine), how to
     *define* them (custom agent types, tool restrictions, system prompts),

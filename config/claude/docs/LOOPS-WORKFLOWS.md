@@ -68,7 +68,7 @@ out of scope here — see [hooks][docs-hooks] and [channels][docs-channels].
 - **Watch cost** with `/usage` (skills, subagents, MCPs), `/goal` (turns
   and tokens), and `/workflows` (per-agent usage).
 
-## What a loop is
+## Overview
 
 A **loop** is an agent repeating cycles of work until a stop condition is
 met. The concept is about *how a task is triggered and when it stops*, not
@@ -81,7 +81,7 @@ that spreads *across* many agents at once. Loops are about **when / how
 often**; workflows are about **how wide**. The two major sections below take
 each in turn.
 
-## The primitive concepts at a glance
+### At a glance — the primitive concepts
 
 The building blocks of the family — some are commands (`/loop`, `/goal`,
 `/background`), others are concepts (a background job, a workflow, an agent
@@ -493,7 +493,13 @@ spawns one worktree-isolated subagent per unit that implements, tests, and
 opens its own PR. Reach for it when the batch is a genuine fit; you still
 hand-curate what goes in, exactly as above.
 
-## Watching unattended work
+## Bringing it together
+
+Loops and workflows **compose** — a proactive loop, or a `/loop` that runs a
+workflow (both above) — and however you combine them, you **operate** them
+the same way: watch what is running, and drive it from a script.
+
+### Watching unattended work
 
 Once work runs without you, these show what is happening:
 
@@ -506,7 +512,7 @@ Once work runs without you, these show what is happening:
 - **`/usage`** — session cost and plan limits, broken down by skill /
   subagent / plugin / MCP.
 
-## Driving it from scripts (headless)
+### Driving it from scripts (headless)
 
 Everything above can be invoked non-interactively for CI or scripts with
 `claude -p "<prompt>"` (print mode), using `--resume` / `--continue` to
@@ -514,7 +520,7 @@ carry a session across invocations and `--permission-mode` to control what
 runs without a prompt. This is the surface that turns a loop or workflow
 into a scheduled or CI-triggered job. See [headless][docs-headless].
 
-## Adjacent: event-driven automation (a different family)
+## See also — adjacent, out of scope
 
 Loops and workflows are about **repetition and fan-out**. A separate family
 **reacts to events** instead — it fires when something happens, not on a
@@ -533,7 +539,7 @@ timer:
 Each of these deserves its own reference (tracked in the backlog); this doc
 stays on loops and workflows.
 
-## Sources
+## Resources
 
 Distilled from the [Getting started with loops][blog] blog post and the
 official Claude Code documentation: [scheduled-tasks][docs-loop] (`/loop`),
