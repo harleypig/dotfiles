@@ -520,6 +520,31 @@ spawns one worktree-isolated subagent per unit that implements, tests, and
 opens its own PR. Reach for it when the batch is a genuine fit; you still
 hand-curate what goes in, exactly as above.
 
+### Prove iteration one by hand, then hand off the rest
+
+A workflow's value is replicating a *proven* recipe across many items — so
+before you fan out, run what would be **the workflow's first iteration
+directly**, by hand, as a normal agent turn. Build one item end to end
+(implement → verify → the shared spine it needs), get it green, and let it
+become the known-good template. *Then* the workflow does the remaining
+homogeneous items against that template. This is the same instinct as the
+best-practice *pilot on small workloads before scaling* — stated as a rule:
+**never let iteration one be a fan-out.**
+
+The reason is that fanning out first multiplies an *unproven* pattern. If the
+recipe is subtly wrong — a mis-shaped schema, a wrong verify command, a bad
+assumption about the API — N parallel agents all bake in the same mistake, and
+you review N broken changes at once. Proving iteration one by hand also tends
+to **discharge the serial spine** the fan-out sits on (the shared client, the
+provider wiring, a root index), so the workflow that follows is closer to pure
+parallel fan-out. Concretely: build a Terraform provider's first resource
+(`mxroute_domain`) by hand — it proves the resource recipe *and* lands the
+one-time provider wiring — then a workflow replicates that recipe across the
+remaining resource families. What the hand-run does **not** prove is the
+orchestration itself (parallelism, worktree isolation, integration); that is
+what the first *real* run — piloted on two or three items, not all of them —
+exercises.
+
 ## Bringing it together
 
 Loops and workflows **compose** — a proactive loop, or a `/loop` that runs a
