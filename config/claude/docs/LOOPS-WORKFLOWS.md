@@ -470,6 +470,30 @@ files (a root `versions.tf`, a modules index) or inter-module dependencies
 break pure parallelism — handle those serially and sequence any dependency
 chains.
 
+**A Terraform provider's resources — strong fit, with a serial spine.** A
+provider like `terraform-provider-mxroute` is the same family: one agent per
+resource (`internal/provider/<x>_resource.go` + its unit test + example),
+each built to the shared spec in the `terraform-provider-patterns` skill
+(**homogeneous**), each owning mostly-disjoint files (**partitioned**). But
+it clears the bar less cleanly than a module tree, and the gaps shape the
+*design* rather than disqualify it. Three of them: a **serial prerequisite**
+— the API client every resource calls must land first (stage 0, never
+parallelized); a **shared registration file** — each resource appends to
+`provider.go`'s `Resources()` / `DataSources()` slices, the same root-index
+collision, so it is a serial final stage; and a **credential-bound verify** —
+static checks (`go build`, `golangci-lint`, unit tests) parallelize per agent,
+but the behavioural proof (acceptance tests against a live account, often
+rate-limited) cannot be a per-agent gate and moves to the serial suffix. So
+the shape is *serial stage 0 (client) → parallel fan-out per resource,
+worktree-isolated, static-verified → serial suffix (register all, run
+acceptance tests sequentially, regenerate docs)*. One structural trick pays
+off: a **thin client** — resources call a single `Do` method rather than each
+adding its own client method — removes one of the two shared-file collisions
+by construction. The real payoff is less the wall-clock on a first handful of
+resources than **codified consistency** across a provider that grows to a
+dozen-plus resource families: build the workflow, save it, re-run it per
+family as coverage expands.
+
 **A raw TODO file — weak fit until curated.** A heterogeneous task list is
 *not* a good "point a workflow at it" target: tasks differ in size, type,
 and acceptance criteria (not homogeneous); "usually discrete" hides coupling
@@ -485,7 +509,10 @@ is batchable — that is the call you make going in.
 
 **The discriminator:** real independence + homogeneity + a verify gate. A
 module tree has all three by construction; a raw TODO has none reliably — so
-it earns a workflow only after the curation step supplies them.
+it earns a workflow only after the curation step supplies them. A provider's
+resources are the instructive middle: the three qualities hold, but a serial
+spine (a shared client, a shared registration file) and a credential-bound
+verify gate shape the run rather than block it.
 
 **A ready-made version:** the bundled **`/batch`** skill *is* this pattern —
 it researches the codebase, decomposes the change into 5–30 units, and
