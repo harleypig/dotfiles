@@ -5,7 +5,7 @@ description: Concrete recipes for building a Terraform PROVIDER in Go with terra
 
 # terraform-provider-patterns
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 The deep *how* for building a **Terraform provider** in Go with HashiCorp's
 **terraform-plugin-framework** (the current SDK; protocol v6). Language policy
@@ -137,6 +137,34 @@ harleydev `bin/set_env` credentials (`TF_ACC=1` + the three MXroute env vars).
 Keep them **out of the default CI gate** — they cost money and mutate real
 state; run them deliberately.
 
+## Fanning out — authoring many resources in parallel
+
+A provider with several resources is a natural workflow fan-out — one agent
+per resource, each mirroring a **proven** template (see the `LOOPS-WORKFLOWS`
+doc, *Prove iteration one by hand*: build the first resource by hand, then fan
+out the rest). Two provider-specific mechanics matter:
+
+- **Author, don't build (per agent).** A Go package compiles as a *whole*, so
+  N agents writing sibling files into one `internal/provider/` package cannot
+  each run `go build` — every build would trip over the others' half-written
+  files. Each agent *authors* its `<name>_resource.go` (+ test + example) and
+  stops; the authoritative `go build` / `go vet` / lint runs **once at
+  integration**, on the assembled package. This is the opposite of a Terraform
+  *module* tree, where each module is independently buildable and a
+  worktree-isolated per-agent verify works — a single-package provider gives
+  that no purchase, so skip the worktrees and verify at integration.
+- **`provider.go` is the one serial pinch-point.** Every resource must be
+  registered in `Resources()` / `DataSources()` — a single-writer file. Agents
+  must **not** edit it; the serial integration step registers them all at once.
+  The thin `client.Do` client (above) keeps `client.go` untouched too, so the
+  fan-out has exactly one shared file to serialize.
+
+Verify each authored resource with an **adversarial review** agent — it catches
+what `go build` and the linter cannot: a write-only secret leaking into state,
+or an `Optional`-not-`Computed` attribute that yields a permanent plan diff.
+The by-design "not registered in `provider.go`" a reviewer flags is the
+integration step's job, not a file defect.
+
 ## Docs — tfplugindocs
 
 `tfplugindocs` renders Registry markdown into `docs/` from the provider schema
@@ -200,6 +228,11 @@ Verified 2026-07-03:
   persists to state.
 - Gate acceptance tests behind `TF_ACC`; run them against safe/live creds
   (harleydev `bin/set_env`), never in the default CI gate.
+- When fanning out resource authoring across parallel agents, have each agent
+  **author but not build** (a Go package can't compile file-by-file); run the
+  authoritative build/lint once at integration, register every resource in
+  `provider.go` in that single serial step, and adversarially review each
+  resource for the state/plan bugs static checks miss.
 - Generate docs with `tfplugindocs` (`go generate`); release via GoReleaser +
   GPG per the scaffolding workflow and `release-tag`.
 - Treat OpenAPI codegen as a one-time accelerator, not a maintained pipeline.
