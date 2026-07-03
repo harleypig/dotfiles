@@ -116,6 +116,13 @@ rule name.
 |------|-------------|
 | [java.md](rules/java.md) | `*.java` |
 
+### Go
+
+| Rule | Activates on |
+|------|-------------|
+| [go.md](rules/go.md)<br>↗ `terraform-provider-patterns` | `*.go`, `go.mod`, `go.sum` |
+| [golangci-lint.md](rules/golangci-lint.md) | `*.go`, `.golangci.yml` |
+
 ### Docker / Infrastructure
 
 | Rule | Activates on |
@@ -237,6 +244,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 | Skill | What it does | Calls / see also |
 |-------|-------------|-----------------|
 | [tftest-patterns](skills/tftest-patterns/SKILL.md) | Terraform native-test recipes: plan-only unit tests, mock_provider, assert, expect_failures for variable validation | `terraform.md` · `testing.md` |
+| [terraform-provider-patterns](skills/terraform-provider-patterns/SKILL.md) | Building a Terraform provider in Go: framework structure, resource CRUD/import, write-only attributes, acceptance testing, tfplugindocs, GoReleaser release | `go.md` · `golangci-lint.md` · `terraform.md` · `testing.md` · `release-tag` |
 | [spotify-patterns](skills/spotify-patterns/SKILL.md) | Spotify Web API recipes: token refresh, track relinking, pagination, rate limits, playlist cover art | `spotify.md` · `spotify-audit` |
 | [spotify-audit](skills/spotify-audit/SKILL.md) | Audit a Spotify integration for API best practices, deprecated endpoints, auth correctness | `spotify.md` |
 | [frontend-design](skills/frontend-design/SKILL.md) | Create distinctive, production-grade frontend UI — avoids generic AI aesthetics | `react.md` · `typescript.md` · `css.md` · `code-style.md` |
