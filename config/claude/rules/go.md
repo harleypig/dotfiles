@@ -69,6 +69,31 @@ endorse):
   `/vN` suffix (`example.com/mod/v2`) and the `module` line must carry it;
   v0/v1 need no suffix. A breaking change is a major bump (`git.md`).
 
+## Toolchain & reproducible environment
+
+Go's cross-system reproducibility is **declarative in the repo**, not a
+separate virtual environment:
+
+- **Pin the toolchain in `go.mod`** — the `go` directive plus a `toolchain`
+  line (e.g. `toolchain go1.24.5`). With `GOTOOLCHAIN=auto` (the default since
+  Go 1.21) any `go` command re-execs — and auto-downloads — the pinned
+  toolchain, so every machine and CI build uses the same Go. A locally
+  installed Go **≥ 1.21** is all that's needed to bootstrap it.
+- **Pin dev tools in `go.mod`** with **`tool` directives** (Go 1.24+) and run
+  them via `go tool <name>` (e.g. `tfplugindocs`) — versioned alongside the
+  deps, replacing the old `tools.go` pattern.
+- **Dependencies** are already pinned by `require` + hashed `go.sum`; the
+  shared module cache is content-addressed — do not vendor or isolate it
+  without a reason.
+- **CI** reads the same pin: `actions/setup-go` with `go-version-file: go.mod`.
+
+The system Go is only a bootstrap (≥ 1.21) plus editor / `gopls` convenience;
+the repo's `go.mod` governs the build. Install a recent system Go however you
+like — the auto-updating **`go` snap** (`snap install go --classic`) or the
+go.dev **tarball** to `/usr/local/go`; Ubuntu's versioned `golang-N.M`
+packages sprawl, and there is **no official Go APT repo**. A per-project
+version manager is unnecessary — `GOTOOLCHAIN` covers it.
+
 ## Testing
 
 Meets the bar in `testing.md` (success + failure paths, a regression test per
@@ -100,6 +125,7 @@ Verified 2026-07-03:
 - Organizing a Go module (`internal/`, `cmd/`) —
   <https://go.dev/doc/modules/layout>
 - Modules reference (semantic import versioning) — <https://go.dev/ref/mod>
+- Toolchain directives / `GOTOOLCHAIN` — <https://go.dev/doc/toolchain>
 - Google Go Style Decisions (MixedCaps, no assertion libraries) —
   <https://google.github.io/styleguide/go/decisions>
 - gofumpt — <https://github.com/mvdan/gofumpt>
@@ -115,5 +141,8 @@ Verified 2026-07-03:
   string-match an error.
 - Put non-exported implementation in `internal/`; do **not** adopt
   `golang-standards/project-layout`.
+- Pin the Go version (`toolchain` in `go.mod`) and dev tools (`tool`
+  directives); rely on `GOTOOLCHAIN=auto` for reproducibility, not a
+  per-project version manager.
 - Meet the `testing.md` bar with table-driven tests; prefer `go-cmp` over an
   assertion library.
