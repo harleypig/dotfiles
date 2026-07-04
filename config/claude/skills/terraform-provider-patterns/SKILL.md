@@ -5,7 +5,7 @@ description: Concrete recipes for building a Terraform PROVIDER in Go with terra
 
 # terraform-provider-patterns
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 The deep *how* for building a **Terraform provider** in Go with HashiCorp's
 **terraform-plugin-framework** (the current SDK; protocol v6). Language policy
@@ -176,6 +176,13 @@ plus `examples/` and `templates/`. Wire via `go generate`:
 
 - Example naming matters: `examples/resources/<name>/resource.tf`,
   `.../import.sh`.
+- **Import docs are gated on the example file, not the code.** tfplugindocs
+  renders a resource's `## Import` section **only when
+  `examples/resources/<name>/import.sh` exists** — implementing
+  `ResourceWithImportState` does nothing for the docs by itself. Every
+  importable resource needs that file, or its Import section silently vanishes
+  from the Registry page (this bit 6 of 10 resources on one provider: all
+  imported in code, none documented it, because the examples were missing).
 - `terraform-registry-manifest.json` at the root:
   `{"version":1,"metadata":{"protocol_versions":["6.0"]}}`.
 
@@ -222,7 +229,8 @@ Verified 2026-07-03:
 - Scaffold from `terraform-provider-scaffolding-framework`; pin framework
   v1.18.x + Go ≥ 1.24 + protocol v6.
 - Declare an explicit `Computed` `id`; implement `ImportState` on every
-  resource.
+  resource **and add an `examples/resources/<name>/import.sh`** — without the
+  example, tfplugindocs omits that resource's `## Import` doc section entirely.
 - For any create-only secret (passwords, API keys) use a **`WriteOnly`**
   attribute + a `*_wo_version` trigger — never a plain `Sensitive` field that
   persists to state.
