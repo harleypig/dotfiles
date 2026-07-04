@@ -14,6 +14,11 @@
             "type": "command",
             "command": "python3 ~/.claude/hooks/terraform-import-safety.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/secret-echo-guard.py",
+            "timeout": 10
           }
         ]
       },
