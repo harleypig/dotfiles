@@ -92,6 +92,38 @@ def test_captured_in_substitution():
   assert not _denies('hash=$(printf "%s" "$API_KEY" | sha256sum)')
 
 
+# --- heredoc bodies are data, not commands: ALLOW ---
+
+
+def test_heredoc_body_commit_message():
+  cmd = (
+    "git commit -F - <<'EOF'\n"
+    'fix things\n\necho "$LINODE_TOKEN" here\nEOF'
+  )
+  assert not _denies(cmd)
+
+
+def test_heredoc_body_pr_via_cat_substitution():
+  cmd = "gh pr create --body \"$(cat <<'EOF'\necho \"$GH_TOKEN\"\nEOF\n)\""
+  assert not _denies(cmd)
+
+
+def test_heredoc_unquoted_delim():
+  cmd = "cat <<EOF > /tmp/x\necho $AWS_SECRET_ACCESS_KEY\nEOF"
+  assert not _denies(cmd)
+
+
+def test_heredoc_dash_tab_indented_close():
+  cmd = "cat <<-'END'\n\techo \"$DB_PASSWORD\"\n\tEND"
+  assert not _denies(cmd)
+
+
+def test_real_echo_on_opener_line_still_blocks():
+  # The echo is a real command on the opener line, not inside the body.
+  cmd = "echo \"$LINODE_TOKEN\"; cat <<'EOF'\nharmless\nEOF"
+  assert _denies(cmd)
+
+
 # --- safe expansions: ALLOW ---
 
 
