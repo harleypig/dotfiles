@@ -60,6 +60,27 @@ Before implementing a requested feature or resolving an issue:
   functions). Leave pre-existing dead code alone.
 - Every changed line must trace directly to the user's request.
 
+## Secret Handling
+
+**Never echo, print, or otherwise emit a secret's value — not even to check
+whether it is set.** Tokens, API keys, passwords, and any credential must
+never reach stdout, stderr, a log, or the conversation transcript: a value
+that lands there is compromised and must be rotated (costly, and easy to
+forget). To test presence, test the variable itself — never expand its value:
+
+- **Check presence, not value.** Use `[[ -n $TOKEN ]]` (set and non-empty)
+  or `[[ -z $TOKEN ]]` (unset or empty), and report only a literal such as
+  `set` / `unset` — never the value.
+- **Never "check" by printing the value.** Not `echo "$TOKEN"`, not
+  `printf '%s' "$SECRET"`, and especially not `echo "${TOKEN:-unset}"`: the
+  `:-` fallback **prints the value** whenever the variable is set. `${VAR:+set}`
+  alone is safe (it emits `set` or nothing); pairing it with `${VAR:-…}`
+  re-introduces the leak.
+
+This covers every secret-bearing variable (`*_TOKEN`, `*_KEY`, `AWS_SECRET_*`,
+`*_PASSWORD`, anything sourced from a `set_env`-style credential loader). When
+in doubt, do not print it.
+
 ## Verification
 
 - Define verifiable success criteria before implementing.
