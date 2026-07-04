@@ -8,7 +8,7 @@ paths:
 
 # golangci-lint Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 The Go meta-linter (and, in v2, formatter). Pairs with `go.md` (language
 policy) and `pre-commit.md` (how it is gated). golangci-lint is currently
@@ -53,6 +53,28 @@ linters:
   `ineffassign`, `staticcheck`, `unused`. **`govet` subsumes `go vet`** — do
   not run `go vet` separately.
 
+### Recommended additions beyond the defaults
+
+The default five cover correctness; add these where the repo warrants — they
+supply `qa.md`'s **security (SAST)** and **complexity** dimensions inside the
+one lint pass:
+
+- **`gosec`** — Go SAST (hardcoded creds, weak crypto, unhandled `Close`,
+  tainted file paths). Its common false positives — notably **G107** ("HTTP
+  request with a variable URL", normal for an API client building
+  `baseURL + path`) — are already silenced by the **`common-false-positives`**
+  exclusion preset, so keep that preset enabled.
+- **`gocyclo`** — a cyclomatic-complexity guardrail. Set
+  `settings.gocyclo.min-complexity` **just above the repo's current ceiling**
+  (≈ 20–30) so it flags *new* tangled functions without forcing a refactor of
+  existing branchy-but-fine code (provider CRUD, request handlers). It catches
+  regressions, not the status quo.
+- Other low-noise correctness/clarity linters worth enabling: `misspell`,
+  `unconvert`, `unparam`, `predeclared`, `forcetypeassert`, `godot`.
+
+Vulnerability scanning is **not** a golangci-lint linter — `govulncheck` runs
+separately (see `go.md` *Security scanning*).
+
 ## pre-commit
 
 golangci-lint ships its own `.pre-commit-hooks.yaml`. Pin the repo at a
@@ -82,6 +104,9 @@ golangci-lint ships its own `.pre-commit-hooks.yaml`. Pin the repo at a
   and fix all findings; format with `golangci-lint fmt` — not a standalone
   gofmt/gofumpt.
 - Do **not** run `go vet` separately; `govet` covers it.
+- Beyond the default five, enable **`gosec`** (SAST) and **`gocyclo`**
+  (complexity, `min-complexity` set just above the repo's current ceiling);
+  keep the `common-false-positives` preset so gosec's G107 stays silenced.
 - Pin the pre-commit `rev` to a verified latest release (`pre-commit.md`).
 - Prefer pre-commit when configured: `pre-commit run --files <f>` to check,
   the fix config to format.
@@ -95,6 +120,8 @@ Verified 2026-07-03:
 - Formatters (`golangci-lint fmt`) — <https://golangci-lint.run/docs/formatters/>
 - Default linters / `govet` —
   <https://golangci-lint.run/docs/linters/configuration/>
+- `gosec` (Go SAST) — <https://github.com/securego/gosec>
+- `gocyclo` (cyclomatic complexity) — <https://github.com/fzipp/gocyclo>
 - Latest release — <https://github.com/golangci/golangci-lint/releases/latest>
 - pre-commit hooks —
   <https://github.com/golangci/golangci-lint/blob/main/.pre-commit-hooks.yaml>

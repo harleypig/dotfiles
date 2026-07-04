@@ -7,7 +7,7 @@ paths:
 
 # Go Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 Go language conventions. The generic rules in `code-style.md` (naming,
 paragraph spacing, 72-col comments, library-vs-executable error posture, Rule
@@ -86,6 +86,9 @@ separate virtual environment:
   shared module cache is content-addressed — do not vendor or isolate it
   without a reason.
 - **CI** reads the same pin: `actions/setup-go` with `go-version-file: go.mod`.
+- **Keep the pinned patch current** — `govulncheck` (see *Security scanning*)
+  reports standard-library CVEs, and the fix is usually a patch bump of this
+  pin.
 
 The system Go is only a bootstrap (≥ 1.21) plus editor / `gopls` convenience;
 the repo's `go.mod` governs the build. Install a recent system Go however you
@@ -114,6 +117,28 @@ bug). Go idioms:
 - **`go vet`** is the baseline and is **subsumed by golangci-lint's `govet`**
   linter (default-enabled) — run golangci-lint, not both. The full linter set
   and config live in `golangci-lint.md`.
+- **SAST (`gosec`)** and **complexity (`gocyclo`)** also run *inside*
+  golangci-lint — enable them there (`golangci-lint.md`), not as separate
+  tools.
+
+## Security scanning
+
+Covers `qa.md`'s security dimension for Go (SCA + standard-library CVEs):
+
+- **`govulncheck`** (official, `golang.org/x/vuln`) is the vulnerability
+  scanner. It reports known CVEs in dependencies **and the standard library**,
+  and is **call-graph aware** — it flags only vulnerabilities the code
+  actually *reaches*, so it is low-noise enough to gate on. Run `govulncheck
+  ./...` locally and as its **own CI job** (`go install
+  golang.org/x/vuln/cmd/govulncheck@latest`, then run it — no third-party
+  action needed).
+- A finding is frequently a **standard-library** CVE fixed in a newer Go
+  patch, so the remedy is usually a **patch bump of the pinned toolchain**
+  (see *Toolchain*) rather than a dependency change. Keep the pinned Go patch
+  current.
+- SAST and complexity live in golangci-lint (above); secrets scanning
+  (gitleaks) is repo-level (`qa.md`). `govulncheck` is the piece golangci-lint
+  does **not** provide.
 
 ## Sources
 
@@ -126,6 +151,8 @@ Verified 2026-07-03:
   <https://go.dev/doc/modules/layout>
 - Modules reference (semantic import versioning) — <https://go.dev/ref/mod>
 - Toolchain directives / `GOTOOLCHAIN` — <https://go.dev/doc/toolchain>
+- Go vulnerability management (`govulncheck`) — <https://go.dev/doc/security/vuln/>
+- `govulncheck` command — <https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck>
 - Google Go Style Decisions (MixedCaps, no assertion libraries) —
   <https://google.github.io/styleguide/go/decisions>
 - gofumpt — <https://github.com/mvdan/gofumpt>
@@ -144,5 +171,8 @@ Verified 2026-07-03:
 - Pin the Go version (`toolchain` in `go.mod`) and dev tools (`tool`
   directives); rely on `GOTOOLCHAIN=auto` for reproducibility, not a
   per-project version manager.
+- Run **`govulncheck ./...`** (and wire it as a CI job); a standard-library
+  finding usually means bumping the pinned Go patch, not a dependency change.
+  Enable `gosec` + `gocyclo` via golangci-lint (`golangci-lint.md`).
 - Meet the `testing.md` bar with table-driven tests; prefer `go-cmp` over an
   assertion library.
