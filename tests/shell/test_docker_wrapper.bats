@@ -208,3 +208,33 @@ teardown() {
   assert_output --partial " -t "
   assert_output --partial " -i "
 }
+
+@test "terraform forwards TF_CLI_CONFIG_FILE for every subcommand, incl. validate" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  # validate does NOT forward cloud credentials (credential-free), so it is the
+  # case that proves TF_CLI_CONFIG_FILE is forwarded regardless of subcommand.
+  # Forwarded by name; a repo points it at a local provider mirror (harleydev's
+  # bin/tf + bin/provider-mirror for the unpublished mxroute provider).
+  run env "PATH=$STUB:$PATH" \
+    TF_CLI_CONFIG_FILE=/mnt/some/provider.tfrc AWS_ACCESS_KEY_ID=akid \
+    "$ROOT/bin/terraform" validate
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--env TF_CLI_CONFIG_FILE"
+  # ...while staying credential-free (creds are still gated to state subcommands).
+  refute_output --partial "--env AWS_ACCESS_KEY_ID"
+}
+
+@test "terraform does not forward TF_CLI_CONFIG_FILE when it is unset" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env -u TF_CLI_CONFIG_FILE "PATH=$STUB:$PATH" "$ROOT/bin/terraform" validate
+  assert_success
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "TF_CLI_CONFIG_FILE"
+}

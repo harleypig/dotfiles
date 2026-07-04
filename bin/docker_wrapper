@@ -135,6 +135,15 @@ terraform() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
+  # Forward a caller-supplied CLI config file (provider_installation, credential
+  # helpers, etc.) when set. Forwarded by name so the value comes from the host
+  # env; the value must be a path INSIDE the mount (/mnt/...), since only $PWD
+  # is mounted. A repo uses this to point terraform at a local provider mirror
+  # for an unpublished provider -- see harleydev's bin/tf + bin/provider-mirror
+  # (the mxroute provider). Set for every subcommand: validate/plan need the
+  # provider schema, not just init.
+  [[ -n ${TF_CLI_CONFIG_FILE-} ]] && args+=(--env TF_CLI_CONFIG_FILE)
+
   # Resolve the subcommand: the first non-flag word, since global options
   # (`-chdir=DIR`, `-help`, `-version`) precede it.
   local subcmd="" arg
