@@ -750,6 +750,15 @@ we can stay current.
   - [ ] Install via: `pipx install pyscn`
 - [ ] Document bash changes resource:
   <https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges>
+- [ ] Consider adopting the old **`gitperms`** repo to record and restore
+  full file permissions in a repository. Git stores only the executable bit
+  (`100644` vs `100755`), not group/other read-write — so tightening files to
+  owner-only (`700`/`600`, e.g. across a `bin/`) can't be committed (surfaced
+  while committing harleydev `bin/` permission changes). A `gitperms`-style
+  manifest + restore hook can carry the bits git drops. **If adopted, the
+  global `~/.claude` config must be updated to manage it** — a rule (and
+  likely a hook) teaching the agent to record/restore and verify permission
+  state, the way it manages other repo tooling.
 
 ## 📋 Template Creation
 
