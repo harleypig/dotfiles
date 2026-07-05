@@ -160,6 +160,24 @@ dw_set_home() {
 }
 
 #-----------------------------------------------------------------------------
+# Append `--env NAME` to the named array for each host variable that is set and
+# non-empty, forwarding its value into the container BY NAME (docker reads the
+# value from the host env, so it never touches the command line / process list).
+# An unset or empty NAME is skipped, so a missing credential surfaces as a clear
+# error inside the container rather than being masked by an empty value. Backs
+# bin/docker_wrapper's `-e` / `--env` flags.
+
+dw_env() {
+  local -n _a=$1
+  shift
+
+  local name
+  for name in "$@"; do
+    [[ -n ${!name-} ]] && _a+=(--env "$name")
+  done
+}
+
+#-----------------------------------------------------------------------------
 # Mount the docker socket and add its group, so a non-root --user can reach
 # the daemon (dive, `trivy image`). No-op when the socket is absent.
 

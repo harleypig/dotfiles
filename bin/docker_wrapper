@@ -6,6 +6,18 @@
 #   bin/shellcheck -> docker_wrapper
 # runs the shellcheck() function, which execs the shellcheck image.
 #
+# Forwarding host env vars:
+#   Leading `-e NAME` / `--env NAME` flags (repeatable) name host environment
+#   variables to forward into the container, e.g.
+#     bin/terraform -e MXROUTE_API_KEY -e MXROUTE_SERVER plan
+#   Each becomes a `docker run --env NAME` (forwarded by name — the value is
+#   read from the host env, never placed on the command line). This lets a
+#   caller pass whatever a run needs without editing per-tool forwarding here.
+#   The flags must lead (parsing stops at the first non-flag argument), and
+#   apply to every $PWD-mounted tool except those whose own CLI claims -e
+#   (shellcheck, whose -e is --exclude — see native_e_tools below); the daemons
+#   do not take them.
+#
 # Add a tool:
 #   1. write a <tool>() function below (build args, exec docker run)
 #   2. register its image next to the function:
@@ -65,6 +77,7 @@ shellcheck() {
 
   local -a args=(--rm)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -87,6 +100,7 @@ shfmt() {
 
   local -a args=(--rm)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -105,6 +119,7 @@ yamllint() {
 
   local -a args=(--rm)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -132,6 +147,7 @@ terraform() {
   args+=(-i)
   [[ -t 0 && -t 1 ]] && args+=(-t)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -186,6 +202,7 @@ image[terraform]="hashicorp/terraform:1.15"
 packer() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -197,6 +214,7 @@ image[packer]="hashicorp/packer:1.15"
 tflint() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -212,6 +230,7 @@ image[tflint]="ghcr.io/terraform-linters/tflint:v0.63.1"
 terraform-docs() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -227,6 +246,7 @@ prettier() {
 
   local -a args=(--rm)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -240,6 +260,7 @@ hadolint() {
 
   local -a args=(--rm)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -263,6 +284,7 @@ markdownlint() {
 
   local -a args=(--rm)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
@@ -311,6 +333,7 @@ trivy() {
 
   local -a args=(--rm)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt --env "TRIVY_CACHE_DIR=/cache")
   dw_mount args "$cache" /cache
@@ -324,6 +347,7 @@ image[trivy]="aquasec/trivy:0.71.0@sha256:016eae51fdcf989332a5404af7e8f625cd5d95
 dive() {
   local -a args=(--rm)
   dw_user args
+  dw_env args "${DW_ENV[@]}"
   dw_docker_socket args
   dw_tty_if_attached args
 
@@ -408,5 +432,33 @@ fi
 # function.
 [[ -v image[$tool] ]] \
   || dw_die 2 "unknown tool '${tool}' — symlink bin/docker_wrapper as one of: ${!image[*]}"
+
+# Collect any leading -e/--env NAME wrapper flags into DW_ENV, so a caller
+# (e.g. a repo's bin/tf) can forward extra host env vars into the container
+# without this dispatcher hardcoding them — the recurring papercut this solves.
+# Each name is forwarded to `docker run` as `--env NAME` by the tool functions
+# (via dw_env), i.e. by name, never the value on the command line. Parsing stops
+# at the first argument that is not one of these flags, so the tool's own argv
+# is left untouched; the flags must therefore lead.
+#
+# Skipped for tools whose OWN CLI already claims -e — shellcheck's -e is
+# --exclude, so stealing it would break `bin/shellcheck -e SC1090 file`. Those
+# tools are linters that never need host-env forwarding anyway. Add any future
+# -e-using tool to native_e_tools.
+native_e_tools=" shellcheck "
+declare -a DW_ENV=()
+if [[ $native_e_tools != *" $tool "* ]]; then
+  while (($#)); do
+    case $1 in
+      -e | --env)
+        [[ -n ${2-} ]] || dw_die 2 "${tool}: ${1} requires an ENVVAR name"
+        DW_ENV+=("$2")
+        shift 2
+        ;;
+
+      *) break ;;
+    esac
+  done
+fi
 
 "$tool" "$@"
