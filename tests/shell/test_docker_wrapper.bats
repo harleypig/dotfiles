@@ -238,3 +238,75 @@ teardown() {
   run cat "$STUB/docker.args"
   refute_output --partial "TF_CLI_CONFIG_FILE"
 }
+
+# Leading -e/--env NAME wrapper flags forward named host vars into the container
+# (by name, never the value) and are stripped from the tool's own argv.
+
+@test "-e/--env forwards named host vars by name and strips the flags from argv" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" \
+    MXROUTE_API_KEY=canary_mxroute_key MXROUTE_SERVER=heracles.example \
+    "$ROOT/bin/terraform" -e MXROUTE_API_KEY --env MXROUTE_SERVER -chdir=infra plan
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--env MXROUTE_API_KEY"
+  assert_output --partial "--env MXROUTE_SERVER"
+  # Forwarded by name only — the secret value never reaches the command line.
+  refute_output --partial "canary_mxroute_key"
+  # The tool's own argv is preserved (the -e/--env flags were consumed, not
+  # passed through to terraform).
+  assert_output --partial "-chdir=infra plan"
+}
+
+@test "-e skips a host var that is unset" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env -u NOPE_VAR "PATH=$STUB:$PATH" "$ROOT/bin/terraform" -e NOPE_VAR plan
+  assert_success
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "--env NOPE_VAR"
+}
+
+@test "-e/--env works for any pwd-mounted tool, not just terraform" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf '# Title\n' > doc.md
+
+  run env "PATH=$STUB:$PATH" MY_TOKEN=canary_tok \
+    "$ROOT/bin/markdownlint" -e MY_TOKEN doc.md
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--env MY_TOKEN"
+  assert_output --partial "doc.md"
+  refute_output --partial "canary_tok"
+}
+
+@test "shellcheck's own -e (exclude) is NOT stolen by the wrapper" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf '#!/usr/bin/env bash\ntrue\n' > script.sh
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/shellcheck" -e SC1090 script.sh
+  assert_success
+
+  run cat "$STUB/docker.args"
+  # -e SC1090 passes through to shellcheck (its --exclude), NOT forwarded as env.
+  assert_output --partial "-e SC1090"
+  assert_output --partial "script.sh"
+  refute_output --partial "--env SC1090"
+}
+
+@test "-e without a NAME is a usage error" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/terraform" -e
+  assert_failure 2
+  assert_output --partial "requires an ENVVAR name"
+}
