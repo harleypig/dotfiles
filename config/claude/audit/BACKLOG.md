@@ -589,3 +589,46 @@ Tips 16/25/17/26).
 - [ ] **Gollum Wiki** rule (wiki engine).
 - [ ] **Ruby** rule — especially as it relates to the Gollum wiki.
 - [ ] **Essay Helper** skill — for the scripturestudy.org wiki ("LDS Scholar").
+
+- [ ] **Workflow-authoring skill (`author-workflow` or similar)**
+  (retrospective, harleydev session 2026-07-06 — user asked whether a global
+  workflow rule/skill would help). The **decision layer** already exists —
+  `config/claude/docs/LOOPS-WORKFLOWS.md` covers loop-vs-workflow, good-fit
+  criteria, "prove iteration one by hand," the serial-spine caveat — and the
+  Workflow **tool description** is a full, always-in-context API reference
+  (pipeline/parallel/schemas/phases/quality-patterns). What is **missing is
+  the authoring *procedure* + this-setup conventions**: what actually gets
+  applied each time a workflow is authored (several times that session —
+  provider comparison, endpoint diff, the resource/data-source spec audit),
+  living nowhere persistent. Decided form: a **skill** (a procedure with
+  decisions that *fires* when the user opts in, not a passive rule/doc). Keep
+  it **thin — link `LOOPS-WORKFLOWS.md` for concepts, do not restate the tool
+  description**; its whole value is the delta below.
+  - **Opt-in gate as step 0.** Author a workflow only on an explicit "use a
+    workflow" / ultracode / named-workflow / skill-directed invocation;
+    otherwise use plain subagents or ask. (In the tool description already;
+    the skill makes it the first procedure step.)
+  - **Authoring gotchas that actually bite** (none in `LOOPS-WORKFLOWS.md`):
+    (1) **subagents run from the *session* cwd, not the target repo → pass
+    absolute paths** in every prompt (a cross-repo session — cwd harleydev,
+    target terraform-provider-mxroute — silently reads the wrong tree with
+    relative paths); (2) `Date.now()` / `Math.random()` / argless `new Date()`
+    throw — stamp times after the run, vary by index; (3) **save the script
+    to the session scratchpad**, iterate via `scriptPath`, resume via
+    `resumeFromRunId`; (4) **workflows return data; do file mutations
+    (TODO.md, docs) in the main thread** — parallel agents can't co-write one
+    file; (5) **structured returns via `schema`** (validated at the tool
+    layer) beat parsing free text; (6) **pipeline() by default**, a barrier
+    only on a genuine cross-item dependency.
+  - **Forcing steps:** assess fit (the `LOOPS-WORKFLOWS.md` bar) → **prove
+    iteration one by hand** → pilot on 2–3 → scale → **adversarially verify
+    each finding** (the guard that would have caught this session's
+    hallucinated "stale spec / 32-71-ops" claim; default-reject unless spec
+    and code prove it).
+  - **Home/build:** a global skill under `config/claude/skills/`, authored
+    with **skill-creator** (`EXTENDING.md`). On build, **update
+    `STRUCTURE.md`** and cross-link from `LOOPS-WORKFLOWS.md` (*Workflows*)
+    and, where relevant, `terraform-provider-patterns` (its fan-out section
+    is a worked example). Distinct from the **understandable-docs** series
+    above (those are conceptual reference; this is a runnable procedure).
+    Generic (global).
