@@ -215,8 +215,8 @@ teardown() {
 
   # validate does NOT forward cloud credentials (credential-free), so it is the
   # case that proves TF_CLI_CONFIG_FILE is forwarded regardless of subcommand.
-  # Forwarded by name; a repo points it at a local provider mirror (harleydev's
-  # bin/tf + bin/provider-mirror for the unpublished mxroute provider).
+  # Forwarded by name; a repo points it at, e.g., a credential helper or a
+  # provider_installation (filesystem_mirror / network_mirror) block.
   run env "PATH=$STUB:$PATH" \
     TF_CLI_CONFIG_FILE=/mnt/some/provider.tfrc AWS_ACCESS_KEY_ID=akid \
     "$ROOT/bin/terraform" validate
