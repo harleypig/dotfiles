@@ -131,7 +131,7 @@ rule name.
 | [hadolint.md](rules/hadolint.md)<br>↗ `containerize` | `Dockerfile*` |
 | [dive.md](rules/dive.md)<br>↗ `containerize` | `Dockerfile*` |
 | [trivy.md](rules/trivy.md)<br>↗ `containerize` · `security-scan` | `Dockerfile*`, security scan context |
-| [terraform.md](rules/terraform.md)<br>↗ `tftest-patterns` · `terraform-review` | `*.tf`, `*.tfvars`, `*.tftest.hcl` |
+| [terraform.md](rules/terraform.md)<br>↗ `tftest-patterns` · `terraform-e2e-patterns` · `terraform-review` | `*.tf`, `*.tfvars`, `*.tftest.hcl` |
 | [tflint.md](rules/tflint.md) | `*.tf`, `.tflint.hcl` |
 | [packer.md](rules/packer.md) | `*.pkr.hcl`, `*.pkrvars.hcl` |
 | [nginx.md](rules/nginx.md) | `nginx.conf`, `sites-*/` |
@@ -244,6 +244,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 | Skill | What it does | Calls / see also |
 |-------|-------------|-----------------|
 | [tftest-patterns](skills/tftest-patterns/SKILL.md) | Terraform native-test recipes: plan-only unit tests, mock_provider, assert, expect_failures for variable validation | `terraform.md` · `testing.md` |
+| [terraform-e2e-patterns](skills/terraform-e2e-patterns/SKILL.md) | Gated apply-mode Terraform e2e against real ephemeral infra: framework-per-target matrix, allow-list guard, reverse-order auto-destroy + trap/reaper backstops, opt-in CI procedure | `terraform.md` · `testing.md` · `tftest-patterns` · `terraform-provider-patterns` |
 | [terraform-provider-patterns](skills/terraform-provider-patterns/SKILL.md) | Building a Terraform provider in Go: framework structure, resource CRUD/import, write-only attributes, acceptance testing, tfplugindocs, GoReleaser release | `go.md` · `golangci-lint.md` · `terraform.md` · `testing.md` · `release-tag` |
 | [spotify-patterns](skills/spotify-patterns/SKILL.md) | Spotify Web API recipes: token refresh, track relinking, pagination, rate limits, playlist cover art | `spotify.md` · `spotify-audit` |
 | [spotify-audit](skills/spotify-audit/SKILL.md) | Audit a Spotify integration for API best practices, deprecated endpoints, auth correctness | `spotify.md` |
