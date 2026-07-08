@@ -6,6 +6,18 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Folded issue categorization into `github-issues`; dropped the
+  `categorize-issue` skill idea (wave 2; dotfiles PR #235).** The proposed
+  `categorize-issue` skill (suggest labels / priority / estimate for a `gh`
+  issue and fold it into the TODO queue) was almost entirely subsumed by
+  `github-issues`, which already recommends labels, scores complexity (the
+  effort estimate), and routes each issue to a `map-to-TODO` disposition
+  against docs + code. The only missing sliver was an **explicit priority**
+  output, so added a priority step to `github-issues` Step 4 (complexity =
+  effort, priority = queue order) and widened its description/triggers rather
+  than building a second, overlapping skill. Chose fold-the-gap over
+  build-distinct (user's call).
+
 - 2026-07-08 — **Triaged the *Skill ideas & future categories* backlog into
   three waves; worked wave 1 (dotfiles PR #233).** Split the section by
   effort: wave 1 = simple / no-input, wave 2 = more complex or needs input
