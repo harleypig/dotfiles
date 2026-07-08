@@ -121,8 +121,9 @@ time and edit time:
    `branch-protection.py` `PreToolUse` hook blocks an `Edit`/`Write`/
    `MultiEdit` while a protected branch is checked out, so the agent is told
    to branch *before* writing the first character. (It allows edits to plan
-   files and to **gitignored, untracked** files — local-only state, such as
-   the agent's own memory, that can never be committed to the branch.) It
+   files and to **untracked** files — a gitignored one such as the agent's
+   own memory, or a non-ignored one that **already exists** on disk, e.g. a
+   scratch note; authoring a *brand-new* non-ignored file still blocks.) It
    reads the protected set straight from the repo's `no-commit-to-branch` args
    (layer 2), so it activates **only where that hook is configured** — a repo
    without it (a cloned upstream/fork) gets no edit-time guard. It is a

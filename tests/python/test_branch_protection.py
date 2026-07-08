@@ -85,6 +85,7 @@ def _is_deny(out: dict) -> bool:
 
 
 def test_blocks_edit_on_protected_master(tmp_path):
+  # foo.txt does not exist — authoring a brand-new, non-ignored file blocks.
   repo = _make_repo(tmp_path, "master", PROTECT_MASTER)
   out = _run(str(repo / "foo.txt"), str(repo))
   assert _is_deny(out)
@@ -92,7 +93,8 @@ def test_blocks_edit_on_protected_master(tmp_path):
 
 
 def test_blocks_edit_for_not_yet_created_file(tmp_path):
-  # A Write to a new path (nonexistent file/dir) must still resolve the repo.
+  # A Write to a new path (nonexistent file/dir) must still resolve the repo
+  # and block — authoring brand-new content still trips the branch-first nudge.
   repo = _make_repo(tmp_path, "master", PROTECT_MASTER)
   out = _run(str(repo / "newdir" / "new.txt"), str(repo))
   assert _is_deny(out)
@@ -131,6 +133,18 @@ def test_allows_gitignored_untracked_file_on_protected_branch(tmp_path):
   repo = _make_repo(tmp_path, "master", PROTECT_MASTER)
   (repo / ".gitignore").write_text("*.log\n", encoding="utf-8")
   out = _run(str(repo / "scratch.log"), str(repo))
+  assert out == {}
+
+
+def test_allows_existing_untracked_file_on_protected_branch(tmp_path):
+  # An untracked file that already exists on disk (a scratch note, a generated
+  # config) is not part of the branch's committed content, so editing it on
+  # protected master is allowed — even though it is NOT gitignored. Only
+  # authoring a brand-new file still blocks (see the two blocks_* cases above).
+  repo = _make_repo(tmp_path, "master", PROTECT_MASTER)
+  f = repo / "notes.txt"
+  f.write_text("scratch\n", encoding="utf-8")
+  out = _run(str(f), str(repo))
   assert out == {}
 
 
