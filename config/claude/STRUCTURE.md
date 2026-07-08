@@ -292,6 +292,7 @@ The series is growing — more topics are queued in `audit/BACKLOG.md`.
 | [TOPIC.md.template](docs/TOPIC.md.template) | The shape every topic doc follows: abstract → ELI5 + best-practices → overview → major groups → optional bring-it-together → see-also → resources |
 | [LOOPS-WORKFLOWS.md](docs/LOOPS-WORKFLOWS.md) | Loops vs workflows — when to iterate vs orchestrate, good-fit criteria, "prove iteration one by hand", the serial-spine caveat, and auto-mode gating |
 | [PERMISSION-MODES.md](docs/PERMISSION-MODES.md) | Permission modes (default / acceptEdits / plan / auto / bypassPermissions / dontAsk), the allow/ask/deny rule system, the auto-mode classifier, hook interaction, and the deny-first resolution order |
+| [HOOKS.md](docs/HOOKS.md) | The hook system — event families (PreToolUse/PostToolUse/session/compaction/permission), configuration + matchers, the stdin/exit-code/JSON contract, how several hooks combine, and this config's own hooks as worked examples |
 
 ---
 
