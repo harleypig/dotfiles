@@ -6,6 +6,41 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Worked the audit-dimensions backlog, wave 3 (the final four
+  items; dotfiles PR #231).** Drained the rest of the *Audit dimensions /
+  design* section. (1) **merge-finalization quoted-syntax false positive**
+  (`config/claude/hooks/merge-finalization.py`): the gate regexed the whole
+  Bash command, so a merge phrase inside a commit message / PR body / heredoc
+  fired it (PR #224). Evaluated the two options — chose **quote+heredoc
+  stripping** over command-position anchoring, because the real `push.sh merge`
+  runs mid-command as a path (`bash …/push.sh merge`), which anchoring would
+  miss, and full `shlex` parsing chokes on apostrophes. Strip heredoc bodies
+  then quoted spans before matching; a merge is never itself quoted, so a
+  genuine one chained after a quoted arg still matches. **Built** (not
+  deferred) — an imminent self-block risk, low complexity, +3 regression
+  tests. (2) **Prose-wrap check** (`tests/lint/prose_wrap.py`): measured
+  feasibility first — a character-counting check (em-dash safe) exempting
+  code/frontmatter/tables/reference-links/URLs and excluding non-authored
+  trees (vendored plugins, cache, agent memory/plans) has **near-zero false
+  positives** and found **146 genuine violations** (incl. a 107-col line
+  wave 2 introduced). Per the user's call, wired it as a **non-gating**
+  (`stages: [manual]`) pre-commit hook now and captured a follow-up to reflow
+  the 146 lines then flip it to gating (kept on `BACKLOG.md`). +9 tests.
+  (3) **External-code install-safety** (`claude-audit` skill): decided —
+  sub-idea 1 (scan third-party skills/plugins for malicious code) folds into
+  the mining flow as a *vet external code before vendoring it* gate
+  (security-scan + manual read of shipped executables; obfuscated = reject),
+  since reimplementing ideas as our own code is the default safeguard and only
+  verbatim-vendored code needs the scan; sub-idea 2 (`AgentLint` target-repo
+  readiness lint) **declined** as a separate artifact — it overlaps
+  `new-project`'s brownfield gap-analysis. (4) **Upstream-drift sweep**
+  (`claude-audit` skill): added a proactive, config-inventory-anchored
+  dimension that re-checks every rule/skill's Sources / pinned versions for
+  upstream drift (grep the tree, not the TODO — a finished setup leaves no
+  TODO). The *pull* complement to `rule-coverage.py`'s *push*; distinct from
+  `deps-update`. With this wave the *Audit dimensions / design* section is
+  empty but for the prose-wrap reflow follow-up.
+
 - 2026-07-08 — **Worked the audit-dimensions backlog, wave 2 (three items;
   dotfiles PR #230).** Continued draining the *Audit dimensions / design*
   section (seven left after wave 1), taking the three low-risk items.

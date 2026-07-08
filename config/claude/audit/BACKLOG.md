@@ -20,28 +20,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Audit dimensions / design
 
-- [x] **merge-finalization: don't match merge syntax quoted in message
-  text (LOW — retrospective, PR #224).** `MERGE_RE` regexes the whole Bash
-  command string, so a `git commit -m` / `gh pr create --body` whose
-  *message* quotes `gh pr merge --repo …` fires the hook (observed on PR
-  #224's own commit: it matched the quoted text and "resolved" repo `or`
-  from the prose). Harmless today — reminder-only, fails safe — but the
-  hook should skip matches that sit inside a quoted heredoc/`-m`/`--body`
-  payload, or anchor on the command position (start / after `&&`, `;`,
-  `|`). Evaluate whether reliable quote-stripping is worth the complexity
-  before building.
-
-- [x] **Prose-wrap check for agent-config Markdown (LOW — retrospective, PR
-  #130).** The 78-col prose-wrap convention (`CONVENTIONS.md`) is enforced
-  only by eye — markdownlint's `line_length` is set to 200 (tables/code),
-  so 79–80-col prose slips through; this session hand-fixed several such lines
-  (em-dashes also fool `awk length`, so the check must count *characters*).
-  Consider a small pre-commit/meta check that flags >78-col **prose** lines in
-  `config/claude/**` and `.claude/**` Markdown while exempting table rows,
-  fenced code, frontmatter `description:`, and reference-link/URL lines.
-  **Risk:** false positives on exactly those exemptions — evaluate whether a
-  reliable check is even feasible before building; it may not be worth it.
-
 - [ ] **Reflow the prose-wrap backlog, then gate the check (follow-up to the
   prose-wrap check above).** The `prose-wrap` pre-commit hook
   (`tests/lint/prose_wrap.py`) is wired **non-gating** (`stages: [manual]`)
@@ -52,35 +30,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   hook off `stages: [manual]`** to a normal stage so it gates commits/CI. Do
   the reflow in its own commit(s), separate from the flip. Scope: **repo**
   (dotfiles agent-config Markdown + the `.pre-commit-config.yaml` change).
-
-- [x] **Audit external skills/plugins for install-safety (CANDIDATE — mined
-  from the plugin-collection sweep, 2026-06-20).** Companion to the allow-list
-  audit above — together they form one **"harden the agent's own attack
-  surface"** theme. We adopt external skills/plugins (the mining queue
-  itself!) with **no pre-install scan**. Two sub-ideas surfaced in the sweep:
-  (1) **scan a third-party skill/plugin for malicious code before install**
-  (`skill-security-auditor`, alirezarezvani) — a real gate we lack; (2) **lint
-  a repo for agent-readiness** (`AgentLint`, ComposioHQ — 33 checks on
-  CLAUDE.md quality/structure), distinct from `claude-audit` (which audits the
-  *config*, not the target repo). Best home: fold (1) into
-  `security-scan`/`claude-audit`; (2) is a separate "is this repo agent-ready"
-  check — decide if it earns its own artifact. Ideas only (mixed/non-OSS
-  sources); we'd write our own. Decide kind + scope when worked.
-
-- [x] **Detect upstream drift in every `## <X> Setup` → flag stale
-  rules/skills (2026-06-27).** During a config audit (`claude-audit` now; a
-  future repo-audit for repo-local pinned setup), enumerate **every rule/skill
-  that documents a setup — language *or* subject alike** — and, via their
-  **Sources** sections and pinned versions, check whether the grounded
-  upstream has moved. Anchor on the **config inventory (rules/skills +
-  Sources/pins), *not* the TODO** — a finished setup has no TODO section, so
-  the TODO can't be the coverage list. Drift sources differ by setup
-  (language: version / version-manager / toolchain / frameworks; subject:
-  pinned image tags, action SHAs, lint styles, wired tools) but the re-check
-  is uniform. The *pull/refresh* complement to the existing *push* trigger
-  (`rule-coverage.py` nags when a *new* tool lacks a rule); distinct from
-  `deps-update` (project manifests). Best home: a new `claude-audit`
-  dimension.
 
 ## Skill ideas & future categories (not from mining)
 
