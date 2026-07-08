@@ -295,6 +295,7 @@ The series is growing — more topics are queued in `audit/BACKLOG.md`.
 | [HOOKS.md](docs/HOOKS.md) | The hook system — event families (PreToolUse/PostToolUse/session/compaction/permission), configuration + matchers, the stdin/exit-code/JSON contract, how several hooks combine, and this config's own hooks as worked examples |
 | [OBSERVABILITY.md](docs/OBSERVABILITY.md) | Monitoring unattended/background work — `/tasks`, `/workflows`, `claude agents` (fleet view), `/usage`, `/context`, and the always-on statusline; which surface to reach for at which scope |
 | [GITHUB-ACTIONS-INTEGRATION.md](docs/GITHUB-ACTIONS-INTEGRATION.md) | Running Claude *in* GitHub Actions (the `@claude` bot / `claude-code-action`) — interactive vs automation mode, setup, triggers, `claude_args` + permissions, and the CI security model; distinct from the repo's own CI (`rules/github-actions.md`) |
+| [HEADLESS.md](docs/HEADLESS.md) | Driving Claude from code — `claude -p` (print mode), output formats (`json` / `stream-json`), session continuity (`--resume`), the scripting/permission flags, and the Agent SDK (`query()`); CLI-composes-with-the-shell vs SDK-composes-with-your-code |
 
 ---
 

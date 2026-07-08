@@ -81,7 +81,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     skill**, not just a doc (the original 2026-06-27 research item). Generic.
   - [ ] **Channels** (research preview). External systems pushing events
     into a running session — the push counterpart to poll/timer loops.
-  - [ ] **Headless / programmatic.** `claude -p`, `--resume` / `--continue`,
+  - [x] **Headless / programmatic.** `claude -p`, `--resume` / `--continue`,
     output formats, the Agent SDK — the surface for driving Claude from
     scripts / CI.
   - [ ] **Agent teams** (experimental). Peer-coordinating multi-agent work;
