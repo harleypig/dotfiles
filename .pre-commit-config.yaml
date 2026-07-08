@@ -152,3 +152,18 @@ repos:
     rev: v8.30.1
     hooks:
       - id: gitleaks-docker
+
+  # Forbid leaked tool-call markup. When a subagent is delegated a full-file
+  # write, its tool-call closing tags can bleed into the file content
+  # (`</content>`, `</invoke>`, `<parameter …>`) — valid text no linter
+  # catches (see config/claude/audit/decisions-log.md; retrospective PR #166).
+  # pygrep fails when the pattern matches. Anchored to a *bare tag line* so
+  # prose that merely mentions the tags (this repo's audit docs) is not
+  # flagged — only a standalone leaked tag is.
+  - repo: local
+    hooks:
+      - id: forbid-tool-call-markup
+        name: forbid leaked tool-call markup
+        language: pygrep
+        entry: '^\s*</?(?:antml:)?(?:invoke|parameter|content|function_calls)\b[^>]*>\s*$'
+        types: [text]

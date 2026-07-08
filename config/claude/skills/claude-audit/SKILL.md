@@ -213,6 +213,19 @@ Produce a disposition table (ADOPT / CANDIDATE / SKIP + one-line reason) and
 record it in `config/claude/audit/mining-census.md`. Fan the enumeration out
 to read-only agents so it doesn't consume the audit's own context.
 
+**Aggregator exception — net-new census for marketplaces.** The full-census
+rule fits a single coherent tool. For an **aggregator** — an
+awesome-list / marketplace of hundreds-to-thousands of skills/plugins (e.g.
+`antigravity-awesome-skills` ≈ 1,678 skills,
+`claude-code-plugins-plus-skills` ≈ 432 plugins) — enumerating every entry is
+impractical and low-signal. Chart it with a **net-new-only census +
+theme-dedup** instead: fan out one read-only agent per source repo reporting
+**only** items novel vs. our existing tooling (skip anything we already
+cover), then cluster the survivors by cross-repo theme before judging. This
+keeps the "no hidden shortlist" intent — the filter is *redundancy with our
+tooling*, recorded per item, not a curated pick — while staying tractable at
+marketplace scale.
+
 **SKIP is two things.** A permanent **SKIP** (covered/redundant) won't come
 back; a conditional **`SKIP-until <trigger>`** (a tool we don't use, a domain
 we're not in) **flips to CANDIDATE when the trigger fires** — don't bury it as a

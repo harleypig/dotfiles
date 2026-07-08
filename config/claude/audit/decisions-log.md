@@ -6,6 +6,28 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Worked the audit-dimensions backlog, wave 1 (three items;
+  dotfiles PR #229).** Triaged the *Audit dimensions / design* section (10
+  items) and verified each against current config before implementing the
+  low-risk three. (1) **Mining aggregator exception** (`claude-audit` skill):
+  the full-census mining rule is impractical for awesome-list/marketplace
+  repos of hundreds–thousands of skills/plugins, so codified a
+  **net-new-only census + theme-dedup** approach (one read-only agent per
+  source repo reporting only items novel vs. our tooling, then cluster by
+  cross-repo theme) as an explicit exception that keeps the "no hidden
+  shortlist" intent — the filter is redundancy-with-our-tooling, recorded per
+  item. (2) **push-pr Step 4.5 relocate step**: finalization pruned `[x]`
+  items and closed issues but nothing removed **non-task** drift (preambles,
+  `**Last Updated:**` headers, status prose, someday piles); added a bullet
+  delegating to the **todo-organize** skill — pruning removes *done* work,
+  this removes *non-work*. (3) **`forbid-tool-call-markup` pre-commit hook**:
+  a subagent full-file write can bleed its tool-call closing tags
+  (`</invoke>`/`</content>`/`<parameter …>`) into file content — valid text no
+  linter catches (PR #166). Added a **pygrep** check anchored to a *bare
+  standalone tag line* so prose that merely mentions the tags (this repo's own
+  audit docs) is not flagged; spiked the regex first (zero tree-wide matches).
+  Remaining seven items stay in `BACKLOG.md` as waves 2–3.
+
 - 2026-06-29 — **Added the `iac-fmt.py` PostToolUse hook + terraform/packer/
   tflint docker wrappers (user request).** HCL is whitespace/quote sensitive,
   so the user wanted fmt to run right after editing a Terraform/Packer file.

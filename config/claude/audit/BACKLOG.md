@@ -20,26 +20,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Audit dimensions / design
 
-- [ ] **push-pr Step 4.5: add a TODO-hygiene / relocate-non-task step
-  (retrospective, terraform-provider-mxroute session 2026-07-08).** Merge-time
-  finalization currently prunes completed `[x]` items, closes issues, and
-  updates the changelog — but nothing catches a planning doc that has
-  accumulated **non-task content**: preamble/`**Last Updated:**` headers,
-  status narratives, one-run outcome reports, "someday" piles. `todo.md`
-  already forbids this ("a planning doc holds only open work") and
-  **todo-organize** is its forcing function, but neither runs at push time, so
-  drift accrues until a human notices (this session hand-pruned a heavily
-  narrated TODO — relocating a versioning-gate note and a tooling gotcha to
-  `CONVENTIONS.md`, icebox-ing deferred items, dropping status prose). Add a
-  step to **push-pr Step 4.5** that every push relocates non-task content out
-  of `TODO.md` / `ROADMAP.md` to where it belongs (docs / ADR / conventions)
-  and drops the rest — **delegating to todo-organize**, not restating its
-  rules. Consider whether the `merge-finalization.py` hook should also flag an
-  obvious non-task block (a preamble heading, `**Last Updated:**`, a
-  multi-paragraph status section) as a backstop, the way it already flags
-  unpruned `[x]` items. Scope: `config/claude/skills/push-pr/SKILL.md` (+
-  optionally the hook). Generic (global).
-
 - [ ] **merge-finalization: don't match merge syntax quoted in message
   text (LOW — retrospective, PR #224).** `MERGE_RE` regexes the whole Bash
   command string, so a `git commit -m` / `gh pr create --body` whose
@@ -99,18 +79,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   check — decide if it earns its own artifact. Ideas only (mixed/non-OSS
   sources); we'd write our own. Decide kind + scope when worked.
 
-- [ ] **Refine the mining method for aggregator/marketplace repos
-  (retrospective, PR #140).** `claude-audit` *Mining repos for ideas* mandates
-  enumerating the **entire** surface (no shortlist) — correct for a single
-  coherent tool, but impractical for an aggregator/awesome-list/marketplace of
-  hundreds–thousands of skills/plugins (`antigravity-awesome-skills` ≈ 1,678
-  skills; `claude-code-plugins-plus-skills` ≈ 432 plugins). The 11-repo sweep
-  used a **net-new-only census + theme-dedup** approach instead (fan out one
-  read-only agent per repo reporting only items novel vs. our tooling, then
-  cluster by cross-repo theme). Codify this as the **aggregator exception** in
-  the skill's mining section so the full-census rule and this approach don't
-  conflict. Global; `config/claude/skills/claude-audit/SKILL.md`. Low cost.
-
 - [ ] **`shell-check.py` PostToolUse hook is stricter than repo gates
   (LOW — retrospective, PR #153).** The global hook
   (`config/claude/hooks/shell-check.py`) runs plain `shellcheck`, but repos
@@ -138,17 +106,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   (`rule-coverage.py` nags when a *new* tool lacks a rule); distinct from
   `deps-update` (project manifests). Best home: a new `claude-audit`
   dimension.
-
-- [ ] **Verify subagent file-writes for leaked tool-call markup
-  (retrospective, PR #166).** When a subagent is delegated a full-file
-  write/rewrite, its tool-call closing tags can bleed into the file content
-  (`</content>`, `</invoke>`, `<parameter …>`) — and **no linter catches
-  them** (they are valid text). PR #166's `TODO.md` reorg leaked
-  `</content>` / `</invoke>` at EOF, caught only by eye. Make it a standard
-  post-delegation step to `grep` the written file for stray tool-call markup,
-  and consider a small check (a pre-commit/meta scan for
-  `</?(invoke|parameter|content|function_calls|antml)` in tracked text files).
-  Generic — applies to any repo where a subagent writes files.
 
 ## Skill ideas & future categories (not from mining)
 
