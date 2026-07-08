@@ -191,27 +191,14 @@ of any local session or machine state. Three trigger types:
 
 ### Auto mode — a permission gate, not a loop
 
-Auto mode is not itself a loop, but it lives here because it is what lets a
-loop run unattended. **It is a permission classifier, not repetition.** It
-evaluates each tool call against a rule set before it runs:
-
-- Allows routine, internal operations automatically (e.g. committing to
-  your own repo).
-- Blocks destructive/irreversible actions (`hard_deny`: force-push,
-  exfiltration).
-- Blocks risky actions with a prompt option (`soft_deny`: prod deploys,
-  destructive commands).
-- Configured via `autoMode.environment`, `autoMode.allow`,
-  `autoMode.soft_deny`, and `autoMode.hard_deny` in settings.
-
-It is a **gate**, not a task. Without auto mode, a `/loop` or routine would
-stop and ask "run this command?" for every tool call. With it, both run
-unattended.
-
-Auto mode (`auto`) is one of several **permission modes** — alongside
-`acceptEdits` (auto-approve edits + filesystem commands), `dontAsk` (deny
-anything not allowlisted), and a full bypass — that set how much unattended
-work may do without asking. See [permission-modes][docs-perm].
+Auto mode isn't a loop, but it's what lets one run **unattended**: it is a
+permission *gate*, not repetition. Without it a `/loop` or `/schedule` routine
+would stop and ask "run this command?" on every tool call; with it, a
+classifier reviews each action — auto-approving the routine ones, blocking the
+destructive or escalating ones — so the loop runs on its own. It's one of
+several **permission modes**; the modes, the `allow`/`ask`/`deny` rules, and
+how the classifier decides are their own topic — see [Permission Modes & Auto
+Mode][perm-doc].
 
 ### How they differ
 
@@ -615,6 +602,7 @@ Claude Code documentation:
 [docs-schedule]: https://code.claude.com/docs/en/routines
 [docs-auto]: https://code.claude.com/docs/en/auto-mode-config
 [docs-perm]: https://code.claude.com/docs/en/permission-modes
+[perm-doc]: PERMISSION-MODES.md
 [docs-subagents]: https://code.claude.com/docs/en/sub-agents
 [docs-workflows-tool]: https://code.claude.com/docs/en/workflows
 [docs-teams]: https://code.claude.com/docs/en/agent-teams

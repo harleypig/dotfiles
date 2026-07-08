@@ -6,6 +6,21 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Wrote the Permission Modes & Auto Mode understandable-doc;
+  extracted auto-mode out of `LOOPS-WORKFLOWS.md` (wave 2; dotfiles PR
+  #236).** First of the wave-2 doc writes: authored
+  `config/claude/docs/PERMISSION- MODES.md` grounded in the current Claude
+  Code docs (via `claude-code-guide`, sources cited) — modes, the
+  allow/ask/deny rules + precedence, the auto-mode classifier, hook
+  interaction, and the single-call resolution order. Moved the auto-mode
+  detail out of the loops doc (slim pointer left) and **corrected stale
+  content**: the loops doc had described `autoMode.soft_deny` / `hard_deny`
+  settings keys, but the current model is a **classifier** tuned via
+  `autoMode.environment` + the `allow`/`deny` rules (the
+  `claude auto-mode defaults` command prints the full ruleset) — so those keys
+  were dropped, not carried forward. Kept it a reference doc (not a rule):
+  it's user understanding, not agent behaviour.
+
 - 2026-07-08 — **Folded issue categorization into `github-issues`; dropped the
   `categorize-issue` skill idea (wave 2; dotfiles PR #235).** The proposed
   `categorize-issue` skill (suggest labels / priority / estimate for a `gh`
