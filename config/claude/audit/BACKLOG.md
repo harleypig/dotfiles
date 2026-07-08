@@ -643,3 +643,18 @@ Tips 16/25/17/26).
     is a worked example). Distinct from the **understandable-docs** series
     above (those are conceptual reference; this is a runnable procedure).
     Generic (global).
+
+- [ ] **`terraform-provider-patterns`: add tfplugindocs *guides* coverage
+  (LOW — retrospective, terraform-provider-mxroute PR #43).** The skill's
+  *Docs — tfplugindocs* section covers resources / data-sources / import
+  examples but is **silent on guides**: authoring
+  `templates/guides/*.md.tmpl`, the guide frontmatter (`page_title`
+  **required** — it sets the nav label; `subcategory` optional), rendering to
+  `docs/guides/*.md` via `tfplugindocs generate`, and nav ordering (guides
+  without a subcategory sort before those with one; guides render above
+  resources/data-sources/functions). Authoring
+  two provider guides in that PR needed a WebFetch of the HashiCorp Registry
+  *provider docs* page to confirm the frontmatter, because neither the skill
+  nor context7 covered it. Add a short *guides* note to the skill's
+  tfplugindocs section (the Registry "docs" URL is already in its *Sources*),
+  so the next guide author skips the lookup. Generic (global).
