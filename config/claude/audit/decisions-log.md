@@ -6,6 +6,16 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Wrote the Headless & Programmatic understandable-doc — the
+  last wave-2 doc (wave 2; dotfiles PR #242).** Fifth wave-2 doc write:
+  authored `config/claude/docs/HEADLESS.md` grounded in current docs (via
+  `claude-code-guide`, sources cited) — `claude -p`, output formats, session
+  continuity, the scripting/permission flags, and the Agent SDK, with the
+  CLI-vs-SDK decision. Completes the wave-2 understandable-docs run
+  (permission-modes, hooks, observability, GitHub-Actions-integration,
+  headless — five docs). Remaining understandable-docs topics (Sub-agents,
+  Channels, Agent teams) are wave 3.
+
 - 2026-07-08 — **Wrote the GitHub Actions integration understandable-doc
   (wave 2; dotfiles PR #241).** Fourth wave-2 doc write: authored
   `config/claude/docs/GITHUB-ACTIONS-INTEGRATION.md` grounded in current docs
