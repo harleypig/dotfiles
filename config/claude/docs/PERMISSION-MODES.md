@@ -279,8 +279,7 @@ every rule stayed silent on.
   [Loops & Workflows][loops-workflows].
 - **Hooks** — the full event model (beyond the `PreToolUse` permission
   interaction above) — matchers, exit codes, the lifecycle events — is its own
-  topic. See the [hooks reference][hooks] (a dedicated understanding-doc is
-  queued).
+  topic. See [Hooks][hooks-doc].
 
 ## Resources
 
@@ -297,5 +296,6 @@ Distilled from the official Claude Code documentation:
 [permission-modes]: https://code.claude.com/docs/en/permission-modes.md
 [permissions]: https://code.claude.com/docs/en/permissions.md
 [hooks]: https://code.claude.com/docs/en/hooks.md
+[hooks-doc]: HOOKS.md
 [settings]: https://code.claude.com/docs/en/settings.md
 [loops-workflows]: LOOPS-WORKFLOWS.md

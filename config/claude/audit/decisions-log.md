@@ -6,6 +6,16 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Wrote the Hooks understandable-doc (wave 2; dotfiles PR
+  #239).** Second wave-2 doc write: authored `config/claude/docs/HOOKS.md`
+  grounded in the current Claude Code hooks docs (via `claude-code-guide`,
+  sources cited) — event families, config + matchers, the stdin/exit-code/JSON
+  contract, multi-hook merge, and this config's own ten hooks as worked
+  examples. Deliberately scoped the event coverage to the common/used events
+  (with a pointer to the reference for the ~two-dozen full set) rather than
+  reproducing the long tail as authoritative — the over-claim guard, since
+  some of the tail is niche/experimental. Kept it a reference doc, not a rule.
+
 - 2026-07-08 — **Gated inline-code spans broken mid-identifier (wave 2;
   dotfiles PR #238).** Acted on the PR #233 retrospective follow-up. Measured
   the proposed "flag any odd backtick count" guard first — **infeasible**: 109

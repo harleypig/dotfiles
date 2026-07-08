@@ -79,9 +79,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     kick the task back** ("bigger/smaller than scoped; re-route") instead of
     grinding at the wrong level. This one's output may be a **rule and/or
     skill**, not just a doc (the original 2026-06-27 research item). Generic.
-  - [ ] **Hooks.** Event-driven automation (`PreToolUse` / `PostToolUse` /
-    `SessionStart` / task-lifecycle) — the reactive family the loops doc
-    points at; the *understanding* doc over our existing hook rules/hooks.
   - [ ] **Channels** (research preview). External systems pushing events
     into a running session — the push counterpart to poll/timer loops.
   - [ ] **Headless / programmatic.** `claude -p`, `--resume` / `--continue`,
