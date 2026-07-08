@@ -67,9 +67,15 @@ def main() -> int:
   except ValueError:
     return 0
 
+  # --external-sources makes shellcheck follow `source`/`.` directives,
+  # matching a repo whose pre-commit gate uses -x; without it the hook
+  # over-flags SC1091 on sourced files the gate resolves cleanly. shellcheck
+  # also honors SHELLCHECK_OPTS (inherited via the environment) and any
+  # .shellcheckrc it finds from the file's directory upward.
   try:
     proc = subprocess.run(
-      ["shellcheck", str(rel)],
+      ["shellcheck", "--external-sources",
+       str(rel)],
       cwd=project_dir,
       capture_output=True,
       text=True,

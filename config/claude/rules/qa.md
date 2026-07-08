@@ -110,7 +110,7 @@ Audit the change against `code-style.md` (plus any repo override in
   condense only tightly-related groups.
 - **Section & function separators** — thick for sections, thin for functions,
   with any exception noted at the file/repo level.
-- **Comments** — wrapped (72 cols, or the repo's limit), explaining *why* not
+- **Comments** — wrapped (78 cols, or the repo's limit), explaining *why* not
   restating code; public APIs documented.
 - **Abstraction (Rule of Three)** — genuine repetition extracted; no
   premature or wrong abstraction.

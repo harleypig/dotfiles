@@ -1,6 +1,6 @@
 # Coding Conventions
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 This document defines coding standards, style rules, and development
 principles for this repository. It is repository-specific and overrides
@@ -27,7 +27,7 @@ The principles below are a working subset relevant to this repository.
 ## Documentation Style
 
 - Wrap Markdown at 78 columns.
-- Wrap code comments at 72 columns.
+- Wrap code comments at 78 columns.
 - Use GitHub-flavored Markdown.
 - Use reference-style links for readability.
 

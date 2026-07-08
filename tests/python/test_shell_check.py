@@ -23,6 +23,13 @@ STUB_FAIL = (
 )
 # A shellcheck stub that finds nothing.
 STUB_PASS = "#!/usr/bin/env bash\nexit 0\n"
+# A stub that records the argv it was invoked with (one per line), so a test
+# can assert which flags the hook passed, then reports nothing.
+STUB_RECORD_ARGV = (
+  "#!/usr/bin/env bash\n"
+  'printf "%s\\n" "$@" > "$(dirname "$0")/argv.txt"\n'
+  "exit 0\n"
+)
 
 
 def _stub_dir(tmp_path: Path, body: str) -> Path:
@@ -80,6 +87,20 @@ def test_silent_when_clean(tmp_path):
   f = _shell_file(proj, "s.sh", "#!/usr/bin/env bash\necho ok\n")
   path = str(_stub_dir(tmp_path, STUB_PASS)) + os.pathsep + os.environ["PATH"]
   assert _run(str(f), str(proj), path) == {}
+
+
+def test_passes_external_sources_flag(tmp_path):
+  # The hook must invoke shellcheck with --external-sources so `source`/`.`
+  # directives resolve, matching a repo whose pre-commit gate uses -x.
+  # Regression guard: without it the hook over-flags SC1091 on sourced files
+  # the gate resolves cleanly.
+  proj = tmp_path / "proj"
+  f = _shell_file(proj, "s.sh", "#!/usr/bin/env bash\necho ok\n")
+  stub = _stub_dir(tmp_path, STUB_RECORD_ARGV)
+  path = str(stub) + os.pathsep + os.environ["PATH"]
+  _run(str(f), str(proj), path)
+  argv = (stub / "argv.txt").read_text().split()
+  assert "--external-sources" in argv
 
 
 def test_detects_shell_by_shebang(tmp_path):

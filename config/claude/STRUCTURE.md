@@ -47,7 +47,7 @@ names as its forcing function (`skill-name`), rules it cross-references
 | Rule | What it governs | Calls / see also |
 |------|-----------------|-----------------|
 | [claude-code-auth.md](rules/claude-code-auth.md) | Claude Code auth methods, precedence order, the never-export-`ANTHROPIC_API_KEY` rule, diagnosing auth problems | — |
-| [code-style.md](rules/code-style.md) | Naming, 78-col Markdown / 72-col comment wrap, paragraph spacing, section separators, Rule of Three, efficiency by default | — |
+| [code-style.md](rules/code-style.md) | Naming, 78-col Markdown / 78-col comment wrap, paragraph spacing, section separators, Rule of Three, efficiency by default | — |
 | [documentation.md](rules/documentation.md) | The documentation bar — when to update docs, what form fits each audience, inline-first philosophy | `write-documentation` · `adr` |
 | [gh.md](rules/gh.md) | GitHub CLI usage: PR conventions, dual-credential auth fallback, issue triage cadence | `git-worktree-workflow` · `push-pr` · `github-tasks` · `github-issues` · `security-scan` · `release-tag` · `github-rulesets.md` |
 | [git.md](rules/git.md) | Commit messages, branch naming, staging discipline, protected-branch rules, worktrees, versioning & tags | `git-worktree-workflow` · `release-tag` · `push-pr` · `branch-protection.py` |

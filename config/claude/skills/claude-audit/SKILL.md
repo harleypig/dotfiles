@@ -186,6 +186,21 @@ spec; a `# Compact instructions` CLAUDE.md heading that doesn't exist), caught
 only because they were high-stakes — make the quote-or-it-didn't-happen check
 routine, not luck.
 
+**Scan the permission allow-list for risky auto-approvals.** The inventory
+already reads `settings.json`; extend it with a **security pass over
+`permissions.allow`** — in the global `settings.json`, the user
+`~/.claude/settings.json`, and the current repo's
+`.claude/settings.local.json`. Flag any auto-approved entry that grants blanket consent to a destructive or
+privilege-escalating command: `sudo`, `rm -rf`, `chmod 777`, a pipe-to-shell
+(`curl … | sh`, `wget … | sh`), `git reset --hard`, a force-push, `eval`, or a
+**broad bare `Bash`** / `Bash(*)` wildcard that auto-approves everything. For
+each, surface it and recommend tightening — narrow the pattern, downgrade to
+`ask`, or remove — **never auto-edit** a permission, since loosening or
+withdrawing consent is the user's call. Generic and security-positive; this is
+**our own** scan (the idea, not the external `cc-safe` npm tool). Pairs with
+the *harden-the-attack-surface* companion still on `BACKLOG.md` (an
+install-safety scan of third-party skills/plugins before adoption).
+
 ## Mining repos for ideas
 
 An audit improves the **whole** dev environment, not just the current repo —
