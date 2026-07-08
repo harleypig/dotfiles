@@ -67,6 +67,13 @@ def test_frontmatter_exempt(tmp_path):
   assert res.returncode == 0, res.stdout
 
 
+def test_heading_exempt(tmp_path):
+  # A long ATX heading cannot soft-wrap, so it is exempt (shortening it would
+  # change the heading text — a content edit, not a reformat).
+  res = _run(_md(tmp_path, "### " + "word " * 20 + "\n"))
+  assert res.returncode == 0, res.stdout
+
+
 def test_reference_link_exempt(tmp_path):
   body = "[ref]: https://example.com/" + "a" * 100 + "\n"
   res = _run(_md(tmp_path, body))
