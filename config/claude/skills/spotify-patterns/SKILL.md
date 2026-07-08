@@ -26,8 +26,8 @@ and the one-liners in `rules/spotify.md` aren't enough detail.
 ## Proactive token refresh
 
 A session must outlive the **one-hour** access token. Store the expiry as an
-**absolute** deadline and refresh from the stored refresh token *before* a call
-when it is near expiry — don't wait for the 401.
+**absolute** deadline and refresh from the stored refresh token *before* a
+call when it is near expiry — don't wait for the 401.
 
 ```python
 import time
@@ -60,8 +60,8 @@ async def fresh_access_token(session) -> str:
 
 Store `token_expires_at` as an absolute epoch (not the raw `expires_in`). A
 refresh *failure* returns the stale token rather than raising, so the helper
-keeps the same failure profile as a plain "get token" and the existing 401 path
-still handles a truly-dead session.
+keeps the same failure profile as a plain "get token" and the existing 401
+path still handles a truly-dead session.
 
 ## Relinking-aware Library operations
 
@@ -141,8 +141,8 @@ async def from_song_list(rows: list[tuple[str, str]]) -> list[str]:
 
 ## Cover-art generation + upload
 
-Render a themed SVG (mind a11y contrast), rasterize, then upload — requires the
-**`ugc-image-upload`** scope.
+Render a themed SVG (mind a11y contrast), rasterize, then upload — requires
+the **`ugc-image-upload`** scope.
 
 ```python
 import cairosvg
@@ -158,6 +158,6 @@ await put(
 )
 ```
 
-Pick text/background colors with a legible contrast ratio (WCAG AA on the cover
-text). Without `ugc-image-upload` the upload returns 401 — fall back to a "set
-this image manually" prompt rather than failing silently.
+Pick text/background colors with a legible contrast ratio (WCAG AA on the
+cover text). Without `ugc-image-upload` the upload returns 401 — fall back to
+a "set this image manually" prompt rather than failing silently.

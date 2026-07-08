@@ -1,7 +1,8 @@
 # Claude Code Setup Audit
 
-**Status:** index for the Claude Code setup-audit records. This file is tracked
-but **not** context-loaded (it is not a rule), so it costs nothing per turn.
+**Status:** index for the Claude Code setup-audit records. This file is
+tracked but **not** context-loaded (it is not a rule), so it costs nothing per
+turn.
 
 The audit keeps the agent's configuration lean (context economy) and each
 artifact in the right place and right form, across the global config
@@ -12,9 +13,9 @@ artifact in the right place and right form, across the global config
 The audit *procedure* is the **`claude-audit`** skill
 ([`skills/claude-audit/SKILL.md`](skills/claude-audit/SKILL.md)) — the
 canonical, runnable methodology: measure via a read-only inventory agent →
-classify by load tier → recommend by cost × (1 − relevance) → confirm → record.
-Run it with `/claude-audit`. (This file no longer carries a separate "How to
-run" — the skill owns the procedure; this is only the record's index.)
+classify by load tier → recommend by cost × (1 − relevance) → confirm →
+record. Run it with `/claude-audit`. (This file no longer carries a separate
+"How to run" — the skill owns the procedure; this is only the record's index.)
 
 ## The record
 

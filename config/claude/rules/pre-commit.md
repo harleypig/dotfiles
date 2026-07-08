@@ -249,9 +249,10 @@ with what the gate enforces.
 - **Fix:** `pre-commit run --config .pre-commit-config-fix.yaml --files
   <file>` — only as the final pre-commit step, never mid-session for a single
   failure (see *Pre-Commit Workflow When Ready to Commit*).
-- **Fall back to direct invocation** (`shellcheck <file>`, `yapf -i <file>`, …)
-  only when pre-commit is **not** configured, or the file is **not covered** by
-  any hook. The per-tool rules document those direct commands and flags.
+- **Fall back to direct invocation** (`shellcheck <file>`, `yapf -i <file>`,
+  …) only when pre-commit is **not** configured, or the file is **not
+  covered** by any hook. The per-tool rules document those direct commands and
+  flags.
 
 The per-tool rules (`shellcheck.md`, `shfmt.md`, `yamllint.md`,
 `markdownlint.md`, `yapf.md`, `isort.md`, `flake8.md`, `pyright.md`,

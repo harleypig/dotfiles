@@ -54,15 +54,16 @@ surfaces it.
 This is the **mark-as-you-go** half of the loop; the **prune-at-merge** half
 is the repo's merge-time finalization, with the merge-finalization hook as the
 end-state backstop (it blocks a merge that still has unpruned `[x]` items, in
-repos that opt in). This rule is always-on **because committing is**: it has to
-be in front of you at each commit, not only when a PR skill runs at the end.
+repos that opt in). This rule is always-on **because committing is**: it has
+to be in front of you at each commit, not only when a PR skill runs at the
+end.
 
 ## Stash
 
-Agents **never auto-stash.** A clean working tree is the precondition for sync,
-prep-for-PR, and cleanup — on a dirty tree, **report and stop**, never stash to
-work around it. (Git's own `--autostash` / `rebase.autoStash` is a separate
-mechanism; it can leave an **orphaned stash** when a rebase/pull is
+Agents **never auto-stash.** A clean working tree is the precondition for
+sync, prep-for-PR, and cleanup — on a dirty tree, **report and stop**, never
+stash to work around it. (Git's own `--autostash` / `rebase.autoStash` is a
+separate mechanism; it can leave an **orphaned stash** when a rebase/pull is
 interrupted — a `stash@{0}: autostash` that never popped.)
 
 Because those orphans accumulate silently, at **onboarding and cleanup** run:

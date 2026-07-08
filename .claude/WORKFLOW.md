@@ -204,18 +204,19 @@ GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets/17364459 \
 
 Because the guardrails above are strong — the server-side ruleset requires a
 PR with `bats` / `meta` / `perl` / `pre-commit` green, blocks direct pushes
-and force-push, and admits no bypass actors — a manual "ask before merge"
-gate adds no safety here. This repo therefore opts in: the
-`auto-merge: enabled` sentinel in the heading above tells the **push-pr**
-skill (Step 5) that invoking it is consent through the **whole** flow. Once CI
-is green and the merge-time finalization below (Step 4.5) is done, push-pr
-merges on its own — no separate "merge it" needed. push-pr reads this sentinel
-**from `master`** (the policy already in effect), not the working tree, so the
-PR that *introduces* the sentinel still merges manually — auto-merge applies
-from the **next** PR. The merge still goes through `push.sh merge`, which the
-ruleset gates (squash-only, required checks); the opt-in skips the prompt,
-**never** the checks. To revert to a manual merge gate, delete this sentinel. See
-`config/claude/skills/push-pr/SKILL.md` Step 5 and `config/claude/rules/gh.md`.
+and force-push, and admits no bypass actors — a manual "ask before merge" gate
+adds no safety here. This repo therefore opts in: the `auto-merge: enabled`
+sentinel in the heading above tells the **push-pr** skill (Step 5) that
+invoking it is consent through the **whole** flow. Once CI is green and the
+merge-time finalization below (Step 4.5) is done, push-pr merges on its own —
+no separate "merge it" needed. push-pr reads this sentinel **from `master`**
+(the policy already in effect), not the working tree, so the PR that
+*introduces* the sentinel still merges manually — auto-merge applies from the
+**next** PR. The merge still goes through `push.sh merge`, which the ruleset
+gates (squash-only, required checks); the opt-in skips the prompt, **never**
+the checks. To revert to a manual merge gate, delete this sentinel. See
+`config/claude/skills/push-pr/SKILL.md` Step 5 and
+`config/claude/rules/gh.md`.
 
 **Merge-time finalization (`merge-finalization: enforce`):**
 
@@ -251,12 +252,13 @@ When capturing any follow-up, decide where it belongs before writing it:
   Anything under `config/claude/`: rules, skills, hooks, the agent-config docs
   (`CLAUDE.md`, `EXTENDING.md`, `SETUP-AUDIT.md`), plugin/MCP setup. This is the
   audit's todo file; `claude-audit` reads it.
-* **Mixed** → split into both files with a cross-reference **unless** the parts
-  are merely coupled (added together, or the config piece can't be authored
-  until the dotfiles piece lands). When coupled, keep the item whole in its
-  primary file and add an inline scope note pointing at the other — and, for an
-  embedded config deliverable, either author it as part of the parent task or
-  move it to `BACKLOG.md` when the parent completes, so it isn't stranded.
+* **Mixed** → split into both files with a cross-reference **unless** the
+  parts are merely coupled (added together, or the config piece can't be
+  authored until the dotfiles piece lands). When coupled, keep the item whole
+  in its primary file and add an inline scope note pointing at the other —
+  and, for an embedded config deliverable, either author it as part of the
+  parent task or move it to `BACKLOG.md` when the parent completes, so it
+  isn't stranded.
 * **Cross-repo** → a follow-up that belongs to a **different repo than the one
   you're in** (e.g. a global-config change that spawns a per-repo evaluation
   for pigify / scripturestudy-app). You usually can't write it into the target

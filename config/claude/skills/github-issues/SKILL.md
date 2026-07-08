@@ -100,7 +100,8 @@ gh api --method POST \
 ```
 
 The native link is the source of truth; fall back to a `Blocked by #N` body
-note only if the API is unavailable. Order the worklist so blockers come first.
+note only if the API is unavailable. Order the worklist so blockers come
+first.
 
 ### 7. Recommend labels (create missing ones)
 

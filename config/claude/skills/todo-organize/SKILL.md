@@ -19,8 +19,8 @@ the active-only / no-header / no-empty-shells invariants).
    *how to carry it out*, not a restatement of the policy.
 2. **The repo's `.claude/` TODO routing** (a *TODO Routing* section in
    `WORKFLOW.md` / `CONVENTIONS.md`, if present) — the repo-specific **scope**
-   split (e.g. which files/scopes this repo tracks separately). The global rule
-   owns structure; the repo owns scope.
+   split (e.g. which files/scopes this repo tracks separately). The global
+   rule owns structure; the repo owns scope.
 
 ## When to use
 
@@ -41,10 +41,10 @@ Work in passes so the result is reviewable, not a blind rewrite:
    sections are activity-grouped, which items are misfiled, any header block,
    and any completed/`[x]` items.
 2. **Classify each item** by the rule's four kinds — `## <Language> Setup`,
-   `## <Subject> Setup`, a work-type section (features/fixes + general config),
-   or a bounded project/audit (descriptive name). Apply the
-   **maintained-vs-bounded** test for Setup-vs-project. Route per *Routing a new
-   item* in the rule.
+   `## <Subject> Setup`, a work-type section (features/fixes + general
+   config), or a bounded project/audit (descriptive name). Apply the
+   **maintained-vs-bounded** test for Setup-vs-project. Route per *Routing a
+   new item* in the rule.
 3. **Plan the target sections** before moving anything. Create a
    `## <Subject> Setup` section only when it will hold at least one item; reuse
    the repo's heading style (emoji prefix if the file uses them).
@@ -53,9 +53,10 @@ Work in passes so the result is reviewable, not a blind rewrite:
    (`→ see <Subject> Setup`) so the originating task doesn't silently lose the
    dependency.
 5. **Enforce the invariants** (`rules/todo.md`): strip the header/preamble;
-   remove completed work (its record belongs in the changelog / decisions log /
-   an ADR, not the TODO); move a deferred "not now" item to an `ICEBOX:` marker
-   at the relevant code (`code-style.md`); delete any section left empty.
+   remove completed work (its record belongs in the changelog / decisions log
+   / an ADR, not the TODO); move a deferred "not now" item to an `ICEBOX:`
+   marker at the relevant code (`code-style.md`); delete any section left
+   empty.
 6. **Verify** — `markdownlint` clean, prose ≤ 78 **display** columns (count
    characters, not bytes — e.g. `perl -CSD` / `wc -L`, since an em-dash is one
    column but multiple bytes), and every cross-reference / pointer resolves.
@@ -70,8 +71,10 @@ Apply the rule's *Routing a new item* decision directly:
 - Setup / tooling / testing / QA / subject-scoped config → the relevant
   `## <Subject> Setup` (create it if absent; version-manager and toolchain work
   goes in **its language's** Setup).
-- Feature / bugfix / enhancement, or **general** config → the work-type section.
-- Bounded project / audit / migration / research → its own descriptive section.
+- Feature / bugfix / enhancement, or **general** config → the work-type
+  section.
+- Bounded project / audit / migration / research → its own descriptive
+  section.
 - A deferred "not now" item is **not** a TODO item → `ICEBOX:` marker
   (`code-style.md`); a declined one → a decision record.
 

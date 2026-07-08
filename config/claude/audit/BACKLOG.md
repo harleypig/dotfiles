@@ -37,27 +37,27 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   When `/push-pr` is invoked and the PR was already opened in a prior session,
   the skill has no explicit "pick up here" guidance. The agent must reason
   through which steps to skip (no new commit needed; PR exists → skip Step 3;
-  jump to Step 1 QA + Step 4 CI-watch). A short note in Step 0 or Step 3 — e.g.
-  "if the PR already exists, skip Step 3 and resume from Step 1 QA / Step 4
-  CI-watch" — would remove the ambiguity for future sessions. Surfaced during
-  PR #141 ship.
+  jump to Step 1 QA + Step 4 CI-watch). A short note in Step 0 or Step 3 —
+  e.g. "if the PR already exists, skip Step 3 and resume from Step 1 QA / Step
+  4 CI-watch" — would remove the ambiguity for future sessions. Surfaced
+  during PR #141 ship.
 
-- [ ] **Rule eval / optimization (analogous to `skill-creator`)** — `skill-
-  creator` measures whether a *skill* triggers on the right prompts and does
-  its job (evals/benchmarks + a description-trigger optimizer). Investigate the
-  same for *rules*: can we measure whether a rule is actually applied at the
-  right moments, and optimize its wording/`paths:` so it fires when it should?
-  Decide only **after** we have exercised skill-creator enough to judge the
-  approach's worth (see the skill-creator decision in the Decisions log). May
-  reuse skill-creator's harness rather than build new.
+- [ ] **Rule eval / optimization (analogous to `skill-creator`)** —
+  `skill- creator` measures whether a *skill* triggers on the right prompts
+  and does its job (evals/benchmarks + a description-trigger optimizer).
+  Investigate the same for *rules*: can we measure whether a rule is actually
+  applied at the right moments, and optimize its wording/`paths:` so it fires
+  when it should? Decide only **after** we have exercised skill-creator enough
+  to judge the approach's worth (see the skill-creator decision in the
+  Decisions log). May reuse skill-creator's harness rather than build new.
 - [ ] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
   issue → **agent** investigates it against the codebase via the
   `debug-assistant` skill (root cause, "simple or not", proposed fix or a
-  question) → decide → fix → open PR with
-  `Closes #X` → merge. The investigation is an agent; **PR-open and merge stay
-  gated** per `gh.md` ("no PR create/merge without explicit approval") unless a
-  deliberately opted-in autonomous variant with guardrails (trivial-only, after
-  CI green) is built. Tools/category: `gh`.
+  question) → decide → fix → open PR with `Closes #X` → merge. The
+  investigation is an agent; **PR-open and merge stay gated** per `gh.md` ("no
+  PR create/merge without explicit approval") unless a deliberately opted-in
+  autonomous variant with guardrails (trivial-only, after CI green) is built.
+  Tools/category: `gh`.
 - [ ] **`categorize-issue` skill** — triage a `gh` issue: suggest
   labels/priority/estimate from codebase context and fold it into the repo's
   TODO triage queue (the `gh.md` *Issues & triage* workflow). Category: `gh`.
@@ -290,10 +290,11 @@ per-repo exception when a hosted scanner's results are worthwhile). **Migrate
 each to that repo's own `TODO.md` when next working it** — captured here so the
 policy isn't created without a path to apply it.
 
-- [ ] **pigify (FastAPI/Python):** assess **Snyk SCA** against the bar — a real
-  Python dependency tree means curated vuln intel / reachability / fix-PRs may
-  be worthwhile beyond osv-scanner + Dependabot. CodeFactor secondary (grade /
-  badge). If adopted: record in pigify's `.claude/` QA doc, non-required first.
+- [ ] **pigify (FastAPI/Python):** assess **Snyk SCA** against the bar — a
+  real Python dependency tree means curated vuln intel / reachability /
+  fix-PRs may be worthwhile beyond osv-scanner + Dependabot. CodeFactor
+  secondary (grade / badge). If adopted: record in pigify's `.claude/` QA doc,
+  non-required first.
 - [ ] **scripturestudy-app (Ruby/Gollum):** same assessment for the Ruby
   (bundler) dependency tree — Snyk supports Ruby; weigh worthwhile results vs.
   the OSS lane (osv-scanner covers `Gemfile.lock`).
@@ -302,10 +303,10 @@ policy isn't created without a path to apply it.
 
 A public badge (CI status, coverage, code-quality grade, security) is **social
 proof** — it can nudge a visitor to take a repo more seriously. Research which
-external signals/badges are worth adopting across my public repos, weighing the
-per-repo cost (SaaS surface, version drift, the §4 bar) against the credibility
-payoff. Feed results back into the `security-scan` §4 escape hatch and per-repo
-QA docs.
+external signals/badges are worth adopting across my public repos, weighing
+the per-repo cost (SaaS surface, version drift, the §4 bar) against the
+credibility payoff. Feed results back into the `security-scan` §4 escape hatch
+and per-repo QA docs.
 
 - [ ] Enumerate candidate signals/badges (CI status, Codecov/coverage,
   CodeFactor / Code Climate grade, Snyk / known-vulns, OpenSSF Scorecard,
@@ -442,28 +443,28 @@ duplicates / similar setups). Chart each in
 
 ## Claude statusline enhancements (claude-hud candidates)
 
-Done 2026-06-19 (fixed + regression-tested; see the decisions log): the display
-bug (leading empty field + a field-shift from the empty `.vim.mode` column —
-root-caused to the whitespace-`IFS`/`@tsv` parse, now joined on the unit
-separator so absent fields are safe), the context-% prominence, the
-**reasoning-effort `[level]`** indicator (`.effort.level`), the
-**rate-limit usage segment** (`5h:`/`7d:` `used_percentage` riding inside the
-context segment, colored by the shared pct ramp; hidden for non-subscribers),
-and the **vim-mode segment** (`.vim.mode` rendered ourselves with
+Done 2026-06-19 (fixed + regression-tested; see the decisions log): the
+display bug (leading empty field + a field-shift from the empty `.vim.mode`
+column — root-caused to the whitespace-`IFS`/`@tsv` parse, now joined on the
+unit separator so absent fields are safe), the context-% prominence, the
+**reasoning-effort `[level]`** indicator (`.effort.level`), the **rate-limit
+usage segment** (`5h:`/`7d:` `used_percentage` riding inside the context
+segment, colored by the shared pct ramp; hidden for non-subscribers), and the
+**vim-mode segment** (`.vim.mode` rendered ourselves with
 `hideVimModeIndicator: true` — NORMAL is bright-yellow-on-red, INSERT/others
 standard; leads the line). `jarrodwatts/claude-hud` was mined — full matrix in
 [`mining/claude-hud.md`](mining/claude-hud.md). Remaining candidates:
 
 - [ ] **Investigate `statusLine.subagentStatusLine`** (surfaced 2026-06-19
-  while confirming the PR-badge can't be hidden). It's a `statusLine` sub-field
-  that *formats* subagent rows. **Decide if it's worth using by answering one
-  thing: does it OVERRIDE the native subagent line or ADD to it?** If it
-  **overrides** (replaces the native row format), great — it's the one native
-  below-prompt element we *can* take control of, so we could restyle the
-  subagent display our way. If it only **adds** a custom row alongside the
-  native one, it would **duplicate** output — not what we want, so skip.
-  Ground the answer in the docs + a quick trial (fire a background subagent and
-  watch the row) before wiring anything.
+  while confirming the PR-badge can't be hidden). It's a `statusLine`
+  sub-field that *formats* subagent rows. **Decide if it's worth using by
+  answering one thing: does it OVERRIDE the native subagent line or ADD to
+  it?** If it **overrides** (replaces the native row format), great — it's the
+  one native below-prompt element we *can* take control of, so we could
+  restyle the subagent display our way. If it only **adds** a custom row
+  alongside the native one, it would **duplicate** output — not what we want,
+  so skip. Ground the answer in the docs + a quick trial (fire a background
+  subagent and watch the row) before wiring anything.
 - [ ] **Keybinding cheat-sheet statusline line** (research → build). The user
   wants a second statusline line *below* the current one that displays the
   prompt-input shortcuts worth memorizing. Two parts:
@@ -500,7 +501,8 @@ Tips 16/25/17/26).
 
 - [ ] **Gollum Wiki** rule (wiki engine).
 - [ ] **Ruby** rule — especially as it relates to the Gollum wiki.
-- [ ] **Essay Helper** skill — for the scripturestudy.org wiki ("LDS Scholar").
+- [ ] **Essay Helper** skill — for the scripturestudy.org wiki ("LDS
+  Scholar").
 
 - [ ] **Workflow-authoring skill (`author-workflow` or similar)**
   (retrospective, harleydev session 2026-07-06 — user asked whether a global

@@ -128,10 +128,10 @@ module keeps hand-written usage/notes alongside the generated tables.
 `terraform_validate`, `terraform_tflint`, `terraform_trivy` (the successor to
 the **deprecated** `terraform_tfsec`), `terraform_docs`. Native hooks need the
 underlying binaries (`terraform`, `tflint`, `trivy`) on `PATH`; if the repo
-runs its toolchain through **Docker** instead (binaries not installed locally),
-write `repo: local` `language: docker_image` hooks pinned to a version tag.
-The repo has **no `packer_*` hooks** (see `packer.md`). Prefer driving these
-through pre-commit (`pre-commit.md`).
+runs its toolchain through **Docker** instead (binaries not installed
+locally), write `repo: local` `language: docker_image` hooks pinned to a
+version tag. The repo has **no `packer_*` hooks** (see `packer.md`). Prefer
+driving these through pre-commit (`pre-commit.md`).
 
 ## Enforcement (hooks)
 

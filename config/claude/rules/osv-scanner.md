@@ -57,9 +57,10 @@ dependency), not ignored.
 
 ## Relationship to the others
 
-- **Dependabot** keeps deps current (prevents knowns); **trivy**/**osv-scanner**
-  detect them; **semgrep** is SAST on your own code. osv-scanner adds the
-  malicious-package detection none of the others specialize in.
+- **Dependabot** keeps deps current (prevents knowns);
+  **trivy**/**osv-scanner** detect them; **semgrep** is SAST on your own code.
+  osv-scanner adds the malicious-package detection none of the others
+  specialize in.
 - **Socket.dev** is the stronger *behavioral* alternative (catches new/
   zero-day malicious packages pre-publication) but is a third-party SaaS;
   note it as an option where an in-house OSS gate is preferred.

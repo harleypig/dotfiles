@@ -64,12 +64,13 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`, and asserts
   the profile comes up (`DOTFILES` set, `powershell/startup/*` modules loaded)
   with no parser errors. Same skip-if-no-docker guard.
-- `tests/docker/vmgr/` + `tests/shell/test_integration_vmgr.bats` — a **second**
-  harness image (Debian slim + git/curl/xz) because `bin/vmgr` installs **real**
-  toolchains: the test actually clones nvm and downloads a Node, then proves the
-  install → expose → update → remove lifecycle. `common.bash` provides
-  `vmgr_harness_image` and `vmgr_run` (same skip-if-no-docker guard). Kept
-  separate from the startup image, which deliberately lacks those download tools.
+- `tests/docker/vmgr/` + `tests/shell/test_integration_vmgr.bats` — a
+  **second** harness image (Debian slim + git/curl/xz) because `bin/vmgr`
+  installs **real** toolchains: the test actually clones nvm and downloads a
+  Node, then proves the install → expose → update → remove lifecycle.
+  `common.bash` provides `vmgr_harness_image` and `vmgr_run` (same
+  skip-if-no-docker guard). Kept separate from the startup image, which
+  deliberately lacks those download tools.
 
 These run wherever docker exists (CI, dev) and skip otherwise, so they sit in
 the same gating suite without breaking docker-less environments.
@@ -82,12 +83,12 @@ the same gating suite without breaking docker-less environments.
 - `config/shell-startup/` modules that contain real logic get an integration
   test that sources them and asserts the resulting environment.
 - Multi-call dispatchers (e.g. `bin/docker_wrapper`) are tested once at the
-  real file; their tool symlinks are not (the generator skips symlinks).
-  Their symlink-vs-registry *consistency* is guarded separately —
-  `test_docker_wrapper_links.bats` asserts every tool from `docker_wrapper
-  --known-tools` has a matching `bin/<tool>` symlink (by `readlink` target,
-  not contents) and that no stray wrapper symlink exists; `bin/docker_wrapper-links
-  --fix` repairs missing links.
+  real file; their tool symlinks are not (the generator skips symlinks). Their
+  symlink-vs-registry *consistency* is guarded separately —
+  `test_docker_wrapper_links.bats` asserts every tool from
+  `docker_wrapper --known-tools` has a matching `bin/<tool>` symlink (by
+  `readlink` target, not contents) and that no stray wrapper symlink exists;
+  `bin/docker_wrapper-links --fix` repairs missing links.
 - Repo-structure invariants get a guard test too: `test_skill_frontmatter.bats`
   holds every `config/claude/skills/*/SKILL.md` to the Agent Skills
   open-standard frontmatter rules (see `config/claude/EXTENDING.md` Skill ›

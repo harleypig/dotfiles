@@ -14,11 +14,11 @@ paths:
 OWASP ZAP is the **DAST** layer — Dynamic Application Security Testing: it
 scans the **running** app over HTTP for issues that static analysis can't see
 (missing security headers, injection, XSS, auth/cookie problems, info leaks).
-Complements SAST (`semgrep.md`), dependency/image CVE scans (`trivy.md`),
-and malicious-package detection (`osv-scanner.md`). Run the **pinned OSS image
+Complements SAST (`semgrep.md`), dependency/image CVE scans (`trivy.md`), and
+malicious-package detection (`osv-scanner.md`). Run the **pinned OSS image
 directly** — no marketplace action, no SaaS (same posture as the others). This
-is the default, not an absolute ban: a repo may adopt a hosted scanner when its
-results are worthwhile (`security-scan` §4).
+is the default, not an absolute ban: a repo may adopt a hosted scanner when
+its results are worthwhile (`security-scan` §4).
 
 ## Two modes
 
@@ -33,8 +33,8 @@ results are worthwhile (`security-scan` §4).
 
 A time-boxed active scan **does not pick up where it left off** — ZAP scans
 are stateless per run, so a hard kill at the budget means the next run starts
-over from the beginning. On a large app a hard cap can mean you *never* finish.
-For complete coverage despite a budget:
+over from the beginning. On a large app a hard cap can mean you *never*
+finish. For complete coverage despite a budget:
 
 - **Scope it, don't open-ended-spider.** Drive the API scan from the
   **OpenAPI spec** (`zap-api-scan -f openapi`): coverage is bounded by and
@@ -59,7 +59,8 @@ For complete coverage despite a budget:
 DAST requires a running target, so CI stands up the stack first (e.g.
 `docker compose up`), waits for readiness, then runs ZAP against it
 (`--network host` so the container reaches the published ports). That
-"stack-up-in-CI" harness is **shared with end-to-end testing** — build it once.
+"stack-up-in-CI" harness is **shared with end-to-end testing** — build it
+once.
 
 ```bash
 docker run --rm --network host --volume "$PWD/.zap:/zap/wrk:rw" \
@@ -96,4 +97,5 @@ the informational findings, then **promote to a required check**.
   endpoints. Fix real findings (add the header, fix the endpoint); only
   allowlist informational/deliberate ones, with a reason.
 - Keep the active scan time-boxed and scheduled; surface its findings as an
-  auto-issue. Run the digest-pinned image directly; never a marketplace action.
+  auto-issue. Run the digest-pinned image directly; never a marketplace
+  action.

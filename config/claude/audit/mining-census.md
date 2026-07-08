@@ -20,13 +20,13 @@ Every mined repo gets its own complete matrix file.
   user decides**. Judged by value to *any* repo, not just the one being
   audited. An agent/command can be a CANDIDATE even though we'd reimplement it
   as a skill.
-- **SKIP** (permanent) — already covered by our tooling, redundant, meta-infra,
-  or already adopted. Won't resurface. Reason given.
-- **SKIP-until `<trigger>`** (conditional) — legitimately skipped *now* because
-  a precondition isn't met (a tool we don't use, a domain we're not in), but it
-  **flips to CANDIDATE when the trigger fires** (usually "first use of X" —
-  ADR-0003). The SKIP stands; the trigger keeps it findable. All `SKIP-until`
-  items are collected in the **Watch list** below.
+- **SKIP** (permanent) — already covered by our tooling, redundant,
+  meta-infra, or already adopted. Won't resurface. Reason given.
+- **SKIP-until `<trigger>`** (conditional) — legitimately skipped *now*
+  because a precondition isn't met (a tool we don't use, a domain we're not
+  in), but it **flips to CANDIDATE when the trigger fires** (usually "first
+  use of X" — ADR-0003). The SKIP stands; the trigger keeps it findable. All
+  `SKIP-until` items are collected in the **Watch list** below.
 
 Disposition reflects **generic value to the whole environment**, then overlap
 with existing built-ins / skills / rules, then the "layer the generic over the
@@ -61,8 +61,8 @@ new dependency or tool; the audit checks it each run.
 | **Wanting context economy beyond removal + snapshot** | context-economy-by-*compression* — compress large tool outputs + MCP tool descriptions + memory files (`caveman`/`headroom`/`context-mode`); we do economy by removal (`claude-audit`) + snapshot (`compact-snapshot`) (sweep 2026-06-20) |
 | **A `gollum` wiki repo** (specific), or generally **any non-code "writing"/prose repo** (the simplified code-vs-writing repo split — refine when it matters) | the **writing-assistant** cluster → author a dedicated **writing rule** (e.g. `rules/writing.md`, "disabled until then"): the drafting/revising/structural/consistency/gardening modes, grounded in `claude-code-tips` Tip 16 ("Claude as a writing assistant") **and Tip 25 ("Claude as a research tool" — research-assisted writing: `paper-search` for academic papers, web/`/chrome`/MCP source-gathering)**, plus Tip 17 (markdown is the medium) and Tip 26 (verify *every* claim — critical for scholarly/scriptural accuracy). Also activates the backlog **Gollum Wiki rule**, **Ruby rule**, and **Essay Helper skill** candidates (2026-06-20) |
 
-(Tier-3 "build on first use" items are already watch-like by definition; listed
-here so there's one place to scan.)
+(Tier-3 "build on first use" items are already watch-like by definition;
+listed here so there's one place to scan.)
 
 ## Adopting a CANDIDATE — fold into existing categories
 

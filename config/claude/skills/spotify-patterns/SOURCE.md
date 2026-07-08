@@ -1,7 +1,7 @@
 # Source
 
-The **spotify-patterns** skill adapts **ideas only — no code** — from one repo,
-with the highest-value recipes (proactive token refresh, relinking-aware
+The **spotify-patterns** skill adapts **ideas only — no code** — from one
+repo, with the highest-value recipes (proactive token refresh, relinking-aware
 Library ops) written from first-hand implementation in the pigify project.
 
 ## Adapted (ideas/structure)

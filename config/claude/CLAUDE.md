@@ -16,8 +16,8 @@ directory and override anything stated here.
    `CONVENTIONS.md`, and `TESTS.md` as authoritative for this repository.
 3. **If a referenced file is missing,** suggest creating it when appropriate;
    do not create it automatically.
-4. **Operate autonomously within defined boundaries.** Act without confirmation
-   unless a rule explicitly requires it.
+4. **Operate autonomously within defined boundaries.** Act without
+   confirmation unless a rule explicitly requires it.
 
 ## Pre-Implementation
 

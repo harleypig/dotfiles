@@ -107,53 +107,56 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   in `STRUCTURE.md`. Shipped on the same PR as the IaC rules below.
 
 - 2026-06-29 — **Worked the backlog: authored the IaC rule set (terraform /
-  packer / tflint + tftest-patterns skill).** Closed the IaC-rules backlog item
-  (added earlier the same day). Authored `rules/terraform.md`,
+  packer / tflint + tftest-patterns skill).** Closed the IaC-rules backlog
+  item (added earlier the same day). Authored `rules/terraform.md`,
   `rules/packer.md`, `rules/tflint.md` (path-scoped, lean — matching
   `shfmt.md`/`shellcheck.md`), and a `tftest-patterns` **skill** (matching
   `pytest-patterns`; with `SOURCE.md`). Extended `trivy.md` with the
   `--misconfig-scanners terraform` IaC-scoping note (no duplication). Grounded
-  every artifact in **official HashiCorp docs** (verified current, URLs in each
-  rule's *Sources* / the skill's `SOURCE.md`) — promoting the generic parts of
-  harleydev's `.claude/CONVENTIONS.md` (validate `-backend=false` + dummy AWS
-  env, plan-only `.tftest.hcl` + `mock_provider`, the docker-vs-native hook
-  tradeoff, packer `-syntax-only`), leaving repo-specifics in the repo.
-  **Rejected** the mining agent's proposed heavy multi-skill collection
-  (terraform/ + packer/ + tflint/ skills with `references/` trees) — it fights
-  the lean, rule-first house philosophy; rules + one patterns skill is the
-  right weight. **No `qa.md`/`qa-check` change needed**: both are tool-agnostic
-  and detection-activated per-tool rules self-wire (STRUCTURE.md + `paths:`);
-  the "wire into qa" note in the backlog item was over-cautious. Current-doc
-  corrections folded in: `tflint --deep` is removed (now `deep_check = true` in
-  a plugin block, credential-bearing); `terraform_tfsec`→`terraform_trivy`;
-  antonbabenko has **no** packer hooks. Updated `STRUCTURE.md` (3 rules under
+  every artifact in **official HashiCorp docs** (verified current, URLs in
+  each rule's *Sources* / the skill's `SOURCE.md`) — promoting the generic
+  parts of harleydev's `.claude/CONVENTIONS.md` (validate `-backend=false` +
+  dummy AWS env, plan-only `.tftest.hcl` + `mock_provider`, the
+  docker-vs-native hook tradeoff, packer `-syntax-only`), leaving
+  repo-specifics in the repo. **Rejected** the mining agent's proposed heavy
+  multi-skill collection (terraform/ + packer/ + tflint/ skills with
+  `references/` trees) — it fights the lean, rule-first house philosophy;
+  rules + one patterns skill is the right weight. **No `qa.md`/`qa-check`
+  change needed**: both are tool-agnostic and detection-activated per-tool
+  rules self-wire (STRUCTURE.md + `paths:`); the "wire into qa" note in the
+  backlog item was over-cautious. Current-doc corrections folded in:
+  `tflint --deep` is removed (now `deep_check = true` in a plugin block,
+  credential-bearing); `terraform_tfsec`→`terraform_trivy`; antonbabenko has
+  **no** packer hooks. Updated `STRUCTURE.md` (3 rules under
   Docker/Infrastructure + the skill under Domain depth); recorded the mined
   reference artifacts in `idea-sources.md`. This **closes the IaC anticipation
-  gap** the prior entry noted (the Watch list never expected a Terraform stack).
+  gap** the prior entry noted (the Watch list never expected a Terraform
+  stack).
 
 - 2026-06-29 — **Assess pass from harleydev (IaC repo): fixed the `bats-setup`
-  `tests/suite/`→`tests/shell/` drift; backlogged IaC rules (user-confirmed).**
-  Ran `/claude-audit` from harleydev right after converting it (a Terraform/
-  Packer/Docker repo) — a new stack vantage, which surfaced gaps rather than
-  cruft (no ICEBOX/Watch triggers fired; nothing to drop/move). **(1) Drift
-  fixed:** the `bats-setup` skill documented a `tests/suite/` layout, but its
-  own declared source of truth `bats.md` (and `testing.md`'s per-language
-  split, and the dotfiles' actual `tests/shell/`) mandate `tests/shell/`. Hit
-  during the conversion and followed the rule, not the skill. Corrected the
-  skill to `tests/shell/` (5 path refs + the frontmatter), bumped it to v1.0.1,
-  and added a note tying the layout to the per-language split so it can't
-  re-drift. Grep confirmed no other `tests/suite` referrers. **(2) Backlogged**
-  (not authored this run, per the assess/work split): no `terraform.md`/
-  `packer.md`/`tflint.md` exist despite heavy IaC use — added a MEDIUM
-  `BACKLOG.md` item to author them (promoting the generic parts of harleydev's
-  `.claude/CONVENTIONS.md`: `validate -backend=false` + dummy AWS env,
-  plan-only `.tftest.hcl` + `mock_provider`, the docker-vs-native hook tradeoff,
-  `packer fmt/validate`; extend `trivy.md` for `--misconfig-scanners
-  terraform`). Noted the `mining-census.md` Watch list never anticipated an
-  IaC/Terraform stack — to be closed when the rules land. **Not done:** did not
-  path-scope the heavy always-on `git.md`/`code-style.md` (guardrail-dense —
-  trim weight, not guardrails); did not wire harleydev's per-repo `terraform`
-  MCP (second-class; the docker toolchain works without it).
+  `tests/suite/`→`tests/shell/` drift; backlogged IaC rules
+  (user-confirmed).** Ran `/claude-audit` from harleydev right after
+  converting it (a Terraform/ Packer/Docker repo) — a new stack vantage, which
+  surfaced gaps rather than cruft (no ICEBOX/Watch triggers fired; nothing to
+  drop/move). **(1) Drift fixed:** the `bats-setup` skill documented a
+  `tests/suite/` layout, but its own declared source of truth `bats.md` (and
+  `testing.md`'s per-language split, and the dotfiles' actual `tests/shell/`)
+  mandate `tests/shell/`. Hit during the conversion and followed the rule, not
+  the skill. Corrected the skill to `tests/shell/` (5 path refs + the
+  frontmatter), bumped it to v1.0.1, and added a note tying the layout to the
+  per-language split so it can't re-drift. Grep confirmed no other
+  `tests/suite` referrers. **(2) Backlogged** (not authored this run, per the
+  assess/work split): no `terraform.md`/ `packer.md`/`tflint.md` exist despite
+  heavy IaC use — added a MEDIUM `BACKLOG.md` item to author them (promoting
+  the generic parts of harleydev's `.claude/CONVENTIONS.md`:
+  `validate -backend=false` + dummy AWS env, plan-only `.tftest.hcl` +
+  `mock_provider`, the docker-vs-native hook tradeoff, `packer fmt/validate`;
+  extend `trivy.md` for `--misconfig-scanners terraform`). Noted the
+  `mining-census.md` Watch list never anticipated an IaC/Terraform stack — to
+  be closed when the rules land. **Not done:** did not path-scope the heavy
+  always-on `git.md`/`code-style.md` (guardrail-dense — trim weight, not
+  guardrails); did not wire harleydev's per-repo `terraform` MCP
+  (second-class; the docker toolchain works without it).
 
 - 2026-06-27 — **Adopted `pyright` for type-checking; `mypy` declined
   (user-confirmed).** Worked the `## 🐍 Python Setup` TODO items. The
@@ -498,46 +501,47 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   `SETUP-AUDIT.md`.
 - 2026-06-19 — **Settled Claude Code compaction control; wired a
   `SessionStart`/`compact` snapshot hook.** Worked the BACKLOG item, grounded
-  in current official docs (claude-code-guide). **Q1 — the `# Compact
-  instructions` CLAUDE.md heading feature is REFUTED:** no such heading-matching
-  feature is documented; the earlier claim was wrong (the more thorough prior
-  lookup was right). What is real is that project-root `CLAUDE.md` + global
-  `CLAUDE.md` + `MEMORY.md` are **auto-reinjected** after a compaction — no
-  magic heading filters what's kept. So **nothing added to `CLAUDE.md`** (and
-  recorded here so the heading idea isn't re-attempted). **Q2/Q3/Q4 confirmed:**
-  `/compact [instructions]` takes free-text focus; no threshold knob;
-  `autoCompactEnabled:false` / `DISABLE_AUTO_COMPACT=1` disable; `/compact` is
-  user-only; and the **`SessionStart` hook fires after compaction with
-  `source: "compact"`**, its `additionalContext` injected into the rebuilt
-  context — the documented lever for surviving compaction. **Decision (user
-  chose the git/session-state option):** built `config/claude/hooks/
-  compact-snapshot.py` (matcher `compact`) — it injects a short deterministic
-  snapshot (repo, branch + protected-default warning, the branch's open PR via
-  `gh`, working-tree status) that the auto-reinjection does **not** cover.
-  Read-only, fail-safe (non-git/detached/non-compact → emits nothing), gh
-  best-effort with a short timeout. Tested via `tests/python/
-  test_compact_snapshot.py` (pytest, matching the existing Python-hook test
-  convention — *not* bats). Cost is near-zero: it runs only on compaction, not
-  per turn. Hook count 4 → 5 (`SETUP-AUDIT.md`).
+  in current official docs (claude-code-guide). **Q1 — the
+  `# Compact instructions` CLAUDE.md heading feature is REFUTED:** no such
+  heading-matching feature is documented; the earlier claim was wrong (the
+  more thorough prior lookup was right). What is real is that project-root
+  `CLAUDE.md` + global `CLAUDE.md` + `MEMORY.md` are **auto-reinjected** after
+  a compaction — no magic heading filters what's kept. So **nothing added to
+  `CLAUDE.md`** (and recorded here so the heading idea isn't re-attempted).
+  **Q2/Q3/Q4 confirmed:** `/compact [instructions]` takes free-text focus; no
+  threshold knob; `autoCompactEnabled:false` / `DISABLE_AUTO_COMPACT=1`
+  disable; `/compact` is user-only; and the **`SessionStart` hook fires after
+  compaction with `source: "compact"`**, its `additionalContext` injected into
+  the rebuilt context — the documented lever for surviving compaction.
+  **Decision (user chose the git/session-state option):** built
+  `config/claude/hooks/ compact-snapshot.py` (matcher `compact`) — it injects
+  a short deterministic snapshot (repo, branch + protected-default warning,
+  the branch's open PR via `gh`, working-tree status) that the
+  auto-reinjection does **not** cover. Read-only, fail-safe
+  (non-git/detached/non-compact → emits nothing), gh best-effort with a short
+  timeout. Tested via `tests/python/ test_compact_snapshot.py` (pytest,
+  matching the existing Python-hook test convention — *not* bats). Cost is
+  near-zero: it runs only on compaction, not per turn. Hook count 4 → 5
+  (`SETUP-AUDIT.md`).
 - 2026-06-19 — **Investigated the agentskills.io skill-format standard;
   confirmed we're already conformant.** Worked the BACKLOG item, grounded in
   current sources (three research agents). **`agentskills.io` is the real,
-  Anthropic-originated open standard** for Agent Skills — the `SKILL.md` format
-  Anthropic created and released as a cross-vendor open standard on 2025-12-18
-  (adopters include OpenAI Codex, Google Gemini CLI, GitHub Copilot, Cursor,
-  JetBrains, Goose, …). Crucially it is **the same format we already use**, not
-  a competing one, so there is **nothing to migrate**: a conformance sweep of
-  all 27 skills passed every hard constraint (name matches parent dir;
-  lowercase/digits/hyphens; no leading/trailing/`--`; ≤64 chars; description
-  ≤1024). **Corrected an over-claim:** one research agent asserted a name
-  "must not contain `claude`/`anthropic`" rule; a targeted re-check of the spec,
-  the Claude Code docs, and the `skills-ref` validator found **no such rule** —
-  `claude-audit` is fully valid. Decision: **document the open standard as our
-  reference** (`EXTENDING.md` Skill › *Format*) and keep the minimal
-  `name`+`description` frontmatter; **skip the optional standard fields**
-  (`license`/`compatibility`/`metadata`/`allowed-tools`) for internal skills
-  (one vendored skill, `frontend-design`, legitimately keeps an upstream
-  `license`). **Guard built (option a, same PR):**
+  Anthropic-originated open standard** for Agent Skills — the `SKILL.md`
+  format Anthropic created and released as a cross-vendor open standard on
+  2025-12-18 (adopters include OpenAI Codex, Google Gemini CLI, GitHub
+  Copilot, Cursor, JetBrains, Goose, …). Crucially it is **the same format we
+  already use**, not a competing one, so there is **nothing to migrate**: a
+  conformance sweep of all 27 skills passed every hard constraint (name
+  matches parent dir; lowercase/digits/hyphens; no leading/trailing/`--`; ≤64
+  chars; description ≤1024). **Corrected an over-claim:** one research agent
+  asserted a name "must not contain `claude`/`anthropic`" rule; a targeted
+  re-check of the spec, the Claude Code docs, and the `skills-ref` validator
+  found **no such rule** — `claude-audit` is fully valid. Decision: **document
+  the open standard as our reference** (`EXTENDING.md` Skill › *Format*) and
+  keep the minimal `name`+`description` frontmatter; **skip the optional
+  standard fields** (`license`/`compatibility`/`metadata`/`allowed-tools`) for
+  internal skills (one vendored skill, `frontend-design`, legitimately keeps
+  an upstream `license`). **Guard built (option a, same PR):**
   `tests/shell/test_skill_frontmatter.bats` self-hosts the conformance check
   (name matches dir + charset/length; description ≤1024) in the gating suite;
   the external Apache-2.0 `skills-ref` validator (option b) is **ICEBOXed** in
@@ -552,13 +556,13 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   exactly that. Added `_is_local_only(repo, target)` — **ignored AND
   untracked** — and a short-circuit allow in `main()`. The *untracked* half is
   load-bearing: a force-added file that is both tracked and ignore-matched can
-  still land in a commit, so it stays protected (verified by a dedicated test).
-  Rationale: the rule guards *commits* on the protected branch, and an
+  still land in a commit, so it stays protected (verified by a dedicated
+  test). Rationale: the rule guards *commits* on the protected branch, and an
   ignored, untracked file (logs, caches, the agent's own memory) can never
   become one. Two new tests in `test_branch_protection.py` (allow ignored;
-  block tracked-but-ignored); docs updated in `git.md` (v1.9.0→v1.10.0,
-  layer 3) and `.claude/WORKFLOW.md`. Same-file edit (the `~/.claude →
-  config/claude` symlink) means no separate deploy.
+  block tracked-but-ignored); docs updated in `git.md` (v1.9.0→v1.10.0, layer
+  3) and `.claude/WORKFLOW.md`. Same-file edit (the
+  `~/.claude → config/claude` symlink) means no separate deploy.
 - 2026-06-19 — **Documented the kept-branch-after-squash sync mechanic in
   `git.md`.** Worked the BACKLOG item (a PR #117 retrospective follow-up).
   Added a new section *Continuing on a Kept Branch After a Squash-Merge*
@@ -568,73 +572,76 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   branch carries the branch's original commits forward as redundant history
   that pollutes the next PR's commit list (PR #117 needed a `rebase --onto`
   cleanup). The mechanic: `git reset --hard origin/<default>` when nothing new
-  is on the branch, or `git rebase --onto origin/<default> <last-merged>
-  <branch>` when post-squash commits exist — never `git merge`. This **promotes
-  the note out of the (untracked, personal) `batch-todos` working memory into
-  the canonical rule** so it isn't memory-only; the memory can now point at the
-  rule. Default-branch-agnostic wording (no hardcoded `master`), per `git.md`'s
-  own rule.
+  is on the branch, or
+  `git rebase --onto origin/<default> <last-merged> <branch>` when post-squash
+  commits exist — never `git merge`. This **promotes the note out of the
+  (untracked, personal) `batch-todos` working memory into the canonical rule**
+  so it isn't memory-only; the memory can now point at the rule.
+  Default-branch-agnostic wording (no hardcoded `master`), per `git.md`'s own
+  rule.
 - 2026-06-19 — **Evaluated CodeFactor & Snyk; relaxed the OSS-pinned-only
-  security posture into a default + per-repo escape hatch.** Worked the BACKLOG
-  *CodeFactor & Snyk* item, grounded in current official docs (two research
-  agents). **Findings:** both are hosted SaaS *App* checks (not in CI).
-  CodeFactor is App-only (no CLI — structurally can't run in a workflow); Snyk
-  *can* run in CI via `snyk/actions` but only with a `SNYK_TOKEN` + account,
-  reporting to app.snyk.io — the exact token-gated marketplace pattern the
-  posture avoids. For *this* repo both fail the worthwhile-results bar: the only
-  manifests are `config/pypoetry/{poetry.lock,pyproject.toml}` (already covered
-  by osv-scanner + Dependabot), and CodeFactor merely re-runs ShellCheck /
-  yamllint already gated locally (and skips Markdown/Perl). **Decision (this
-  repo):** drop Snyk (uninstall the App — a user web-UI action, captured in
-  BACKLOG), keep CodeFactor as a passive non-required badge; recorded in
-  `.claude/QA.md`. **Policy change (global):** the user judged the absolute
-  "never a marketplace action / vendor cloud" stance too broad — it's right for
-  *this* shell repo but would wrongly forbid a real app repo from adopting Snyk
-  SCA where its curated intel / reachability / fix-PRs are genuinely worthwhile.
-  Reframed `security-scan` §4 (v1.1.0→v1.2.0) into **OSS-pinned-direct default +
-  a documented per-repo exception**: a hosted scanner may be adopted when its
-  results are worthwhile, overlap is acceptable (the user's bar: *some overlap
-  is fine if the results are worthwhile*), the owner accepts the token/account/
-  drift costs, and it's recorded in that repo's `.claude/` QA doc, non-required
-  first. Cross-noted in `semgrep.md` (v1.0.0→v1.1.0) and `trufflehog.md`
-  (v1.1.0→v1.2.0) — both note the exception doesn't apply to *them* (their OSS
-  engines fully match the SaaS for our use). Spawned follow-ups: per-repo Snyk
-  evaluation for **pigify** (Python) and **scripturestudy-app** (Ruby), plus a
-  research task on **credibility badges as social proof** across public repos
-  (all in BACKLOG).
+  security posture into a default + per-repo escape hatch.** Worked the
+  BACKLOG *CodeFactor & Snyk* item, grounded in current official docs (two
+  research agents). **Findings:** both are hosted SaaS *App* checks (not in
+  CI). CodeFactor is App-only (no CLI — structurally can't run in a workflow);
+  Snyk *can* run in CI via `snyk/actions` but only with a `SNYK_TOKEN` +
+  account, reporting to app.snyk.io — the exact token-gated marketplace
+  pattern the posture avoids. For *this* repo both fail the worthwhile-results
+  bar: the only manifests are `config/pypoetry/{poetry.lock,pyproject.toml}`
+  (already covered by osv-scanner + Dependabot), and CodeFactor merely re-runs
+  ShellCheck / yamllint already gated locally (and skips Markdown/Perl).
+  **Decision (this repo):** drop Snyk (uninstall the App — a user web-UI
+  action, captured in BACKLOG), keep CodeFactor as a passive non-required
+  badge; recorded in `.claude/QA.md`. **Policy change (global):** the user
+  judged the absolute "never a marketplace action / vendor cloud" stance too
+  broad — it's right for *this* shell repo but would wrongly forbid a real app
+  repo from adopting Snyk SCA where its curated intel / reachability / fix-PRs
+  are genuinely worthwhile. Reframed `security-scan` §4 (v1.1.0→v1.2.0) into
+  **OSS-pinned-direct default + a documented per-repo exception**: a hosted
+  scanner may be adopted when its results are worthwhile, overlap is
+  acceptable (the user's bar: *some overlap is fine if the results are
+  worthwhile*), the owner accepts the token/account/ drift costs, and it's
+  recorded in that repo's `.claude/` QA doc, non-required first. Cross-noted
+  in `semgrep.md` (v1.0.0→v1.1.0) and `trufflehog.md` (v1.1.0→v1.2.0) — both
+  note the exception doesn't apply to *them* (their OSS engines fully match
+  the SaaS for our use). Spawned follow-ups: per-repo Snyk evaluation for
+  **pigify** (Python) and **scripturestudy-app** (Ruby), plus a research task
+  on **credibility badges as social proof** across public repos (all in
+  BACKLOG).
 - 2026-06-19 — **Resolved the always-on rule-scoping review (the last two
-  unscoped single-purpose rules).** Worked the BACKLOG *Always-on rule scoping*
-  item. **`trufflehog.md` → path-scoped** to `.github/workflows/**` (bumped
-  v1.0.0 → v1.1.0): the rule's entire concern is the `secret-scan.yml` CI
-  workflow, so it loads only when a workflow file is edited — mirroring the
-  `github-actions.md` precedent (same glob, same reasoning). The `security-scan`
-  skill reads it by name when it runs, so nothing that needs it depends on the
-  per-turn tier. **`claude-code-auth.md` → kept always-on** (bumped v1.0.0 →
-  v1.1.0, added a documenting `# No paths` frontmatter): it is a guardrail
-  (never export `ANTHROPIC_API_KEY` globally — the mistake that broke the Max
-  subscription, PR #110) whose trigger is **conversational** (auth diagnosis,
-  "/status shows the wrong method", "set up my key"), not a file edit — so
-  path-scoping would make it miss exactly those moments, and its token files
-  live in a separate repo (`private_dotfiles`) anyway. Per "trim weight, never
-  guardrails," it stays. Consequence: the always-on tier drops from 9 unscoped
-  rules to 8 (7 cross-cutting + `claude-code-auth`); 42 are now `paths:`-scoped.
-  Every always-on rule now carries an explicit `# No paths — <why>` frontmatter,
-  so "no frontmatter" is no longer an ambiguous state. Updated `SETUP-AUDIT.md`
-  baseline.
+  unscoped single-purpose rules).** Worked the BACKLOG *Always-on rule
+  scoping* item. **`trufflehog.md` → path-scoped** to `.github/workflows/**`
+  (bumped v1.0.0 → v1.1.0): the rule's entire concern is the `secret-scan.yml`
+  CI workflow, so it loads only when a workflow file is edited — mirroring the
+  `github-actions.md` precedent (same glob, same reasoning). The
+  `security-scan` skill reads it by name when it runs, so nothing that needs
+  it depends on the per-turn tier. **`claude-code-auth.md` → kept always-on**
+  (bumped v1.0.0 → v1.1.0, added a documenting `# No paths` frontmatter): it
+  is a guardrail (never export `ANTHROPIC_API_KEY` globally — the mistake that
+  broke the Max subscription, PR #110) whose trigger is **conversational**
+  (auth diagnosis, "/status shows the wrong method", "set up my key"), not a
+  file edit — so path-scoping would make it miss exactly those moments, and
+  its token files live in a separate repo (`private_dotfiles`) anyway. Per
+  "trim weight, never guardrails," it stays. Consequence: the always-on tier
+  drops from 9 unscoped rules to 8 (7 cross-cutting + `claude-code-auth`); 42
+  are now `paths:`-scoped. Every always-on rule now carries an explicit
+  `# No paths — <why>` frontmatter, so "no frontmatter" is no longer an
+  ambiguous state. Updated `SETUP-AUDIT.md` baseline.
 - 2026-06-19 — **Restored the vim-mode segment; confirmed the other native
-  indicator lines can't be hidden.** Set `statusLine.hideVimModeIndicator: true`
-  (placement confirmed against the docs — a sibling of `type`/`command`) and
-  render `.vim.mode` ourselves: a leading segment, NORMAL in bright-yellow-on-red
-  (live command keystrokes), INSERT/others standard, absent when vim mode is off.
-  This removes the built-in `-- INSERT --` text and its NORMAL-collapses-to-empty
-  vertical jitter. Two research tasks settled the rest: (a) the **auto-accept /
-  permission-mode** indicator (`⏵⏵ auto mode on`) and the **subagent/task** line
-  have **no documented or findable off-switch**, and the permission mode is **not
-  in the statusline stdin JSON** (so not reconstructable); (b) **`claude-hud`
-  offers no suppression** of native lines (sets no key, can't see the mode, just
-  stacks its transcript-parsed agents line on top). Recorded as a BACKLOG
-  `ICEBOX:` with upstream #27916 / #48246. 15 statusline tests. Folded into the
-  statusline PR.
+  indicator lines can't be hidden.** Set
+  `statusLine.hideVimModeIndicator: true` (placement confirmed against the
+  docs — a sibling of `type`/`command`) and render `.vim.mode` ourselves: a
+  leading segment, NORMAL in bright-yellow-on-red (live command keystrokes),
+  INSERT/others standard, absent when vim mode is off. This removes the
+  built-in `-- INSERT --` text and its NORMAL-collapses-to-empty vertical
+  jitter. Two research tasks settled the rest: (a) the **auto-accept /
+  permission-mode** indicator (`⏵⏵ auto mode on`) and the **subagent/task**
+  line have **no documented or findable off-switch**, and the permission mode
+  is **not in the statusline stdin JSON** (so not reconstructable); (b)
+  **`claude-hud` offers no suppression** of native lines (sets no key, can't
+  see the mode, just stacks its transcript-parsed agents line on top).
+  Recorded as a BACKLOG `ICEBOX:` with upstream #27916 / #48246. 15 statusline
+  tests. Folded into the statusline PR.
 - 2026-06-19 — **Added the rate-limit / usage segment to the statusline.**
   Worked the top remaining claude-hud candidate. Added two fields
   (`rate_limits.five_hour.used_percentage`, `…seven_day…`) rendered as
@@ -648,22 +655,22 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   absent / color-escalation). Folded into the statusline PR.
 - 2026-06-19 — **Added the reasoning-effort indicator; root-caused the parse;
   corrected the `.vim.mode` story.** Verified against the official statusline
-  docs (claude-code-guide) that **`.effort.level`** (low/medium/high/xhigh/max,
-  absent when the model lacks effort) is a real field — added it to
-  `statusline.sh` as a `[level]` tag riding with the model (no `|` between),
-  colored by level via the same calm/warn/alarm scheme as context %, shown only
-  when present. While there, fixed the
-  **root cause** of the earlier field-shift rather than just its symptom: the
-  `@tsv` + whitespace-`IFS` `read` collapsed empty/leading fields; switched to
+  docs (claude-code-guide) that **`.effort.level`**
+  (low/medium/high/xhigh/max, absent when the model lacks effort) is a real
+  field — added it to `statusline.sh` as a `[level]` tag riding with the model
+  (no `|` between), colored by level via the same calm/warn/alarm scheme as
+  context %, shown only when present. While there, fixed the **root cause** of
+  the earlier field-shift rather than just its symptom: the `@tsv` +
+  whitespace-`IFS` `read` collapsed empty/leading fields; switched to
   `join("")` + `IFS=$'\x1f'` (non-whitespace), so an absent field stays in
   place — effort and future fields are now safe in any position. Two
   **corrections** the verification surfaced: (a) **`.vim.mode` IS documented**
-  (NORMAL/INSERT, present when CC vim mode is on; the user uses it) — the prior
-  commit's "not in the JSON" was wrong; the field was still broken as written
-  (emitted only the empty label) and caused the shift, so its removal was
-  functionally right but the *reason* was not. Restoring it correctly is now a
-  user-decision BACKLOG item. (b) **`rate_limits` IS present** (5h + 7-day
-  `used_percentage`, subscriber-only) — the rate-limit segment's gate is
+  (NORMAL/INSERT, present when CC vim mode is on; the user uses it) — the
+  prior commit's "not in the JSON" was wrong; the field was still broken as
+  written (emitted only the empty label) and caused the shift, so its removal
+  was functionally right but the *reason* was not. Restoring it correctly is
+  now a user-decision BACKLOG item. (b) **`rate_limits` IS present** (5h +
+  7-day `used_percentage`, subscriber-only) — the rate-limit segment's gate is
   satisfied; left as the top remaining candidate. Marked git ahead/behind
   **SKIP** (already in `git-status`, user doesn't surface it). Extended
   `test_statusline.bats` to 8 tests (effort present/absent). Folded into the
@@ -671,102 +678,104 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 - 2026-06-19 — **Worked a backlog item: fixed the Claude statusline + mined
   `claude-hud`.** First use of the *Working the backlog* step. (1) **Fixed
   `config/claude/bin/statusline.sh`:** the reported "leading empty field" was
-  the surface of a deeper bug — the dead `mode` field (`.vim.mode`, absent from
-  Claude Code's statusline JSON) emitted an empty leading `@tsv` column, and
-  `read` with a whitespace `IFS` collapsed the leading tab and **shifted every
-  field by one** (model→mode, ctx→model, …). Removed the `mode` field
-  (eliminates both the stray `|` and the shift), added empty-part filtering for
-  robustness, and made context % escalate harder (cyan → bright-yellow ≥60% →
-  white-on-red alarm ≥80%, since compaction is manual). Added
+  the surface of a deeper bug — the dead `mode` field (`.vim.mode`, absent
+  from Claude Code's statusline JSON) emitted an empty leading `@tsv` column,
+  and `read` with a whitespace `IFS` collapsed the leading tab and **shifted
+  every field by one** (model→mode, ctx→model, …). Removed the `mode` field
+  (eliminates both the stray `|` and the shift), added empty-part filtering
+  for robustness, and made context % escalate harder (cyan → bright-yellow
+  ≥60% → white-on-red alarm ≥80%, since compaction is manual). Added
   `tests/shell/test_statusline.bats` (6 tests) — the regression test **caught
   the field-shift** the cosmetic fix alone would have missed. (2) **Mined
   `jarrodwatts/claude-hud`** (MIT, active, ~25k★) for statusline ideas via a
-  read-only agent: it's a transcript-enriching TS plugin (wrong form to vendor).
-  Recorded the full disposition in `mining/claude-hud.md` and a row in
-  `idea-sources.md`; the top ideas (rate-limit/usage segment, git ahead/behind,
-  effort indicator) are all **gated** on JSON-field verification or the shared
-  `git-status`, so captured as `BACKLOG` candidates rather than added
-  speculatively. Pruned the done statusline item from `BACKLOG`. Landed via
-  dotfiles PR.
+  read-only agent: it's a transcript-enriching TS plugin (wrong form to
+  vendor). Recorded the full disposition in `mining/claude-hud.md` and a row
+  in `idea-sources.md`; the top ideas (rate-limit/usage segment, git
+  ahead/behind, effort indicator) are all **gated** on JSON-field verification
+  or the shared `git-status`, so captured as `BACKLOG` candidates rather than
+  added speculatively. Pruned the done statusline item from `BACKLOG`. Landed
+  via dotfiles PR.
 - 2026-06-19 — **Routed a scratch `tmptodo.txt` into `BACKLOG.md` (first live
-  test of the routing convention).** Every item proved to be Claude-agent-config
-  work — nothing for the dotfiles `TODO.md` — so the whole file routed to
-  `BACKLOG.md` under a "tmptodo intake" section: a mining queue (11 collection
-  repos + `claude-code-tips` + `ruflo`), an agentskills.io standard check, an
-  urgent Claude-statusline display fix, and new rule/skill candidates (Gollum
-  wiki, Ruby, an essay-helper skill). For the 5 Anthropic official plugins the
-  user asked to *re-mine for text*: checked the decisions log — `pr-review-
-  toolkit` / `feature-dev` / `security-guidance` were already content-reviewed
-  (their bits are the vendor-when-needed items), so only `code-simplifier` +
-  `commit-commands` (dropped at capability level, no text review, and both with
-  our own equivalents) were queued for a text re-mine. Also **moved the
-  `Research: Claude Code compaction control` item from `TODO.md`** here (it's
-  config/claude, and its context-% theme overlaps the statusline fix); left the
-  coordination *Statusline Coordination / Task 1* in `TODO.md` (coupled) with a
-  cross-ref. Deleted the consumed `tmptodo.txt`. Landed via dotfiles PR.
-- 2026-06-19 — **Established TODO routing; migrated Claude-config items from the
-  repo `TODO.md`; made `claude-audit` work the backlog.** Defined the
+  test of the routing convention).** Every item proved to be
+  Claude-agent-config work — nothing for the dotfiles `TODO.md` — so the whole
+  file routed to `BACKLOG.md` under a "tmptodo intake" section: a mining queue
+  (11 collection repos + `claude-code-tips` + `ruflo`), an agentskills.io
+  standard check, an urgent Claude-statusline display fix, and new rule/skill
+  candidates (Gollum wiki, Ruby, an essay-helper skill). For the 5 Anthropic
+  official plugins the user asked to *re-mine for text*: checked the decisions
+  log — `pr-review- toolkit` / `feature-dev` / `security-guidance` were
+  already content-reviewed (their bits are the vendor-when-needed items), so
+  only `code-simplifier` + `commit-commands` (dropped at capability level, no
+  text review, and both with our own equivalents) were queued for a text
+  re-mine. Also **moved the `Research: Claude Code compaction control` item
+  from `TODO.md`** here (it's config/claude, and its context-% theme overlaps
+  the statusline fix); left the coordination *Statusline Coordination / Task
+  1* in `TODO.md` (coupled) with a cross-ref. Deleted the consumed
+  `tmptodo.txt`. Landed via dotfiles PR.
+- 2026-06-19 — **Established TODO routing; migrated Claude-config items from
+  the repo `TODO.md`; made `claude-audit` work the backlog.** Defined the
   convention — a follow-up about the Claude agent config (`config/claude/`)
-  goes in this `BACKLOG.md`; a dotfiles task in the repo `TODO.md`; a mixed task
-  is split with a cross-ref unless its parts are merely coupled — and homed it
-  in `WORKFLOW.md` → *TODO routing* (repo-scoped, so it costs no global
-  always-on tokens) with reciprocal header pointers in both files. Reviewed the
-  ~37-section `TODO.md` and **moved 8 Claude-config sections** here (STRUCTURE.md
-  diagram, kept-branch sync mechanic, `.claude/`-promotion audit, skill-creator
-  retrospective dogfood, skill-creator upgrade, Claude Rules Files, CodeFactor/
-  Snyk rule-or-skill, OpenWebUI offload) under "Repo-config follow-ups". Left
-  coupled items in `TODO.md` with scope notes (Extract-`config/claude` =
-  packaging; Perl agent-config subsection; Claude statusline = 1 of 4 surfaces;
-  the pre-commit-skill + markdownlint-rule sub-items). Chose to **extend
-  `claude-audit`** with a "Working the backlog" step (pick → kind/scope →
-  implement → ship-pr → prune+record) rather than spawn a `claude-backlog`
-  skill — reuses the audit's context and PR machinery; revisit a dedicated
-  skill only if the activity proves frequent/distinct (Rule of Three). Folded
-  into the same PR as the `SETUP-AUDIT.md` restructure. Landed via dotfiles PR.
+  goes in this `BACKLOG.md`; a dotfiles task in the repo `TODO.md`; a mixed
+  task is split with a cross-ref unless its parts are merely coupled — and
+  homed it in `WORKFLOW.md` → *TODO routing* (repo-scoped, so it costs no
+  global always-on tokens) with reciprocal header pointers in both files.
+  Reviewed the ~37-section `TODO.md` and **moved 8 Claude-config sections**
+  here (STRUCTURE.md diagram, kept-branch sync mechanic, `.claude/`-promotion
+  audit, skill-creator retrospective dogfood, skill-creator upgrade, Claude
+  Rules Files, CodeFactor/ Snyk rule-or-skill, OpenWebUI offload) under
+  "Repo-config follow-ups". Left coupled items in `TODO.md` with scope notes
+  (Extract-`config/claude` = packaging; Perl agent-config subsection; Claude
+  statusline = 1 of 4 surfaces; the pre-commit-skill + markdownlint-rule
+  sub-items). Chose to **extend `claude-audit`** with a "Working the backlog"
+  step (pick → kind/scope → implement → ship-pr → prune+record) rather than
+  spawn a `claude-backlog` skill — reuses the audit's context and PR
+  machinery; revisit a dedicated skill only if the activity proves
+  frequent/distinct (Rule of Three). Folded into the same PR as the
+  `SETUP-AUDIT.md` restructure. Landed via dotfiles PR.
 - 2026-06-19 — **Restructured `SETUP-AUDIT.md` into an index + split record
-  (user-requested revamp).** The file had accreted into a 575-line mix of stale
-  point-in-time snapshots, methodology duplicated from the `claude-audit` skill,
-  and the living record. Verified the live config is healthy first (41 rules
-  `paths:`-scoped, 9 always-on; 1 plugin enabled; context7 via `mymcp`; 4 hooks
-  — no drops needed). Then: **methodology → the skill** (it is canonical;
-  removed "How to run", left a pointer — skills own procedures, ADR-0001);
-  **dropped** the stale Baseline / resolved Findings A–F / Global-changes
-  (already in this log); and **split the three record sections into sibling
-  files** under `audit/` — `decisions-log.md`, `BACKLOG.md` (named to avoid
-  confusion with the repo `TODO.md`; treated as a todo file), `idea-sources.md`
-  (joining `mining-census.md`). `SETUP-AUDIT.md` is now a 43-line index
-  (status + methodology pointer + current baseline + record links). Updated all
-  referrers (the skill, `EXTENDING.md`, `mining-census.md`, repo `TODO.md`).
-  New finding logged in `BACKLOG.md`: review `claude-code-auth.md` /
-  `trufflehog.md` (the 2 niche always-on rules) for path-scoping. Landed via
-  dotfiles PR.
+  (user-requested revamp).** The file had accreted into a 575-line mix of
+  stale point-in-time snapshots, methodology duplicated from the
+  `claude-audit` skill, and the living record. Verified the live config is
+  healthy first (41 rules `paths:`-scoped, 9 always-on; 1 plugin enabled;
+  context7 via `mymcp`; 4 hooks — no drops needed). Then: **methodology → the
+  skill** (it is canonical; removed "How to run", left a pointer — skills own
+  procedures, ADR-0001); **dropped** the stale Baseline / resolved Findings
+  A–F / Global-changes (already in this log); and **split the three record
+  sections into sibling files** under `audit/` — `decisions-log.md`,
+  `BACKLOG.md` (named to avoid confusion with the repo `TODO.md`; treated as a
+  todo file), `idea-sources.md` (joining `mining-census.md`). `SETUP-AUDIT.md`
+  is now a 43-line index (status + methodology pointer + current baseline +
+  record links). Updated all referrers (the skill, `EXTENDING.md`,
+  `mining-census.md`, repo `TODO.md`). New finding logged in `BACKLOG.md`:
+  review `claude-code-auth.md` / `trufflehog.md` (the 2 niche always-on rules)
+  for path-scoping. Landed via dotfiles PR.
 - 2026-06-18 — **Dogfooded `skill-creator` on `ship-pr`; its trigger eval is
   broken on CC 2.1.181 (updates the "keep + put to work" entry below).** Ran
   `run_eval.py` against ship-pr's `description` with a 20-query should/
-  should-not set. **Uniform 0% trigger rate in BOTH configs** — installed skill
-  present, *and* (per upstream issue #2003's Option-2 workaround) with the
-  installed skill moved aside so only the temp registration remained. Two root
-  causes: (1) **issue #2003** (anthropics/claude-plugins-official) — `run_eval`
-  registers a UUID-named temp copy and checks for that UUID name, but a
-  co-installed real skill is invoked instead (its name lacks the UUID) → 0%;
-  (2) **deeper, isolated by our hidden rerun** — `run_eval` writes a **command**
-  to `.claude/commands/` but detects a **`Skill`** tool-use, and on CC 2.1.181
-  that command is never invoked as a `Skill`, so it reads 0% *even with no
-  competing skill*. So #2003's hide-workaround does **not** fix it for us —
-  there is currently **no usable triggering eval here**, and the
+  should-not set. **Uniform 0% trigger rate in BOTH configs** — installed
+  skill present, *and* (per upstream issue #2003's Option-2 workaround) with
+  the installed skill moved aside so only the temp registration remained. Two
+  root causes: (1) **issue #2003** (anthropics/claude-plugins-official) —
+  `run_eval` registers a UUID-named temp copy and checks for that UUID name,
+  but a co-installed real skill is invoked instead (its name lacks the UUID) →
+  0%; (2) **deeper, isolated by our hidden rerun** — `run_eval` writes a
+  **command** to `.claude/commands/` but detects a **`Skill`** tool-use, and
+  on CC 2.1.181 that command is never invoked as a `Skill`, so it reads 0%
+  *even with no competing skill*. So #2003's hide-workaround does **not** fix
+  it for us — there is currently **no usable triggering eval here**, and the
   `improve_description`/`run_loop` loop is moot (it depends on `run_eval`).
   `run_eval.py` is **byte-identical to upstream `main`** (diffed) — unfixed
   upstream; #2003 is OPEN. We commented our repro on #2003. **Verdict (revises
   the entry below):** keep skill-creator's `SKILL.md` as *conceptual* guidance
   — and note its **instruction-review pass produced two real `ship-pr` fixes**
   (the genuine value this round) — but treat its **automated eval/optimize
-  machinery as non-functional on CC 2.1.x**; use **manual triggering judgment**
-  until upstream fixes #2003. **Plugin upgrade deferred** (would only modernize
-  the moot improve-loop): blocked by a **marketplace path-corruption** — the
-  `~/.claude` → `config/claude` symlink makes CC 2.1.181 reject the recorded
-  marketplace `installLocation` (not the real dotfiles path); the sanctioned
-  fix is a global marketplace remove + re-add. Both tracked in `TODO.md`.
-  Landed via dotfiles PR.
+  machinery as non-functional on CC 2.1.x**; use **manual triggering
+  judgment** until upstream fixes #2003. **Plugin upgrade deferred** (would
+  only modernize the moot improve-loop): blocked by a **marketplace
+  path-corruption** — the `~/.claude` → `config/claude` symlink makes CC
+  2.1.181 reject the recorded marketplace `installLocation` (not the real
+  dotfiles path); the sanctioned fix is a global marketplace remove + re-add.
+  Both tracked in `TODO.md`. Landed via dotfiles PR.
 - 2026-06-18 — **Kept `skill-creator` (the one plugin worth keeping) and put
   it to work.** Unlike the four dropped plugins, skill-creator is **not
   redundant** — it is a skill-authoring + **evaluation** harness (analyzer /
@@ -774,11 +783,11 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   `improve_description` / `package_skill` / `quick_validate` scripts; an
   eval-viewer) whose quantitative skill evals and **description-trigger
   optimization** are a capability we otherwise lack. It is Anthropic-official
-  (low supply-chain risk, stays current), so we **keep it enabled** rather than
-  vendor + restyle ~8 third-party Python scripts for a tool not yet exercised.
-  To stop it sitting idle, it is now **wired into our workflow**: the
-  `claude-audit` skill names it as the standing tool for the skills dimension
-  (measure triggering/behaviour, not eyeball the frontmatter), and
+  (low supply-chain risk, stays current), so we **keep it enabled** rather
+  than vendor + restyle ~8 third-party Python scripts for a tool not yet
+  exercised. To stop it sitting idle, it is now **wired into our workflow**:
+  the `claude-audit` skill names it as the standing tool for the skills
+  dimension (measure triggering/behaviour, not eyeball the frontmatter), and
   `EXTENDING.md` instructs using it when **authoring/iterating any skill**
   (draft → eval → description-optimize). The sooner it is used, the sooner we
   learn whether to leave it as a plugin, **vendor** it, borrow its ideas, or
@@ -807,8 +816,8 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   points that evaluate declarative markdown rules
   (`.claude/hookify.<name>.local.md`) to warn/block on bash/file/stop/prompt
   events, plus a `conversation-analyzer` agent and a `writing-rules` skill. It
-  is a different hook model from ours (bespoke, single-purpose Python per hook:
-  `merge-finalization.py`, `rule-coverage.py`, `branch-protection.py`).
+  is a different hook model from ours (bespoke, single-purpose Python per
+  hook: `merge-finalization.py`, `rule-coverage.py`, `branch-protection.py`).
   Dropped because: (a) the "own **and version**" goal cuts against it — its
   rules are gitignored, per-machine `*.local.md`, whereas our committed hooks
   are versioned; (b) none of our real hooks fit its pattern model (each needs
@@ -817,8 +826,8 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   maintenance + **security** surface for trivial guards we have never needed;
   (d) the conversation-analyzer "mine pain → propose a guard" angle is now
   covered by the new `retrospective` skill. Disabled via `enabledPlugins`;
-  cache + `installed_plugins.json` are gitignored local state.
-  `ICEBOX:` revisit a **declarative hook / guard-rule engine** — hookify-style
+  cache + `installed_plugins.json` are gitignored local state. `ICEBOX:`
+  revisit a **declarative hook / guard-rule engine** — hookify-style
   pattern-based block/warn guard rules, low-friction declarative hooks without
   bespoke Python — **only if** we start writing many trivial pattern-guards
   and the Rule of Three kicks in. Until then, write a bespoke hook (cf.
@@ -884,70 +893,72 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   `initialize` handshake; full tool-resolution is a post-deploy check
   (re-register + reload). Landed via dotfiles PR.
 - 2026-06-16 — **`ICEBOX:` marker + feature-request behaviors (from pigify).**
-  Standardized a discoverability convention for *deferred / revisit-on-request*
-  decisions, born from a real pigify case (persistent playlist reorder under
-  review). Global: `rules/code-style.md` defines the `ICEBOX:` marker (vs
-  `TODO`/`FIXME`/`XXX`) and the keyword-dense rule so a grep on a future
-  request's wording lands on the note; `CLAUDE.md` gains a **Handling Feature
-  Requests** section — scan `ICEBOX:` first, and (the *generic* form of) verify
-  external-API support against current docs before building, surfacing +
-  recording any limitation (an `ICEBOX:` note plus the dependency's
-  `rules/<tool>.md` *or* the repo's `.claude/`). The *specific* Spotify limits
-  (no queue reorder, no playlist-library reorder) live in pigify's local
-  `.claude/CONVENTIONS.md`, per the generic-global / specific-local split.
-  Landed via dotfiles PR.
+  Standardized a discoverability convention for *deferred /
+  revisit-on-request* decisions, born from a real pigify case (persistent
+  playlist reorder under review). Global: `rules/code-style.md` defines the
+  `ICEBOX:` marker (vs `TODO`/`FIXME`/`XXX`) and the keyword-dense rule so a
+  grep on a future request's wording lands on the note; `CLAUDE.md` gains a
+  **Handling Feature Requests** section — scan `ICEBOX:` first, and (the
+  *generic* form of) verify external-API support against current docs before
+  building, surfacing + recording any limitation (an `ICEBOX:` note plus the
+  dependency's `rules/<tool>.md` *or* the repo's `.claude/`). The *specific*
+  Spotify limits (no queue reorder, no playlist-library reorder) live in
+  pigify's local `.claude/CONVENTIONS.md`, per the generic-global /
+  specific-local split. Landed via dotfiles PR.
 - 2026-06-12 — **Added `rules/nginx.md` (rule-coverage gap from pigify).**
   pigify configures nginx (TLS termination, the `/api` reverse proxy, and a
-  CSP / `Permissions-Policy` tuned for a cross-origin SDK iframe) but there was
-  no nginx rule — every nginx edit there had been unguided, and the session hit
-  the two classic footguns first-hand: the missing `always` flag (headers
-  dropped on error responses) and `Permissions-Policy` delegation to a
-  cross-origin iframe. The new detection-activated rule covers reverse-proxy
+  CSP / `Permissions-Policy` tuned for a cross-origin SDK iframe) but there
+  was no nginx rule — every nginx edit there had been unguided, and the
+  session hit the two classic footguns first-hand: the missing `always` flag
+  (headers dropped on error responses) and `Permissions-Policy` delegation to
+  a cross-origin iframe. The new detection-activated rule covers reverse-proxy
   header hygiene, TLS hardening (1.2/1.3, HSTS, OCSP), the security-header set
   with the `always` + `add_header`-inheritance gotchas, CSP / Permissions-
-  Policy authoring, SPA serving, and hardening. Grounded in official nginx docs
-  (Context7 currency check). **Rule-only — no skill:** authoring is reference/
-  policy (a rule's job), and the *procedural* side (verifying headers are
-  actually served, incl. on error responses) already lives in `rules/zap.md` /
-  DAST + the qa Security dimension, which the rule cross-references. No Idea
-  source / SOURCE.md (official docs, no third-party repo mined). Landed via
-  dotfiles PR.
+  Policy authoring, SPA serving, and hardening. Grounded in official nginx
+  docs (Context7 currency check). **Rule-only — no skill:** authoring is
+  reference/ policy (a rule's job), and the *procedural* side (verifying
+  headers are actually served, incl. on error responses) already lives in
+  `rules/zap.md` / DAST + the qa Security dimension, which the rule
+  cross-references. No Idea source / SOURCE.md (official docs, no third-party
+  repo mined). Landed via dotfiles PR.
 - 2026-06-12 — **Built `spotify-patterns` skill (completes the Spotify
   category).** The recipe half deferred from the Spotify category, mirroring
   `fastapi-patterns` / `sqlalchemy-patterns`: concrete recipes for proactive
   token refresh, relinking-aware Library ops (the two bugs pigify hit, written
-  first-hand from those fixes), pagination + set-based dedup, a 429/Retry-After
-  backoff wrapper, playlist-creation strategies (by-artist / theme /
-  song-list — the recommendation-seeded one dropped as deprecated-dependent),
-  and cover-art (SVG→PNG, a11y contrast, `ugc-image-upload`). Wired into
-  `rules/spotify.md` ("for recipes, invoke spotify-patterns"); SOURCE.md cites
-  `fabioc-aloha/spotify-skill` (Apache-2.0, ideas-only). The mining census's
-  ADOPT set is now fully shipped. **Follow-up logged** (census + TODO): re-mine
-  Spotify's official Concepts / Tutorials / How-Tos sections for more material.
-  Landed via dotfiles PR.
-- 2026-06-12 — **Spotify category: `rules/spotify.md` + `spotify-audit`
-  skill (audit run from pigify).** pigify (the first Spotify repo) surfaced a
+  first-hand from those fixes), pagination + set-based dedup, a
+  429/Retry-After backoff wrapper, playlist-creation strategies (by-artist /
+  theme / song-list — the recommendation-seeded one dropped as
+  deprecated-dependent), and cover-art (SVG→PNG, a11y contrast,
+  `ugc-image-upload`). Wired into `rules/spotify.md` ("for recipes, invoke
+  spotify-patterns"); SOURCE.md cites `fabioc-aloha/spotify-skill`
+  (Apache-2.0, ideas-only). The mining census's ADOPT set is now fully
+  shipped. **Follow-up logged** (census + TODO): re-mine Spotify's official
+  Concepts / Tutorials / How-Tos sections for more material. Landed via
+  dotfiles PR.
+- 2026-06-12 — **Spotify category: `rules/spotify.md` + `spotify-audit` skill
+  (audit run from pigify).** pigify (the first Spotify repo) surfaced a
   cluster of hard-won, non-obvious Spotify Web API quirks — track relinking
   (`linked_from` for Library ops), the 1-hour token + proactive refresh, the
-  `127.0.0.1`-only OAuth redirect, and the Web-Playback-SDK / EME / Permissions-
-  Policy requirements — each of which had already caused a bug. Built a global,
-  detection-activated **`rules/spotify.md`** (the policy/reference: auth +
-  PKCE, tokens, scopes, current-vs-deprecated endpoints incl. the 2024-11-27
-  deprecations and the legacy `/me/tracks` save/remove, 429/Retry-After,
-  relinking, SDK/EME, compliance) and a **`spotify-audit`** skill (`/spotify-
-  audit`) that checks a codebase against it and emits a severity-grouped
-  report. Repo-foreign-API guidance → **global, front-loaded** (ADR-0003).
-  Ideas adapted from `fabioc-aloha/spotify-skill` (Apache-2.0, ideas-only —
-  SOURCE.md); policy grounded in Spotify's official docs (its references are
-  stale). `spotify-patterns` (cover-art, playlist strategies, pagination/dedup)
+  `127.0.0.1`-only OAuth redirect, and the Web-Playback-SDK / EME /
+  Permissions- Policy requirements — each of which had already caused a bug.
+  Built a global, detection-activated **`rules/spotify.md`** (the
+  policy/reference: auth + PKCE, tokens, scopes, current-vs-deprecated
+  endpoints incl. the 2024-11-27 deprecations and the legacy `/me/tracks`
+  save/remove, 429/Retry-After, relinking, SDK/EME, compliance) and a
+  **`spotify-audit`** skill (`/spotify- audit`) that checks a codebase against
+  it and emits a severity-grouped report. Repo-foreign-API guidance →
+  **global, front-loaded** (ADR-0003). Ideas adapted from
+  `fabioc-aloha/spotify-skill` (Apache-2.0, ideas-only — SOURCE.md); policy
+  grounded in Spotify's official docs (its references are stale).
+  `spotify-patterns` (cover-art, playlist strategies, pagination/dedup)
   deferred to `TODO.md`. Landed via dotfiles PR.
 - 2026-06-12 — **claude-audit: use Context7 (if available) to verify
-  currency.** Added a step to the **claude-audit** skill — when auditing a rule
-  or adopting a pattern, query **Context7** for the tool/library/API's current
-  docs to catch drift without cloning (it caught Spotify's `/me/tracks`
-  deprecation that third-party guides missed). Strictly **second-class**
-  (`mcp.md`): a convenience for the audit *process*, never a dependency of the
-  resulting config; the audit works without it.
+  currency.** Added a step to the **claude-audit** skill — when auditing a
+  rule or adopting a pattern, query **Context7** for the tool/library/API's
+  current docs to catch drift without cloning (it caught Spotify's
+  `/me/tracks` deprecation that third-party guides missed). Strictly
+  **second-class** (`mcp.md`): a convenience for the audit *process*, never a
+  dependency of the resulting config; the audit works without it.
 - 2026-06-11 — **Built `deps-update`; Tier-1 cluster done.** The proactive,
   human-driven dependency-currency sweep — inventory outdated → triage by
   risk/security-urgency → read changelogs → apply in safe batches →
@@ -1021,9 +1032,9 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   claude-code-setup, `ralph-loop` (to trial — distinct from `/loop`), and
   `pr-review-toolkit` / `feature-dev` / `security-guidance` (decide-later).
   Follow-ups in `TODO.md`.
-- 2026-06-10 — **Plugin audit, round 2 (the three decide-later): all dropped.**
-  `pr-review-toolkit` (6 always-on agents; redundant with built-in `/review`,
-  `/code-review`, `/simplify` + `qa.md`), `feature-dev` (agents dup
+- 2026-06-10 — **Plugin audit, round 2 (the three decide-later): all
+  dropped.** `pr-review-toolkit` (6 always-on agents; redundant with built-in
+  `/review`, `/code-review`, `/simplify` + `qa.md`), `feature-dev` (agents dup
   Explore/Plan; the value was the command's orchestration), and
   `security-guidance` (a **blocking** PreToolUse hook matching JS/TS/py
   substrings — false-positives on Bash, references non-existent files;
@@ -1034,42 +1045,42 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   skills.** Resolved the earlier `pydantic-ai` name-conflation (the agent
   framework vs AI-assisted pydantic work). Mined four repos (see *Idea
   sources*) and **adapted** — not vendored — two global on-demand skills:
-  `fastapi-patterns` and `sqlalchemy-patterns`, rendered in the native-`Depends`
-  house idiom, each cross-linked from the slim path-scoped rules
-  (`fastapi.md`/`sqlalchemy.md`/`alembic.md`) so the always-on tier stays lean.
-  Established the **provenance policy**: per-artifact `SOURCE.md` cites a repo
-  only when implementation detail was reused; idea-only sources go in the *Idea
-  sources* registry. **No edit-time hook** (conflicts with "auto-fixers run
-  once"); instead each skill has a troubleshooting step pointing at `qa-check`.
-  Landed via dotfiles PR.
+  `fastapi-patterns` and `sqlalchemy-patterns`, rendered in the
+  native-`Depends` house idiom, each cross-linked from the slim path-scoped
+  rules (`fastapi.md`/`sqlalchemy.md`/`alembic.md`) so the always-on tier
+  stays lean. Established the **provenance policy**: per-artifact `SOURCE.md`
+  cites a repo only when implementation detail was reused; idea-only sources
+  go in the *Idea sources* registry. **No edit-time hook** (conflicts with
+  "auto-fixers run once"); instead each skill has a troubleshooting step
+  pointing at `qa-check`. Landed via dotfiles PR.
 - 2026-06-11 — **Mined the shortlist; adopted ADR, skipped the rest.** 8 of 9
   candidate agents/commands were already covered (see *Audit backlog*); only
   ADR was additive. Added a generic `adr` skill (Nygard template, house style)
   and a second ADR area for this subsystem at `config/claude/adr/` — distinct
   from the running *Decisions log* (granularity boundary documented in the
   skill). Two decisions of record formalized by **dogfooding** ADR:
-  **ADR-0001** (skills over custom commands) and **ADR-0002** (adapt-not-vendor;
-  `SOURCE.md` only on implementation reuse). The dotfiles-system `docs/adr/`
-  area is out of audit scope — created when its first decision arises. Landed
-  via dotfiles PR.
+  **ADR-0001** (skills over custom commands) and **ADR-0002**
+  (adapt-not-vendor; `SOURCE.md` only on implementation reuse). The
+  dotfiles-system `docs/adr/` area is out of audit scope — created when its
+  first decision arises. Landed via dotfiles PR.
 - 2026-06-11 — **Full mining census + discovery method (corrective).** The
   earlier mining evaluated a pre-filtered shortlist of 9 and under-weighted
-  generic, whole-environment value. Corrected: charted **all ~158 items** across
-  the four repos into `audit/mining-census.md` (ADOPT/CANDIDATE/SKIP + reason),
-  and documented two practices in the claude-audit skill — **source discovery**
-  (official-first → stars+recency+maintenance-health; >1yr staleness gate,
-  re-evaluate not discard) and **full-census + generic-lens mining** (enumerate
-  the whole surface, judge by value to *any* repo, treat an agent/command as a
-  candidate even when reimplemented as a skill). Surfaced a tiered CANDIDATE
-  backlog (strongest: the architecture/codebase-analysis cluster). Landed via
-  dotfiles PR.
+  generic, whole-environment value. Corrected: charted **all ~158 items**
+  across the four repos into `audit/mining-census.md` (ADOPT/CANDIDATE/SKIP +
+  reason), and documented two practices in the claude-audit skill — **source
+  discovery** (official-first → stars+recency+maintenance-health; >1yr
+  staleness gate, re-evaluate not discard) and **full-census + generic-lens
+  mining** (enumerate the whole surface, judge by value to *any* repo, treat
+  an agent/command as a candidate even when reimplemented as a skill).
+  Surfaced a tiered CANDIDATE backlog (strongest: the
+  architecture/codebase-analysis cluster). Landed via dotfiles PR.
 - 2026-06-11 — **Placement refinement (ADR-0003).** Guidance for anything
   *foreign to the current repo* (a third-party library, or our own code in a
   different repo) is **global and front-loaded** — authored as a global
   skill/rule the first time any repo uses it, even for single-repo use, rather
   than repo-local or deferred. Corrected the mining census Tier-3 mislabel
-  ("per-repo need" → global/build-on-first-use) and documented the principle in
-  `EXTENDING.md`. Reconciles with the Rule of Three (which guards *our own*
+  ("per-repo need" → global/build-on-first-use) and documented the principle
+  in `EXTENDING.md`. Reconciles with the Rule of Three (which guards *our own*
   code, not stable external libraries).
 - 2026-07-02 — **Renamed the `ship-pr` skill/command to `push-pr`; added an
   `auto-merge: enabled` opt-in.** Renamed to fit the user's mental model
