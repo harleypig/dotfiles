@@ -27,6 +27,15 @@ ROADMAP.md / docs/ROADMAP.md) with a ``merge-finalization-docs:`` line in the
 same opt-in docs — keeping repo-specific paths out of this global hook (e.g.
 the dotfiles repo adds its audit ``BACKLOG.md``).
 
+The scanned repo is the merge's **target**, not blindly the session dir — a
+``--repo``/``-R`` flag or a ``cd <path> &&`` prefix means the merge lands in a
+*different* repo, whose planning docs are the ones that matter (scanning the
+session repo instead false-blocked cross-repo merges twice: PRs #38/#40 in
+terraform-provider-mxroute, blocked on harleydev's kept-branch ``[x]`` marks).
+A ``--repo`` target resolves to a local clone via the related-repos convention
+(a sibling directory named after the repo); when no clone is found the hook
+cannot verify anything, so it emits the reminder and never blocks.
+
 Fail-safe: any error exits 0 silently so a hook bug can never block a merge.
 """
 
@@ -41,6 +50,15 @@ from pathlib import Path
 # A PR-merge invocation, but not `git merge` (branch sync). Matches
 # `gh pr merge`, `push.sh merge`, `push merge`.
 MERGE_RE = re.compile(r"\b(?:gh\s+pr\s+merge|push(?:\.sh)?\s+merge)\b")
+
+# The merge's explicit target repo: `--repo`/`-R` takes `[HOST/]OWNER/REPO`
+# or a full URL; only the trailing repo name matters for finding a clone.
+REPO_FLAG_RE = re.compile(r"(?:^|\s)(?:--repo|-R)(?:=|\s+)(\S+)")
+
+# A `cd <path> && ...` prefix — the merge runs in <path>, not the session dir.
+CD_PREFIX_RE = re.compile(
+  r"^\s*cd\s+(?:\"([^\"]+)\"|'([^']+)'|([^\s;&|]+))\s*&&"
+)
 
 # A completed Markdown task-list item: `- [x]` / `* [X]` (any indent).
 DONE_ITEM_RE = re.compile(r"^\s*[-*+]\s+\[[xX]\]")
@@ -101,6 +119,39 @@ def _extra_docs(repo: Path) -> tuple[str, ...]:
   return ()
 
 
+def _target_repo(command: str, session: Path) -> Path | None:
+  """The local repo the merge actually targets. `--repo`/`-R` names a repo
+  explicitly — resolve it to the session repo (name match) or a sibling
+  clone (the related-repos convention: `$PARENT_DIR/<repo-name>/`); None if
+  no local clone is found (unverifiable — the caller must not block on some
+  *other* repo's docs). A `cd <path> &&` prefix runs the merge in <path>.
+  Otherwise the merge targets the session repo, as before."""
+  m = REPO_FLAG_RE.search(command)
+  if m:
+    name = m.group(1).rstrip("/").split("/")[-1]
+    if name.endswith(".git"):
+      name = name[:-4]
+
+    if session.name == name:
+      return session
+
+    sibling = session.parent / name
+    if (sibling / ".git").exists():
+      return sibling
+
+    return None
+
+  m = CD_PREFIX_RE.match(command)
+  if m:
+    path = Path(os.path.expanduser(next(g for g in m.groups() if g)))
+    if not path.is_absolute():
+      path = session / path
+    if path.is_dir():
+      return path
+
+  return session
+
+
 def _done_items(repo: Path) -> list[str]:
   """Planning docs under `repo` that still carry completed `- [x]` items,
   reported as "file (N)"."""
@@ -144,9 +195,19 @@ def main() -> int:
   if not MERGE_RE.search(command):
     return 0
 
-  repo = Path(
+  session = Path(
     os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd()
   )
+
+  repo = _target_repo(command, session)
+  if repo is None:
+    _emit(
+      None,
+      "This merge targets a repo with no local clone found beside the "
+      "session repo — its merge-time finalization cannot be verified from "
+      "here; confirm it yourself. " + CHECKLIST,
+    )
+    return 0
 
   hits = _done_items(repo) if _enforces(repo) else []
   if hits:
