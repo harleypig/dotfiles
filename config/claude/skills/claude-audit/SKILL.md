@@ -174,6 +174,25 @@ convention**: its claims may be memory-based and already stale. This pairs
 with the currency check above (Context7) — grounding is *whether* a source
 exists; currency is *whether* it is still current.
 
+**Sweep for upstream drift across the whole inventory.** The currency check
+above fires *reactively* — when you happen to open a rule. This is its
+*proactive* complement, run once per audit: enumerate **every** rule/skill
+that documents a **setup** (language *or* subject alike) and carries a
+**Sources** section or **pinned** versions/digests, and re-check whether the
+grounded upstream has moved since it was captured. Anchor on the **config
+inventory, not a TODO** — a finished setup leaves no TODO item, so the TODO
+can't be the coverage list; `grep -rl` the `rules/` / `skills/` tree for
+`## Sources`, `fetched`, and version / `sha256:` pins, and work that list.
+What "drift" means varies by setup — a language's version / version-manager /
+toolchain / frameworks; a subject's pinned image tags, action SHAs, lint
+style, or wired tools — but the re-check is uniform: compare what the artifact
+documents (and its `fetched YYYY-MM-DD` date) against the current upstream
+(Context7, or the cited URL). Route each drifted artifact to `BACKLOG.md` as a
+re-grounding item — **never silently rewrite** a Sources claim. This is the
+*pull/refresh* counterpart to the `rule-coverage.py` *push* trigger (it nags
+when a **new** tool has no rule); distinct from **deps-update**, which tracks
+project dependency manifests, not the agent config's own grounding.
+
 **Delegated research can over-claim — demand exact doc quotes.** When a
 spawned research agent (a `claude-code-guide` lookup, a doc-mining subagent)
 reports a **feature or behaviour claim** that would drive an action — a
@@ -190,16 +209,17 @@ routine, not luck.
 already reads `settings.json`; extend it with a **security pass over
 `permissions.allow`** — in the global `settings.json`, the user
 `~/.claude/settings.json`, and the current repo's
-`.claude/settings.local.json`. Flag any auto-approved entry that grants blanket consent to a destructive or
-privilege-escalating command: `sudo`, `rm -rf`, `chmod 777`, a pipe-to-shell
-(`curl … | sh`, `wget … | sh`), `git reset --hard`, a force-push, `eval`, or a
-**broad bare `Bash`** / `Bash(*)` wildcard that auto-approves everything. For
-each, surface it and recommend tightening — narrow the pattern, downgrade to
-`ask`, or remove — **never auto-edit** a permission, since loosening or
-withdrawing consent is the user's call. Generic and security-positive; this is
-**our own** scan (the idea, not the external `cc-safe` npm tool). Pairs with
-the *harden-the-attack-surface* companion still on `BACKLOG.md` (an
-install-safety scan of third-party skills/plugins before adoption).
+`.claude/settings.local.json`. Flag any auto-approved entry that grants
+blanket consent to a destructive or privilege-escalating command: `sudo`,
+`rm -rf`, `chmod 777`, a pipe-to-shell (`curl … | sh`, `wget … | sh`),
+`git reset --hard`, a force-push, `eval`, or a **broad bare `Bash`** /
+`Bash(*)` wildcard that auto-approves everything. For each, surface it and
+recommend tightening — narrow the pattern, downgrade to `ask`, or remove —
+**never auto-edit** a permission, since loosening or withdrawing consent is
+the user's call. Generic and security-positive; this is **our own** scan (the
+idea, not the external `cc-safe` npm tool). Pairs with the *vet external code
+before vendoring it* step under *Mining repos for ideas* — together they
+harden the agent's own attack surface.
 
 ## Mining repos for ideas
 
@@ -263,6 +283,24 @@ category-specific pieces first and touch `qa` (and `qa-check`) last, wiring
 the new pieces in (`qa.md` names them, `qa-check` composes them). Record
 sources in the *Idea sources* registry; a per-artifact `SOURCE.md` only on
 implementation reuse (ADR-0002).
+
+**Vet external code before vendoring it.** Adopting an *idea* and
+reimplementing it as our own skill/rule is the default (above) and is itself
+the strongest safeguard — we author the code, so there is nothing external to
+trust. But when external code is **vendored verbatim** — a marketplace plugin
+under `config/claude/plugins/`, a copied skill's `scripts/` or hooks, an
+installed plugin's `.mcp.json` command — scan it **before** it lands, since we
+otherwise adopt it with no pre-install check. Run the **security-scan** skill
+(SAST) over it and read every executable it ships — shell/Python in
+`scripts/`, hook `entry` commands, any `postinstall`/setup step — for the same
+red flags the allow-list pass names: pipe-to-shell installers, credential or
+token reads, network exfiltration, obfuscated or `eval`'d payloads, and writes
+outside the repo. Treat an unreadable or obfuscated payload as a **reject**,
+not a puzzle to solve. This is the pre-adoption gate the mining flow otherwise
+lacks; it complements the allow-list scan (both harden the agent's own attack
+surface). *(An agent-readiness lint of a **target repo** — the `AgentLint`
+idea — is a different concern; it overlaps the `new-project` skill's brownfield
+gap-analysis and does not earn its own artifact. See the decisions log.)*
 
 ## Guardrails
 

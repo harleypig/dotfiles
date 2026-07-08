@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.4
+**Version:** v2.6.5
 
 ## Purpose
 
@@ -30,6 +30,7 @@ One `tests/` root with per-language subdirs (see
 tests/
   helpers/common.bash   # shared bash/bats support (load_bats_libs, dotfiles_root, make_stub, make_test_repo, docker harness)
   scaffold/             # meta-test generator + templates (build-meta-tests)
+  lint/                 # repo lint helpers, not tests (e.g. prose_wrap.py, run via a pre-commit hook); their unit tests live in python/
   docker/               # integration-test harness image (Dockerfile, entrypoint)
   shell/                # bats: *.bats hand-written, *_integration_*.bats, *.meta.bats (generated, gitignored)
   python/               # pytest: test_*.py

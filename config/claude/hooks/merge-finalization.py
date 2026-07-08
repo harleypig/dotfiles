@@ -3,7 +3,10 @@
 """PreToolUse hook: gate PR merges on the merge-time finalization.
 
 Fires on a PR-merge command (`gh pr merge ...` / `push.sh merge ...`) — NOT
-`git merge`, so routine branch syncs are never gated. It backstops the
+`git merge`, so routine branch syncs are never gated. Merge phrases quoted
+inside a commit message (`-m "..."`), a PR body (`--body "..."`), or a heredoc
+payload are ignored — those spans are stripped before the match, so writing
+*about* a merge doesn't trip the gate. It backstops the
 merge-time documentation finalization that the push-pr skill (Step 4.5) and a
 repo's `WORKFLOW.md` describe: completed items pruned from the planning docs,
 the GitHub issues those items resolve closed, and the changelog refreshed
@@ -51,6 +54,16 @@ from pathlib import Path
 # `gh pr merge`, `push.sh merge`, `push merge`.
 MERGE_RE = re.compile(r"\b(?:gh\s+pr\s+merge|push(?:\.sh)?\s+merge)\b")
 
+# Quoted spans and heredoc bodies are stripped *before* MERGE_RE runs, so a
+# merge phrase that only appears inside a commit message (`-m "..."`), a PR
+# body (`--body "..."`), or a heredoc payload is not mistaken for a real merge
+# invocation (observed on PR #224: a `--body` heredoc quoting `gh pr merge`
+# fired the hook). A genuine merge is never itself quoted, so this can't hide
+# one — `... "done" && push.sh merge N` still matches after the quote is gone.
+# Heredocs are removed first since their bodies may themselves contain quotes.
+HEREDOC_RE = re.compile(r"<<-?\s*(['\"]?)(\w+)\1.*?^[ \t]*\2\b", re.S | re.M)
+QUOTED_RE = re.compile(r"'[^']*'|\"[^\"]*\"")
+
 # The merge's explicit target repo: `--repo`/`-R` takes `[HOST/]OWNER/REPO`
 # or a full URL; only the trailing repo name matters for finding a clone.
 REPO_FLAG_RE = re.compile(r"(?:^|\s)(?:--repo|-R)(?:=|\s+)(\S+)")
@@ -89,6 +102,15 @@ CHECKLIST = (
   "commit it here, never in CI).\n"
   " - Commit the docs-only change, push, re-watch CI green, then merge."
 )
+
+
+def _strip_quoted(command: str) -> str:
+  """The command with heredoc bodies and quoted spans blanked out, so
+  MERGE_RE only sees text outside string payloads. Used solely for the
+  merge-detection gate; repo/`--repo`/`cd` resolution still reads the
+  original command."""
+  without_heredocs = HEREDOC_RE.sub(" ", command)
+  return QUOTED_RE.sub(" ", without_heredocs)
 
 
 def _enforces(repo: Path) -> bool:
@@ -192,7 +214,7 @@ def main() -> int:
     return 0
 
   command = (event.get("tool_input") or {}).get("command") or ""
-  if not MERGE_RE.search(command):
+  if not MERGE_RE.search(_strip_quoted(command)):
     return 0
 
   session = Path(
