@@ -31,7 +31,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   `|`). Evaluate whether reliable quote-stripping is worth the complexity
   before building.
 
-- [ ] **Prose-wrap check for agent-config Markdown (LOW — retrospective, PR
+- [x] **Prose-wrap check for agent-config Markdown (LOW — retrospective, PR
   #130).** The 78-col prose-wrap convention (`CONVENTIONS.md`) is enforced
   only by eye — markdownlint's `line_length` is set to 200 (tables/code),
   so 79–80-col prose slips through; this session hand-fixed several such lines
@@ -41,6 +41,17 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   fenced code, frontmatter `description:`, and reference-link/URL lines.
   **Risk:** false positives on exactly those exemptions — evaluate whether a
   reliable check is even feasible before building; it may not be worth it.
+
+- [ ] **Reflow the prose-wrap backlog, then gate the check (follow-up to the
+  prose-wrap check above).** The `prose-wrap` pre-commit hook
+  (`tests/lint/prose_wrap.py`) is wired **non-gating** (`stages: [manual]`)
+  because ~146 pre-existing >78-col prose lines across ~30 authored
+  agent-config Markdown files would otherwise fail the gate. List them with
+  `pre-commit run prose-wrap --hook-stage manual --all-files`, reflow each to
+  78 cols (mechanical; leave the exempt constructs alone), then **flip the
+  hook off `stages: [manual]`** to a normal stage so it gates commits/CI. Do
+  the reflow in its own commit(s), separate from the flip. Scope: **repo**
+  (dotfiles agent-config Markdown + the `.pre-commit-config.yaml` change).
 
 - [ ] **Audit external skills/plugins for install-safety (CANDIDATE — mined
   from the plugin-collection sweep, 2026-06-20).** Companion to the allow-list
