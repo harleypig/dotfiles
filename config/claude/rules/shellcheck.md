@@ -11,7 +11,7 @@ paths:
 
 # shellcheck Rules
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 ## Invocation
 
@@ -79,6 +79,11 @@ merely remembered. It is:
   container per edit via the docker wrapper).
 - **Fail-open** — skips silently for a non-shell file, a file outside the
   project, or when `shellcheck` is absent; it can never block an edit.
+- **Gate-matched** — runs with `--external-sources` so `source`/`.`
+  directives resolve (matching a repo whose pre-commit gate uses `-x`), and
+  inherits `SHELLCHECK_OPTS` plus any `.shellcheckrc` shellcheck finds from
+  the file's directory upward — so it doesn't over-flag SC1091 on sourced
+  files the repo's gate resolves cleanly.
 
 A shell file is detected by a `.sh`/`.bash` extension or a shell shebang
 (so extension-less `bin/`, `lib/`, `config/shell-startup/` scripts are

@@ -10,7 +10,7 @@ paths:
 **Version:** v1.1.0
 
 Go language conventions. The generic rules in `code-style.md` (naming,
-paragraph spacing, 72-col comments, library-vs-executable error posture, Rule
+paragraph spacing, 78-col comments, library-vs-executable error posture, Rule
 of Three) apply here too; this file records the Go-specific specifics, defers
 tool invocation to `golangci-lint.md`, and the test bar to `testing.md`.
 
@@ -23,7 +23,7 @@ tool invocation to `golangci-lint.md`, and the test bar to `testing.md`.
   (see `golangci-lint.md`). There is no first-party gofumpt pre-commit hook,
   so this is the single pinnable entry point for both format and lint.
 - gofmt does not wrap lines — leave code line length to the formatter; keep
-  **comments** wrapped at 72 cols per `code-style.md`.
+  **comments** wrapped at 78 cols per `code-style.md`.
 
 ## Naming & doc comments
 

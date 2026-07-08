@@ -4,7 +4,7 @@
 
 # Code Style
 
-**Version:** v1.7.0
+**Version:** v1.8.0
 
 ## General Style
 
@@ -24,11 +24,12 @@ at the bottom).
 ### Documentation and Wrapping
 
 - Wrap Markdown prose at **78 columns**.
-- Wrap code comments at **72 columns**. Comment wrap is independent of
-  the code-line wrap configured for the formatter — even when a repo
-  raises its formatter's `column_limit` / `line-length`, comments stay
-  at 72. Widen past 72 only when absolutely needed (an unbreakable URL,
-  a literal that would mislead if split).
+- Wrap code comments at **78 columns** — the same width as the Markdown
+  prose wrap above. This is independent of the code-line wrap the
+  formatter enforces: a repo may set its formatter's `column_limit` /
+  `line-length` higher (79, 88, …) for code, but comments still wrap at
+  78. Widen past 78 only when absolutely needed (an unbreakable URL, a
+  literal that would mislead if split).
 - Use GitHub-flavored Markdown.
 - Use reference-style links for readability in Markdown.
 - Document complex logic inline; do not write comments that merely

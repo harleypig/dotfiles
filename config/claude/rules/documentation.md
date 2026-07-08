@@ -54,7 +54,7 @@ context — dedupe the source of a fact, not understanding (`code-style.md`).
 | Layer | Holds |
 |-------|-------|
 | This rule (`documentation.md`) | the doc bar + the "right form per audience" stance |
-| `code-style.md` | writing mechanics — 78-col wrap, 72-col comments, reference links, public-API docstrings, dedupe-the-fact |
+| `code-style.md` | writing mechanics — 78-col wrap, 78-col comments, reference links, public-API docstrings, dedupe-the-fact |
 | `markdownlint.md` (+ prose linters) | the linter that gates Markdown |
 | `qa.md` | the Documentation pipeline stage that gates docs pre-merge (dim 13), incl. generated-changelog prep |
 | `adr` skill | decision records (the "why") |
