@@ -1,6 +1,6 @@
 ---
 name: github-issues
-description: Deep triage of a repo's open GitHub issues — reconcile each against the repo's existing planning docs (TODO/ROADMAP/ICEBOX) AND its current code, detect already-done/stale issues and recommend closing them with an explanatory comment, score each issue's complexity, spot duplicate/umbrella issues and blocking chains, recommend labels (creating missing ones), and keep issue ↔ planning-doc references in sync. Routes every issue to a disposition (close-done / map-to-TODO / icebox+close / roadmap / features-&-fixes / flag-for-decision) and presents a worklist — it NEVER auto-fixes an issue. Use for "triage the issues", "go through the issues", "map issues to todos", "which issues are already done", "what's still open". The depth skill github-tasks delegates issue triage to.
+description: Deep triage of a repo's open GitHub issues — reconcile each against the repo's existing planning docs (TODO/ROADMAP/ICEBOX) AND its current code, detect already-done/stale issues and recommend closing them with an explanatory comment, score each issue's complexity (effort estimate) and suggest a priority, spot duplicate/umbrella issues and blocking chains, recommend labels (creating missing ones), and keep issue ↔ planning-doc references in sync. Routes every issue to a disposition (close-done / map-to-TODO / icebox+close / roadmap / features-&-fixes / flag-for-decision) and presents a worklist — it NEVER auto-fixes an issue. Use for "triage the issues", "go through the issues", "map issues to todos", "which issues are already done", "what's still open", "categorize/prioritize an issue", "how big is this issue". The depth skill github-tasks delegates issue triage to.
 ---
 
 # github-issues
@@ -77,6 +77,13 @@ Give every still-open issue a complexity estimate with its basis:
 
 Report it for **every** open issue — it informs prioritization (it does
 **not** trigger auto-tackle; see *Scope*).
+
+Then pair each with a **priority** suggestion — urgency × leverage from the
+reconciliation above (a security or data-loss issue with a small fix outranks
+a large nice-to-have) — so the worklist is **ordered**, not just sized:
+complexity is the effort estimate, priority is where it lands in the queue.
+This triage *is* the per-issue categorization (labels + priority + effort);
+there is no separate "categorize an issue" pass.
 
 ### 5. Detect duplicates & umbrellas
 
