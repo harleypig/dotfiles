@@ -174,3 +174,37 @@ def test_cd_prefix_scans_target(tmp_path):
     _run(session, command=f"cd {other} && gh pr merge 40 --squash")
   )
   assert out.get("permissionDecision") == "deny"
+
+
+# --- Quoted / heredoc merge phrases are not real invocations (regression:
+# --- PR #224 — a `--body` heredoc quoting `gh pr merge` fired the hook).
+
+
+def test_merge_phrase_in_commit_message_ignored(tmp_path):
+  # A commit message that merely mentions the merge syntax must NOT be treated
+  # as a merge (session has unpruned [x] items, so a false match would block).
+  session = _make_simple_repo(tmp_path / "session")
+
+  out = _run(session, command='git commit -m "fix gh pr merge false positive"')
+  assert out == {}
+
+
+def test_merge_phrase_in_heredoc_body_ignored(tmp_path):
+  # A PR body heredoc quoting the merge syntax must NOT fire the gate.
+  session = _make_simple_repo(tmp_path / "session")
+  command = (
+    "gh pr create --title t --body \"$(cat <<'EOF'\n"
+    "## Summary\n- document how `push.sh merge` works\nEOF\n)\""
+  )
+  assert _run(session, command=command) == {}
+
+
+def test_real_merge_after_quoted_arg_still_matches(tmp_path):
+  # Stripping quotes must not lose a genuine merge chained after a quoted
+  # command: `... "done" && push.sh merge N` still blocks on unpruned items.
+  session = _make_simple_repo(tmp_path / "session")
+
+  out = _hook_out(
+    _run(session, command='echo "all done" && push.sh merge 40 --squash')
+  )
+  assert out.get("permissionDecision") == "deny"

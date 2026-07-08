@@ -20,7 +20,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Audit dimensions / design
 
-- [ ] **merge-finalization: don't match merge syntax quoted in message
+- [x] **merge-finalization: don't match merge syntax quoted in message
   text (LOW — retrospective, PR #224).** `MERGE_RE` regexes the whole Bash
   command string, so a `git commit -m` / `gh pr create --body` whose
   *message* quotes `gh pr merge --repo …` fires the hook (observed on PR
