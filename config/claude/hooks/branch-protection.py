@@ -26,12 +26,14 @@ guard here — the agent's git.md discipline and the server ruleset still apply.
 Revisit if that gap bites in practice.
 
 Edits to a plan file (`.../claude/plans/...`) are always allowed, so plan mode
-is never blocked. Edits to a **gitignored, untracked** file are likewise
-allowed: such a file is local-only state (logs, caches, the agent's own
-gitignored memory) that can never be committed to the protected branch, so the
-"don't author on it" rule does not apply. The *untracked* half matters — a
-force-added file that is both tracked and ignore-matched can still land in a
-commit, so it stays protected.
+is never blocked. An **untracked** file is allowed too, since it is not part
+of the branch's committed content: a gitignored one (logs, caches, the agent's
+own gitignored memory) whether or not it exists yet, and a non-ignored one that
+**already exists** on disk (a pre-existing scratch note or generated config
+being touched, not authored). Authoring a **brand-new**, non-ignored file still
+blocks — that is new content the "branch first" nudge should catch. A
+force-added file that is both tracked and ignore-matched stays protected, since
+it can still land in a commit — which is why the tracked check comes first.
 
 Fail-safe: any error exits 0 silently so a hook bug can never block editing.
 """
@@ -101,15 +103,27 @@ def _git_ok(repo: Path, *args: str) -> bool:
   return res.returncode == 0
 
 
-def _is_local_only(repo: Path, target: Path) -> bool:
-  """True when `target` is gitignored AND not tracked — purely local state
-  (logs, caches, the agent's own gitignored memory) that can never be
-  committed, so editing it on a protected branch breaks nothing. A force-added
-  file that is both tracked and ignore-matched stays protected (it can still
-  land in a commit), which is why the tracked check is required."""
-  if not _git_ok(repo, "check-ignore", "-q", "--", str(target)):
-    return False
-  return not _git_ok(repo, "ls-files", "--error-unmatch", "--", str(target))
+def _is_untracked_editable(repo: Path, target: Path) -> bool:
+  """True when `target` may be edited on a protected branch because it is not
+  part of the branch's committed content.
+
+  Editable when the file is NOT tracked AND either:
+
+    - gitignored — purely local state (logs, caches, the agent's own gitignored
+      memory) that can never be committed, whether or not it exists yet; or
+    - already present on disk — a pre-existing untracked scratch file (local
+      notes, a generated config) being touched, not authored anew.
+
+  A brand-new, non-ignored path (a Write to a file that does not exist and is
+  not ignored) is NOT editable: authoring new content should still trip the
+  "branch first" nudge. A tracked file — even a force-added ignore-matched
+  one — is never editable here, since it can still land in a commit, which is
+  why the tracked check comes first."""
+  if _git_ok(repo, "ls-files", "--error-unmatch", "--", str(target)):
+    return False             # tracked → part of the branch, stays protected
+  if _git_ok(repo, "check-ignore", "-q", "--", str(target)):
+    return True              # gitignored + untracked → local-only
+  return target.exists()     # untracked, not ignored → allow only if it exists
 
 
 def _existing_ancestor(path: Path) -> Path | None:
@@ -215,10 +229,11 @@ def main() -> int:
   if repo is None:
     return 0  # not in a git repo → nothing to protect
 
-  # A gitignored, untracked file is local-only state that can never be
-  # committed to the protected branch, so the "don't author on it" rule does
-  # not apply — allow it (e.g. the agent's own gitignored memory files).
-  if _is_local_only(repo, target):
+  # An untracked file is not part of the branch's committed content, so the
+  # "don't author on it" rule does not apply: a gitignored one (e.g. the
+  # agent's own memory files) or a pre-existing untracked scratch file. Only
+  # authoring a brand-new, non-ignored file still trips the branch-first nudge.
+  if _is_untracked_editable(repo, target):
     return 0
 
   protected = _protected_branches(repo)
