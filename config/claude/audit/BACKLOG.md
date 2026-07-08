@@ -20,6 +20,17 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Audit dimensions / design
 
+- [ ] **merge-finalization: don't match merge syntax quoted in message
+  text (LOW — retrospective, PR #224).** `MERGE_RE` regexes the whole Bash
+  command string, so a `git commit -m` / `gh pr create --body` whose
+  *message* quotes `gh pr merge --repo …` fires the hook (observed on PR
+  #224's own commit: it matched the quoted text and "resolved" repo `or`
+  from the prose). Harmless today — reminder-only, fails safe — but the
+  hook should skip matches that sit inside a quoted heredoc/`-m`/`--body`
+  payload, or anchor on the command position (start / after `&&`, `;`,
+  `|`). Evaluate whether reliable quote-stripping is worth the complexity
+  before building.
+
 - [ ] **Prose-wrap check for agent-config Markdown (LOW — retrospective, PR
   #130).** The 78-col prose-wrap convention (`CONVENTIONS.md`) is enforced
   only by eye — markdownlint's `line_length` is set to 200 (tables/code),
