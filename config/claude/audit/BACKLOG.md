@@ -84,7 +84,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     points at; the *understanding* doc over our existing hook rules/hooks.
   - [ ] **Channels** (research preview). External systems pushing events
     into a running session — the push counterpart to poll/timer loops.
-  - [ ] **Permission modes & auto mode.** `acceptEdits` / `dontAsk` / `auto`
+  - [x] **Permission modes & auto mode.** `acceptEdits` / `dontAsk` / `auto`
     / bypass and the `autoMode` classifier; how unattended work is gated.
     Consider **extracting the auto-mode section out of
     `LOOPS-WORKFLOWS.md`** into this dedicated modes doc once it exists (it
