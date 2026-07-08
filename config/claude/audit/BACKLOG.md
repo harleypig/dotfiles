@@ -30,7 +30,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   during PR #141 ship.
 
 - [ ] **Rule eval / optimization (analogous to `skill-creator`)** —
-  `skill- creator` measures whether a *skill* triggers on the right prompts
+  `skill-creator` measures whether a *skill* triggers on the right prompts
   and does its job (evals/benchmarks + a description-trigger optimizer).
   Investigate the same for *rules*: can we measure whether a rule is actually
   applied at the right moments, and optimize its wording/`paths:` so it fires
@@ -48,11 +48,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 - [ ] **`categorize-issue` skill** — triage a `gh` issue: suggest
   labels/priority/estimate from codebase context and fold it into the repo's
   TODO triage queue (the `gh.md` *Issues & triage* workflow). Category: `gh`.
-- [ ] **Future top-level categories.** Fold a new capability into an existing
-  category (`code-style` / `testing` / `qa` / `gh` / `git`); open a new
-  top-level category only when it genuinely doesn't fit. (`documentation` and
-  `troubleshooting` were opened 2026-06-11 — see the decisions log.)
-
 - [ ] **UI/UX design skills (CLI / windowed / web), beyond `frontend-design`
   (2026-06-27).** `frontend-design` (vendored, Apache-2.0) covers **web** UI
   *visual design* only — its triggers are web components / pages / React /
@@ -115,12 +110,16 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     work; cross-reference the existing `rules/github-actions.md`.
   - [ ] **Observability.** `/tasks`, `/workflows`, `claude agents`, `/usage`
     — monitoring unattended work.
-  - [ ] **Reflect `config/claude/docs/` in `STRUCTURE.md`** (retrospective,
-    PR #205). The new understandable-docs series and `TOPIC.md.template` are
-    a structural addition to the agent config that the `STRUCTURE.md`
-    reference map does not yet list; decide how the `docs/` tree is
-    represented there and add it.
   Generic (global; docs under `config/claude/docs/`).
+
+- [ ] **Extend the prose-wrap check to catch code spans broken across lines
+  (LOW — retrospective, PR #233).** An inline-code span split across a line
+  break renders with an errant internal space (the `skill-creator` →
+  `skill- creator` class fixed in PR #233). A cheap guard: flag any non-fence
+  line with an **odd** backtick count in `config/claude/**` / `.claude/**`
+  Markdown, folded into `tests/lint/prose_wrap.py`. Low urgency now the corpus
+  is clean and prose is gated; weigh it against the false-positive surface (a
+  lone literal backtick in prose) before building.
 
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
 

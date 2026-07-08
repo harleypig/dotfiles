@@ -279,6 +279,21 @@ deterministically, without relying on the model remembering.
 
 ---
 
+## Reference docs
+
+Longer-form conceptual docs under `docs/` — a plain, layered explanation of a
+topic (the shape `TOPIC.md.template` defines), distinct from the prescriptive
+`rules/` and the procedural `skills/`. A topic graduates to a `rules/<x>.md`
+when it must drive agent *behaviour*; otherwise it stays a reference doc here.
+The series is growing — more topics are queued in `audit/BACKLOG.md`.
+
+| Doc | What it covers |
+|-----|----------------|
+| [TOPIC.md.template](docs/TOPIC.md.template) | The shape every topic doc follows: abstract → ELI5 + best-practices → overview → major groups → optional bring-it-together → see-also → resources |
+| [LOOPS-WORKFLOWS.md](docs/LOOPS-WORKFLOWS.md) | Loops vs workflows — when to iterate vs orchestrate, good-fit criteria, "prove iteration one by hand", the serial-spine caveat, and auto-mode gating |
+
+---
+
 ## Built-in commands
 
 These come with the Claude Code installation — they are not authored in
