@@ -20,7 +20,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Audit dimensions / design
 
-- [ ] **push-pr Step 4.5: add a TODO-hygiene / relocate-non-task step
+- [x] **push-pr Step 4.5: add a TODO-hygiene / relocate-non-task step
   (retrospective, terraform-provider-mxroute session 2026-07-08).** Merge-time
   finalization currently prunes completed `[x]` items, closes issues, and
   updates the changelog — but nothing catches a planning doc that has
@@ -99,7 +99,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   check — decide if it earns its own artifact. Ideas only (mixed/non-OSS
   sources); we'd write our own. Decide kind + scope when worked.
 
-- [ ] **Refine the mining method for aggregator/marketplace repos
+- [x] **Refine the mining method for aggregator/marketplace repos
   (retrospective, PR #140).** `claude-audit` *Mining repos for ideas* mandates
   enumerating the **entire** surface (no shortlist) — correct for a single
   coherent tool, but impractical for an aggregator/awesome-list/marketplace of
@@ -139,7 +139,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   `deps-update` (project manifests). Best home: a new `claude-audit`
   dimension.
 
-- [ ] **Verify subagent file-writes for leaked tool-call markup
+- [x] **Verify subagent file-writes for leaked tool-call markup
   (retrospective, PR #166).** When a subagent is delegated a full-file
   write/rewrite, its tool-call closing tags can bleed into the file content
   (`</content>`, `</invoke>`, `<parameter …>`) — and **no linter catches

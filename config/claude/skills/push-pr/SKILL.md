@@ -148,6 +148,15 @@ at merge time; the only changes here are documentation.
   track only open work and nothing is removed for a PR that never lands. The
   merge-finalization hook enforces this for any planning doc a repo declares
   (the generic defaults plus any `merge-finalization-docs:` extras).
+- **Relocate any non-task content** that has crept into `TODO.md` /
+  `ROADMAP.md` (and equivalent planning lists) — a preamble / `**Last
+  Updated:**` header, status narratives, one-off outcome reports, a "someday"
+  pile — to where it belongs (docs / an `adr` / `CONVENTIONS.md`), and drop
+  the rest. **Delegate to the `todo-organize` skill**, which owns the
+  structure and routing (`rules/todo.md`); don't restate its rules here. This
+  keeps finalization from silently shipping a drifted planning doc alongside
+  the pruned `[x]` items — pruning removes *done* work, this removes
+  *non-work*.
 - **Close the GitHub issues those items resolve** — pruning a completed item
   and leaving its issue open lets the tracker drift from the docs. When a
   pruned item maps to an issue (a `github-issues` bidirectional link, or a
