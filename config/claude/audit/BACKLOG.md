@@ -20,6 +20,26 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Audit dimensions / design
 
+- [ ] **push-pr Step 4.5: add a TODO-hygiene / relocate-non-task step
+  (retrospective, terraform-provider-mxroute session 2026-07-08).** Merge-time
+  finalization currently prunes completed `[x]` items, closes issues, and
+  updates the changelog — but nothing catches a planning doc that has
+  accumulated **non-task content**: preamble/`**Last Updated:**` headers,
+  status narratives, one-run outcome reports, "someday" piles. `todo.md`
+  already forbids this ("a planning doc holds only open work") and
+  **todo-organize** is its forcing function, but neither runs at push time, so
+  drift accrues until a human notices (this session hand-pruned a heavily
+  narrated TODO — relocating a versioning-gate note and a tooling gotcha to
+  `CONVENTIONS.md`, icebox-ing deferred items, dropping status prose). Add a
+  step to **push-pr Step 4.5** that every push relocates non-task content out
+  of `TODO.md` / `ROADMAP.md` to where it belongs (docs / ADR / conventions)
+  and drops the rest — **delegating to todo-organize**, not restating its
+  rules. Consider whether the `merge-finalization.py` hook should also flag an
+  obvious non-task block (a preamble heading, `**Last Updated:**`, a
+  multi-paragraph status section) as a backstop, the way it already flags
+  unpruned `[x]` items. Scope: `config/claude/skills/push-pr/SKILL.md` (+
+  optionally the hook). Generic (global).
+
 - [ ] **merge-finalization: don't match merge syntax quoted in message
   text (LOW — retrospective, PR #224).** `MERGE_RE` regexes the whole Bash
   command string, so a `git commit -m` / `gh pr create --body` whose
