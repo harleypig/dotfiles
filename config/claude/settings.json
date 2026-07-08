@@ -101,6 +101,6 @@
     }
   },
   "effortLevel": "high",
-  "editorMode": "vim",
-  "skipWorkflowUsageWarning": true
+  "skipWorkflowUsageWarning": true,
+  "editorMode": "vim"
 }
