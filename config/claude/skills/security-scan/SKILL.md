@@ -47,14 +47,14 @@ triage step; "set up scanning" is the wiring steps.
    a true false positive gets `# nosemgrep: <rule-id>` + reason.
 2. **Dependencies / supply chain** — **reconcile `.github/dependabot.yml` to
    full coverage** per `rules/dependabot.md` (the source of truth for ecosystems
-   + conventions): scan the repo for every manifest / Dockerfile / workflow, map
-   each to its ecosystem, **consult current official Dependabot docs before
-   authoring** (schema keys + supported ecosystems change), add an `updates`
-   entry for each (incl. `docker` + `github-actions`), apply the conventions
-   (weekly, group minor/patch, `chore(deps)` messages), then **verify**
-   (yamllint). This is dependabot *setup* — triaging the resulting PRs is the
-   next step. For an ad-hoc check, `trivy fs .` surfaces dependency CVEs +
-   secrets now.
+   + conventions): scan the repo for every manifest / Dockerfile / workflow,
+     map each to its ecosystem, **consult current official Dependabot docs
+     before authoring** (schema keys + supported ecosystems change), add an
+     `updates` entry for each (incl. `docker` + `github-actions`), apply the
+     conventions (weekly, group minor/patch, `chore(deps)` messages), then
+     **verify** (yamllint). This is dependabot *setup* — triaging the
+     resulting PRs is the next step. For an ad-hoc check, `trivy fs .`
+     surfaces dependency CVEs + secrets now.
 3. **Triage Dependabot PRs** — green grouped minor/patch is usually safe to
    merge; review **major** bumps individually. Never blanket-auto-merge
    majors or silence an advisory without justification.

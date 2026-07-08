@@ -19,8 +19,8 @@ paths:
 shellcheck <file>
 ```
 
-Run after creating or modifying any shell file matched by the paths above.
-No errors or warnings are permitted. Fix all reported issues before committing.
+Run after creating or modifying any shell file matched by the paths above. No
+errors or warnings are permitted. Fix all reported issues before committing.
 
 ## Inline Disables
 

@@ -34,7 +34,6 @@ again. The two are distinct by design:
 The **full disposition census** of every item in these repos (every agent /
 command / hook / skill considered, ADOPT/CANDIDATE/SKIP + reason) is in
 [`mining-census.md`](mining-census.md). The open CANDIDATE backlog lives there
-too. The
-source-discovery method (official-first → stars+recency+health; the >1yr
-staleness gate) and the full-census/generic-lens practice are documented in the
-**claude-audit** skill (*Mining repos for ideas*).
+too. The source-discovery method (official-first → stars+recency+health; the
+>1yr staleness gate) and the full-census/generic-lens practice are documented
+in the **claude-audit** skill (*Mining repos for ideas*).

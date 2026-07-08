@@ -13,14 +13,14 @@ statusline display fix). Audit-only (not context-loaded).
 
 ## What it is
 
-A native statusline renderer (TS, stdin → line). It **enriches** the documented
-statusline JSON from three extra sources: the **transcript JSONL**
-(`transcript_path`, streamed for tool/agent/todo/skill/MCP activity, per-session
-token totals, session start, compaction count, advisor model), **git** (shell
-out for branch/dirty/ahead-behind/file-stats), and an optional snapshot /
-env-gated `--extra-cmd`. Multi-line "expanded" layout by default + a "compact"
-single-line mode; ~40 segment toggles, presets, `elementOrder`, i18n, 12
-themeable colors, configurable bar glyphs.
+A native statusline renderer (TS, stdin → line). It **enriches** the
+documented statusline JSON from three extra sources: the **transcript JSONL**
+(`transcript_path`, streamed for tool/agent/todo/skill/MCP activity,
+per-session token totals, session start, compaction count, advisor model),
+**git** (shell out for branch/dirty/ahead-behind/file-stats), and an optional
+snapshot / env-gated `--extra-cmd`. Multi-line "expanded" layout by default +
+a "compact" single-line mode; ~40 segment toggles, presets, `elementOrder`,
+i18n, 12 themeable colors, configurable bar glyphs.
 
 Contrast with ours: `config/claude/bin/statusline.sh` is a **stateless** single
 ` | `-joined bash/jq line (git-status, model, ctx %, cost, version) that reads
@@ -77,8 +77,8 @@ true` (NORMAL bright-yellow-on-red, INSERT/others standard; leads the line).
 
 Re-examined `claude-hud` (2026-06-19) for a way to suppress Claude Code's
 native below-prompt lines — **it has none**: it sets no suppression key, can't
-read the permission/auto-accept mode (not in its stdin), and its agents line is
-a transcript-parsed display stacked on top of the native one. The
+read the permission/auto-accept mode (not in its stdin), and its agents line
+is a transcript-parsed display stacked on top of the native one. The
 **auto-accept indicator and subagent line have no off-switch** and the
 permission mode isn't in the statusline JSON — see the BACKLOG `ICEBOX:` note
 (upstream #27916 / #48246).

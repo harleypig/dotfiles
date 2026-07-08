@@ -13,8 +13,8 @@ comes from `go.md` + `golangci-lint.md`; the test bar from `testing.md`;
 Terraform conventions from `terraform.md`. Distinct from **tftest-patterns**,
 which tests Terraform *modules* — this builds the *provider* those modules
 consume. A provider lives in its own `terraform-provider-<name>` repo (a
-Registry requirement); a module library ("foundation fabric") is a **separate**
-repo.
+Registry requirement); a module library ("foundation fabric") is a
+**separate** repo.
 
 ## Baseline
 
@@ -155,15 +155,15 @@ out the rest). Two provider-specific mechanics matter:
   that no purchase, so skip the worktrees and verify at integration.
 - **`provider.go` is the one serial pinch-point.** Every resource must be
   registered in `Resources()` / `DataSources()` — a single-writer file. Agents
-  must **not** edit it; the serial integration step registers them all at once.
-  The thin `client.Do` client (above) keeps `client.go` untouched too, so the
-  fan-out has exactly one shared file to serialize.
+  must **not** edit it; the serial integration step registers them all at
+  once. The thin `client.Do` client (above) keeps `client.go` untouched too,
+  so the fan-out has exactly one shared file to serialize.
 
-Verify each authored resource with an **adversarial review** agent — it catches
-what `go build` and the linter cannot: a write-only secret leaking into state,
-or an `Optional`-not-`Computed` attribute that yields a permanent plan diff.
-The by-design "not registered in `provider.go`" a reviewer flags is the
-integration step's job, not a file defect.
+Verify each authored resource with an **adversarial review** agent — it
+catches what `go build` and the linter cannot: a write-only secret leaking
+into state, or an `Optional`-not-`Computed` attribute that yields a permanent
+plan diff. The by-design "not registered in `provider.go`" a reviewer flags is
+the integration step's job, not a file defect.
 
 ## Docs — tfplugindocs
 

@@ -70,8 +70,8 @@ Sort the gathered state into a worklist. For each category, decide and route
   blanket-auto-merge majors. Ties into the repo's Dependabot/auto-merge
   policy if it has one.
 - **Open issues** — delegate to the **github-issues** skill for deep triage:
-  it reconciles each issue against the repo's planning docs *and* current code,
-  labels (recommending any missing label), scores complexity, detects
+  it reconciles each issue against the repo's planning docs *and* current
+  code, labels (recommending any missing label), scores complexity, detects
   done/duplicate/blocked issues, routes each (close-done / map-to-TODO /
   icebox+close / roadmap / features-&-fixes), and keeps issue ↔ doc references
   in sync — per `rules/gh.md` *Issues & triage*. Auto-filed scanner issues

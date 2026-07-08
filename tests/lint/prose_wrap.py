@@ -46,6 +46,11 @@ URL_RE = re.compile(r"<?https?://\S+>?")         # bare or <bracketed> URL
 
 FENCE_RE = re.compile(r"^\s*(?:```|~~~)")
 
+# An ATX heading (`## …`) is a single structural line that cannot soft-wrap,
+# so it is exempt like a table or code line — shortening it means changing the
+# heading text, which is a content edit, not a reformat.
+HEADING_RE = re.compile(r"^\s*#{1,6}\s")
+
 
 def _collapse(line: str) -> str:
   """`line` with unbreakable tokens (links, inline code, URLs) reduced to a
@@ -82,6 +87,9 @@ def violations(path: Path) -> list[tuple[int, int]]:
       continue
 
     if line.count("|") >= 2 or REF_LINK_RE.match(line):
+      continue
+
+    if HEADING_RE.match(line):
       continue
 
     if len(_collapse(line)) <= LIMIT:

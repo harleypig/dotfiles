@@ -182,18 +182,18 @@ The **github-issues** skill is the procedure for the above (per-issue depth);
 the **github-tasks** skill is the forcing function for the *cadence* — it runs
 the issue check as one part of a wider repo sweep (Dependabot PRs, failing
 checks, stale branches, release/tag hygiene) and **delegates issue triage to
-github-issues**. Reach for github-tasks at the start of git/gh work rather than
-running the `gh issue list` calls above piecemeal.
+github-issues**. Reach for github-tasks at the start of git/gh work rather
+than running the `gh issue list` calls above piecemeal.
 
 ## Agent Rules
 
 - After creating a PR, follow the CI monitoring workflow in
   `github-actions.md` if Actions are configured in the repo.
 - Check `gh issue list` at the start of git/gh work (and daily); triage per
-  *Issues & triage* — reconcile against planning docs + code, score complexity,
-  close stale/done with a comment, route the rest, and **never auto-tackle**.
-  Use the **github-issues** skill for the per-issue procedure and the
-  **github-tasks** skill to run it as part of a single repo sweep.
+  *Issues & triage* — reconcile against planning docs + code, score
+  complexity, close stale/done with a comment, route the rest, and **never
+  auto-tackle**. Use the **github-issues** skill for the per-issue procedure
+  and the **github-tasks** skill to run it as part of a single repo sweep.
 - Always return the PR URL after creating.
 - Use `gh` for all GitHub operations (issues, PRs, checks, releases).
 - Do not create, merge, or close PRs without explicit user approval.

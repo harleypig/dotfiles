@@ -440,7 +440,8 @@ If TARGET's worktree can't be located, stop and ask.
 | personal base branch in fork (e.g. `mine`) | `upstream/$DEFAULT_BRANCH` |
 | default branch itself | `upstream/$DEFAULT_BRANCH` (fork) or nothing to sync (own) |
 
-If the issue's origin isn't already known from this session, re-resolve it via `gh issue view` before deciding.
+If the issue's origin isn't already known from this session, re-resolve it via
+`gh issue view` before deciding.
 
 ### Merge vs rebase decision
 
@@ -561,7 +562,8 @@ stop and ask whether to add one or check it out somewhere.
 
 1. Verify target worktree is clean
 2. cd to target worktree
-3. Apply merge-vs-rebase decision from Operation 2 based on the target branch type
+3. Apply merge-vs-rebase decision from Operation 2 based on the target branch
+   type
 4. Use `--no-ff` on merges so the integration point stays visible in history
 5. Report result
 
@@ -607,10 +609,13 @@ etc.
      diverged history: warn user, then
      `git push --force-with-lease --force-if-includes -u origin "$BRANCH_NAME"`
    - Otherwise: `git push -u origin "$BRANCH_NAME"`
-6. Determine target: in fork mode with upstream issue, PR targets `${UPSTREAM_SLUG}:${DEFAULT_BRANCH}`. In own-repo mode, PR targets `${ORIGIN_SLUG}:${DEFAULT_BRANCH}`.
+6. Determine target: in fork mode with upstream issue, PR targets
+   `${UPSTREAM_SLUG}:${DEFAULT_BRANCH}`. In own-repo mode, PR targets
+   `${ORIGIN_SLUG}:${DEFAULT_BRANCH}`.
 7. Offer to run `gh pr create` — but only after confirming PR title and body with the user
 
-Don't auto-create the PR without confirmation. Creating a PR is a user-facing action against a public repo and deserves an explicit nod.
+Don't auto-create the PR without confirmation. Creating a PR is a user-facing
+action against a public repo and deserves an explicit nod.
 
 The same squash-then-push step applies for follow-up pushes during
 review — when the author addresses review comments, the response
@@ -634,7 +639,8 @@ X", etc.
    ```
 
 2. Worktree has a clean tree
-3. Branch's PR status — use `gh pr list --head "$BRANCH_NAME"` to check if there's an open/merged PR; warn if no merged PR is found but don't block
+3. Branch's PR status — use `gh pr list --head "$BRANCH_NAME"` to check if
+   there's an open/merged PR; warn if no merged PR is found but don't block
 
 ### Execute
 
@@ -678,10 +684,12 @@ git worktree prune             # clean up metadata for directories that were man
 
 Recovery cases the skill should recognize:
 
-- **Directory exists but git doesn't know about it** — not a worktree, just a stray directory. Report and let user decide.
+- **Directory exists but git doesn't know about it** — not a worktree, just a
+  stray directory. Report and let user decide.
 - **Git tracks a worktree but directory is gone** — `git worktree prune` fixes this.
 - **Branch exists but no worktree** — offer to add a worktree or leave as-is.
-- **Worktree exists, branch was deleted** — worktree is in detached HEAD. Report state; usually means removing the worktree.
+- **Worktree exists, branch was deleted** — worktree is in detached HEAD.
+  Report state; usually means removing the worktree.
 
 ---
 
@@ -768,17 +776,26 @@ confirmation.
 
 ## Rules and defaults
 
-- **Never hardcode `main` or `master`.** Always derive from the appropriate remote's default.
-- **Never invent a default branch** if upstream doesn't have one. Stop and ask.
-- **`--no-ff` on all merges** unless the user explicitly overrides. Keeps history legible.
-- **Rebase for upstream-bound PR branches** unless upstream's CONTRIBUTING.md says otherwise.
-- **Merge (`--no-ff`) for personal/own-repo branches** — preserves the story of integration points.
+- **Never hardcode `main` or `master`.** Always derive from the appropriate
+  remote's default.
+- **Never invent a default branch** if upstream doesn't have one. Stop and
+  ask.
+- **`--no-ff` on all merges** unless the user explicitly overrides. Keeps
+  history legible.
+- **Rebase for upstream-bound PR branches** unless upstream's CONTRIBUTING.md
+  says otherwise.
+- **Merge (`--no-ff`) for personal/own-repo branches** — preserves the story
+  of integration points.
 - **Never force-push without `--force-with-lease`.** Even then, warn first.
 - **Never force-delete a branch silently.** Always confirm.
-- **Preconditions matter:** clean tree before sync, prep, or cleanup. Report and stop on violations.
-- **Ambiguity → ask.** If source, target, or verb is unclear, one clarifying question beats a wrong action.
-- **Never create the PR automatically** — confirm title/body with the user first.
-- **`gh` calls are cheap** — re-resolve issue source rather than caching across sessions.
+- **Preconditions matter:** clean tree before sync, prep, or cleanup. Report
+  and stop on violations.
+- **Ambiguity → ask.** If source, target, or verb is unclear, one clarifying
+  question beats a wrong action.
+- **Never create the PR automatically** — confirm title/body with the user
+  first.
+- **`gh` calls are cheap** — re-resolve issue source rather than caching
+  across sessions.
 
 ## Common trigger phrases and mappings
 
@@ -808,4 +825,5 @@ Ask first when:
 - About to force-delete or force-push
 - About to create a PR
 - About to run project checks whose command isn't obvious
-- Worktree state doesn't match expectations (different branch, unexpected files)
+- Worktree state doesn't match expectations (different branch, unexpected
+  files)

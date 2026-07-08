@@ -112,16 +112,16 @@ working an item ships real config changes, so keep it a deliberate, separate
 action.
 
 1. **Pick** — read `audit/BACKLOG.md`, present the open `- [ ]` items as a
-   ranked worklist (priority × cost × leverage), and confirm which to work. One
-   item (or one coherent cluster) at a time.
-2. **Decide kind + scope** — for the chosen item, apply the placement ladder in
-   `EXTENDING.md` (rule vs skill vs hook vs patterns vs command vs MCP; global
-   vs repo-local) and the three-tier model. Verify currency (Context7) and
-   grounding before authoring, per the checks below.
+   ranked worklist (priority × cost × leverage), and confirm which to work.
+   One item (or one coherent cluster) at a time.
+2. **Decide kind + scope** — for the chosen item, apply the placement ladder
+   in `EXTENDING.md` (rule vs skill vs hook vs patterns vs command vs MCP;
+   global vs repo-local) and the three-tier model. Verify currency (Context7)
+   and grounding before authoring, per the checks below.
 3. **Implement** — author/modify the artifact. Run the reference-consistency
    grep (below) for anything renamed/moved/dropped.
-4. **Land** — global changes via a dotfiles PR (audit + affected files; squash;
-   watch CI; merge on explicit approval) using **push-pr**.
+4. **Land** — global changes via a dotfiles PR (audit + affected files;
+   squash; watch CI; merge on explicit approval) using **push-pr**.
 5. **Finalize** — once green, **remove** the item from `audit/BACKLOG.md` and
    record the outcome in `audit/decisions-log.md` (the same prune-at-merge
    discipline the repo uses for `TODO.md`).
@@ -131,15 +131,16 @@ section) is worked the same way — it is now a backlog item like any other.
 
 **Verify currency with live docs (Context7, if available).** Rules and skills
 go stale as tools change — deprecations, renamed flags, shifted best practice.
-When auditing an existing rule or adopting a new pattern, use **Context7** (the
-`context7` MCP, *if it is enabled in this session*) to check the tool /
+When auditing an existing rule or adopting a new pattern, use **Context7**
+(the `context7` MCP, *if it is enabled in this session*) to check the tool /
 library / API's **current** documentation before trusting what's written — it
-catches drift without cloning a repo (e.g. it surfaced Spotify's now-deprecated
-`PUT/DELETE /me/tracks` that older third-party guides still listed as current).
-Resolve the library id, then query the specific question. It is **second-class**
-(`rules/mcp.md`): a convenience for the audit *process* only — never a
-dependency the resulting rules/skills rely on, and the audit must work
-without it. Fall back to official docs or a shallow clone when it's absent.
+catches drift without cloning a repo (e.g. it surfaced Spotify's
+now-deprecated `PUT/DELETE /me/tracks` that older third-party guides still
+listed as current). Resolve the library id, then query the specific question.
+It is **second-class** (`rules/mcp.md`): a convenience for the audit *process*
+only — never a dependency the resulting rules/skills rely on, and the audit
+must work without it. Fall back to official docs or a shallow clone when it's
+absent.
 
 **Evaluate skills with `skill-creator`.** When the audit questions a skill's
 quality or whether its `description` triggers on the right requests, use the
@@ -263,11 +264,11 @@ marketplace scale.
 
 **SKIP is two things.** A permanent **SKIP** (covered/redundant) won't come
 back; a conditional **`SKIP-until <trigger>`** (a tool we don't use, a domain
-we're not in) **flips to CANDIDATE when the trigger fires** — don't bury it as a
-plain SKIP. Every `SKIP-until` goes on the census **Watch list**; check that
+we're not in) **flips to CANDIDATE when the trigger fires** — don't bury it as
+a plain SKIP. Every `SKIP-until` goes on the census **Watch list**; check that
 list whenever a new dependency/tool is adopted (and each audit run), and
-re-promote what the trigger unlocks. Never *rewrite* the original SKIP — it was
-right when made; the trigger is what resurfaces it.
+re-promote what the trigger unlocks. Never *rewrite* the original SKIP — it
+was right when made; the trigger is what resurfaces it.
 
 **Judging.** Score each item by **generic value to *any* repo** first, then
 overlap with existing built-ins/skills/rules, then the layering principle.

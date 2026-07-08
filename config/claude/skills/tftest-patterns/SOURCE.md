@@ -1,7 +1,8 @@
 # Sources
 
 Authored from the official HashiCorp Terraform documentation (verified current
-2026-06-29), not adapted from a single external skill. House skill grounded in:
+2026-06-29), not adapted from a single external skill. House skill grounded
+in:
 
 - Tests / `.tftest.hcl` (run blocks, `command = plan` vs `apply`, `assert`,
   `expect_failures`, `variables`, test discovery) —

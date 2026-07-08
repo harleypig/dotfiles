@@ -72,8 +72,8 @@ is `vMAJOR.MINOR.PATCH`.
 ## Gating
 
 **Non-required first** (security-scan skill): the check runs on PRs but is not
-yet in the branch ruleset's required checks. Promote it to required once it has
-a clean track record — a ruleset change needing the OAuth admin token (see
+yet in the branch ruleset's required checks. Promote it to required once it
+has a clean track record — a ruleset change needing the OAuth admin token (see
 `WORKFLOW.md`).
 
 ## Limitations

@@ -8,13 +8,14 @@ description: The Terraform slice of qa-check — run the full Terraform QA sub-p
 **Version:** v1.0.0
 
 The **Terraform slice of `qa-check`**: for a repo with Terraform, run the
-Terraform QA dimensions *and* a structural audit, then return one report. It is
-the single thing `qa-check` delegates to for Terraform — `qa-check` learns
+Terraform QA dimensions *and* a structural audit, then return one report. It
+is the single thing `qa-check` delegates to for Terraform — `qa-check` learns
 "there is Terraform here" and hands it off.
 
-This is deliberately **belt-and-suspenders over pre-commit**: it **re-verifies**
-rather than trusting that the pre-commit hooks ran. Most of the toolchain pass
-*is* what pre-commit does — running it again here is the point, not waste.
+This is deliberately **belt-and-suspenders over pre-commit**: it
+**re-verifies** rather than trusting that the pre-commit hooks ran. Most of
+the toolchain pass *is* what pre-commit does — running it again here is the
+point, not waste.
 
 It is **global and subject-agnostic** across Terraform repos; the
 repo-specific specifics (which dirs are modules vs. root configs, the required
@@ -22,12 +23,12 @@ file set, the exception policy) come from the **repo's own `.claude/`**.
 
 ## Read first
 
-1. **The repo's QA / Terraform doc** (`.claude/` — a "Quality assurance" and/or
-   "Terraform" section in `CONVENTIONS.md`/`WORKFLOW.md`). Take from it: the
-   **module roots** (e.g. `tfmods/*`), the **working-config roots** (e.g.
-   `domains/`, `servers/`, `volumes/`), the concrete commands, and any
-   **repo-specific structure rules or exceptions**. This is the source of truth
-   for *this* repo; fall back to the defaults below when it is silent.
+1. **The repo's QA / Terraform doc** (`.claude/` — a "Quality assurance"
+   and/or "Terraform" section in `CONVENTIONS.md`/`WORKFLOW.md`). Take from
+   it: the **module roots** (e.g. `tfmods/*`), the **working-config roots**
+   (e.g. `domains/`, `servers/`, `volumes/`), the concrete commands, and any
+   **repo-specific structure rules or exceptions**. This is the source of
+   truth for *this* repo; fall back to the defaults below when it is silent.
 2. **`terraform.md`** (CLI, credential-free validate, versions.tf, the
    terraform-docs convention), **`tftest-patterns`** (native tests),
    **`tflint.md`**, **`trivy.md`** — the tool details.
@@ -101,8 +102,8 @@ The structural scan is read-heavy (every module's `.tf`). For a large library,
 above in the prompt; return **structured findings only**) — fan out one per
 top-level area and merge. For a few modules, scan inline. State which you did.
 
-The toolchain pass runs the actual tools (Docker/pre-commit) — run it yourself,
-don't delegate tool execution to a subagent.
+The toolchain pass runs the actual tools (Docker/pre-commit) — run it
+yourself, don't delegate tool execution to a subagent.
 
 ## Report shape
 

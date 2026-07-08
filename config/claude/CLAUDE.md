@@ -16,8 +16,8 @@ directory and override anything stated here.
    `CONVENTIONS.md`, and `TESTS.md` as authoritative for this repository.
 3. **If a referenced file is missing,** suggest creating it when appropriate;
    do not create it automatically.
-4. **Operate autonomously within defined boundaries.** Act without confirmation
-   unless a rule explicitly requires it.
+4. **Operate autonomously within defined boundaries.** Act without
+   confirmation unless a rule explicitly requires it.
 
 ## Pre-Implementation
 
@@ -58,7 +58,21 @@ Before implementing a requested feature or resolving an issue:
   permission.
 - Clean up only orphans your own changes created (unused imports, variables,
   functions). Leave pre-existing dead code alone.
-- Every changed line must trace directly to the user's request.
+- **Exception — a document's reformatting-only change may ride along.** When a
+  standalone document's *only* change is mechanical reformatting — a prose
+  re-wrap to the 78-col convention, whitespace / end-of-file normalization, a
+  Markdown formatter's output, with no change to content or meaning — include
+  it in the current PR (as its **own clearly-labeled commit**, e.g. a `docs:` /
+  `style:` reformat, so the functional diff stays reviewable) rather than
+  reverting it to satisfy scope. Excluding a pure reformatting **orphans** it:
+  the non-conforming file lingers and the same reformatting resurfaces on the
+  next formatter run or convention check, causing recurring churn and merge
+  hiccups. This covers **documents only — not code comments**: re-wrapping or
+  reformatting a comment inside a code file is *not* exempt and stays out of
+  scope (it muddies the code diff). A change to a document's *content* — as
+  opposed to its formatting — is likewise still out of scope.
+- Every changed line must trace directly to the user's request (the
+  document-reformatting exception above aside).
 
 ## Secret Handling
 
