@@ -84,11 +84,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     points at; the *understanding* doc over our existing hook rules/hooks.
   - [ ] **Channels** (research preview). External systems pushing events
     into a running session — the push counterpart to poll/timer loops.
-  - [x] **Permission modes & auto mode.** `acceptEdits` / `dontAsk` / `auto`
-    / bypass and the `autoMode` classifier; how unattended work is gated.
-    Consider **extracting the auto-mode section out of
-    `LOOPS-WORKFLOWS.md`** into this dedicated modes doc once it exists (it
-    lives in the loops section there only because it gates loops).
   - [ ] **Headless / programmatic.** `claude -p`, `--resume` / `--continue`,
     output formats, the Agent SDK — the surface for driving Claude from
     scripts / CI.
