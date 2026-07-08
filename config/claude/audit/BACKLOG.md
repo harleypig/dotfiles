@@ -67,7 +67,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   check — decide if it earns its own artifact. Ideas only (mixed/non-OSS
   sources); we'd write our own. Decide kind + scope when worked.
 
-- [ ] **Detect upstream drift in every `## <X> Setup` → flag stale
+- [x] **Detect upstream drift in every `## <X> Setup` → flag stale
   rules/skills (2026-06-27).** During a config audit (`claude-audit` now; a
   future repo-audit for repo-local pinned setup), enumerate **every rule/skill
   that documents a setup — language *or* subject alike** — and, via their

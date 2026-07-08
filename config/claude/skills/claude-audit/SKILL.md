@@ -174,6 +174,25 @@ convention**: its claims may be memory-based and already stale. This pairs
 with the currency check above (Context7) — grounding is *whether* a source
 exists; currency is *whether* it is still current.
 
+**Sweep for upstream drift across the whole inventory.** The currency check
+above fires *reactively* — when you happen to open a rule. This is its
+*proactive* complement, run once per audit: enumerate **every** rule/skill
+that documents a **setup** (language *or* subject alike) and carries a
+**Sources** section or **pinned** versions/digests, and re-check whether the
+grounded upstream has moved since it was captured. Anchor on the **config
+inventory, not a TODO** — a finished setup leaves no TODO item, so the TODO
+can't be the coverage list; `grep -rl` the `rules/` / `skills/` tree for
+`## Sources`, `fetched`, and version / `sha256:` pins, and work that list.
+What "drift" means varies by setup — a language's version / version-manager /
+toolchain / frameworks; a subject's pinned image tags, action SHAs, lint
+style, or wired tools — but the re-check is uniform: compare what the artifact
+documents (and its `fetched YYYY-MM-DD` date) against the current upstream
+(Context7, or the cited URL). Route each drifted artifact to `BACKLOG.md` as a
+re-grounding item — **never silently rewrite** a Sources claim. This is the
+*pull/refresh* counterpart to the `rule-coverage.py` *push* trigger (it nags
+when a **new** tool has no rule); distinct from **deps-update**, which tracks
+project dependency manifests, not the agent config's own grounding.
+
 **Delegated research can over-claim — demand exact doc quotes.** When a
 spawned research agent (a `claude-code-guide` lookup, a doc-mining subagent)
 reports a **feature or behaviour claim** that would drive an action — a
