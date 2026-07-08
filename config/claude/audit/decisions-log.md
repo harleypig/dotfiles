@@ -6,6 +6,16 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Wrote the GitHub Actions integration understandable-doc
+  (wave 2; dotfiles PR #241).** Fourth wave-2 doc write: authored
+  `config/claude/docs/GITHUB-ACTIONS-INTEGRATION.md` grounded in current docs
+  (via `claude-code-guide`, sources cited) — running Claude *in* Actions (the
+  `@claude` bot / `claude-code-action`): interactive vs automation mode,
+  setup, triggers, `claude_args` + permissions, and the CI security model.
+  Deliberately distinguished from the repo's own CI (`rules/github-actions.md`)
+  and cross-linked to the auth rule + permission-modes. Reference doc, not a
+  rule.
+
 - 2026-07-08 — **Wrote the Observability understandable-doc (wave 2; dotfiles
   PR #240).** Third wave-2 doc write: authored
   `config/claude/docs/OBSERVABILITY.md` grounded in current Claude Code docs
