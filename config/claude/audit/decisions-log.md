@@ -6,6 +6,22 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Triaged the *Skill ideas & future categories* backlog into
+  three waves; worked wave 1 (dotfiles PR #233).** Split the section by
+  effort: wave 1 = simple / no-input, wave 2 = more complex or needs input
+  (the understandable-docs topic writes + the
+  `categorize-issue`-vs-`github-issues` overlap call), wave 3 = big / own-PR /
+  input (rule eval-optimization, the `resolve-issue` skill, UI/UX design
+  skills, the Sub-agents doc, and the experimental Channels / Agent-teams
+  docs). Wave 1, no input needed: (1) added a **Reference docs** section to
+  `STRUCTURE.md` mapping `config/claude/docs/` (`TOPIC.md.template` +
+  `LOOPS-WORKFLOWS.md`), closing the reflect-docs item; (2) **pruned** the
+  "Future top-level categories" note as redundant standing policy (already
+  canonical in the claude-audit Judging section; `todo.md` bars standing
+  policy from a planning doc); (3) **fixed** 5 inline-code spans broken
+  mid-identifier by earlier line-wraps (surfaced by the 78-col reflow;
+  rendering was already space-broken, so a typo fix).
+
 - 2026-07-08 — **Reformatting ride-along exception + reflowed the agent-config
   Markdown to 78 cols, then gated the prose-wrap check (dotfiles PR #232).**
   Scope discipline previously excluded *anything* unrelated to the current

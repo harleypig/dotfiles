@@ -110,12 +110,16 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     work; cross-reference the existing `rules/github-actions.md`.
   - [ ] **Observability.** `/tasks`, `/workflows`, `claude agents`, `/usage`
     — monitoring unattended work.
-  - [x] **Reflect `config/claude/docs/` in `STRUCTURE.md`** (retrospective,
-    PR #205). The new understandable-docs series and `TOPIC.md.template` are
-    a structural addition to the agent config that the `STRUCTURE.md`
-    reference map does not yet list; decide how the `docs/` tree is
-    represented there and add it.
   Generic (global; docs under `config/claude/docs/`).
+
+- [ ] **Extend the prose-wrap check to catch code spans broken across lines
+  (LOW — retrospective, PR #233).** An inline-code span split across a line
+  break renders with an errant internal space (the `skill-creator` →
+  `skill- creator` class fixed in PR #233). A cheap guard: flag any non-fence
+  line with an **odd** backtick count in `config/claude/**` / `.claude/**`
+  Markdown, folded into `tests/lint/prose_wrap.py`. Low urgency now the corpus
+  is clean and prose is gated; weigh it against the false-positive surface (a
+  lone literal backtick in prose) before building.
 
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
 
