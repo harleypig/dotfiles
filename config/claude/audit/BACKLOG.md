@@ -20,7 +20,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Audit dimensions / design
 
-- [ ] **Reflow the prose-wrap backlog, then gate the check (follow-up to the
+- [x] **Reflow the prose-wrap backlog, then gate the check (follow-up to the
   prose-wrap check above).** The `prose-wrap` pre-commit hook
   (`tests/lint/prose_wrap.py`) is wired **non-gating** (`stages: [manual]`)
   because ~146 pre-existing >78-col prose lines across ~30 authored
