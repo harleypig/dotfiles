@@ -70,6 +70,11 @@ CUR=$(git branch --show-current)
 If `CUR` equals `DEF`, stop: create a `feature/<name>` branch first (or
 use the **git-worktree-workflow** skill), then resume.
 
+**Resuming a PR that already exists** (opened in a prior session — check with
+`gh pr list --head "$CUR"`): don't re-open it. Skip Step 3, and pick up from
+where it stands — re-run **Step 1** QA if there are new commits to push (then
+Step 2), otherwise jump straight to **Step 4** CI-watch → 4.5/4.6 → merge.
+
 ## Step 1 — QA check, then commit (model authors)
 
 First run the **qa-check** skill — it executes this repo's local QA pipeline
