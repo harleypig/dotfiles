@@ -30,7 +30,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   during PR #141 ship.
 
 - [ ] **Rule eval / optimization (analogous to `skill-creator`)** —
-  `skill- creator` measures whether a *skill* triggers on the right prompts
+  `skill-creator` measures whether a *skill* triggers on the right prompts
   and does its job (evals/benchmarks + a description-trigger optimizer).
   Investigate the same for *rules*: can we measure whether a rule is actually
   applied at the right moments, and optimize its wording/`paths:` so it fires

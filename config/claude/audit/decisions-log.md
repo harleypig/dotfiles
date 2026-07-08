@@ -534,12 +534,12 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   compaction with `source: "compact"`**, its `additionalContext` injected into
   the rebuilt context — the documented lever for surviving compaction.
   **Decision (user chose the git/session-state option):** built
-  `config/claude/hooks/ compact-snapshot.py` (matcher `compact`) — it injects
+  `config/claude/hooks/compact-snapshot.py` (matcher `compact`) — it injects
   a short deterministic snapshot (repo, branch + protected-default warning,
   the branch's open PR via `gh`, working-tree status) that the
   auto-reinjection does **not** cover. Read-only, fail-safe
   (non-git/detached/non-compact → emits nothing), gh best-effort with a short
-  timeout. Tested via `tests/python/ test_compact_snapshot.py` (pytest,
+  timeout. Tested via `tests/python/test_compact_snapshot.py` (pytest,
   matching the existing Python-hook test convention — *not* bats). Cost is
   near-zero: it runs only on compaction, not per turn. Hook count 4 → 5
   (`SETUP-AUDIT.md`).
@@ -723,7 +723,7 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   standard check, an urgent Claude-statusline display fix, and new rule/skill
   candidates (Gollum wiki, Ruby, an essay-helper skill). For the 5 Anthropic
   official plugins the user asked to *re-mine for text*: checked the decisions
-  log — `pr-review- toolkit` / `feature-dev` / `security-guidance` were
+  log — `pr-review-toolkit` / `feature-dev` / `security-guidance` were
   already content-reviewed (their bits are the vendor-when-needed items), so
   only `code-simplifier` + `commit-commands` (dropped at capability level, no
   text review, and both with our own equivalents) were queued for a text
@@ -965,7 +965,7 @@ items) and [`idea-sources.md`](idea-sources.md) (mined repos).
   policy/reference: auth + PKCE, tokens, scopes, current-vs-deprecated
   endpoints incl. the 2024-11-27 deprecations and the legacy `/me/tracks`
   save/remove, 429/Retry-After, relinking, SDK/EME, compliance) and a
-  **`spotify-audit`** skill (`/spotify- audit`) that checks a codebase against
+  **`spotify-audit`** skill (`/spotify-audit`) that checks a codebase against
   it and emits a severity-grouped report. Repo-foreign-API guidance →
   **global, front-loaded** (ADR-0003). Ideas adapted from
   `fabioc-aloha/spotify-skill` (Apache-2.0, ideas-only — SOURCE.md); policy
