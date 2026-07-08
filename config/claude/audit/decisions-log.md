@@ -6,6 +6,26 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Reformatting ride-along exception + reflowed the agent-config
+  Markdown to 78 cols, then gated the prose-wrap check (dotfiles PR #232).**
+  Scope discipline previously excluded *anything* unrelated to the current
+  work, including a document a formatter/convention would reflow — but
+  reverting a pure reformatting **orphans** it (the non-conforming file
+  lingers and the reformat resurfaces on the next formatter run / convention
+  check, causing recurring churn). Per the user's direction, added an
+  **exception** to `CLAUDE.md` *Scope Discipline*: a standalone **document**'s
+  reformatting-only change may ride along as its own clearly-labeled commit —
+  scoped to **documents only, not code comments** (a comment reflow muddies
+  the code diff — the user's explicit clarification), and never a document's
+  *content*. Then acted on it: (1) **fixed** the prose-wrap check to exempt
+  ATX headings (a heading can't soft-wrap, so a long one was a false
+  positive); (2) **reflowed** 30 authored agent-config docs to the 78-col wrap
+  with a markdown-aware, token-preserving rewrapper — verified byte-identical
+  normalized token streams (reformatting only, zero content change); (3)
+  **gated** the `prose-wrap` hook (dropped `stages: [manual]`) now the corpus
+  is clean, so it blocks new >78-col prose at commit / CI. Completes the
+  reflow-then-gate follow-up left by wave 3.
+
 - 2026-07-08 — **Worked the audit-dimensions backlog, wave 3 (the final four
   items; dotfiles PR #231).** Drained the rest of the *Audit dimensions /
   design* section. (1) **merge-finalization quoted-syntax false positive**

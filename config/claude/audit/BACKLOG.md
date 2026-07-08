@@ -18,19 +18,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   [`mining-census.md`](mining-census.md) *Watch list*; mined-repo provenance
   is in [`idea-sources.md`](idea-sources.md) / `mining-census.md`.
 
-## Audit dimensions / design
-
-- [x] **Reflow the prose-wrap backlog, then gate the check (follow-up to the
-  prose-wrap check above).** The `prose-wrap` pre-commit hook
-  (`tests/lint/prose_wrap.py`) is wired **non-gating** (`stages: [manual]`)
-  because ~146 pre-existing >78-col prose lines across ~30 authored
-  agent-config Markdown files would otherwise fail the gate. List them with
-  `pre-commit run prose-wrap --hook-stage manual --all-files`, reflow each to
-  78 cols (mechanical; leave the exempt constructs alone), then **flip the
-  hook off `stages: [manual]`** to a normal stage so it gates commits/CI. Do
-  the reflow in its own commit(s), separate from the flip. Scope: **repo**
-  (dotfiles agent-config Markdown + the `.pre-commit-config.yaml` change).
-
 ## Skill ideas & future categories (not from mining)
 
 - [ ] **`push-pr`: document "PR already open" resume path (2026-06-20)** —
