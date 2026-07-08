@@ -95,15 +95,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     — monitoring unattended work.
   Generic (global; docs under `config/claude/docs/`).
 
-- [ ] **Extend the prose-wrap check to catch code spans broken across lines
-  (LOW — retrospective, PR #233).** An inline-code span split across a line
-  break renders with an errant internal space (the `skill-creator` →
-  `skill- creator` class fixed in PR #233). A cheap guard: flag any non-fence
-  line with an **odd** backtick count in `config/claude/**` / `.claude/**`
-  Markdown, folded into `tests/lint/prose_wrap.py`. Low urgency now the corpus
-  is clean and prose is gated; weigh it against the false-positive surface (a
-  lone literal backtick in prose) before building.
-
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
 
 These were tracked in the dotfiles `TODO.md` but are Claude-agent-config

@@ -168,17 +168,19 @@ repos:
         entry: '^\s*</?(?:antml:)?(?:invoke|parameter|content|function_calls)\b[^>]*>\s*$'
         types: [text]
 
-  # Prose-wrap check for agent-config Markdown: flags >78-col PROSE lines that
-  # markdownlint's line_length=200 (for tables/code) lets slip through. Counts
-  # characters, so em-dashes are not miscounted; exempts code/frontmatter/
-  # tables/reference-links/headings/URLs (see the script). Runs on our authored
-  # docs only — vendored plugins, the cached changelog, and agent memory/plan
-  # trees are excluded. Gating: the corpus was reflowed clean, so this now
-  # blocks a commit / CI on any new >78-col prose line.
+  # Agent-config Markdown hygiene: (1) flags >78-col PROSE lines that
+  # markdownlint's line_length=200 (for tables/code) lets slip through — counts
+  # characters, so em-dashes aren't miscounted; exempts code/frontmatter/
+  # tables/reference-links/headings/URLs; and (2) flags inline-code spans
+  # broken mid-identifier (an errant internal space glued to -_/. — an
+  # identifier wrapped across a line). Runs on our authored docs only —
+  # vendored plugins, the cached changelog, and agent memory/plan trees are
+  # excluded. Gating: the corpus is clean, so this blocks a commit / CI on any
+  # new >78-col prose line or broken code span.
   - repo: local
     hooks:
       - id: prose-wrap
-        name: prose wrap (78 cols, agent-config markdown)
+        name: agent-config markdown hygiene (78-col prose + code spans)
         language: system
         entry: python3 tests/lint/prose_wrap.py
         files: ^(config/claude|\.claude)/.*\.md$
