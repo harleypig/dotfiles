@@ -6,6 +6,19 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Gated inline-code spans broken mid-identifier (wave 2;
+  dotfiles PR #238).** Acted on the PR #233 retrospective follow-up. Measured
+  the proposed "flag any odd backtick count" guard first — **infeasible**: 109
+  legitimate multi-word command spans wrap across lines (e.g. a long `/goal …`
+  example), so it would be near-all false positives. Built the **precise**
+  detector instead — a code span with one internal space glued to a `-`/`_`/`/`
+  /`.` in an otherwise space-free token — folded into the existing markdown
+  hygiene check (`tests/lint/prose_wrap.py`), which skips fenced blocks so a
+  broken example can still be documented. It caught two live cases (one real
+  wrap artifact from PR #236, one self-referential example), now fixed. The
+  measure-before-build discipline paid off: the naive check would have been
+  unusable.
+
 - 2026-07-08 — **Wrote the Permission Modes & Auto Mode understandable-doc;
   extracted auto-mode out of `LOOPS-WORKFLOWS.md` (wave 2; dotfiles PR
   #236).** First of the wave-2 doc writes: authored

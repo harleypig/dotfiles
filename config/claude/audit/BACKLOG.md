@@ -95,16 +95,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     — monitoring unattended work.
   Generic (global; docs under `config/claude/docs/`).
 
-- [x] **Extend the prose-wrap check to catch code spans broken across lines
-  (LOW — retrospective, PR #233).** An inline-code span split across a line
-  break rejoins with an errant internal space — an identifier arriving as two
-  space-separated words (a batch was fixed in PR #233). The naive "flag any
-  odd backtick count" guard proved infeasible (109 legit multi-word command
-  spans wrap across lines); built the **precise** detector instead — a code
-  span with one internal space glued to a `-`/`_`/`/`/`.` — folded into
-  `tests/lint/prose_wrap.py`. Near-zero false positives; document a broken
-  example inside a fenced code block (skipped by the check).
-
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
 
 These were tracked in the dotfiles `TODO.md` but are Claude-agent-config
