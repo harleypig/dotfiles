@@ -190,16 +190,17 @@ routine, not luck.
 already reads `settings.json`; extend it with a **security pass over
 `permissions.allow`** — in the global `settings.json`, the user
 `~/.claude/settings.json`, and the current repo's
-`.claude/settings.local.json`. Flag any auto-approved entry that grants blanket consent to a destructive or
-privilege-escalating command: `sudo`, `rm -rf`, `chmod 777`, a pipe-to-shell
-(`curl … | sh`, `wget … | sh`), `git reset --hard`, a force-push, `eval`, or a
-**broad bare `Bash`** / `Bash(*)` wildcard that auto-approves everything. For
-each, surface it and recommend tightening — narrow the pattern, downgrade to
-`ask`, or remove — **never auto-edit** a permission, since loosening or
-withdrawing consent is the user's call. Generic and security-positive; this is
-**our own** scan (the idea, not the external `cc-safe` npm tool). Pairs with
-the *harden-the-attack-surface* companion still on `BACKLOG.md` (an
-install-safety scan of third-party skills/plugins before adoption).
+`.claude/settings.local.json`. Flag any auto-approved entry that grants
+blanket consent to a destructive or privilege-escalating command: `sudo`,
+`rm -rf`, `chmod 777`, a pipe-to-shell (`curl … | sh`, `wget … | sh`),
+`git reset --hard`, a force-push, `eval`, or a **broad bare `Bash`** /
+`Bash(*)` wildcard that auto-approves everything. For each, surface it and
+recommend tightening — narrow the pattern, downgrade to `ask`, or remove —
+**never auto-edit** a permission, since loosening or withdrawing consent is
+the user's call. Generic and security-positive; this is **our own** scan (the
+idea, not the external `cc-safe` npm tool). Pairs with the *vet external code
+before vendoring it* step under *Mining repos for ideas* — together they
+harden the agent's own attack surface.
 
 ## Mining repos for ideas
 
@@ -263,6 +264,24 @@ category-specific pieces first and touch `qa` (and `qa-check`) last, wiring
 the new pieces in (`qa.md` names them, `qa-check` composes them). Record
 sources in the *Idea sources* registry; a per-artifact `SOURCE.md` only on
 implementation reuse (ADR-0002).
+
+**Vet external code before vendoring it.** Adopting an *idea* and
+reimplementing it as our own skill/rule is the default (above) and is itself
+the strongest safeguard — we author the code, so there is nothing external to
+trust. But when external code is **vendored verbatim** — a marketplace plugin
+under `config/claude/plugins/`, a copied skill's `scripts/` or hooks, an
+installed plugin's `.mcp.json` command — scan it **before** it lands, since we
+otherwise adopt it with no pre-install check. Run the **security-scan** skill
+(SAST) over it and read every executable it ships — shell/Python in
+`scripts/`, hook `entry` commands, any `postinstall`/setup step — for the same
+red flags the allow-list pass names: pipe-to-shell installers, credential or
+token reads, network exfiltration, obfuscated or `eval`'d payloads, and writes
+outside the repo. Treat an unreadable or obfuscated payload as a **reject**,
+not a puzzle to solve. This is the pre-adoption gate the mining flow otherwise
+lacks; it complements the allow-list scan (both harden the agent's own attack
+surface). *(An agent-readiness lint of a **target repo** — the `AgentLint`
+idea — is a different concern; it overlaps the `new-project` skill's brownfield
+gap-analysis and does not earn its own artifact. See the decisions log.)*
 
 ## Guardrails
 

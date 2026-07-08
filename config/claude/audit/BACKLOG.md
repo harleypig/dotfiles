@@ -53,7 +53,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   the reflow in its own commit(s), separate from the flip. Scope: **repo**
   (dotfiles agent-config Markdown + the `.pre-commit-config.yaml` change).
 
-- [ ] **Audit external skills/plugins for install-safety (CANDIDATE — mined
+- [x] **Audit external skills/plugins for install-safety (CANDIDATE — mined
   from the plugin-collection sweep, 2026-06-20).** Companion to the allow-list
   audit above — together they form one **"harden the agent's own attack
   surface"** theme. We adopt external skills/plugins (the mining queue
