@@ -294,6 +294,7 @@ The series is growing — more topics are queued in `audit/BACKLOG.md`.
 | [PERMISSION-MODES.md](docs/PERMISSION-MODES.md) | Permission modes (default / acceptEdits / plan / auto / bypassPermissions / dontAsk), the allow/ask/deny rule system, the auto-mode classifier, hook interaction, and the deny-first resolution order |
 | [HOOKS.md](docs/HOOKS.md) | The hook system — event families (PreToolUse/PostToolUse/session/compaction/permission), configuration + matchers, the stdin/exit-code/JSON contract, how several hooks combine, and this config's own hooks as worked examples |
 | [OBSERVABILITY.md](docs/OBSERVABILITY.md) | Monitoring unattended/background work — `/tasks`, `/workflows`, `claude agents` (fleet view), `/usage`, `/context`, and the always-on statusline; which surface to reach for at which scope |
+| [GITHUB-ACTIONS-INTEGRATION.md](docs/GITHUB-ACTIONS-INTEGRATION.md) | Running Claude *in* GitHub Actions (the `@claude` bot / `claude-code-action`) — interactive vs automation mode, setup, triggers, `claude_args` + permissions, and the CI security model; distinct from the repo's own CI (`rules/github-actions.md`) |
 
 ---
 

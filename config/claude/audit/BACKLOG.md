@@ -86,7 +86,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     scripts / CI.
   - [ ] **Agent teams** (experimental). Peer-coordinating multi-agent work;
     the deep-dive the loops doc only summarizes.
-  - [ ] **GitHub Actions integration.** GitHub-native triggers for Claude
+  - [x] **GitHub Actions integration.** GitHub-native triggers for Claude
     work; cross-reference the existing `rules/github-actions.md`.
   Generic (global; docs under `config/claude/docs/`).
 
