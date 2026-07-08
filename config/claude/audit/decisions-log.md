@@ -6,6 +6,31 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Worked the audit-dimensions backlog, wave 2 (three items;
+  dotfiles PR #230).** Continued draining the *Audit dimensions / design*
+  section (seven left after wave 1), taking the three low-risk items.
+  (1) **Comment-wrap 72 → 78** (`code-style.md` + repo mirror
+  `CONVENTIONS.md`): reconciled the rule with de-facto repo bash (which wraps
+  comments at ~78, matching the 78-col Markdown prose wrap), bumping the
+  canonical value and **syncing every restated copy** (`go.md`, `qa.md`,
+  `documentation.md`, `STRUCTURE.md`) so no reference goes stale. Chose the
+  *bump-the-rule* direction over reflowing bash to 72 — practice already wraps
+  at 78, so no code churn. (2) **`shell-check.py` `--external-sources`**: the
+  PostToolUse shellcheck hook ran plain `shellcheck`, over-flagging SC1091 on
+  `source`/`.` targets that a repo's `-x` pre-commit gate resolves cleanly;
+  added `--external-sources` so the hook matches the gate (`SHELLCHECK_OPTS` +
+  `.shellcheckrc` were already honored via env / native discovery), pinned it
+  with a regression test (`test_passes_external_sources_flag`), and documented
+  the *gate-matched* behavior in `shellcheck.md`. (3) **Allow-list audit
+  dimension** (`claude-audit` skill): added a security pass over
+  `permissions.allow` (global / user / repo-local settings) that flags risky
+  auto-approved commands (`sudo`, `rm -rf`, `chmod 777`, pipe-to-shell,
+  `git reset --hard`, force-push, `eval`, broad bare `Bash`/`Bash(*)`) and
+  recommends tightening — **never auto-editing**, since consent is the user's
+  call. Adopted the *idea* (not the external `cc-safe` npm tool); pairs with
+  the still-open install-safety scan of third-party skills/plugins. Remaining
+  four items stay in `BACKLOG.md` as wave 3.
+
 - 2026-07-08 — **Worked the audit-dimensions backlog, wave 1 (three items;
   dotfiles PR #229).** Triaged the *Audit dimensions / design* section (10
   items) and verified each against current config before implementing the

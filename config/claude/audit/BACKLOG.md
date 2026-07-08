@@ -42,29 +42,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   **Risk:** false positives on exactly those exemptions — evaluate whether a
   reliable check is even feasible before building; it may not be worth it.
 
-- [x] **Reconcile the 72-col code-comment rule with repo bash reality (LOW —
-  retrospective, PR #180).** `code-style.md` and `.claude/CONVENTIONS.md` say
-  code comments wrap at **72**, but the repo's bash de-facto wraps at **~78**
-  (`bin/docker_wrapper` 27/93, `bin/cleanpath` 32/62,
-  `config/shell-startup/010-general` 41/79 comment lines exceed 72; the
-  function/section separators are 79 wide). New `vmgr` code followed the ~78
-  de-facto for consistency. Decide one way: bump the rule to 78 (matching
-  practice and the 78-col Markdown prose wrap) **or** reflow the bash comments
-  to 72. `shfmt`/`shellcheck` don't enforce comment width, so it's a manual
-  code-style-audit convention either way. Mixed-scope: the rule is global
-  (`config/claude/rules/code-style.md`), any reflow is dotfiles bash — split
-  when actioned.
-
-- [x] **Audit the permission allow-list for risky auto-approved commands
-  (CANDIDATE — mined from `claude-code-tips` Tip 31 / the `cc-safe` idea,
-  2026-06-20).** We have no check that scans `settings.json`
-  `permissions.allow` for dangerous auto-approved patterns — `sudo`,
-  `rm -rf`, `chmod 777`, `curl | sh`, `git reset --hard`, broad bare `Bash`.
-  Generic and security-positive. Best home: a **new `claude-audit` dimension**
-  (the audit already inspects `settings.json` for plugins/hooks, so add a
-  "scan the allow-list" pass), or a small standalone check. The idea is
-  adopted, not the external `cc-safe` npm tool — we'd write our own scan.
-  Decide kind + scope when worked.
 - [ ] **Audit external skills/plugins for install-safety (CANDIDATE — mined
   from the plugin-collection sweep, 2026-06-20).** Companion to the allow-list
   audit above — together they form one **"harden the agent's own attack
@@ -78,19 +55,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   `security-scan`/`claude-audit`; (2) is a separate "is this repo agent-ready"
   check — decide if it earns its own artifact. Ideas only (mixed/non-OSS
   sources); we'd write our own. Decide kind + scope when worked.
-
-- [x] **`shell-check.py` PostToolUse hook is stricter than repo gates
-  (LOW — retrospective, PR #153).** The global hook
-  (`config/claude/hooks/shell-check.py`) runs plain `shellcheck`, but repos
-  that gate with `--external-sources` (dotfiles does) — or that suppress
-  false positives via a dir-scoped `.shellcheckrc` — make the hook *over*-flag:
-  it nagged about `shell-startup:83` sourcing `$DOTFILES/lib/debug`, which the
-  pre-commit gate resolves cleanly. The hook is fail-open and advisory so this
-  is only noise, but it recurs on any `--external-sources` repo. Consider
-  forwarding `SHELLCHECK_OPTS` and/or passing `--external-sources` (and
-  confirm it picks up a repo `.shellcheckrc` from the file's directory) so the
-  hook matches what the repo actually enforces. Global;
-  `config/claude/hooks/shell-check.py` (+ note in `rules/shellcheck.md`).
 
 - [ ] **Detect upstream drift in every `## <X> Setup` → flag stale
   rules/skills (2026-06-27).** During a config audit (`claude-audit` now; a
