@@ -6,6 +6,15 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Wrote the Observability understandable-doc (wave 2; dotfiles
+  PR #240).** Third wave-2 doc write: authored
+  `config/claude/docs/OBSERVABILITY.md` grounded in current Claude Code docs
+  (via `claude-code-guide`, sources cited) — the surfaces for monitoring
+  unattended work (`/tasks`, `/workflows`, `claude agents`, `/usage`,
+  `/context`, the statusline), framed as a scope ladder (task < workflow <
+  session). Cross-links the loops doc + this config's statusline; reference
+  doc, not a rule.
+
 - 2026-07-08 — **Wrote the Hooks understandable-doc (wave 2; dotfiles PR
   #239).** Second wave-2 doc write: authored `config/claude/docs/HOOKS.md`
   grounded in the current Claude Code hooks docs (via `claude-code-guide`,
