@@ -1,30 +1,29 @@
 #!/usr/bin/env python3
 
-"""Flag Markdown *prose* lines wider than the 78-column wrap convention.
+"""Lint agent-config Markdown for two wrap-related defects.
 
-`CONVENTIONS.md` / `code-style.md` wrap Markdown prose at 78 columns, but
-markdownlint's `line_length` is set to 200 (so long table rows and code lines
-pass) — which lets 79-80-col prose slip through unnoticed. This check closes
-that gap for the lines a formatter can't judge: it counts **characters** (not
-bytes, so an em-dash — three UTF-8 bytes but one column — is not miscounted,
-the exact trap that fools `awk length`) and reports any prose line over the
-limit.
+1. **Overlong prose.** `CONVENTIONS.md` / `code-style.md` wrap Markdown prose
+   at 78 columns, but markdownlint's `line_length` is set to 200 (so long
+   table rows and code lines pass) — which lets 79-80-col prose slip through.
+   This counts **characters** (not bytes, so an em-dash — three UTF-8 bytes
+   but one column — is not miscounted, the trap that fools `awk length`) and
+   flags any prose line over the limit. It exempts what legitimately exceeds
+   78 and must not wrap: fenced code, YAML frontmatter, table rows (two or
+   more `|`), reference-link definitions, ATX headings, and lines whose only
+   overage is an unbreakable inline-code / URL / `[text](url)` token.
 
-It exempts the constructs that legitimately exceed 78 and must not wrap:
-
-- fenced code blocks (``` / ~~~),
-- YAML frontmatter (the leading `---` … `---` block, e.g. a long
-  `description:`),
-- table rows (two or more `|`),
-- reference-style link definitions (`[label]: url`),
-- lines whose only overage is an unbreakable token — an inline-code span,
-  a bare URL, or a `[text](url)` link target — measured by re-checking the
-  length with those tokens collapsed.
+2. **Code spans broken mid-identifier.** An inline-code span split across a
+   line break rejoins with an errant internal space (an identifier arriving as
+   two space-separated words) — a rendering bug the 78-col reflow surfaces on
+   one line. Flag a code span that has a single internal space right after a
+   `-` / `_` / `/` / `.` in an otherwise space-free token. To document the bug
+   itself, put the broken example inside a fenced code block, which this check
+   skips.
 
 File selection (which trees to scan, which to skip — vendored plugins, the
-cached changelog, agent memory/plan dirs) is the pre-commit hook's job via
-its `files:` / `exclude:` regex; this script checks whatever paths it is
-given. Exits non-zero when any file has a violation, printing `path:line`.
+cached changelog, agent memory/plan dirs) is the pre-commit hook's job via its
+`files:` / `exclude:` regex; this script checks whatever paths it is given.
+Exits non-zero when any file has a defect, printing `path:line: message`.
 """
 
 from __future__ import annotations
@@ -51,6 +50,12 @@ FENCE_RE = re.compile(r"^\s*(?:```|~~~)")
 # heading text, which is a content edit, not a reformat.
 HEADING_RE = re.compile(r"^\s*#{1,6}\s")
 
+# A code span with one internal space right after `-_/.` in an otherwise
+# space-free token — the signature of an identifier/path broken across a line
+# and rejoined (e.g. `foo-` + `bar` → `foo- bar`). Multi-word command spans
+# (`git log --oneline`) don't match: the space isn't glued to punctuation.
+BROKEN_SPAN_RE = re.compile(r"`[^ `]+[-_/.] [A-Za-z][^ `]*`")
+
 
 def _collapse(line: str) -> str:
   """`line` with unbreakable tokens (links, inline code, URLs) reduced to a
@@ -60,9 +65,9 @@ def _collapse(line: str) -> str:
   return URL_RE.sub("x", collapsed)
 
 
-def violations(path: Path) -> list[tuple[int, int]]:
-  """`(line_number, width)` for every overlong prose line in `path`."""
-  hits: list[tuple[int, int]] = []
+def violations(path: Path) -> list[tuple[int, str]]:
+  """`(line_number, message)` for every defect in `path`."""
+  hits: list[tuple[int, str]] = []
   in_code = False
   in_front = False
 
@@ -83,7 +88,17 @@ def violations(path: Path) -> list[tuple[int, int]]:
       in_code = not in_code
       continue
 
-    if in_code or len(line) <= LIMIT:
+    if in_code:
+      continue
+
+    # Code-span break — checked on every non-code line, regardless of length.
+    if BROKEN_SPAN_RE.search(line):
+      hits.append((
+        num, "code span has an errant internal space "
+        "(identifier broken across a line?)"
+      ))
+
+    if len(line) <= LIMIT:
       continue
 
     if line.count("|") >= 2 or REF_LINK_RE.match(line):
@@ -95,7 +110,7 @@ def violations(path: Path) -> list[tuple[int, int]]:
     if len(_collapse(line)) <= LIMIT:
       continue
 
-    hits.append((num, len(line)))
+    hits.append((num, f"prose line is {len(line)} cols (limit {LIMIT})"))
 
   return hits
 
@@ -111,9 +126,9 @@ def main(argv: list[str]) -> int:
     except (OSError, UnicodeDecodeError):
       continue
 
-    for (num, width) in hits:
+    for (num, message) in hits:
       found = True
-      print(f"{path}:{num}: prose line is {width} cols (limit {LIMIT})")
+      print(f"{path}:{num}: {message}")
 
   return 1 if found else 0
 

@@ -1,8 +1,8 @@
-"""Tests for the prose-wrap check (tests/lint/prose_wrap.py).
+"""Tests for the markdown-hygiene check (tests/lint/prose_wrap.py).
 
 Runs the checker as a subprocess against throwaway Markdown files, covering
-the overlong-prose detection and each exemption. See the script for the
-convention it enforces.
+both the overlong-prose detection (with each exemption) and the
+broken-code-span detection. See the script for the conventions it enforces.
 """
 
 import subprocess
@@ -95,3 +95,35 @@ def test_prose_overage_with_short_url_flagged(tmp_path):
   res = _run(_md(tmp_path, body))
   assert res.returncode == 1
   assert "doc.md:1:" in res.stdout
+
+
+def test_broken_code_span_flagged(tmp_path):
+  # An identifier broken across a line rejoins with an errant space.
+  res = _run(_md(tmp_path, "The file `config/hooks/ compact.py` moved.\n"))
+  assert res.returncode == 1
+  assert "errant internal space" in res.stdout
+
+
+def test_command_span_not_flagged(tmp_path):
+  # Multi-word command spans have spaces not glued to punctuation — fine.
+  ok = "Run `git log --oneline`, then `rm -rf build/` and `claude -p`.\n"
+  res = _run(_md(tmp_path, ok))
+  assert res.returncode == 0, res.stdout
+
+
+def test_wrapped_multiword_span_not_flagged(tmp_path):
+  # A long command span legitimately wrapped across lines renders with a
+  # space, but the space isn't glued to punctuation — not a broken identifier.
+  body = (
+    "Example: `/goal get the score to 90 or\n"
+    "above, stop after 5 tries`.\n"
+  )
+  res = _run(_md(tmp_path, body))
+  assert res.returncode == 0, res.stdout
+
+
+def test_broken_span_inside_fence_ignored(tmp_path):
+  # Documenting the bug: the broken example lives in a fenced block, skipped.
+  body = "How it looks:\n\n```\n`foo/ bar`\n```\n\nDon't do that.\n"
+  res = _run(_md(tmp_path, body))
+  assert res.returncode == 0, res.stdout
