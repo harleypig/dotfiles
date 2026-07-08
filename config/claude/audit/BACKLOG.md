@@ -48,11 +48,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 - [ ] **`categorize-issue` skill** — triage a `gh` issue: suggest
   labels/priority/estimate from codebase context and fold it into the repo's
   TODO triage queue (the `gh.md` *Issues & triage* workflow). Category: `gh`.
-- [ ] **Future top-level categories.** Fold a new capability into an existing
-  category (`code-style` / `testing` / `qa` / `gh` / `git`); open a new
-  top-level category only when it genuinely doesn't fit. (`documentation` and
-  `troubleshooting` were opened 2026-06-11 — see the decisions log.)
-
 - [ ] **UI/UX design skills (CLI / windowed / web), beyond `frontend-design`
   (2026-06-27).** `frontend-design` (vendored, Apache-2.0) covers **web** UI
   *visual design* only — its triggers are web components / pages / React /
