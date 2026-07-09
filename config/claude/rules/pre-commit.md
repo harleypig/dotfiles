@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.6.0
+**Version:** v1.7.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -137,6 +137,39 @@ and Repo Verification*).
 
 This is a *preference* weighed per repo: it pays off most where the repo
 already standardizes on docker tooling and values local/CI parity.
+
+## Coverage gotcha: non-executable extensionless shell
+
+pre-commit selects a hook's files with `identify`, which tags a file `shell`
+from its **extension** or, for an extensionless file, its **shebang** — but it
+reads the shebang only on an **executable** file. So a *non-executable,
+extensionless* shell file — a sourced library carrying a
+`# shellcheck shell=bash` directive but no shebang, an extensionless config
+loader, a sourced event handler — is **silently ungated** by a default
+`types: [shell]` shellcheck/shfmt hook: `identify` never tags it `shell`, so
+the hook skips it (and a green run looks like coverage it doesn't have).
+
+The fix is a **second hook entry** that selects those files **by path** rather
+than by type — the same tool, with `types: [text]` and a `files:` regex:
+
+```yaml
+  - id: shellcheck
+    alias: shellcheck-sourced
+    name: shellcheck (sourced shell)
+    types: [text]
+    files: &sourced_shell '^(shell-startup|config/shell-startup/[^./]+|lib/[^./]+)$'
+  - id: shfmt-docker
+    alias: shfmt-sourced
+    name: shfmt (sourced shell)
+    types: [text]
+    files: *sourced_shell   # reuse the anchor so the two stay in sync
+```
+
+Give the extra entry a distinct `alias:` / `name:` so it reads clearly in the
+hook output, and share one YAML anchor (`&sourced_shell` / `*sourced_shell`)
+between the shellcheck and shfmt copies so the path set can't drift. This
+repo's `.pre-commit-config.yaml` (its `shellcheck-sourced` / `shfmt-sourced`
+hooks) is the reference implementation; `TESTS.md` records why they exist.
 
 ## Recommended Cross-Cutting Hooks
 
