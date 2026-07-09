@@ -6,6 +6,35 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-09 — **Automated the language/tool layering check (dotfiles PR
+  #253).** The `claude-audit` layering check (`EXTENDING.md` *The language &
+  tool stacks*) was a by-hand audit — re-deriving the
+  language/framework/tool taxonomy and grepping for up-references. Made it
+  mechanical: every `config/claude/rules/*.md` now carries a **`layer:`**
+  frontmatter key — one of **generic | language | framework | tool | process**
+  — and **`test_rule_layering.bats`** enforces (a) every rule has a valid
+  `layer:`, (b) a `language` rule references up to `code-style.md`/
+  `EXTENDING.md`, (c) no `tool`/`generic` rule links a language file.
+  **Design choice — self-derivation:** the language set is derived from the
+  `layer: language` tags themselves, so there is no hardcoded language list to
+  drift; `framework` rules (single-language, e.g. `fastapi`→`python`) are
+  exempt from (c) by design. The user chose **full tagging** (all 59 rules)
+  over a lean language+framework-only variant, for maximum self-documentation.
+  Counts: 1 generic, 9 language, 20 framework, 18 tool, 11 process. The tree
+  was **already 100% conformant**, so this is a pure regression guard; all
+  three checks were **negative-tested** (each fails on an injected violation,
+  passes when reverted). **Gray-zone classifications** (judgment calls, worth
+  revisiting if they bite): `git`/`gh` → **tool** (VCS, per EXTENDING's own
+  example); `terraform`/`packer`/`tflint` → **tool** (HashiCorp DSL tools, not
+  general-purpose languages, so `tflint` doesn't build on a language rule);
+  `shellcheck`/`shfmt` → **framework** (shell-only, so they *may* reference
+  `bash.md`); `spotify` → **process** (an external-API integration policy, not
+  an invocable tool). Residual risk: a *new* language rule mis-tagged (or left
+  untagged) silently escapes checks (b)/(c) for itself — acceptable given the
+  validity check + the still-running audit. Docs updated in the same PR:
+  `rule-TEMPLATE.md`, `EXTENDING.md`, the `claude-audit` skill, and the repo
+  `.claude/TESTS.md`.
+
 - 2026-07-09 — **Declined hosted SaaS scanners (Snyk / CodeFactor) for pigify
   and scripturestudy-app (dotfiles PR — per-repo SaaS-scanner backlog item).**
   Evaluated the `security-scan` §4 escape hatch for both app repos and decided
