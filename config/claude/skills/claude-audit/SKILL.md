@@ -222,6 +222,36 @@ idea, not the external `cc-safe` npm tool). Pairs with the *vet external code
 before vendoring it* step under *Mining repos for ideas* — together they
 harden the agent's own attack surface.
 
+**Audit the repo's README badges / credibility signals.** A public repo's
+badges are social proof, but each one past ~4 dilutes the rest and a vanity
+badge undercuts the real ones — so evaluate *fit by repo type*, not "more is
+better". Check the current repo's README against this shortlist and flag
+badges to add or drop:
+
+- **Earn their surface on any public repo:** **CI status** (native GitHub
+  Actions workflow badge) and **License**.
+- **Latest release / version** — add where the repo **tags releases**.
+- **Coverage** (Codecov / Coveralls; free for public repos, needs a
+  coverage-upload step) — add for a repo whose tests are worth advertising
+  (libraries especially).
+- **OpenSSF Scorecard** (free; a 0–10 supply-chain *process-hygiene* score via
+  `ossf/scorecard-action` + `publish_results: true`) — for a
+  security-sensitive library/app; a middling public score can backfire, so
+  weigh it.
+- **SCA / known-vuln** (Snyk badge, SaaS) — **only per `security-scan` §4**: a
+  real dependency tree with worthwhile results, recorded in the repo's QA doc.
+- **Usually vanity — drop unless the repo wants the SaaS anyway:**
+  maintainability letter grades (CodeFactor / Codacy / Code Climate→Qlty),
+  "built with X", download counts, and badge *walls* generally.
+
+Fit by repo type: **dotfiles / config** (no real dependency tree) → CI +
+License; **app** (real dep tree, e.g. FastAPI/Python, Ruby) → CI + License +
+Coverage, and consider Scorecard / Snyk per §4; **library** → CI + License +
+Coverage + Release, plus Scorecard if security-sensitive. Adding or removing a
+badge is **outward-facing** — recommend and confirm with the user, **never
+auto-add**. The full shortlist + rationale is in `audit/decisions-log.md`
+(2026-07-08 badges research).
+
 ## Mining repos for ideas
 
 An audit improves the **whole** dev environment, not just the current repo —

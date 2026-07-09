@@ -1,0 +1,50 @@
+name: scorecard
+
+# OpenSSF Scorecard — supply-chain / process-hygiene health score (branch
+# protection, pinned deps, CI, SAST, …). `publish_results: true` feeds the
+# public README badge (api.securityscorecards.dev); the SARIF upload surfaces
+# findings in the Security tab (free for public repos). Runs on pushes to the
+# default branch, on branch-protection changes, and weekly — not on PRs, so it
+# never gates a PR.
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: '20 14 * * 1'
+  push:
+    branches: ["master"]
+
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write   # upload the SARIF to code scanning
+      id-token: write          # OIDC token, required by publish_results
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@v2.4.3
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
