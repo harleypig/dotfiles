@@ -6,6 +6,34 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-09 — **Declined hosted SaaS scanners (Snyk / CodeFactor) for pigify
+  and scripturestudy-app (dotfiles PR — per-repo SaaS-scanner backlog item).**
+  Evaluated the `security-scan` §4 escape hatch for both app repos and decided
+  **not now** for both. **Stale premise corrected:** the backlog item called
+  scripturestudy-app "Ruby/Gollum" with a bundler tree — it is actually
+  **Python (FastAPI) + npm**, the same stack as pigify, so the "Snyk supports
+  Ruby / osv covers `Gemfile.lock`" rationale never applied; both are one
+  evaluation. **Rationale:** both repos already run a dense OSS lane (semgrep
+  SAST + **osv-scanner** hard-gate on lockfiles incl. the OpenSSF `MAL-` feed +
+  **Dependabot** with auto fix-PRs + trivy fs/image + ZAP DAST), so SCA is
+  already covered and hard-gated. Snyk SCA's one genuine add over that lane is
+  **reachability analysis** (DeepCode; GA for Java/JS/Python) — a
+  noise-reduction feature whose payoff scales with advisory *volume*, marginal
+  on a personal-scale tree that already hard-gates and auto-fixes; its costs
+  (a Snyk account, a `SNYK_TOKEN` in CI, SaaS read-access to the code, an
+  engine off the pin, secrets withheld from fork PRs) don't clear the §4 bar
+  ("worthwhile results the OSS lane genuinely *can't* deliver").
+  **CodeFactor** (the secondary) is a maintainability letter grade — **vanity,
+  skip** per the 2026-07-08 badges decision below. scripturestudy's own QA doc
+  already names **Socket** (not Snyk) as the "if a SaaS is ever accepted"
+  option, already leaning not-now. **No target-repo edits** — those are only
+  needed on adoption; the repos keep their Security dimension **Active** via
+  the OSS lane. **Revisit trigger:** a dependency tree grows large enough that
+  advisory-triage noise becomes a real burden (then reachability earns its
+  cost). Grounded against current Snyk docs (reachability GA for Java/JS/
+  Python; `SNYK_TOKEN` required even for the CLI; auto fix-PRs) via web
+  search, 2026-07-09.
+
 - 2026-07-08 — **Credibility-signals / badges research + adoption (dotfiles PR
   #250).** Researched which badges earn their surface across public repos
   (grounded: OpenSSF Scorecard, Codecov/Coveralls, CodeFactor/Codacy/Code
