@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.7.0
+**Version:** v1.8.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -134,6 +134,19 @@ and Repo Verification*).
   Python tool with no official image — yamllint, isort, yapf, flake8,
   pyright — or a node formatter like prettier) have none; those stay on
   their native language. Prefer docker **where it exists**, not everywhere.
+- **A containerized hook can't see your global `~/.config`, so mirror the
+  baseline repo-locally.** A `*-docker` hook runs with only the repo mounted —
+  it never reads a *user-level* tool config (`~/.config/hadolint.yaml`,
+  `~/.config/yamllint/config`). With no **repo-local** config it silently
+  falls back to the tool's *defaults*: a laxer failure threshold (e.g.
+  `hadolint` gates at `info`, not your `warning`), a lost trusted-registries
+  or relaxation set — so the gate is *weaker* than your interactive runs, with
+  no error to signal it. When you gate a tool via a containerized hook,
+  **commit a repo-local config that mirrors your baseline** (`.hadolint.yaml`,
+  `.yamllint`, …) so local, commit-time, and CI all enforce the same rules.
+  (This is distinct from repo-local *precedence*, which the per-tool rules
+  already note — here the global config is simply *invisible*, not
+  overridden.)
 
 This is a *preference* weighed per repo: it pays off most where the repo
 already standardizes on docker tooling and values local/CI parity.

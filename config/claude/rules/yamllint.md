@@ -6,7 +6,7 @@ paths:
 
 # yamllint Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 ## Invocation
 
@@ -29,6 +29,14 @@ Config lives at `config/yamllint/config` in this repo, which resolves to
 - `document-start`: level warning
 - `truthy`: allows `true`, `false`, `yes`, `no`
 - `quoted-strings`: disabled
+
+**Gating via a containerized yamllint hook needs a repo-local config.** A
+docker-image hook sees only the mounted repo, not
+`~/.config/yamllint/config` — with no repo-local `.yamllint` it reverts to
+yamllint's stricter `default` and loses these relaxations, so the gate
+diverges from local runs. A repo that gates yamllint through a container
+**must commit a `.yamllint` mirroring this baseline**. See `pre-commit.md`
+*Prefer docker_image Hooks* (the containerized-config caveat).
 
 ## Docker Wrapper
 
