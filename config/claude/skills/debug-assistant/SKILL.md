@@ -17,7 +17,7 @@ discipline it serves (reproduce-first, root-cause, regression-test) lives in
 A specific failure to diagnose: a failing or flaky test, a crash or
 exception, a bug report, or surprising behaviour you need to track to its
 cause. This is the **investigation** step inside a bug-report resolution (the
-planned `resolve-issue` skill composes it).
+`resolve-task` skill composes it for the bug task-type).
 
 ## Type / composition
 

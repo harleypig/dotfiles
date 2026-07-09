@@ -20,7 +20,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Skill ideas & future categories (not from mining)
 
-- [ ] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
+- [x] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
   issue → **agent** investigates it against the codebase via the
   `debug-assistant` skill (root cause, "simple or not", proposed fix or a
   question) → decide → fix → open PR with `Closes #X` → merge. The

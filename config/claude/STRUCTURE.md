@@ -197,6 +197,7 @@ it involves (`hook.py`), and built-in commands it names as a step (`/cmd`).
 | [release-tag](skills/release-tag/SKILL.md) | Cut an annotated `vX.Y.Z` tag at the merge commit, push, and watch the release workflow | `git.md` · `github-actions.md` |
 | [github-tasks](skills/github-tasks/SKILL.md) | Sweep a repo's GitHub state (Dependabot PRs, open issues, failing checks, stale branches, release hygiene), triage into a ranked worklist, and route each item to its skill | `security-scan` · `push-pr` · `git-worktree-workflow` · `github-issues` · `release-tag` · `debug-assistant` · `gh.md` · `git.md` |
 | [github-issues](skills/github-issues/SKILL.md) | Deep per-issue triage: reconcile against planning docs + code, complexity, close stale/done with a comment, dedup/umbrella + blocking detection, label recommendations, issue↔doc sync — routes, never auto-tackles | `gh.md` · `todo.md` · `github-tasks` |
+| [resolve-task](skills/resolve-task/SKILL.md) | Resolve one work item (or a group) end-to-end from any source (GitHub issue · this repo's TODO/BACKLOG · another repo's TODO): reconcile (skip if done) → classify task-type → branch → investigate (debug-assistant for bugs) → change + tests → land via push-pr (`Closes #N` / mark `[x]`); merge gated, opt-in autonomous (default-off) | `github-issues` · `git-worktree-workflow` · `debug-assistant` · `qa-check` · `push-pr` · `gh.md` · `todo.md` |
 
 ### Quality assurance
 
