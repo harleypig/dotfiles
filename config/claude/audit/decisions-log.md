@@ -6,6 +6,20 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Added a non-sourceable-shell testing recipe to `bats.md`
+  (dotfiles PR #246).** Second of the Repo-config follow-ups. New *Testing
+  non-independently-sourceable shell* section: to unit-test a function in a
+  file that can't be sourced on its own (a shell-startup orchestrator with
+  side effects, an interactive-guarded lib, a load-time handler), `awk`/`sed`
+  the named function block out and `eval` it in isolation — the dotfiles
+  `source_funcs <file> <fn>...` helper (`tests/helpers/common.bash`) is the
+  reference impl. Documented the two gotchas: bats runs test bodies under
+  `set -e` (grounded in the bats-core *Writing tests* docs — any non-zero
+  intermediate command aborts the test, hence `|| true` when asserting only on
+  state), and a by-name extractor sees only whole `name() { … }` blocks, so a
+  function needing a non-function definition or buried behind a guard stays
+  bespoke. +Agent Behavior bullet; `bats.md` → v2.3.0.
+
 - 2026-07-08 — **Documented the exclude-vs-native-ignore decision in
   `pre-commit.md` (dotfiles PR #245).** First of the Repo-config follow-ups,
   worked one at a time. Added a *Suppressing a finding: native in-file ignore
