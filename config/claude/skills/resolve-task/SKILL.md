@@ -5,7 +5,7 @@ description: Resolve one work item — or a user-requested group — end-to-end 
 
 # Resolve Task
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 Take a **work item** — from a GitHub issue, this repo's `TODO.md` /
 `BACKLOG.md`, or another repo's `TODO.md` — from *selected* to *landed*, by
@@ -31,9 +31,11 @@ resolve-task *is* that step, generalized to any work item.
 
 - **A GitHub issue** (`#N`, any repo you can reach).
 - **The current repo's `TODO.md` / `BACKLOG.md`** (a bullet).
-- **Another repo's `TODO.md`** — a sibling clone at `$PARENT_DIR/<repo>`
-  (`git.md` related-repos). Cross-repo tasks operate in the **target** repo:
-  the branch, worktree, and PR happen there, not the invoking repo.
+- **Another repo's `TODO.md`** — a **local** clone at any path (conventionally
+  a `$PARENT_DIR` sibling; `git.md` related-repos). Cross-repo tasks operate in
+  the **target** repo: branch, worktree, and PR happen there, not the invoking
+  repo. **Remote-only** targets (not checked out locally) are **out of scope**
+  — surface and ask, don't auto-clone.
 
 Invoke on **one task or a user-requested group** (e.g. a whole TODO section).
 A group is an explicit batch — work each — but see *Scope* for when small ones
@@ -125,7 +127,10 @@ Use **git-worktree-workflow**:
   `git.md` (git-worktree-workflow's non-issue task path — same worktree/plain
   setup, no `gh issue view`).
 
-Cross-repo: operate in the sibling clone at `$PARENT_DIR/<repo>`.
+Cross-repo: operate in the target's **local** clone (any path; conventionally
+a `$PARENT_DIR` sibling). First run `git.md`'s **foreign-repo coordination
+check** — a non-default branch you didn't create means another instance may be
+on it; warn and offer to wait / defer before branching.
 
 ## Step 4 — Investigate, routed by task-type (read-only agent)
 

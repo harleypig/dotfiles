@@ -5,7 +5,7 @@ description: Manage git worktree-based development for forked and personal repos
 
 # Git Worktree Workflow
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 This skill manages development across git worktrees for forked repos and
 personal repos. It covers issue setup, syncing, PR prep, cross-branch
@@ -55,6 +55,21 @@ git clone <url> "$PARENT_DIR/<repo-name>"
 Do not assume a specific prefix for the repo directory name — use the
 upstream repository's actual name (i.e., the last path component of its clone
 URL, without `.git`). Confirm the derived path with the user before cloning.
+
+`$PARENT_DIR` is only the conventional place to **look** — a foreign repo may
+live at **any local path**; work it wherever it is. A **remote-only** repo
+(not checked out locally) is **out of scope** (`git.md`): surface and ask, do
+not auto-clone to work it.
+
+**Coordination — a foreign repo may be in use by another instance.** Before
+setting up or working in a foreign repo, and again at re-entry points
+mid-work, run `git.md`'s **foreign-repo coordination check**: its branch is a
+shared resource git won't guard. If its current branch is **not** the default
+and you did not put it there this session — or, mid-work, the branch changes
+out from under you (HEAD switched, or your tip moved by a commit you didn't
+make) — treat it as *possibly under active development elsewhere*: **notify
+the user and suggest** (wait / come back later / another fitting option).
+Warn, never block; a dirty tree corroborates.
 
 ### Deriving a worktree path
 
