@@ -191,6 +191,43 @@ Cost is per-token (the Claude API) **plus** GitHub Actions minutes; keep both
 down with targeted prompts, `--max-turns`, `timeout-minutes:`, and concurrency
 limits.
 
+## Hosted Code Review (Team/Enterprise)
+
+Distinct from everything above, Anthropic also runs a hosted
+**[Code Review][code-review-product]** product — a managed multi-agent
+service that reviews a PR automatically once an admin enables it and installs
+its GitHub App. It is **not** the `claude-code-action` this doc covers, and
+not a slash command: it is a separate, server-side offering in **research
+preview for Team and Enterprise** plans.
+
+On each PR it:
+
+- **Fans out parallel agents** — dispatches a team of agents that hunt for
+  bugs concurrently, and **scales with the PR**: a large or complex change
+  draws more agents and a deeper read, a trivial one a lightweight pass.
+- **Verifies before reporting** — a verification pass filters out false
+  positives (Anthropic reports under 1% of findings marked incorrect by
+  engineers), then **ranks the surviving bugs by severity**.
+- **Posts one overview plus inline** — results land as a single high-signal
+  overview comment plus in-line annotations on the specific lines.
+- **Surfaces, never approves** — it flags issues for a human; it **won't
+  approve a PR**, which stays a human call.
+
+Cost is **per-token, roughly $15–25 per PR**, scaling with size and
+complexity; admins set monthly org caps, toggle it per repository, and see
+analytics.
+
+Don't confuse it with three adjacent things:
+
+- The local **`/code-review` and `/security-review` slash commands** run *in
+  your session* against the working diff, invoked by the developer — not a
+  hosted service reacting to a PR.
+- **Automation-mode `/code-review` on every PR** (above) is *this* action
+  running a slash-command prompt on a GitHub event — still a workflow you
+  author, not the managed product.
+- This repo's **QA "Code review" gate** (`qa.md` dimension 14) is the human
+  peer-review requirement — a gate, not a tool.
+
 ## See also — adjacent, out of scope
 
 - **Your repo's own CI** — the workflows Claude helps you write and watches to
@@ -219,6 +256,7 @@ Distilled from the official Claude Code documentation:
 [gha]: https://code.claude.com/docs/en/github-actions
 [action-repo]: https://github.com/anthropics/claude-code-action
 [cli-ref]: https://code.claude.com/docs/en/cli-reference
+[code-review-product]: https://claude.com/blog/code-review
 [perm-doc]: PERMISSION-MODES.md
 [gha-rule]: ../rules/github-actions.md
 [auth-rule]: ../rules/claude-code-auth.md

@@ -92,51 +92,39 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   that doc), and when the **template itself changes, re-audit the existing
   docs and reflow them** to the new shape. Topics to document next — each its
   own doc, same shape:
-  - [ ] **Sub-agents.** How to *use* them well (delegate-vs-inline —
-    `EXTENDING.md` *Agent* gives the principle, not a routine), how to
-    *define* them (custom agent types, tool restrictions, system prompts),
-    and **effort levels**: the Agent/Workflow tooling exposes an `effort`
-    knob (low/medium/high/…) with no guidance on *which* a task warrants.
-    Investigate estimating a task's effort and **auto-assigning** the right
-    sub-agent (model tier + effort + agent type) from the description, and —
-    the harder half — whether a sub-agent can **recognize a mis-guess and
-    kick the task back** ("bigger/smaller than scoped; re-route") instead of
-    grinding at the wrong level. This one's output may be a **rule and/or
-    skill**, not just a doc (the original 2026-06-27 research item). Generic.
+  - [ ] **Sub-agents — the auto-routing rule/skill.** The *doc* half landed
+    2026-07-09: `SUBAGENTS.md` covers using them (delegate-vs-inline,
+    when-not-to) and defining them (custom types, tool restrictions), and
+    `MODELS-AND-EFFORT.md` covers the `effort` knob and the model×effort
+    selection heuristic. What remains is the **rule and/or skill** the
+    original 2026-06-27 research item called for: estimating a task's effort
+    from its description and **auto-assigning** the right sub-agent (model
+    tier + effort + agent type), and — the harder half — whether a sub-agent
+    can **recognize a mis-guess and kick the task back** ("bigger/smaller
+    than scoped; re-route") instead of grinding at the wrong level. Generic.
   - [ ] **Channels** (research preview). External systems pushing events
     into a running session — the push counterpart to poll/timer loops.
   - [ ] **Agent teams** (experimental). Peer-coordinating multi-agent work;
     the deep-dive the loops doc only summarizes.
-  Two further threads under this umbrella — not docs-to-write like the
-  topics above, but link/idea triage that feeds them:
-  - [ ] **Triage the saved reference links.** A pile of saved URLs — mostly
-    Claude blog posts (skills/hooks/subagents/effort, prompt-caching, code
-    review, responsive layouts, agent-org practices) plus a few non-Claude-
-    Code links (Linode Terraform/Packer, the GitHub Terraform provider) — to
-    work through **one at a time**. For each, first ask the user *why it was
-    saved / what it might be for* (the intent is rarely obvious from the URL),
-    then decide the outcome: a new `config/claude/docs/` doc, a
-    rule/skill/hook, folding into an existing doc, or dropping it. Not all are
-    Claude-Code learning; route each per the three-tier model (`CLAUDE.md`
-    *Configuration Migration*) as its purpose becomes clear. Links to triage:
-    - [ ] <https://github.com/linode/terraform-provider-sshhostkeycache>
-    - [ ] <https://github.com/linode/packer-plugin-linode>
-    - [ ] <https://developer.hashicorp.com/packer/integrations/linode/linode/latest/components/builder/linode>
-    - [ ] <https://claude.com/blog/steering-claude-code-skills-hooks-rules-subagents-and-more>
-    - [ ] <https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills>
-    - [ ] <https://claude.com/blog/build-responsive-web-layouts>
-    - [ ] <https://claude.com/blog/code-review>
-    - [ ] <https://claude.com/blog/auto-mode>
-    - [ ] <https://claude.com/blog/subagents-in-claude-code>
-    - [ ] <https://x.com/RLanceMartin/status/2027450018513490419>
-    - [ ] <https://claude.com/blog/seeing-like-an-agent>
-    - [ ] <https://claude.com/blog/onboarding-claude-code-like-a-new-developer-lessons-from-17-years-of-development>
-    - [ ] <https://claude.com/blog/lessons-from-building-claude-code-prompt-caching-is-everything>
-    - [ ] <https://claude.com/blog/how-coderabbit-used-claude-to-build-an-agent-orchestration-system>
-    - [ ] <https://claude.com/blog/running-an-ai-native-engineering-org>
-    - [ ] <https://github.com/integrations/terraform-provider-github>
-    - [ ] <https://claude.com/blog/a-field-guide-to-claude-fable-finding-your-unknowns>
-    - [ ] <https://claude.com/blog/claude-model-and-effort-level-in-claude-code>
+  Two further threads under this umbrella — link/idea triage that feeds the
+  docs above:
+  - [x] **Triage the saved reference links** (done 2026-07-09). The saved
+    URLs were evaluated with one subagent per cluster and routed: six new
+    reference docs written (`STEERING`, `SKILLS`, `SUBAGENTS`,
+    `MODELS-AND-EFFORT`, `PROMPT-CACHING`, `AGENT-NATIVE-ENGINEERING`), three
+    folded into existing docs (code-review → `GITHUB-ACTIONS-INTEGRATION`,
+    auto-mode → `PERMISSION-MODES`, CodeRabbit → `LOOPS-WORKFLOWS`), one
+    dropped (responsive-web-layouts — already served by `frontend-design` /
+    `a11y-review` / `qa.md` dim 7), and the un-actioned links re-captured as
+    their own items (the X thread below; the infra links in their own
+    section). Full routing in the decisions log.
+  - [ ] **Context-engineering thread (R. Lance Martin, X).** The saved link
+    <https://x.com/RLanceMartin/status/2027450018513490419> can't be fetched
+    (X paywalls unauthenticated reads), so its content is unverified. Paste
+    the thread text, then decide: a resource link in
+    `AGENT-NATIVE-ENGINEERING.md`, or seed a standalone `CONTEXT-ENGINEERING.md`
+    (the write / select / compress / isolate taxonomy maps onto this config's
+    memory files, path-scoped rules, and subagent result-relay). Generic.
   - [ ] **Evaluate claude-science as a template for other knowledge
     domains.** Can its structure be reused to build the same kind of layered
     knowledge/research artifact for other subjects — religious studies,
@@ -144,6 +132,31 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     a doc, a skill, or nothing. Link:
     <https://claude.com/product/claude-science>
   Generic (global; docs under `config/claude/docs/`).
+
+## Non-Claude infra reference links (parked from the link triage, 2026-07-09)
+
+Surfaced by the *Learning about Claude* link triage but **not** Claude-agent
+config — infrastructure tooling references with no home in this repo's docs.
+Parked here (cross-repo) rather than dropped; route each to the relevant
+infra/IaC repo when one exists, per the TODO-routing convention.
+
+- [ ] **Linode image-build / host-provisioning tooling** (group). Three
+  saved refs for a future Linode infra / image-build repo — not for the
+  global `terraform.md` / `packer.md` (single-provider utilities, not generic
+  guidance). Route there when such a repo exists, else drop:
+  - <https://github.com/linode/terraform-provider-sshhostkeycache> — caches an
+    SSH host key across `plan`/`apply` to avoid repeated `ssh-keyscan`.
+  - <https://github.com/linode/packer-plugin-linode> — official Packer plugin
+    to build custom Linode images.
+  - <https://developer.hashicorp.com/packer/integrations/linode/linode/latest/components/builder/linode>
+    — the authoritative builder-component reference for that plugin.
+- [ ] **`terraform-provider-github` — GitHub-resources-as-IaC.** Manages
+  repos, teams, branch protections, **rulesets**, Actions secrets, etc. as
+  Terraform. Secondary relevance to *this* repo: it is the IaC alternative to
+  the manual `gh api` + `protect-master-solo.json` master-ruleset management
+  (see `WORKFLOW.md`) — a design tradeoff, not a rule fact, so revisit only if
+  ruleset management outgrows the manual approach, or route to a future IaC
+  repo. Link: <https://github.com/integrations/terraform-provider-github>.
 
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
 

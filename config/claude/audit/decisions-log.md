@@ -6,6 +6,34 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-09 — **Triaged the saved reference links and wrote the resulting
+  "Learning about Claude" docs (dotfiles PR; dogfooded `resolve-task` with a
+  subagent fan-out).** The raw pile of ~18 saved URLs under the *Learning
+  about Claude* backlog umbrella was evaluated **one subagent per thematic
+  cluster** (read-only: fetch → summarize → recommend disposition + target +
+  doc-shape), then a second fan-out **authored the results**. **Routing:**
+  six new `config/claude/docs/` reference docs — **`STEERING`** (umbrella over
+  the extension surface), **`SKILLS`**, **`SUBAGENTS`**, **`MODELS-AND-EFFORT`**
+  (model tier × effort, folding in the Fable field-guide), **`PROMPT-CACHING`**,
+  and **`AGENT-NATIVE-ENGINEERING`** (three org-practice essays synthesized
+  into one); three folds into existing docs (code-review → hosted-review
+  section of `GITHUB-ACTIONS-INTEGRATION`; auto-mode enrichment in
+  `PERMISSION-MODES`; CodeRabbit orchestration case study in
+  `LOOPS-WORKFLOWS`); one **drop** (build-responsive-web-layouts — a
+  user-task demo already covered by `frontend-design` / `a11y-review` /
+  `qa.md` dim 7). **Deferred, not dropped:** the R. Lance Martin X thread
+  (unfetchable — X paywalls reads) is parked as a backlog item to paste-and-
+  decide; the four non-Claude infra links (Linode Terraform/Packer, the GitHub
+  Terraform provider) are parked in their own backlog section as cross-repo
+  references (per-user: "put them back as todos", not dropped). **Decisions:**
+  every new doc stayed a **reference doc** — none graduated to a `rules/<x>.md`
+  (they carry no enforceable agent policy on their own); each follows
+  `TOPIC.md.template` and the `LOOPS-WORKFLOWS.md` quality bar (78-col prose,
+  reference-style links, markdownlint-clean). The backlog's planned
+  **Sub-agents** topic is now doc-complete (`SUBAGENTS` + `MODELS-AND-EFFORT`);
+  its *auto-routing rule/skill* half (estimate effort → auto-assign model +
+  effort + agent type, plus mis-guess kick-back) stays open.
+
 - 2026-07-09 — **Built the `resolve-task` work-item resolver (dotfiles PR
   #255); supersedes the never-landed `resolve-issue` draft.** The planned
   `resolve-issue` skill was generalized during design review into
