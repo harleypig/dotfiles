@@ -10,6 +10,40 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-09
+
+### Added
+
+- **Six "Learning about Claude" reference docs from the saved-link triage.**
+  New `config/claude/docs/` docs following `TOPIC.md.template` at the
+  `LOOPS-WORKFLOWS.md` quality bar, each grounded in the official Claude Code
+  documentation with inline links: **STEERING** (the umbrella over the
+  extension surface — `CLAUDE.md` / rules / skills / subagents / hooks /
+  output-styles, on the when-it-loads / context-cost / authority axes),
+  **SKILLS** (folder anatomy, the nine categories, authoring best-practices
+  and anti-patterns), **SUBAGENTS** (context isolation, when-to vs
+  when-not-to, the five ways to direct one), **MODELS-AND-EFFORT** (the model
+  × effort dials and the selection heuristic), **PROMPT-CACHING** (the API
+  caching contract plus the Claude Code patterns that preserve hit-rate), and
+  **AGENT-NATIVE-ENGINEERING** (design / onboard / restructure, anchored to
+  this repo's own artifacts). The saved URLs were triaged one subagent per
+  cluster; `STRUCTURE.md` lists the new docs and `audit/decisions-log.md`
+  records the full routing. (PR #258)
+
+### Changed
+
+- **Folded three saved links into existing docs.** Hosted Code Review →
+  `GITHUB-ACTIONS-INTEGRATION.md`; the Auto mode enrichment (availability +
+  disambiguation from the repo's `auto-merge`) → `PERMISSION-MODES.md`; the
+  CodeRabbit orchestration case study → `LOOPS-WORKFLOWS.md`. Grounding the
+  new docs against the live documentation also corrected three blog-era stale
+  facts (the Explore subagent inherits the main conversation's model; the
+  `/agents` command is no longer a creation wizard; the real `SKILL.md` /
+  agent-file frontmatter spec). One link was dropped (build-responsive-web-
+  layouts — already covered by `frontend-design` / `a11y-review` / `qa.md`
+  dim 7); the X/context-engineering thread and four non-Claude infra links
+  were re-captured as backlog TODOs rather than dropped. (PR #258)
+
 ## 2026-07-02
 
 ### Added

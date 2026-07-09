@@ -107,17 +107,8 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
   - [ ] **Agent teams** (experimental). Peer-coordinating multi-agent work;
     the deep-dive the loops doc only summarizes.
   Two further threads under this umbrella — link/idea triage that feeds the
-  docs above:
-  - [x] **Triage the saved reference links** (done 2026-07-09). The saved
-    URLs were evaluated with one subagent per cluster and routed: six new
-    reference docs written (`STEERING`, `SKILLS`, `SUBAGENTS`,
-    `MODELS-AND-EFFORT`, `PROMPT-CACHING`, `AGENT-NATIVE-ENGINEERING`), three
-    folded into existing docs (code-review → `GITHUB-ACTIONS-INTEGRATION`,
-    auto-mode → `PERMISSION-MODES`, CodeRabbit → `LOOPS-WORKFLOWS`), one
-    dropped (responsive-web-layouts — already served by `frontend-design` /
-    `a11y-review` / `qa.md` dim 7), and the un-actioned links re-captured as
-    their own items (the X thread below; the infra links in their own
-    section). Full routing in the decisions log.
+  docs above (the saved-link triage itself is done — see the changelog and
+  `decisions-log.md`; these are the deferred spin-offs):
   - [ ] **Context-engineering thread (R. Lance Martin, X).** The saved link
     <https://x.com/RLanceMartin/status/2027450018513490419> can't be fetched
     (X paywalls unauthenticated reads), so its content is unverified. Paste
@@ -289,6 +280,18 @@ Tips 16/25/17/26).
 - [ ] **Ruby** rule — especially as it relates to the Gollum wiki.
 - [ ] **Essay Helper** skill — for the scripturestudy.org wiki ("LDS
   Scholar").
+
+- [ ] **Relative-link integrity lint for the docs series** (retrospective,
+  PR #258). markdownlint (MD053) checks that reference labels are
+  defined-and-used, but nothing checks that a **relative** link target —
+  `[x](STEERING.md)`, `[y](../rules/qa.md)` — actually resolves on disk, so a
+  see-also pointing at a not-yet-written sibling doc passes lint yet 404s. The
+  `config/claude/docs/` series cross-references heavily (PR #258 added six
+  interlinked docs and needed a hand-rolled existence check), so a broken
+  relative link is easy to ship. Add a small pre-commit check (its own hook,
+  or an extension of the `agent-config markdown hygiene` hook) that resolves
+  every relative markdown link and link-definition target and fails on a miss.
+  Global (config/claude).
 
 - [ ] **Workflow-authoring skill (`author-workflow` or similar)**
   (retrospective, harleydev session 2026-07-06 — user asked whether a global
