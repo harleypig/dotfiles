@@ -6,6 +6,20 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Dropped the STRUCTURE.md Mermaid diagram approach (dotfiles
+  PR #249).** The user decided the Mermaid diagram "doesn't do what I want"
+  and asked to remove Mermaid support rather than keep slimming it. The
+  diagram was never merged to `master` — it lived only on an un-pushed
+  `docs/structure-diagram` branch that no longer exists locally or remotely,
+  and `STRUCTURE.md` on
+  `master` has no Mermaid content (its structure reads as the prose + `text`
+  tree it already carries). So this is a decision-to-abandon, not a code
+  removal: pruned the "📊 Slim down the STRUCTURE.md mermaid diagram" backlog
+  item, and removed the three now-moot local memory notes
+  (`structure-diagram-iteration`, `structure-diagram-branch-discipline`,
+  `chrome-blocks-github-mermaid-sandbox`). If a visual map is wanted later, it
+  should take a different form than a GitHub-rendered Mermaid flowchart.
+
 - 2026-07-08 — **Conformance sweep for the language/tool layering (dotfiles PR
   #248).** Fourth of the Repo-config follow-ups. Measured every rule file
   against `EXTENDING.md` *The language & tool stacks* rather than trusting the
