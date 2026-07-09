@@ -6,6 +6,35 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-09 — **Built the `resolve-task` work-item resolver (dotfiles PR
+  #255); supersedes the never-landed `resolve-issue` draft.** The planned
+  `resolve-issue` skill was generalized during design review into
+  **`resolve-task`** — the execution counterpart to `github-issues` (which
+  triages but never tackles), resolving one work item (or a user-requested
+  group) end-to-end from any source: a **GitHub issue**, this repo's
+  **`TODO.md`/`BACKLOG.md`**, or **another repo's `TODO.md`** (cross-repo, in
+  the target repo). **Why generalize (not icebox):** this repo's work is
+  TODO-driven, so an issue-only skill couldn't be dogfooded here; the Rule of
+  Three doesn't gate a known 2-source union (a genuine concept, not
+  speculative duplication). **Design model** (from the review): naming +
+  analysis happen at **selection**, not capture; a **disposition-first
+  reconcile** (already-done / do-now / WONTFIX / ICEBOX / LATER /
+  flag-for-decision) reachable at analysis **and mid-work**; an **open
+  task-type taxonomy** that routes investigation (`debug-assistant` for bugs,
+  a design agent for features, straight to the fix for trivial) — correcting
+  the draft's flaw of hard-wiring debug-assistant for every item; **decompose
+  / opportunistic-compose ("notice, don't hunt") / small-group-batch** scope
+  handling; **source-specific close** (`Closes #N` vs mark `[x]`+prune); the
+  branch name as the task's stable handle. **Autonomous variant (v1.0.0,
+  default-off):** a `resolve-task: autonomous` sentinel read from the
+  **target repo's default branch** (never self-granting), skipping only the
+  skill's present-and-ask gate for trivial/small do-now tasks after CI green;
+  merge autonomy remains push-pr's `auto-merge: enabled`; not enabled in this
+  repo. Landing delegates wholly to **push-pr**; the merge gate is unchanged.
+  Cross-refs updated (debug-assistant, github-issues, `gh.md`,
+  `STRUCTURE.md`, `todo.md`); git-worktree-workflow Op 1 gained a non-issue
+  task branch path.
+
 - 2026-07-09 — **Iceboxed the whole `skill-creator` work cluster (dotfiles
   PR).** The skill-creator work was spread across three BACKLOG spots (the
   "rule eval / optimization" idea, the `retrospective` dogfood, and the

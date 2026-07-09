@@ -20,14 +20,15 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Skill ideas & future categories (not from mining)
 
-- [x] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
-  issue → **agent** investigates it against the codebase via the
-  `debug-assistant` skill (root cause, "simple or not", proposed fix or a
-  question) → decide → fix → open PR with `Closes #X` → merge. The
-  investigation is an agent; **PR-open and merge stay gated** per `gh.md` ("no
-  PR create/merge without explicit approval") unless a deliberately opted-in
-  autonomous variant with guardrails (trivial-only, after CI green) is built.
-  Tools/category: `gh`.
+- [ ] **Hook: hard-enforce `resolve-task` autonomous scoping** (retrospective,
+  PR #255). The autonomous variant's trivial-only / do-now / reproduced gate
+  is currently **judgment** (the skill's task-type classifier) backed by
+  push-pr's merge guardrails. Consider a `PreToolUse` hook that
+  deterministically blocks
+  an *autonomous* merge when the task isn't trivial/small or CI isn't green —
+  the forcing-function backstop to the skill's soft gate (cf.
+  `merge-finalization.py`). Weigh the value against the existing guardrails
+  before building. Scope: global (`config/claude/hooks/`).
 - [ ] **UI/UX design skills (CLI / windowed / web), beyond `frontend-design`
   (2026-06-27).** `frontend-design` (vendored, Apache-2.0) covers **web** UI
   *visual design* only — its triggers are web components / pages / React /
