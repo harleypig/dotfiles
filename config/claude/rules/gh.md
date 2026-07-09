@@ -1,4 +1,5 @@
 ---
+layer: tool
 # No paths — applies to all PRs and issues regardless of file type.
 ---
 

@@ -1,4 +1,5 @@
 ---
+layer: tool
 paths:
   - "**/docker-compose*.yml"
   - "**/docker-compose*.yaml"

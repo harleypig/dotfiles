@@ -1,4 +1,5 @@
 ---
+layer: tool
 # On-demand: loads only when a workflow file is edited, since trufflehog's
 # whole concern is the `secret-scan.yml` GitHub Actions workflow. The
 # security-scan skill reads this rule by name when it runs, so nothing that

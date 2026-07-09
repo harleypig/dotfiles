@@ -1,4 +1,5 @@
 ---
+layer: tool
 paths:
   - "**/nginx.conf"
   - "**/nginx/**/*.conf"

@@ -1,4 +1,5 @@
 ---
+layer: language
 paths:
   - "**/*.java"
 ---

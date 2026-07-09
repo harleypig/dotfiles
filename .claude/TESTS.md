@@ -95,9 +95,13 @@ the same gating suite without breaking docker-less environments.
   *Format*), `test_rule_frontmatter.bats` holds every
   `config/claude/rules/*.md` to declaring its load tier — a `paths:` key or a
   `# No paths — <why>` comment — so a rule can't silently join the always-on
-  per-turn tier by omission (see `config/claude/rule-TEMPLATE.md`) — and
-  `test_docker_wrapper_links.bats` (above) holds the docker_wrapper symlinks
-  to its registry.
+  per-turn tier by omission (see `config/claude/rule-TEMPLATE.md`),
+  `test_rule_layering.bats` holds every `config/claude/rules/*.md` to declaring
+  a valid `layer:` class (generic/language/framework/tool/process) and enforces
+  the language/tool layering (a `language` rule references up to the generic
+  layer; a `tool` rule links no language file — see `config/claude/EXTENDING.md`
+  *The language & tool stacks*), and `test_docker_wrapper_links.bats` (above)
+  holds the docker_wrapper symlinks to its registry.
 
 ## Deliberately not unit-tested
 

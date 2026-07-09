@@ -302,7 +302,13 @@ tool that points at a language file, creates circular, drift-prone coupling —
 the generic layer stops being reusable, and a language/tool can't be added or
 removed without editing the other side. (A single-language framework building
 on its one language is **not** that coupling — its language is its substrate,
-not a foreign dependency.) `/claude-audit` verifies this layering.
+not a foreign dependency.) Each rule declares its class in a `layer:`
+frontmatter key (`generic` | `language` | `framework` | `tool` | `process`),
+and **`test_rule_layering.bats`** enforces this layering mechanically — a
+`language` rule must reference up to the generic layer, and a `tool` rule must
+not link a language file (the language set is self-derived from the
+`layer: language` tags). `/claude-audit` no longer has to re-derive the
+taxonomy by hand; it relies on that guard.
 
 ### Foreign to the repo → global, and front-loaded
 

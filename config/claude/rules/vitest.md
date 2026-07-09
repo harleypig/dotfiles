@@ -1,4 +1,5 @@
 ---
+layer: framework
 paths:
   - "**/*.test.ts"
   - "**/*.test.tsx"

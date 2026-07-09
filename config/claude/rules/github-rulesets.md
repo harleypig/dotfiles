@@ -1,4 +1,5 @@
 ---
+layer: process
 # On-demand: auto-loads when a ruleset config JSON is being edited. The
 # other trigger (deciding whether to add a ruleset while doing branch-
 # protection / platform work) is covered by gh.md — always-on and pointing

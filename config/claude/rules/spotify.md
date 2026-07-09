@@ -1,4 +1,5 @@
 ---
+layer: process
 paths:
   - "**/*.py"
   - "**/*.ts"

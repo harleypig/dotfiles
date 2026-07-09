@@ -1,4 +1,5 @@
 ---
+layer: tool
 paths:
   - "**/.github/dependabot.yml"
   - "**/.github/dependabot.yaml"

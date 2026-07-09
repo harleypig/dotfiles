@@ -1,4 +1,19 @@
 ---
+# Declare the layering class — a conformance guard (test_rule_layering.bats)
+# enforces every rule carries a valid `layer:` and the layering invariants
+# (EXTENDING.md *The language & tool stacks*). Pick ONE:
+#  - generic   : the language/tool-agnostic anchor (only code-style.md).
+#  - language  : a rules/<language>.md — MUST reference up to code-style.md /
+#                EXTENDING.md; other stacks build on it.
+#  - framework : a single-language framework/library/tool (its whole identity
+#                is one language, e.g. fastapi->python, bats->bash) — MAY build
+#                on that language's rule.
+#  - tool      : a language-agnostic tool (formatter/linter/scanner/VCS/…) —
+#                MUST NOT link a language file; name applicable languages in
+#                Detection instead. This template is for a tool rule.
+#  - process   : a cross-cutting policy/procedure not embodied by one tool
+#                (qa, testing, docs, git workflow, …).
+layer: tool
 # Declare the load tier — a conformance guard (test_rule_frontmatter.bats)
 # enforces that this block has one or the other, so a rule can't silently
 # join the expensive always-on tier by omission:

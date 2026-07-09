@@ -197,7 +197,7 @@ bats/pytest test, in the spirit of `test_rule_frontmatter.bats`) would make it
 mechanical and catch a regression the moment a new language rule lands without
 an up-reference.
 
-- [ ] Investigate a lightweight automated check that asserts every
+- [x] Investigate a lightweight automated check that asserts every
   **language** rule references up to `code-style.md`/`EXTENDING.md`, and no
   **language-agnostic tool** rule links a language *file*. The hard part is
   **classifying** each rule (language vs single-language framework/tool vs

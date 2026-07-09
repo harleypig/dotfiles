@@ -1,4 +1,5 @@
 ---
+layer: process
 # No paths — this is a guardrail (never export ANTHROPIC_API_KEY globally;
 # it broke the Max subscription, PR #110) whose trigger is conversational
 # (auth diagnosis, "/status shows the wrong method", "set up my key"), not a

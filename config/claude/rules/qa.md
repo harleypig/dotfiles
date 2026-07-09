@@ -1,4 +1,5 @@
 ---
+layer: process
 # No paths — the QA pipeline applies to every change regardless of
 # file type.
 ---
