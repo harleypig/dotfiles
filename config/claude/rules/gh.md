@@ -173,7 +173,9 @@ the repo already has** before routing it:
 - **Keep issue ↔ planning-doc references in sync** (issue # in the item; a
   comment on the issue linking the item/PR).
 - **Never auto-tackle** — present the worklist and ask; acting on an issue is
-  a separate, routed step.
+  a separate, routed step (the **resolve-task** skill is that step: it
+  resolves one chosen work item — issue or TODO — reconcile → classify →
+  investigate → change → PR with `Closes #N`).
 
 Route each to a disposition (close-done / map-to-TODO / icebox+close / roadmap
 / features-&-fixes / flag-for-decision). Don't let auto-created issues pile up
@@ -194,7 +196,9 @@ than running the `gh issue list` calls above piecemeal.
   *Issues & triage* — reconcile against planning docs + code, score
   complexity, close stale/done with a comment, route the rest, and **never
   auto-tackle**. Use the **github-issues** skill for the per-issue procedure
-  and the **github-tasks** skill to run it as part of a single repo sweep.
+  and the **github-tasks** skill to run it as part of a single repo sweep; to
+  *act* on one chosen work item — issue or TODO — (reconcile → classify →
+  investigate → change → PR), use the **resolve-task** skill.
 - Always return the PR URL after creating.
 - Use `gh` for all GitHub operations (issues, PRs, checks, releases).
 - Do not create, merge, or close PRs without explicit user approval.

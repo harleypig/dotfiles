@@ -22,8 +22,10 @@ code layout from the repo itself.
 Invoking this is consent to **gather, reconcile, label, comment, and (on
 approval) close** issues. It is **not** consent to *implement* one. Even a
 trivial issue is **presented, not fixed** — there is no auto-tackle. Acting on
-a mapped issue is a separate, explicit step routed to the right skill
-(`debug-assistant`, `qa-check`, the language skills, …).
+a mapped issue is a separate, explicit step: route it to the
+**`resolve-task`** skill (which resolves a work item end-to-end — reconcile →
+classify → investigate → change → PR), or an individual concern to the right
+skill directly (`debug-assistant`, `qa-check`, the language skills, …).
 
 ## Read first
 

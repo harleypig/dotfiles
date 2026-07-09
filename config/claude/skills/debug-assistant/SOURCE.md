@@ -22,6 +22,6 @@ Recorded in `../../audit/mining/claude-tools.md`:
   `qa-check`** — the fix isn't done until the bar holds.
 - **Boundaries drawn** — whole-codebase health → `arch-review`; "it's slow" →
   `perf-review`; ops/incident response → a future `devops-troubleshooter`.
-- **Composed by the planned `resolve-issue` skill** as its investigation step
-  (the `gh` issue-resolution flow).
+- **Composed by the `resolve-task` skill** as its investigation step for the
+  **bug** task-type (the work-item resolution flow).
 - The Tier-1 build that **opens the `troubleshooting` category**.

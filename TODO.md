@@ -514,6 +514,16 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
 
 ## 📝 Documentation Setup
 
+- [ ] **Auto-fix companion for `prose_wrap.py` (78-col reflow).** The
+  `prose-wrap` pre-commit check flags >78-col agent-config prose but has no
+  `--fix`, so reflowing is manual and **cascades** (moving a word overflows the
+  next line) — a recurring agent friction (seen repeatedly, e.g. dotfiles PR
+  #255). Investigate a reflow mode (extend `tests/lint/prose_wrap.py`, or a
+  markdown-aware wrapper) that rewraps prose paragraphs to 78 cols while
+  leaving fenced code, tables, headings, and lists untouched — wired into
+  `.pre-commit-config-fix.yaml`. Weigh against the risk of mangling intentional
+  line breaks.
+
 ### Prose linting: adopt Vale for Phase 4
 
 **Research complete (2026-06-26) — decision: adopt Vale.** proselint is

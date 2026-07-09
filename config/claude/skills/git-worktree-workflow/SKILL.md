@@ -340,6 +340,13 @@ before deleting the remote side.
 Triggered by: "work on issue #N", "let's tackle N", "start issue N", "open
 issue N", etc.
 
+**Non-issue task variant.** The `resolve-task` skill uses this operation for a
+task from a `TODO.md` / `BACKLOG.md` too, where there is no `#N`: substitute a
+`feature|bugfix|docs/<slug>` branch name (per `git.md` *Branch naming*) for
+`issue/<N>`, **skip Step 1's `gh issue view`** (read the TODO bullet instead),
+and follow the same worktree/plain setup below. The branch name is then the
+task's stable handle.
+
 ### Step 1: Resolve the issue
 
 ```bash

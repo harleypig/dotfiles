@@ -184,3 +184,7 @@ lifecycle/doc/QA concerns to `git.md`, `documentation.md`, and `qa.md`.
 - Defer lifecycle to `git.md` (mark `[x]` as you go; pruning happens at
   merge), the doc bar to `documentation.md`, and the repo's *scope* routing to
   its `.claude/`.
+- An item is captured **raw** — just the task. Naming, analysis, and
+  disposition happen at *selection*, when the **resolve-task** skill picks it
+  up to act on it (it may decompose one item into several tasks). Don't
+  pre-analyze at capture.
