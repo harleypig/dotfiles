@@ -107,21 +107,6 @@ policy isn't created without a path to apply it.
   (bundler) dependency tree — Snyk supports Ruby; weigh worthwhile results vs.
   the OSS lane (osv-scanner covers `Gemfile.lock`).
 
-### 🏅 Research credibility signals / badges worth adopting across public repos
-
-A public badge (CI status, coverage, code-quality grade, security) is **social
-proof** — it can nudge a visitor to take a repo more seriously. Research which
-external signals/badges are worth adopting across my public repos, weighing
-the per-repo cost (SaaS surface, version drift, the §4 bar) against the
-credibility payoff. Feed results back into the `security-scan` §4 escape hatch
-and per-repo QA docs.
-
-- [ ] Enumerate candidate signals/badges (CI status, Codecov/coverage,
-  CodeFactor / Code Climate grade, Snyk / known-vulns, OpenSSF Scorecard,
-  license, release/version, …) and what each signals to a visitor.
-- [ ] Decide which earn their surface per repo type (app vs library vs
-  dotfiles) and which are pure vanity. Record the shortlist + rationale.
-
 ### 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
 
 Review every repo under `$PROJECTS_DIR` and decide, per the three-tier model

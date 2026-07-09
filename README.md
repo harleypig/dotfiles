@@ -1,4 +1,6 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/harleypig/dotfiles/badge)](https://www.codefactor.io/repository/github/harleypig/dotfiles)
+[![tests](https://github.com/harleypig/dotfiles/actions/workflows/tests.yml/badge.svg)](https://github.com/harleypig/dotfiles/actions/workflows/tests.yml)
+[![License: WTFPL](https://img.shields.io/badge/license-WTFPL-brightgreen.svg)](LICENSE)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/harleypig/dotfiles/badge)](https://scorecard.dev/viewer/?uri=github.com/harleypig/dotfiles)
 
 # Dotfiles Repository
 
