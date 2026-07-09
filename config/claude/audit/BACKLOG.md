@@ -20,6 +20,37 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Skill ideas & future categories (not from mining)
 
+- [ ] **Repo-orientation documentation skill (explain & index a complex repo
+  for evaluators, learners, and refreshers).** A skill/rule/agent for
+  **orientation** docs — *not* the code/task/README docs (those are fine as
+  they are) — that explain *what a complex repo is about*: the main dotfiles
+  repo and, **separately**, the `config/claude/` config. Multi-file (as many
+  as make sense), with a layered shape:
+  - **Elevator pitch**
+  - **Bird's-eye view**
+  - **General overview / ELI5**
+  - then **structure-dependent** detail per the repo's own layout;
+  - plus a cross-cutting **quick-lookup / reverse index** — recover a feature
+    by *what it does* when you know it exists but can't recall what you named
+    it.
+
+  The author "thinks differently and has a hard time explaining himself," so
+  the skill is deliberately **question-driven** — ask lots of clarifying
+  questions to draw the mental model out. **Start by documenting
+  `config/claude/` while building the skill** (dogfood it into existence).
+  Reuses the layered shape of the **understandable-docs** series
+  (`config/claude/docs/TOPIC.md.template`) — cross-reference, don't duplicate;
+  the difference is *audience* — this serves **three**: an outside
+  **evaluator** (what is this?), a **learner** (understand it), and a
+  **refresher / quick-lookup** for someone already experienced with the repo
+  (the reverse index by intent above, for infrequently-used parts you know
+  exist but can't name). Generic (global).
+- [ ] **Should top-level orchestrator skills be agents?** Skills that are
+  *mainly composed of other skills* — `qa-check`, `resolve-task`,
+  `github-tasks`, `push-pr` — may fit better as **sub-agents** (own context,
+  delegation) than as skills. Evaluate the skill-vs-agent line for these
+  orchestrators against `EXTENDING.md` *Choosing between them* / *Agent*.
+  (Raised alongside the repo-orientation-doc idea above.)
 - [ ] **Hook: hard-enforce `resolve-task` autonomous scoping** (retrospective,
   PR #255). The autonomous variant's trivial-only / do-now / reproduced gate
   is currently **judgment** (the skill's task-type classifier) backed by
