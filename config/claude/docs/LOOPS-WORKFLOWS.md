@@ -532,6 +532,43 @@ orchestration itself (parallelism, worktree isolation, integration); that is
 what the first *real* run — piloted on two or three items, not all of them —
 exercises.
 
+### Case study — CodeRabbit's planning layer
+
+CodeRabbit built an agent orchestration system on exactly this instinct — get
+the plan right *before* the fan-out — and turned it into a standing stage.
+Their failure mode was the one a raw fan-out invites: code that compiled and
+passed tests but did not solve the actual problem, the model quietly filling
+implicit assumptions the request never stated. Their fix was a **planning
+layer** inserted between the user request and any code generation, on the
+premise that *planning quality determines output quality* — a structured phase
+that surfaces the hidden assumptions and yields a reviewable PRD before
+implementation. That is the *prove-iteration-one-first* move above, promoted
+from a one-off discipline to a gate on every request — this repo's
+**`plan-review`** (review the plan before building) as a permanent stage.
+
+Two details map onto concepts already here:
+
+- **Model routing is model selection, codified into the orchestrator.** They
+  route across the family by task: **Opus** for orchestration and strategy
+  (understand the problem, set direction), **Sonnet** to sequence the plan
+  into structured steps, **Haiku** for narrow ops (context distillation,
+  targeted tool use) — *"if Haiku does as well as Sonnet on a given task, we
+  use Haiku."* A workflow script does the same: pick the cheapest model that
+  clears each stage's bar rather than running one tier throughout.
+- **An evaluation framework makes plan quality measurable.** They score each
+  plan on three axes — **intent-match** (does it solve the original problem),
+  **unnecessary scope** (extra, unspecified functionality), and **token
+  efficiency** (tokens to produce it) — and tune the plan's abstraction level
+  against it: too granular and it goes stale, too high-level and the
+  assumption problem returns. That eval is the *verify gate* the fan-out
+  discipline demands, moved one layer up — applied to the plan itself, not
+  only the code it yields.
+
+The takeaway for a workflow: the leverage is often *upstream* of the fan-out.
+Get the plan right and route each stage to the right-sized model, and the
+parallel run replicates a proven, cheaply-run recipe instead of multiplying an
+unproven one. See [coderabbit][coderabbit].
+
 ## Bringing it together
 
 Loops and workflows **compose** — a proactive loop, or a `/loop` that runs a
@@ -584,6 +621,7 @@ Distilled from the "Getting started with loops" blog post and the official
 Claude Code documentation:
 
 - [Getting started with loops][blog] — the source blog post
+- [coderabbit][coderabbit] — CodeRabbit's planning-layer case study
 - [scheduled-tasks][docs-loop] — `/loop`
 - [routines][docs-schedule] — `/schedule`
 - [auto-mode][docs-auto] — auto mode
@@ -598,6 +636,7 @@ Claude Code documentation:
 - [github-actions][docs-gha] — GitHub Actions
 
 [blog]: https://claude.com/blog/getting-started-with-loops
+[coderabbit]: https://claude.com/blog/how-coderabbit-used-claude-to-build-an-agent-orchestration-system
 [docs-loop]: https://code.claude.com/docs/en/scheduled-tasks
 [docs-schedule]: https://code.claude.com/docs/en/routines
 [docs-auto]: https://code.claude.com/docs/en/auto-mode-config

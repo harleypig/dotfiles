@@ -193,11 +193,20 @@ classifier model** reviews each action first and blocks "anything that
 escalates beyond your request, targets unrecognized infrastructure, or appears
 driven by hostile content Claude read." It is a **gate, not a task** — the
 thing that makes a `/loop` or a `/schedule` routine run unattended instead of
-stopping to ask on every call.
+stopping to ask on every call. (Don't confuse it with this repo's
+`auto-merge` / push-pr autonomy: that's a *merge* policy — a green PR merging
+without an ask — not this CLI permission tier.)
 
 ### Availability
 
-Auto mode has real prerequisites: a recent model (on the Anthropic API, a
+Auto mode ships as a **research preview** — on the Team plan first, with
+Enterprise and API access following. Turn it on with `claude
+--enable-auto-mode` (then `Shift+Tab` cycles to it), or toggle it under
+*Settings → Claude Code* in the Desktop app and the VS Code extension; an
+admin can force it off with `"disableAutoMode": "disable"` in managed
+settings.
+
+It also has real prerequisites: a recent model (on the Anthropic API, a
 current Opus/Sonnet; on Bedrock/Vertex/Foundry a smaller supported set, plus
 `CLAUDE_CODE_ENABLE_AUTO_MODE=1`), and — on Team/Enterprise — an Owner must
 enable it. Crucially, **a repo cannot grant itself auto mode**: `defaultMode:
