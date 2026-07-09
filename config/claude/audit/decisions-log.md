@@ -6,6 +6,17 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Worked the two rule refinements from the shell-startup-guard
+  PR #154 (dotfiles PR #244).** Two small global doc-rule additions, one
+  commit each. (1) **`pre-commit.md`: `--all-files` skips untracked files** —
+  it runs only over git-tracked files, so a brand-new un-added file passes a
+  green `--all-files` run yet is caught by the commit hooks (staged set)
+  later; note to `git add` it (or `--files`) to lint up front. (2)
+  **`python.md`: `usedforsecurity=False` for non-cryptographic hashing** — an
+  integrity/drift `hashlib.md5`/`sha1` should pass it (3.9+) to clear the
+  weak-hash SAST finding (Bandit B324) without a blanket suppression; new
+  section + Agent Behavior bullet, `md5-guard.py` as the worked example.
+
 - 2026-07-08 — **Worked the three rule refinements from the harleydev #83
   QA-linter-gates PR (dotfiles PR #243).** Three small global doc-rule
   additions, one commit each. (1) **Non-exec extensionless-shell hook
