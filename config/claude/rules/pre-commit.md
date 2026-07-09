@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.8.0
+**Version:** v1.9.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -246,6 +246,12 @@ Notes:
   git hook — run it manually with `--config` (see the fix workflow below).
 - `pre-commit run --all-files` / `--files <f>` work without `install`; use
   them for ad-hoc checks and in CI.
+- **`--all-files` skips *untracked* files.** It runs only over git-**tracked**
+  files, so a brand-new file you haven't `git add`ed yet passes a green
+  `--all-files` run — then gets caught by the commit hooks (which run on the
+  **staged** set) once you stage it. To lint a not-yet-committed new file up
+  front, `git add` it (or pass `pre-commit run --files <paths>`), so a clean
+  `--all-files` isn't mistaken for full coverage.
 
 ### autoupdate — keep revs current
 
