@@ -6,6 +6,22 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Closed the "branch-protection hook: exempt gitignored paths"
+  item as already-done (dotfiles PR #247).** Third of the Repo-config
+  follow-ups — reconciled against the code before working it and found it
+  **already implemented**. `branch-protection.py`'s `_is_untracked_editable`
+  already allows an `Edit`/`Write`/`MultiEdit` to a gitignored, untracked path
+  (`git check-ignore -q`), and to an existing untracked file, while keeping a
+  force-added tracked-but-ignore-matched file protected — landed in **PR
+  #125** (gitignored untracked) and extended by **PR #237** (existing
+  untracked).
+  Regression tests exist in `tests/python/test_branch_protection.py`
+  (`test_allows_gitignored_untracked_file_on_protected_branch`,
+  `test_allows_existing_untracked_file_on_protected_branch`,
+  `test_blocks_tracked_file_even_if_ignore_matched`). The backlog item
+  post-dated the fix in the queue but was never pruned; pruned now, no code
+  change needed.
+
 - 2026-07-08 — **Added a non-sourceable-shell testing recipe to `bats.md`
   (dotfiles PR #246).** Second of the Repo-config follow-ups. New *Testing
   non-independently-sourceable shell* section: to unit-test a function in a
