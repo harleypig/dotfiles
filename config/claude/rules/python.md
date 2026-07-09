@@ -6,7 +6,7 @@ paths:
 
 # Python Rules
 
-**Version:** v2.4.1
+**Version:** v2.5.0
 
 For concrete depth beyond these conventions — pytest technique (fixtures,
 mocking discipline, async, flakiness) and typing technique (TypedDict,
@@ -130,6 +130,21 @@ be reproduced locally.
 See `code-style.md` *Error Handling Posture*. Libraries raise; CLIs may
 exit non-zero. Never call `sys.exit` from library code.
 
+## Non-cryptographic hashing
+
+A `hashlib.md5` / `sha1` used for **integrity or drift detection** — not
+security — should pass **`usedforsecurity=False`** (Python 3.9+):
+
+```python
+digest = hashlib.md5(data, usedforsecurity=False).hexdigest()
+```
+
+It records that the weak hash is a deliberate, non-security choice and clears
+the weak-hash SAST finding (Bandit **B324**, and the equivalent in GitHub's
+default code scanning) **without** a blanket suppression. Reserve a
+cryptographic hash (`sha256`+) for anything security-relevant. This config's
+`md5-guard.py` (the checksum-blessing hook) is the worked example.
+
 ## Pre-commit
 
 Wire the repo's chosen formatter, `flake8`, and `pyright` into pre-commit
@@ -145,3 +160,6 @@ include it locally if its plugin ecosystem is in use.
   3. Run `flake8 <file>` and fix all reported issues.
   4. Run `pyright <file>` and resolve type errors.
 - Run `mypy <file>` on demand or rely on CI for the mypy pass.
+- For a non-security hash (integrity / drift), use
+  `hashlib.<algo>(..., usedforsecurity=False)` — it clears the weak-hash SAST
+  flag without a blanket ignore (see *Non-cryptographic hashing*).
