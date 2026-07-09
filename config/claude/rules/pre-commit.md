@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.6.0
+**Version:** v1.8.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -134,9 +134,55 @@ and Repo Verification*).
   Python tool with no official image — yamllint, isort, yapf, flake8,
   pyright — or a node formatter like prettier) have none; those stay on
   their native language. Prefer docker **where it exists**, not everywhere.
+- **A containerized hook can't see your global `~/.config`, so mirror the
+  baseline repo-locally.** A `*-docker` hook runs with only the repo mounted —
+  it never reads a *user-level* tool config (`~/.config/hadolint.yaml`,
+  `~/.config/yamllint/config`). With no **repo-local** config it silently
+  falls back to the tool's *defaults*: a laxer failure threshold (e.g.
+  `hadolint` gates at `info`, not your `warning`), a lost trusted-registries
+  or relaxation set — so the gate is *weaker* than your interactive runs, with
+  no error to signal it. When you gate a tool via a containerized hook,
+  **commit a repo-local config that mirrors your baseline** (`.hadolint.yaml`,
+  `.yamllint`, …) so local, commit-time, and CI all enforce the same rules.
+  (This is distinct from repo-local *precedence*, which the per-tool rules
+  already note — here the global config is simply *invisible*, not
+  overridden.)
 
 This is a *preference* weighed per repo: it pays off most where the repo
 already standardizes on docker tooling and values local/CI parity.
+
+## Coverage gotcha: non-executable extensionless shell
+
+pre-commit selects a hook's files with `identify`, which tags a file `shell`
+from its **extension** or, for an extensionless file, its **shebang** — but it
+reads the shebang only on an **executable** file. So a *non-executable,
+extensionless* shell file — a sourced library carrying a
+`# shellcheck shell=bash` directive but no shebang, an extensionless config
+loader, a sourced event handler — is **silently ungated** by a default
+`types: [shell]` shellcheck/shfmt hook: `identify` never tags it `shell`, so
+the hook skips it (and a green run looks like coverage it doesn't have).
+
+The fix is a **second hook entry** that selects those files **by path** rather
+than by type — the same tool, with `types: [text]` and a `files:` regex:
+
+```yaml
+  - id: shellcheck
+    alias: shellcheck-sourced
+    name: shellcheck (sourced shell)
+    types: [text]
+    files: &sourced_shell '^(shell-startup|config/shell-startup/[^./]+|lib/[^./]+)$'
+  - id: shfmt-docker
+    alias: shfmt-sourced
+    name: shfmt (sourced shell)
+    types: [text]
+    files: *sourced_shell   # reuse the anchor so the two stay in sync
+```
+
+Give the extra entry a distinct `alias:` / `name:` so it reads clearly in the
+hook output, and share one YAML anchor (`&sourced_shell` / `*sourced_shell`)
+between the shellcheck and shfmt copies so the path set can't drift. This
+repo's `.pre-commit-config.yaml` (its `shellcheck-sourced` / `shfmt-sourced`
+hooks) is the reference implementation; `TESTS.md` records why they exist.
 
 ## Recommended Cross-Cutting Hooks
 

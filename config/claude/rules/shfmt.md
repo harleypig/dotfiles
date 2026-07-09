@@ -11,7 +11,7 @@ paths:
 
 # shfmt Rules
 
-**Version:** v1.2.0
+**Version:** v1.2.1
 
 ## Default Settings
 
@@ -93,3 +93,7 @@ the file being formatted).
   .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
   invocation above only when pre-commit isn't configured or doesn't cover the
   file.
+- **Non-executable extensionless shell needs a path-selected hook** — a
+  default `types: [shell]` shfmt hook skips a sourced, non-exec, extensionless
+  file; pair it with a `*-sourced` entry (`types: [text]` + a `files:` regex).
+  See `pre-commit.md` *Coverage gotcha: non-executable extensionless shell*.

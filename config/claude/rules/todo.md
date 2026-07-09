@@ -7,7 +7,7 @@ paths:
 
 # TODO / Planning-Doc Organization
 
-**Version:** v1.1.0
+**Version:** v1.2.0
 
 How a planning doc (`TODO.md`, `ROADMAP.md`, `BACKLOG.md`) is **structured
 and routed** — the section taxonomy every item lands in, and the test for
@@ -136,6 +136,14 @@ activity section.
   section when its first item arrives, and **remove** it when its last item is
   completed/pruned. Never leave an empty section, and never create one
   speculatively — a subject with no open work simply has no section.
+- **Don't bake a volatile count into an item.** State the *task*, not a
+  snapshot metric — "fix the markdownlint findings", not "fix ~3715
+  markdownlint issues across 61 files". A number captured at planning time
+  goes stale the moment a config lands or a `--fix` runs, and the stale figure
+  then mis-drives the work (over- or under-scoping it) until someone
+  re-measures. Re-measure at execution time; keep a number in the item only
+  when it's a **stable target** (a version, a fixed threshold), never a
+  churn-prone snapshot.
 
 ## Sources
 
@@ -156,6 +164,9 @@ lifecycle/doc/QA concerns to `git.md`, `documentation.md`, and `qa.md`.
   declined outright — as a decision record (an **ADR** via the `adr` skill, or
   the decisions log; see `documentation.md`). Don't keep a someday pile in the
   TODO.
+- **Never bake a volatile count** (issue / file / line counts) into an item —
+  it goes stale and mis-plans the work; state the task and re-measure when you
+  pick it up (see *Naming & form*).
 - Strip any **header / preamble** (a `**Last Updated:**` line, a
   description / scope / structure boilerplate block) when authoring or
   reorganizing a planning doc, in **any** repo — routing and explanatory

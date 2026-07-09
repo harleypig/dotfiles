@@ -7,7 +7,7 @@ paths:
 
 # hadolint Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 hadolint lints Dockerfiles against best practices (and the inline shell in
 `RUN` via shellcheck). It is the enforcement arm of the policy in
@@ -51,6 +51,14 @@ Global config lives at `config/hadolint.yaml` in this repo, which resolves to
 `$XDG_CONFIG_HOME`. It sets `failure-threshold: warning` and restricts `FROM`
 to `docker.io` / `ghcr.io` (`trustedRegistries`, DL3026). A repo-local
 `.hadolint.yaml` at the repo root overrides it for that repo.
+
+**Gating via the `hadolint-docker` pre-commit hook needs a repo-local config.**
+The containerized hook only sees the mounted repo, not `~/.config/hadolint.yaml`
+— with no repo-local `.hadolint.yaml` it silently reverts to hadolint's
+defaults (`failure-threshold: info`, no trusted-registries), a *weaker* gate
+than local runs. So a repo that gates hadolint through the docker hook **must
+commit a `.hadolint.yaml` mirroring this baseline**. See `pre-commit.md`
+*Prefer docker_image Hooks* (the containerized-config caveat).
 
 ## Docker Wrapper
 

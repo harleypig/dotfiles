@@ -11,7 +11,7 @@ paths:
 
 # shellcheck Rules
 
-**Version:** v1.2.0
+**Version:** v1.2.1
 
 ## Invocation
 
@@ -102,3 +102,8 @@ always the final step:
   .pre-commit-config-fix.yaml --files <file>` to fix. Fall back to the direct
   invocation above only when pre-commit isn't configured or doesn't cover the
   file.
+- **Non-executable extensionless shell needs a path-selected hook.** A default
+  `types: [shell]` pre-commit hook won't gate a sourced, non-exec,
+  extensionless file (`identify` reads a shebang only on executables) — add a
+  second `*-sourced` entry (`types: [text]` + a `files:` regex). See
+  `pre-commit.md` *Coverage gotcha: non-executable extensionless shell*.
