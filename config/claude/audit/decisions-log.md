@@ -6,6 +6,22 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Conformance sweep for the language/tool layering (dotfiles PR
+  #248).** Fourth of the Repo-config follow-ups. Measured every rule file
+  against `EXTENDING.md` *The language & tool stacks* rather than trusting the
+  item's old list. Real violations found and fixed: four **language** rules
+  lacked the up-reference to `code-style.md`/`EXTENDING.md` — `powershell.md`,
+  `css.md`, `html.md`, `typescript.md` (added a lead paragraph; `html.md`'s
+  wording fits its parsing-not-authoring scope); `vite.md` referenced nothing,
+  so anchored it to its TS/JS ecosystem (`typescript.md`); and `pre-commit.md`
+  (a language-agnostic tool) enumerated `bash.md`/`perl.md` in its "per-tool
+  rules point back here" list — dropped the two language files (the trailing
+  "…" covers them). Confirmed the framework rules
+  (react/mantine/vitest/fastapi/sqlalchemy/alembic/bats) already reference
+  their parent language rule, and single-language *tools* (shellcheck/poetry/
+  golangci-lint/black/…) are the framework-analog case — both correct, left
+  as-is. Version bumps on the changed versioned rules.
+
 - 2026-07-08 — **Closed the "branch-protection hook: exempt gitignored paths"
   item as already-done (dotfiles PR #247).** Third of the Repo-config
   follow-ups — reconciled against the code before working it and found it
