@@ -6,7 +6,7 @@ paths:
 
 # pre-commit Agent Contract
 
-**Version:** v1.9.0
+**Version:** v1.10.0
 
 This document defines **normative agent behavior** for interacting with
 **pre-commit** in this repository.
@@ -184,6 +184,39 @@ between the shellcheck and shfmt copies so the path set can't drift. This
 repo's `.pre-commit-config.yaml` (its `shellcheck-sourced` / `shfmt-sourced`
 hooks) is the reference implementation; `TESTS.md` records why they exist.
 
+## Suppressing a finding: native in-file ignore over `exclude:`
+
+When a file — or one construct in it — trips a linter, choose the
+**narrowest** remedy that still fixes the real problem. The hierarchy,
+narrowest first:
+
+1. **Fix the finding.** A real defect gets fixed, not silenced. This is the
+   default; the two exceptions below are for a finding that is *deliberate*,
+   not for one that is inconvenient.
+2. **If the construct is intentional, use the tool's native in-file ignore,
+   with a reason at the site.** Most linters make a scoped, one-rule /
+   one-line-or-block suppression first-class — e.g. shellcheck
+   `# shellcheck disable=SCxxxx  # reason`, markdownlint
+   `<!-- markdownlint-disable-line MDxxx -->` (or a
+   `disable`/`enable` — and `capture`/`restore` — pair to exempt a **block**),
+   hadolint `# hadolint ignore=DLxxxx`, yamllint
+   `# yamllint disable-line rule:xxx`. This is narrower (one rule, one
+   line/block — not the whole file), self-documenting (the reason sits at the
+   point of violation), and keeps the **rest** of the file linted.
+3. **Reserve a pre-commit `exclude:` for whole files that genuinely should not
+   be linted** — generated, vendored, binary, or templated files — and
+   **document why** at the `exclude:` entry. An `exclude:` silently drops the
+   file from that hook **entirely**, so a later real defect in it goes
+   uncaught; that cost is only worth paying for a file no one edits by hand.
+
+**Read the tool's docs for a native ignore before excluding** — do not assume
+the directive from memory (the grounding convention, `CLAUDE.md`). Each tool's
+exact mechanism lives in its `rules/<tool>.md`; the shellcheck form is obvious,
+but the markdownlint block `disable`/`enable` and `capture`/`restore` pair is
+easy to miss and has to be looked up. This mirrors the inline-disable
+philosophy in `code-style.md` *Marker comments* — a scoped, reasoned
+suppression at the site beats a blanket bypass.
+
 ## Recommended Cross-Cutting Hooks
 
 Beyond the obvious language/file-type linters (shellcheck, shfmt, yamllint,
@@ -317,6 +350,12 @@ The per-tool rules (`shellcheck.md`, `shfmt.md`, `yamllint.md`,
   maintained image) when one exists, for local/CI parity and to avoid
   host-runtime mismatches; verify the id exists at the pinned rev first. See
   *Prefer docker_image Hooks for Environment Parity*.
+* To silence a finding, choose the **narrowest** remedy: fix it; else a
+  tool's **native in-file ignore** with a reason at the site; and only for a
+  whole file that shouldn't be linted (generated / vendored / binary /
+  templated) a documented `exclude:`. Read the tool's docs for the ignore
+  directive first. See *Suppressing a finding: native in-file ignore over
+  `exclude:`*.
 * If `.pre-commit-config-fix.yaml` exists:
   * It defines optional, modifying hooks.
 * Agents MUST NOT apply auto-fixes mid-session in response to hook
