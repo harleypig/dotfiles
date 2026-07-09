@@ -5,7 +5,7 @@ layer: tool
 
 # Git Rules
 
-**Version:** v1.13.0
+**Version:** v1.14.0
 
 ## Commit Messages
 
@@ -199,11 +199,46 @@ Key defaults from that skill:
 
 ## Related/Foreign Repositories
 
-Repositories related to the current project but not forks of it (dependency
-sources, upstream APIs, reference implementations) are expected at
-`$PARENT_DIR/<repo-name>/` — siblings of the current clone. Check there
-before suggesting a clone location. See the full convention in the
-git-worktree-workflow skill under *Related/foreign repositories*.
+A **foreign** repo is any git working copy other than the current one —
+dependency sources, upstream APIs, reference implementations, or another repo
+whose `TODO.md` you are resolving a task from. Related repos are
+**conventionally** found as siblings at `$PARENT_DIR/<repo-name>/` (check
+there first before suggesting a clone location), but a foreign repo can live
+at **any local filesystem path** — `$PARENT_DIR` is where to *look*, not a
+constraint. See the full sibling convention in the git-worktree-workflow skill
+under *Related/foreign repositories*.
+
+**Local only.** These rules apply to a repo **checked out locally**. A
+**remote-only** repo — not present on this filesystem (GitHub-only, or on
+another host) — is **out of scope**: do not auto-clone and work it. If a task
+or issue targets a repo that isn't local, **surface that and ask** rather than
+assume. (A GitHub *issue* is still a valid task source — but the work needs
+its repo checked out locally.)
+
+### Coordinating with other instances (a foreign repo may be in use)
+
+A foreign repo's checked-out branch is effectively a **shared resource**:
+git gives no signal that *another* agent/session (or you, elsewhere) is
+working it. So treat its branch state as a coordination signal — **warn,
+never block**:
+
+- **Before starting** work in a foreign repo: if its current branch is
+  **not** the default (`master` / the repo's default) **and you didn't put it
+  there this session**, it is likely under active development elsewhere.
+  **Notify the user** and suggest — wait for that work to finish, come back
+  later, or another fitting option. A **dirty working tree** corroborates
+  (uncommitted work in progress).
+- **Mid-work, even when the branch is yours**: if the branch changes out from
+  under you — HEAD switched to a different branch, or your branch's tip moved
+  by a commit you didn't make — another instance has stepped in. **Re-check
+  the branch (name + tip) at re-entry points** (before another commit/push, or
+  when resuming), and on an unexpected change **stop and present the same
+  options** before continuing, rather than risk clobbering their work.
+
+You know your **own** actions this session, so a branch *you* created or left
+is not a conflict — this detects a *different* actor. It is a heuristic (a
+non-default branch may just be parked, not active), so it informs a
+**suggestion**, not a refusal.
 
 ## Aliases and Configuration
 
@@ -474,3 +509,10 @@ the merge commit, push, and watch the release — is the **release-tag** skill;
   with `git reset --hard origin/<default>` (or `git rebase --onto`), NEVER
   `git merge <default>` — the merge replays already-merged commits into the
   next PR. See *Continuing on a Kept Branch After a Squash-Merge*.
+- A **foreign** repo is any *local* working copy other than the current one,
+  at **any** path (`$PARENT_DIR` is only the conventional place to look);
+  **remote-only** repos are out of scope — surface and ask, never auto-clone.
+  Before/while working one, run the **branch-coordination check**: a
+  non-default branch you didn't create (or one that changes out from under you
+  mid-work) signals another instance may be on it — **warn and suggest** (wait
+  / later / other), never block. See *Related/Foreign Repositories*.
