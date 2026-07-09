@@ -6,6 +6,22 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Documented the exclude-vs-native-ignore decision in
+  `pre-commit.md` (dotfiles PR #245).** First of the Repo-config follow-ups,
+  worked one at a time. Added a *Suppressing a finding: native in-file ignore
+  over `exclude:`* section stating the narrowest-first hierarchy — fix the
+  finding; else the tool's **native in-file ignore** with a reason at the site
+  (shellcheck `disable`, markdownlint `disable-line` / block
+  `disable`/`enable` + `capture`/`restore`, hadolint `ignore`, yamllint
+  `disable-line`); else a documented `exclude:` reserved for whole files that
+  genuinely shouldn't be linted (generated / vendored / binary / templated).
+  An `exclude:` drops the whole file from a hook, so a later real defect goes
+  uncaught — hence the narrower forms first. Stressed reading the tool's docs
+  for the directive before excluding (grounding convention); the markdownlint
+  block/capture pair was the non-obvious case that motivated the item.
+  Cross-references `code-style.md` *Marker comments*; +Agent Rules bullet;
+  `pre-commit.md` → v1.10.0.
+
 - 2026-07-08 — **Worked the two rule refinements from the shell-startup-guard
   PR #154 (dotfiles PR #244).** Two small global doc-rule additions, one
   commit each. (1) **`pre-commit.md`: `--all-files` skips untracked files** —
