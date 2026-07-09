@@ -97,6 +97,7 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     *Configuration Migration*) as its purpose becomes clear. Links to triage:
     - [ ] <https://github.com/linode/terraform-provider-sshhostkeycache>
     - [ ] <https://github.com/linode/packer-plugin-linode>
+    - [ ] <https://developer.hashicorp.com/packer/integrations/linode/linode/latest/components/builder/linode>
     - [ ] <https://claude.com/blog/steering-claude-code-skills-hooks-rules-subagents-and-more>
     - [ ] <https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills>
     - [ ] <https://claude.com/blog/build-responsive-web-layouts>
