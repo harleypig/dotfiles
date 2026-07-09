@@ -83,6 +83,41 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
     into a running session — the push counterpart to poll/timer loops.
   - [ ] **Agent teams** (experimental). Peer-coordinating multi-agent work;
     the deep-dive the loops doc only summarizes.
+  Two further threads under this umbrella — not docs-to-write like the
+  topics above, but link/idea triage that feeds them:
+  - [ ] **Triage the saved reference links.** A pile of saved URLs — mostly
+    Claude blog posts (skills/hooks/subagents/effort, prompt-caching, code
+    review, responsive layouts, agent-org practices) plus a few non-Claude-
+    Code links (Linode Terraform/Packer, the GitHub Terraform provider) — to
+    work through **one at a time**. For each, first ask the user *why it was
+    saved / what it might be for* (the intent is rarely obvious from the URL),
+    then decide the outcome: a new `config/claude/docs/` doc, a
+    rule/skill/hook, folding into an existing doc, or dropping it. Not all are
+    Claude-Code learning; route each per the three-tier model (`CLAUDE.md`
+    *Configuration Migration*) as its purpose becomes clear. Links to triage:
+    - [ ] <https://github.com/linode/terraform-provider-sshhostkeycache>
+    - [ ] <https://github.com/linode/packer-plugin-linode>
+    - [ ] <https://claude.com/blog/steering-claude-code-skills-hooks-rules-subagents-and-more>
+    - [ ] <https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills>
+    - [ ] <https://claude.com/blog/build-responsive-web-layouts>
+    - [ ] <https://claude.com/blog/code-review>
+    - [ ] <https://claude.com/blog/auto-mode>
+    - [ ] <https://claude.com/blog/subagents-in-claude-code>
+    - [ ] <https://x.com/RLanceMartin/status/2027450018513490419>
+    - [ ] <https://claude.com/blog/seeing-like-an-agent>
+    - [ ] <https://claude.com/blog/onboarding-claude-code-like-a-new-developer-lessons-from-17-years-of-development>
+    - [ ] <https://claude.com/blog/lessons-from-building-claude-code-prompt-caching-is-everything>
+    - [ ] <https://claude.com/blog/how-coderabbit-used-claude-to-build-an-agent-orchestration-system>
+    - [ ] <https://claude.com/blog/running-an-ai-native-engineering-org>
+    - [ ] <https://github.com/integrations/terraform-provider-github>
+    - [ ] <https://claude.com/blog/a-field-guide-to-claude-fable-finding-your-unknowns>
+    - [ ] <https://claude.com/blog/claude-model-and-effort-level-in-claude-code>
+  - [ ] **Evaluate claude-science as a template for other knowledge
+    domains.** Can its structure be reused to build the same kind of layered
+    knowledge/research artifact for other subjects — religious studies,
+    researching aspects of a task, etc.? Assess and decide whether it yields
+    a doc, a skill, or nothing. Link:
+    <https://claude.com/product/claude-science>
   Generic (global; docs under `config/claude/docs/`).
 
 ## Repo-config follow-ups (migrated from TODO.md, 2026-06-19)
