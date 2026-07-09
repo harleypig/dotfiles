@@ -8,7 +8,7 @@ paths:
 
 # bats (Bash Automated Testing System) Rules
 
-**Version:** v2.2.0
+**Version:** v2.3.0
 
 Conventions for testing shell code with **bats-core**. Pairs with `bash.md`,
 `shellcheck.md`, and `shfmt.md`; the QA pipeline lives in `qa.md`.
@@ -109,6 +109,38 @@ bats --filter "pattern" tests/shell/   # matching tests only
 - Keep tests runnable without external services where feasible; `skip` with a
   reason when a precondition (a real daemon, a specific host) is absent.
 
+## Testing non-independently-sourceable shell
+
+Some shell files can't be `source`d on their own just to reach their functions:
+a `shell-startup` orchestrator with top-level side effects, a lib gated behind
+an interactive check, an event handler that runs code on load. To unit-test a
+function inside one, **extract that function's definition and `eval` it** in the
+test — `awk` (or `sed`) the named function block out of the file and evaluate it
+in isolation:
+
+```bash
+eval "$(source_funcs config/shell-startup/git gtoplevel gtl)"
+gtoplevel   # now defined; assert on its behaviour
+```
+
+`tests/helpers/common.bash`'s `source_funcs <file> <fn>...` is the reference
+implementation: it `awk`s each `name() {` / `function name() {` block through
+its closing `}` and prints the definitions for `eval`. Two gotchas bite here:
+
+- **bats runs test bodies under `set -e`** — a non-zero command aborts the test
+  (bats sets `set -e` for all tests, so *any* failing intermediate command
+  ends it, not just the last; that is also why `run` exists — it captures the
+  status and returns `0`). An extracted function whose normal path returns
+  non-zero (an early-out, or one whose last command is a `[[ ]]` test that's
+  false) therefore aborts the test **before** your assertions run. Call it as
+  `the_fn ... || true` when you only care about the *state* it left, not its
+  exit status.
+- **A by-name extractor only sees whole `name() { … }` blocks.** A function
+  that also needs a **non-function** definition from the file (a top-level
+  variable it reads), or one buried inside a guard you must strip out of the
+  middle, stays **bespoke** — extract that part yourself rather than force it
+  through the by-name helper (see `test_tmux` / `test_bash_prompt`).
+
 ## Linting test files
 
 - **shellcheck parses `.bats`** (it understands `@test`); run it on the test
@@ -151,6 +183,10 @@ all runs under one runner:
   covering success and failure paths. Bug fixes include a regression test.
 - Load helper libs with `bats_load_library` (OS package first); never add a
   relative-`load`ed `global.bash`.
+- To test a function in a file that isn't sourceable on its own, extract just
+  that function and `eval` it (`source_funcs` in `tests/helpers/common.bash`);
+  remember bats' `set -e` (append `|| true` when asserting only on state). See
+  *Testing non-independently-sourceable shell*.
 - After writing/modifying tests, run the specific file, then
   `bats tests/shell/test_*.bats`; run `shellcheck` on the `.bats` files and
   `shfmt` on the `.bash` ones. Reserve the full suite for CI in general use.
