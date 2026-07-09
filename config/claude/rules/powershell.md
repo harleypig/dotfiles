@@ -8,6 +8,11 @@ paths:
 
 # PowerShell Style
 
+PowerShell language conventions. The generic rules in `code-style.md` (naming,
+paragraph spacing, 78-col comments, library-vs-executable error posture, Rule
+of Three) apply here too; this file records only the PowerShell-specific
+layer, per `EXTENDING.md` *The language & tool stacks*.
+
 - Use approved verbs for function names (`Get-Verb` lists them).
 - Add comment-based help to all functions.
 - Lint with PSScriptAnalyzer (the standard PowerShell static analysis tool).

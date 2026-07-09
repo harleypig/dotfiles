@@ -5,9 +5,13 @@ paths:
 
 # Vite Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
-Conventions for the Vite build tool / dev server.
+Conventions for the Vite build tool / dev server. Vite lives in the
+TypeScript/JavaScript ecosystem — its config is authored in TS, so
+`typescript.md` (and the generic `code-style.md` it references up to) applies,
+per `EXTENDING.md` *The language & tool stacks*; this file adds only the
+Vite-specific layer.
 
 ## Detection
 

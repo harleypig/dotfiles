@@ -5,10 +5,13 @@ paths:
 
 # CSS Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
 
 Plain CSS conventions. (For *parsing* existing HTML/CSS into text, see
-`html.md`; this file is about *authoring* stylesheets.)
+`html.md`; this file is about *authoring* stylesheets.) The generic
+`code-style.md` conventions (naming, paragraph spacing, 78-col comments) apply
+here too; this file adds only the CSS-specific layer, per `EXTENDING.md` *The
+language & tool stacks*.
 
 ## Detection
 

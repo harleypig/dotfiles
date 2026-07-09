@@ -198,26 +198,24 @@ Surfaced while dogfooding skill-creator (see
   upstream, so the upgrade does **not** fix the broken trigger eval (still
   gated on #2003).
 
-### 🧠 Claude Rules Files (MEDIUM PRIORITY)
+### 🧪 Automate the language/tool layering check (LOW PRIORITY)
 
-Rules files in `config/claude/rules/` (global, `~/.claude/rules/`) tell the
-agent how to use each tool. Already have, among others: bash, perl,
-powershell, pre-commit, python, shellcheck, shfmt, yamllint, markdownlint,
-yapf, git, gh, bats, docker (plus `.editorconfig` coverage for shfmt).
+Retrospective (PR #248, the conformance sweep): the `claude-audit` framework
+check for the layering (`EXTENDING.md` *The language & tool stacks*) is a
+**manual** audit — the sweep re-derived the language-vs-framework-vs-tool
+taxonomy by hand and grepped for up-references. An automated guard (a
+bats/pytest test, in the spirit of `test_rule_frontmatter.bats`) would make it
+mechanical and catch a regression the moment a new language rule lands without
+an up-reference.
 
-- [ ] **Conformance sweep for the language/tool layering** (follow-up to the
-  codification above). Bring existing artifacts into line with `EXTENDING.md`
-  *The language & tool stacks*: each language rule (`typescript.md`,
-  `powershell.md`, `html.md`, `css.md`, `react.md`, `bats.md`, …) should
-  **reference up** to `code-style.md` / `EXTENDING.md` (several don't yet —
-  `perl.md` now does, done 2026-06-20); and audit **language-agnostic tool**
-  rules for any link to a language
-  *file* (replace with a by-name "applies to <lang>" applicability).
-  **Keep the framework distinction:** a single-language framework/library —
-  `fastapi.md`, `sqlalchemy.md`, `react.md`, and their `*-patterns` skills —
-  is language-axis and **may** reference its language rule; do **not** strip
-  those. Mechanical but multi-file; the `claude-audit` framework check now
-  flags real violations only.
+- [ ] Investigate a lightweight automated check that asserts every
+  **language** rule references up to `code-style.md`/`EXTENDING.md`, and no
+  **language-agnostic tool** rule links a language *file*. The hard part is
+  **classifying** each rule (language vs single-language framework/tool vs
+  language-agnostic tool) automatically — likely needs an explicit per-rule
+  tag (e.g. a frontmatter key) rather than a fragile heuristic. Weigh the
+  tagging cost against the drift it prevents. Scope: **global** dotfiles
+  agent-config.
 
 ### 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
 

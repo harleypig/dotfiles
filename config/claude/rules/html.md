@@ -6,7 +6,12 @@ paths:
 
 # HTML Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
+
+This rule is about *reading* existing HTML (converting it to text/Markdown),
+not authoring HTML documents. The generic `code-style.md` conventions still
+govern any parsing code you write; this file adds only the HTML-specific
+technique layer, per `EXTENDING.md` *The language & tool stacks*.
 
 ## Parsing HTML — prefer html2text
 
