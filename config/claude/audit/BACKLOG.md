@@ -127,22 +127,6 @@ These were tracked in the dotfiles `TODO.md` but are Claude-agent-config
 work (rules, skills, plugins, agent-config docs) — moved here per the TODO
 routing convention (see the header). Provenance preserved verbatim.
 
-### 🌐 Per-repo SaaS-scanner evaluation (escape hatch, 2026-06-19)
-
-Spawned by the new `security-scan` §4 escape hatch (OSS-pinned default + a
-per-repo exception when a hosted scanner's results are worthwhile). **Migrate
-each to that repo's own `TODO.md` when next working it** — captured here so the
-policy isn't created without a path to apply it.
-
-- [ ] **pigify (FastAPI/Python):** assess **Snyk SCA** against the bar — a
-  real Python dependency tree means curated vuln intel / reachability /
-  fix-PRs may be worthwhile beyond osv-scanner + Dependabot. CodeFactor
-  secondary (grade / badge). If adopted: record in pigify's `.claude/` QA doc,
-  non-required first.
-- [ ] **scripturestudy-app (Ruby/Gollum):** same assessment for the Ruby
-  (bundler) dependency tree — Snyk supports Ruby; weigh worthwhile results vs.
-  the OSS lane (osv-scanner covers `Gemfile.lock`).
-
 ### 🧭 Audit Project .claude/ Dirs for Promotable Rules/Skills (MEDIUM PRIORITY)
 
 Review every repo under `$PROJECTS_DIR` and decide, per the three-tier model
