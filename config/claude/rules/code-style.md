@@ -1,4 +1,5 @@
 ---
+layer: generic
 # No paths — applies to all code regardless of language or file type.
 ---
 

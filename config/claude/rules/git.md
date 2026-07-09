@@ -1,4 +1,5 @@
 ---
+layer: tool
 # No paths — applies to all commits and branches regardless of file type.
 ---
 

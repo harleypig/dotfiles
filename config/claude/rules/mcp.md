@@ -1,4 +1,5 @@
 ---
+layer: process
 # Path-scoped: this rule is a setup/decision procedure, not always-on
 # policy. It loads when touching MCP config (a committed .mcp.json or the
 # mymcp wrapper) or when authoring rules/skills/agents — where the

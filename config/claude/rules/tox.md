@@ -1,4 +1,5 @@
 ---
+layer: framework
 paths:
   - "tox.ini"
   - "pyproject.toml"

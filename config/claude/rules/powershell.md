@@ -1,4 +1,5 @@
 ---
+layer: language
 paths:
   - "**/*.ps1"
   - "**/*.psm1"

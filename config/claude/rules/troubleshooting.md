@@ -1,4 +1,5 @@
 ---
+layer: process
 # No paths — a failure can surface on ANY turn (a bug report, a failing
 # test, unexpected behaviour mid-development), so the debugging discipline
 # must be present whenever it's needed, not gated to a file type. Kept

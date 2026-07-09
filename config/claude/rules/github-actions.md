@@ -1,4 +1,5 @@
 ---
+layer: process
 # On-demand: auto-loads only when a workflow file is being edited. The
 # other trigger (watching CI after creating a PR) is covered by gh.md —
 # always-on and pointing here — so the agent reads this rule when it

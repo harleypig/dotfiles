@@ -187,25 +187,6 @@ Surfaced while dogfooding skill-creator (see
   upstream, so the upgrade does **not** fix the broken trigger eval (still
   gated on #2003).
 
-### 🧪 Automate the language/tool layering check (LOW PRIORITY)
-
-Retrospective (PR #248, the conformance sweep): the `claude-audit` framework
-check for the layering (`EXTENDING.md` *The language & tool stacks*) is a
-**manual** audit — the sweep re-derived the language-vs-framework-vs-tool
-taxonomy by hand and grepped for up-references. An automated guard (a
-bats/pytest test, in the spirit of `test_rule_frontmatter.bats`) would make it
-mechanical and catch a regression the moment a new language rule lands without
-an up-reference.
-
-- [ ] Investigate a lightweight automated check that asserts every
-  **language** rule references up to `code-style.md`/`EXTENDING.md`, and no
-  **language-agnostic tool** rule links a language *file*. The hard part is
-  **classifying** each rule (language vs single-language framework/tool vs
-  language-agnostic tool) automatically — likely needs an explicit per-rule
-  tag (e.g. a frontmatter key) rather than a fragile heuristic. Weigh the
-  tagging cost against the drift it prevents. Scope: **global** dotfiles
-  agent-config.
-
 ### 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
 
 **Importance: high** (cost, privacy, and actually leveraging the dedicated

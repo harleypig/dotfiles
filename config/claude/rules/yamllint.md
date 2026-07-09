@@ -1,4 +1,5 @@
 ---
+layer: tool
 paths:
   - "**/*.yml"
   - "**/*.yaml"

@@ -1,4 +1,5 @@
 ---
+layer: tool
 paths:
   - ".pre-commit-config.yaml"
   - ".pre-commit-config-fix.yaml"

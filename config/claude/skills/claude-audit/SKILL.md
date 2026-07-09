@@ -76,14 +76,16 @@ decisions — revisit on a trigger or on request), `mining-census.md`
    **categories themselves**: has a top-level category grown **too big or too
    spread out** and need **splitting** (e.g. `qa` shedding `documentation` /
    `troubleshooting`)? Splitting is the counter-move to over-folding. Verify
-   the **language/tool layering** specifically (`EXTENDING.md` *The language &
-   tool stacks*): the generic layer (`code-style.md` / `EXTENDING.md`) names
-   **no** language or tool; every language/tool rule references **up** to it;
-   a **language-agnostic** tool rule declares its applicable language(s) by
-   name
+   the **language/tool layering** (`EXTENDING.md` *The language & tool
+   stacks*): the generic layer (`code-style.md` / `EXTENDING.md`) names **no**
+   language or tool; every language/tool rule references **up** to it; a
+   **language-agnostic** tool rule declares its applicable language(s) by name
    and never links a language *file* (but a **single-language framework** like
-   `fastapi.md` *may* build on its language rule — not a violation); optional
-   skills/patterns are wired where they exist.
+   `fastapi.md` *may* build on its language rule — not a violation). The
+   mechanical half of this is now a guard — **`test_rule_layering.bats`**
+   enforces the `layer:` frontmatter tag and the two invariants — so here just
+   confirm the tags are still *accurate* (a rule's class matches what it
+   actually is) and that optional skills/patterns are wired where they exist.
 3. **Recommend** by **cost × (1 − relevance)** — trim weight, never
    guardrails. Apply the placement ladder from `EXTENDING.md` (global+lazy >
    per-repo) and the plugin/MCP rules from `rules/mcp.md` (plugins are global

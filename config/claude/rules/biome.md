@@ -1,4 +1,5 @@
 ---
+layer: framework
 paths:
   - "biome.json"
   - "biome.jsonc"

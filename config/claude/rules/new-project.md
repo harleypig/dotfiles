@@ -1,4 +1,5 @@
 ---
+layer: process
 # Setup activity has no single file type; scope to the manifest and
 # scaffolding files a project init / conversion actually touches, so this
 # policy loads then but never joins the always-on tier.
