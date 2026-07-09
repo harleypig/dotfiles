@@ -6,6 +6,39 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Credibility-signals / badges research + adoption (dotfiles PR
+  #250).** Researched which badges earn their surface across public repos
+  (grounded: OpenSSF Scorecard, Codecov/Coveralls, CodeFactor/Codacy/Code
+  Climate→Qlty, Snyk, OpenSSF Best Practices, Shields.io). **Shortlist +
+  rationale (the recorded decision):**
+  - **CI status** (native GitHub Actions badge) and **License** (Shields.io) —
+    free, no SaaS; earn their surface on any public repo.
+  - **Latest release / version** (Shields.io) — where the repo tags releases.
+  - **Coverage** (Codecov/Coveralls; free public, needs a coverage-upload
+    step) — for repos whose tests are worth advertising (libraries above all).
+  - **OpenSSF Scorecard** (free; 0–10 supply-chain process-hygiene) — for
+    security-sensitive libs/apps; a middling public score can backfire.
+  - **SCA / known-vuln** (Snyk, SaaS) — only per `security-scan` §4 (real
+    dependency tree, worthwhile results).
+  - **Vanity, skip:** maintainability letter grades (CodeFactor/Codacy/Code
+    Climate→Qlty), "built with X", download counts, and badge *walls* (each
+    past ~4 dilutes the rest).
+  - **Fit by type:** dotfiles/config (no dep tree) → CI + License; app (real
+    dep tree) → CI + License + Coverage, consider Scorecard/Snyk per §4;
+    library → CI + License + Coverage + Release, Scorecard if
+    security-sensitive.
+  **Applied to this dotfiles repo:** replaced the existing CodeFactor badge (a
+  letter grade — vanity for a shell/config repo per the shortlist) with **CI
+  status + License (WTFPL) + OpenSSF Scorecard**; added
+  `.github/workflows/scorecard.yml` (publishes results so the badge renders,
+  pinned `scorecard-action@v2.4.3` / `checkout@v7` / `upload-artifact@v7` /
+  `codeql-action/upload-sarif@v3`; triggers on push-to-`master`/schedule/
+  branch-protection, not PRs, so it never gates a PR). **App repos** (pigify,
+  scripturestudy) — recorded here only, no per-repo TODOs (per the user;
+  handle when next working them). **Badge-selection guidance folded into the
+  `claude-audit` skill** as a per-repo README-badges audit dimension (the
+  user's "make it part of claude-audit"), not a standalone rule/skill.
+
 - 2026-07-08 — **Dropped the STRUCTURE.md Mermaid diagram approach (dotfiles
   PR #249).** The user decided the Mermaid diagram "doesn't do what I want"
   and asked to remove Mermaid support rather than keep slimming it. The
