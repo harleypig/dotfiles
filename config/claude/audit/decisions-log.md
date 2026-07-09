@@ -6,6 +6,23 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-08 — **Worked the three rule refinements from the harleydev #83
+  QA-linter-gates PR (dotfiles PR #243).** Three small global doc-rule
+  additions, one commit each. (1) **Non-exec extensionless-shell hook
+  variant**: `pre-commit.md` gained a "Coverage gotcha" section — `identify`
+  reads a shebang only on executables, so a non-exec extensionless sourced
+  shell file is silently ungated by a `types: [shell]` hook; the fix is a
+  `*-sourced` entry (`types: [text]` + `files:` regex), with this repo's own
+  hooks as the reference impl; pointer notes in `shellcheck.md`/`shfmt.md`.
+  (2) **Containerized hooks can't see `~/.config`**: added to the docker_image
+  trade-offs that a `*-docker` hook reverts to laxer *defaults* without a
+  repo-local config, so gating via a container requires committing a config
+  that mirrors the baseline (`hadolint.md`/`yamllint.md` notes) — distinct
+  from repo-local *precedence* (the global config is invisible, not
+  overridden). (3) **No volatile counts in planning items** (`todo.md`): state
+  the task, not a snapshot metric that goes stale and mis-plans; re-measure at
+  execution time.
+
 - 2026-07-08 — **Wrote the Headless & Programmatic understandable-doc — the
   last wave-2 doc (wave 2; dotfiles PR #242).** Fifth wave-2 doc write:
   authored `config/claude/docs/HEADLESS.md` grounded in current docs (via
