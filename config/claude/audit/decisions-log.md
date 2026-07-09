@@ -6,6 +6,25 @@ annotated, not rewritten. Audit-only (not context-loaded); written by the
 **claude-audit** skill. Sibling records: [`BACKLOG.md`](BACKLOG.md) (open
 items) and [`idea-sources.md`](idea-sources.md) (mined repos).
 
+- 2026-07-09 — **Iceboxed the whole `skill-creator` work cluster (dotfiles
+  PR).** The skill-creator work was spread across three BACKLOG spots (the
+  "rule eval / optimization" idea, the `retrospective` dogfood, and the
+  plugin-upgrade + marketplace-corruption task), all ultimately gated on
+  skill-creator's automated eval — still broken on CC 2.1.x. **Re-verified
+  2026-07-09:** upstream **#2003 is still OPEN** with no movement since our
+  2026-06-18 repro; CC is now **2.1.205** (was 2.1.181); `run_eval.py` still
+  scores a `.claude/commands/` command against a `Skill` tool_use → 0% recall;
+  the marketplace corruption *may* have eased (`marketplace list` works now)
+  but `known_marketplaces.json` still records the `~/.claude` symlink path.
+  Decision (user): **don't work these now — consolidate all three into one
+  [`ICEBOX.md`](ICEBOX.md) entry** ("skill-creator: automated eval blocked
+  upstream…") and revisit on a trigger (#2003 fixed, or we choose to build our
+  own, or on request), and **add a new consideration — build our own lean,
+  CC-2.1.x-correct skill-creator** rather than stay dependent on the broken
+  upstream plugin. Consolidated, not dropped; the three BACKLOG spots are
+  pruned. Supersedes the routing (not the diagnosis) of the two 2026-06-18
+  skill-creator entries below.
+
 - 2026-07-09 — **Automated the language/tool layering check (dotfiles PR
   #253).** The `claude-audit` layering check (`EXTENDING.md` *The language &
   tool stacks*) was a by-hand audit — re-deriving the
