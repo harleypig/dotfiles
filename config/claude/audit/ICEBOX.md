@@ -96,3 +96,48 @@ heading that is neither `<X> Setup` nor a known project/audit) was also
 weighed but risks false positives from per-repo project names. Build the
 reminder and/or validator only if drift recurs despite the rule and the
 qa-check audit.
+
+## skill-creator: automated eval blocked upstream; consider building our own
+
+**Revisit if** upstream **anthropics/claude-plugins-official #2003** lands a
+fix, **or** we decide to build our own harness, **or** on request.
+
+The whole `skill-creator` work cluster is deferred here — consolidated from
+three former BACKLOG spots (the "rule eval / optimization" idea, the
+`retrospective` dogfood, and the plugin-upgrade + marketplace-corruption
+task). It all hinges on skill-creator's automated eval, which does not work on
+CC 2.1.x.
+
+- **Root blocker — #2003** (OPEN, no movement since our 2026-06-18 repro; CC
+  2.1.205 as of 2026-07-09). `run_eval.py` registers the target as a
+  `.claude/commands/` **command** but scores success only on a **`Skill`**
+  tool_use (`run_eval.py:45` vs `:164`), so recall reads **0%** on CC 2.1.x —
+  the trigger-eval and the `improve_description` / `run_loop` optimizer that
+  depends on it are non-functional. `run_eval.py` is byte-identical to
+  upstream `main`.
+- **Plugin upgrade + marketplace path-corruption.** Upgrading gets a
+  modernized `improve_description.py` (`claude -p`-based, no `anthropic` SDK)
+  but does **not** fix `run_eval` (still #2003). The upgrade is gated behind a
+  marketplace corruption: `known_marketplaces.json` records the `~/.claude`
+  **symlink** `installLocation`, not the real dotfiles path, which blocked
+  `plugin update` on CC 2.1.181. **May have eased on 2.1.205** (`marketplace
+  list` works again) — retest before assuming the global remove + re-add is
+  still needed.
+- **Manual `retrospective` review.** The one bit that is *not* #2003-blocked —
+  a by-hand triggering judgment + instruction-review of
+  `retrospective/SKILL.md` (skill-creator's instruction-review pass produced
+  two real `ship-pr` fixes last round). Deferred with the rest per this
+  decision; pick it up first on revisit, since it needs no working eval.
+- **Downstream — rule eval / optimization** (analogous to skill-creator).
+  Measure whether a *rule* fires at the right moments and optimize its
+  wording / `paths:`; explicitly gated on having exercised a working
+  skill-creator harness first (may reuse its machinery).
+- **New consideration — build our own skill-creator.** Rather than stay
+  dependent on the broken upstream plugin, weigh building a lean, CC-2.1.x-
+  correct eval/optimize harness under `config/claude/skills/` (fixing the
+  command-vs-`Skill` detection ourselves) — against vendoring + patching
+  upstream `run_eval.py`, opening an upstream PR, or simply waiting for #2003.
+  This is the fork to decide on revisit.
+
+See the two 2026-06-18 decisions-log entries ("Dogfooded `skill-creator`…" and
+"Kept `skill-creator`…") for the full diagnosis.

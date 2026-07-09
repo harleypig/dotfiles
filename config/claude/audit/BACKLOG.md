@@ -20,14 +20,6 @@ merely coupled (see `WORKFLOW.md` → *TODO routing*). Read when running
 
 ## Skill ideas & future categories (not from mining)
 
-- [ ] **Rule eval / optimization (analogous to `skill-creator`)** —
-  `skill-creator` measures whether a *skill* triggers on the right prompts
-  and does its job (evals/benchmarks + a description-trigger optimizer).
-  Investigate the same for *rules*: can we measure whether a rule is actually
-  applied at the right moments, and optimize its wording/`paths:` so it fires
-  when it should? Decide only **after** we have exercised skill-creator enough
-  to judge the approach's worth (see the skill-creator decision in the
-  Decisions log). May reuse skill-creator's harness rather than build new.
 - [ ] **`resolve-issue` skill** — orchestrate `gh` issue resolution: fetch
   issue → **agent** investigates it against the codebase via the
   `debug-assistant` skill (root cause, "simple or not", proposed fix or a
@@ -143,49 +135,6 @@ promoted to the global config (`config/claude/rules/` or `.../skills/`).
 - [ ] Consolidate drift: the same rule copied (and diverging) across repos
   should become one global source that repos reference.
 - [ ] Note any project that lacks a `.claude/` but should have one.
-
-### 🧪 Dogfood skill-creator on the retrospective skill (LOW PRIORITY)
-
-Retrospective follow-up (from the PR that added the `retrospective` skill):
-`EXTENDING.md` now says to use **skill-creator** when authoring a skill, but
-`retrospective` predated that rule.
-
-**Blocked on the trigger eval:** dogfooding skill-creator on `ship-pr` showed
-`run_eval.py` returns **0% regardless** on CC 2.1.x (upstream issue #2003 + a
-command-vs-`Skill` detection gap — see `config/claude/audit/decisions-log.md`).
-So the automated
-triggering eval won't help here until upstream fixes it.
-
-**Reconfirmed (PR #115):** the *modify-an-existing-skill* path is unusable too
-— extending `test-review` was done by hand because skill-creator's
-improve/optimize loop depends on the same broken `run_eval`. So skill-creator
-helps with neither new-skill eval nor existing-skill edits on CC 2.1.x; treat
-it as conceptual guidance only until #2003 is fixed.
-
-- [ ] When upstream fixes #2003 (or we vendor + patch `run_eval`), run the
-  trigger eval + description optimizer on `retrospective`.
-- [ ] Meanwhile, do a **manual** triggering judgment + instruction-review of
-  `retrospective` (the value skill-creator delivers that isn't blocked).
-
-### 🔌 skill-creator plugin upgrade + marketplace path-corruption (MEDIUM PRIORITY)
-
-Surfaced while dogfooding skill-creator (see
-`config/claude/audit/decisions-log.md`).
-
-- [ ] **Fix the marketplace path-corruption.** CC 2.1.181 rejects the
-  `claude-plugins-official` marketplace because its recorded `installLocation`
-  is the `~/.claude/...` **symlink** path, not the real
-  `config/claude/plugins/marketplaces/...` path (the `~/.claude → config/claude`
-  symlink). It blocks `claude plugin marketplace update` / `plugin update`.
-  Sanctioned fix: `claude plugin marketplace remove claude-plugins-official`
-  then re-add — **global** (re-pulls all that marketplace's plugins; may shift
-  versions), so do it deliberately. Affects *all* plugin management, not just
-  skill-creator.
-- [ ] **Then upgrade `skill-creator`** to current upstream — its
-  `improve_description.py` dropped the `anthropic` SDK / API-key requirement
-  (now `claude -p`-based, 2026-04-23). Note: `run_eval.py` is unchanged
-  upstream, so the upgrade does **not** fix the broken trigger eval (still
-  gated on #2003).
 
 ### 🤖 Claude Code -> local OpenWebUI offload (HIGH IMPORTANCE, LOW PRIORITY)
 
