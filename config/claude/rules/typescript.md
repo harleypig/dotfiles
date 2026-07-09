@@ -6,7 +6,12 @@ paths:
 
 # TypeScript Rules
 
-**Version:** v1.0.0
+**Version:** v1.1.0
+
+TypeScript language conventions. The generic rules in `code-style.md` (naming,
+paragraph spacing, 78-col comments, library-vs-executable error posture, Rule
+of Three) apply here too; this file adds only the TypeScript-specific layer,
+per `EXTENDING.md` *The language & tool stacks*.
 
 ## Detection
 
