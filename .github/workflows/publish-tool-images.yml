@@ -35,6 +35,9 @@ jobs:
           - tool: perltidy
             modules: Perl::Tidy@20250912
             tag: '20250912'
+          - tool: perlcritic
+            modules: Perl::Critic@1.156
+            tag: '1.156'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
