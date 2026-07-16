@@ -1,0 +1,8 @@
+# Deny everything; allow only tracked config. Each config/ subdir owns its
+# own allowlist in this format (deny all, then re-include specifics).
+# See config/.gitignore.
+
+*
+!.gitignore
+!perl-tools/
+!perl-tools/**
