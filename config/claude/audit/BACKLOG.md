@@ -350,3 +350,28 @@ Tips 16/25/17/26).
   nor context7 covered it. Add a short *guides* note to the skill's
   tfplugindocs section (the Registry "docs" URL is already in its *Sources*),
   so the next guide author skips the lookup. Generic (global).
+
+- [ ] **Ruleset storage + propagation convention** (from the `dotagents`
+  extraction, 2026-07-16). `private_dotfiles/github-rulesets/` holds reusable
+  ruleset **templates** a consuming repo copies and modifies; a repo's
+  **applied** ruleset JSON must not pollute that template space. Decide and
+  codify a canonical home for a repo's own applied ruleset — candidate
+  `.github/rulesets/<name>.json` (GitHub allows inert, non-actionable files in
+  `.github/`; it only special-cases known paths, and rulesets-as-code is not a
+  native GitHub feature, so the JSON is just a source of truth applied via the
+  API), alternative `docs/`. Record it in **`rules/github-rulesets.md`** (with
+  a pointer from `gh.md`, and in the `push-pr` / `github-tasks` skills that
+  create/apply rulesets): templates -> `private_dotfiles/github-rulesets/`,
+  applied per-repo ruleset -> the repo's own `.github/rulesets/`. Then
+  relocate dotfiles' own `protect-master-solo.json` out of the template space
+  and update the re-apply command in `WORKFLOW.md`. `dotagents` already stores
+  its applied ruleset at `.github/rulesets/protect-master.json` (the first
+  instance). Global (config/claude). See memory `ruleset-storage-location`.
+  - [ ] **Reconstruct a ruleset from an existing GitHub ruleset (propagation
+    subtask).** Check whether `gh api repos/{owner}/{repo}/rulesets/{id}`
+    output round-trips — strip the read-only fields (`id`, `created_at`,
+    `updated_at`, `_links`, `node_id`, `source`, `source_type`) and re-`POST`
+    it to another repo — so an applied ruleset can be **cloned to other
+    repos** from a known-good one instead of hand-maintaining template JSON.
+    If it round-trips cleanly, fold a "clone ruleset from <repo>" step into
+    `github-rulesets.md` / the `github-tasks` skill.
