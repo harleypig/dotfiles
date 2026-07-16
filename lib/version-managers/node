@@ -6,7 +6,7 @@
 # provides and a <manager>_<verb> function per manager - the verbs are install,
 # update, remove, report, and help (see bin/vmgr). As a sourced library it uses
 # no `set -e` and calls no `exit` - it surfaces errors via return codes (see
-# config/claude/rules/bash.md).
+# the dotagents repo's rules/bash.md).
 #
 # nvm itself is installed via the PINNED git-clone method: controllable,
 # reproducible, and free of any curl/wget dependency for nvm proper. Node

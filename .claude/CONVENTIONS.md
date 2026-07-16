@@ -41,5 +41,5 @@ The principles below are a working subset relevant to this repository.
 ## Quality Assurance
 
 This repo's QA map — the concrete tools, commands, and a per-dimension
-status for every dimension in the global `config/claude/rules/qa.md`
-pipeline — lives in [`QA.md`](QA.md). The **qa-check** skill reads it.
+status for every dimension in the global QA pipeline (the dotagents repo's
+`rules/qa.md`) — lives in [`QA.md`](QA.md). The **qa-check** skill reads it.

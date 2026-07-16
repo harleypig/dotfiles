@@ -108,11 +108,12 @@ keystone is what unblocks them.
 
 ### Rules & skills (agent config)
 
-*Claude-config note (TODO-routing):* these deliverables are `config/claude`
-work (rules / a skill), kept here because they're coupled to the perl-tooling
-stages above (each rule lands as its tool does). Author them as part of that
-work, or move this subsection to `audit/BACKLOG.md` when the tooling lands —
-don't leave it stranded in the dotfiles `TODO.md`.
+*Claude-config note (TODO-routing):* these deliverables are agent-config work
+(rules / a skill) that now lives in the **dotagents** repo, kept here because
+they're coupled to the perl-tooling stages above (each rule lands as its tool
+does). Author them as part of that work, or move this subsection to the
+dotagents repo's `audit/BACKLOG.md` when the tooling lands — don't leave it
+stranded in the dotfiles `TODO.md`.
 
 These stages adopt several tools the **agent** must know how to drive — capture
 each as agent config, not only human setup docs, per `CLAUDE.md` *Missing or
@@ -345,16 +346,16 @@ Context detection: use `$TMUX`, `$VIM`/`$VIMRUNTIME`, and
 
 ### Task 1: Claude Statusline Script
 
-*Scope note (TODO-routing):* `config/claude/bin/statusline.sh` is
+*Scope note (TODO-routing):* the dotagents repo's `bin/statusline.sh` is
 Claude-agent config, but this stays here because it's one surface of a four-way
 coordination (bash / tmux / vim / Claude) — kept whole, not split to
-`audit/BACKLOG.md`. **The urgent display bug** in that script (malformed
-layout, context-% prominence) is tracked separately in `audit/BACKLOG.md` →
+the dotagents repo's `audit/BACKLOG.md`. **The urgent display bug** in that script (malformed
+layout, context-% prominence) is tracked separately in the dotagents repo's `audit/BACKLOG.md` →
 *Claude statusline fix*; this Task 1 is the longer-horizon coordination work.
 
 Docs: <https://code.claude.com/docs/en/statusline>
 
-Built: `config/claude/bin/statusline.sh` (`model | ctx N% | $cost`; context %
+Built: the dotagents repo's `bin/statusline.sh` (`model | ctx N% | $cost`; context %
 colored by threshold; graceful jq-missing exit), wired in `settings.json`,
 worktree marker via `bin/git-status`. Remaining:
 
@@ -369,7 +370,7 @@ Once the Claude statusline exists, audit all four surfaces together:
   - bash prompt (`config/bash_prompt`, `bin/git-status`)
   - tmux (`config/tmux/tmux.conf` status-left/right)
   - vim (vimrc / airline / lightline config in `../dotvim`)
-  - claude (`config/claude/bin/statusline.sh` — built in Task 1)
+  - claude (the dotagents repo's `bin/statusline.sh` — built in Task 1)
 - [ ] Identify duplicates and decide canonical owner for each piece of info
 - [ ] Implement suppression logic using context env vars (`$TMUX`, `$VIM`, etc.)
   - This subsumes the existing "if in tmux, disable git-status in bash prompt"
@@ -543,10 +544,10 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
   a repo-local `.vale.ini` selecting curated styles (start minimal — e.g.
   `proselint` and/or `write-good`, scoped to skip code blocks/links so
   technical docs stay quiet); run `vale sync` in setup/CI. Ground a new
-  **`config/claude/rules/vale.md`** in Vale's current docs at that point
-  (build-on-first-use) and wire it into the tool-detection table + the `qa.md`
-  Documentation dimension. *(The `config/claude` parts route to
-  `audit/BACKLOG.md` per the TODO convention when authored.)*
+  the dotagents repo's **`rules/vale.md`** in Vale's current docs at that
+  point (build-on-first-use) and wire it into the tool-detection table + the
+  `qa.md` Documentation dimension. *(The agent-config parts route to the
+  dotagents repo's `audit/BACKLOG.md` per the TODO convention when authored.)*
 
 ### Phase 4: Documentation Linting (pre-commit)
 
@@ -600,7 +601,7 @@ integrated into `shell-startup` (guarded so a failure can't blank PATH).
 
 ### Surfaced from comment cleanup
 
-- [ ] `config/claude/bin/statusline.sh` + `bin/ansi` - check whether tput /
+- [ ] the dotagents repo's `bin/statusline.sh` + `bin/ansi` - check whether tput /
   terminals support OSC 8 hyperlink escapes; if so, extend `bin/ansi` to
   emit them for clickable links repo-wide. (Markers in both files.)
 
@@ -613,33 +614,19 @@ integrated into `shell-startup` (guarded so a failure can't blank PATH).
 
 ## 🧰 Repository extraction (carve subtrees into their own repos)
 
-Both items below are the same question — extract a subtree into a standalone
-repo and decide how dotfiles consumes it (submodule vs sibling clone vs
-symlink). Reconcile their consumption decisions together.
+Extract a subtree into a standalone repo and decide how dotfiles consumes it
+(submodule vs sibling clone vs symlink). `config/claude` was the first — it
+now lives in the **dotagents** repo, consumed as a sibling clone symlinked
+into `~/.claude` (see the changelog); its genericize / AGENTS.md follow-up
+lives in that repo's own backlog. The tmux extraction below is what remains.
 
-### Extract `config/claude/` into its own generic repo
-
-The agent config under `config/claude/` (rules, skills, `CLAUDE.md`,
-`EXTENDING.md`, hooks, …) is language- and repo-agnostic and is consumed by
-every project, not just dotfiles. Move it to a standalone repo so it can be
-shared/versioned independently and carries **no dotfiles-specific references**
-(generic — no mention of "dotfiles").
-
-- [ ] **Check first whether such a repo already exists** before creating one —
-  scan sibling clones under `$PROJECTS_DIR` and `gh repo list` (candidates to
-  rule out: `newdotfiles`, `gollum-config`). As of 2026-06-17 no dedicated
-  agent-config repo was found.
-- [ ] Carve `config/claude/` out into the standalone repo; scrub
-  dotfiles-specific wording so the content reads generically.
-- [ ] Decide how dotfiles (and other repos) consume it — submodule, sibling
-  clone, or symlink into `$CLAUDE_CONFIG_DIR` — and update the deploy/symlink
-  steps and any hardcoded paths.
-- [ ] Reconcile with the "Break tmux config into its own repo" item (same
-  extraction question: submodule vs sibling).
-
-*Scope note (TODO-routing):* the subject is `config/claude`, but the work is
-repo packaging / deployment — a dotfiles concern, not agent behavior — so it
-stays here, not in `audit/BACKLOG.md`.
+- [ ] **Normalize foreign-repo support in the deploy/link mechanism.** The
+  dotlinks / check-dotfiles flow linked `~/.claude` from `$CLAUDE_CONFIG_DIR`;
+  that entry was dropped when `config/claude` became the external dotagents
+  repo, so sibling foreign repos (dotvim, dotagents, …) are now linked ad hoc
+  (manual symlinks). Design first-class, existence-guarded support for
+  linking/deploying sibling repos through the dotfiles mechanism (skip when
+  the sibling isn't cloned, so a fresh machine degrades cleanly).
 
 ### Break tmux config into its own repo
 
@@ -722,7 +709,7 @@ How the repo stays current with files and tools that originate elsewhere.
 ### Vendored file / skill update checker
 
 Some files are **vendored** (copied in from an upstream repo) rather than
-authored here — e.g. `config/claude/skills/frontend-design/` from
+authored here — e.g. the dotagents repo's `skills/frontend-design/` from
 `anthropics/skills`. Each vendored item carries a `SOURCE.md` recording its
 upstream repo, path, and pinned commit SHA (frontend-design has the first
 one). We need a way to check whether any vendored item is behind upstream so
@@ -735,10 +722,10 @@ we can stay current.
 - [ ] Decide placement (**leaning toward both**):
   - Option A: `bin/check-vendored` — general, repo-wide; scans for any
     `SOURCE.md` so it works for non-Claude vendored files too.
-  - Option B: `config/claude/bin/check-vendored-skills` — Claude-scoped;
-    limits to `config/claude/skills/*/SOURCE.md`.
+  - Option B: the dotagents repo's `bin/check-vendored-skills` — Claude-scoped;
+    limits to the dotagents repo's `skills/*/SOURCE.md`.
   - Likely both: a general `bin/` core that does the work, plus a thin
-    `config/claude/bin/` entry that scopes it to skills.
+    dotagents repo `bin/` entry that scopes it to skills.
 - [ ] Generalize the `SOURCE.md` provenance convention (repo / path / SHA /
   local-edits) and document it (WORKFLOW.md or a rules file).
 - [ ] Consider folding the git-completion `check4update` item below into

@@ -5,7 +5,7 @@
 # security settings; this file configures scheduled *version*-update PRs.
 # No auto-merge — Dependabot PRs land through the normal protected-master
 # flow (squash-only + required checks), reviewed/merged via the push-pr
-# skill like any other PR. Conventions per config/claude/rules/dependabot.md:
+# skill like any other PR. Conventions per the dotagents repo's rules/dependabot.md:
 # cover every shipped manifest (incl. docker + github-actions), schedule
 # weekly, group minor/patch (majors stay individual), conventional commits.
 version: 2

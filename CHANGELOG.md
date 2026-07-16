@@ -10,6 +10,21 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-16
+
+### Removed
+
+- **Extracted `config/claude/` into a standalone repo (`dotagents`) and
+  removed it from dotfiles.** The agent config (rules, skills, hooks,
+  `CLAUDE.md`, `EXTENDING.md`, docs) now lives in the **dotagents** repo,
+  consumed as a sibling clone symlinked into `~/.claude` with
+  `CLAUDE_CONFIG_DIR` pointing at it. dotfiles' config/claude-scoped tooling
+  was unwired first — the `pyright` pre-commit hook, the meta-generator's
+  `config/claude/skills` scan root, and the migrated hook/guard tests (now in
+  dotagents) — then the tree and its doc/comment references were removed, and
+  the `$CLAUDE_CONFIG_DIR .claude` dotlinks entry dropped (provisioning
+  `~/.claude` is now the user's job). (PRs #262, #263)
+
 ## 2026-07-09
 
 ### Added
