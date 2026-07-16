@@ -114,7 +114,7 @@ in the pre-commit configuration.
 **Framework:** BATS (Bash Automated Testing System)
 
 **See `TESTS.md` for this repo's testing strategy, and the global
-`config/claude/rules/bats.md` for bats conventions.**
+the dotagents repo's `rules/bats.md` for bats conventions.**
 
 **Quick reference:**
 
@@ -183,13 +183,13 @@ advisory — the remote enforces it:
 * No bypass actors — even the owner goes through a PR.
 * A local `no-commit-to-branch` pre-commit hook also blocks a direct commit
   to `master` at commit time (early guard; the server ruleset is what
-  actually enforces it). See `config/claude/rules/git.md`.
+  actually enforces it). See the dotagents repo's `rules/git.md`.
 * The global `branch-protection.py` `PreToolUse` hook blocks an agent
   `Edit`/`Write`/`MultiEdit` while `master` is checked out — the earliest
   guard, at edit time (it allows plan files and gitignored, untracked files —
   local-only state that can't be committed). It derives the protected branch
   from the `no-commit-to-branch` args above, so this repo activates it
-  automatically. See `config/claude/rules/git.md` *Protecting the Default
+  automatically. See the dotagents repo's `rules/git.md` *Protecting the Default
   Branch*.
 
 To change the ruleset, edit the JSON and re-apply with the OAuth token (the
@@ -215,8 +215,8 @@ no separate "merge it" needed. push-pr reads this sentinel **from `master`**
 **next** PR. The merge still goes through `push.sh merge`, which the ruleset
 gates (squash-only, required checks); the opt-in skips the prompt, **never**
 the checks. To revert to a manual merge gate, delete this sentinel. See
-`config/claude/skills/push-pr/SKILL.md` Step 5 and
-`config/claude/rules/gh.md`.
+the dotagents repo's `skills/push-pr/SKILL.md` Step 5 and
+`rules/gh.md`.
 
 **Merge-time finalization (`merge-finalization: enforce`):**
 
@@ -227,53 +227,42 @@ finalized work is migrated to [`CHANGELOG.md`](../CHANGELOG.md), not left as
 `[x]` markers. The `merge-finalization: enforce` sentinel in the heading above
 activates the `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`),
 which **blocks** a `gh pr merge` / `push.sh merge` while any completed `- [x]`
-items still remain in the planning docs. See
-`config/claude/skills/push-pr/SKILL.md` and `config/claude/rules/git.md`.
+items still remain in the planning docs. See the dotagents repo's
+`skills/push-pr/SKILL.md` and `rules/git.md`.
 
-The agent-config **audit backlog** is an equivalent planning list, so it is
-pruned the same way (completed items removed at merge, their record kept in
-[`audit/decisions-log.md`](../config/claude/audit/decisions-log.md)). It is
-declared as an extra planning doc the hook also enforces — repo-relative paths
-beyond the generic defaults, kept out of the global hook:
-
-```text
-merge-finalization-docs: config/claude/audit/BACKLOG.md
-```
+The agent-config planning backlog now lives in the **dotagents** repo (it was
+extracted there with `config/claude`), so this repo's merge-finalization only
+enforces its own `TODO.md` (and `ROADMAP.md` if one exists) — no extra
+`merge-finalization-docs` are declared.
 
 ### TODO Routing
 
-This repo splits its task tracking by **scope**, so each list stays focused.
-When capturing any follow-up, decide where it belongs before writing it:
+This repo tracks all its work in one list, root [`TODO.md`](../TODO.md):
+`bin/`, `lib/`, `config/`, shell-startup, tests, CI, packaging, the OS/$HOME
+setup. Its former second list — the Claude-agent-config backlog — moved out
+with `config/claude` when that was extracted into the **dotagents** repo.
 
-* **Dotfiles work** → root [`TODO.md`](../TODO.md). Anything about the broader
-  repo: `bin/`, `lib/`, `config/` (except `config/claude/`), shell-startup,
-  tests, CI, packaging, the OS/$HOME setup.
-* **Claude-agent-config work** → [`config/claude/audit/BACKLOG.md`](../config/claude/audit/BACKLOG.md).
-  Anything under `config/claude/`: rules, skills, hooks, the agent-config docs
-  (`CLAUDE.md`, `EXTENDING.md`, `SETUP-AUDIT.md`), plugin/MCP setup. This is the
-  audit's todo file; `claude-audit` reads it.
-* **Mixed** → split into both files with a cross-reference **unless** the
-  parts are merely coupled (added together, or the config piece can't be
-  authored until the dotfiles piece lands). When coupled, keep the item whole
-  in its primary file and add an inline scope note pointing at the other —
-  and, for an embedded config deliverable, either author it as part of the
-  parent task or move it to `BACKLOG.md` when the parent completes, so it
-  isn't stranded.
+When capturing a follow-up, decide where it belongs before writing it:
+
+* **Dotfiles work** → root [`TODO.md`](../TODO.md).
+* **Claude-agent-config work** (rules, skills, hooks, the agent-config docs,
+  plugin/MCP setup) → the **dotagents** repo, which now owns that config and
+  its own `audit/BACKLOG.md`. Capture it there directly when working in
+  dotagents; when it surfaces while you're here in dotfiles, treat it as a
+  **cross-repo** item (below).
 * **Cross-repo** → a follow-up that belongs to a **different repo than the one
-  you're in** (e.g. a global-config change that spawns a per-repo evaluation
-  for pigify / scripturestudy-app). You usually can't write it into the target
-  repo's `TODO.md` from here, so don't lose it or mis-home it: **capture
-  it where the originating work lives** (the dotfiles `BACKLOG.md` for
-  config-spawned items, else the current repo's `TODO.md`), tag it with the
-  **target repo** and a **migrate-on-next-visit trigger** — e.g. "→ pigify:
-  migrate to its `TODO.md` when next working it". The reciprocal: when you
-  **start work in a repo**, scan the dotfiles `BACKLOG.md` (and any other
-  parking spot) for items tagged to it and migrate them into its `TODO.md`.
-  The **github-tasks** sweep is the natural place to run that inbound check.
+  you're in** (an agent-config item surfaced here and bound for dotagents; or
+  a global-config change spawning a per-repo evaluation for pigify /
+  scripturestudy-app). You usually can't write it into the target repo's
+  planning doc from here, so don't lose it: **capture it in the current repo's
+  `TODO.md`**, tagged with the **target repo** and a **migrate-on-next-visit
+  trigger** — e.g. "→ dotagents: migrate to its `BACKLOG.md` when next working
+  it". The reciprocal: when you **start work in a repo**, scan the other
+  repos' parking spots for items tagged to it and migrate them in. The
+  **github-tasks** sweep is the natural place to run that inbound check.
 
-This section is the canonical routing home; the reciprocal pointer also lives
-in `BACKLOG.md`'s header. `TODO.md` itself carries no routing preamble — only
-open tasks — per the global `rules/todo.md`.
+`TODO.md` carries no routing preamble — only open tasks — per the global
+`rules/todo.md`.
 
 ## Tool Setup Procedures
 

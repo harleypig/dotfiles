@@ -32,7 +32,7 @@ The model owns the decision about *what the drift is* and *how to resolve it*.
 - **On demand** — whenever you suspect `shell-startup` changed out of band.
 
 The agent never has to *remember* to re-bless after its **own** edits: a
-PostToolUse hook (`config/claude/hooks/md5-guard.py`) regenerates
+PostToolUse hook (the dotagents repo's `hooks/md5-guard.py`) regenerates
 `shell-startup.md5` automatically whenever the agent edits `shell-startup`
 through the Edit/Write tools. Only **un-managed** changes (an installer, a
 manual edit outside the tools) leave the checksum stale — which is exactly

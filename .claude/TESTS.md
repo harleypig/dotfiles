@@ -12,8 +12,8 @@ policy. It is deliberately thin.
 install/loading (`bats_load_library` + `BATS_LIB_PATH`), the `bats-toolbox`
 helper lib, file naming, how to write tests and stub externals, linting
 `.bats`, and the meta-test generator all live in the global rule
-**`config/claude/rules/bats.md`** — read that first. This file only covers
-what is specific to this repo.
+**the dotagents repo's `rules/bats.md`** — read that first. This file only
+covers what is specific to this repo.
 
 For general workflow see `WORKFLOW.md`.
 
@@ -23,8 +23,8 @@ otherwise the rule applies.
 
 ## Layout (this repo)
 
-One `tests/` root with per-language subdirs (see
-`config/claude/rules/testing.md` for the general convention):
+One `tests/` root with per-language subdirs (see the dotagents repo's
+`rules/testing.md` for the general convention):
 
 ```text
 tests/
@@ -89,19 +89,10 @@ the same gating suite without breaking docker-less environments.
   `docker_wrapper --known-tools` has a matching `bin/<tool>` symlink (by
   `readlink` target, not contents) and that no stray wrapper symlink exists;
   `bin/docker_wrapper-links --fix` repairs missing links.
-- Repo-structure invariants get a guard test too: `test_skill_frontmatter.bats`
-  holds every `config/claude/skills/*/SKILL.md` to the Agent Skills
-  open-standard frontmatter rules (see `config/claude/EXTENDING.md` Skill ›
-  *Format*), `test_rule_frontmatter.bats` holds every
-  `config/claude/rules/*.md` to declaring its load tier — a `paths:` key or a
-  `# No paths — <why>` comment — so a rule can't silently join the always-on
-  per-turn tier by omission (see `config/claude/rule-TEMPLATE.md`),
-  `test_rule_layering.bats` holds every `config/claude/rules/*.md` to declaring
-  a valid `layer:` class (generic/language/framework/tool/process) and enforces
-  the language/tool layering (a `language` rule references up to the generic
-  layer; a `tool` rule links no language file — see `config/claude/EXTENDING.md`
-  *The language & tool stacks*), and `test_docker_wrapper_links.bats` (above)
-  holds the docker_wrapper symlinks to its registry.
+- Repo-structure invariants get a guard test too:
+  `test_docker_wrapper_links.bats` (above) holds the docker_wrapper symlinks
+  to its registry. (The former `config/claude` rule/skill frontmatter and
+  layering guards moved to the **dotagents** repo with that config.)
 
 ## Deliberately not unit-tested
 
@@ -130,10 +121,8 @@ pinning (the generated meta suite still static-checks them):
 
 The generated **meta suite** runs language-specific static checks per file:
 bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
-`perl -c`; python → shebang + `compile()`. It scans `bin lib` **plus
-`config/claude/skills`** (the last covers skill helper scripts such as
-`config/claude/skills/*/scripts/*`, e.g. `push-pr`'s `push.sh`; non-script
-files are skipped). It does **not** scan repo-local `.claude/skills/` — that
+`perl -c`; python → shebang + `compile()`. It scans `bin lib`. It does **not**
+scan repo-local `.claude/skills/` — that
 helper (`shell-startup-guard`'s `guard.sh`) is covered by the repo-wide
 pre-commit `shellcheck`/`shfmt` hooks plus its hand-written
 `test_shell_startup_md5_guard.bats`. The `bin/` + `lib/` + skill-helper debt is
@@ -181,7 +170,7 @@ check config via `pre-commit run --all-files`).
 
 ## Questions
 
-- Test structure (all languages) → `config/claude/rules/testing.md`
-- bats how-to → `config/claude/rules/bats.md`
+- Test structure (all languages) → the dotagents repo's `rules/testing.md`
+- bats how-to → the dotagents repo's `rules/bats.md`
 - General workflow → `WORKFLOW.md`
 - Examples → `tests/shell/`

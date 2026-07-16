@@ -6,18 +6,19 @@
 
 This is the **repo-specific** QA doc for the dotfiles repository: the concrete
 tools, commands, and a **per-dimension status** for every dimension in the
-global `config/claude/rules/qa.md` pipeline. `qa.md` owns the dimensions,
-their ordering, and the fix/check discipline (generic); this file records what
-each dimension *is* here. The **qa-check** skill reads this doc for the
-commands.
+global QA pipeline (the dotagents repo's `rules/qa.md`). `qa.md` owns the
+dimensions, their ordering, and the fix/check discipline (generic); this file
+records what each dimension *is* here. The **qa-check** skill reads this doc
+for the commands.
 
 **Precedence:** `WORKFLOW.md` > `TESTS.md` > this file. Testing specifics live
-in `TESTS.md`; pre-commit policy in `config/claude/rules/pre-commit.md`; this
-file is the QA map that ties them to the global dimensions.
+in `TESTS.md`; pre-commit policy in the dotagents repo's
+`rules/pre-commit.md`; this file is the QA map that ties them to the global
+dimensions.
 
 ## How QA runs here
 
-Two pre-commit configs (see `config/claude/rules/pre-commit.md`):
+Two pre-commit configs (see the dotagents repo's `rules/pre-commit.md`):
 
 - **Fix** — `.pre-commit-config-fix.yaml` (auto-fixers; run once as prep):
 
@@ -45,7 +46,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 |---|-----------|--------|-----------|
 | 1 | Format | **Active** | `shfmt`, `yapf`, `isort`, `prettier`, `markdownlint-fix`, trailing-whitespace, end-of-file-fixer (fix config) |
 | 2 | Lint | **Active** | `shellcheck`, `yamllint`, `markdownlint`, `flake8` (check config) |
-| 3 | Type-check | **Active** | `pyright` (standard mode, scoped to `config/claude/hooks` via `pyrightconfig.json`) — wired as a pre-commit hook, so it runs in the required `pre-commit` CI job (`rules/pyright.md`). **mypy deliberately not used** — small, fully-typed surface; second checker not worth the cost (`audit/decisions-log.md`). |
+| 3 | Type-check | **Off** | No type checker. `pyright` was removed when `config/claude/hooks` (its only typed surface) was extracted to the dotagents repo; the small remaining first-party Python (`bin/poetry2setup`, `tests/lint/prose_wrap.py`) is not type-checked. Revisit if a substantial typed Python surface returns. |
 | 4 | Code smell / complexity | **Off** | `shellcheck` catches some; no dedicated bash complexity tool. Acknowledged gap, no tracked owner yet. |
 | 5 | Security | **Active (partial)** | Secrets: `gitleaks` + `detect-private-key` (commit-time check) **plus `trufflehog`** — PR-time *verified* scan in CI (`secret-scan.yml`, non-required for now). SCA / supply-chain: Dependabot alerts + version updates (`.github/dependabot.yml`). SAST: `semgrep` via the `security-scan` skill; **Checkmarx evaluated & declined** (commercial, no free tier — disproportionate). **`Snyk` & `CodeFactor` evaluated (2026-06-19) & not formalized** — both are hosted SaaS App checks that fail this repo's *worthwhile-results* bar (`security-scan` §4 escape hatch): no real dependency tree, so Snyk is a near-noise advisory check, and CodeFactor only re-runs ShellCheck/yamllint already gated locally. **Snyk dropped (uninstall the App); CodeFactor kept as a passive, non-required badge.** DAST: **N/A** (no running service). Deeper triage → `security-scan` skill. |
 | 6 | Tests | **Active** | `bats tests/shell/test_*.bats` (gate), `prove tests/perl/`, `pytest tests/python` (self-activating). Layout/policy in `TESTS.md`. Suite *quality/coverage* (missing, outdated, brittle tests) → the **test-review** skill (qa.md dim 6), which `qa-check` composes. |

@@ -71,13 +71,13 @@ cp dotlinks-default ~/.dotlinks
 $DOTFILES/dot-general/.bashrc
 
 # Two-column: explicit symlink name (required when basename doesn't match)
-$CLAUDE_CONFIG_DIR .claude
+$DOTFILES/config/foo .foorc
 ```
 
 Single-column entries create `~/.<name>` where `<name>` is the basename of
 the source path. Two-column entries use the second field as the symlink name,
 allowing sources whose basename differs from the desired `~/<name>` (e.g.,
-`config/claude` → `.claude`). Comments (`#`) and blank lines are ignored.
+`config/foo` → `.foorc`). Comments (`#`) and blank lines are ignored.
 
 #### Bin-Dirs Files
 
