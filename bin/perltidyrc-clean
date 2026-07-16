@@ -8,10 +8,8 @@ use File::Basename;
 # ------------------------------------------------------------------------------
 
 # Check for Perl::Tidy dependency early
-eval "use Perl::Tidy";
-if ($@) {
-  die "Perl::Tidy not installed\n";
-}
+eval { require Perl::Tidy; 1 }
+  or die "Perl::Tidy not installed\n";
 
 my $version = $Perl::Tidy::VERSION;
 if ( $version < 20060528 ) {
@@ -74,6 +72,8 @@ sub check_undefined_keys {
       die "Internal error: undefined or empty key found in $context\n";
     }
   }
+
+  return;
 }
 
 # Extracts numeric prefix from section name for sorting (e.g., "1.2" from "1.2. Subsection").
@@ -146,6 +146,7 @@ sub add_section_note {
     ? $sections->{$opt}
     : 'UNKNOWN';
   push @{ $section_notes->{$section} }, $text;
+  return;
 }
 
 # ------------------------------------------------------------------------------
@@ -197,6 +198,7 @@ USAGE
 sub set_keep_defaults {
   $cli{drop_defaults} = 0;
   $cli{keep_defaults} = 1;
+  return;
 }
 
 sub set_add_missing_defaults {
@@ -204,6 +206,7 @@ sub set_add_missing_defaults {
   $cli{drop_defaults}        = 0;
   $cli{keep_defaults}        = 1;
   $cli{condense}             = 0;      # implies --no-condense
+  return;
 }
 
 sub extract_outfile {
@@ -370,6 +373,7 @@ sub show_config_location {
   my ( $rc_file, $perltidy_args ) = @_;
   my $location = get_config_location( $rc_file, $perltidy_args );
   print "$location\n";
+  return;
 }
 
 # Get Perl::Tidy default options and abbreviations.
@@ -510,9 +514,14 @@ sub condense_options {
       }
     }
 
-    # Recursively expand abbreviations to get final long option names
-    # This handles cases like cti=2 -> cpi=2, cbi=2, csbi=2 -> closing-paren-indentation=2, etc.
-    sub expand_abbrev_to_long {
+    # Recursively expand abbreviations to get final long option names.
+    # A recursive lexical closure rather than a named nested sub: Perl scopes a
+    # named sub to the package regardless of nesting (perlcritic's
+    # ProhibitNestedSubs flags it), whereas an anonymous sub in a lexical stays
+    # private to condense_options. Handles cases like cti=2 -> cpi=2, cbi=2,
+    # csbi=2 -> closing-paren-indentation=2, etc.
+    my $expand_abbrev_to_long;
+    $expand_abbrev_to_long = sub {
       my ( $abbr, $abbr_hash, $short_to_long_hash ) = @_;
       my @result;
 
@@ -543,7 +552,7 @@ sub condense_options {
         foreach my $exp (@expanded) {
 
   # Recursively expand each expanded option
-  my $expanded_result = expand_abbrev_to_long( $exp, $abbr_hash, $short_to_long_hash );
+  my $expanded_result = $expand_abbrev_to_long->( $exp, $abbr_hash, $short_to_long_hash );
   if (@$expanded_result) {
     push @result, @$expanded_result;
   }
@@ -556,7 +565,7 @@ sub condense_options {
         foreach my $exp (@expanded) {
 
   # Recursively expand each expanded option, preserving value if present
-  my $expanded_result = expand_abbrev_to_long( $exp, $abbr_hash, $short_to_long_hash );
+  my $expanded_result = $expand_abbrev_to_long->( $exp, $abbr_hash, $short_to_long_hash );
   if (@$expanded_result) {
     if ( defined $value ) {
 
@@ -576,7 +585,7 @@ sub condense_options {
       } ## end elsif ( exists $abbr_hash...)
 
       return \@result;
-    } ## end sub expand_abbrev_to_long
+    }; ## end $expand_abbrev_to_long closure
 
     # Iterate through preferred abbreviations only to find condensing opportunities
     foreach my $expansion_key ( keys %expansion_to_preferred ) {
@@ -607,7 +616,7 @@ sub condense_options {
       my $expected_value;
       my $all_have_values = 1;
       foreach my $mapped_opt (@mapped_opts) {
-        my $expanded = expand_abbrev_to_long( $mapped_opt, $abbreviations_default, \%short_to_long );
+        my $expanded = $expand_abbrev_to_long->( $mapped_opt, $abbreviations_default, \%short_to_long );
         if (@$expanded) {
   foreach my $long_opt (@$expanded) {
     if ( $long_opt =~ /^(.+)=(.+)$/ ) {
@@ -682,6 +691,8 @@ sub condense_options {
       }
     } ## end foreach my $expansion_key (...)
   } ## end if ($abbreviations_default)
+
+  return;
 } ## end sub condense_options
 
 sub detect_conflicts {
@@ -746,6 +757,8 @@ sub detect_conflicts {
       "format is disabled but format-skipping detection is enabled"
     );
   }
+
+  return;
 } ## end sub detect_conflicts
 
 sub dump_options {
@@ -840,6 +853,8 @@ sub dump_options {
       $append->( $key . ' {' . join( ' ', @vals ) . '}' . "\n" );
     }
   }
+
+  return;
 } ## end sub dump_options
 
 # ------------------------------------------------------------------------------
@@ -907,17 +922,15 @@ if ( $cli{overwrite} ) {
 # Clean @ARGV: filter out file arguments since we're only dumping options,
 # not processing source files. Keep only option-like arguments for Perl::Tidy.
 # GetOptions already removed our CLI options, so @ARGV contains pass-through args.
-@ARGV = grep { /^-/ } @ARGV;           # Keep only option-like arguments
+local @ARGV = grep { /^-/ } @ARGV;     # Keep only option-like arguments
 
 # Get Perl::Tidy defaults
 my ( $rOpts_default, $rabbreviations_default ) = get_perltidy_defaults();
 
 # Dump defaults if requested
 if ( $cli{dump_perltidy_defaults} ) {
-  eval "use Data::Dumper";
-  if ($@) {
-    die "Data::Dumper not installed\n";
-  }
+  eval { require Data::Dumper; Data::Dumper->import; 1 }
+    or die "Data::Dumper not installed\n";
   local $Data::Dumper::Indent   = 1;
   local $Data::Dumper::Sortkeys = 1;
   local $Data::Dumper::Terse    = 1;
@@ -933,10 +946,8 @@ my ( $error_message, $rOpts, $rGetopt_flags, $rsections, $rabbreviations ) = get
 
 # Dump config if requested
 if ( $cli{dump_perltidy_config} ) {
-  eval "use Data::Dumper";
-  if ($@) {
-    die "Data::Dumper not installed\n";
-  }
+  eval { require Data::Dumper; Data::Dumper->import; 1 }
+    or die "Data::Dumper not installed\n";
   local $Data::Dumper::Indent   = 1;
   local $Data::Dumper::Sortkeys = 1;
   local $Data::Dumper::Terse    = 1;
