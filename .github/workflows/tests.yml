@@ -170,6 +170,8 @@ jobs:
 
   pre-commit:
     runs-on: ubuntu-latest
+    permissions:
+      packages: read  # pull the private perltidy image for the perltidy hook
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -181,6 +183,13 @@ jobs:
 
       - name: Install pre-commit
         run: pip install pre-commit
+
+      # The perltidy hook is a docker_image hook that pulls the PRIVATE
+      # ghcr.io/harleypig/perltidy image; log in so pre-commit can pull it.
+      - name: Log in to ghcr (private perltidy image)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       # no-commit-to-branch is a local-only guard; skip it in CI (the run on
       # master would otherwise fail merely for being on master). The gitleaks

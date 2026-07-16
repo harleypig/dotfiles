@@ -298,6 +298,28 @@ markdownlint() {
 image[markdownlint]="ghcr.io/igorshubovych/markdownlint-cli:v0.48.0"
 
 #------------------------------------------------------------------------------
+perltidy() {
+  dw_guard_pwd_paths perltidy "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_env args "${DW_ENV[@]}"
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # The perl-tools image has no entrypoint (one image can host several tools),
+  # so name the tool. The repo-root .perltidyrc (-> config/perl/perltidyrc) is
+  # auto-discovered from /mnt (= $PWD), matching how shfmt finds .editorconfig.
+  exec docker run "${args[@]}" "${image[perltidy]}" perltidy "$@"
+}
+# SYNC: keep this tag+digest in lock-step with the perltidy hooks in
+# .pre-commit-config.yaml / -fix.yaml, and with the publish-tool-images matrix.
+# To bump: change the module version in .github/workflows/publish-tool-images.yml,
+# let it publish, then re-pin the tag + digest here (docker pull, then
+# `docker inspect --format '{{index .RepoDigests 0}}'`).
+image[perltidy]="ghcr.io/harleypig/perltidy:20250912@sha256:9ba462faf62909a8879e614e28818aa657844014816975bd3d89d74cf8843f7a"
+
+#------------------------------------------------------------------------------
 trivy() {
   # Path guard, but skip the token after `image` (an image ref, not a
   # path) and the subcommand keywords themselves.
