@@ -333,6 +333,7 @@ sub get_config_location {
   if ( exists $ENV{PERLTIDY} && defined $ENV{PERLTIDY} ) {
     my $perltidy_env = $ENV{PERLTIDY};
     if ( -f $perltidy_env && -r $perltidy_env ) {
+
       # PERLTIDY points to a file
       my $abs_path =
         File::Spec->file_name_is_absolute($perltidy_env)
@@ -340,6 +341,7 @@ sub get_config_location {
         : File::Spec->rel2abs($perltidy_env);
       return $abs_path;
     } elsif ( -d $perltidy_env ) {
+
       # PERLTIDY points to a directory, look for .perltidyrc in it
       my $rc_in_dir = File::Spec->catfile( $perltidy_env, '.perltidyrc' );
       if ( -f $rc_in_dir && -r $rc_in_dir ) {
@@ -349,10 +351,12 @@ sub get_config_location {
           : File::Spec->rel2abs($rc_in_dir);
         return $abs_path;
       }
+
       # PERLTIDY directory exists but no .perltidyrc in it, fall through to search
     }
+
     # PERLTIDY is set but invalid, fall through to search
-  }
+  } ## end if ( exists $ENV{PERLTIDY...})
 
   # No PERLTIDY or PERLTIDY didn't yield a valid config, find what Perl::Tidy would use
   my $found = find_perltidyrc();
@@ -585,7 +589,7 @@ sub condense_options {
       } ## end elsif ( exists $abbr_hash...)
 
       return \@result;
-    }; ## end $expand_abbrev_to_long closure
+    }; ## end $expand_abbrev_to_long = sub
 
     # Iterate through preferred abbreviations only to find condensing opportunities
     foreach my $expansion_key ( keys %expansion_to_preferred ) {
@@ -961,7 +965,7 @@ if ( $cli{dump_perltidy_config} ) {
   print "\nabbreviations:\n";
   print Dumper($rabbreviations);
   exit 0;
-} ## end if ( $cli{dump_perltidy_config...})
+}
 
 die $error_message if $error_message;
 
