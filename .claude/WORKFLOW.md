@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.7.0
+**Version:** v1.8.0
 
 ## Purpose
 
@@ -176,8 +176,10 @@ advisory — the remote enforces it:
 
 * **Direct pushes to `master` are rejected** — all changes land via PR.
 * **Squash is the only allowed merge method.**
-* **`bats`, `meta`, `perl`, and `pre-commit` must be green** to merge
-  (required status checks).
+* **`bats`, `meta`, `perl`, `perl-compile`, and `pre-commit` must be green**
+  to merge (required status checks). `perl-compile` builds a real pinned Perl
+  in CI, but only when a PR touches the perl toolchain — it exits early-green
+  otherwise (see `.github/workflows/tests.yml`).
 * Deletion and force-push of `master` are blocked; unresolved review threads
   block merge; stale reviews are dismissed on push.
 * No bypass actors — even the owner goes through a PR.
@@ -335,6 +337,16 @@ Perl version, and the cpanm module list); bump them there. `vmgr install perl`
 does **not** touch a pre-existing system-perl + local::lib setup until it
 completes — `config/shell-startup/perl` prefers the vmgr-managed perlbrew only
 once it is present, and otherwise leaves the existing Perl environment alone.
+
+**The perltidy gate needs a ghcr login.** The pre-commit `perltidy` hooks (and
+the `bin/perltidy` docker wrapper) pull the pinned, **private**
+`ghcr.io/harleypig/perltidy` image built by
+[`publish-tool-images.yml`](../.github/workflows/publish-tool-images.yml). So a
+one-time `docker login ghcr.io -u <you>` with a `read:packages` token is
+required for the perltidy hook to run locally; CI logs in with the workflow
+token. Bumping the pinned `Perl::Tidy` version is a three-place SYNC — the
+publish-workflow matrix, `bin/docker_wrapper` `image[perltidy]`, and the
+tag+digest in both pre-commit configs — re-pin the digest after it publishes.
 
 ## Agent-Specific Overrides
 
