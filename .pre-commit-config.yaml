@@ -110,18 +110,6 @@ repos:
       - id: flake8
         args: [--config, config/flake8]
 
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.411
-    hooks:
-      # Type-check the first-party hooks. pyrightconfig.json scopes the run to
-      # config/claude/hooks (standard mode); pass_filenames=false so pyright
-      # uses that project config rather than per-file args. Lint-only, like
-      # flake8 — no fix-config variant. pyright is this repo's sole type
-      # checker; mypy is deliberately NOT used (see pyright.md / decisions-log).
-      - id: pyright
-        pass_filenames: false
-        files: ^config/claude/hooks/.*\.py$
-
   # Phase 3 (Language) — Perl: DEFERRED (intentionally not enabled). Enabling
   # either tool in this *gating* config would currently break the gate:
   #   - perlcritic --severity 4 reports substantial debt on existing code, and
@@ -156,7 +144,8 @@ repos:
   # Forbid leaked tool-call markup. When a subagent is delegated a full-file
   # write, its tool-call closing tags can bleed into the file content
   # (`</content>`, `</invoke>`, `<parameter …>`) — valid text no linter
-  # catches (see config/claude/audit/decisions-log.md; retrospective PR #166).
+  # catches (see the dotagents repo's audit/decisions-log.md; retrospective
+  # PR #166).
   # pygrep fails when the pattern matches. Anchored to a *bare tag line* so
   # prose that merely mentions the tags (this repo's audit docs) is not
   # flagged — only a standalone leaked tag is.
@@ -183,5 +172,4 @@ repos:
         name: agent-config markdown hygiene (78-col prose + code spans)
         language: system
         entry: python3 tests/lint/prose_wrap.py
-        files: ^(config/claude|\.claude)/.*\.md$
-        exclude: ^config/claude/(plugins|cache|projects|plans)/
+        files: ^\.claude/.*\.md$
