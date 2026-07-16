@@ -172,3 +172,30 @@ vmgr_run() {
   local image=$1 cmd=$2
   run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" bash -c "$cmd"
 }
+
+#------------------------------------------------------------------------------
+# perlbrew integration harness. Build (cached) the perl vmgr test image and
+# echo its tag; skip the calling test when docker is unavailable or the build
+# fails. A SEPARATE image from vmgr_harness_image because perlbrew compiles
+# Perl from source and needs a C toolchain (see tests/docker/perl/).
+
+perl_harness_image() {
+  command -v docker > /dev/null 2>&1 || skip "docker not available"
+
+  local tag=dotfiles-vmgr-perl-test:latest
+  docker build -q -t "$tag" "$(dotfiles_root)/tests/docker/perl" > /dev/null 2>&1 \
+    || skip "could not build the perl vmgr test image"
+
+  printf '%s' "$tag"
+}
+
+#------------------------------------------------------------------------------
+# Run a command in a throwaway perl-harness container with the repo mounted
+# read-only at /dotfiles and /dotfiles/bin on PATH. Sets $output/$status via
+# bats `run`.
+#   perl_run "$IMAGE" 'vmgr report perl'
+
+perl_run() {
+  local image=$1 cmd=$2
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" bash -c "$cmd"
+}
