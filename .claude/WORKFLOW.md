@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.6.0
+**Version:** v1.7.0
 
 ## Purpose
 
@@ -312,6 +312,29 @@ Optional but recommended:
    ```
 
 5. Follow setup instructions in root `README.md`
+
+### Perl QA toolchain (perlbrew via vmgr)
+
+The Perl QA tools that run **locally** — `perltidy` (Perl::Tidy), `perlcritic`
+(Perl::Critic), and the coverage/POD test modules — are installed into a
+pinned, perlbrew-managed Perl by `bin/vmgr`, so every machine has the same
+Perl and module versions. (The commit/CI **gate** does not depend on this — it
+runs `perltidy`/`perlcritic` from pinned docker images — so this toolchain is
+for local development and running `tests/perl/` under a controlled Perl.)
+
+```bash
+vmgr install perl     # install pinned perlbrew, build the pinned Perl, and
+                      # cpanm the QA module set into it (compiles Perl from
+                      # source — minutes)
+vmgr report perl      # show expected (pins) vs. current install + drift
+vmgr update perl      # reconcile an existing install after bumping a pin
+```
+
+The pins live in [`config/vmgr/perl`](../config/vmgr/perl) (perlbrew release,
+Perl version, and the cpanm module list); bump them there. `vmgr install perl`
+does **not** touch a pre-existing system-perl + local::lib setup until it
+completes — `config/shell-startup/perl` prefers the vmgr-managed perlbrew only
+once it is present, and otherwise leaves the existing Perl environment alone.
 
 ## Agent-Specific Overrides
 

@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.5
+**Version:** v2.6.6
 
 ## Purpose
 
@@ -71,6 +71,16 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   `common.bash` provides `vmgr_harness_image` and `vmgr_run` (same
   skip-if-no-docker guard). Kept separate from the startup image, which
   deliberately lacks those download tools.
+- `tests/docker/perl/` + `tests/shell/test_integration_vmgr_perl.bats` — a
+  **third** harness image (Debian slim + `perl` + a C toolchain) for `bin/vmgr`'s
+  perl (perlbrew) manager, which **compiles Perl from source**. Because that
+  compile takes minutes, the always-run tests exercise everything *except* the
+  build — the pinned perlbrew self-install, `vmgr report perl`, and `vmgr
+  remove perl` (fast, one network fetch, enough to gate per-PR) — while the
+  full lifecycle that builds a real Perl + installs the module set is **opt-in
+  via `VMGR_PERL_COMPILE=1`**. `common.bash` provides `perl_harness_image` and
+  `perl_run`. Separate from the node/python `vmgr` image, which lacks a C
+  toolchain.
 
 These run wherever docker exists (CI, dev) and skip otherwise, so they sit in
 the same gating suite without breaking docker-less environments.

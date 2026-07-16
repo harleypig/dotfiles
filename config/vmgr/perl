@@ -1,0 +1,41 @@
+# shellcheck shell=bash
+# shellcheck disable=SC2034  # consumed by code that sources this file
+# (lib/version-managers/perl, and anything else that needs the pins).
+
+# vmgr - perl toolchain pins (perlbrew). Same model as config/vmgr/node: the
+# version numbers live here, not in code. Bump deliberately.
+#
+#   - Fresh machine: `vmgr install perl` installs perlbrew (pinned), builds
+#     this Perl, installs cpanm, installs the module list below, and makes the
+#     pinned Perl the default.
+#   - Bump a pin: `vmgr update perl` reconciles an existing install to these
+#     pins (and `install` does too).
+#
+# The pinned Perl + module set is what makes the local QA toolchain (notably
+# Perl::Tidy and Perl::Critic) reproducible across machines. The commit/CI
+# GATE does not depend on this - it runs those tools from pinned docker images
+# (config/docker/, self-contained) - so this toolchain is for LOCAL dev and
+# running tests/perl/ under a controlled Perl.
+
+# perlbrew release to install / pin to. vmgr fetches the fat-packed `perlbrew`
+# script for this release tag (the same raw script install.perlbrew.pl fetches,
+# but pinned to a tag rather than master) and self-installs it, so the manager
+# itself is pinned (the nvm-git-tag analogue).
+PERLBREW_PIN=1.02
+
+# Exact Perl vmgr builds and sets as the default (a perlbrew perl name, NOT a
+# floating major). perlbrew compiles this from source.
+PERL_PIN=perl-5.40.2
+
+# The QA toolchain cpanm installs into the pinned Perl. These run IN-PROCESS
+# under the test Perl (Perl::Tidy is also a runtime dependency of
+# bin/perltidyrc-clean), so they must live in the managed Perl, not a docker
+# image. A bash array - the first list-valued vmgr pin.
+PERL_CPANM_MODULES=(
+  Perl::Tidy
+  Perl::Critic
+  Test::Perl::Critic
+  Devel::Cover
+  Test::Pod
+  Test::Pod::Coverage
+)
