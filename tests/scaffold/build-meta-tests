@@ -11,9 +11,7 @@
 # Usage:
 #   tests/scaffold/build-meta-tests [DIR ...]
 #
-# DIR arguments are roots to scan, relative to the repo root
-# (default: bin lib config/claude/skills — the last covers skill helper
-# scripts like config/claude/skills/*/scripts/*; non-scripts are skipped).
+# DIR arguments are roots to scan, relative to the repo root (default: bin lib).
 # Output: one <dir>-<name>.meta.bats per script, written to tests/shell/ (which
 # gitignores *.meta.bats). Files listed in tests/scaffold/meta-ignore (one
 # repo-relative path per line, # comments allowed) are skipped.
@@ -54,7 +52,7 @@ mkdir -p "$out_dir"
 # Roots to scan (repo-relative); default to bin + lib + skill helper scripts.
 
 declare -a roots=("$@")
-((${#roots[@]})) || roots=(bin lib config/claude/skills)
+((${#roots[@]})) || roots=(bin lib)
 
 #------------------------------------------------------------------------------
 # Load the ignore list (repo-relative paths) into a set.
