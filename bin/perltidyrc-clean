@@ -1025,3 +1025,108 @@ if ( %clean_opts || %abbreviations_user ) {
 }
 
 exit 0;
+
+__END__
+
+=head1 NAME
+
+perltidyrc-clean - clean, condense, and validate a perltidyrc configuration
+
+=head1 SYNOPSIS
+
+  perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults]
+                   [--add-missing-defaults] [--[no-]condense]
+                   [--outfile FILE | --overwrite] [--quiet]
+                   [--showconfig] [--help]
+
+  # Clean the perltidyrc Perl::Tidy would find and print to stdout
+  perltidyrc-clean
+
+  # Clean a specific file in place
+  perltidyrc-clean --rc .perltidyrc --overwrite
+
+  # Report which perltidyrc Perl::Tidy resolves, then exit
+  perltidyrc-clean --showconfig
+
+=head1 DESCRIPTION
+
+Loads a perltidyrc (via Perl::Tidy's own resolution, or the file named by
+C<--rc>), then emits a cleaned version: options matching Perl::Tidy defaults
+are dropped (unless C<--keep-defaults>), fine-grained options that duplicate a
+broader setting are condensed into that setting (unless C<--no-condense>),
+conflicting or shadowed options are annotated, and the result is regrouped by
+the Formatting Options sections of the perltidy manual.
+
+The cleaned configuration is written to stdout by default, to C<--outfile>, or
+back over the source file with C<--overwrite>. Any arguments not recognised as
+options above are passed through to Perl::Tidy, which reports an error if it
+does not recognise them.
+
+Requires Perl::Tidy (version 20060528 or newer) at runtime.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--rc> I<FILE>
+
+Load I<FILE> as the perltidyrc instead of letting Perl::Tidy search.
+
+=item B<--no-rc>
+
+Do not load any perltidyrc; process from Perl::Tidy defaults, overlaying any
+options passed through.
+
+=item B<--keep-defaults>
+
+Keep options whose values match Perl::Tidy defaults (normally dropped). Does
+not add missing defaults.
+
+=item B<--add-missing-defaults>
+
+Add any missing default options. Implies C<--keep-defaults> and
+C<--no-condense>.
+
+=item B<--condense>, B<--no-condense>
+
+Condense fine-grained options that duplicate a broader setting (on by
+default; disable with C<--no-condense>).
+
+=item B<--outfile> I<FILE>, B<-o> I<FILE>
+
+Write the output to I<FILE> instead of stdout. Mutually exclusive with
+C<--overwrite>.
+
+=item B<--overwrite>
+
+Overwrite the C<--rc> file with the cleaned output. Requires C<--rc>.
+
+=item B<--quiet>, B<-q>
+
+Omit the header and per-section comments from the output.
+
+=item B<--showconfig>
+
+Print the perltidyrc location as Perl::Tidy resolves it (the C<--rc> file if
+given, else the searched result) and exit. All options except C<--help> are
+ignored.
+
+=item B<--dump-perltidy-defaults>, B<--dump-perltidy-config>
+
+Debugging aids: dump Perl::Tidy's default option set, or the resolved option
+set for the current invocation, then exit.
+
+=item B<--help>, B<-h>
+
+Show the usage message and exit.
+
+=back
+
+=head1 EXIT STATUS
+
+Exits C<0> on success (including C<--showconfig>, C<--help>, and the C<--dump->
+modes). Exits non-zero via C<die> on a usage error (e.g. C<--overwrite>
+without C<--rc>, or mutually exclusive options), a missing Perl::Tidy, or an
+I/O failure writing the output.
+
+=cut
