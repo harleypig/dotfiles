@@ -1,0 +1,330 @@
+#!/usr/bin/env bash
+
+# lib/version-managers/perl - vmgr module wrapping perlbrew (Perl version mgr).
+#
+# Sourced by bin/vmgr (never executed). Declares the managers this language
+# provides and a <manager>_<verb> function per manager - the verbs are install,
+# update, remove, report, and help (see bin/vmgr). As a sourced library it uses
+# no `set -e` and calls no `exit` - it surfaces errors via return codes (see
+# the dotagents repo's rules/bash.md).
+#
+# perlbrew is installed by fetching the fat-packed `perlbrew` script for the
+# PINNED release and self-installing it, so the manager itself is pinned (the
+# nvm-git-tag analogue) rather than whatever install.perlbrew.pl serves today.
+# It then compiles the pinned Perl, installs cpanm, and installs the pinned
+# module set into that Perl. Shell-init (lazy-load at login) is deliberately
+# NOT handled here - it lives in config/shell-startup/perl, a separate concern.
+#
+# The pins (PERLBREW_PIN, PERL_PIN, PERL_CPANM_MODULES) live in
+# config/vmgr/perl, loaded by _perl_load_pins. The commit/CI GATE does NOT use
+# this toolchain - it runs Perl::Tidy / Perl::Critic from pinned docker images
+# (config/docker/, self-contained) - so this is for LOCAL dev and running
+# tests/perl/ under a controlled Perl.
+
+# shellcheck disable=SC2034  # read by bin/vmgr after it sources this module
+vmgr_managers=(perlbrew)
+
+# PERLBREW_PIN / PERL_PIN / PERL_CPANM_MODULES come from config/vmgr/perl via
+# _perl_load_pins (a runtime `source`), so shellcheck can't see them assigned.
+# shellcheck disable=SC2154
+
+###############################################################################
+# Internal helpers
+
+#------------------------------------------------------------------------------
+# Echo the XDG-compliant perlbrew root (honouring a caller-set PERLBREW_ROOT).
+
+_perl_perlbrew_root() {
+  printf '%s' "${PERLBREW_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/perlbrew}"
+}
+
+#------------------------------------------------------------------------------
+# Echo the perlbrew CLI path inside the root (present only after install).
+
+_perl_perlbrew_bin() {
+  printf '%s/bin/perlbrew' "$(_perl_perlbrew_root)"
+}
+
+#------------------------------------------------------------------------------
+# Path to this language's pins config. Defaults to the repo's config/vmgr/perl
+# (resolved from this module's own location, so it works however the module is
+# sourced); override the dir with VMGR_CONFIG_DIR.
+
+_perl_conf() {
+  local dir
+
+  if [[ -n ${VMGR_CONFIG_DIR:-} ]]; then
+    dir=$VMGR_CONFIG_DIR
+
+  else
+    local self
+    self=$(readlink -f "${BASH_SOURCE[0]}")
+    dir="$(dirname "$(dirname "$(dirname "$self")")")/config/vmgr"
+  fi
+
+  printf '%s/perl' "$dir"
+}
+
+#------------------------------------------------------------------------------
+# Source the pins config, populating PERLBREW_PIN, PERL_PIN, and
+# PERL_CPANM_MODULES. Returns non-zero (with a message) if the config is
+# missing or does not set the required scalars.
+
+_perl_load_pins() {
+  local conf
+  conf=$(_perl_conf)
+
+  [[ -r $conf ]] || {
+    printf 'perl: pins config not found at %s\n' "$conf" >&2
+    return 1
+  }
+
+  # shellcheck disable=SC1090  # config path resolved at runtime
+  source "$conf"
+
+  [[ -n ${PERLBREW_PIN:-} && -n ${PERL_PIN:-} ]] || {
+    printf 'perl: PERLBREW_PIN and PERL_PIN must be set in %s\n' "$conf" >&2
+    return 1
+  }
+}
+
+#------------------------------------------------------------------------------
+# Install perlbrew (pinned) into the root if absent: fetch the fat-packed
+# script for release PERLBREW_PIN and self-install it. Idempotent - an existing
+# perlbrew is left in place.
+
+_perl_install_perlbrew() {
+  local root bin
+  root=$(_perl_perlbrew_root)
+  bin=$(_perl_perlbrew_bin)
+
+  [[ -x $bin ]] && return 0
+
+  printf 'installing perlbrew %s into %s\n' "$PERLBREW_PIN" "$root" >&2
+
+  local url tmp
+  url="https://raw.githubusercontent.com/gugod/App-perlbrew/release-$PERLBREW_PIN/perlbrew"
+  tmp=$(mktemp) || return 1
+
+  curl -fLsS "$url" -o "$tmp" \
+    || {
+      printf 'perlbrew: download of %s failed\n' "$url" >&2
+      rm -f "$tmp"
+      return 1
+    }
+
+  # self-install honours PERLBREW_ROOT and drops the CLI at $root/bin/perlbrew.
+  PERLBREW_ROOT=$root perl "$tmp" self-install \
+    || {
+      printf 'perlbrew: self-install failed\n' >&2
+      rm -f "$tmp"
+      return 1
+    }
+
+  rm -f "$tmp"
+}
+
+#------------------------------------------------------------------------------
+# Reconcile the toolchain to the pins: build PERL_PIN (perlbrew compiles from
+# source), install cpanm, install the pinned module set into that Perl, and set
+# it the default. Shared by install and update. Assumes perlbrew is present.
+# Idempotent toward the pins: perlbrew skips an already-built Perl, and
+# re-running re-asserts the default and re-checks the modules.
+
+_perl_reconcile() {
+  local root bin jobs
+  root=$(_perl_perlbrew_root)
+  bin=$(_perl_perlbrew_bin)
+  jobs=$(nproc 2> /dev/null || echo 2)
+
+  export PERLBREW_ROOT=$root
+
+  printf 'building Perl %s (perlbrew compiles from source; this is slow)\n' "$PERL_PIN" >&2
+
+  "$bin" install --notest --noman -j "$jobs" "$PERL_PIN" \
+    || {
+      printf 'perl %s build failed\n' "$PERL_PIN" >&2
+      return 1
+    }
+
+  printf 'installing cpanm\n' >&2
+
+  "$bin" install-cpanm \
+    || {
+      printf 'cpanm install failed\n' >&2
+      return 1
+    }
+
+  if ((${#PERL_CPANM_MODULES[@]})); then
+    printf 'installing modules into %s: %s\n' "$PERL_PIN" "${PERL_CPANM_MODULES[*]}" >&2
+
+    "$bin" exec --with "$PERL_PIN" cpanm --notest "${PERL_CPANM_MODULES[@]}" \
+      || {
+        printf 'module install failed\n' >&2
+        return 1
+      }
+  fi
+
+  printf 'setting %s as the default perl\n' "$PERL_PIN" >&2
+
+  "$bin" switch "$PERL_PIN" \
+    || {
+      printf 'setting default perl failed\n' >&2
+      return 1
+    }
+}
+
+###############################################################################
+# Manager: perlbrew
+
+#------------------------------------------------------------------------------
+# Ensure perlbrew is present (install it if absent), then reconcile the whole
+# toolchain to the pins. Idempotent toward the pins: re-running re-asserts them,
+# including RESETTING the default Perl to PERL_PIN. That reset is intentional;
+# vmgr owns only the pinned default - use perlbrew itself to pick another, or
+# bump PERL_PIN in config/vmgr/perl.
+
+perlbrew_install() {
+  _perl_load_pins || return 1
+
+  _perl_install_perlbrew || return 1
+
+  _perl_reconcile
+}
+
+#------------------------------------------------------------------------------
+# Bring an existing install to the pins (the same reconcile as install, minus
+# the initial perlbrew self-install). Run it after bumping a pin.
+
+perlbrew_update() {
+  local bin
+  bin=$(_perl_perlbrew_bin)
+
+  _perl_load_pins || return 1
+
+  [[ -x $bin ]] || {
+    printf "perlbrew not installed at %s (run 'vmgr install perl')\n" \
+      "$(_perl_perlbrew_root)" >&2
+    return 1
+  }
+
+  _perl_reconcile
+}
+
+#------------------------------------------------------------------------------
+# Remove perlbrew and everything it installed (the whole root). Idempotent:
+# a missing install is a successful no-op.
+
+perlbrew_remove() {
+  local root
+  root=$(_perl_perlbrew_root)
+
+  if [[ ! -d $root ]]; then
+    printf 'perlbrew not installed at %s; nothing to remove\n' "$root" >&2
+    return 0
+  fi
+
+  printf 'removing perlbrew (and its Perls + modules) at %s\n' "$root" >&2
+  rm -rf "$root"
+}
+
+#------------------------------------------------------------------------------
+# Report expected (pins / location) vs. current (what is installed now), and
+# flag drift. Read-only: it inspects files and never installs or switches.
+
+perlbrew_report() {
+  local expected current bin src installed
+  local -a perls=()
+
+  _perl_load_pins || {
+    PERLBREW_PIN='(no pins config)'
+    PERL_PIN='(no pins config)'
+  }
+
+  expected="${XDG_DATA_HOME:-$HOME/.local/share}/perlbrew"
+  current=$(_perl_perlbrew_root)
+  bin=$(_perl_perlbrew_bin)
+
+  if [[ -n ${PERLBREW_ROOT:-} ]]; then
+    src="from environment (PERLBREW_ROOT)"
+  else
+    src="vmgr default"
+  fi
+
+  if [[ -x $bin ]]; then
+    installed=$(PERLBREW_ROOT=$current "$bin" version 2> /dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1)
+    mapfile -t perls < <(
+      PERLBREW_ROOT=$current "$bin" list 2> /dev/null | sed 's/^[* ]*//; s/ .*//'
+    )
+  fi
+
+  printf 'perl (manager: perlbrew)\n\n'
+
+  printf '  Expected (vmgr):\n'
+  printf '    root      : %s\n' "$expected"
+  printf '    perlbrew  : %s\n' "$PERLBREW_PIN"
+  printf '    perl      : %s (default)\n\n' "$PERL_PIN"
+
+  printf '  Current:\n'
+  printf '    root      : %s (%s)\n' "$current" "$src"
+  printf '    perlbrew  : %s\n' "${installed:-not installed}"
+  if ((${#perls[@]})); then
+    printf '    perls     : %s\n' "${perls[*]}"
+  else
+    printf '    perls     : none installed\n'
+  fi
+
+  printf '\n  Findings:\n'
+
+  if [[ -z $installed ]]; then
+    printf "    - perlbrew not installed at the current root; run 'vmgr install perl'.\n"
+  fi
+
+  if [[ $current != "$expected" ]]; then
+    printf '    - location: perlbrew is at\n        %s\n      but vmgr expects\n        %s\n' \
+      "$current" "$expected"
+    printf '      Consider migrating; vmgr does not move it.\n'
+  else
+    printf '    - location: matches the expected vmgr location.\n'
+  fi
+
+  if [[ -n $installed && $installed != "$PERLBREW_PIN" ]]; then
+    printf "    - perlbrew version: %s installed vs %s pinned (run 'vmgr update perl').\n" \
+      "$installed" "$PERLBREW_PIN"
+  fi
+}
+
+#------------------------------------------------------------------------------
+# Print perl-specific help: what vmgr manages, what each verb does, the pin
+# semantics, and where the install lives.
+
+perlbrew_help() {
+  cat << 'EOF'
+perl - managed via perlbrew (the Perl version manager).
+
+vmgr keeps a pinned perlbrew, a pinned default Perl compiled from source, and a
+pinned set of QA modules (Perl::Tidy, Perl::Critic, and the test/coverage
+modules) installed into that Perl. The pins (PERLBREW_PIN, PERL_PIN,
+PERL_CPANM_MODULES) live in config/vmgr/perl - in config, not code - so they
+are set in one place. perlbrew itself is pinned by self-installing the
+fat-packed script for PERLBREW_PIN's release.
+
+Verbs:
+  install   Install perlbrew if absent, then reconcile the toolchain to the
+            pins: build PERL_PIN, install cpanm, install the module set, and
+            set PERL_PIN the default.
+  update    Reconcile an existing install to the pins (the same as install,
+            minus the initial perlbrew self-install). Run it after bumping a
+            pin.
+  remove    Delete the whole perlbrew root (every Perl and module it built).
+  report    Show expected (pins / location) vs. current state, and flag drift.
+
+Building a Perl compiles it from source and is SLOW (minutes), unlike nvm's
+prebuilt-binary download. The pins govern only what vmgr installs and defaults;
+perlbrew stays usable directly. Use perlbrew itself to pick a different default
+Perl.
+
+Location: vmgr uses $PERLBREW_ROOT if set, otherwise $XDG_DATA_HOME/perlbrew.
+Run 'vmgr report perl' to see expected vs. current location and versions.
+EOF
+}
