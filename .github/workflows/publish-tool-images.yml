@@ -1,0 +1,61 @@
+---
+name: publish-tool-images
+
+# Build and push the repo's pinned Perl QA tool images to ghcr (PRIVATE
+# packages). Each image is the shared config/docker/perl-tools/Dockerfile built
+# with a tool-specific MODULES list - the seed of the roadmap's single combined
+# tool image (add a matrix entry per tool; the combined image is one entry with
+# the full module list).
+#
+# On a PR it BUILDS only (verify the Dockerfile); it pushes only on a push to
+# master, so unmerged changes never publish. The docker_wrapper image[] pins +
+# the pre-commit hooks consume these images (see bin/docker_wrapper and
+# .pre-commit-config*.yaml); bump a module version here and re-pin there.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - config/docker/perl-tools/**
+      - .github/workflows/publish-tool-images.yml
+  pull_request:
+    paths:
+      - config/docker/perl-tools/**
+      - .github/workflows/publish-tool-images.yml
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - tool: perltidy
+            modules: Perl::Tidy@20250912
+            tag: '20250912'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build ${{ matrix.tool }}
+        run: |
+          image="ghcr.io/${{ github.repository_owner }}/${{ matrix.tool }}"
+          docker build --build-arg MODULES="${{ matrix.modules }}" \
+            -t "$image:${{ matrix.tag }}" config/docker/perl-tools
+
+      # Push only from master (not PRs); a fork PR has no packages:write anyway.
+      - name: Log in to ghcr
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Push ${{ matrix.tool }}
+        if: github.event_name != 'pull_request'
+        run: |
+          image="ghcr.io/${{ github.repository_owner }}/${{ matrix.tool }}:${{ matrix.tag }}"
+          docker push "$image"
+          docker image inspect "$image" \
+            --format 'digest: {{index .RepoDigests 0}}'
