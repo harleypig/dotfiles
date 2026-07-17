@@ -12,6 +12,15 @@ goes green (see the merge-time finalization in
 
 ## 2026-07-16
 
+### Changed
+
+- **Extracted the shared vmgr pins-loader.** The `_<lang>_conf` /
+  `_<lang>_load_pins` helpers — duplicated across the node, python, and perl
+  `vmgr` modules (the Rule of Three, met once perl landed) — are now a single
+  `_vmgr_load_pins <lang> <VAR>…` in `lib/vmgr-common`, sourced by each module.
+  Behaviour-preserving; verified by the node/python/perl docker integration
+  tests.
+
 ### Added
 
 - **Stood up and gated the Perl QA toolchain.** A perlbrew `vmgr` module

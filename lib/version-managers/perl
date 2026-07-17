@@ -16,7 +16,7 @@
 # NOT handled here - it lives in config/shell-startup/perl, a separate concern.
 #
 # The pins (PERLBREW_PIN, PERL_PIN, PERL_CPANM_MODULES) live in
-# config/vmgr/perl, loaded by _perl_load_pins. The commit/CI GATE does NOT use
+# config/vmgr/perl, loaded by _vmgr_load_pins. The commit/CI GATE does NOT use
 # this toolchain - it runs Perl::Tidy / Perl::Critic from pinned docker images
 # (config/docker/, self-contained) - so this is for LOCAL dev and running
 # tests/perl/ under a controlled Perl.
@@ -24,8 +24,13 @@
 # shellcheck disable=SC2034  # read by bin/vmgr after it sources this module
 vmgr_managers=(perlbrew)
 
+# Shared vmgr helpers (_vmgr_load_pins), resolved relative to this module.
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=../vmgr-common
+source "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")/vmgr-common"
+
 # PERLBREW_PIN / PERL_PIN / PERL_CPANM_MODULES come from config/vmgr/perl via
-# _perl_load_pins (a runtime `source`), so shellcheck can't see them assigned.
+# _vmgr_load_pins (a runtime `source`), so shellcheck can't see them assigned.
 # shellcheck disable=SC2154
 
 ###############################################################################
@@ -43,49 +48,6 @@ _perl_perlbrew_root() {
 
 _perl_perlbrew_bin() {
   printf '%s/bin/perlbrew' "$(_perl_perlbrew_root)"
-}
-
-#------------------------------------------------------------------------------
-# Path to this language's pins config. Defaults to the repo's config/vmgr/perl
-# (resolved from this module's own location, so it works however the module is
-# sourced); override the dir with VMGR_CONFIG_DIR.
-
-_perl_conf() {
-  local dir
-
-  if [[ -n ${VMGR_CONFIG_DIR:-} ]]; then
-    dir=$VMGR_CONFIG_DIR
-
-  else
-    local self
-    self=$(readlink -f "${BASH_SOURCE[0]}")
-    dir="$(dirname "$(dirname "$(dirname "$self")")")/config/vmgr"
-  fi
-
-  printf '%s/perl' "$dir"
-}
-
-#------------------------------------------------------------------------------
-# Source the pins config, populating PERLBREW_PIN, PERL_PIN, and
-# PERL_CPANM_MODULES. Returns non-zero (with a message) if the config is
-# missing or does not set the required scalars.
-
-_perl_load_pins() {
-  local conf
-  conf=$(_perl_conf)
-
-  [[ -r $conf ]] || {
-    printf 'perl: pins config not found at %s\n' "$conf" >&2
-    return 1
-  }
-
-  # shellcheck disable=SC1090  # config path resolved at runtime
-  source "$conf"
-
-  [[ -n ${PERLBREW_PIN:-} && -n ${PERL_PIN:-} ]] || {
-    printf 'perl: PERLBREW_PIN and PERL_PIN must be set in %s\n' "$conf" >&2
-    return 1
-  }
 }
 
 #------------------------------------------------------------------------------
@@ -185,7 +147,7 @@ _perl_reconcile() {
 # bump PERL_PIN in config/vmgr/perl.
 
 perlbrew_install() {
-  _perl_load_pins || return 1
+  _vmgr_load_pins perl PERLBREW_PIN PERL_PIN || return 1
 
   _perl_install_perlbrew || return 1
 
@@ -200,7 +162,7 @@ perlbrew_update() {
   local bin
   bin=$(_perl_perlbrew_bin)
 
-  _perl_load_pins || return 1
+  _vmgr_load_pins perl PERLBREW_PIN PERL_PIN || return 1
 
   [[ -x $bin ]] || {
     printf "perlbrew not installed at %s (run 'vmgr install perl')\n" \
@@ -236,7 +198,7 @@ perlbrew_report() {
   local expected current bin src installed
   local -a perls=()
 
-  _perl_load_pins || {
+  _vmgr_load_pins perl PERLBREW_PIN PERL_PIN || {
     PERLBREW_PIN='(no pins config)'
     PERL_PIN='(no pins config)'
   }

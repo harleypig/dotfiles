@@ -94,12 +94,6 @@ pattern** they share.
 - [ ] Evaluate/standardize **Ruby** and **rustup** (rustup already in use)
   under the same pattern — a `config/shell-startup/<lang>` module plus a
   `lib/version-managers/<lang>` module. (Node, Python, and Perl are done.)
-- [ ] **Extract the shared pins loader** — the `_<lang>_conf` /
-  `_<lang>_load_pins` helpers are now duplicated across three modules
-  (`lib/version-managers/{node,python,perl}`), so the Rule of Three is met.
-  Factor them into one shared helper (e.g. `lib/vmgr-common`, sourced by each
-  module — it can't live in `lib/version-managers/`, which `bin/vmgr` lists as
-  languages) and migrate all three; verify via the docker integration tests.
 - [ ] **Pre-installed global manager** (when first needed): handle a machine
   that already has a manager installed system-wide — detect it and decide
   adopt / skip / coexist rather than blindly re-installing.
