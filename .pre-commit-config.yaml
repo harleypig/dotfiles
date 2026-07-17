@@ -125,14 +125,28 @@ repos:
       - id: perltidy-check
         name: perltidy (check — assert tidy)
         language: docker_image
-        entry: 'ghcr.io/harleypig/perltidy:20250912@sha256:9ba462faf62909a8879e614e28818aa657844014816975bd3d89d74cf8843f7a sh -c ''rc=0; for f in "$@"; do perltidy -st "$f" 2>/dev/null | diff -q "$f" - >/dev/null || { echo "not tidy: $f" >&2; rc=1; }; done; exit $rc'' --'
+        entry: 'ghcr.io/harleypig/perltidy:20250912@sha256:61983dd2a1c283df0b839f8fa7a45bcbca5228c7a24495567cbabc3fa997f37b sh -c ''rc=0; for f in "$@"; do perltidy -st "$f" 2>/dev/null | diff -q "$f" - >/dev/null || { echo "not tidy: $f" >&2; rc=1; }; done; exit $rc'' --'
         files: ^bin/
         types: [perl]
 
-  # Phase 3 (Language) — Perl / perlcritic: DEFERRED to F3 — it needs its own
-  # pinned docker image + Test::Perl::Critic. The curated core-severity-4
-  # config/perl/perlcriticrc is already in place (F0); the gate lands with F3.
-  #
+  # Phase 3 (Language) — Perl / perlcritic: ACTIVE. Linting is gated via the
+  # pinned, self-contained (PRIVATE) docker image ghcr.io/harleypig/perlcritic
+  # (built by publish-tool-images.yml; `docker login ghcr.io` required — see
+  # WORKFLOW.md). perlcritic handles multiple files natively and auto-discovers
+  # the repo-root .perlcriticrc (-> config/perl/perlcriticrc, the curated
+  # core-severity-4 profile from F0), exiting non-zero on any violation. Scoped
+  # to bin/ like perltidy. There is deliberately no in-suite Test::Perl::Critic
+  # — this docker gate is the enforcement (a recorded decision). SYNC the
+  # tag+digest with bin/docker_wrapper image[perlcritic] and the matrix.
+  - repo: local
+    hooks:
+      - id: perlcritic-check
+        name: perlcritic --severity 4
+        language: docker_image
+        entry: ghcr.io/harleypig/perlcritic:1.156@sha256:a1e4413ee095894c3ad5e72fadc10057fc955cb42a9ab05c54868ede915c6e26 perlcritic
+        files: ^bin/
+        types: [perl]
+
   # Phase 3 (Language) — Rust: N/A (no Rust in this repo).
 
   # Secret detection (Phase 2). The gitleaks hook scans staged content at
