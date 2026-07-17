@@ -14,3 +14,4 @@ repo's `adr/`.
 | ADR | Title | Status |
 |-----|-------|--------|
 | [0001](0001-custom-polyglot-version-manager.md) | Build a custom polyglot version-manager orchestrator that wraps native managers | Accepted |
+| [0002](0002-perl-qa-tooling-scope.md) | Scope of the Perl QA tooling — what to gate, skip, and defer | Accepted |

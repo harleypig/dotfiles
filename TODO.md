@@ -2,141 +2,30 @@
 
 ## 🐫 Perl Setup
 
-Everything for standing up Perl in this repo, end to end: the toolchain
-install, QA tooling (perlcritic, coverage, POD, deeper analysis, SAST), the
-pre-commit/CI gate integration, setup docs, and the agent rules/skills that
-capture it. Build it out across **both the test suite and the CLI scripts**
-(where CLIs exist — e.g. `bin/parse_params`, `bin/perltidyrc-clean`), as
-strict as practical, in stages. Capture the resulting toolchain in **agent
-rules/skills** (see *Rules & skills* below), not only human setup docs.
+The Perl QA toolchain is stood up and gated (perlbrew toolchain; curated
+core-severity-4 perlcritic; docker-image perltidy + perlcritic gates;
+Test::Pod; non-gating Devel::Cover coverage; setup docs — shipped across
+PRs #265–#271, see [CHANGELOG.md](CHANGELOG.md)). Scope decisions on what was
+skipped / declined / deferred are recorded in
+[ADR-0002](docs/adr/0002-perl-qa-tooling-scope.md). Remaining:
 
-### Toolchain install (perlbrew)
-
-- [ ] **perlbrew**: install a pinned Perl + cpanm, then the toolchain the repo
-  needs (notably **Perl::Tidy**, plus the perlcritic policy dists chosen
-  below). A controlled Perl::Tidy identical across machines **and CI** removes
-  the version drift behind the non-gating `perl` job; pinning fixes the
-  wording drift, though the `perltidyrc-clean` tests should still be hardened
-  to be version-robust. Follow the one documented, idempotent, XDG-aware
-  install + shell-init pattern from *Tool/Version Manager Setup*.
-
-### perlcritic
-
-`perlcritic` is currently unusable: this machine has many **non-core,
-third-party policy bundles** installed that bury real findings in noise. On
-`bin/parse_params`, `--severity 4` shows only
-`ValuesAndExpressions::ProhibitAccessOfPrivateData` (28× — false positive on
-plain `$hashref->{key}`); `--severity 3` adds `CodeLayout::TabIndentSpaceAlign`
-(217×, demands tabs — **rejected, this repo is spaces-only**),
-`ProhibitHashBarewords`, `Reneeb::*`, `logicLAB::*`, `Bangs::*`, UTF-8 and
-`RequireExtendedFormatting` opinions, etc. The current
-`config/perl/perlcriticrc` is worse than nothing — it references uninstalled
-bundles (OTRS, TryTiny).
-
-- [ ] Rebuild `config/perl/perlcriticrc` as a curated profile; drop the
-  uninstalled-bundle references.
-- [ ] **Review each installed external policy individually** — they are *not*
-  all bad; adopt the useful ones and exclude only what genuinely doesn't fit
-  (e.g. TabIndentSpaceAlign, ProhibitAccessOfPrivateData). Don't dismiss the
-  third-party bundles wholesale.
-- [ ] **Ratchet severity toward the strictest (1), in stages** — clean the
-  findings at each level before tightening; start from the `--severity 4`
-  baseline (`perl.md`) and work down.
-- [ ] **Test::Perl::Critic** — run perlcritic from the test suite (a
-  `tests/perl/*-critic.t` over `bin/` + `lib/`) so the curated profile is
-  *enforced*, not merely available.
-- [ ] **Docker angle** (ties into "run more linters via Docker"): a pinned
-  `perlcritic` image (`FROM perl` + `cpanm Perl::Critic` plus only the chosen
-  policy dists) gives a **controlled** policy set — no stray third-party
-  bundles — removing most noise by construction. No official image exists, so
-  it'd be a small custom pinned `docker_wrapper` entry.
-
-### Coverage and POD
-
-- [ ] **Devel::Cover** — measure coverage for the perl test suite (and the
-  CLIs it exercises); add a report and a coverage target to aim for.
-- [ ] **Pod::Coverage** / **Test::Pod::Coverage** — ensure every public sub
-  and CLI option is documented in POD; gate it in the suite. Pair with
-  **Test::Pod** for POD syntax.
-
-### Additional analysis
-
-- [ ] **B::Lint** — a second, lighter layer of basic checks (accepting some
-  overlap with perlcritic); decide where it adds signal perlcritic doesn't.
-- [ ] **B::Deparse** — use as an *aid* when making scripts idiomatic (compare
-  deparsed output to spot non-idiomatic constructs / hidden behavior); a
-  technique, not a gate.
-- [ ] **Perl::Analyzer** — investigate (call-graph / structure analysis);
-  evaluate whether it's worth adding for the larger perl.
-
-### Security scanning
-
-- [ ] Look into perl SAST: **Checkmarx was evaluated and declined** (commercial,
-  no free tier — see "Evaluate trufflehog & Checkmarx"), so pursue
-  **open-source** options only (e.g. `perlcritic` security policies, or other
-  OSS perl analyzers), and fold any perl SAST into the `security-scan` skill /
-  `qa.md` security dimension rather than a one-off.
-
-### Pre-commit & CI integration
-
-Gating Perl in the commit/CI pipeline. Both depend on a clean, enforced
-perlcritic profile (above) and a pinned toolchain (*Toolchain install*) — that
-keystone is what unblocks them.
-
-- [ ] **Pre-commit hook** (Pre-commit rollout → Phase 3) — DEFERRED; the
-  `perlcritic` and `perltidy` hooks are staged commented in both configs
-  (`.pre-commit-config.yaml` / `-fix.yaml`). Blocked on: the existing
-  `perlcritic --severity 4` debt; `config/perl/perlcriticrc` referencing
-  uninstalled policy bundles (OTRS, TryTiny); perltidy version drift; and the
-  perl tools not being installed in the CI pre-commit job. Enable after
-  perlbrew pinning + perlcriticrc rebuild + debt cleanup.
-- [ ] **CI linting job** (CI/CD rollout → Phase 3) — wire perl linting
-  (perlcritic/perltidy) into `tests.yml`, gating once the pre-commit hooks are
-  enabled and the perl tools are installed in the CI job. Today the `perl`
-  prove job is **non-gating** (perltidy version drift); pinning via perlbrew
-  is what lets it gate.
-
-### Setup / documentation
-
-- [ ] Document installation + setup for **all of the above** (Perl::Critic +
-  the chosen policy dists, Test::Perl::Critic, Devel::Cover, Pod::Coverage /
-  Test::Pod::Coverage / Test::Pod, B::Lint, Perl::Analyzer, any perl SAST)
-  alongside the existing setup docs (WORKFLOW.md *Tool Setup Procedures* /
-  Prerequisites). Use the repo's standard install path — perlbrew + cpanm (see
-  *Tool/Version Manager Setup*) or pinned docker wrappers — so a fresh machine
-  reproduces the whole perl QA toolchain from one documented place.
-
-### Rules & skills (agent config)
-
-*Claude-config note (TODO-routing):* these deliverables are agent-config work
-(rules / a skill) that now lives in the **dotagents** repo, kept here because
-they're coupled to the perl-tooling stages above (each rule lands as its tool
-does). Author them as part of that work, or move this subsection to the
-dotagents repo's `audit/BACKLOG.md` when the tooling lands — don't leave it
-stranded in the dotfiles `TODO.md`.
-
-These stages adopt several tools the **agent** must know how to drive — capture
-each as agent config, not only human setup docs, per `CLAUDE.md` *Missing or
-Conflicting Tool Rules* and *When to Propose a Skill*. Today only a thin
-`rules/perl.md` exists (a one-line `perltidy` + `perlcritic --severity 4`
-mention) and there is **no** perl-QA skill (cf. `bats-setup`,
-`pytest-patterns`).
-
-- [ ] **Per-tool rules.** As each tool lands, create or extend its
-  `rules/<tool>.md`, **grounded in current official docs with a Sources cite**
-  (`EXTENDING.md` *Grounding & sourcing*) — never memory. Likely a dedicated
-  **`rules/perlcritic.md`** (the curated profile, policy-selection judgement,
-  staged severity ratchet, and docker-pinned-policy-set angle are far more than
-  `perl.md`'s one-liner), plus shorter rules or `perl.md` sections for
-  `perltidy`, `Devel::Cover`, and `Test::Pod::Coverage`. Wire each into the
-  tool-detection table and the `qa.md` / repo QA-doc dimension mapping.
-- [ ] **A perl-QA skill?** Decide whether the multi-step procedures here
-  (scaffold the toolchain → curate the perlcritic profile → ratchet severity in
-  stages → wire Test::Perl::Critic + coverage + POD gates) warrant a skill — a
-  perl analog of **`bats-setup`** (scaffolding) and/or **`pytest-patterns`**
-  (depth recipes). Weigh against `qa-check` (which *runs* QA) and the existing
-  skills; fold into one rather than duplicate if it already fits (Rule of
-  Three).
+- [ ] **Ratchet the perlcritic severity toward 1, in stages.** The gate is at
+  severity 4 (`config/perl/perlcriticrc`); tighten in steps (4 → 3 → 2 → 1),
+  cleaning each level's findings before the next. As part of a step, review the
+  installed third-party policies for any worth adopting (added to the
+  perlcritic docker image + the profile). Bump `severity` in the profile.
+- [ ] **Combined tool image (roadmap).** perltidy + perlcritic build from one
+  parameterized Dockerfile (`config/docker/perl-tools/`); fold them into a
+  single combined image (one build with the full `MODULES` list), and longer
+  term investigate one image spanning multiple languages' QA tools. Extend the
+  existing layout + `publish-tool-images.yml` — don't restart.
+- [ ] **→ dotagents (agent-config): Perl rules + generic language-setup
+  standard.** Reconcile `rules/perl.md` (severity 4 + the ratchet; add a
+  `## Sources`), add `rules/perlcritic.md` + `rules/perltidy.md` wired into the
+  tool-detection table; and codify the generic *runtime → version-manager /
+  tools → docker-preferred-ladder* standard as a tier-1 rule that the vmgr /
+  tool-detection docs point at. Lives in the **dotagents** repo — migrate to
+  its `audit/BACKLOG.md` when next working it.
 
 ## 🪟 PowerShell Setup
 
@@ -204,12 +93,13 @@ pattern** they share.
 
 - [ ] Evaluate/standardize **Ruby** and **rustup** (rustup already in use)
   under the same pattern — a `config/shell-startup/<lang>` module plus a
-  `lib/version-managers/<lang>` module. (Node and Python are done.)
-- [ ] **Extract the shared pins loader** (retrospective, PR #183) — the
-  `_<lang>_conf` / `_<lang>_load_pins` helpers are duplicated in
-  `lib/version-managers/node` and `…/python` (2 of 3). Per the Rule of Three,
-  factor them into one shared helper when the third language module (Ruby or
-  rustup, above) lands.
+  `lib/version-managers/<lang>` module. (Node, Python, and Perl are done.)
+- [ ] **Extract the shared pins loader** — the `_<lang>_conf` /
+  `_<lang>_load_pins` helpers are now duplicated across three modules
+  (`lib/version-managers/{node,python,perl}`), so the Rule of Three is met.
+  Factor them into one shared helper (e.g. `lib/vmgr-common`, sourced by each
+  module — it can't live in `lib/version-managers/`, which `bin/vmgr` lists as
+  languages) and migrate all three; verify via the docker integration tests.
 - [ ] **Pre-installed global manager** (when first needed): handle a machine
   that already has a manager installed system-wide — detect it and decide
   adopt / skip / coexist rather than blindly re-installing.
