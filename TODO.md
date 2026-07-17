@@ -19,13 +19,6 @@ skipped / declined / deferred are recorded in
   single combined image (one build with the full `MODULES` list), and longer
   term investigate one image spanning multiple languages' QA tools. Extend the
   existing layout + `publish-tool-images.yml` — don't restart.
-- [ ] **→ dotagents (agent-config): Perl rules + generic language-setup
-  standard.** Reconcile `rules/perl.md` (severity 4 + the ratchet; add a
-  `## Sources`), add `rules/perlcritic.md` + `rules/perltidy.md` wired into the
-  tool-detection table; and codify the generic *runtime → version-manager /
-  tools → docker-preferred-ladder* standard as a tier-1 rule that the vmgr /
-  tool-detection docs point at. Lives in the **dotagents** repo — migrate to
-  its `audit/BACKLOG.md` when next working it.
 
 ## 🪟 PowerShell Setup
 
