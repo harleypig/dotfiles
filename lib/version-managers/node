@@ -18,8 +18,13 @@
 # shellcheck disable=SC2034  # read by bin/vmgr after it sources this module
 vmgr_managers=(nvm)
 
+# Shared vmgr helpers (_vmgr_load_pins), resolved relative to this module.
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=../vmgr-common
+source "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")/vmgr-common"
+
 # The pinned versions (NVM_PIN, NODE_PIN) are NOT hardcoded here - they live in
-# config/vmgr/node and are loaded by _node_load_pins, so the numbers are set in
+# config/vmgr/node and are loaded by _vmgr_load_pins, so the numbers are set in
 # one place and sourceable by anything that needs them. Bump them there.
 
 ###############################################################################
@@ -30,48 +35,6 @@ vmgr_managers=(nvm)
 
 _node_nvm_dir() {
   printf '%s' "${NVM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nvm}"
-}
-
-#------------------------------------------------------------------------------
-# Echo the path to this language's pins config. Defaults to the repo's
-# config/vmgr/node (resolved from this module's own location, so it works
-# however the module is sourced); override the dir with VMGR_CONFIG_DIR.
-
-_node_conf() {
-  local dir
-
-  if [[ -n ${VMGR_CONFIG_DIR:-} ]]; then
-    dir=$VMGR_CONFIG_DIR
-
-  else
-    local self
-    self=$(readlink -f "${BASH_SOURCE[0]}")
-    dir="$(dirname "$(dirname "$(dirname "$self")")")/config/vmgr"
-  fi
-
-  printf '%s/node' "$dir"
-}
-
-#------------------------------------------------------------------------------
-# Source the pins config, populating NVM_PIN and NODE_PIN. Returns non-zero
-# (with a message) if the config is missing or does not set both.
-
-_node_load_pins() {
-  local conf
-  conf=$(_node_conf)
-
-  [[ -r $conf ]] || {
-    printf 'node: pins config not found at %s\n' "$conf" >&2
-    return 1
-  }
-
-  # shellcheck disable=SC1090  # config path resolved at runtime
-  source "$conf"
-
-  [[ -n ${NVM_PIN:-} && -n ${NODE_PIN:-} ]] || {
-    printf 'node: NVM_PIN and NODE_PIN must be set in %s\n' "$conf" >&2
-    return 1
-  }
 }
 
 #------------------------------------------------------------------------------
@@ -147,7 +110,7 @@ nvm_install() {
   local dir
   dir=$(_node_nvm_dir)
 
-  _node_load_pins || return 1
+  _vmgr_load_pins node NVM_PIN NODE_PIN || return 1
 
   if [[ ! -d $dir/.git ]]; then
     printf 'cloning nvm into %s\n' "$dir" >&2
@@ -171,7 +134,7 @@ nvm_update() {
   local dir
   dir=$(_node_nvm_dir)
 
-  _node_load_pins || return 1
+  _vmgr_load_pins node NVM_PIN NODE_PIN || return 1
 
   [[ -d $dir/.git ]] || {
     printf "nvm not installed at %s (run 'vmgr install node')\n" "$dir" >&2
@@ -207,7 +170,7 @@ nvm_report() {
   local expected current src installed default_alias
   local -a node_versions=()
 
-  _node_load_pins || {
+  _vmgr_load_pins node NVM_PIN NODE_PIN || {
     NVM_PIN='(no pins config)'
     NODE_PIN='(no pins config)'
   }

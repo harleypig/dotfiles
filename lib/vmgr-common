@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+# lib/vmgr-common - shared helpers for the vmgr language modules
+# (lib/version-managers/<lang>). Sourced by each module (never executed); it is
+# NOT itself a language, because bin/vmgr lists the files in
+# lib/version-managers/, not lib/. As a sourced library it uses no `set -e` and
+# calls no `exit` - it surfaces errors via return codes (see the dotagents
+# repo's rules/bash.md).
+#
+# It exists because node, python, and perl each need the same "find and load
+# this language's pins config, then check the required pins are set" logic -
+# three instances, so the Rule of Three is met and the logic lives here once.
+
+#------------------------------------------------------------------------------
+# Source the pins config for <lang> and verify the required pin variables are
+# set:
+#     _vmgr_load_pins <lang> VAR1 [VAR2 ...]
+#
+# The config lives at config/vmgr/<lang> (override the dir with
+# VMGR_CONFIG_DIR); its path is resolved from THIS file's own location, so it
+# works however a module is sourced. Returns non-zero (with a message) if the
+# config is missing or any named variable is unset/empty after sourcing it.
+
+_vmgr_load_pins() {
+  local lang=$1
+  shift
+
+  local dir
+  if [[ -n ${VMGR_CONFIG_DIR:-} ]]; then
+    dir=$VMGR_CONFIG_DIR
+
+  else
+    local self
+    self=$(readlink -f "${BASH_SOURCE[0]}")
+    dir="$(dirname "$(dirname "$self")")/config/vmgr"
+  fi
+
+  local conf="$dir/$lang"
+
+  [[ -r $conf ]] || {
+    printf '%s: pins config not found at %s\n' "$lang" "$conf" >&2
+    return 1
+  }
+
+  # shellcheck disable=SC1090  # config path resolved at runtime
+  source "$conf"
+
+  local var
+  local -a missing=()
+
+  for var in "$@"; do
+    [[ -n ${!var:-} ]] || missing+=("$var")
+  done
+
+  ((${#missing[@]} == 0)) || {
+    printf '%s: %s must be set in %s\n' "$lang" "${missing[*]}" "$conf" >&2
+    return 1
+  }
+}

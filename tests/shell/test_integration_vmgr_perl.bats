@@ -26,9 +26,9 @@ setup() {
     export PERLBREW_ROOT="$HOME/.local/share/perlbrew"
 
     # Install just perlbrew (the pinned self-install), skipping the slow Perl
-    # build, by driving the module internal directly.
+    # build, by driving the module internals directly.
     source /dotfiles/lib/version-managers/perl
-    _perl_load_pins
+    _vmgr_load_pins perl PERLBREW_PIN PERL_PIN
     _perl_install_perlbrew
 
     # The pinned perlbrew landed at the XDG root and reports its version.

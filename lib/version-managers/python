@@ -9,7 +9,7 @@
 #
 # uv and pipx COEXIST (like pip/pipx/uv) - there is no mutual exclusivity to
 # enforce, so this module declares none. The pins (UV_PIN, PIPX_PIN) live in
-# config/vmgr/python, loaded by _python_load_pins.
+# config/vmgr/python, loaded by _vmgr_load_pins.
 #
 # Install methods are PRIORITY LISTS with fallbacks, because some hosts sit
 # behind a whitelisted firewall:
@@ -21,47 +21,13 @@
 # shellcheck disable=SC2034  # read by bin/vmgr after it sources this module
 vmgr_managers=(uv pipx)
 
+# Shared vmgr helpers (_vmgr_load_pins), resolved relative to this module.
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=../vmgr-common
+source "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")/vmgr-common"
+
 ###############################################################################
 # Internal helpers
-
-#------------------------------------------------------------------------------
-# Path to this language's pins config (overridable via VMGR_CONFIG_DIR).
-
-_python_conf() {
-  local dir
-
-  if [[ -n ${VMGR_CONFIG_DIR:-} ]]; then
-    dir=$VMGR_CONFIG_DIR
-
-  else
-    local self
-    self=$(readlink -f "${BASH_SOURCE[0]}")
-    dir="$(dirname "$(dirname "$(dirname "$self")")")/config/vmgr"
-  fi
-
-  printf '%s/python' "$dir"
-}
-
-#------------------------------------------------------------------------------
-# Source the pins config, populating UV_PIN and PIPX_PIN.
-
-_python_load_pins() {
-  local conf
-  conf=$(_python_conf)
-
-  [[ -r $conf ]] || {
-    printf 'python: pins config not found at %s\n' "$conf" >&2
-    return 1
-  }
-
-  # shellcheck disable=SC1090  # config path resolved at runtime
-  source "$conf"
-
-  [[ -n ${UV_PIN:-} && -n ${PIPX_PIN:-} ]] || {
-    printf 'python: UV_PIN and PIPX_PIN must be set in %s\n' "$conf" >&2
-    return 1
-  }
-}
 
 #------------------------------------------------------------------------------
 # True if a Python pip is usable (pip, pip3, or `python3 -m pip`).
@@ -79,7 +45,7 @@ _python_have_pip() {
 # pipx is whitelisted). Idempotent: an existing uv is left in place.
 
 uv_install() {
-  _python_load_pins || return 1
+  _vmgr_load_pins python UV_PIN PIPX_PIN || return 1
 
   if command -v uv > /dev/null 2>&1; then
     printf 'uv already present at %s\n' "$(command -v uv)" >&2
@@ -146,7 +112,7 @@ uv_remove() {
 # Report uv: expected pin vs current install (and how it was installed).
 
 uv_report() {
-  _python_load_pins || UV_PIN='(no pins config)'
+  _vmgr_load_pins python UV_PIN PIPX_PIN || UV_PIN='(no pins config)'
 
   printf 'python / uv\n'
   printf '  expected : uv %s (standalone installer, pipx fallback)\n' "$UV_PIN"
@@ -188,7 +154,7 @@ EOF
 # message.
 
 pipx_install() {
-  _python_load_pins || return 1
+  _vmgr_load_pins python UV_PIN PIPX_PIN || return 1
 
   local existing
   existing=$(command -v pipx 2> /dev/null)
@@ -241,7 +207,7 @@ pipx_install() {
 # system/apt pipx is not vmgr's to update.
 
 pipx_update() {
-  _python_load_pins || return 1
+  _vmgr_load_pins python UV_PIN PIPX_PIN || return 1
 
   command -v pipx > /dev/null 2>&1 || {
     printf "pipx not installed (run 'vmgr install python pipx')\n" >&2
@@ -289,7 +255,7 @@ pipx_remove() {
 # Report pipx: expected pin vs current install (user vs system).
 
 pipx_report() {
-  _python_load_pins || PIPX_PIN='(no pins config)'
+  _vmgr_load_pins python UV_PIN PIPX_PIN || PIPX_PIN='(no pins config)'
 
   printf 'python / pipx\n'
   printf '  expected : pipx %s (user install via pip, uv fallback)\n' "$PIPX_PIN"
