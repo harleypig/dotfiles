@@ -12,6 +12,24 @@ goes green (see the merge-time finalization in
 
 ## 2026-07-16
 
+### Added
+
+- **Stood up and gated the Perl QA toolchain.** A perlbrew `vmgr` module
+  (`lib/version-managers/perl` + `config/vmgr/perl` pins + XDG/lazy-load rework
+  of `config/shell-startup/perl`) installs a pinned Perl + QA modules for local
+  dev; the commit/CI **gate** runs `perltidy` and `perlcritic` (`--severity 4`,
+  curated core-only `config/perl/perlcriticrc`) from **pinned private ghcr
+  docker images** built by `publish-tool-images.yml` from one parameterized
+  `config/docker/perl-tools/Dockerfile`. Added a `Test::Pod` syntax gate and an
+  on-demand (non-gating) Devel::Cover coverage report; a path-filtered
+  `perl-compile` required CI check builds a real Perl to validate the toolchain
+  end to end. Rebuilt the previously-broken `config/perl/perlcriticrc` (a
+  2287-line brutal-severity dump referencing uninstalled policy bundles) into a
+  lean curated profile, cleared the resulting findings, and added POD to
+  `bin/parse_params` / `bin/perltidyrc-clean`. Tooling *scope* decisions
+  (skipped/declined/deferred tools) are recorded in
+  [ADR-0002](docs/adr/0002-perl-qa-tooling-scope.md). (PRs #265–#271)
+
 ### Removed
 
 - **Extracted `config/claude/` into a standalone repo (`dotagents`) and
