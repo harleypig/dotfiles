@@ -27,15 +27,17 @@ PERLBREW_PIN=1.02
 # floating major). perlbrew compiles this from source.
 PERL_PIN=perl-5.40.2
 
-# The QA toolchain cpanm installs into the pinned Perl. These run IN-PROCESS
-# under the test Perl (Perl::Tidy is also a runtime dependency of
-# bin/perltidyrc-clean), so they must live in the managed Perl, not a docker
-# image. A bash array - the first list-valued vmgr pin.
+# The QA + test toolchain cpanm installs into the pinned Perl, so `prove
+# tests/perl/` runs under a controlled Perl and the QA tools are available
+# locally. These are IN-PROCESS (Perl::Tidy is also a runtime dependency of
+# bin/perltidyrc-clean; Test::Cmd + Test::Pod are test deps), so they live in
+# the managed Perl, not a docker image. (The commit/CI GATE runs Perl::Tidy /
+# Perl::Critic from pinned docker images instead - this list is for local dev
+# and the test suite.) A bash array - the first list-valued vmgr pin.
 PERL_CPANM_MODULES=(
   Perl::Tidy
   Perl::Critic
-  Test::Perl::Critic
-  Devel::Cover
+  Test::Cmd
   Test::Pod
-  Test::Pod::Coverage
+  Devel::Cover
 )

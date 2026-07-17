@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.6
+**Version:** v2.6.7
 
 ## Purpose
 
@@ -159,13 +159,27 @@ tests/scaffold/build-meta-tests   # (re)generate the meta tests first
 Run a single file or filter while iterating; reserve the full suite for
 pre-commit / CI.
 
+## Perl coverage (Devel::Cover — non-gating)
+
+`tests/perl/` includes `pod-syntax.t` (Test::Pod over the CLIs). Coverage is
+measured **on demand** with Devel::Cover (in the perlbrew toolchain — see
+`config/vmgr/perl`); it is a **report, not a gate** (a percentage threshold on
+two scripts would be brittle — a gating threshold is Planned, see `QA.md`):
+
+```bash
+cover -delete
+HARNESS_PERL_SWITCHES=-MDevel::Cover prove tests/perl/
+cover                              # prints a summary; writes cover_db/ (gitignored)
+```
+
 ## CI
 
 `.github/workflows/tests.yml` runs these jobs on pushes to `master` and on
 PRs: **bats** (`tests/shell/test_*.bats`, the gate), **meta** (regenerates and
 runs `tests/shell/*.meta.bats` with pinned `shellcheck`/`shfmt` — a required
 check, see the meta-suite note above), **perl** (`prove tests/perl/`,
-installing `libtest-cmd-perl` + `perltidy`), **python** (`pytest tests/python`,
+installing `libtest-cmd-perl` + `libtest-pod-perl` + `perltidy`), **python**
+(`pytest tests/python`,
 self-activating once `tests/python/test_*.py` exist), and **pre-commit** (the
 check config via `pre-commit run --all-files`).
 
