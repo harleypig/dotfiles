@@ -87,12 +87,12 @@ jobs:
         uses: actions/checkout@v7
 
       # perl is preinstalled on the runner. Non-core deps: Test::Cmd (used by
-      # the tests) and Perl::Tidy (loaded by the script under test); both come
-      # from Debian packages.
+      # the tests), Test::Pod (pod-syntax.t), and Perl::Tidy (loaded by the
+      # script under test); all from Debian packages.
       - name: Install perl test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libtest-cmd-perl perltidy
+          sudo apt-get install -y libtest-cmd-perl libtest-pod-perl perltidy
 
       # Tests resolve `use lib 'tests/perl/lib'` and the data dir relative to
       # the repo root, so prove must run from the checkout root.
