@@ -78,7 +78,7 @@ repos:
       - id: perltidy
         name: perltidy -b (format in place)
         language: docker_image
-        entry: ghcr.io/harleypig/perltidy:20250912@sha256:9ba462faf62909a8879e614e28818aa657844014816975bd3d89d74cf8843f7a perltidy -b -bext=/ -se
+        entry: ghcr.io/harleypig/perltidy:20250912@sha256:61983dd2a1c283df0b839f8fa7a45bcbca5228c7a24495567cbabc3fa997f37b perltidy -b -bext=/ -se
         files: ^bin/
         types: [perl]
 

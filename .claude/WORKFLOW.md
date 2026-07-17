@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.8.0
+**Version:** v1.9.0
 
 ## Purpose
 
@@ -338,15 +338,18 @@ does **not** touch a pre-existing system-perl + local::lib setup until it
 completes — `config/shell-startup/perl` prefers the vmgr-managed perlbrew only
 once it is present, and otherwise leaves the existing Perl environment alone.
 
-**The perltidy gate needs a ghcr login.** The pre-commit `perltidy` hooks (and
-the `bin/perltidy` docker wrapper) pull the pinned, **private**
-`ghcr.io/harleypig/perltidy` image built by
+**The perl gates need a ghcr login.** The pre-commit `perltidy` and
+`perlcritic` hooks (and the `bin/perltidy` / `bin/perlcritic` docker wrappers)
+pull the pinned, **private** `ghcr.io/harleypig/perltidy` and
+`ghcr.io/harleypig/perlcritic` images built by
 [`publish-tool-images.yml`](../.github/workflows/publish-tool-images.yml). So a
 one-time `docker login ghcr.io -u <you>` with a `read:packages` token is
-required for the perltidy hook to run locally; CI logs in with the workflow
-token. Bumping the pinned `Perl::Tidy` version is a three-place SYNC — the
-publish-workflow matrix, `bin/docker_wrapper` `image[perltidy]`, and the
-tag+digest in both pre-commit configs — re-pin the digest after it publishes.
+required for those hooks to run locally; CI logs in with the workflow token.
+Both images are the one parameterized `config/docker/perl-tools/Dockerfile`
+(they differ only by the `MODULES` build-arg). Bumping a pinned module version
+is a SYNC — the publish-workflow matrix, `bin/docker_wrapper` `image[<tool>]`,
+and the tag+digest in the pre-commit config(s) — re-pin the digest after it
+publishes (perlcritic has a check hook only; perltidy has both check and fix).
 
 ## Agent-Specific Overrides
 

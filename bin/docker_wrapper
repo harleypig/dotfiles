@@ -317,7 +317,27 @@ perltidy() {
 # To bump: change the module version in .github/workflows/publish-tool-images.yml,
 # let it publish, then re-pin the tag + digest here (docker pull, then
 # `docker inspect --format '{{index .RepoDigests 0}}'`).
-image[perltidy]="ghcr.io/harleypig/perltidy:20250912@sha256:9ba462faf62909a8879e614e28818aa657844014816975bd3d89d74cf8843f7a"
+image[perltidy]="ghcr.io/harleypig/perltidy:20250912@sha256:61983dd2a1c283df0b839f8fa7a45bcbca5228c7a24495567cbabc3fa997f37b"
+
+#------------------------------------------------------------------------------
+perlcritic() {
+  dw_guard_pwd_paths perlcritic "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_env args "${DW_ENV[@]}"
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # The perl-tools image has no entrypoint, so name the tool. The repo-root
+  # .perlcriticrc (-> config/perl/perlcriticrc) is auto-discovered from /mnt
+  # (= $PWD), matching how perltidy finds .perltidyrc.
+  exec docker run "${args[@]}" "${image[perlcritic]}" perlcritic "$@"
+}
+# SYNC: keep this tag+digest in lock-step with the perlcritic hook in
+# .pre-commit-config.yaml and the publish-tool-images matrix (re-pin after a
+# publish; see the perltidy note above).
+image[perlcritic]="ghcr.io/harleypig/perlcritic:1.156@sha256:a1e4413ee095894c3ad5e72fadc10057fc955cb42a9ab05c54868ede915c6e26"
 
 #------------------------------------------------------------------------------
 trivy() {
