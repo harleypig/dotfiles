@@ -15,3 +15,4 @@ repo's `adr/`.
 |-----|-------|--------|
 | [0001](0001-custom-polyglot-version-manager.md) | Build a custom polyglot version-manager orchestrator that wraps native managers | Accepted |
 | [0002](0002-perl-qa-tooling-scope.md) | Scope of the Perl QA tooling — what to gate, skip, and defer | Accepted |
+| [0003](0003-home-config-symlink.md) | Whether to symlink `~/.config` to `$DOTFILES/config` | Accepted |
