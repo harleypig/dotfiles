@@ -10,6 +10,30 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-20
+
+### Added
+
+- **Added `xdg-audit`, a `$HOME` XDG-compliance auditor.** `bin/xdg-audit`
+  (core-modules-only Perl) audits `$HOME` for dotfiles a program supports
+  relocating to an XDG base directory, grouped by type (handled / unhandled /
+  linked / stray / remove; `-a/--all` reveals already-migrated ones), with a
+  collapsed per-app detail view and a `--json` data feed. Backed by a pinned,
+  schema-validated vendored xdg-ninja database (`config/xdg-audit/`, MIT) plus
+  a local overlay (`programs-local/`) for annotations and ignores; env
+  redirects are detected via the variable or an existing target, and a CI
+  `json-schema` job validates both dirs. Recorded the `~/.config ->
+  $DOTFILES/config` decision in
+  [ADR-0003](docs/adr/0003-home-config-symlink.md); refined the `$HOME` dotfile
+  audit [TODO.md](TODO.md) into a tool-driven per-app checklist. (PR #275)
+
+### Changed
+
+- **Redirected more shell state to XDG directories.** `config/shell-startup`
+  now sets `GRADLE_USER_HOME`, `KIVY_HOME`, and `SQLITE_HISTORY`, and moves
+  bash `HISTFILE` to `$XDG_STATE_HOME/bash/history` (history is state, not
+  cache). (PR #275)
+
 ## 2026-07-16
 
 ### Changed
