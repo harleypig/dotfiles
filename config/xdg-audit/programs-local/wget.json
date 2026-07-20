@@ -1,0 +1,17 @@
+{
+  "files": [
+    {
+      "mechanism": "alias",
+      "movable": true,
+      "path": "$HOME/.wget-hsts",
+      "rewrite": "$XDG_CACHE_HOME/wget-hsts"
+    },
+    {
+      "movable": true,
+      "path": "$HOME/.wgetrc"
+    }
+  ],
+  "name": "wget",
+  "override-of": "wget",
+  "upstream-digest": "1c6565e40b3014be532bf97cc172ac9df0bce307a50ee1e97ddeb2097b613136"
+}

@@ -1,0 +1,6 @@
+{
+  "ignore": ["$HOME/.sudo_as_admin_successful"],
+  "name": "sudo",
+  "override-of": "sudo",
+  "upstream-digest": "9c9121d68e9b6cf1af547d8e5c89d94d6fb3cc6d5c3a82b2225f8896522e5021"
+}

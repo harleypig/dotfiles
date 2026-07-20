@@ -1,0 +1,10 @@
+{
+  "files": [
+    {
+      "help": "gradle-mcp (dev.rnett:gradle-mcp, the Gradle MCP Server) keeps its cache and logs here (default $HOME/.gradle-mcp). `GRADLE_MCP_LOG_DIR` relocates the logs; the cache dir has no confirmed env override. Configure the redirect in the repo/project that runs the server (e.g. a Minecraft-mod build), not globally.",
+      "movable": true,
+      "path": "$HOME/.gradle-mcp"
+    }
+  ],
+  "name": "gradle-mcp"
+}
