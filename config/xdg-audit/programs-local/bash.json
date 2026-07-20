@@ -1,0 +1,25 @@
+{
+   "files" : [
+      {
+         "movable" : true,
+         "path" : "$HOME/.oh-my-bash"
+      },
+      {
+         "env" : "HISTFILE",
+         "mechanism" : "env",
+         "movable" : true,
+         "path" : "$HOME/.bash_history",
+         "rewrite" : "$XDG_STATE_HOME/bash/history"
+      }
+   ],
+   "ignore" : [
+      "$HOME/.bash_logout",
+      "$HOME/.bash_login",
+      "$HOME/.bash_profile",
+      "$HOME/.bash_aliases",
+      "$HOME/.bashrc"
+   ],
+   "name" : "bash",
+   "override-of" : "bash",
+   "upstream-digest" : "871e61773e8c19669887cdbb33732170ec7fee007d65b1354942bacf3ad78b4b"
+}

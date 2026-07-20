@@ -1,0 +1,17 @@
+{
+   "files" : [
+      {
+         "env" : "SQLITE_HISTORY",
+         "mechanism" : "env",
+         "movable" : true,
+         "path" : "$HOME/.sqlite_history"
+      },
+      {
+         "movable" : true,
+         "path" : "$HOME/.sqliterc"
+      }
+   ],
+   "name" : "sqlite",
+   "override-of" : "sqlite",
+   "upstream-digest" : "801bb983eb01e08843b381b716f4aaa5d995cb7281afe65c81121b80f721f093"
+}

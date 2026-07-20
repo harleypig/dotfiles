@@ -1,0 +1,13 @@
+{
+   "files" : [
+      {
+         "env" : "KIVY_HOME",
+         "mechanism" : "env",
+         "movable" : true,
+         "path" : "$HOME/.kivy"
+      }
+   ],
+   "name" : "kivy",
+   "override-of" : "kivy",
+   "upstream-digest" : "7fd83f9f522847d2fe2936d30c69204a4f9803b54216f1d80941258d3cd068d5"
+}
