@@ -36,7 +36,10 @@ validated against `programs-local/.schema.json`:
   upstream changes.
 - **addition** — a `name` upstream does not cover (e.g. an internal tool).
 - **ignore** — list the `$HOME` path in the top-level `ignore` array to suppress
-  it from the report (a considered "leave it in place").
+  it from the default report (a considered "leave it in place"). Each item is
+  either a bare path string, or an object `{ "path": ..., "reason": ... }`
+  where `reason` is a short why-it-is-ignored note shown next to the path in
+  the `-a/--all` output.
 - **wrap annotation** — a file entry with `mechanism: wrap` + a `rewrite`
   target, handled by a `bin/<app>` namespace bind-mount wrapper (planned).
 
@@ -65,9 +68,18 @@ repo's prior migrations follow:
 
 A dotfile that is itself a **symlink** (a deliberate managed link, e.g. into
 another repo like `.vim` -> the dotvim repo, or `.claude` -> dotagents) is
-reported as `linked -> <target>` rather than flagged as a stray. It is
-informational and non-actionable — the audit shows where it points so you can
-confirm the link, not migrate it.
+reported in the `linked` group as `.x -> <target> (external)` rather than
+flagged as a stray. Like the other non-actionable groups (`handled`,
+`ignored`, `unknown`), it is shown only with `-a/--all`; it is informational —
+the audit shows where it points so you can confirm the link, not migrate it.
+
+## Unknown dotfiles
+
+`-a/--all` also lists an **`unknown`** group: top-level `$HOME` dotfiles that
+**no** db entry — upstream `programs/` or local `programs-local/` — covers.
+These are candidates for a new overlay entry (a redirect, an `ignore`, or an
+`addition`) once you decide how to handle them; the XDG base dirs
+(`.config` / `.cache` / `.local`) are skipped as infrastructure.
 
 ## config vs. state routing
 

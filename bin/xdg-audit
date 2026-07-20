@@ -147,7 +147,10 @@ sub entries_from_program {
       ignore    => 0,
     };
   }
-  for my $path ( @{ $data->{ignore} || [] } ) {
+  for my $ig ( @{ $data->{ignore} || [] } ) {
+
+    # An ignore item is either a bare path string or {path, reason}.
+    my ( $path, $reason ) = ref $ig eq 'HASH' ? ( $ig->{path}, $ig->{reason} ) : ( $ig, undef );
     push @out, {
       name    => $name,
       source  => $source,
@@ -155,6 +158,7 @@ sub entries_from_program {
       path    => $path,
       movable => JSON::PP::false,
       ignore  => 1,
+      reason  => $reason,
     };
   }
   return @out;
@@ -381,6 +385,7 @@ sub report_record {
     mechanism   => $entry->{mechanism},
     env         => $entry->{env},
     rewrite     => $entry->{rewrite},
+    reason      => $entry->{reason},
     link_target => $link,
     status      => ( defined $link ? 'linked' : handling_status($entry) ),
     group       => classify($entry),
@@ -418,32 +423,21 @@ sub home_relative {
   return $path;
 }
 
-# Display order of the scan groups. `handled` (already-migrated, no leftover)
-# is shown only with --all.
-my @GROUP_ORDER = qw(handled unhandled linked stray remove);
+# Default-scan groups: only the actionable ones. The non-actionable groups
+# (handled, ignored, linked) are shown only with -a/--all (print_scan_all).
+my @GROUP_ORDER = qw(unhandled stray remove);
 
-# Print classified records grouped by type, in GROUP_ORDER, omitting empty
-# groups. Each row is "appname (.dotfile)"; linked rows append " -> target",
-# aligned to the widest linked row (width-aware).
+# Print the actionable classified records grouped by type, in GROUP_ORDER,
+# omitting empty groups. Each row is a terse "appname (.dotfile)".
 sub print_grouped {
   my ($buckets) = @_;
 
-  my @shown = grep { $_ ne 'handled' || $cli{all} }
-    grep { $buckets->{$_} && @{ $buckets->{$_} } } @GROUP_ORDER;
+  my @shown = grep { $buckets->{$_} && @{ $buckets->{$_} } } @GROUP_ORDER;
 
   unless (@shown) {
     print "Nothing to report.\n";
     return;
   }
-
-  # Align linked targets to the widest linked "appname (.dotfile)".
-  my $longest = 0;
-  for my $r ( @{ $buckets->{linked} || [] } ) {
-    my $len = length sprintf( '%s (%s)', $r->{name}, $r->{display} );
-    $longest = $len if $len > $longest;
-  }
-  my $cap = term_width() - 42;
-  my $col = ( $cap > 12 && $longest > $cap ) ? $cap : $longest;
 
   my $first = 1;
   for my $group (@shown) {
@@ -452,16 +446,125 @@ sub print_grouped {
     print "$group\n";
 
     for my $r ( sort { $a->{name} cmp $b->{name} || $a->{path} cmp $b->{path} } @{ $buckets->{$group} } ) {
-      my $left = sprintf '%s (%s)', $r->{name}, $r->{display};
-      if ( $group eq 'linked' ) {
-        printf "  %-*s  -> %s\n", $col, $left, ( $r->{link_target} // '?' );
-      } else {
-        printf "  %s\n", $left;
-      }
+      printf "  %s (%s)\n", $r->{name}, $r->{display};
     }
   }
   return;
 } ## end sub print_grouped
+
+# --all display order: the non-actionable groups first (handled, ignored,
+# linked), then the actionable ones.
+my @ALL_ORDER = qw(handled ignored linked unhandled stray remove unknown);
+
+# The mechanism/type tag shown after an entry in the --all view. A symlink is
+# "external"; an annotated redirect shows its mechanism (env/alias/...); an
+# ignored path shows "ignore"; a mechanism-less path our overlay adds shows
+# "overlay"; a plain upstream entry with nothing to add gets no tag.
+sub scan_tag {
+  my ($r) = @_;
+  return 'external'      if defined $r->{link_target};
+  return $r->{mechanism} if defined $r->{mechanism};
+  return 'ignore'        if ( $r->{group}  // '' ) eq 'ignored';
+  return 'overlay'       if ( $r->{source} // '' ) =~ /^(?:override|local)$/;
+  return;
+}
+
+# --all renderer: like print_grouped, but adds the handled + ignored groups,
+# tags every entry with its mechanism, and collapses an app's dotfiles onto one
+# line. Symlinks stay one-per-line (each has its own target).
+sub print_scan_all {
+  my ($buckets) = @_;
+
+  my @shown = grep { $buckets->{$_} && @{ $buckets->{$_} } } @ALL_ORDER;
+  unless (@shown) {
+    print "Nothing to report.\n";
+    return;
+  }
+
+  my $first = 1;
+  for my $group (@shown) {
+    print "\n" unless $first;
+    $first = 0;
+    print "$group\n";
+
+    if ( $group eq 'linked' ) {
+      print_external_rows( $buckets->{$group} );
+    } elsif ( $group eq 'unknown' ) {
+      print_unknown_rows( $buckets->{$group} );
+    } else {
+      print_collapsed_rows( $buckets->{$group} );
+    }
+  }
+  return;
+} ## end sub print_scan_all
+
+# Symlink rows: "app (.x)  -> target (external)", targets aligned (width-aware).
+sub print_external_rows {
+  my ($rows) = @_;
+
+  my @sorted = sort { $a->{name} cmp $b->{name} || $a->{path} cmp $b->{path} } @$rows;
+  my $w      = 0;
+  for my $r (@sorted) {
+    my $len = length sprintf( '%s (%s)', $r->{name}, $r->{display} );
+    $w = $len if $len > $w;
+  }
+  my $cap = term_width() - 42;
+  $w = $cap if $cap > 12 && $w > $cap;
+
+  for my $r (@sorted) {
+    my $left = sprintf '%s (%s)', $r->{name}, $r->{display};
+    printf "  %-*s  -> %s (external)\n", $w, $left, ( $r->{link_target} // '?' );
+  }
+  return;
+} ## end sub print_external_rows
+
+# Collapse an app's dotfiles that share a tag (and reason) into
+# "app (.a,.b) (tag) - reason". Only ignored entries carry a reason.
+sub print_collapsed_rows {
+  my ($rows) = @_;
+
+  my ( %agg, @order );
+  for my $r (@$rows) {
+    my $tag    = scan_tag($r) // q{};
+    my $reason = $r->{reason} // q{};
+    my $key    = join "\0", $r->{name}, $tag, $reason;
+    if ( !$agg{$key} ) {
+      $agg{$key} = { name => $r->{name}, tag => $tag, reason => $reason, dots => [] };
+      push @order, $key;
+    }
+    push @{ $agg{$key}{dots} }, $r->{display};
+  }
+
+  my @lines = sort { $a->{name} cmp $b->{name} || $a->{tag} cmp $b->{tag} }
+    map { $agg{$_} } @order;
+
+  for my $l (@lines) {
+    my $line = sprintf '%s (%s)', $l->{name}, join( ',', sort @{ $l->{dots} } );
+    $line .= " ($l->{tag})"    if length $l->{tag};
+    $line .= " - $l->{reason}" if length $l->{reason};
+    print "  $line\n";
+  }
+  return;
+} ## end sub print_collapsed_rows
+
+# 'unknown' rows: a $HOME dotfile with no owning app. Just the name (+ target if
+# it is a symlink) — there is no app or mechanism to show.
+sub print_unknown_rows {
+  my ($rows) = @_;
+
+  my @sorted = sort { $a->{display} cmp $b->{display} } @$rows;
+  my $w      = 0;
+  for my $r (@sorted) { $w = length $r->{display} if length $r->{display} > $w }
+
+  for my $r (@sorted) {
+    if ( defined $r->{link_target} ) {
+      printf "  %-*s  -> %s\n", $w, $r->{display}, $r->{link_target};
+    } else {
+      printf "  %s\n", $r->{display};
+    }
+  }
+  return;
+}
 
 # ------------------------------------------------------------------------------
 # Detail view (single app / path lookup)
@@ -487,6 +590,7 @@ sub print_app_detail {
       env         => $e->{env},
       rewrite     => $e->{rewrite},
       link_target => $link,
+      reason      => $e->{reason},
       ignore      => ( $e->{ignore}  ? JSON::PP::true : JSON::PP::false ),
       group       => ( $e->{ignore}  ? 'ignore'       : classify($e) ),
       status      => ( defined $link ? 'linked'       : $exists ? handling_status($e) : 'not present' ),
@@ -505,8 +609,9 @@ sub print_app_detail {
   for my $f (@out) { $w = length $f->{path} if length $f->{path} > $w }
 
   for my $f (@out) {
+    my $ignored = 'ignored (left in place)' . ( $f->{reason} ? " - $f->{reason}" : q{} );
     my $detail =
-        $f->{ignore}                                             ? 'ignored (left in place)'
+        $f->{ignore}                                             ? $ignored
       : defined $f->{link_target}                                ? "-> $f->{link_target}"
       : !$f->{exists} && $f->{group} && $f->{group} eq 'handled' ? 'handled'
       : !$f->{exists}                                            ? 'absent'
@@ -530,33 +635,93 @@ sub print_app_detail {
 # Modes
 # ------------------------------------------------------------------------------
 
+# $HOME top-level dotfiles that no db path covers. The XDG base dirs
+# (.config/.cache/.local) are infrastructure, not migration candidates, so they
+# are skipped. Returns 'unknown' records (present, no owning app).
+sub scan_unknown {
+  my ($known) = @_;
+
+  my $home = home_dir();
+  opendir my $dh, $home or return ();
+  my %skip = map { $_ => 1 } qw(. .. .config .cache .local);
+
+  my @recs;
+  for my $name ( readdir $dh ) {
+    next unless $name =~ /^\./;
+    next if $skip{$name};
+
+    my $abs = File::Spec->catfile( $home, $name );
+    next if $known->{$abs};
+
+    my $link = -l $abs ? readlink($abs) : undef;
+    push @recs, {
+      name        => q{},
+      path        => $abs,
+      display     => $name,
+      resolved    => $abs,
+      exists      => JSON::PP::true,
+      movable     => JSON::PP::false,
+      mechanism   => undef,
+      source      => undef,
+      reason      => undef,
+      link_target => $link,
+      status      => 'unknown',
+      group       => 'unknown',
+    };
+  } ## end for my $name ( readdir ...)
+  closedir $dh;
+  return @recs;
+} ## end sub scan_unknown
+
 sub mode_scan {
   my $entries = load_index( force => $cli{reindex} );
 
+  # Every db path (files + ignores) is "known"; a $HOME dotfile outside this set
+  # is surfaced as 'unknown' below.
+  my %known = map { expand_path( $_->{path} ) => 1 } @$entries;
+
   my ( @records, %buckets );
   for my $e (@$entries) {
-    next if $e->{ignore};
     next if defined $cli{mechanism} && ( $e->{mechanism} // '' ) ne $cli{mechanism};
     next if defined $cli{movable}   && ( ( $e->{movable} ? 1 : 0 ) != $cli{movable} );
 
-    my $group = classify($e);
-    next unless defined $group;        # absent and not redirected -> irrelevant
+    my ( $group, $rec );
+    if ( $e->{ignore} ) {
 
-    my $rec = report_record($e);
+      # Deliberately-left-in-place paths: their own group, shown only with -a.
+      # Skip when absent — nothing is left in place if the file isn't there.
+      next unless path_exists($e);
+      $group        = 'ignored';
+      $rec          = report_record($e);
+      $rec->{group} = $rec->{status} = 'ignored';
+    } else {
+      $group = classify($e);
+      next unless defined $group;      # absent and not redirected -> irrelevant
+      $rec = report_record($e);
+    }
+
     push @records,              $rec;
     push @{ $buckets{$group} }, $rec;
+  } ## end for my $e (@$entries)
+
+  # $HOME dotfiles no db entry (upstream or overlay) covers -> 'unknown'.
+  for my $rec ( scan_unknown( \%known ) ) {
+    push @records,               $rec;
+    push @{ $buckets{unknown} }, $rec;
   }
 
   if ( $cli{json} ) {
 
-    # A flat feed: every classified record (including handled) carries its
-    # group, so tooling gets the full picture regardless of --all.
+    # A flat feed: every classified record (handled and ignored included)
+    # carries its group, so tooling gets the full picture regardless of --all.
     emit_json( \@records );
+  } elsif ( $cli{all} ) {
+    print_scan_all( \%buckets );
   } else {
     print_grouped( \%buckets );
   }
 
-  # Exit 2 when there is actionable work; 0 when only handled/linked/none.
+  # Exit 2 when there is actionable work; 0 when only handled/linked/ignored.
   my $actionable = grep { $buckets{$_} && @{ $buckets{$_} } } qw(unhandled stray remove);
   return $actionable ? 2 : 0;
 } ## end sub mode_scan
@@ -788,7 +953,7 @@ USAGE
   xdg-audit --update-db [<ref>]    refresh the vendored mirror from upstream
 
 OPTIONS
-  -a, --all                also show the 'handled' group (already migrated)
+  -a, --all                also show handled/ignored/linked/unknown, tagged
   --json                   machine-readable output (for tooling / AI)
   --search <term>          substring search across name, path, and help
   --mechanism <m>          restrict the scan to one mechanism (env/alias/wrap)
@@ -799,28 +964,36 @@ OPTIONS
   -h, --help               this message
 
 OUTPUT
-  The scan groups each dotfile by type (empty groups omitted), in this order:
+  The default scan lists only actionable dotfiles, grouped by type (empty
+  groups omitted):
 
-    handled    Already migrated: the file is gone from $HOME and its redirect
-               is active. Hidden unless -a/--all. Non-actionable.
     unhandled  Present but not redirected yet (mechanism inactive, or
-               nothing recorded). Actionable.
-    linked     A symlink (a deliberate managed link into another repo); shown
-               as ".x -> target". Non-actionable.
+               nothing recorded).
     stray      Present, and its redirect is already active -> the leftover
-               file is safe to remove. Actionable.
-    remove     The app is marked unused; just delete the file. Actionable.
+               file is safe to remove.
+    remove     The app is marked unused; just delete the file.
+
+  -a/--all also shows the non-actionable groups the default scan hides -
+  'handled' (migrated: gone from $HOME, redirect active), 'ignored'
+  (deliberately left in place, with a short reason), 'linked' (a symlink into
+  another repo), and 'unknown' (a $HOME dotfile no db entry covers) - and tags
+  every entry with its mechanism. An app's dotfiles collapse onto one line:
+  "app (.a,.b) (env)"; a symlink reads "app (.x) -> target (external)"; an
+  ignored entry appends its reason: "app (.x) (ignore) - why". Tags: the
+  redirect mechanism (env/alias/symlink/wrap), "external" (symlink), "ignore",
+  "remove", or "overlay" (a path our overlay adds but has not redirected).
 
   An exact app name shows that app's detail (a paths list, then each path's
   migration help); so does a fragment that matches only one app. A fragment
   matching several apps shows a per-app list. In a detail view a path reads as
-  "-> target" (linked), "absent", "ignored", or its group word.
+  "-> target" (linked), "absent", "ignored" (with its reason), or its group
+  word.
 
-  --json emits a flat array; every record carries its "group" (the values
-  above) for tooling and agents.
+  --json emits a flat array; every record (handled, ignored, and unknown
+  included) carries its "group" for tooling and agents.
 
 EXIT STATUS
-  0  nothing actionable (only handled/linked, or nothing to report)
+  0  nothing actionable (no unhandled / stray / remove found)
   2  actionable findings (any unhandled / stray / remove)
   1  a usage or runtime error
 END_USAGE
@@ -899,9 +1072,9 @@ directories are newer, or on C<--reindex>.
 
 =head1 EXIT STATUS
 
-Exits C<0> when nothing is actionable (only handled/linked, or a successful
-lookup), C<2> when the scan finds actionable work (any unhandled / stray /
-remove), and C<1> on a usage or runtime error.
+Exits C<0> when nothing is actionable (only handled/linked/ignored, or a
+successful lookup), C<2> when the scan finds actionable work (any unhandled /
+stray / remove), and C<1> on a usage or runtime error.
 
 =head1 SEE ALSO
 

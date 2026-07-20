@@ -1,5 +1,10 @@
 {
-  "ignore": ["$HOME/.vscode-server"],
+  "ignore": [
+    {
+      "path": "$HOME/.vscode-server",
+      "reason": "the WSL extension cannot relocate it"
+    }
+  ],
   "name": "vscode",
   "override-of": "vscode",
   "upstream-digest": "3a5e4196662ae7a5b2591e325b9483fbfd06081d09527513f6001b1e64da4460"

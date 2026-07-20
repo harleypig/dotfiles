@@ -556,6 +556,12 @@ handled, and verify the app still works:
 
 ### xdg-audit follow-ups
 
+- [ ] **Normalize `programs-local/*.json` formatting** — the overlays are a
+  mix of 3-space (JSON::PP, the older files) and 2-space (prettier, the ones
+  touched since prettier landed in the fix config). Pick one canonical form:
+  run prettier over the whole dir once (2-space), or exclude the dir from
+  prettier so the JSON::PP 3-space stays canonical. Cosmetic — prettier is
+  fix-only, not a check gate.
 - [ ] **Self-wrap tier** — implement `mechanism: wrap`: a `bin/<app>` wrapper
   using `unshare --user --map-root-user --mount` + `mount --bind` (confirmed
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global

@@ -1,8 +1,11 @@
 {
-   "ignore" : [
-      "$HOME/.profile"
-   ],
-   "name" : "profile",
-   "override-of" : "profile",
-   "upstream-digest" : "9d40208a1292cf0a9df80e0fa29fa4cb31a44242059ab5147a81f03dacb492be"
+  "ignore": [
+    {
+      "path": "$HOME/.profile",
+      "reason": "the dotfiles shell-startup owns the login profile"
+    }
+  ],
+  "name": "profile",
+  "override-of": "profile",
+  "upstream-digest": "9d40208a1292cf0a9df80e0fa29fa4cb31a44242059ab5147a81f03dacb492be"
 }

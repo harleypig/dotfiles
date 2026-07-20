@@ -41,6 +41,13 @@ goes green (see the merge-time finalization in
   Java/nss/cpan/sudo/vscode-server/redhat (immovable or unsupported), and a
   `gradle-mcp` addition documenting the Gradle MCP Server. Removed the
   orphaned `~/.m2` (101M) and stale `~/.gradle-mcp` caches. (PR #276)
+- **Enriched the `xdg-audit` scan output.** The default scan now lists only
+  actionable dotfiles (unhandled/stray/remove); `-a/--all` is the full-picture
+  view, tagging each entry with its mechanism, collapsing an app's dotfiles
+  onto one line (`app (.a,.b) (env)`), and adding an `ignored` group (with
+  per-path reasons via a `{path, reason}` ignore form) and an `unknown` group
+  (`$HOME` dotfiles no db entry covers). Absent ignored paths are no longer
+  reported. (PR #277)
 
 ## 2026-07-16
 
