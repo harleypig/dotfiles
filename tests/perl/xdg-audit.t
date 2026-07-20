@@ -115,6 +115,30 @@ write_json( locl('histlike'),
   { name => 'histlike', files => [ { path => '$HOME/.histlike', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'FIXTURE_NEVER_SET', rewrite => $rtarget } ] } );
 touch('.histlike');
 
+# A local-only addition (no upstream) with two present, unredirected files:
+# exercises --all's per-app collapse and the "overlay" tag (a mechanism-less
+# path that is still from our overlay).
+write_json( locl('addon'),
+  { name => 'addon', files => [ { path => '$HOME/.addon1', movable => JSON::PP::true, help => "a1\n" }, { path => '$HOME/.addon2', movable => JSON::PP::true, help => "a2\n" } ] } );
+touch('.addon1');
+touch('.addon2');
+
+# An ignore in object form carrying a reason (vs 'secret's bare-string form).
+# .reasonedgone is ignored but NOT created -> must not appear (absent).
+# .mystery is a $HOME dotfile that no db entry covers (surfaces as 'unknown').
+write_json(
+  locl('reasoned'),
+  {
+    name   => 'reasoned',
+    ignore => [
+      { path => '$HOME/.reasoned',     reason => 'left because tests' },
+      { path => '$HOME/.reasonedgone', reason => 'not present' },
+    ],
+  }
+);
+touch('.reasoned');
+touch('.mystery');
+
 # ------------------------------------------------------------------------------
 # Runner — invoke the script with a hermetic environment.
 # ------------------------------------------------------------------------------
@@ -169,19 +193,56 @@ sub run_json {
   is( $by{foo}{group}, 'unhandled', 'foo groups as unhandled (present, no mechanism)' );
   is( $by{cleanapp}{group}, 'handled', 'cleanapp groups as handled (absent + redirect active)' );
   is( $by{histlike}{group}, 'stray', 'env redirect detected via existing target (unexported var)' );
-  ok( !exists $by{secret}, 'ignored entry (secret) is suppressed from the scan' );
+  is( $by{secret}{group}, 'ignored', 'ignored entry carries group "ignored" in json' );
+  is( $by{reasoned}{reason}, 'left because tests', 'ignore reason carried in json' );
+
+  my ($mystery) = grep { ( $_->{group} // '' ) eq 'unknown' } @$data;
+  is( $mystery->{display}, '.mystery', 'a $HOME dotfile with no db entry is json group "unknown"' );
 }
 
-# The handled group is hidden by default, shown with --all.
+# The non-actionable groups (handled, ignored, linked) are hidden by default
+# and revealed only by --all.
 {
   my ($out) = run_audit();
-  unlike( $out, qr/^handled$/m, 'handled group hidden by default' );
-  unlike( $out, qr/\bcleanapp\b/, 'already-migrated app not shown by default' );
+  unlike( $out, qr/^handled$/m,    'handled group hidden by default' );
+  unlike( $out, qr/^ignored$/m,    'ignored group hidden by default' );
+  unlike( $out, qr/^linked$/m,     'linked group hidden by default' );
+  unlike( $out, qr/\bcleanapp\b/,  'already-migrated app not shown by default' );
+  unlike( $out, qr/\.secretdir\b/, 'ignored path not shown by default' );
+  unlike( $out, qr/\.linkme\b/,    'symlink not shown by default' );
+  unlike( $out, qr/^unknown$/m,    'unknown group hidden by default' );
+  unlike( $out, qr/\.mystery\b/,   'unknown dotfile not shown by default' );
 }
+
+# --all reveals every group and tags each entry with its mechanism.
 {
   my ($out) = run_audit('--all');
   like( $out, qr/^handled$/m, '--all reveals the handled group' );
-  like( $out, qr/cleanapp \(\.cleanme\)/, '--all lists the already-migrated app' );
+  like( $out, qr/^ignored$/m, '--all reveals the ignored group' );
+  like( $out, qr/^linked$/m,  '--all reveals the linked group' );
+  like( $out, qr/^unknown$/m, '--all reveals the unknown group' );
+
+  like( $out, qr/cleanapp \(\.cleanme\) \(env\)/,    'handled entry tagged with its mechanism (env)' );
+  like( $out, qr/secret \(\.secretdir\) \(ignore\)/, 'ignored entry tagged (ignore)' );
+  like( $out, qr/linky \(\.linkme\) +-> \Q$other\E \(external\)/, 'linked entry shows "-> target (external)"' );
+  like( $out, qr/addon \(\.addon1,\.addon2\) \(overlay\)/, '--all collapses an app and tags a mechanism-less overlay entry' );
+
+  # Reason: object-form ignore shows its why; bare-string ignore shows none.
+  like( $out, qr/reasoned \(\.reasoned\) \(ignore\) - left because tests/, 'ignore reason is shown in --all' );
+  like( $out, qr/^  secret \(\.secretdir\) \(ignore\)$/m, 'bare-string ignore shows no reason' );
+
+  # An ignored path that is absent from $HOME is not reported.
+  unlike( $out, qr/\.reasonedgone/, 'absent ignored path is skipped, not shown' );
+
+  # Unknown: a $HOME dotfile with no db entry is listed by name.
+  like( $out, qr/^  \.mystery$/m, 'unknown dotfile listed by name' );
+}
+
+# The default (non-all) scan keeps the terse, per-path, untagged format.
+{
+  my ($out) = run_audit();
+  like( $out, qr/^\s+addon \(\.addon1\)$/m, 'default scan lists dotfiles per line (no collapse)' );
+  unlike( $out, qr/\((?:env|overlay|external|ignore)\)/, 'default scan carries no mechanism tags' );
 }
 
 # ------------------------------------------------------------------------------
@@ -207,6 +268,12 @@ sub run_json {
   like( $out, qr/\.secretdir\s+ignored/, 'ignored paths appear in the detail, marked' );
   unlike( $out, qr/uninitialized/, 'no uninitialized-value warnings for an all-ignored app' );
   is( $rc, 0, 'all-ignored app lookup exits 0' );
+}
+
+# A detail view appends the ignore reason when one is recorded.
+{
+  my ($out) = run_audit('reasoned');
+  like( $out, qr/\.reasoned\s+ignored \(left in place\) - left because tests/, 'detail shows the ignore reason' );
 }
 
 # An exact app name shows that app, even when it is a prefix of others.
@@ -324,9 +391,9 @@ sub run_json {
 }
 
 {
-  my ($out) = run_audit();
-  like( $out, qr/^linked$/m, 'scan has a linked group' );
-  like( $out, qr/linky \(\.linkme\)\s+-> \S/, 'the symlink row shows its target' );
+  my ($out) = run_audit('--all');
+  like( $out, qr/^linked$/m, '--all scan has a linked group' );
+  like( $out, qr/linky \(\.linkme\)\s+-> \S.* \(external\)/, 'the symlink row shows its target and "external" tag' );
 }
 
 done_testing();

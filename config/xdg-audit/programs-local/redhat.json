@@ -1,5 +1,10 @@
 {
-  "ignore": ["$HOME/.redhat"],
+  "ignore": [
+    {
+      "path": "$HOME/.redhat",
+      "reason": "unsupported telemetry; regenerates"
+    }
+  ],
   "name": "redhat",
   "override-of": "redhat",
   "upstream-digest": "f162eebdc49c1517ed817925805e724894c49ba6160b10577f2c750a1af132ab"

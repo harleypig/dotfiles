@@ -10,10 +10,7 @@
   },
   "type": "object",
   "required": ["name"],
-  "anyOf": [
-    { "required": ["files"] },
-    { "required": ["ignore"] }
-  ],
+  "anyOf": [{ "required": ["files"] }, { "required": ["ignore"] }],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -38,14 +35,35 @@
     },
     "ignore": {
       "title": "ignore",
-      "description": "Paths deliberately left in place. xdg-audit does not report these $HOME\npaths (a considered 'leave it alone'). Each is a $HOME path, e.g.\n$HOME/.bashrc.",
+      "description": "Paths deliberately left in place. xdg-audit does not report these $HOME\npaths (a considered 'leave it alone'). Each item is a $HOME path (e.g.\n$HOME/.bashrc) as a bare string, or an object {path, reason} where reason\nis a short why-it-is-ignored note shown in the -a/--all output.",
       "type": "array",
       "uniqueItems": true,
       "minItems": 1,
       "items": {
-        "type": "string",
-        "minLength": 1,
-        "not": { "$ref": "#/definitions/empty" }
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "not": { "$ref": "#/definitions/empty" }
+          },
+          {
+            "type": "object",
+            "required": ["path"],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "not": { "$ref": "#/definitions/empty" }
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "not": { "$ref": "#/definitions/empty" }
+              }
+            }
+          }
+        ]
       }
     },
     "files": {

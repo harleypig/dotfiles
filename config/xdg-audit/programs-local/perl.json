@@ -1,5 +1,10 @@
 {
-  "ignore": ["$HOME/.cpan"],
+  "ignore": [
+    {
+      "path": "$HOME/.cpan",
+      "reason": "CPAN offers no XDG support"
+    }
+  ],
   "name": "perl",
   "override-of": "perl",
   "upstream-digest": "cdffd85d98c10daefedc6553a529cb41d390690e17cfaca5d1c194e29dce71b9"

@@ -1,5 +1,10 @@
 {
-  "ignore": ["$HOME/.pki"],
+  "ignore": [
+    {
+      "path": "$HOME/.pki",
+      "reason": "chromium/browsers hardcode ~/.pki"
+    }
+  ],
   "name": "nss",
   "override-of": "nss",
   "upstream-digest": "b70c46bac235951470a882f310dd9583e5fe8ca83937559db14ed5314f5aace3"
