@@ -540,14 +540,6 @@ Each present `$HOME` dotfile gets a `programs-local/<app>.json` entry (redirect
 / ignore / addition) so `xdg-audit` tracks it; the actual per-machine
 relocation (moving an install, symlinking) is a separate step.
 
-- [x] **aider** — no `$HOME` footprint (aider is configured per-project, not in
-  `$HOME`); ignored via overlay.
-- [x] **zsh** — this repo is bash-based with no zsh provisions; the zsh
-  dotfiles (`.zshrc`/`.zshenv`/`.zprofile`/`.zlogin`) are ignored via overlay.
-- [x] **havecmd-gated redirects** — `GNUPGHOME` / `LEDGER_FILE` /
-  `SQLITE_HISTORY` now export unconditionally (the KIVY_HOME pattern), so a
-  leftover reads as *stray* not *unhandled* and the redirect applies the moment
-  the tool is installed.
 - [ ] **jbang** — research the migration. `JBANG_DIR` relocates jbang's whole
   dir, but `~/.jbang` (471M) holds the *install* (its `bin/` is on PATH), not
   just cache — so it is an install move + a PATH change, not a plain env flip.
