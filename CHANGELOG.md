@@ -33,6 +33,14 @@ goes green (see the merge-time finalization in
   now sets `GRADLE_USER_HOME`, `KIVY_HOME`, and `SQLITE_HISTORY`, and moves
   bash `HISTFILE` to `$XDG_STATE_HOME/bash/history` (history is state, not
   cache). (PR #275)
+- **Resolved the remaining `$HOME` dotfile-audit items.** Added
+  `config/xdg-audit/programs-local/` overlays classifying each leftover: wget
+  (`alias` → stray), parallel + gradle (`env`, with `PARALLEL_HOME` /
+  `GRADLE_USER_HOME` now exported unconditionally so the audit sees the
+  redirect regardless of install state), `ignore` entries for
+  Java/nss/cpan/sudo/vscode-server/redhat (immovable or unsupported), and a
+  `gradle-mcp` addition documenting the Gradle MCP Server. Removed the
+  orphaned `~/.m2` (101M) and stale `~/.gradle-mcp` caches. (PR #276)
 
 ## 2026-07-16
 

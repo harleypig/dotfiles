@@ -544,20 +544,15 @@ handled, and verify the app still works:
 - [ ] **aider** (`~/.aider`) — check `AIDER_*` env / `--config-dir`.
 - [ ] **grok** (`~/.grok`) — check XDG / config-dir support.
 - [ ] **serena** (`~/.serena`) — check if the config path is configurable.
-- [x] **gradle-mcp** (`~/.gradle-mcp`) — its own tool (Gradle MCP Server), not
-  `GRADLE_USER_HOME`; added a `programs-local/gradle-mcp.json` addition and
-  removed the stale dir. The redirect (`GRADLE_MCP_LOG_DIR` for logs) is left
-  to whichever repo runs the server.
-- [x] **redhat** (`~/.redhat`) — immovable telemetry; annotated as ignored.
-- [x] **Java** (`~/.java`) — `_JAVA_OPTIONS` is too noisy (prints to stderr on
-  every `java` run); annotated as ignored.
-- [x] **Maven** (`~/.m2`) — maven/leiningen not installed; orphaned repo cache
-  (101M) removed.
-- [x] **cpan** (`~/.cpan`) — hardcoded/unsupported per xdg-ninja; annotated as
-  ignored.
 - [ ] **zsh** (`~/.zshrc`) — not the primary shell; remove if unused.
 - [ ] Per-machine: clear the leftover strays for the already-redirected tools
   once their new XDG locations are populated.
+- [ ] Review the remaining `havecmd`-gated XDG redirect exports in
+  `config/shell-startup/app_env_vars` (gpg `GNUPGHOME`, ledger `LEDGER_FILE`,
+  sqlite `SQLITE_HISTORY`) — consider exporting them unconditionally (the
+  KIVY_HOME / gradle / parallel pattern) so a leftover reports as *stray*
+  rather than *unhandled* and the redirect applies the moment the tool is
+  installed.
 
 ### xdg-audit follow-ups
 
