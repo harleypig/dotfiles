@@ -19,3 +19,19 @@ fi
 if havecmd ledger; then
   export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
 fi
+
+# Redirect Gradle's home out of ~/.gradle (build cache + config → data dir)
+if havecmd gradle; then
+  export GRADLE_USER_HOME="${XDG_DATA_HOME}/gradle"
+fi
+
+# Redirect SQLite's REPL history out of ~/.sqlite_history (sqlite reads its
+# config from $XDG_CONFIG_HOME/sqlite3/sqliterc on its own since 3.44)
+if havecmd sqlite3; then
+  export SQLITE_HISTORY="${XDG_STATE_HOME}/sqlite_history"
+fi
+
+# Redirect Kivy's home out of ~/.kivy. Set unconditionally: Kivy is a Python
+# library with no CLI to detect via havecmd, and the variable is inert when
+# Kivy is absent.
+export KIVY_HOME="${XDG_DATA_HOME}/kivy"
