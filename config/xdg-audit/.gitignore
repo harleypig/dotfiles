@@ -1,0 +1,18 @@
+# Deny everything; allow only tracked config. Each config/ subdir owns its
+# own allowlist in this format (deny all, then re-include specifics).
+# See config/.gitignore.
+
+*
+!.gitignore
+!README.md
+!LICENSE.xdg-ninja
+!upstream.json
+!json-schema/
+!json-schema/**
+!programs/
+!programs/**
+!programs-local/
+!programs-local/**
+
+# The generated reverse/enriched index is a cache: denied by * above and never
+# re-included, so it stays untracked.

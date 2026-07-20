@@ -1,0 +1,15 @@
+{
+    "files": [
+        {
+            "help": "Supported since _27.1_.\n\nYou can move the directory to _$XDG_CONFIG_HOME/emacs_.\n",
+            "movable": true,
+            "path": "$HOME/.emacs.d"
+        },
+        {
+            "help": "Supported since _27.1_.\n\nYou can move the file to _$XDG_CONFIG_HOME/emacs/init.el_.\n",
+            "movable": true,
+            "path": "$HOME/.emacs"
+        }
+    ],
+    "name": "emacs"
+}

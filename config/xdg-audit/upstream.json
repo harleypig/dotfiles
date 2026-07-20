@@ -1,0 +1,10 @@
+{
+  "repo": "https://github.com/b3nj5m1n/xdg-ninja.git",
+  "ref": "f2ab12bbf1cf60dc3cc9459d122811c55ba88150",
+  "paths": {
+    "schema": "json-schema/program.json",
+    "programs": "programs"
+  },
+  "license": "MIT",
+  "note": "Pristine vendored mirror of xdg-ninja's schema + programs. Do not hand-edit programs/ or json-schema/; local divergence lives in programs-local/. Refresh with: xdg-audit --update-db (updates ref + files together)."
+}

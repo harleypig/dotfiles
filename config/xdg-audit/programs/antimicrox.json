@@ -1,0 +1,15 @@
+{
+    "files": [
+        {
+            "help": "Move to `XDG_CONFIG_HOME/antimicro`\n",
+            "movable": true,
+            "path": "$HOME/.antimicro"
+        },
+        {
+            "help": "Move to `XDG_CONFIG_HOME/antimicrox`\n",
+            "movable": true,
+            "path": "$HOME/.antimicrox"
+        }
+    ],
+    "name": "antimicrox"
+}

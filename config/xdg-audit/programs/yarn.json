@@ -1,0 +1,25 @@
+{
+    "name": "yarn",
+    "files": [
+        {
+            "path": "$HOME/.yarnrc",
+            "movable": false,
+            "help": "You can try to alias _yarn_ to use a custom yarnrc location.\n\n```bash\nyarn --use-yarnrc $XDG_CONFIG_HOME/yarn/config\n```\n\n_yarn_ might still generate this file by itself though.\n"
+        },
+        {
+            "path": "$HOME/.yarn",
+            "movable": false,
+            "help": "Changing this is currently not supported.\n"
+        },
+        {
+            "path": "$HOME/.yarncache",
+            "movable": false,
+            "help": "Changing this is currently not supported.\n"
+        },
+        {
+            "path": "$HOME/.yarn-config",
+            "movable": false,
+            "help": "Changing this is currently not supported.\n"
+        }
+    ]
+}

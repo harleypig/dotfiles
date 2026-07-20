@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "path": "$HOME/.ansible",
+            "movable": true,
+            "help": "Export the following environment variables:\n\n```bash\nexport ANSIBLE_HOME=\"$XDG_DATA_HOME\"/ansible\n```\n"
+        }
+    ],
+    "name": "ansible"
+}

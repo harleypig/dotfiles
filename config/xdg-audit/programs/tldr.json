@@ -1,0 +1,15 @@
+{
+    "name": "tldr",
+    "files": [
+        {
+            "path": "$HOME/.tldr",
+            "movable": true,
+            "help": "Tldr has multiple official clients, so the instructions depend on your installation method.\n\nIf you're using the C client, export the following environment variable:\n\n```bash\nexport TLDR_CACHE_DIR=\"$XDG_CACHE_HOME\"/tldr\n```\n\nThe Python client and tlrc (Rust client) use the correct XDG directory out of the box.\n\n**There is currently no way to use an XDG directory in the Node.js client.**\n"
+        },
+        {
+            "path": "$HOME/.tldrc",
+            "movable": true,
+            "help": "Tldr has multiple official clients, so the instructions depend on your installation method.\n\nIf you're using the C client, export the following environment variable:\n\n```bash\nexport TLDR_CACHE_DIR=\"$XDG_CACHE_HOME\"/tldr\n```\n\nThe Python client and tlrc (Rust client) use the correct XDG directory out of the box.\n\n**There is currently no way to use an XDG directory in the Node.js client.**\n"
+        }
+    ]
+}

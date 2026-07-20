@@ -1,0 +1,10 @@
+{
+    "name": "PHP",
+    "files": [
+        {
+            "path": "$HOME/.php_history",
+            "movable": true,
+            "help": "Support since PHP _8.4_ through the PHP_HISTFILE environment variable.\n\nExport the following environment variable:\n\n```sh\nexport PHP_HISTFILE=\"$XDG_STATE_HOME\"/php/history\n```\n"
+        }
+    ]
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "program-local",
+  "description": "Superset of xdg-ninja's program schema for the LOCAL overlay\n(config/xdg-audit/programs-local/). It accepts every upstream field plus\noptional local-only fields (override provenance, per-file mechanism/env/\nrewrite, and a top-level ignore list). `xdg-audit --submit` strips the\nlocal-only fields so the submission validates against the pristine\njson-schema/program.json.\n\nAn entry has `files` (paths that need handling or carry help), `ignore`\n(paths deliberately left in place), or both.\n\nRoles an overlay entry can play:\n- override  : same `name` as an upstream program; corrects/annotates it.\n              Carries `override-of` + `upstream-digest` so --update-db can\n              flag it obsolete once upstream changes.\n- addition  : a `name` upstream does not cover (e.g. grok, serena).\n- ignore    : list a $HOME path in the top-level `ignore` array to suppress\n              it from the audit report.\n- wrap      : a file with `mechanism: wrap` + `rewrite` target, handled by a\n              bin/<app> namespace bind-mount wrapper.",
+  "definitions": {
+    "empty": {
+      "type": "string",
+      "pattern": "^\\s+$"
+    }
+  },
+  "type": "object",
+  "required": ["name"],
+  "anyOf": [
+    { "required": ["files"] },
+    { "required": ["ignore"] }
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "title": "name",
+      "description": "A program name (matches the upstream file basename when overriding).",
+      "type": "string",
+      "minLength": 1,
+      "not": { "$ref": "#/definitions/empty" },
+      "examples": ["grok", "vim"]
+    },
+    "override-of": {
+      "title": "override-of",
+      "description": "The upstream program name this entry overrides. Usually equal to\n`name`. Presence marks the entry as an override rather than an addition.",
+      "type": "string",
+      "minLength": 1
+    },
+    "upstream-digest": {
+      "title": "upstream-digest",
+      "description": "sha256 hex of the upstream programs/<name>.json this override was made\nagainst. --update-db compares it to the refreshed upstream file and, on a\nmismatch, flags this override as possibly obsolete (offers removal).",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ignore": {
+      "title": "ignore",
+      "description": "Paths deliberately left in place. xdg-audit does not report these $HOME\npaths (a considered 'leave it alone'). Each is a $HOME path, e.g.\n$HOME/.bashrc.",
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "not": { "$ref": "#/definitions/empty" }
+      }
+    },
+    "files": {
+      "title": "files",
+      "description": "Files and folders that need handling or carry help.",
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "title": "path",
+            "description": "A path to a file or a folder, e.g. $HOME/.grok.",
+            "type": "string",
+            "minLength": 1,
+            "not": { "$ref": "#/definitions/empty" }
+          },
+          "movable": {
+            "title": "movable",
+            "description": "Whether the file/folder is movable out of $HOME. Optional in the\noverlay (required upstream); include it on additions meant for --submit.",
+            "type": "boolean"
+          },
+          "help": {
+            "title": "help",
+            "description": "Markdown help for the user. Optional in the overlay (required\nupstream); include it on additions meant for --submit.",
+            "type": "string",
+            "minLength": 1,
+            "not": { "$ref": "#/definitions/empty" }
+          },
+          "mechanism": {
+            "title": "mechanism",
+            "description": "How this path is handled. `env`/`alias`/`symlink`/`remove` are the\nxdg-ninja-handleable set; `wrap` uses a bin/<app> namespace bind-mount\nredirect. Absent = inferred by xdg-audit.",
+            "type": "string",
+            "enum": ["env", "alias", "symlink", "wrap", "remove"]
+          },
+          "rewrite": {
+            "title": "rewrite",
+            "description": "The redirect target path. Used as the bind-mount destination for `wrap`,\nthe link target for `symlink`, and — for `env` — as a fallback handled-\nsignal when the variable is not exported (e.g. HISTFILE): xdg-audit treats\nthe path as handled if this target exists. May use $XDG_* / $HOME\nvariables, e.g. $XDG_STATE_HOME/foo.",
+            "type": "string",
+            "minLength": 1,
+            "not": { "$ref": "#/definitions/empty" }
+          },
+          "env": {
+            "title": "env",
+            "description": "For `mechanism: env`, the environment variable that performs the\nredirect (e.g. DOCKER_CONFIG). xdg-audit reports the path as handled\nwhen this variable is set, so a leftover $HOME copy reads as 'stray'\nrather than 'unhandled'.",
+            "type": "string",
+            "minLength": 1,
+            "not": { "$ref": "#/definitions/empty" }
+          }
+        }
+      }
+    }
+  }
+}

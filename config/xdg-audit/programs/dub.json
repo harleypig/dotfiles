@@ -1,0 +1,10 @@
+{
+    "name": "dub package manager",
+    "files": [
+        {
+            "path": "$HOME/.dub",
+            "movable": true,
+            "help": "Export the following environment variable:\n\n```bash\nexport DUB_HOME=\"$XDG_DATA_HOME/dub\"\n```\n\nNote that this directory is used for **both** user data and configuration files.\n"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Swift Package Manager",
+    "files": [
+        {
+            "path": "$HOME/.swiftpm",
+            "movable": true,
+            "help": "Set the _$XDG_CONFIG_HOME_ environment variable\n\nOnce set, Swift Package Manager will store its configuration files in _$XDG_CONFIG_HOME/swiftpm_."
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "path": "$HOME/.x2goclient",
+            "movable": true,
+            "help": "Alias x2goclient to use a custom configuration location:\n\n```bash\nalias x2goclient=\"x2goclient --home=$XDG_CONFIG_HOME\"\n```\n"
+        }
+    ],
+    "name": "x2goclient"
+}

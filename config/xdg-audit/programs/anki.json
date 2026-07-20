@@ -1,0 +1,15 @@
+{
+    "files": [
+        {
+            "path": "$HOME/Anki",
+            "movable": true,
+            "help": "Supported by default, you can move this directory to _$XDG_DATA_HOME/Anki2_.\n"
+        },
+        {
+            "path": "$HOME/Documents/Anki",
+            "movable": true,
+            "help": "Supported by default, you can move this directory to _$XDG_DATA_HOME/Anki2_.\n"
+        }
+    ],
+    "name": "anki"
+}

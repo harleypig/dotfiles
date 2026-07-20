@@ -1,0 +1,20 @@
+{
+    "name": "gem",
+    "files": [
+        {
+            "path": "$HOME/.gem",
+            "movable": true,
+            "help": "Supported by default.\n\nNewer versions of directories automatically create directories at correct locations, so this can safely be deleted (after moving your configuration files).\n"
+        },
+        {
+            "path": "$HOME/.gem/gemrc",
+            "movable": true,
+            "help": "Supported by default.\n\nYou can move the file to _$XDG_CONFIG_HOME/gem/gemrc_.\n"
+        },
+        {
+            "path": "$HOME/.gem/irbrc",
+            "movable": true,
+            "help": "Supported by default.\n\nYou can move the file to _$XDG_CONFIG_HOME/irb/irbrc_.\n"
+        }
+    ]
+}
