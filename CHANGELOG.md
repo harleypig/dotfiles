@@ -41,6 +41,12 @@ goes green (see the merge-time finalization in
   Java/nss/cpan/sudo/vscode-server/redhat (immovable or unsupported), and a
   `gradle-mcp` addition documenting the Gradle MCP Server. Removed the
   orphaned `~/.m2` (101M) and stale `~/.gradle-mcp` caches. (PR #276)
+- **Resolved the remaining `$HOME` per-app migrations.** Tracked the last
+  untracked dotfiles via `programs-local/` overlays — aider (ignore, no `$HOME`
+  footprint), zsh (ignore, bash-only repo), grok (tracking addition for a
+  `.claude`-style symlink), jbang (tracking addition, `JBANG_DIR`) — and
+  exported `GNUPGHOME` / `LEDGER_FILE` / `SQLITE_HISTORY` unconditionally so a
+  leftover reads as *stray*. (PR #278)
 - **Enriched the `xdg-audit` scan output.** The default scan now lists only
   actionable dotfiles (unhandled/stray/remove); `-a/--all` is the full-picture
   view, tagging each entry with its mechanism, collapsing an app's dotfiles

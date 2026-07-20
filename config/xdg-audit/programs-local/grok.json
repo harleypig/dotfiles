@@ -1,0 +1,10 @@
+{
+  "files": [
+    {
+      "help": "grok hardcodes ~/.grok with no relocation env, so a symlink is the redirect: manage ~/.grok as a symlink into a managed repo, the same as ~/.claude.",
+      "movable": true,
+      "path": "$HOME/.grok"
+    }
+  ],
+  "name": "grok"
+}

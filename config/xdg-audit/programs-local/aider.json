@@ -1,0 +1,9 @@
+{
+  "ignore": [
+    {
+      "path": "$HOME/.aider.conf.yml",
+      "reason": "aider is configured per-project, not in $HOME"
+    }
+  ],
+  "name": "aider"
+}

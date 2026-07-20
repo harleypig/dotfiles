@@ -1,0 +1,23 @@
+{
+  "ignore": [
+    {
+      "path": "$HOME/.zshrc",
+      "reason": "repo is bash-based; no zsh provisions"
+    },
+    {
+      "path": "$HOME/.zshenv",
+      "reason": "repo is bash-based; no zsh provisions"
+    },
+    {
+      "path": "$HOME/.zprofile",
+      "reason": "repo is bash-based; no zsh provisions"
+    },
+    {
+      "path": "$HOME/.zlogin",
+      "reason": "repo is bash-based; no zsh provisions"
+    }
+  ],
+  "name": "zsh",
+  "override-of": "zsh",
+  "upstream-digest": "13d4620f1e80776b17eb0213ee8ad9a671a718ecf166fc136c7eae5ce6aa720c"
+}
