@@ -1,0 +1,14 @@
+{
+  "files": [
+    {
+      "env": "PARALLEL_HOME",
+      "mechanism": "env",
+      "movable": true,
+      "path": "$HOME/.parallel",
+      "rewrite": "$XDG_CONFIG_HOME/parallel"
+    }
+  ],
+  "name": "parallel",
+  "override-of": "parallel",
+  "upstream-digest": "f35d88b77698eabfa0a1bdffdf18cc8ea02d01fabab4febdb413ef629195218f"
+}

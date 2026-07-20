@@ -20,10 +20,15 @@ if havecmd ledger; then
   export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
 fi
 
-# Redirect Gradle's home out of ~/.gradle (build cache + config → data dir)
-if havecmd gradle; then
-  export GRADLE_USER_HOME="${XDG_DATA_HOME}/gradle"
-fi
+# Redirect Gradle's home out of ~/.gradle (build cache + config → data dir).
+# Set unconditionally (like KIVY_HOME below): GRADLE_USER_HOME is inert when
+# Gradle is absent, and an unconditional export keeps the redirect in effect —
+# and visible to xdg-audit as active — regardless of install state.
+export GRADLE_USER_HOME="${XDG_DATA_HOME}/gradle"
+
+# Redirect GNU parallel's home out of ~/.parallel. Set unconditionally for the
+# same reason as GRADLE_USER_HOME above (inert when parallel is absent).
+export PARALLEL_HOME="${XDG_CONFIG_HOME}/parallel"
 
 # Redirect SQLite's REPL history out of ~/.sqlite_history (sqlite reads its
 # config from $XDG_CONFIG_HOME/sqlite3/sqliterc on its own since 3.44)

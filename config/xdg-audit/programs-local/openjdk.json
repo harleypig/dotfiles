@@ -1,0 +1,6 @@
+{
+  "ignore": ["$HOME/.java"],
+  "name": "openjdk",
+  "override-of": "openjdk",
+  "upstream-digest": "40c631eb02ba24cf6cfa62063cc187c24f838673c2e93a6909ea2b17e9de9680"
+}

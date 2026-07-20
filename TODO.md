@@ -528,9 +528,11 @@ Reduce $HOME clutter by moving dotfiles to XDG directories where supported and
 removing unused ones. The repeatable auditor is [`bin/xdg-audit`](bin/xdg-audit)
 (data + model in [`config/xdg-audit/README.md`](config/xdg-audit/README.md)):
 plain `xdg-audit` scans `$HOME`; passing an app name shows one app's status;
-`--json` emits machine-readable output. Redirects for Gradle/Kivy/SQLite are
-landed; docker/cpanm/less/npm (and bash history) are annotated as
-already-redirected in `programs-local/`.
+`--json` emits machine-readable output. Redirects for
+Gradle/Kivy/SQLite/Parallel are landed; docker/cpanm/less/npm/wget (and bash
+history) are annotated as redirected in `programs-local/`, and the
+immovable/unsupported set (Java, nss .pki, cpan, sudo, vscode-server,
+redhat) is annotated as ignored.
 
 ### Remaining per-app migrations
 
@@ -542,16 +544,15 @@ handled, and verify the app still works:
 - [ ] **aider** (`~/.aider`) — check `AIDER_*` env / `--config-dir`.
 - [ ] **grok** (`~/.grok`) — check XDG / config-dir support.
 - [ ] **serena** (`~/.serena`) — check if the config path is configurable.
-- [ ] **gradle-mcp** (`~/.gradle-mcp`) — likely `GRADLE_USER_HOME` or its own.
-- [ ] **redhat** (`~/.redhat`) — investigate; may be immovable.
-- [ ] **Java** (`~/.java`) — `_JAVA_OPTIONS=-Djava.util.prefs.userRoot=…`
-  (awkward) or the self-wrap tier.
-- [ ] **Maven** (`~/.m2`) — `MAVEN_OPTS`/`MAVEN_ARGS` (awkward) or self-wrap.
-- [ ] **cpan** (`~/.cpan`) — hardcoded per xdg-ninja; self-wrap if used, else
-  remove.
 - [ ] **zsh** (`~/.zshrc`) — not the primary shell; remove if unused.
 - [ ] Per-machine: clear the leftover strays for the already-redirected tools
   once their new XDG locations are populated.
+- [ ] Review the remaining `havecmd`-gated XDG redirect exports in
+  `config/shell-startup/app_env_vars` (gpg `GNUPGHOME`, ledger `LEDGER_FILE`,
+  sqlite `SQLITE_HISTORY`) — consider exporting them unconditionally (the
+  KIVY_HOME / gradle / parallel pattern) so a leftover reports as *stray*
+  rather than *unhandled* and the redirect applies the moment the tool is
+  installed.
 
 ### xdg-audit follow-ups
 
@@ -576,6 +577,12 @@ handled, and verify the app still works:
 - [ ] **ephemeral-style cache relocator** (consideration) — a generic
   symlink-to-`$XDG_CACHE_HOME`/`$XDG_RUNTIME_DIR` helper (dry-run, env-config)
   for chromium/electron caches; build only when a second real case appears.
+- [ ] → **dotagents**: teach the agent config to use `xdg-audit` as part of
+  tool setup/configuration — when standing up a tool, check its `$HOME`
+  footprint and create the appropriate `programs-local/` overlay entry
+  (redirect / ignore / addition) so new tools are XDG-audited by default.
+  Cross-repo: migrate to dotagents' `audit/BACKLOG.md` when next working that
+  repo.
 
 ### `~/.config` symlink — decided in ADR-0003
 
