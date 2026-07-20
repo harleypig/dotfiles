@@ -9,16 +9,17 @@ if havecmd elinks; then
   export ELINKS_CONFDIR="$HOME/.elinks"
 fi
 
-# Add other application environment variables here following the same pattern
-# Check if GNUPG is installed and set GNUPGHOME if it is
-if havecmd gpg; then
-  export GNUPGHOME="${XDG_DATA_HOME}/gnupg"
-fi
+# The XDG redirects below are exported unconditionally (the KIVY_HOME /
+# GRADLE_USER_HOME pattern): each names a directory its tool reads and is inert
+# when the tool is absent, so an unconditional export keeps the redirect in
+# effect the moment the tool is installed — and visible to xdg-audit as active,
+# so a leftover reads as stray rather than unhandled.
 
-# Check if LEDGER is installed and set LEDGER_FILE if it is
-if havecmd ledger; then
-  export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
-fi
+# Redirect GnuPG's home out of ~/.gnupg (keys + config -> data dir).
+export GNUPGHOME="${XDG_DATA_HOME}/gnupg"
+
+# Redirect ledger/hledger's journal out of ~/.
+export LEDGER_FILE="${XDG_DATA_HOME}/hledger/journal"
 
 # Redirect Gradle's home out of ~/.gradle (build cache + config → data dir).
 # Set unconditionally (like KIVY_HOME below): GRADLE_USER_HOME is inert when
@@ -31,10 +32,9 @@ export GRADLE_USER_HOME="${XDG_DATA_HOME}/gradle"
 export PARALLEL_HOME="${XDG_CONFIG_HOME}/parallel"
 
 # Redirect SQLite's REPL history out of ~/.sqlite_history (sqlite reads its
-# config from $XDG_CONFIG_HOME/sqlite3/sqliterc on its own since 3.44)
-if havecmd sqlite3; then
-  export SQLITE_HISTORY="${XDG_STATE_HOME}/sqlite_history"
-fi
+# config from $XDG_CONFIG_HOME/sqlite3/sqliterc on its own since 3.44). Set
+# unconditionally, as with the redirects above.
+export SQLITE_HISTORY="${XDG_STATE_HOME}/sqlite_history"
 
 # Redirect Kivy's home out of ~/.kivy. Set unconditionally: Kivy is a Python
 # library with no CLI to detect via havecmd, and the variable is inert when

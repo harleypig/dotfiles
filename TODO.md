@@ -536,23 +536,33 @@ redhat) is annotated as ignored.
 
 ### Remaining per-app migrations
 
-Offenders `xdg-audit` still reports as unhandled — resolve each, then add a
-`programs-local/<app>.json` entry (mechanism + env/rewrite) so it reports
-handled, and verify the app still works:
+Each present `$HOME` dotfile gets a `programs-local/<app>.json` entry (redirect
+/ ignore / addition) so `xdg-audit` tracks it; the actual per-machine
+relocation (moving an install, symlinking) is a separate step.
 
-- [ ] **jbang** (`~/.jbang`) — `JBANG_DIR`; add redirect + overlay entry.
-- [ ] **aider** (`~/.aider`) — check `AIDER_*` env / `--config-dir`.
-- [ ] **grok** (`~/.grok`) — check XDG / config-dir support.
-- [ ] **serena** (`~/.serena`) — check if the config path is configurable.
-- [ ] **zsh** (`~/.zshrc`) — not the primary shell; remove if unused.
+- [x] **aider** — no `$HOME` footprint (aider is configured per-project, not in
+  `$HOME`); ignored via overlay.
+- [x] **zsh** — this repo is bash-based with no zsh provisions; the zsh
+  dotfiles (`.zshrc`/`.zshenv`/`.zprofile`/`.zlogin`) are ignored via overlay.
+- [x] **havecmd-gated redirects** — `GNUPGHOME` / `LEDGER_FILE` /
+  `SQLITE_HISTORY` now export unconditionally (the KIVY_HOME pattern), so a
+  leftover reads as *stray* not *unhandled* and the redirect applies the moment
+  the tool is installed.
+- [ ] **jbang** — research the migration. `JBANG_DIR` relocates jbang's whole
+  dir, but `~/.jbang` (471M) holds the *install* (its `bin/` is on PATH), not
+  just cache — so it is an install move + a PATH change, not a plain env flip.
+  Plan the per-machine move (or a clean reinstall under `$XDG_DATA_HOME/jbang`)
+  before flipping `JBANG_DIR`. Tracked via overlay (shows *unhandled*).
+- [ ] **grok** — convert `~/.grok` to a managed symlink into a repo, like
+  `~/.claude` (grok hardcodes `~/.grok` with no relocation env). Tracked via
+  overlay; the symlink itself is a per-machine action.
+- [ ] **serena** — it is running **natively** (creating `~/.serena`: LSP
+  backend, memories, logs) when it should run via a docker image. Its MCP
+  wiring was not found under `~/.config` or the known MCP configs — locate what
+  spawns it, then either dockerize it (no host footprint) or set `SERENA_HOME`
+  to relocate `~/.serena`.
 - [ ] Per-machine: clear the leftover strays for the already-redirected tools
   once their new XDG locations are populated.
-- [ ] Review the remaining `havecmd`-gated XDG redirect exports in
-  `config/shell-startup/app_env_vars` (gpg `GNUPGHOME`, ledger `LEDGER_FILE`,
-  sqlite `SQLITE_HISTORY`) — consider exporting them unconditionally (the
-  KIVY_HOME / gradle / parallel pattern) so a leftover reports as *stray*
-  rather than *unhandled* and the redirect applies the moment the tool is
-  installed.
 
 ### xdg-audit follow-ups
 

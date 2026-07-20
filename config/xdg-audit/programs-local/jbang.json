@@ -1,0 +1,13 @@
+{
+  "files": [
+    {
+      "env": "JBANG_DIR",
+      "help": "JBANG_DIR relocates jbang's whole dir (install + cache + config); default ~/.jbang. Migrating is an install move (its bin/ is on PATH) - needs a plan, see TODO.",
+      "mechanism": "env",
+      "movable": true,
+      "path": "$HOME/.jbang",
+      "rewrite": "$XDG_DATA_HOME/jbang"
+    }
+  ],
+  "name": "jbang"
+}
