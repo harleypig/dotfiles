@@ -14,6 +14,9 @@ name: tests
 #   - python: pytest over tests/python/ (activates once tests exist)
 #   - pre-commit: the check config (lint/format/secret hooks) via
 #                 `pre-commit run --all-files`
+#   - json-schema: validate the xdg-audit program database (pristine mirror
+#                 against xdg-ninja's schema; local overlay against the
+#                 overlay superset schema) with check-jsonschema
 
 on:
   push:
@@ -197,3 +200,33 @@ jobs:
       # is the security-scan skill's job.
       - name: Run pre-commit (check config)
         run: SKIP=no-commit-to-branch pre-commit run --all-files --show-diff-on-failure
+
+  # Validate the xdg-audit program database: the pristine vendored mirror
+  # against xdg-ninja's schema, and our local overlay against the overlay
+  # superset schema. check-jsonschema is the same validator we can run locally
+  # (pre-commit parity is a follow-up in TODO.md).
+  json-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install check-jsonschema
+        run: pip install check-jsonschema
+
+      - name: Validate vendored programs against the pristine schema
+        run: >
+          check-jsonschema
+          --schemafile config/xdg-audit/json-schema/program.json
+          config/xdg-audit/programs/*.json
+
+      - name: Validate the local overlay against the overlay schema
+        run: >
+          check-jsonschema
+          --schemafile config/xdg-audit/programs-local/.schema.json
+          config/xdg-audit/programs-local/*.json

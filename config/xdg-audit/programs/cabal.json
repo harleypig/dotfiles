@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "path": "$HOME/.cabal",
+            "movable": true,
+            "help": "Move the _$HOME/.cabal/config_ directory to _$XDG_CONFIG_HOME/cabal/config_, then delete _$HOME/.cabal_.\n"
+        }
+    ],
+    "name": "cabal"
+}

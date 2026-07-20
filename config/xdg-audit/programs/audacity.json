@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "path": "$HOME/.audacity-data",
+            "movable": true,
+            "help": "Supported since version 3.2.0\nYou can move these files.\n"
+        }
+    ],
+    "name": "audacity"
+}

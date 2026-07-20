@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "help": "Supported since _8.0.0_.\n\nYou can move the directory to _$XDG_CONFIG_HOME/ipython_.\n",
+            "movable": true,
+            "path": "$HOME/.ipython"
+        }
+    ],
+    "name": "ipython"
+}

@@ -1,0 +1,911 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Getopt::Long qw(:config bundling no_ignore_case);
+use File::Spec;
+use Digest::SHA qw(sha256_hex);
+use FindBin     qw($RealBin);
+use JSON::PP;
+
+# ------------------------------------------------------------------------------
+# xdg-audit — audit $HOME for dotfiles that could move to XDG locations.
+#
+# Data model: a PRISTINE vendored mirror of xdg-ninja (json-schema/ + programs/)
+# plus a local overlay (programs-local/) that overrides/adds/ignores entries and
+# annotates each with a handling mechanism. See config/xdg-audit/README.md.
+#
+# Core modules only (JSON::PP, Getopt::Long, File::Spec, Digest::SHA, FindBin),
+# so this runs on system perl with no CPAN/perlbrew dependency.
+# ------------------------------------------------------------------------------
+
+my $PROG = 'xdg-audit';
+
+# Program data (help text) and our output are UTF-8; add the encoding layer so
+# wide characters print without warnings.
+binmode STDOUT, ':encoding(UTF-8)';
+binmode STDERR, ':encoding(UTF-8)';
+
+# ------------------------------------------------------------------------------
+# Settings
+# ------------------------------------------------------------------------------
+
+my %cli = (
+  json      => 0,
+  all       => 0,
+  db        => undef,
+  home      => undef,
+  search    => undef,
+  mechanism => undef,
+  movable   => undef,                  # tri-state: undef=any, 1=only movable, 0=only immovable
+  reindex   => 0,
+  update_db => 0,
+);
+
+# ------------------------------------------------------------------------------
+# Utility subroutines
+# ------------------------------------------------------------------------------
+
+# The XDG base directories, with spec defaults when unset. $XDG_CONFIG_HOME in
+# this setup points at $DOTFILES/config, so we honour the environment first.
+sub xdg_dirs {
+  my $home = home_dir();
+  return {
+    HOME            => $home,
+    XDG_CONFIG_HOME => $ENV{XDG_CONFIG_HOME} || "$home/.config",
+    XDG_CACHE_HOME  => $ENV{XDG_CACHE_HOME}  || "$home/.cache",
+    XDG_DATA_HOME   => $ENV{XDG_DATA_HOME}   || "$home/.local/share",
+    XDG_STATE_HOME  => $ENV{XDG_STATE_HOME}  || "$home/.local/state",
+    XDG_RUNTIME_DIR => $ENV{XDG_RUNTIME_DIR} || "$home/.cache",
+  };
+}
+
+sub home_dir {
+  return $cli{home} if defined $cli{home};
+  return $ENV{HOME} if defined $ENV{HOME} && length $ENV{HOME};
+  die "$PROG: \$HOME is not set (pass --home)\n";
+}
+
+# Expand $VAR / ${VAR} references (HOME + XDG_*) in a db path to an absolute one.
+sub expand_path {
+  my ($path) = @_;
+  my $dirs = xdg_dirs();
+  $path =~ s{\$\{(\w+)\}}{ $dirs->{$1} // "\${$1}" }ge;
+  $path =~ s{\$(\w+)}{ $dirs->{$1} // "\$$1" }ge;
+  return $path;
+}
+
+# Resolve the database directory: --db, then $XDG_AUDIT_HOME, then
+# $XDG_CONFIG_HOME/xdg-audit, then the repo copy relative to this script.
+sub db_dir {
+  return $cli{db}             if defined $cli{db};
+  return $ENV{XDG_AUDIT_HOME} if defined $ENV{XDG_AUDIT_HOME};
+
+  if ( defined $ENV{XDG_CONFIG_HOME} ) {
+    my $d = File::Spec->catdir( $ENV{XDG_CONFIG_HOME}, 'xdg-audit' );
+    return $d if -d $d;
+  }
+
+  my $repo = File::Spec->catdir( $RealBin, File::Spec->updir, 'config', 'xdg-audit' );
+  return $repo if -d $repo;
+
+  die "$PROG: cannot locate the xdg-audit database (pass --db DIR)\n";
+}
+
+sub read_file {
+  my ($path) = @_;
+  open my $fh, '<:encoding(UTF-8)', $path or die "$PROG: cannot read $path: $!\n";
+  local $/;
+  my $content = <$fh>;
+  close $fh;
+  return $content;
+}
+
+sub decode_file {
+  my ($path) = @_;
+  return JSON::PP->new->utf8(0)->decode( read_file($path) );
+}
+
+# ------------------------------------------------------------------------------
+# Database loading
+# ------------------------------------------------------------------------------
+
+# Cheap name -> file map from a directory listing (no JSON parsed). The filename
+# stem is the app name, so a single app's file can be loaded on its own.
+sub name_index {
+  my ($subdir) = @_;
+  my $dir = File::Spec->catdir( db_dir(), $subdir );
+  my %map;
+  return \%map unless -d $dir;
+
+  opendir my $dh, $dir or die "$PROG: cannot open $dir: $!\n";
+  for my $f ( readdir $dh ) {
+    next unless $f =~ /^(.+)\.json$/;
+    next if $f     =~ /^\./;           # skip .schema.json and other dotfiles
+    $map{$1} = File::Spec->catfile( $dir, $f );
+  }
+  closedir $dh;
+  return \%map;
+}
+
+# Normalise one raw program JSON into flat per-path entries. `files[]` are paths
+# that need handling or carry help; the top-level `ignore[]` (overlay only) is a
+# list of paths deliberately left in place.
+sub entries_from_program {
+  my ( $data, $name, $source, $relfile ) = @_;
+  my @out;
+  for my $file ( @{ $data->{files} || [] } ) {
+    push @out, {
+      name      => $name,
+      source    => $source,
+      file      => $relfile,
+      path      => $file->{path},
+      movable   => $file->{movable} ? JSON::PP::true : JSON::PP::false,
+      help      => $file->{help},
+      mechanism => $file->{mechanism},
+      env       => $file->{env},
+      rewrite   => $file->{rewrite},
+      ignore    => 0,
+    };
+  }
+  for my $path ( @{ $data->{ignore} || [] } ) {
+    push @out, {
+      name    => $name,
+      source  => $source,
+      file    => $relfile,
+      path    => $path,
+      movable => JSON::PP::false,
+      ignore  => 1,
+    };
+  }
+  return @out;
+} ## end sub entries_from_program
+
+# An override replaces the upstream entry, so a minimal overlay would lose the
+# upstream help/movable. Backfill those per path (matched by path) from the
+# upstream entry when the overlay omits them.
+sub backfill_from_upstream {
+  my ( $odata, $udata ) = @_;
+  my %up = map { $_->{path} => $_ } @{ $udata->{files} || [] };
+  for my $f ( @{ $odata->{files} || [] } ) {
+    my $u = $up{ $f->{path} } or next;
+    $f->{help}    //= $u->{help};
+    $f->{movable} //= $u->{movable};
+  }
+  return $odata;
+}
+
+# Load a single app by name (no full-db scan, no index). Overlay wins over
+# upstream for the same name; an override backfills upstream help/movable.
+sub load_app {
+  my ($name)   = @_;
+  my $upstream = name_index('programs');
+  my $local    = name_index('programs-local');
+
+  my ( $file, $source );
+  if ( exists $local->{$name} ) {
+    ( $file, $source ) = ( $local->{$name}, exists $upstream->{$name} ? 'override' : 'local' );
+  } elsif ( exists $upstream->{$name} ) {
+    ( $file, $source ) = ( $upstream->{$name}, 'upstream' );
+  } else {
+    return;
+  }
+
+  my $data = decode_file($file);
+  $data->{name} //= $name;
+  if ( $source eq 'override' ) {
+    my $udata = eval { decode_file( $upstream->{$name} ) };
+    backfill_from_upstream( $data, $udata ) if $udata;
+  }
+  return [ entries_from_program( $data, $name, $source, $file ) ];
+} ## end sub load_app
+
+# Merge upstream + overlay into the full flat entry list (overlay wins by name).
+sub load_all_entries {
+  my $upstream = name_index('programs');
+  my $local    = name_index('programs-local');
+
+  my %by_name;
+  for my $name ( keys %$upstream ) {
+    $by_name{$name} = { file => $upstream->{$name}, source => 'upstream' };
+  }
+  for my $name ( keys %$local ) {
+    $by_name{$name} = {
+      file   => $local->{$name},
+      source => ( exists $upstream->{$name} ? 'override' : 'local' ),
+    };
+  }
+
+  my @entries;
+  for my $name ( sort keys %by_name ) {
+    my $info = $by_name{$name};
+    my $data = eval { decode_file( $info->{file} ) };
+    if ( !$data ) {
+      warn "$PROG: skipping malformed $info->{file}: $@";
+      next;
+    }
+    if ( $info->{source} eq 'override' ) {
+      my $udata = eval { decode_file( $upstream->{$name} ) };
+      backfill_from_upstream( $data, $udata ) if $udata;
+    }
+    push @entries, entries_from_program( $data, $name, $info->{source}, $info->{file} );
+  }
+  return \@entries;
+} ## end sub load_all_entries
+
+# ------------------------------------------------------------------------------
+# Enriched index (cache) — powers scan / reverse-path lookup / structured filters
+# without parsing every body on each run. Rebuilt when stale.
+# ------------------------------------------------------------------------------
+
+sub index_path { return File::Spec->catfile( db_dir(), '.index.json' ) }
+
+# Newest mtime across the two program dirs and their files.
+sub sources_mtime {
+  my $newest = 0;
+  for my $sub (qw(programs programs-local)) {
+    my $dir = File::Spec->catdir( db_dir(), $sub );
+    next unless -d $dir;
+    my $m = ( stat $dir )[9] // 0;
+    $newest = $m if $m > $newest;
+    opendir my $dh, $dir or next;
+    for my $f ( readdir $dh ) {
+      next if $f eq '.' || $f eq '..';
+      my $fm = ( stat File::Spec->catfile( $dir, $f ) )[9] // 0;
+      $newest = $fm if $fm > $newest;
+    }
+    closedir $dh;
+  }
+  return $newest;
+}
+
+sub index_is_stale {
+  my $idx = index_path();
+  return 1 unless -f $idx;
+  my $idx_m = ( stat $idx )[9] // 0;
+  return $idx_m < sources_mtime() ? 1 : 0;
+}
+
+sub build_index {
+  my $entries = load_all_entries();
+
+  # Strip help from the index — it is loaded on demand for the matched few.
+  # Leading + forces hashref (not a code block) inside map.
+  my @slim = map { +{ %{$_}, help => undef } } @$entries;
+
+  my $doc = {
+    _generated => "$PROG index - regenerated automatically; do not edit or commit",
+    version    => 1,
+    entries    => \@slim,
+  };
+
+  my $idx  = index_path();
+  my $json = JSON::PP->new->utf8(0)->canonical->pretty->encode($doc);
+  open my $fh, '>:encoding(UTF-8)', $idx or die "$PROG: cannot write index $idx: $!\n";
+  print {$fh} $json;
+  close $fh;
+  return scalar @slim;
+} ## end sub build_index
+
+# Return the index entries, rebuilding first if stale (or forced).
+sub load_index {
+  my (%opt) = @_;
+  build_index() if $opt{force} || index_is_stale();
+  my $doc = decode_file( index_path() );
+  return $doc->{entries} || [];
+}
+
+# ------------------------------------------------------------------------------
+# Status detection
+# ------------------------------------------------------------------------------
+
+# Does the (expanded) db path currently exist under $HOME?
+sub path_exists {
+  my ($entry) = @_;
+  my $abs = expand_path( $entry->{path} );
+  return ( -e $abs || -l $abs ) ? 1 : 0;
+}
+
+# Best-effort: is this path already redirected/handled by the repo?
+#   env      -> handled when the named variable is set
+#   alias    -> assumed handled (cannot verify a shell alias from here)
+#   symlink  -> handled when the rewrite target exists
+#   wrap     -> handled when the rewrite target exists (wrapper wiring is separate)
+#   remove   -> a removal candidate, not "handled"
+#   (none)   -> upstream-only: handling unknown
+# Returns one of: handled / unhandled / remove / unknown.
+sub handling_status {
+  my ($entry) = @_;
+  my $mech = $entry->{mechanism};
+  return 'unknown' unless defined $mech;
+
+  if ( $mech eq 'env' ) {
+
+    # Handled when the env var is set (an exported redirect this shell sees),
+    # or when the redirect target already exists — evidence of a redirect we
+    # cannot see, e.g. a non-exported shell variable such as HISTFILE.
+    my $by_env    = $entry->{env}     && $ENV{ $entry->{env} };
+    my $by_target = $entry->{rewrite} && -e expand_path( $entry->{rewrite} );
+    return ( $by_env || $by_target ) ? 'handled' : 'unhandled';
+  }
+  return 'handled' if $mech eq 'alias';
+  if ( $mech eq 'symlink' || $mech eq 'wrap' ) {
+    return ( $entry->{rewrite} && -e expand_path( $entry->{rewrite} ) ) ? 'handled' : 'unhandled';
+  }
+  return 'remove' if $mech eq 'remove';
+  return 'unknown';
+} ## end sub handling_status
+
+# If the (expanded) path is a symlink, return its target, else undef. A
+# symlinked dotfile is a deliberate managed link (e.g. into another repo), not
+# a stray to migrate.
+sub link_target {
+  my ($entry) = @_;
+  my $abs = expand_path( $entry->{path} );
+  return -l $abs ? readlink($abs) : undef;
+}
+
+# Bucket an entry into a display group, or return undef to skip it (a file that
+# is both absent and not redirected is simply irrelevant).
+#   linked    : the path is a symlink (a deliberate managed link)
+#   stray     : present + redirect active -> removable leftover
+#   unhandled : present + not redirected (inactive mechanism, or no annotation)
+#   remove    : mechanism = remove (unused app)
+#   handled   : absent + redirect active -> already migrated/clean
+sub classify {
+  my ($entry) = @_;
+  return 'linked' if defined link_target($entry);
+
+  my $exists = path_exists($entry);
+  my $status = handling_status($entry);
+
+  if ( !$exists ) {
+    return $status eq 'handled' ? 'handled' : undef;
+  }
+  return 'stray'  if $status eq 'handled';
+  return 'remove' if $status eq 'remove';
+  return 'unhandled';
+}
+
+# Assemble a report record for one entry.
+sub report_record {
+  my ($entry) = @_;
+  my $link = link_target($entry);
+  return {
+    name        => $entry->{name},
+    source      => $entry->{source},
+    path        => $entry->{path},
+    display     => home_relative( $entry->{path} ),
+    resolved    => expand_path( $entry->{path} ),
+    exists      => ( path_exists($entry) ? JSON::PP::true : JSON::PP::false ),
+    movable     => ( $entry->{movable}   ? JSON::PP::true : JSON::PP::false ),
+    mechanism   => $entry->{mechanism},
+    env         => $entry->{env},
+    rewrite     => $entry->{rewrite},
+    link_target => $link,
+    status      => ( defined $link ? 'linked' : handling_status($entry) ),
+    group       => classify($entry),
+  };
+} ## end sub report_record
+
+# ------------------------------------------------------------------------------
+# Output
+# ------------------------------------------------------------------------------
+
+sub emit_json {
+  my ($data) = @_;
+  print JSON::PP->new->utf8(0)->canonical->pretty->encode($data);
+  return;
+}
+
+# Usable terminal width: $COLUMNS, else the tty size, else 80.
+sub term_width {
+  return $ENV{COLUMNS} if $ENV{COLUMNS} && $ENV{COLUMNS} =~ /^\d+$/;
+
+  # struct winsize is 4 unsigned shorts (rows, cols, ...); TIOCGWINSZ=0x5413.
+  my $ws = pack 'S4', 0, 0, 0, 0;
+  if ( ioctl( STDOUT, 0x5413, $ws ) ) {
+    my ( undef, $cols ) = unpack 'S4', $ws;
+    return $cols if $cols;
+  }
+  return 80;
+}
+
+# Drop the assumed $HOME/ prefix from a db path ($HOME/.foo -> .foo). The scan
+# only covers $HOME, so the prefix is noise.
+sub home_relative {
+  my ($path) = @_;
+  $path =~ s{^\$\{?HOME\}?/}{};
+  return $path;
+}
+
+# Display order of the scan groups. `handled` (already-migrated, no leftover)
+# is shown only with --all.
+my @GROUP_ORDER = qw(handled unhandled linked stray remove);
+
+# Print classified records grouped by type, in GROUP_ORDER, omitting empty
+# groups. Each row is "appname (.dotfile)"; linked rows append " -> target",
+# aligned to the widest linked row (width-aware).
+sub print_grouped {
+  my ($buckets) = @_;
+
+  my @shown = grep { $_ ne 'handled' || $cli{all} }
+    grep { $buckets->{$_} && @{ $buckets->{$_} } } @GROUP_ORDER;
+
+  unless (@shown) {
+    print "Nothing to report.\n";
+    return;
+  }
+
+  # Align linked targets to the widest linked "appname (.dotfile)".
+  my $longest = 0;
+  for my $r ( @{ $buckets->{linked} || [] } ) {
+    my $len = length sprintf( '%s (%s)', $r->{name}, $r->{display} );
+    $longest = $len if $len > $longest;
+  }
+  my $cap = term_width() - 42;
+  my $col = ( $cap > 12 && $longest > $cap ) ? $cap : $longest;
+
+  my $first = 1;
+  for my $group (@shown) {
+    print "\n" unless $first;
+    $first = 0;
+    print "$group\n";
+
+    for my $r ( sort { $a->{name} cmp $b->{name} || $a->{path} cmp $b->{path} } @{ $buckets->{$group} } ) {
+      my $left = sprintf '%s (%s)', $r->{name}, $r->{display};
+      if ( $group eq 'linked' ) {
+        printf "  %-*s  -> %s\n", $col, $left, ( $r->{link_target} // '?' );
+      } else {
+        printf "  %s\n", $left;
+      }
+    }
+  }
+  return;
+} ## end sub print_grouped
+
+# ------------------------------------------------------------------------------
+# Detail view (single app / path lookup)
+# ------------------------------------------------------------------------------
+
+sub print_app_detail {
+  my ($entries) = @_;
+  my $app = @$entries ? $entries->[0]{name} : '(unknown)';
+
+  # Show every path — including ignored ones — so the app's full picture is
+  # visible. Ignored paths are marked (they are left in place by choice).
+  my @out;
+  for my $e (@$entries) {
+    my $exists = path_exists($e);
+    my $link   = link_target($e);
+    push @out, {
+      name        => $e->{name},
+      source      => $e->{source},
+      path        => home_relative( $e->{path} ),
+      exists      => ( $exists ? JSON::PP::true : JSON::PP::false ),
+      movable     => $e->{movable},
+      mechanism   => $e->{mechanism},
+      env         => $e->{env},
+      rewrite     => $e->{rewrite},
+      link_target => $link,
+      ignore      => ( $e->{ignore}  ? JSON::PP::true : JSON::PP::false ),
+      group       => ( $e->{ignore}  ? 'ignore'       : classify($e) ),
+      status      => ( defined $link ? 'linked'       : $exists ? handling_status($e) : 'not present' ),
+      help        => $e->{help},
+    };
+  } ## end for my $e (@$entries)
+
+  if ( $cli{json} ) {
+    emit_json( { app => $app, files => \@out } );
+    return;
+  }
+
+  # Paths block: one line per path, $HOME stripped, detail depends on type.
+  print "$out[0]{name}  ($out[0]{source})\n\n";
+  my $w = 0;
+  for my $f (@out) { $w = length $f->{path} if length $f->{path} > $w }
+
+  for my $f (@out) {
+    my $detail =
+        $f->{ignore}                                             ? 'ignored (left in place)'
+      : defined $f->{link_target}                                ? "-> $f->{link_target}"
+      : !$f->{exists} && $f->{group} && $f->{group} eq 'handled' ? 'handled'
+      : !$f->{exists}                                            ? 'absent'
+      :                                                            $f->{group};
+    printf "  %-*s  %s\n", $w, $f->{path}, $detail;
+  }
+
+  # Then each path's migration help (ignored paths need none).
+  for my $f (@out) {
+    next if $f->{ignore};
+    next unless defined $f->{help};
+    my $help = $f->{help};
+    $help =~ s/\n+\z//;
+    $help =~ s/^(?=.)/    /mg;         # indent non-empty lines only
+    print "\nhelp for $f->{path}:\n$help\n";
+  }
+  return;
+} ## end sub print_app_detail
+
+# ------------------------------------------------------------------------------
+# Modes
+# ------------------------------------------------------------------------------
+
+sub mode_scan {
+  my $entries = load_index( force => $cli{reindex} );
+
+  my ( @records, %buckets );
+  for my $e (@$entries) {
+    next if $e->{ignore};
+    next if defined $cli{mechanism} && ( $e->{mechanism} // '' ) ne $cli{mechanism};
+    next if defined $cli{movable}   && ( ( $e->{movable} ? 1 : 0 ) != $cli{movable} );
+
+    my $group = classify($e);
+    next unless defined $group;        # absent and not redirected -> irrelevant
+
+    my $rec = report_record($e);
+    push @records,              $rec;
+    push @{ $buckets{$group} }, $rec;
+  }
+
+  if ( $cli{json} ) {
+
+    # A flat feed: every classified record (including handled) carries its
+    # group, so tooling gets the full picture regardless of --all.
+    emit_json( \@records );
+  } else {
+    print_grouped( \%buckets );
+  }
+
+  # Exit 2 when there is actionable work; 0 when only handled/linked/none.
+  my $actionable = grep { $buckets{$_} && @{ $buckets{$_} } } qw(unhandled stray remove);
+  return $actionable ? 2 : 0;
+} ## end sub mode_scan
+
+# Look up by a $HOME path, an exact app name, or a name fragment.
+#   - a path-ish query matches by owned path;
+#   - an EXACT app name wins, so `bash` / `docker` show their own detail rather
+#     than a fragment list (babashka, docker-machine, ...);
+#   - otherwise a fragment resolves by ambiguity: one app -> detail, several ->
+#     a per-app list (so `Vim`, which is no app's exact name, still lists the
+#     vim family).
+sub mode_lookup {
+  my ($query) = @_;
+
+  if ( $query =~ m{/} || $query =~ /^\./ ) {
+    return resolve_and_show( [ find_by_path($query) ], $query );
+  }
+
+  my $exact = load_app($query);
+  if ($exact) {
+    print_app_detail($exact);
+    return 0;
+  }
+
+  return resolve_and_show( [ find_by_name($query) ], $query );
+}
+
+# Entries whose owned path matches the query (exact, expanded, or substring).
+sub find_by_path {
+  my ($query) = @_;
+  my $entries = load_index( force => $cli{reindex} );
+  my $qexp    = expand_path($query);
+  return grep {
+    my $p  = $_->{path};
+    my $pe = expand_path($p);
+    $p eq $query || $pe eq $qexp || $p =~ /\Q$query\E/ || $pe =~ /\Q$qexp\E/;
+  } @$entries;
+}
+
+# Entries whose app name or (home-relative) path matches a fragment. A direct
+# lookup surfaces ignored entries too (the detail view then notes they are left
+# in place); only the scan suppresses them.
+sub find_by_name {
+  my ($term)  = @_;
+  my $entries = load_index( force => $cli{reindex} );
+  my $re      = qr/\Q$term\E/i;
+  return grep { $_->{name} =~ $re || home_relative( $_->{path} ) =~ $re } @$entries;
+}
+
+# One distinct app → its detail; none → no-match; several → a per-app list.
+sub resolve_and_show {
+  my ( $hits, $query ) = @_;
+  my %apps;
+  $apps{ $_->{name} } = 1 for @$hits;
+  my @names = sort keys %apps;
+
+  if ( @names == 1 ) {
+    print_app_detail( load_app( $names[0] ) );
+    return 0;
+  }
+  if ( !@names ) {
+    if ( $cli{json} ) { emit_json( { query => $query, matches => [] } ); }
+    else              { print "No known program matches '$query'.\n"; }
+    return 1;
+  }
+  print_matches( $hits, $query );
+  return 0;
+} ## end sub resolve_and_show
+
+# List the distinct apps that matched, each with its matching dotfile(s).
+sub print_matches {
+  my ( $hits, $term ) = @_;
+  my %by;
+  push @{ $by{ $_->{name} } }, home_relative( $_->{path} ) for @$hits;
+
+  if ( $cli{json} ) {
+    my @m = map { { name => $_, paths => $by{$_} } } sort keys %by;
+    emit_json( { query => $term, matches => \@m } );
+    return;
+  }
+
+  my $header = ( keys %by > 1 ) ? "Multiple apps match '$term':" : "Matches for '$term':";
+  print "$header\n";
+  for my $name ( sort keys %by ) {
+    printf "  %-22s %s\n", $name, join( ', ', @{ $by{$name} } );
+  }
+  return;
+} ## end sub print_matches
+
+# Explicit --search: broadest match (name / path / help), always a per-app list.
+sub mode_search {
+  my ($term)  = @_;
+  my $entries = load_all_entries();    # search scans help → load bodies
+  my $re      = qr/\Q$term\E/i;
+
+  my @hits = grep {
+    ( join "\n", grep { defined } $_->{name}, $_->{path}, $_->{help} ) =~ $re;
+  } @$entries;
+
+  unless (@hits) {
+    if ( $cli{json} ) { emit_json( { query => $term, matches => [] } ); }
+    else              { print "No matches for '$term'.\n"; }
+    return 1;
+  }
+
+  print_matches( \@hits, $term );
+  return 0;
+} ## end sub mode_search
+
+# ------------------------------------------------------------------------------
+# Database lifecycle
+# ------------------------------------------------------------------------------
+
+sub mode_reindex {
+  my $n = build_index();
+  print "$PROG: rebuilt index with $n path entries.\n" unless $cli{json};
+  emit_json( { reindexed => $n } ) if $cli{json};
+  return 0;
+}
+
+# Refresh the pristine mirror from upstream, then flag overrides whose recorded
+# upstream digest no longer matches (i.e. upstream likely caught up).
+sub mode_update_db {
+  my ($ref_arg) = @_;
+  my $dbd       = db_dir();
+  my $pin       = decode_file( File::Spec->catfile( $dbd, 'upstream.json' ) );
+  my $repo      = $pin->{repo};
+  my $ref       = $ref_arg || 'HEAD';
+
+  require File::Temp;
+  my $tmp   = File::Temp::tempdir( CLEANUP => 1 );
+  my @clone = ( 'git', 'clone', '--quiet', '--depth', '1' );
+  push @clone, ( '--branch', $ref ) if $ref ne 'HEAD';
+  push @clone, ( $repo, $tmp );
+  system(@clone) == 0 or die "$PROG: git clone of $repo failed\n";
+
+  my $new_sha = qx(git -C "$tmp" rev-parse HEAD);
+  chomp $new_sha;
+
+  # Snapshot old overrides' recorded digests before overwriting the mirror.
+  my $local = name_index('programs-local');
+  my %override_digest;
+  for my $name ( keys %$local ) {
+    my $d = eval { decode_file( $local->{$name} ) } or next;
+    $override_digest{$name} = $d->{'upstream-digest'} if $d->{'upstream-digest'};
+  }
+
+  # Overwrite schema + programs from the fresh clone (keep the mirror pristine).
+  my $prog_dst = File::Spec->catdir( $dbd, 'programs' );
+  my $prog_src = File::Spec->catdir( $tmp, 'programs' );
+
+  my @changed;
+  opendir my $dh, $prog_src or die "$PROG: no programs/ in clone\n";
+  for my $f ( readdir $dh ) {
+    next unless $f =~ /\.json$/;
+    my $src    = File::Spec->catfile( $prog_src, $f );
+    my $dst    = File::Spec->catfile( $prog_dst, $f );
+    my $before = ( -f $dst ) ? sha256_hex( read_file($dst) ) : '';
+    my $after  = sha256_hex( read_file($src) );
+    if ( $before ne $after ) {
+      _copy( $src, $dst );
+      ( my $name = $f ) =~ s/\.json$//;
+      push @changed, $name;
+    }
+  }
+  closedir $dh;
+
+  _copy(
+    File::Spec->catfile( $tmp, 'json-schema', 'program.json' ),
+    File::Spec->catfile( $dbd, 'json-schema', 'program.json' ),
+  );
+
+  # Record the new pin.
+  $pin->{ref} = $new_sha;
+  open my $pf, '>:encoding(UTF-8)', File::Spec->catfile( $dbd, 'upstream.json' )
+    or die "$PROG: cannot update upstream.json: $!\n";
+  print {$pf} JSON::PP->new->utf8(0)->canonical->pretty->encode($pin);
+  close $pf;
+
+  build_index();
+
+  # Flag overrides that may now be obsolete.
+  my @obsolete;
+  for my $name ( keys %override_digest ) {
+    my $up = File::Spec->catfile( $prog_dst, "$name.json" );
+    next unless -f $up;
+    my $now = sha256_hex( read_file($up) );
+    push @obsolete, $name if $now ne $override_digest{$name};
+  }
+
+  if ( $cli{json} ) {
+    emit_json( { ref => $new_sha, changed => \@changed, obsolete_overrides => \@obsolete } );
+  } else {
+    print "$PROG: updated to $new_sha\n";
+    print "  changed programs: " . ( @changed ? join( ', ', sort @changed ) : 'none' ) . "\n";
+    if (@obsolete) {
+      print "  overrides possibly obsolete (upstream changed since the override):\n";
+      print "    $_  - review programs-local/$_.json; remove if upstream now suffices\n" for sort @obsolete;
+    }
+  }
+  return 0;
+} ## end sub mode_update_db
+
+sub _copy {
+  my ( $src, $dst ) = @_;
+  my $data = read_file($src);
+  open my $fh, '>:encoding(UTF-8)', $dst or die "$PROG: cannot write $dst: $!\n";
+  print {$fh} $data;
+  close $fh;
+  return;
+}
+
+# ------------------------------------------------------------------------------
+# Usage / dispatch
+# ------------------------------------------------------------------------------
+
+sub usage {
+  my ($code) = @_;
+  $code //= 0;
+  print <<'END_USAGE';
+xdg-audit - audit $HOME for dotfiles that could move to XDG locations.
+
+USAGE
+  xdg-audit [options]              scan $HOME for stray dotfiles
+  xdg-audit [options] <app>        show what one app needs + live status
+  xdg-audit [options] <$HOME-path> reverse-map a dotfile to its app
+  xdg-audit --search <term>        search name/path/help text
+  xdg-audit --reindex              rebuild the enriched index cache
+  xdg-audit --update-db [<ref>]    refresh the vendored mirror from upstream
+
+OPTIONS
+  -a, --all                also show the 'handled' group (already migrated)
+  --json                   machine-readable output (for tooling / AI)
+  --search <term>          substring search across name, path, and help
+  --mechanism <m>          restrict the scan to one mechanism (env/alias/wrap)
+  --movable / --immovable  filter the scan by movability
+  --db <dir>               database dir (default: $XDG_CONFIG_HOME/xdg-audit)
+  --home <dir>             treat <dir> as $HOME (testing)
+  --reindex                force-rebuild the index before running
+  -h, --help               this message
+
+OUTPUT
+  The scan groups each dotfile by type (empty groups omitted), in this order:
+
+    handled    Already migrated: the file is gone from $HOME and its redirect
+               is active. Hidden unless -a/--all. Non-actionable.
+    unhandled  Present but not redirected yet (mechanism inactive, or
+               nothing recorded). Actionable.
+    linked     A symlink (a deliberate managed link into another repo); shown
+               as ".x -> target". Non-actionable.
+    stray      Present, and its redirect is already active -> the leftover
+               file is safe to remove. Actionable.
+    remove     The app is marked unused; just delete the file. Actionable.
+
+  An exact app name shows that app's detail (a paths list, then each path's
+  migration help); so does a fragment that matches only one app. A fragment
+  matching several apps shows a per-app list. In a detail view a path reads as
+  "-> target" (linked), "absent", "ignored", or its group word.
+
+  --json emits a flat array; every record carries its "group" (the values
+  above) for tooling and agents.
+
+EXIT STATUS
+  0  nothing actionable (only handled/linked, or nothing to report)
+  2  actionable findings (any unhandled / stray / remove)
+  1  a usage or runtime error
+END_USAGE
+  exit $code;
+} ## end sub usage
+
+# ------------------------------------------------------------------------------
+
+GetOptions(
+  'json'        => \$cli{json},
+  'all|a'       => \$cli{all},
+  'search=s'    => \$cli{search},
+  'mechanism=s' => \$cli{mechanism},
+  'movable'     => sub { $cli{movable} = 1 },
+  'immovable'   => sub { $cli{movable} = 0 },
+  'db=s'        => \$cli{db},
+  'home=s'      => \$cli{home},
+  'reindex'     => \$cli{reindex},
+  'update-db'   => \$cli{update_db},
+  'help|h'      => sub { usage(0) },
+) or usage(1);
+
+# Dispatch. A runtime failure (e.g. missing database) reports and exits 1;
+# a scan with actionable findings returns 2; a clean run returns 0.
+my $exit = eval {
+  if    ( $cli{update_db} )         { mode_update_db( $ARGV[0] ) }
+  elsif ( defined $cli{search} )    { mode_search( $cli{search} ) }
+  elsif ( $cli{reindex} && !@ARGV ) { mode_reindex() }
+  elsif (@ARGV)                     { mode_lookup( $ARGV[0] ) }
+  else                              { mode_scan() }
+};
+if ( !defined $exit ) {
+  print {*STDERR} $@ if $@;
+  $exit = 1;
+}
+
+exit $exit;
+
+__END__
+
+=head1 NAME
+
+xdg-audit - audit $HOME for dotfiles that could move to XDG locations
+
+=head1 SYNOPSIS
+
+  xdg-audit [options]              # scan $HOME
+  xdg-audit vim                    # what vim needs + live status
+  xdg-audit .some-dir              # reverse-map a $HOME path to its app
+  xdg-audit --search gradle        # search name/path/help
+  xdg-audit --json                 # machine-readable output
+  xdg-audit --reindex              # rebuild the index cache
+  xdg-audit --update-db            # refresh the vendored xdg-ninja mirror
+
+=head1 DESCRIPTION
+
+C<xdg-audit> reports dotfiles in C<$HOME> that a program supports relocating to
+an XDG base directory, using a vendored, schema-validated mirror of xdg-ninja's
+program database plus a local overlay (C<programs-local/>) that overrides stale
+upstream entries, adds programs upstream does not cover, marks paths to ignore,
+and annotates each path with a handling I<mechanism> (env / alias / symlink /
+wrap / remove).
+
+Every mode honours C<--json> so both a human and an agent can consume the
+output. Report-only: this first cut never moves or deletes files. See the
+B<OUTPUT> section of C<--help> for what each reported status means.
+
+=head2 Loading strategy
+
+Scans, lookups, and filters resolve against a generated enriched index
+(C<.index.json>) that carries the cheap structured fields; when a lookup
+narrows to a single app, that app's file is read for its help/detail. Program
+bodies are otherwise parsed only to build the index (or on a C<--search>, which
+scans help text). The index rebuilds automatically when the C<programs*/>
+directories are newer, or on C<--reindex>.
+
+=head1 EXIT STATUS
+
+Exits C<0> when nothing is actionable (only handled/linked, or a successful
+lookup), C<2> when the scan finds actionable work (any unhandled / stray /
+remove), and C<1> on a usage or runtime error.
+
+=head1 SEE ALSO
+
+C<config/xdg-audit/README.md> for the data model, mechanism hierarchy, and the
+update/submit workflow.
+
+=cut

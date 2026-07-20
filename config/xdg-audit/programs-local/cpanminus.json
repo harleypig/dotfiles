@@ -1,0 +1,13 @@
+{
+   "files" : [
+      {
+         "env" : "PERL_CPANM_HOME",
+         "mechanism" : "env",
+         "movable" : true,
+         "path" : "$HOME/.cpanm"
+      }
+   ],
+   "name" : "cpanminus",
+   "override-of" : "cpanminus",
+   "upstream-digest" : "b6e100c54ff9356ae040cf3379c53b768668acf7d974b316ae3f91581152cf5a"
+}

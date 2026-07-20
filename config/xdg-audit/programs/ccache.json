@@ -1,0 +1,10 @@
+{
+    "name": "ccache",
+    "files": [
+        {
+            "path": "$HOME/.ccache",
+            "movable": true,
+            "help": "Supported by default since version 4.0.\n\nYou can move the directory to _$XDG_CACHE_HOME/ccache_.\n"
+        }
+    ]
+}

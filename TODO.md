@@ -524,54 +524,69 @@ main dotfiles checkout.
 
 ## 🏠 $HOME dotfile audit
 
-Reduce $HOME clutter by moving dotfiles to XDG directories where supported
-and removing unused ones.
+Reduce $HOME clutter by moving dotfiles to XDG directories where supported and
+removing unused ones. The repeatable auditor is [`bin/xdg-audit`](bin/xdg-audit)
+(data + model in [`config/xdg-audit/README.md`](config/xdg-audit/README.md)):
+plain `xdg-audit` scans `$HOME`; passing an app name shows one app's status;
+`--json` emits machine-readable output. Redirects for Gradle/Kivy/SQLite are
+landed; docker/cpanm/less/npm (and bash history) are annotated as
+already-redirected in `programs-local/`.
 
-Reference: <https://wiki.archlinux.org/title/XDG_Base_Directory>
-(comprehensive list of which apps support XDG and how to configure them)
+### Remaining per-app migrations
 
-### Migration steps
+Offenders `xdg-audit` still reports as unhandled — resolve each, then add a
+`programs-local/<app>.json` entry (mechanism + env/rewrite) so it reports
+handled, and verify the app still works:
 
-- [ ] Inventory all dotfiles/dotdirs in $HOME (`ls -la ~ | grep '^\.'`)
-- [ ] For each, check the Arch wiki XDG page:
-  - If XDG is supported: move file/dir to appropriate XDG location and
-    configure the app (env var, config option, symlink, etc.)
-  - If XDG is not supported: determine if the app is still in use; remove
-    the dotfile if not
-- [ ] Update `config/shell-startup/` modules to set any required env vars
-  for apps migrated to XDG paths
-- [ ] Update dotlinks if any of these were previously managed there
-- [ ] After migration, verify apps still work correctly
+- [ ] **jbang** (`~/.jbang`) — `JBANG_DIR`; add redirect + overlay entry.
+- [ ] **aider** (`~/.aider`) — check `AIDER_*` env / `--config-dir`.
+- [ ] **grok** (`~/.grok`) — check XDG / config-dir support.
+- [ ] **serena** (`~/.serena`) — check if the config path is configurable.
+- [ ] **gradle-mcp** (`~/.gradle-mcp`) — likely `GRADLE_USER_HOME` or its own.
+- [ ] **redhat** (`~/.redhat`) — investigate; may be immovable.
+- [ ] **Java** (`~/.java`) — `_JAVA_OPTIONS=-Djava.util.prefs.userRoot=…`
+  (awkward) or the self-wrap tier.
+- [ ] **Maven** (`~/.m2`) — `MAVEN_OPTS`/`MAVEN_ARGS` (awkward) or self-wrap.
+- [ ] **cpan** (`~/.cpan`) — hardcoded per xdg-ninja; self-wrap if used, else
+  remove.
+- [ ] **zsh** (`~/.zshrc`) — not the primary shell; remove if unused.
+- [ ] Per-machine: clear the leftover strays for the already-redirected tools
+  once their new XDG locations are populated.
 
-### Known offenders to investigate (as of 2026-05-20)
+### xdg-audit follow-ups
 
-| Path | Tool | Notes |
-| --- | --- | --- |
-| `~/.aider` | aider AI | check if `--config-dir` or `AIDER_CONFIG` supports XDG |
-| `~/.cpan` | CPAN | `CPAN::Config` supports custom dirs |
-| `~/.cpanm` | cpanm | `PERL_CPANM_HOME` env var |
-| `~/.docker` | Docker | `DOCKER_CONFIG` — already set in `010-general` but dir still in `$HOME` |
-| `~/.gradle` | Gradle | `GRADLE_USER_HOME` env var |
-| `~/.gradle-mcp` | gradle-mcp | likely follows `GRADLE_USER_HOME` or its own config |
-| `~/.grok` | grok (xAI CLI) | check XDG / config-dir support (installer block already relocated to `config/shell-startup/grok`) |
-| `~/.java` | Java/JVM | `java.util.prefs.userRoot` system property |
-| `~/.jbang` | jbang | `JBANG_DIR` env var |
-| `~/.kivy` | Kivy | `KIVY_HOME` env var |
-| `~/.lesshst` | less | `LESSHISTFILE` env var — set to `$XDG_CACHE_HOME/less/history` |
-| `~/.m2` | Maven | `settings.xml` `<localRepository>` or `MAVEN_OPTS` |
-| `~/.npm` | npm | `NPM_CONFIG_CACHE` or `.npmrc` `cache=` |
-| `~/.redhat` | Red Hat tools | investigate; may not be movable |
-| `~/.serena` | Serena AI | check if config path is configurable |
-| `~/.sqlite_history` | SQLite | `SQLITE_HISTORY` env var |
-| `~/.wget-hsts` | wget | already handled via alias in `010-general` |
-| `~/.zshrc` | Zsh | not primary shell; remove if unused |
+- [ ] **Self-wrap tier** — implement `mechanism: wrap`: a `bin/<app>` wrapper
+  using `unshare --user --map-root-user --mount` + `mount --bind` (confirmed
+  working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
+  `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
+  (Java/Maven/cpan).
+- [ ] **`--migrate` / `--remove`** — guarded, confirmation-gated `$HOME`
+  mutation (move a stray to its XDG target / delete it).
+- [ ] **`--submit`** — open an upstream xdg-ninja PR from a local
+  addition/override (gh OAuth fallback; strip local-only fields).
+- [ ] **`--update-db`** — exercise against upstream and verify obsolete-override
+  detection (needs network; not unit-tested yet).
+- [ ] **pre-commit `check-jsonschema`** — local parity with the CI `json-schema`
+  job (validate `programs/` + `programs-local/` on commit).
+- [ ] **Multiple apps, one dotfile** — several programs can own the same `$HOME`
+  path (e.g. `.m2` → maven + leiningen). `xdg-audit` currently shows a per-app
+  list for such a query. See how common this is across the db; if frequent,
+  decide on better handling (merge into one finding, disambiguate, or annotate
+  which app "owns" the path).
+- [ ] **ephemeral-style cache relocator** (consideration) — a generic
+  symlink-to-`$XDG_CACHE_HOME`/`$XDG_RUNTIME_DIR` helper (dry-run, env-config)
+  for chromium/electron caches; build only when a second real case appears.
 
-**Note:** Consider symlinking `~/.config -> $DOTFILES/config` to handle apps
-that hardcode `$HOME/.config` rather than respecting `$XDG_CONFIG_HOME`. This
-would make both paths resolve to the same location without needing per-app
-symlinks. Risk: `~/.config` becomes the canonical store for all XDG config,
-so anything the OS or other tools write there lands directly in the repo
-working tree — evaluate carefully before implementing.
+### `~/.config` symlink — decided in ADR-0003
+
+Adopt in principle (safe: the `config/.gitignore` allowlist keeps stray writes
+untracked), but establishing it is a deliberate per-machine migration, not
+auto-wired into dotlinks (`~/.config` already exists on every machine, so
+`check-dotfiles` would only warn). See
+[`docs/adr/0003-home-config-symlink.md`](docs/adr/0003-home-config-symlink.md).
+
+- [ ] Per-machine: migrate an existing `~/.config` into `config/` and replace
+  it with the `~/.config -> $DOTFILES/config` symlink, where wanted.
 
 ## 🐙 GitHub repository audit
 

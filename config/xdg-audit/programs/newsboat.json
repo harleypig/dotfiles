@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "path": "$HOME/.newsboat",
+            "movable": true,
+            "help": "If the XDG environment variables are set, simply move the configuration files.\n\n_Note: configuration and urls should go to **$XDG_CONFIG_HOME/newsboat**_\n\n_Note: cache.db, history.search, history.cmdline, queue should go to **$XDG_DATA_HOME/newsboat**_\n"
+        }
+    ],
+    "name": "newsboat"
+}

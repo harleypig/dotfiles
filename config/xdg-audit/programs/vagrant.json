@@ -1,0 +1,10 @@
+{
+    "name": "Vagrant",
+    "files": [
+        {
+            "path": "$HOME/.vagrant.d",
+            "movable": true,
+            "help": "Move to `${XDG_DATA_HOME}/vagrant` and modify your environment:\n\n```bash\nexport VAGRANT_HOME=\"${XDG_DATA_HOME}/vagrant\"\n```\n"
+        }
+    ]
+}

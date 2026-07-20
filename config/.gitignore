@@ -38,5 +38,6 @@
 !/task/
 !/tmux/
 !/vmgr/
+!/xdg-audit/
 !/yamllint/
 !/yapf/

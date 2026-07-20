@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "help": "Export the following environment variables:\n\n```bash\nexport STACK_ROOT=\"$XDG_DATA_HOME\"/stack\n```\n\n_Note: In recent versions, stack will automatically follow the XDG spec if you set the `STACK_XDG` environment variable to any non empty value._\n\n```bash\nexport STACK_XDG=1\n```\n",
+            "movable": true,
+            "path": "$HOME/.stack"
+        }
+    ],
+    "name": "stack"
+}

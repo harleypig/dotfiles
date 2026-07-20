@@ -1,0 +1,15 @@
+{
+    "files": [
+        {
+            "help": "Try exporting the following environment variable:\n```bash\nBZR_LOG=$XDG_CACHE_HOME/bazaar\n```\n",
+            "movable": true,
+            "path": "$HOME/.bzr.log"
+        },
+        {
+            "help": "Bazaar should use _$HOME/.config/bazaar_ if it exists.\n",
+            "movable": true,
+            "path": "$HOME/.bazaar"
+        }
+    ],
+    "name": "bazaar"
+}

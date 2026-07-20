@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "path": "$HOME/.jupyter",
+            "movable": true,
+            "help": "Supported by default.\n\nYou can move the directory to _$XDG_CONFIG_HOME/jupyter_.\n"
+        }
+    ],
+    "name": "jupyter"
+}

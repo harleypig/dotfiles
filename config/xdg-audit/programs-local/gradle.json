@@ -1,0 +1,13 @@
+{
+   "files" : [
+      {
+         "env" : "GRADLE_USER_HOME",
+         "mechanism" : "env",
+         "movable" : true,
+         "path" : "$HOME/.gradle"
+      }
+   ],
+   "name" : "gradle",
+   "override-of" : "gradle",
+   "upstream-digest" : "2d255e515916aba584609ee3868d9fb46deb3300cde5f21bba59752e6a5a2564"
+}

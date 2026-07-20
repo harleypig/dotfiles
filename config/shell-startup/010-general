@@ -170,8 +170,8 @@ function sudo() {
 }
 
 #-----------------------------------------------------------------------------
-mkdir -p "$XDG_CACHE_HOME/bash"
-HISTFILE="$XDG_CACHE_HOME/bash/history"
+mkdir -p "$XDG_STATE_HOME/bash"
+HISTFILE="$XDG_STATE_HOME/bash/history"
 
 HISTCONTROL="erasedups:ignoreboth"
 HISTFILESIZE=100000

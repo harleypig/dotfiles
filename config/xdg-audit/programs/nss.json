@@ -1,0 +1,10 @@
+{
+    "files": [
+        {
+            "path": "$HOME/.pki",
+            "movable": false,
+            "help": "**Disclaimer: XDG is supported, but directory may be created again by some programs.**\n\nXDG is supported out-of-the-box, so we can simply move directory to _\"$XDG_DATA_HOME\"/pki_.\n\n_Note: some apps (chromium, for example) hardcode path to _\"$HOME\"/.pki_, so directory may appear again, see_ [https://bugzilla.mozilla.org/show_bug.cgi?id=818686#c11](https://bugzilla.mozilla.org/show_bug.cgi?id=818686#c11)_._\n"
+        }
+    ],
+    "name": "nss"
+}

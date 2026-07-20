@@ -1,0 +1,10 @@
+{
+    "name": "xdg-utils",
+    "files": [
+        {
+            "path": "$HOME/.gnome",
+            "movable": true,
+            "help": "This directory is created by old versions of `xdg-utils` and is no longer needed since GNOME 2.10. It can simply be deleted."
+        }
+    ]
+}
