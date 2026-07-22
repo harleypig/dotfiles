@@ -563,11 +563,6 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [x] **`--migrate`** — guarded, confirmation-gated *move* of a present dotfile
-  to its declared XDG `rewrite` target (env-mechanism only). Gates on the
-  ordering: the redirect must be active in the shell **and point at** the
-  declared target, the target must not already exist, and the source must be a
-  non-symlink under `$HOME`.
 - [ ] **`--migrate` for the `symlink` mechanism** — move a `mechanism: symlink`
   file into the managed repo and create the `$HOME` symlink, coordinating with
   `bin/check-dotfiles` / `.dotlinks`. Deferred: no `symlink`-mechanism overlay
