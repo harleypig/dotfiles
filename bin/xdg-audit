@@ -988,10 +988,14 @@ sub move_path {
 
   if ( -d $abs && !-l $abs ) {
     return ( 1, undef ) if rename $abs, $tgt;
+
+    # Capture errno *before* anything else runs — require/make_path/etc. would
+    # clobber $! with their own syscalls, so a deferred check would miss EXDEV.
+    my $errno = $!;
     require Errno;
     return ( 0, 'cross-filesystem directory move - move it by hand' )
-      if $! == Errno::EXDEV();
-    return ( 0, "could not move directory: $!" );
+      if $errno == Errno::EXDEV();
+    return ( 0, "could not move directory: $errno" );
   }
 
   require File::Copy;

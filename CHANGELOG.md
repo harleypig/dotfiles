@@ -43,6 +43,17 @@ goes green (see the merge-time finalization in
   xdg-ninja runs no formatter, and keeping the mirror byte-identical to
   upstream preserves the `upstream-digest` / `--update-db` comparison. (PR #279)
 
+### Fixed
+
+- **`xdg-audit --migrate` cross-filesystem directory refusal.** `move_path`
+  checked `$! == EXDEV` only *after* a `require Errno`, whose own syscalls
+  clobbered `$!` first — so a cross-filesystem directory move reported a blank
+  error instead of the intended "move it by hand" refusal. Capture errno
+  immediately after the failed `rename`. Added a docker integration test
+  (`test_integration_xdg_migrate.bats`, a `--tmpfs` = separate filesystem)
+  that reproduces the real boundary the single-tempdir unit suite cannot.
+  (PR #281)
+
 ## 2026-07-20
 
 ### Added
