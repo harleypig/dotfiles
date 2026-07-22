@@ -564,22 +564,19 @@ relocation (moving an install, symlinking) is a separate step.
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
 - [ ] **Mechanism state-machine — Phase 1**
-  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)), split into
-  three reviewable slices:
-  - [x] **Slice 1 — detection + reporting + `owner`.** The `owner` overlay
-    field + reporting; `$DOTFILES`-aware `expand_path`; current-mechanism
-    detection for `symlink` (+ in-dotlinks completeness) and `env`;
-    recommended-vs-actual display + divergence; `hardcoded`/`unknown`
-    classification. Read-only/additive — no mutation changes.
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)) — the
+  detection + reporting + `owner` slice shipped (see CHANGELOG); the two
+  remaining slices:
   - [ ] **Slice 2 — `--migrate env` reframe.** Change `--migrate <app>` to
     `--migrate <mechanism> <app>` (mechanism required; bare `--migrate`
     errors); a breaking change to PR #280's signature — its own commit +
-    changelog note. Depends on Slice 1.
+    changelog note.
   - [ ] **Slice 3 — `--migrate symlink` + `--fix`.** move → `.dotlinks` →
     `check-dotfiles`, interactive dotlinks-file selection/bootstrap, auto-run
     `check-dotfiles`; `--fix` for a symlink-not-in-dotlinks;
     cleanup-on-failure; a docker integration test for the real
-    check-dotfiles interaction. Depends on Slices 1 and 2.
+    check-dotfiles interaction. Do Slice 2 first (it adds the `symlink`
+    mechanism to the new signature).
 - [ ] **Mechanism state-machine — Phase 2** (ADR-0004). `--migrate recommended`
   dispatch; the automatable transition-matrix cells; `--migrate env` with
   instruct-the-`export`; `env`↔`symlink` conversions; `--remove` as teardown
