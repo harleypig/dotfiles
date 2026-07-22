@@ -569,15 +569,6 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [x] **Vendored xdg-audit files were rewritten by the fix config.** The
-  *fix* config's `trailing-whitespace` + `end-of-file-fixer` hooks reformatted
-  the vendored `config/xdg-audit/{programs,json-schema}/` mirror on any
-  `--all-files` run (prettier was already excluded), diverging from upstream
-  and masking real diffs. Fenced the whole vendored mirror off via the fix
-  config's top-level `exclude` so no fixer (current or future) touches it;
-  schema validation of the vendored files is kept in the check config + CI,
-  duplicating upstream's validate-json gate. (Surfaced while iceboxing
-  Phase 3.)
 - [ ] **`--migrate` cross-filesystem *directory* move** — v1 refuses an EXDEV
   directory move (a recursive copy needs a non-core module; the script is
   core-only). Add an `mv`-shell-out or core recursive strategy if a real case

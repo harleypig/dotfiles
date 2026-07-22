@@ -113,6 +113,17 @@ goes green (see the merge-time finalization in
 
 ### Fixed
 
+- **Pre-commit fix config no longer rewrites the vendored xdg-audit mirror.**
+  The `trailing-whitespace` + `end-of-file-fixer` fixers had no exclude for
+  `config/xdg-audit/{programs,json-schema}/` and rewrote ~140 pristine
+  upstream files on any `--all-files` run, diverging from xdg-ninja and
+  masking real diffs (`prettier` was already excluded). The whole vendored
+  mirror is now fenced off via the fix config's top-level `exclude`, so no
+  fixer — current or future — can touch it, while our overlays
+  (`programs-local/`) stay in scope. Schema validation of the vendored files
+  is deliberately retained in the check config + CI, duplicating upstream's
+  `validate-json` gate. (PR #295)
+
 - **`bin/where` now finds aliases defined in the dotfiles shell modules.**
   `where` classifies a command via `type -t` (keyword / builtin / file /
   function / alias) and reports where it is defined, but its hardcoded search
