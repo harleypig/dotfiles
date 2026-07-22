@@ -583,8 +583,9 @@ relocation (moving an install, symlinking) is a separate step.
   eligibility, or route target-absent strays to `--migrate`.
 - [ ] **`--submit`** — open an upstream xdg-ninja PR from a local
   addition/override (gh OAuth fallback; strip local-only fields).
-- [ ] **`--update-db`** — exercise against upstream and verify obsolete-override
-  detection (needs network; not unit-tested yet).
+- [x] **`--update-db`** — exercised end-to-end by
+  `test_integration_xdg_audit.bats` against a **local git upstream** (hermetic,
+  no network), verifying the mirror refresh and obsolete-override detection.
 - [ ] **Multiple apps, one dotfile** — several programs can own the same `$HOME`
   path (e.g. `.m2` → maven + leiningen). `xdg-audit` currently shows a per-app
   list for such a query. See how common this is across the db; if frequent,
