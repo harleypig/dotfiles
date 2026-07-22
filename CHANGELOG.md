@@ -43,6 +43,19 @@ goes green (see the merge-time finalization in
   xdg-ninja runs no formatter, and keeping the mirror byte-identical to
   upstream preserves the `upstream-digest` / `--update-db` comparison. (PR #279)
 
+### Tests
+
+- **Docker integration suite for `xdg-audit`.** Added a fourth harness image
+  (Debian slim + `perl` + `git`) and `tests/shell/test_integration_xdg_audit.bats`,
+  covering what the single-tempdir unit suite can't: the read-only modes
+  end-to-end against the **real vendored database** in a clean container; the
+  `--remove` / `--migrate` mutating modes with **real filesystem side effects**
+  in a throwaway `$HOME`; `--migrate` **across a filesystem boundary** (a
+  `--tmpfs` mount — file move succeeds, directory move refused); and
+  `--update-db` against a **local git upstream** (hermetic, no network) proving
+  the mirror refresh + obsolete-override detection. Folded in the cross-fs
+  regression guard (`test_integration_xdg_migrate.bats` removed). (PR #282)
+
 ### Fixed
 
 - **`xdg-audit --migrate` cross-filesystem directory refusal.** `move_path`
