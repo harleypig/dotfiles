@@ -467,6 +467,15 @@ integrated into `shell-startup` (guarded so a failure can't blank PATH).
 
 ### Shell Helpers
 
+- [ ] **Fix `bin/where`** — it classifies a command via `type -t`
+  (keyword/builtin/file/function/alias) and reports where it's defined, but its
+  hardcoded `location` search array (`/etc/bash*`, `/etc/profile*`, `/etc/skel`,
+  `$HOME/.bash*`, `$HOME/.profile*`) misses this setup's real config dirs, so it
+  detects an alias/function's *type* but can't find *where* it's defined when
+  the definition lives in `$DOTFILES/config/shell-startup/*`, `dot-general/*`,
+  etc. Fix = expand the search locations (the logic is fine). Prerequisite for
+  the xdg-audit mechanism model's `type`/`where`-based `alias` detection
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md), Phase 3).
 - [ ] Evaluate creating a reusable `select`/menu helper (sibling to
   `yesno`) for enumerated-option prompts
   - Survey existing callers in `bin/` and `config/shell-startup/` that
@@ -563,15 +572,27 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **`--migrate` for the `symlink` mechanism** — move a `mechanism: symlink`
-  file into the managed repo and create the `$HOME` symlink, coordinating with
-  `bin/check-dotfiles` / `.dotlinks`. Deferred: no `symlink`-mechanism overlay
-  exists yet, and it is a different operation (repo write + link) than the
-  env-move.
-- [ ] **`--migrate` for `alias` entries** — the alias redirect can't be
-  verified from `xdg-audit` (`handling_status` returns `handled` unconditionally
-  for `alias`), so the "redirect active first" gate is unverifiable. Decide
-  whether/how migrate can safely support it.
+- [ ] **Mechanism state-machine — Phase 1**
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)). The `owner`
+  overlay field + reporting; current-mechanism detection for `symlink` (+
+  in-dotlinks completeness) and `env`; recommended-vs-actual display;
+  `hardcoded`/`unknown` classification. `--migrate symlink` (move → `.dotlinks`
+  → `check-dotfiles`, interactive dotlinks-file selection, auto-run
+  `check-dotfiles`) + `--fix` for a symlink-not-in-dotlinks. Reframe the shipped
+  env `--migrate` as `--migrate env` (a breaking change to PR #280's signature
+  — its own commit + changelog note).
+- [ ] **Mechanism state-machine — Phase 2** (ADR-0004). `--migrate recommended`
+  dispatch; the automatable transition-matrix cells; `--migrate env` with
+  instruct-the-`export`; `env`↔`symlink` conversions; `--remove` as teardown
+  (drop the `.dotlinks` entry for a `symlink`-current entry — folds in the
+  stray-without-target fix below).
+- [ ] **Mechanism state-machine — Phase 3** (ADR-0004; ICEBOX-candidate).
+  General installation-method detection beyond the easy signals; `alias`/`wrap`
+  transitions (alias as a migrate target — instruct/suggest, with `bin/where`
+  confirming it's active; `wrap` *suggests* creating the `bin/<app>` wrapper);
+  the full N×N transition matrix; inferring the recommended mechanism from
+  xdg-ninja `help` prose. Depends on the **`bin/where` fix** (see *Shell
+  Helpers* → Features & fixes).
 - [ ] **`--migrate` cross-filesystem *directory* move** — v1 refuses an EXDEV
   directory move (a recursive copy needs a non-core module; the script is
   core-only). Add an `mv`-shell-out or core recursive strategy if a real case
