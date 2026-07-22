@@ -569,13 +569,9 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **Mechanism state-machine — Phase 2** (ADR-0004), in three slices:
-  - [x] **Slice 1 — `--migrate recommended` + hardcoded→env instruct-export.**
-    `--migrate recommended <app>` resolves the entry's declared mechanism and
-    dispatches to env/symlink. Rework `--migrate env` so a hardcoded entry with
-    no active redirect is *automated* (the move) with the exact `export VAR=…`
-    line *instructed* as a dual-audience suggestion (human + agent, also in
-    `--json`), instead of refusing.
+- [ ] **Mechanism state-machine — Phase 2** (ADR-0004) — Slice 1
+  (`--migrate recommended` + hardcoded→env instruct-the-export) shipped (see
+  CHANGELOG); the remaining slices:
   - [ ] **Slice 2 — `env`↔`symlink` conversions.** `symlink → env` (drop the
     symlink + `.dotlinks` entry, move canonical → XDG target, instruct the
     export); `env → symlink` (move canonical → repo, register in `.dotlinks`,
