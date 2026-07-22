@@ -20,9 +20,16 @@ goes green (see the merge-time finalization in
   asking per file (default No). A symlink (`linked`) or an un-redirected
   (`unhandled`) file is refused, every deletion is confined to `$HOME`, and it
   never sweeps the whole scan — the target must be named. A directory leftover
-  is removed recursively. (`--migrate`, which *moves* an unhandled file to its
-  XDG target, is deferred — its redirect-activation ordering is subtler.)
-  (PR #279)
+  is removed recursively. (PR #279)
+- **`xdg-audit --migrate` — guarded `$HOME → XDG` move.** The second mutating
+  mode: `xdg-audit --migrate <app|$HOME-path>` *moves* a present dotfile to its
+  declared XDG target (the overlay's `rewrite`) so an already-active redirect
+  finds it there. It enforces the ordering the move depends on — the redirect
+  must be exported and active in this shell **and point at** the declared
+  target, or it refuses and tells you to export it first (moving before the
+  redirect is live would leave the app reading the old, now-empty path).
+  env-mechanism only for now; also refuses a symlink, an existing target (use
+  `--remove`), or a source/target outside `$HOME`. (PR #280)
 - **Local pre-commit gates for the xdg-audit database.** Added check-only
   `check-jsonschema` hooks validating `programs/` against xdg-ninja's schema
   and `programs-local/` against the overlay superset schema — local parity with
