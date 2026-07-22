@@ -40,6 +40,7 @@ my %cli = (
   reindex   => 0,
   update_db => 0,
   remove    => 0,
+  migrate   => 0,
 );
 
 # ------------------------------------------------------------------------------
@@ -965,6 +966,164 @@ sub mode_remove {
 } ## end sub mode_remove
 
 # ------------------------------------------------------------------------------
+# Migration (guarded $HOME -> XDG move)
+# ------------------------------------------------------------------------------
+
+# Move a file (or directory) from $abs to $tgt, creating the target's parent.
+# A file uses File::Copy::move, which handles a cross-filesystem move (copy +
+# unlink). A directory is moved with a same-filesystem rename only; a
+# cross-device directory move is refused rather than risking a half-copy (a
+# recursive copy would need a non-core module, and this script is core-only).
+# Returns (ok, err): ok truthy on success, else err is a human message.
+sub move_path {
+  my ( $abs, $tgt ) = @_;
+
+  require File::Basename;
+  my $parent = File::Basename::dirname($tgt);
+  if ( length $parent && !-d $parent ) {
+    require File::Path;
+    File::Path::make_path($parent);
+    return ( 0, "could not create $parent: $!" ) unless -d $parent;
+  }
+
+  if ( -d $abs && !-l $abs ) {
+    return ( 1, undef ) if rename $abs, $tgt;
+    require Errno;
+    return ( 0, 'cross-filesystem directory move - move it by hand' )
+      if $! == Errno::EXDEV();
+    return ( 0, "could not move directory: $!" );
+  }
+
+  require File::Copy;
+  return File::Copy::move( $abs, $tgt ) ? ( 1, undef ) : ( 0, "could not move: $!" );
+} ## end sub move_path
+
+# --migrate <app|$HOME-path>: move a present dotfile to its declared XDG target
+# (`rewrite`) so an already-active redirect finds it there. env-mechanism only
+# in this cut. Gated on concrete preconditions (NOT the display group, since
+# the clean case classifies as 'stray'): the redirect must be active in THIS
+# shell and point at the declared target, the target must not already exist,
+# and the source must be a real file/dir under $HOME (never a symlink). Every
+# move is confirmed interactively (default No); never scan-wide.
+sub mode_migrate {
+  my ($query) = @_;
+
+  unless ( defined $query && length $query ) {
+    print {*STDERR} "$PROG: --migrate needs an app name or \$HOME path\n";
+    return 1;
+  }
+
+  my @entries = resolve_target_entries($query);
+  unless (@entries) {
+    print "No known program or path matches '$query'.\n";
+    return 1;
+  }
+
+  my %apps = map { $_->{name} => 1 } @entries;
+  if ( keys %apps > 1 ) {
+    print_matches( \@entries, $query );
+    print "\nName one app (or a specific \$HOME path) to --migrate.\n";
+    return 1;
+  }
+
+  my $home = home_dir();
+  print "$entries[0]{name}\n\n";
+
+  # First pass: show each path's disposition; collect the eligible moves.
+  my @moves;
+  for my $e ( sort { $a->{path} cmp $b->{path} } @entries ) {
+    my $abs  = expand_path( $e->{path} );
+    my $disp = home_relative( $e->{path} );
+
+    if ( $e->{ignore} ) {
+      printf "  %-24s ignored (left in place)\n", $disp;
+      next;
+    }
+    if ( defined link_target($e) ) {
+      printf "  %-24s linked (managed symlink) - not migrated\n", $disp;
+      next;
+    }
+    if ( !path_exists($e) ) {
+      printf "  %-24s absent - nothing to migrate\n", $disp;
+      next;
+    }
+
+    my $mech = $e->{mechanism} // '';
+    if ( $mech ne 'env' ) {
+      printf "  %-24s migrate supports env-redirect entries; %s not yet\n",
+        $disp, ( length $mech ? $mech : 'no mechanism' );
+      next;
+    }
+    unless ( $e->{rewrite} ) {
+      printf "  %-24s no XDG target declared (needs an overlay 'rewrite')\n", $disp;
+      next;
+    }
+
+    # THE ORDERING GATE: the redirect must be active in this shell, or the app
+    # would look at the old $HOME path (now empty) after the move.
+    my $var = $e->{env} // '';
+    my $val = length $var ? $ENV{$var} : undef;
+    unless ( defined $val && length $val ) {
+      printf "  %-24s redirect \$%s is not active here - export it first, then re-run\n",
+        $disp, $var;
+      next;
+    }
+
+    my $tgt = expand_path( $e->{rewrite} );
+
+    # The target must resolve to an absolute path with every $VAR expanded.
+    if ( $tgt =~ /\$\{?\w+\}?/ || !File::Spec->file_name_is_absolute($tgt) ) {
+      printf "  %-24s target does not resolve to an absolute path (%s) - refused\n",
+        $disp, $tgt;
+      next;
+    }
+
+    # The app reads wherever the exported var points; it must equal the declared
+    # target, or moving there leaves the app looking elsewhere.
+    if ( File::Spec->canonpath($val) ne File::Spec->canonpath($tgt) ) {
+      printf "  %-24s redirect \$%s points at %s, not the declared %s - reconcile first\n",
+        $disp, $var, $val, $tgt;
+      next;
+    }
+
+    if ( -e $tgt || -l $tgt ) {
+      printf "  %-24s target %s already exists - a redundant leftover; use --remove\n",
+        $disp, $tgt;
+      next;
+    }
+
+    unless ( index( $abs, "$home/" ) == 0 ) {
+      printf "  %-24s resolves outside \$HOME (%s) - refused\n", $disp, $abs;
+      next;
+    }
+
+    printf "  %-24s move to %s\n", $disp, $tgt;
+    push @moves, [ $abs, $tgt ];
+  } ## end for my $e ( sort { $a->...})
+
+  # Second pass: confirm and move each eligible file (default No).
+  my $migrated = 0;
+  if (@moves) {
+    print "\n";
+    for my $m (@moves) {
+      my ( $abs, $tgt ) = @$m;
+      next unless prompt_yes("  Move $abs -> $tgt? [y/N] ");
+
+      my ( $ok, $err ) = move_path( $abs, $tgt );
+      if ($ok) {
+        print "  migrated $abs -> $tgt\n";
+        $migrated++;
+      } else {
+        print {*STDERR} "  $PROG: $err\n";
+      }
+    }
+  }
+
+  print "\n$PROG: migrated $migrated item(s).\n";
+  return 0;
+} ## end sub mode_migrate
+
+# ------------------------------------------------------------------------------
 # Database lifecycle
 # ------------------------------------------------------------------------------
 
@@ -1083,6 +1242,7 @@ USAGE
   xdg-audit [options] <$HOME-path> reverse-map a dotfile to its app
   xdg-audit --search <term>        search name/path/help text
   xdg-audit --remove <app|path>    delete a confirmed leftover (asks first)
+  xdg-audit --migrate <app|path>   move a dotfile to its XDG target (asks)
   xdg-audit --reindex              rebuild the enriched index cache
   xdg-audit --update-db [<ref>]    refresh the vendored mirror from upstream
 
@@ -1091,6 +1251,7 @@ OPTIONS
   --json                   machine-readable output (for tooling / AI)
   --search <term>          substring search across name, path, and help
   --remove                 delete a confirmed leftover for <app|path> (asks)
+  --migrate                move <app|path> to its XDG rewrite target (asks)
   --mechanism <m>          restrict the scan to one mechanism (env/alias/wrap)
   --movable / --immovable  filter the scan by movability
   --db <dir>               database dir (default: $XDG_CONFIG_HOME/xdg-audit)
@@ -1135,6 +1296,18 @@ REMOVE
   delete them - and every deletion is confined to $HOME. Name the app or
   path; --remove never sweeps the whole scan.
 
+MIGRATE
+  --migrate <app|$HOME-path> moves a present dotfile to its declared XDG
+  target (the overlay's 'rewrite'), so an already-active redirect finds it
+  there. env-mechanism entries only, for now. It gates on the ordering the
+  move depends on: the redirect must be exported and active in THIS shell and
+  point at the declared target - otherwise it refuses and tells you to add the
+  export first (move the file before the redirect is live and the app looks at
+  the old, now-empty path). It also refuses when the target already exists (a
+  redundant leftover - use --remove), when the file is a symlink, or when
+  either path escapes $HOME. Asks before each move (default No); never sweeps
+  the whole scan.
+
 EXIT STATUS
   0  nothing actionable (no unhandled / stray / remove found)
   2  actionable findings (any unhandled / stray / remove)
@@ -1157,6 +1330,7 @@ GetOptions(
   'reindex'     => \$cli{reindex},
   'update-db'   => \$cli{update_db},
   'remove'      => \$cli{remove},
+  'migrate'     => \$cli{migrate},
   'help|h'      => sub { usage(0) },
 ) or usage(1);
 
@@ -1165,6 +1339,7 @@ GetOptions(
 my $exit = eval {
   if    ( $cli{update_db} )         { mode_update_db( $ARGV[0] ) }
   elsif ( $cli{remove} )            { mode_remove( $ARGV[0] ) }
+  elsif ( $cli{migrate} )           { mode_migrate( $ARGV[0] ) }
   elsif ( defined $cli{search} )    { mode_search( $cli{search} ) }
   elsif ( $cli{reindex} && !@ARGV ) { mode_reindex() }
   elsif (@ARGV)                     { mode_lookup( $ARGV[0] ) }
@@ -1190,6 +1365,7 @@ xdg-audit - audit $HOME for dotfiles that could move to XDG locations
   xdg-audit .some-dir              # reverse-map a $HOME path to its app
   xdg-audit --search gradle        # search name/path/help
   xdg-audit --remove docker        # delete a confirmed leftover (asks first)
+  xdg-audit --migrate bash         # move a dotfile to its XDG target (asks)
   xdg-audit --json                 # machine-readable output
   xdg-audit --reindex              # rebuild the index cache
   xdg-audit --update-db            # refresh the vendored xdg-ninja mirror
@@ -1204,11 +1380,13 @@ and annotates each path with a handling I<mechanism> (env / alias / symlink /
 wrap / remove).
 
 Every reporting mode honours C<--json> so both a human and an agent can
-consume the output. The scan and lookups never touch C<$HOME>; the one
-mutating mode is C<--remove>, which deletes a confirmed leftover (a I<stray>
-or a I<remove>-marked file) for a named app or path, after showing its status
-and asking for confirmation (see the B<REMOVE> section of C<--help>). See the
-B<OUTPUT> section for what each reported status means.
+consume the output. The scan and lookups never touch C<$HOME>; the two
+mutating modes are C<--remove>, which deletes a confirmed leftover (a I<stray>
+or a I<remove>-marked file), and C<--migrate>, which I<moves> a present dotfile
+to its declared XDG target once the redirect is active (env-mechanism only in
+this cut) — both for a named app or path, and both showing status and asking
+for confirmation first (see the B<REMOVE> and B<MIGRATE> sections of
+C<--help>). See the B<OUTPUT> section for what each reported status means.
 
 =head2 Loading strategy
 

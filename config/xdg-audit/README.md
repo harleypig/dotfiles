@@ -89,8 +89,11 @@ Only genuine **config** belongs under `config/` (tracked). Runtime
 
 ## Removing a leftover
 
-The scan and lookups are read-only. The one mutating mode is `--remove`, which
-deletes a **confirmed leftover** for a named app or `$HOME` path:
+The scan and lookups are read-only. There are two mutating modes, `--remove`
+and `--migrate`, each acting on a named app or `$HOME` path, showing status,
+and asking before each change (default No).
+
+`--remove` deletes a **confirmed leftover**:
 
 ```bash
 xdg-audit --remove docker      # shows status, asks before each deletion
@@ -101,8 +104,30 @@ active — a duplicate) or a **remove**-marked (unused app) file. A **symlink**
 (`linked`) or an **un-redirected** (`unhandled`) file is refused — migrate
 those, do not delete them. Every deletion is confined to `$HOME` and confirmed
 interactively (default No); `--remove` never sweeps the whole scan, so a
-target must be named. (A guarded `--migrate` that *moves* an unhandled file to
-its XDG target is planned; see `TODO.md`.)
+target must be named.
+
+## Migrating a leftover
+
+`--migrate` *moves* a present dotfile to its declared XDG target (the overlay's
+`rewrite`), so an already-active redirect finds it there:
+
+```bash
+xdg-audit --migrate bash       # move ~/.<file> to its rewrite target, asks
+```
+
+It is env-mechanism-only for now, and gates on the ordering the move depends
+on: the redirect (e.g. the `export`) must be **active in this shell and point
+at the declared target** — otherwise it refuses and tells you to add the
+export first, because moving the file before the redirect is live leaves the
+app looking at the old, now-empty path. It also refuses when the **target
+already exists** (a redundant leftover — use `--remove`), when the file is a
+**symlink**, or when either path escapes `$HOME`. A cross-filesystem
+*directory* move is refused (move it by hand).
+
+Note: a `rewrite` under `$XDG_CONFIG_HOME` lands in the **tracked repo** (this
+setup's `$XDG_CONFIG_HOME` is `$DOTFILES/config`) — the confirmation shows the
+destination so you see where it goes; keep runtime **state/cache** out of the
+repo (see *config vs. state routing* above).
 
 ## Keeping the mirror current
 

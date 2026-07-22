@@ -563,10 +563,29 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **`--migrate`** — guarded, confirmation-gated *move* of an unhandled file
-  to its XDG rewrite target. Subtler than `--remove`: the redirect (e.g. the
-  env export) must be active first, or the app won't find the moved file —
-  surface that ordering / gate on it. Deferred from the `--remove` PR.
+- [x] **`--migrate`** — guarded, confirmation-gated *move* of a present dotfile
+  to its declared XDG `rewrite` target (env-mechanism only). Gates on the
+  ordering: the redirect must be active in the shell **and point at** the
+  declared target, the target must not already exist, and the source must be a
+  non-symlink under `$HOME`.
+- [ ] **`--migrate` for the `symlink` mechanism** — move a `mechanism: symlink`
+  file into the managed repo and create the `$HOME` symlink, coordinating with
+  `bin/check-dotfiles` / `.dotlinks`. Deferred: no `symlink`-mechanism overlay
+  exists yet, and it is a different operation (repo write + link) than the
+  env-move.
+- [ ] **`--migrate` for `alias` entries** — the alias redirect can't be
+  verified from `xdg-audit` (`handling_status` returns `handled` unconditionally
+  for `alias`), so the "redirect active first" gate is unverifiable. Decide
+  whether/how migrate can safely support it.
+- [ ] **`--migrate` cross-filesystem *directory* move** — v1 refuses an EXDEV
+  directory move (a recursive copy needs a non-core module; the script is
+  core-only). Add an `mv`-shell-out or core recursive strategy if a real case
+  appears (e.g. jbang, a 471M dir).
+- [ ] **`--remove` stray-without-target tightening** — env `handling_status`
+  marks an env-set entry `handled` even when the `rewrite` target does not
+  exist, so `--remove` can delete a file whose redirected copy was never
+  created (data loss). Require the redirected copy to exist for `stray`
+  eligibility, or route target-absent strays to `--migrate`.
 - [ ] **`--submit`** — open an upstream xdg-ninja PR from a local
   addition/override (gh OAuth fallback; strip local-only fields).
 - [ ] **`--update-db`** — exercise against upstream and verify obsolete-override
