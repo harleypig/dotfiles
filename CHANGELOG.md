@@ -14,6 +14,16 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **jbang shell-startup module auto-adopts its XDG dir.** Extracted jbang out
+  of the `010-general` catch-all into its own `config/shell-startup/jbang`
+  module (matching the per-tool pattern of `node`/`go`/`rust`/…), then taught
+  it to auto-adopt `$XDG_DATA_HOME/jbang`: when that dir exists it exports
+  `JBANG_DIR` to it and points PATH at `$JBANG_DIR/bin`, else it falls back to
+  `~/.jbang` unchanged. jbang has no native XDG support, so `JBANG_DIR` (which
+  relocates its whole install dir) is the only lever — this turns the
+  per-machine migration into a single `mv ~/.jbang "$XDG_DATA_HOME/jbang"` plus
+  a new shell. The 471M physical move stays a per-machine action. (PR #296)
+
 - **`xdg-audit --remove` symlink teardown + stray-target safety.** Phase 2
   Slice 3 of the mechanism state-machine
   ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)), completing
