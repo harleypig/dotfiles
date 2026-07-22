@@ -142,7 +142,7 @@ J
 J
     printf secret > "$HOME/.mgapp"
     printf "y\n" | env MG_ACTIVE=/tmp/mgdata/mgapp \
-      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --migrate mgapp 2>&1
+      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --migrate env mgapp 2>&1
     echo "SRC=$([ -e "$HOME/.mgapp" ] && echo present || echo gone)"
     echo "TGT=$([ -e /tmp/mgdata/mgapp ] && echo present || echo absent)"
     echo "CONTENT=$(cat /tmp/mgdata/mgapp 2>/dev/null)"
@@ -163,7 +163,7 @@ J
 J
     printf across > "$HOME/.xfile"
     printf "y\n" | env XF=/altfs/xfile \
-      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --migrate xfile 2>&1
+      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --migrate env xfile 2>&1
     echo "SRC=$([ -e "$HOME/.xfile" ] && echo present || echo gone)"
     echo "TGT=$([ -e /altfs/xfile ] && echo present || echo absent)"
     echo "CONTENT=$(cat /altfs/xfile 2>/dev/null)"
@@ -184,7 +184,7 @@ J
 { "name":"xdir","files":[{"path":"$HOME/.xdir","movable":true,"mechanism":"env","env":"XD","rewrite":"/altfs/xdir"}] }
 J
     printf "y\n" | env XD=/altfs/xdir \
-      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --migrate xdir 2>&1
+      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --migrate env xdir 2>&1
     echo "SRC=$([ -e "$HOME/.xdir/inner" ] && echo intact || echo gone)"
     echo "TGT=$([ -e /altfs/xdir ] && echo present || echo absent)"
   '

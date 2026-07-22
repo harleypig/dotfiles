@@ -30,6 +30,21 @@ goes green (see the merge-time finalization in
   externally managed. Additive — the existing groups and the terse scan are
   unchanged. (PR #287)
 
+### Changed
+
+- **`xdg-audit --migrate` now takes a required target mechanism** (breaking).
+  Phase 1 Slice 2 of the mechanism state-machine
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)): the signature
+  is now `xdg-audit --migrate <mechanism> <app|$HOME-path>`, with the mechanism
+  a **required positional** (no silent default). Only `env` is implemented so
+  far — `symlink` and the rest arrive in later phases — so the previously
+  shipped `xdg-audit --migrate <app>` (env-only, PR #280) becomes
+  `xdg-audit --migrate env <app>`. A bare `--migrate`, an
+  unknown/unimplemented mechanism, or the old bare-app form is now a usage
+  error whose message teaches the new signature. This reframes `--migrate`
+  around the state-machine's `current → target` transition model so later
+  mechanisms slot in without changing the CLI shape again.
+
 ### Fixed
 
 - **`bin/where` now finds aliases defined in the dotfiles shell modules.**

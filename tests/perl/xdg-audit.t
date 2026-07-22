@@ -6,6 +6,7 @@ use File::Temp qw(tempdir);
 use File::Path qw(make_path);
 use File::Spec;
 use IPC::Open2 qw(open2);
+use IPC::Open3 qw(open3);
 use JSON::PP;
 
 # Exercises bin/xdg-audit against a self-contained fixture database and a
@@ -237,6 +238,30 @@ sub run_audit_env {
   }
   return ( $out, $rc );
 } ## end sub run_audit_env
+
+# Like run_audit but captures STDOUT and STDERR merged, so usage-error messages
+# (argument validation prints to STDERR) can be asserted on. No stdin needed for
+# the usage-error cases that use it.
+sub run_audit_merged {
+  my (@args) = @_;
+  local $ENV{HOME} = $home;
+  delete local $ENV{XDG_CONFIG_HOME};
+  delete local $ENV{XDG_CACHE_HOME};
+  delete local $ENV{XDG_DATA_HOME};
+  delete local $ENV{XDG_STATE_HOME};
+  delete local $ENV{XDG_AUDIT_HOME};
+  delete local $ENV{DOTFILES};
+
+  my $out_fh;
+  my $pid = open3( my $in_fh, $out_fh, $out_fh, $^X, $SCRIPT, '--db', $db, '--home', $home, @args );
+  close $in_fh;
+  local $/;
+  my $out = <$out_fh> // '';
+  close $out_fh;
+  waitpid $pid, 0;
+  my $rc = $? >> 8;
+  return ( $out, $rc );
+} ## end sub run_audit_merged
 
 # ------------------------------------------------------------------------------
 # Scan
@@ -633,7 +658,7 @@ write_json( locl('mgoutside'),
 
 # Clean move accepted.
 {
-  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG => $mg_tgt }, "y\n", '--migrate', 'mgstray' );
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG => $mg_tgt }, "y\n", '--migrate', 'env', 'mgstray' );
   like( $out, qr/move to \Q$mg_tgt\E/,             '--migrate shows the planned move' );
   like( $out, qr/migrated \Q$mgstray\E -> \Q$mg_tgt\E/, '--migrate reports the move' );
   ok( !-e $mgstray, 'source is gone from $HOME after migrate' );
@@ -643,7 +668,7 @@ write_json( locl('mgoutside'),
 
 # Decline keeps the file.
 {
-  my ( $out, $rc ) = run_audit_env( { FIXTURE_MGK => $mgk_tgt }, "n\n", '--migrate', 'mgkeep' );
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_MGK => $mgk_tgt }, "n\n", '--migrate', 'env', 'mgkeep' );
   ok( -e $mgkeep,   'declined file is kept' );
   ok( !-e $mgk_tgt, 'nothing written to the target on decline' );
   unlike( $out, qr/migrated \S+ ->/, 'no move reported on decline' );
@@ -651,7 +676,7 @@ write_json( locl('mgoutside'),
 
 # The ordering gate: redirect not active -> refused, file untouched.
 {
-  my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'mgunset' );
+  my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'env', 'mgunset' );
   like( $out, qr/redirect \$FIXTURE_MG_UNSET is not active here/, 'inactive redirect is refused with a pointer to export first' );
   ok( -e $mgunset,  'file kept when the redirect is not active' );
   ok( !-e $mgu_tgt, 'no move happened when the redirect is not active' );
@@ -659,7 +684,7 @@ write_json( locl('mgoutside'),
 
 # Redirect points elsewhere than the declared target -> refused.
 {
-  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_MM => File::Spec->catfile( $root, 'elsewhere' ) }, "y\n", '--migrate', 'mgmm' );
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_MM => File::Spec->catfile( $root, 'elsewhere' ) }, "y\n", '--migrate', 'env', 'mgmm' );
   like( $out, qr/points at .* not the declared/, 'a mismatched redirect value is refused' );
   ok( -e $mgmm,     'file kept on a redirect mismatch' );
   ok( !-e $mgm_tgt, 'nothing moved on a redirect mismatch' );
@@ -667,27 +692,27 @@ write_json( locl('mgoutside'),
 
 # Target already exists -> refused, source untouched.
 {
-  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_EX => $mge_tgt }, "y\n", '--migrate', 'mgexists' );
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_EX => $mge_tgt }, "y\n", '--migrate', 'env', 'mgexists' );
   like( $out, qr/already exists.*use --remove/, 'an existing target is refused, pointing at --remove' );
   ok( -e $mgexists, 'source kept when the target already exists' );
 }
 
 # No rewrite declared -> refused.
 {
-  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_NR => 'x' }, "y\n", '--migrate', 'mgnorw' );
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_NR => 'x' }, "y\n", '--migrate', 'env', 'mgnorw' );
   like( $out, qr/no XDG target declared/, 'an entry with no rewrite is refused' );
   ok( -e $mgnorw, 'file kept when no target is declared' );
 }
 
 # Non-env mechanism -> out of scope.
 {
-  my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'mgalias' );
-  like( $out, qr/migrate supports env-redirect entries; alias not yet/, 'a non-env mechanism is refused' );
+  my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'env', 'mgalias' );
+  like( $out, qr/recommended mechanism is alias, not env - not migrated/, 'a non-env recommended mechanism is refused' );
 }
 
 # Symlink -> refused, link + target intact.
 {
-  my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'mglink' );
+  my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'env', 'mglink' );
   like( $out, qr/linked \(managed symlink\) - not migrated/, 'a symlink is refused' );
   ok( -l $mglink,  'the symlink itself is intact' );
   ok( -d $mgl_tgt, 'the symlink target is intact' );
@@ -695,22 +720,51 @@ write_json( locl('mgoutside'),
 
 # Directory leftover moved recursively.
 {
-  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_D => $mgd_tgt }, "y\n", '--migrate', 'mgdir' );
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_D => $mgd_tgt }, "y\n", '--migrate', 'env', 'mgdir' );
   ok( !-e $mgd, 'source directory is gone after migrate' );
   ok( -e File::Spec->catfile( $mgd_tgt, 'inner' ), 'directory contents moved to the target' );
 }
 
 # Source outside $HOME -> guarded even with an active, matching redirect.
 {
-  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_OUT => $mgo_tgt }, "y\n", '--migrate', 'mgoutside' );
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_MG_OUT => $mgo_tgt }, "y\n", '--migrate', 'env', 'mgoutside' );
   like( $out, qr/resolves outside \$HOME .* refused/, 'an out-of-$HOME source is refused' );
   ok( -e $mgo_src, 'the out-of-$HOME file is untouched' );
 }
 
-# --migrate with no target names nothing to do.
+# The reframed signature (Slice 2): --migrate now takes a REQUIRED mechanism
+# positional (only 'env' implemented). Bare --migrate, an unknown mechanism (or
+# the old bare 'app' syntax landing where the mechanism is now read), and a
+# mechanism with no app are each a usage error.
+
+# Bare --migrate: no mechanism -> usage error.
 {
-  my ( $out, $rc ) = run_audit_env( {}, q{}, '--migrate' );
-  is( $rc, 1, '--migrate with no target exits 1' );
+  my ( $out, $rc ) = run_audit_merged('--migrate');
+  like( $out, qr/--migrate needs a target mechanism/, 'bare --migrate reports the missing mechanism' );
+  is( $rc, 1, 'bare --migrate exits 1' );
+}
+
+# The old bare 'app' syntax: the app name is read as the mechanism, rejected
+# with a message teaching the new signature.
+{
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'mgstray' );
+  like( $out, qr/--migrate now takes a target mechanism first/, 'the old bare-app syntax is taught the new signature' );
+  like( $out, qr/'mgstray' is not a supported mechanism/,       'the misread app name is named back' );
+  is( $rc, 1, 'the old syntax exits 1' );
+}
+
+# A planned-but-unimplemented mechanism (symlink) is refused for now.
+{
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'symlink', 'mgstray' );
+  like( $out, qr/'symlink' is not a supported mechanism/, 'symlink is not implemented yet' );
+  is( $rc, 1, 'an unimplemented mechanism exits 1' );
+}
+
+# A mechanism with no app -> usage error.
+{
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'env' );
+  like( $out, qr/--migrate env needs an app name/, 'env with no app reports the missing target' );
+  is( $rc, 1, '--migrate env with no app exits 1' );
 }
 
 # ------------------------------------------------------------------------------

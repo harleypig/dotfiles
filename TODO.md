@@ -567,7 +567,7 @@ relocation (moving an install, symlinking) is a separate step.
   ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)) — the
   detection + reporting + `owner` slice shipped (see CHANGELOG); the two
   remaining slices:
-  - [ ] **Slice 2 — `--migrate env` reframe.** Change `--migrate <app>` to
+  - [x] **Slice 2 — `--migrate env` reframe.** Change `--migrate <app>` to
     `--migrate <mechanism> <app>` (mechanism required; bare `--migrate`
     errors); a breaking change to PR #280's signature — its own commit +
     changelog note.
