@@ -13,7 +13,7 @@ use Test::More;
 eval { require Test::Pod; Test::Pod->import; 1 }
   or plan skip_all => 'Test::Pod not installed';
 
-my @files = ( 'bin/parse_params', 'bin/perltidyrc-clean' );
+my @files = ( 'bin/parse_params', 'bin/perltidyrc-clean', 'bin/xdg-audit' );
 
 plan tests => scalar @files;
 

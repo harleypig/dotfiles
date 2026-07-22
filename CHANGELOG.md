@@ -12,6 +12,24 @@ goes green (see the merge-time finalization in
 
 ## 2026-07-22
 
+### Added
+
+- **`xdg-audit` reports the current vs. recommended mechanism.** Phase 1
+  Slice 1 of the mechanism state-machine
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)): alongside
+  the declared (recommended) mechanism, `xdg-audit` now detects the *current*
+  mechanism from `$HOME` state — `symlink` / `env` / `hardcoded` / `unknown` /
+  `absent` — with completeness sub-states (a symlink is `complete` when
+  registered in the dotlinks file `check-dotfiles` reads, else `partial`; an
+  env redirect is `clean` or `leftover`), and reports where the two diverge. A
+  new generic `owner` overlay field names an external manager (a declared
+  `mechanism: symlink` implies `owner: check-dotfiles`), and `expand_path`
+  learned `$DOTFILES`. `--json` carries `current_mechanism`,
+  `recommended_mechanism`, `current_completeness`, `divergence`, and `owner`; a
+  detail line appends `(recommended: X)` on divergence and `[owner: …]` when
+  externally managed. Additive — the existing groups and the terse scan are
+  unchanged. (PR #287)
+
 ### Fixed
 
 - **`bin/where` now finds aliases defined in the dotfiles shell modules.**

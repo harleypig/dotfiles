@@ -154,6 +154,7 @@ sub run_audit {
   delete local $ENV{XDG_DATA_HOME};
   delete local $ENV{XDG_STATE_HOME};
   delete local $ENV{XDG_AUDIT_HOME};
+  delete local $ENV{DOTFILES};
 
   my $pid = open( my $fh, '-|', $^X, $SCRIPT, '--db', $db, '--home', $home, @args )
     or die "cannot run $SCRIPT: $!";
@@ -185,6 +186,7 @@ sub run_audit_stdin {
   delete local $ENV{XDG_DATA_HOME};
   delete local $ENV{XDG_STATE_HOME};
   delete local $ENV{XDG_AUDIT_HOME};
+  delete local $ENV{DOTFILES};
 
   my ( $out_fh, $in_fh );
   my $pid = open2( $out_fh, $in_fh, $^X, $SCRIPT, '--db', $db, '--home', $home, @args );
@@ -210,6 +212,7 @@ sub run_audit_env {
   delete local $ENV{XDG_DATA_HOME};
   delete local $ENV{XDG_STATE_HOME};
   delete local $ENV{XDG_AUDIT_HOME};
+  delete local $ENV{DOTFILES};
 
   my %saved;
   for my $k ( keys %$extra ) {
@@ -708,6 +711,98 @@ write_json( locl('mgoutside'),
 {
   my ( $out, $rc ) = run_audit_env( {}, q{}, '--migrate' );
   is( $rc, 1, '--migrate with no target exits 1' );
+}
+
+# ------------------------------------------------------------------------------
+# Mechanism state (Slice 1 — reporting): the CURRENT (detected) mechanism vs the
+# RECOMMENDED (declared) one, completeness sub-states, divergence, and owner.
+# Fixtures added late (as with --remove/--migrate) so they can't disturb the
+# scan assertions above.
+# ------------------------------------------------------------------------------
+
+# A symlink whose link-name is registered in the dotlinks file check-dotfiles
+# reads -> complete; one that is not -> partial. $HOME/.dotlinks wins over
+# $DOTFILES/dotlinks-default, so this is hermetic (the helpers unset $DOTFILES).
+my $slink_reg_tgt = File::Spec->catdir( $root, 'slink-reg-target' );
+make_path($slink_reg_tgt);
+symlink( $slink_reg_tgt, File::Spec->catfile( $home, '.slinkreg' ) ) or die "symlink: $!";
+write_json( locl('slinkreg'),
+  { name => 'slinkreg', files => [ { path => '$HOME/.slinkreg', movable => JSON::PP::true, help => "s\n", mechanism => 'symlink', rewrite => '$DOTFILES/slinkreg' } ] } );
+
+my $slink_loose_tgt = File::Spec->catdir( $root, 'slink-loose-target' );
+make_path($slink_loose_tgt);
+symlink( $slink_loose_tgt, File::Spec->catfile( $home, '.slinkloose' ) ) or die "symlink: $!";
+write_json( locl('slinkloose'),
+  { name => 'slinkloose', files => [ { path => '$HOME/.slinkloose', movable => JSON::PP::true, help => "s\n", mechanism => 'symlink', rewrite => '$DOTFILES/slinkloose' } ] } );
+
+# The dotlinks file registers .slinkreg (explicit link-name form) but not
+# .slinkloose; a comment line must be skipped.
+{
+  open my $fh, '>', File::Spec->catfile( $home, '.dotlinks' ) or die "dotlinks: $!";
+  print {$fh} "# a comment\n\$DOTFILES/slinkreg .slinkreg\n";
+  close $fh;
+}
+
+# A present real file whose RECOMMENDED mechanism is symlink but which is not a
+# symlink -> current 'hardcoded', diverges from recommended; the detail line
+# appends "(recommended: symlink)" and the implied "[owner: check-dotfiles]".
+write_json( locl('divapp'),
+  { name => 'divapp', files => [ { path => '$HOME/.divapp', movable => JSON::PP::true, help => "d\n", mechanism => 'symlink', rewrite => '$DOTFILES/divapp' } ] } );
+touch('.divapp');
+
+# An explicit `owner` annotation on a non-symlink entry -> round-trips
+# independently of the symlink implication.
+write_json( locl('ownedapp'),
+  { name => 'ownedapp', files => [ { path => '$HOME/.ownedapp', movable => JSON::PP::true, help => "o\n", owner => 'some-manager' } ] } );
+touch('.ownedapp');
+
+# Detection + completeness + owner + divergence in the --json feed.
+{
+  my ( $data, $rc ) = run_json();
+  my %by = map { $_->{name} => $_ } @$data;
+
+  is( $by{slinkreg}{current_mechanism},    'symlink',           'a symlink reports current_mechanism symlink' );
+  is( $by{slinkreg}{current_completeness}, 'complete',          'a registered symlink is complete' );
+  is( $by{slinkreg}{owner},                'check-dotfiles',    'mechanism symlink implies owner check-dotfiles' );
+  is( $by{slinkreg}{divergence},           'using recommended', 'a symlink on its recommended mechanism reads "using recommended"' );
+
+  is( $by{slinkloose}{current_completeness}, 'partial', 'an unregistered symlink is partial' );
+
+  is( $by{docker}{current_mechanism},      'env',      'an active env redirect reports current_mechanism env' );
+  is( $by{docker}{current_completeness},   'leftover', 'a present env redirect is a leftover' );
+  is( $by{cleanapp}{current_mechanism},    'env',      'an absent-but-redirected entry is current env' );
+  is( $by{cleanapp}{current_completeness}, 'clean',    'a migrated env redirect is clean' );
+
+  is( $by{foo}{current_mechanism}, 'hardcoded', 'a present unredirected file is hardcoded' );
+  is( $by{foo}{divergence},        'using hardcoded', 'a hardcoded file with no recommendation reads "using hardcoded"' );
+
+  is( $by{divapp}{current_mechanism},     'hardcoded', 'a symlink-recommended plain file is current hardcoded' );
+  is( $by{divapp}{recommended_mechanism}, 'symlink',   'its recommended mechanism is symlink' );
+  is( $by{divapp}{divergence}, 'using hardcoded, recommended symlink', 'divergence names both current and recommended' );
+
+  is( $by{ownedapp}{owner},             'some-manager', 'an explicit owner annotation round-trips' );
+  is( $by{ownedapp}{current_mechanism}, 'hardcoded',    'the owned present file is hardcoded' );
+
+  my ($mystery) = grep { ( $_->{display} // '' ) eq '.mystery' } @$data;
+  is( $mystery->{current_mechanism}, 'unknown', 'a db-less $HOME dotfile is current unknown' );
+
+  # Regression: the existing group/status vocabulary is unchanged.
+  is( $by{docker}{group}, 'stray',     'group vocabulary unchanged (docker stray)' );
+  is( $by{foo}{group},    'unhandled', 'group vocabulary unchanged (foo unhandled)' );
+}
+
+# The detail view surfaces the divergence and the owner on the path line, while
+# the group word still leads it (existing detail assertions rely on that).
+{
+  my ($out) = run_audit('divapp');
+  like( $out, qr/\.divapp\s+unhandled \(recommended: symlink\) \[owner: check-dotfiles\]/,
+    'detail appends "(recommended: X)" and "[owner: ...]" after the group word' );
+}
+
+# An aligned entry (env on its recommended env) appends nothing extra.
+{
+  my ($out) = run_audit('docker');
+  unlike( $out, qr/recommended:/, 'an aligned entry shows no "(recommended: ...)" note' );
 }
 
 done_testing();

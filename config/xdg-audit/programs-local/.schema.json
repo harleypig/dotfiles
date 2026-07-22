@@ -115,6 +115,13 @@
             "type": "string",
             "minLength": 1,
             "not": { "$ref": "#/definitions/empty" }
+          },
+          "owner": {
+            "title": "owner",
+            "description": "The external manager of this path, e.g. \"check-dotfiles\". A generic\nlocal-only annotation: xdg-audit reports the path as externally managed\nand coordinates its transitions with that owner. `mechanism: symlink`\nimplies `owner: check-dotfiles` without needing this field. Absent =\nxdg-audit manages it (or nothing does). Stripped by --submit.",
+            "type": "string",
+            "minLength": 1,
+            "not": { "$ref": "#/definitions/empty" }
           }
         }
       }
