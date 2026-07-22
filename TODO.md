@@ -540,11 +540,14 @@ Each present `$HOME` dotfile gets a `programs-local/<app>.json` entry (redirect
 / ignore / addition) so `xdg-audit` tracks it; the actual per-machine
 relocation (moving an install, symlinking) is a separate step.
 
-- [ ] **jbang** — research the migration. `JBANG_DIR` relocates jbang's whole
-  dir, but `~/.jbang` (471M) holds the *install* (its `bin/` is on PATH), not
-  just cache — so it is an install move + a PATH change, not a plain env flip.
-  Plan the per-machine move (or a clean reinstall under `$XDG_DATA_HOME/jbang`)
-  before flipping `JBANG_DIR`. Tracked via overlay (shows *unhandled*).
+- [ ] **jbang** — per-machine: relocate the 471M install to XDG. Research +
+  repo prep are done: jbang has no native XDG support, and `JBANG_DIR`
+  relocates its *whole* dir (install `bin/`, trust, config, cache), default
+  `~/.jbang`. `config/shell-startup/jbang` now **auto-adopts**
+  `$XDG_DATA_HOME/jbang` when it exists (exports `JBANG_DIR`, points PATH
+  there) and falls back to `~/.jbang` otherwise, so the remaining step is a
+  one-time per-machine `mv ~/.jbang "$XDG_DATA_HOME/jbang"` (or a clean
+  reinstall there), then a new shell. Tracked via overlay.
 - [ ] **grok** — convert `~/.grok` to a managed symlink into a repo, like
   `~/.claude` (grok hardcodes `~/.grok` with no relocation env). Tracked via
   overlay; the symlink itself is a per-machine action.

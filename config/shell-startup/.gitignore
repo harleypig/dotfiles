@@ -19,6 +19,7 @@
 !git
 !go
 !grok
+!jbang
 !less
 !node
 !perl

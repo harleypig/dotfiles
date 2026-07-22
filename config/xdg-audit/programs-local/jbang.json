@@ -2,7 +2,7 @@
   "files": [
     {
       "env": "JBANG_DIR",
-      "help": "JBANG_DIR relocates jbang's whole dir (install + cache + config); default ~/.jbang. Migrating is an install move (its bin/ is on PATH) - needs a plan, see TODO.",
+      "help": "JBANG_DIR relocates jbang's whole dir (install + cache + config); default ~/.jbang. jbang has no native XDG support. shell-startup auto-adopts $XDG_DATA_HOME/jbang when present (exports JBANG_DIR, points PATH there); migrating is a per-machine install move (its bin/ is on PATH): mv ~/.jbang $XDG_DATA_HOME/jbang.",
       "mechanism": "env",
       "movable": true,
       "path": "$HOME/.jbang",
