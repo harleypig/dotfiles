@@ -14,6 +14,21 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **`xdg-audit --migrate recommended` + hardcoded→env "instruct-the-export".**
+  Phase 2 Slice 1 of the mechanism state-machine
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)).
+  `--migrate recommended <app|path>` resolves the target's *declared* mechanism
+  and dispatches to it (env/symlink), refusing a heterogeneous app (with a
+  per-path breakdown), an unimplementable recommendation (alias/wrap/remove), or
+  a mechanism-less entry. `--migrate env` now follows "automate the automatable,
+  instruct the rest": a hardcoded entry whose redirect is not active is moved
+  (no longer refused) and the exact `export VAR="<target>"` line is printed as a
+  dual-audience suggestion (with a "before running the app again" caveat); the
+  same step also rides in the read-only `--json` feed as a new `suggested_steps`
+  array per record, for an agent to apply. Every other env gate is preserved,
+  plus a new refusal for an env-recommended entry that declares no variable to
+  export. (PR #291)
+
 - **`xdg-audit --migrate symlink` + `--fix` — put a hardcoded dotfile under
   `check-dotfiles` management.** Phase 1 Slice 3 of the mechanism state-machine
   ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)), which
