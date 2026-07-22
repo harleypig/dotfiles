@@ -2,7 +2,17 @@
 
 # jbang: run Java scripts/apps without a build system
 # https://www.jbang.dev
+#
+# jbang has no native XDG support; JBANG_DIR relocates its whole directory
+# (install bin/, trust, config, cache) and defaults to ~/.jbang. Auto-adopt
+# the XDG location once a machine has relocated the install there (a
+# per-machine `mv ~/.jbang "$XDG_DATA_HOME/jbang"`, then a new shell); until
+# then fall back to ~/.jbang so an un-migrated machine is unchanged.
 
-addpath "$HOME/.jbang/bin"
+jbang_dir="${XDG_DATA_HOME:-$HOME/.local/share}/jbang"
+[[ -d $jbang_dir ]] && export JBANG_DIR="$jbang_dir"
+unset jbang_dir
+
+addpath "${JBANG_DIR:-$HOME/.jbang}/bin"
 
 alias j!=jbang
