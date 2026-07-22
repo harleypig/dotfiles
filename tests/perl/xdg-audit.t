@@ -5,6 +5,7 @@ use Test::More;
 use File::Temp qw(tempdir);
 use File::Path qw(make_path);
 use File::Spec;
+use IPC::Open2 qw(open2);
 use JSON::PP;
 
 # Exercises bin/xdg-audit against a self-contained fixture database and a
@@ -168,6 +169,33 @@ sub run_json {
   my ( $out, $rc ) = run_audit( '--json', @args );
   my $data = eval { JSON::PP->new->decode($out) };
   return ( $data, $rc, $out );
+}
+
+# Like run_audit, but feeds $input on STDIN (for --remove's confirmation
+# prompt). Output is small, so writing all input up front then draining stdout
+# cannot deadlock.
+sub run_audit_stdin {
+  my ( $input, @args ) = @_;
+  local $ENV{HOME}                  = $home;
+  local $ENV{FIXTURE_DOCKER_CONFIG} = '1';
+  local $ENV{FIXTURE_CLEAN}         = '1';
+  local $ENV{FIXTURE_RM}            = '1';    # active redirect for the rm stray
+  delete local $ENV{XDG_CONFIG_HOME};
+  delete local $ENV{XDG_CACHE_HOME};
+  delete local $ENV{XDG_DATA_HOME};
+  delete local $ENV{XDG_STATE_HOME};
+  delete local $ENV{XDG_AUDIT_HOME};
+
+  my ( $out_fh, $in_fh );
+  my $pid = open2( $out_fh, $in_fh, $^X, $SCRIPT, '--db', $db, '--home', $home, @args );
+  print {$in_fh} $input;
+  close $in_fh;
+  local $/;
+  my $out = <$out_fh> // '';
+  close $out_fh;
+  waitpid $pid, 0;
+  my $rc = $? >> 8;
+  return ( $out, $rc );
 }
 
 # ------------------------------------------------------------------------------
@@ -394,6 +422,101 @@ sub run_json {
   my ($out) = run_audit('--all');
   like( $out, qr/^linked$/m, '--all scan has a linked group' );
   like( $out, qr/linky \(\.linkme\)\s+-> \S.* \(external\)/, 'the symlink row shows its target and "external" tag' );
+}
+
+# ------------------------------------------------------------------------------
+# --remove : guarded deletion of a leftover (fixtures created late so they can
+# not disturb the scan assertions above).
+# ------------------------------------------------------------------------------
+
+# A stray (present + env redirect active via FIXTURE_RM) to accept-delete.
+write_json( locl('rmstray'),
+  { name => 'rmstray', files => [ { path => '$HOME/.rmstray', movable => JSON::PP::true, help => "r\n", mechanism => 'env', env => 'FIXTURE_RM' } ] } );
+my $rmstray = touch('.rmstray');
+
+# A second stray, to decline (must be kept).
+write_json( locl('rmkeep'),
+  { name => 'rmkeep', files => [ { path => '$HOME/.rmkeep', movable => JSON::PP::true, help => "k\n", mechanism => 'env', env => 'FIXTURE_RM' } ] } );
+my $rmkeep = touch('.rmkeep');
+
+# An unhandled file (present, no redirect) -> refused, never deleted.
+write_json( prog('rmunh'),
+  { name => 'rmunh', files => [ { path => '$HOME/.rmunh', movable => JSON::PP::true, help => "u\n" } ] } );
+my $rmunh = touch('.rmunh');
+
+# A symlinked dotfile -> refused (managed link), symlink + target intact.
+my $rmlink_target = File::Spec->catdir( $root, 'rmlink-target' );
+make_path($rmlink_target);
+my $rmlink = File::Spec->catfile( $home, '.rmlink' );
+symlink( $rmlink_target, $rmlink ) or die "symlink: $!";
+write_json( prog('rmlinky'),
+  { name => 'rmlinky', files => [ { path => '$HOME/.rmlink', movable => JSON::PP::true, help => "l\n" } ] } );
+
+# An eligible ('remove') entry that resolves OUTSIDE $HOME -> refused by the
+# $HOME guard, the file untouched.
+my $outside = File::Spec->catfile( $root, 'outside-home-file' );
+open my $of, '>', $outside or die "outside: $!";
+close $of;
+write_json( locl('rmoutside'),
+  { name => 'rmoutside', files => [ { path => $outside, movable => JSON::PP::false, help => "o\n", mechanism => 'remove' } ] } );
+
+# A 'remove'-marked directory (with content) to accept-delete recursively.
+my $rmdir = File::Spec->catdir( $home, '.rmdir' );
+make_path($rmdir);
+{ open my $fh, '>', File::Spec->catfile( $rmdir, 'inner' ) or die "inner: $!"; close $fh; }
+write_json( locl('rmdirapp'),
+  { name => 'rmdirapp', files => [ { path => '$HOME/.rmdir', movable => JSON::PP::false, help => "d\n", mechanism => 'remove' } ] } );
+
+# Accept: delete the stray.
+{
+  my ( $out, $rc ) = run_audit_stdin( "y\n", '--remove', 'rmstray' );
+  like( $out, qr/stray - a leftover file/, '--remove shows the leftover status before asking' );
+  like( $out, qr/removed \Q$rmstray\E/,    '--remove reports the deletion' );
+  ok( !-e $rmstray, 'accepted stray is deleted from $HOME' );
+  is( $rc, 0, '--remove exits 0 on success' );
+}
+
+# Decline: keep the stray.
+{
+  my ( $out, $rc ) = run_audit_stdin( "n\n", '--remove', 'rmkeep' );
+  ok( -e $rmkeep, 'declined stray is kept' );
+  unlike( $out, qr/removed \Q$rmkeep\E/, 'nothing reported removed on decline' );
+  is( $rc, 0, 'declining still exits 0' );
+}
+
+# Refuse an unhandled (un-redirected) file: it needs migration, not deletion.
+{
+  my ( $out, $rc ) = run_audit_stdin( "y\n", '--remove', 'rmunh' );
+  like( $out, qr/unhandled - migrate it first/, 'unhandled file is refused with a pointer to migrate' );
+  ok( -e $rmunh, 'refused unhandled file is kept even when confirmed' );
+}
+
+# Refuse a symlink: a managed link is never deleted or followed.
+{
+  my ( $out, $rc ) = run_audit_stdin( "y\n", '--remove', 'rmlinky' );
+  like( $out, qr/linked \(managed symlink\) - not removed/, 'symlink is refused' );
+  ok( -l $rmlink,        'the symlink itself is intact' );
+  ok( -d $rmlink_target, 'the symlink target is intact' );
+}
+
+# Refuse a deletion that resolves outside $HOME (defense-in-depth guard).
+{
+  my ( $out, $rc ) = run_audit_stdin( "y\n", '--remove', 'rmoutside' );
+  like( $out, qr/resolves outside \$HOME .* - refused/, 'an out-of-$HOME target is refused' );
+  ok( -e $outside, 'the out-of-$HOME file is untouched' );
+}
+
+# Accept: delete a 'remove'-marked directory recursively.
+{
+  my ( $out, $rc ) = run_audit_stdin( "y\n", '--remove', 'rmdirapp' );
+  like( $out, qr/remove - a leftover directory/, 'a directory leftover is identified as such' );
+  ok( !-e $rmdir, 'accepted directory is removed recursively' );
+}
+
+# A --remove with no target names nothing to do.
+{
+  my ( $out, $rc ) = run_audit_stdin( q{}, '--remove' );
+  is( $rc, 1, '--remove with no target exits 1' );
 }
 
 done_testing();

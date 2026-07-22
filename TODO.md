@@ -567,8 +567,13 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **`--migrate` / `--remove`** — guarded, confirmation-gated `$HOME`
-  mutation (move a stray to its XDG target / delete it).
+- [x] **`--remove`** — guarded, confirmation-gated deletion of a leftover (a
+  `stray` or `remove`-marked file), confined to `$HOME`; a symlink or
+  un-redirected file is refused, and it never sweeps the whole scan.
+- [ ] **`--migrate`** — guarded, confirmation-gated *move* of an unhandled file
+  to its XDG rewrite target. Subtler than `--remove`: the redirect (e.g. the
+  env export) must be active first, or the app won't find the moved file —
+  surface that ordering / gate on it. Deferred from the `--remove` PR.
 - [ ] **`--submit`** — open an upstream xdg-ninja PR from a local
   addition/override (gh OAuth fallback; strip local-only fields).
 - [ ] **`--update-db`** — exercise against upstream and verify obsolete-override
