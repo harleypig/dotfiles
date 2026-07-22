@@ -30,13 +30,6 @@ havecmd chromium-browser && export BROWSER='chromium-browser'
 umask 022
 
 #-----------------------------------------------------------------------------
-# Java
-#
-# jbang: run Java scripts/apps without a build system
-# https://www.jbang.dev
-addpath "$HOME/.jbang/bin"
-
-#-----------------------------------------------------------------------------
 # rust/rustup
 
 if [[ -d $XDG_DATA_HOME ]]; then
@@ -202,11 +195,6 @@ if havecmd vault; then
 
   unset vaultpath
 fi
-
-#-----------------------------------------------------------------------------
-# Java
-
-alias j!=jbang
 
 #-----------------------------------------------------------------------------
 # gcloud stuff

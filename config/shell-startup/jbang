@@ -1,0 +1,8 @@
+# shellcheck shell=bash
+
+# jbang: run Java scripts/apps without a build system
+# https://www.jbang.dev
+
+addpath "$HOME/.jbang/bin"
+
+alias j!=jbang
