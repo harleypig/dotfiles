@@ -41,6 +41,7 @@ my %cli = (
   update_db => 0,
   remove    => 0,
   migrate   => 0,
+  fix       => 0,
 );
 
 # ------------------------------------------------------------------------------
@@ -1014,6 +1015,29 @@ sub resolve_target_entries {
   return find_by_name($query);
 }
 
+# Resolve a mutation target to the entries of exactly ONE app, or print the
+# no-match / ambiguity message and return an empty list. Shared by --migrate and
+# --fix so a mutation is never run against a fragment that spans several apps.
+# $verb names the mode in the ambiguity hint (e.g. '--migrate env').
+sub resolve_one_app {
+  my ( $query, $verb ) = @_;
+
+  my @entries = resolve_target_entries($query);
+  unless (@entries) {
+    print "No known program or path matches '$query'.\n";
+    return;
+  }
+
+  my %apps = map { $_->{name} => 1 } @entries;
+  if ( keys %apps > 1 ) {
+    print_matches( \@entries, $query );
+    print "\nName one app (or a specific \$HOME path) to $verb.\n";
+    return;
+  }
+
+  return @entries;
+} ## end sub resolve_one_app
+
 # Prompt on STDIN, defaulting to No; returns true only on an explicit yes.
 sub prompt_yes {
   my ($msg) = @_;
@@ -1165,15 +1189,11 @@ sub move_path {
 } ## end sub move_path
 
 # --migrate <mechanism> <app|$HOME-path>: transition the target to <mechanism>.
-# The mechanism is a REQUIRED positional (no silent default) — only `env` is
-# implemented in this cut; `symlink` and the rest arrive in later slices/phases
-# (see ADR-0004). `--migrate env` moves a present dotfile to its declared XDG
-# target (`rewrite`) so an already-active redirect finds it there. Gated on
-# concrete preconditions (NOT the display group, since the clean case
-# classifies as 'stray'): the redirect must be active in THIS shell and point
-# at the declared target, the target must not already exist, and the source
-# must be a real file/dir under $HOME (never a symlink). Every move is confirmed
-# interactively (default No); never scan-wide.
+# The mechanism is a REQUIRED positional (no silent default). `env` and
+# `symlink` are implemented; the rest arrive in later phases (see ADR-0004).
+# mode_migrate validates the mechanism + target and dispatches to the
+# per-mechanism executor. Every change is confirmed interactively (default No);
+# never scan-wide.
 sub mode_migrate {
   my ( $mechanism, $query ) = @_;
 
@@ -1182,33 +1202,37 @@ sub mode_migrate {
     return 1;
   }
 
-  # env is the only implemented target. Reject anything else — a planned-but-
-  # unbuilt mechanism (symlink/…) or the old bare `--migrate <app>` syntax,
-  # where the app name lands here as the mechanism — with a message that teaches
-  # the new signature rather than silently mis-reading the app as a mechanism.
-  if ( $mechanism ne 'env' ) {
-    print {*STDERR} "$PROG: --migrate now takes a target mechanism first: --migrate <mechanism> <app|\$HOME path>.\n"
-      . "  Only 'env' is implemented so far (e.g. --migrate env bash); '$mechanism' is not a supported mechanism.\n";
+  # env/symlink are implemented. Reject anything else — a planned-but-unbuilt
+  # mechanism, or the old bare `--migrate <app>` syntax where the app name lands
+  # here as the mechanism — with a message that teaches the new signature rather
+  # than silently mis-reading the app as a mechanism.
+  my %supported = ( env => 1, symlink => 1 );
+  unless ( $supported{$mechanism} ) {
+    print {*STDERR} "$PROG: --migrate takes a target mechanism first: --migrate <mechanism> <app|\$HOME path>.\n"
+      . "  Implemented mechanisms are 'env' and 'symlink' (e.g. --migrate env bash); '$mechanism' is not one.\n";
     return 1;
   }
 
   unless ( defined $query && length $query ) {
-    print {*STDERR} "$PROG: --migrate env needs an app name or \$HOME path\n";
+    print {*STDERR} "$PROG: --migrate $mechanism needs an app name or \$HOME path\n";
     return 1;
   }
 
-  my @entries = resolve_target_entries($query);
-  unless (@entries) {
-    print "No known program or path matches '$query'.\n";
-    return 1;
-  }
+  return mode_migrate_env($query)     if $mechanism eq 'env';
+  return mode_migrate_symlink($query) if $mechanism eq 'symlink';
+  return 1;                            # unreachable: %supported gates the mechanism above
+} ## end sub mode_migrate
 
-  my %apps = map { $_->{name} => 1 } @entries;
-  if ( keys %apps > 1 ) {
-    print_matches( \@entries, $query );
-    print "\nName one app (or a specific \$HOME path) to --migrate env.\n";
-    return 1;
-  }
+# --migrate env: move a present dotfile to its declared XDG target (`rewrite`)
+# so an already-active redirect finds it there. Gated on concrete preconditions
+# (NOT the display group, since the clean case classifies as 'stray'): the
+# redirect must be active in THIS shell and point at the declared target, the
+# target must not already exist, and the source must be a real file/dir under
+# $HOME (never a symlink).
+sub mode_migrate_env {
+  my ($query) = @_;
+
+  my @entries = resolve_one_app( $query, '--migrate env' ) or return 1;
 
   my $home = home_dir();
   print "$entries[0]{name}\n\n";
@@ -1305,7 +1329,352 @@ sub mode_migrate {
 
   print "\n$PROG: migrated $migrated item(s).\n";
   return 0;
-} ## end sub mode_migrate
+} ## end sub mode_migrate_env
+
+# ------------------------------------------------------------------------------
+# Migration to the symlink mechanism (and --fix), delegating the actual linking
+# to check-dotfiles (which owns .dotlinks + `ln -fs`). A hardcoded dotfile is
+# moved into the repo at its `rewrite` target, registered in a dotlinks file,
+# and linked back by check-dotfiles; a loose (unregistered) symlink is just
+# registered. Every step is confirmation-gated with cleanup/rollback on failure.
+# ------------------------------------------------------------------------------
+
+# --migrate symlink: put a HARDCODED dotfile under check-dotfiles management
+# (move ~/.x into the repo at its `rewrite`, register it, let check-dotfiles
+# link it back), or register a loose (partial) symlink. xdg-audit never runs
+# `ln` itself — check-dotfiles is the sole owner of the linking.
+sub mode_migrate_symlink {
+  my ($query) = @_;
+
+  my @entries = resolve_one_app( $query, '--migrate symlink' ) or return 1;
+
+  my $home = home_dir();
+  print "$entries[0]{name}\n\n";
+
+  my @actions;
+  for my $e ( sort { $a->{path} cmp $b->{path} } @entries ) {
+    my ( $action, $msg ) = plan_symlink_action( $e, $home );
+    printf "  %-24s %s\n", home_relative( $e->{path} ), $msg;
+    push @actions, $action if $action;
+  }
+
+  return run_symlink_actions( \@actions, 'migrated' );
+}
+
+# --fix <app|$HOME-path>: complete/repair the CURRENT setup without changing
+# mechanism (sugar for `--migrate <current-mechanism>`). The implemented case is
+# a loose (partial) symlink -> register it so check-dotfiles maintains it.
+# Refuses states with nothing to fix (hardcoded/absent/unknown -> use --migrate;
+# an env leftover -> use --remove).
+sub mode_fix {
+  my ($query) = @_;
+
+  unless ( defined $query && length $query ) {
+    print {*STDERR} "$PROG: --fix needs an app name or \$HOME path\n";
+    return 1;
+  }
+
+  my @entries = resolve_one_app( $query, '--fix' ) or return 1;
+
+  my $home = home_dir();
+  print "$entries[0]{name}\n\n";
+
+  my @actions;
+  for my $e ( sort { $a->{path} cmp $b->{path} } @entries ) {
+    my ( $action, $msg ) = plan_fix_action( $e, $home );
+    printf "  %-24s %s\n", home_relative( $e->{path} ), $msg;
+    push @actions, $action if $action;
+  }
+
+  return run_symlink_actions( \@actions, 'fixed' );
+} ## end sub mode_fix
+
+# Decide what --migrate symlink should do with one entry, and the disposition
+# line to show. Returns ($action, $message): $action is a hashref
+# { entry, kind => 'full'|'register', source, linkname, abs[, tgt] } when the
+# entry is actionable, else (undef, refusal-message). 'full' moves a hardcoded
+# file into the repo then links it; 'register' just records a loose symlink.
+sub plan_symlink_action {
+  my ( $e, $home ) = @_;
+
+  return ( undef, 'ignored (left in place)' ) if $e->{ignore};
+
+  my $abs = expand_path( $e->{path} );
+  ( my $linkname = $abs ) =~ s{.*/}{};
+  my $cur = current_mechanism($e);
+
+  if ( $cur eq 'symlink' ) {
+    return ( undef, 'already a registered symlink (complete) - nothing to do' )
+      if dotlinks_registered($e);
+
+    # A loose symlink: register its current (canonical) target, no move.
+    require Cwd;
+    my $target = Cwd::abs_path($abs) // link_target($e);
+    my $source = dotlinks_source_token($target);
+    return (
+      { entry => $e, kind => 'register', source => $source, linkname => $linkname, abs => $abs },
+      "loose symlink -> register $source"
+    );
+  }
+
+  return ( undef, 'absent - nothing to migrate' )                if $cur eq 'absent';
+  return ( undef, 'current mechanism unknown - cannot migrate' ) if $cur eq 'unknown';
+  return ( undef, 'using env; an env->symlink conversion is a later phase (ADR-0004)' )
+    if $cur eq 'env';
+
+  # $cur eq 'hardcoded' — the prize. The source must physically live in the repo
+  # for check-dotfiles to link from it, so require a `rewrite` under $DOTFILES.
+  my $df = $ENV{DOTFILES};
+  return ( undef, '$DOTFILES is not set - required for a symlink migrate' )
+    unless defined $df && length $df;
+
+  return ( undef, "no repo target declared (needs an overlay 'rewrite' under \$DOTFILES)" )
+    unless $e->{rewrite};
+
+  my $tgt = expand_path( $e->{rewrite} );
+  if ( $tgt =~ /\$\{?\w+\}?/ || !File::Spec->file_name_is_absolute($tgt) ) {
+    return ( undef, "target does not resolve to an absolute path ($tgt) - refused" );
+  }
+  unless ( index( $tgt, "$df/" ) == 0 ) {
+    return ( undef, "target $tgt is not under \$DOTFILES - a symlink source must live in the repo" );
+  }
+  if ( -e $tgt || -l $tgt ) {
+    return ( undef, "target $tgt already exists - resolve by hand" );
+  }
+  unless ( index( $abs, "$home/" ) == 0 ) {
+    return ( undef, "resolves outside \$HOME ($abs) - refused" );
+  }
+
+  return (
+    { entry => $e, kind => 'full', source => $e->{rewrite}, linkname => $linkname, abs => $abs, tgt => $tgt },
+    "move into repo -> $tgt, then link"
+  );
+} ## end sub plan_symlink_action
+
+# Decide what --fix should do with one entry. A symlink defers to the migrate-
+# symlink planner (complete -> nothing to do; partial -> register). Everything
+# else has nothing to *fix* (a hardcoded/absent/unknown needs --migrate; an env
+# leftover overlaps --remove).
+sub plan_fix_action {
+  my ( $e, $home ) = @_;
+
+  return ( undef, 'ignored (left in place)' ) if $e->{ignore};
+
+  my $cur = current_mechanism($e);
+  return plan_symlink_action( $e, $home ) if $cur eq 'symlink';
+
+  return ( undef, 'using env; fixing an env leftover overlaps --remove - use --remove' )
+    if $cur eq 'env';
+  return ( undef, "nothing to fix for a $cur setup - use --migrate <target> to choose a mechanism" );
+}
+
+# Render a symlink source for a .dotlinks line, keeping it host-portable: a path
+# under $DOTFILES is re-tokenized to the literal $DOTFILES (check-dotfiles
+# envsubst-expands it); any other absolute path is written verbatim.
+sub dotlinks_source_token {
+  my ($path) = @_;
+  my $df = $ENV{DOTFILES};
+  return '$DOTFILES' . substr( $path, length $df )
+    if defined $df && length $df && index( $path, "$df/" ) == 0;
+  return $path;
+}
+
+# Execute the collected symlink actions: resolve the dotlinks file once (may
+# prompt to bootstrap ~/.dotlinks), then confirm and run each action (default
+# No). A bootstrapped ~/.dotlinks that ends up holding nothing is removed, so a
+# fully-declined run leaves no trace. Returns 0 (1 only never happens here).
+sub run_symlink_actions {
+  my ( $actions, $verb ) = @_;
+
+  unless (@$actions) {
+    print "\n$PROG: nothing to $verb.\n";
+    return 0;
+  }
+
+  my ( $dl_file, $preexisted ) = dotlinks_target_file();
+  unless ( defined $dl_file ) {
+    print "\n$PROG: no dotlinks file chosen; nothing done.\n";
+    return 0;
+  }
+
+  print "\n";
+  my $done = 0;
+  for my $action (@$actions) {
+    my $prompt =
+      $action->{kind} eq 'full'
+      ? "  Move $action->{abs} into the repo and link it? [y/N] "
+      : "  Register $action->{abs} in $dl_file? [y/N] ";
+    next unless prompt_yes($prompt);
+
+    my ( $ok, $msg ) = do_symlink_action( $action, $dl_file );
+    if ($ok) {
+      print "  $msg\n";
+      $done++;
+    } else {
+      print {*STDERR} "  $PROG: $msg\n";
+    }
+  }
+
+  # Undo a bootstrapped ~/.dotlinks that nothing landed in (restore the state).
+  unlink $dl_file if !$preexisted && $done == 0 && -e $dl_file;
+
+  print "\n$PROG: $verb $done item(s).\n";
+  return 0;
+} ## end sub run_symlink_actions
+
+# Execute one symlink action with rollback on any partial failure. 'full' moves
+# ~/.x into the repo (freeing ~/.x), appends the dotlinks line, then lets
+# check-dotfiles create ~/.x -> the repo copy; 'register' only appends the line
+# for an already-present loose symlink. The authoritative success signal is the
+# link itself (check-dotfiles' exit code is unreliable). Returns (ok, message).
+sub do_symlink_action {
+  my ( $action, $dl_file ) = @_;
+  my $abs = $action->{abs};
+
+  if ( $action->{kind} eq 'full' ) {
+    my ( $mok, $merr ) = move_path( $abs, $action->{tgt} );
+    return ( 0, $merr ) unless $mok;
+  }
+
+  my ( $aok, $prior ) = append_dotlinks_line( $dl_file, $action->{source}, $action->{linkname} );
+  unless ($aok) {
+    move_path( $action->{tgt}, $abs ) if $action->{kind} eq 'full';  # roll the move back
+    return ( 0, "could not update $dl_file: $prior" );
+  }
+
+  my ($rc) = run_check_dotfiles();
+
+  if ( symlink_ok( $abs, $action ) ) {
+    return (
+      1,
+      $action->{kind} eq 'full'
+      ? "migrated $abs -> $action->{tgt} (linked, registered in $dl_file)"
+      : "registered $abs in $dl_file"
+    );
+  }
+
+  # The link was not created: strip our dotlinks line, remove any stray link,
+  # and move the file back so $HOME and the repo are left as they were.
+  truncate_file( $dl_file, $prior );
+  if ( $action->{kind} eq 'full' ) {
+    remove_path($abs) if -l $abs;
+    move_path( $action->{tgt}, $abs );
+  }
+  return ( 0, "check-dotfiles did not create the link for $abs (rc=$rc) - reverted" );
+} ## end sub do_symlink_action
+
+# The link is good when ~/.x is a symlink that resolves; for a 'full' migrate we
+# additionally confirm it resolves to the exact repo target we moved into (so a
+# pre-existing unrelated link can't read as success).
+sub symlink_ok {
+  my ( $abs, $action ) = @_;
+  return 0 unless -l $abs && -e $abs;
+  return 1 unless $action->{kind} eq 'full';
+
+  require Cwd;
+  my $got  = Cwd::abs_path($abs)             // '';
+  my $want = Cwd::abs_path( $action->{tgt} ) // '';
+  return ( length $got && $got eq $want ) ? 1 : 0;
+}
+
+# Append "<source> [<link-name>]" to the dotlinks file (link-name omitted when
+# it matches the source basename, per the file's convention). Returns (1, prior)
+# so a later failure can truncate the file back to where it was, or (0, err).
+sub append_dotlinks_line {
+  my ( $file, $source, $linkname ) = @_;
+
+  my $prior = -e $file ? -s $file : 0;
+  ( my $base = $source ) =~ s{.*/}{};
+  my $line =
+    ( defined $linkname && length $linkname && $linkname ne $base )
+    ? "$source $linkname\n"
+    : "$source\n";
+
+  open my $fh, '>>:encoding(UTF-8)', $file or return ( 0, "$!" );
+  my $ok = print {$fh} $line;
+  close $fh or return ( 0, "$!" );
+  return $ok ? ( 1, $prior ) : ( 0, 'write failed' );
+}
+
+# Truncate a file back to $len bytes (dotlinks-line rollback). Best-effort.
+sub truncate_file {
+  my ( $file, $len ) = @_;
+  open my $fh, '+<', $file or return 0;
+  my $ok = truncate $fh, $len;
+  close $fh;
+  return $ok ? 1 : 0;
+}
+
+# Run the sibling check-dotfiles — the sole owner of `ln -fs` — capturing its
+# output so its chatter stays out of ours. It reads $HOME/$DOTFILES from the
+# environment (it ignores --home), so pin $HOME to our resolved home. The exit
+# code is a weak signal (it almost always exits 0); the caller verifies it.
+sub run_check_dotfiles {
+  my $cd = File::Spec->catfile( $RealBin, 'check-dotfiles' );
+  return ( -1, '' ) unless -x $cd;
+
+  local $ENV{HOME} = home_dir();
+  open my $fh, '-|', $cd or return ( -1, "cannot run check-dotfiles: $!" );
+  local $/;
+  my $out = <$fh>;
+  close $fh;
+  return ( $? >> 8, $out // '' );
+}
+
+# Choose the dotlinks file to append to, bootstrapping ~/.dotlinks when it is
+# absent. All prompts default No, so a non-interactive/fixture run declines and
+# aborts cleanly. Prints the $DOTFILES/dotlinks-* files, marking the active one
+# (check-dotfiles reads ~/.dotlinks if present, else the dotlinks-default).
+# Returns ($file, $preexisted), or an empty list if the user declines.
+sub dotlinks_target_file {
+  my $home = home_dir();
+  my $user = File::Spec->catfile( $home, '.dotlinks' );
+  my $df   = $ENV{DOTFILES};
+  my $def  = ( defined $df && length $df ) ? File::Spec->catfile( $df, 'dotlinks-default' ) : undef;
+
+  list_dotlinks_files( $df, ( -e $user ? $user : $def ) );
+
+  return ( $user, 1 ) if -e $user;     # ~/.dotlinks is the active file already
+
+  # ~/.dotlinks absent: offer to bootstrap it (the active file check-dotfiles
+  # would read), else fall back to the shared, tracked dotlinks-default.
+  if ( prompt_yes("  Create $user (your personal, active dotlinks file)? [y/N] ") ) {
+    my $seed = ( $def && -r $def && prompt_yes("  Seed it from $def? [y/N] ") ) ? read_file($def) : '';
+
+    open my $fh, '>:encoding(UTF-8)', $user or do {
+      print {*STDERR} "  $PROG: cannot create $user: $!\n";
+      return;
+    };
+    print {$fh} $seed;
+    close $fh;
+    return ( $user, 0 );
+  }
+
+  return ( $def, 1 )
+    if $def && prompt_yes("  Append to $def instead (shared, tracked - affects every host)? [y/N] ");
+
+  return;
+} ## end sub dotlinks_target_file
+
+# List the dotlinks-* files present in $DOTFILES, marking the active one. Purely
+# informational, shown before the bootstrap prompts.
+sub list_dotlinks_files {
+  my ( $df, $active ) = @_;
+  return unless defined $df && length $df && -d $df;
+
+  opendir my $dh, $df or return;
+  my @names = sort grep { /^dotlinks-/ } readdir $dh;
+  closedir $dh;
+  return unless @names;
+
+  print "  dotlinks files in \$DOTFILES:\n";
+  for my $name (@names) {
+    my $full = File::Spec->catfile( $df, $name );
+    printf "    %s%s\n", $full, ( defined $active && $full eq $active ) ? ' (active)' : '';
+  }
+  print "\n";
+  return;
+}
 
 # ------------------------------------------------------------------------------
 # Database lifecycle
@@ -1426,7 +1795,9 @@ USAGE
   xdg-audit [options] <$HOME-path> reverse-map a dotfile to its app
   xdg-audit --search <term>        search name/path/help text
   xdg-audit --remove <app|path>    delete a confirmed leftover (asks first)
-  xdg-audit --migrate env <app|path>  move a dotfile to its XDG target (asks)
+  xdg-audit --migrate env <app|path>      move a dotfile to its XDG target (asks)
+  xdg-audit --migrate symlink <app|path>  move into the repo + symlink (asks)
+  xdg-audit --fix <app|path>       complete/repair the current setup (asks)
   xdg-audit --reindex              rebuild the enriched index cache
   xdg-audit --update-db [<ref>]    refresh the vendored mirror from upstream
 
@@ -1435,7 +1806,8 @@ OPTIONS
   --json                   machine-readable output (for tooling / AI)
   --search <term>          substring search across name, path, and help
   --remove                 delete a confirmed leftover for <app|path> (asks)
-  --migrate <mechanism>    transition <app|path> to <mechanism> (env only; asks)
+  --migrate <mechanism>    transition <app|path> to <mechanism> (env, symlink; asks)
+  --fix                    complete/repair <app|path>'s current setup (asks)
   --mechanism <m>          restrict the scan to one mechanism (env/alias/wrap)
   --movable / --immovable  filter the scan by movability
   --db <dir>               database dir (default: $XDG_CONFIG_HOME/xdg-audit)
@@ -1488,8 +1860,8 @@ REMOVE
 
 MIGRATE
   --migrate <mechanism> <app|$HOME-path> transitions the target to <mechanism>.
-  The mechanism is required (no default); only 'env' is implemented so far
-  (symlink and the rest come in later phases - see ADR-0004), so the old bare
+  The mechanism is required (no default); 'env' and 'symlink' are implemented
+  (the rest come in later phases - see ADR-0004), so the old bare
   'xdg-audit --migrate <app>' is now 'xdg-audit --migrate env <app>'.
 
   --migrate env moves a present dotfile to its declared XDG target (the
@@ -1499,8 +1871,33 @@ MIGRATE
   tells you to add the export first (move the file before the redirect is live
   and the app looks at the old, now-empty path). It also refuses when the
   target already exists (a redundant leftover - use --remove), when the file is
-  a symlink, or when either path escapes $HOME. Asks before each move (default
-  No); never sweeps the whole scan.
+  a symlink, or when either path escapes $HOME.
+
+  --migrate symlink puts a HARDCODED dotfile (a present real file, no redirect)
+  under check-dotfiles management: it moves the file into the repo at its
+  declared 'rewrite' (which must live under $DOTFILES - a symlink source must be
+  repo-resident), registers it in a dotlinks file, then runs check-dotfiles to
+  create the $HOME symlink back to the repo copy. xdg-audit never runs 'ln'
+  itself; check-dotfiles owns the linking. It offers to bootstrap ~/.dotlinks
+  (the active dotlinks file) when absent, or to append to the shared, tracked
+  $DOTFILES/dotlinks-default. It writes into the TRACKED repo but never commits
+  - the git commit stays yours. A partial-failure rolls back (the file is moved
+  back and the dotlinks line stripped). It refuses when no repo 'rewrite' is
+  declared, the target is outside $DOTFILES or already exists, or the source
+  escapes $HOME.
+
+  Both --migrate modes ask before each change (default No) and never sweep the
+  whole scan.
+
+FIX
+  --fix <app|$HOME-path> completes or repairs the CURRENT setup without changing
+  mechanism - it is sugar for '--migrate <current-mechanism>'. The implemented
+  case is a loose symlink (a real symlink NOT registered in the dotlinks file,
+  reported as 'partial'): --fix registers it (source = the link's current
+  target) and runs check-dotfiles so the link is maintained from then on. It
+  refuses a hardcoded/absent/unknown path (nothing to fix - use --migrate to
+  choose a mechanism) and an env leftover (use --remove). Asks first (default
+  No).
 
 EXIT STATUS
   0  nothing actionable (no unhandled / stray / remove found)
@@ -1525,6 +1922,7 @@ GetOptions(
   'update-db'   => \$cli{update_db},
   'remove'      => \$cli{remove},
   'migrate'     => \$cli{migrate},
+  'fix'         => \$cli{fix},
   'help|h'      => sub { usage(0) },
 ) or usage(1);
 
@@ -1533,6 +1931,7 @@ GetOptions(
 my $exit = eval {
   if    ( $cli{update_db} )         { mode_update_db( $ARGV[0] ) }
   elsif ( $cli{remove} )            { mode_remove( $ARGV[0] ) }
+  elsif ( $cli{fix} )               { mode_fix( $ARGV[0] ) }
   elsif ( $cli{migrate} )           { mode_migrate( $ARGV[0], $ARGV[1] ) }
   elsif ( defined $cli{search} )    { mode_search( $cli{search} ) }
   elsif ( $cli{reindex} && !@ARGV ) { mode_reindex() }
@@ -1562,6 +1961,8 @@ xdg-audit - audit $HOME for dotfiles that could move to XDG locations
   xdg-audit --search gradle        # search name/path/help
   xdg-audit --remove docker        # delete a confirmed leftover (asks first)
   xdg-audit --migrate env bash     # move a dotfile to its XDG target (asks)
+  xdg-audit --migrate symlink grok # move into the repo + symlink (asks)
+  xdg-audit --fix grok             # register a loose symlink (asks)
   xdg-audit --json                 # machine-readable output
   xdg-audit --reindex              # rebuild the index cache
   xdg-audit --update-db            # refresh the vendored xdg-ninja mirror
@@ -1583,16 +1984,19 @@ should handle this" and "what does". A path an external tool manages (a
 C<symlink> is owned by C<check-dotfiles>) is tagged with its C<owner>.
 
 Every reporting mode honours C<--json> so both a human and an agent can
-consume the output. The scan and lookups never touch C<$HOME>; the two
-mutating modes are C<--remove>, which deletes a confirmed leftover (a I<stray>
-or a I<remove>-marked file), and C<--migrate> C<< <mechanism> >>, which
-transitions a target to a mechanism. The mechanism is required — only C<env> is
-implemented in this cut (so C<--migrate env> I<moves> a present dotfile to its
-declared XDG target once the redirect is active; C<symlink> and the rest arrive
-in later phases, see C<ADR-0004>) — both for a named app or path, and both
-showing status and asking for confirmation first (see the B<REMOVE> and
-B<MIGRATE> sections of C<--help>). See the B<OUTPUT> section for what each
-reported status means.
+consume the output. The scan and lookups never touch C<$HOME>; the mutating
+modes are C<--remove>, which deletes a confirmed leftover (a I<stray> or a
+I<remove>-marked file); C<--migrate> C<< <mechanism> >>, which transitions a
+target to a mechanism (the mechanism is required — C<env> I<moves> a present
+dotfile to its declared XDG target once the redirect is active, and C<symlink>
+puts a hardcoded dotfile under C<check-dotfiles> management by moving it into
+the repo, registering it in a dotlinks file, and letting C<check-dotfiles> link
+it back; the rest arrive in later phases, see C<ADR-0004>); and C<--fix>, which
+completes or repairs the current setup without changing mechanism (sugar for
+C<< --migrate <current-mechanism> >>, e.g. registering a loose symlink). Each
+acts on a named app or path and asks for confirmation first (see the B<REMOVE>,
+B<MIGRATE>, and B<FIX> sections of C<--help>). See the B<OUTPUT> section for
+what each reported status means.
 
 =head2 Loading strategy
 

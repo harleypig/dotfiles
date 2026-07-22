@@ -127,9 +127,9 @@ Only genuine **config** belongs under `config/` (tracked). Runtime
 
 ## Removing a leftover
 
-The scan and lookups are read-only. There are two mutating modes, `--remove`
-and `--migrate`, each acting on a named app or `$HOME` path, showing status,
-and asking before each change (default No).
+The scan and lookups are read-only. The mutating modes — `--remove`,
+`--migrate`, and `--fix` — each act on a named app or `$HOME` path, show
+status, and ask before each change (default No).
 
 `--remove` deletes a **confirmed leftover**:
 
@@ -147,8 +147,8 @@ target must be named.
 ## Migrating a leftover
 
 `--migrate <mechanism> <app|path>` transitions a target to `<mechanism>`. The
-mechanism is a **required positional** (no silent default); only `env` is
-implemented so far — `symlink` and the rest arrive in later phases (see
+mechanism is a **required positional** (no silent default); `env` and `symlink`
+are implemented — the rest arrive in later phases (see
 [ADR-0004](../../docs/adr/0004-xdg-audit-mechanism-state-machine.md)). So the
 old bare `xdg-audit --migrate bash` is now `xdg-audit --migrate env bash`;
 a bare `--migrate`, an unknown/unimplemented mechanism, or the old bare-app
@@ -173,6 +173,41 @@ Note: a `rewrite` under `$XDG_CONFIG_HOME` lands in the **tracked repo** (this
 setup's `$XDG_CONFIG_HOME` is `$DOTFILES/config`) — the confirmation shows the
 destination so you see where it goes; keep runtime **state/cache** out of the
 repo (see *config vs. state routing* above).
+
+`--migrate symlink` puts a **hardcoded** dotfile (a present real file with no
+redirect — the unmanaged state) under `check-dotfiles` management:
+
+```bash
+xdg-audit --migrate symlink grok   # move ~/.grok into the repo + symlink, asks
+```
+
+It moves the file into the repo at its declared `rewrite` (which **must live
+under `$DOTFILES`** — a symlink source has to be repo-resident), registers it in
+a dotlinks file, then runs [`check-dotfiles`](../../bin/check-dotfiles) to
+create the `$HOME` symlink back to the repo copy. xdg-audit never runs `ln`
+itself — `check-dotfiles` (via `.dotlinks`) owns the linking. When `~/.dotlinks`
+(the active dotlinks file) is absent it offers to **bootstrap** it — seeded from
+`$DOTFILES/dotlinks-default` or empty — or to append to the shared, tracked
+`dotlinks-default`. It writes into the **tracked repo** but never commits (the
+git commit stays yours), and a partial failure **rolls back** (the file is moved
+back and the dotlinks line stripped). It refuses when no repo `rewrite` is
+declared, the target is outside `$DOTFILES` or already exists, or the source
+escapes `$HOME`.
+
+## Fixing a partial setup
+
+`--fix <app|path>` completes or repairs the **current** setup without changing
+mechanism — sugar for `--migrate <current-mechanism>`:
+
+```bash
+xdg-audit --fix grok           # register a loose symlink so it is maintained
+```
+
+The implemented case is a **loose symlink** — a real symlink not registered in
+the dotlinks file, reported as `partial`. `--fix` registers it (source = the
+link's current target) and runs `check-dotfiles`, so the link is maintained from
+then on. It refuses a `hardcoded`/`absent`/`unknown` path (nothing to fix — use
+`--migrate` to choose a mechanism) and an `env` leftover (use `--remove`).
 
 ## Keeping the mirror current
 

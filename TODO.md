@@ -573,7 +573,7 @@ relocation (moving an install, symlinking) is a separate step.
   ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)) — the
   detection + reporting + `owner` slice (Slice 1) and the `--migrate <mechanism>`
   reframe (Slice 2) shipped (see CHANGELOG); the remaining slice:
-  - [ ] **Slice 3 — `--migrate symlink` + `--fix`.** move → `.dotlinks` →
+  - [x] **Slice 3 — `--migrate symlink` + `--fix`.** move → `.dotlinks` →
     `check-dotfiles`, interactive dotlinks-file selection/bootstrap, auto-run
     `check-dotfiles`; `--fix` for a symlink-not-in-dotlinks;
     cleanup-on-failure; a docker integration test for the real
