@@ -7,8 +7,11 @@
 #   - the read-only modes end-to-end against the REAL vendored database in a
 #     clean environment (index build over the real corpus, --json/--all/lookup/
 #     reverse/--search/filters/--help);
-#   - the mutating modes (--remove, --migrate) with REAL filesystem side
+#   - the mutating modes (--remove, --migrate, --fix) with REAL filesystem side
 #     effects in a throwaway $HOME, so a mistake can never touch the host;
+#   - --migrate symlink and --fix driving the REAL bin/check-dotfiles: a
+#     hardcoded dotfile is moved into a writable $DOTFILES, registered in a
+#     dotlinks file, and symlinked back; a loose symlink is registered in place;
 #   - --migrate ACROSS a real filesystem boundary (a --tmpfs mount at /altfs is
 #     a separate filesystem, so rename() returns EXDEV): a file move must still
 #     succeed and a directory move must be refused (the regression guard for an
@@ -192,6 +195,59 @@ J
   [[ "$output" == *"cross-filesystem directory move"* ]]
   [[ "$output" == *"SRC=intact"* ]]
   [[ "$output" == *"TGT=absent"* ]]
+}
+
+# ---------------------------------------------------------------------------
+# --migrate symlink / --fix: the REAL check-dotfiles creates the $HOME symlink.
+# $DOTFILES must be WRITABLE (/dotfiles is mounted read-only), so use /tmp/df.
+# ---------------------------------------------------------------------------
+
+@test "--migrate symlink moves a hardcoded dotfile into the repo and links it (real check-dotfiles)" {
+  xdg_audit_run "$IMAGE" '
+    DB=/tmp/db; export DOTFILES=/tmp/df; export HOME=/tmp/symhome
+    mkdir -p "$DB/programs-local" "$DOTFILES" "$HOME"
+    cat > "$DB/programs-local/mgsym.json" <<"J"
+{ "name":"mgsym","files":[{"path":"$HOME/.mgsym","movable":true,"mechanism":"symlink","rewrite":"$DOTFILES/mgsym"}] }
+J
+    : > "$HOME/.dotlinks"          # active dotlinks file present -> no bootstrap
+    printf secret > "$HOME/.mgsym"
+    printf "y\n" | env HOME="$HOME" DOTFILES="$DOTFILES" \
+      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --migrate symlink mgsym 2>&1
+    echo "LINK=$([ -L "$HOME/.mgsym" ] && echo yes || echo no)"
+    echo "TARGET=$(readlink "$HOME/.mgsym")"
+    echo "REPO=$(cat "$DOTFILES/mgsym" 2>/dev/null)"
+    echo "SRC=$([ -e "$HOME/.mgsym" ] && echo present || echo gone)"
+    echo "DL=$(cat "$HOME/.dotlinks")"
+  '
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"migrated"* ]]
+  [[ "$output" == *"LINK=yes"* ]]
+  [[ "$output" == *"TARGET=/tmp/df/mgsym"* ]]
+  [[ "$output" == *"REPO=secret"* ]]
+  [[ "$output" == *'DL=$DOTFILES/mgsym .mgsym'* ]]
+}
+
+@test "--fix registers a loose symlink without moving it (real check-dotfiles)" {
+  xdg_audit_run "$IMAGE" '
+    DB=/tmp/db; export DOTFILES=/tmp/df; export HOME=/tmp/fixhome
+    mkdir -p "$DB/programs-local" "$DOTFILES" "$HOME"
+    cat > "$DB/programs-local/mgloose.json" <<"J"
+{ "name":"mgloose","files":[{"path":"$HOME/.mgloose","movable":true,"mechanism":"symlink","rewrite":"$DOTFILES/mgloose"}] }
+J
+    : > "$HOME/.dotlinks"
+    printf loosecfg > "$DOTFILES/mgloose"
+    ln -s "$DOTFILES/mgloose" "$HOME/.mgloose"    # a loose (unregistered) symlink
+    printf "y\n" | env HOME="$HOME" DOTFILES="$DOTFILES" \
+      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --fix mgloose 2>&1
+    echo "STILL=$([ -L "$HOME/.mgloose" ] && echo yes || echo no)"
+    echo "TARGET=$(readlink "$HOME/.mgloose")"
+    echo "DL=$(cat "$HOME/.dotlinks")"
+  '
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"registered"* ]]
+  [[ "$output" == *"STILL=yes"* ]]
+  [[ "$output" == *"TARGET=/tmp/df/mgloose"* ]]
+  [[ "$output" == *'DL=$DOTFILES/mgloose .mgloose'* ]]
 }
 
 # ---------------------------------------------------------------------------

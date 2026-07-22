@@ -14,6 +14,23 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **`xdg-audit --migrate symlink` + `--fix` — put a hardcoded dotfile under
+  `check-dotfiles` management.** Phase 1 Slice 3 of the mechanism state-machine
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)), which
+  **completes Phase 1**. `--migrate symlink <app|path>` moves a *hardcoded*
+  dotfile (a present real file, no redirect) into the repo at its declared
+  `rewrite` (required under `$DOTFILES`), registers it in a dotlinks file, and
+  runs [`check-dotfiles`](bin/check-dotfiles) to symlink it back — xdg-audit
+  never runs `ln` itself. It offers to bootstrap `~/.dotlinks` (seeded from
+  `dotlinks-default` or empty) when absent, or to append to the shared tracked
+  default; it writes into the tracked repo but never commits, and rolls back
+  the move + dotlinks line on any partial failure. `--fix <app|path>` is sugar
+  for `--migrate <current-mechanism>`: it registers a *loose* (partial) symlink
+  so `check-dotfiles` maintains it, and refuses states with nothing to fix
+  (hardcoded/absent/unknown → use `--migrate`; an env leftover → use
+  `--remove`). Covered by unit tests plus docker integration tests that drive
+  the real `check-dotfiles`. (PR #290)
+
 - **`xdg-audit` reports the current vs. recommended mechanism.** Phase 1
   Slice 1 of the mechanism state-machine
   ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)): alongside

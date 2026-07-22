@@ -263,6 +263,34 @@ sub run_audit_merged {
   return ( $out, $rc );
 } ## end sub run_audit_merged
 
+# Slice 3 (--migrate symlink / --fix) drives the REAL bin/check-dotfiles, which
+# reads $HOME/$DOTFILES from the environment and creates actual symlinks — so
+# its tests use a DEDICATED, writable fixture $HOME + $DOTFILES pair ($h, $df)
+# rather than the shared fixtures other tests assert against. Runs the script
+# against them with canned STDIN, capturing STDOUT and STDERR merged (refusals
+# print to STDERR; check-dotfiles' own chatter is captured by xdg-audit).
+sub run_symlink {
+  my ( $h, $df, $input, @args ) = @_;
+  local $ENV{HOME}     = $h;
+  local $ENV{DOTFILES} = $df;
+  delete local $ENV{XDG_CONFIG_HOME};
+  delete local $ENV{XDG_CACHE_HOME};
+  delete local $ENV{XDG_DATA_HOME};
+  delete local $ENV{XDG_STATE_HOME};
+  delete local $ENV{XDG_AUDIT_HOME};
+
+  my $out_fh;
+  my $pid = open3( my $in_fh, $out_fh, $out_fh, $^X, $SCRIPT, '--db', $db, '--home', $h, @args );
+  print {$in_fh} $input;
+  close $in_fh;
+  local $/;
+  my $out = <$out_fh> // '';
+  close $out_fh;
+  waitpid $pid, 0;
+  my $rc = $? >> 8;
+  return ( $out, $rc );
+} ## end sub run_symlink
+
 # ------------------------------------------------------------------------------
 # Scan
 # ------------------------------------------------------------------------------
@@ -748,15 +776,17 @@ write_json( locl('mgoutside'),
 # with a message teaching the new signature.
 {
   my ( $out, $rc ) = run_audit_merged( '--migrate', 'mgstray' );
-  like( $out, qr/--migrate now takes a target mechanism first/, 'the old bare-app syntax is taught the new signature' );
-  like( $out, qr/'mgstray' is not a supported mechanism/,       'the misread app name is named back' );
+  like( $out, qr/--migrate takes a target mechanism first/, 'the old bare-app syntax is taught the new signature' );
+  like( $out, qr/'mgstray' is not one/,                     'the misread app name is named back' );
   is( $rc, 1, 'the old syntax exits 1' );
 }
 
-# A planned-but-unimplemented mechanism (symlink) is refused for now.
+# A planned-but-unimplemented mechanism (recommended) is refused for now
+# (env and symlink are the implemented ones).
 {
-  my ( $out, $rc ) = run_audit_merged( '--migrate', 'symlink', 'mgstray' );
-  like( $out, qr/'symlink' is not a supported mechanism/, 'symlink is not implemented yet' );
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'recommended', 'mgstray' );
+  like( $out, qr/'recommended' is not one/, 'an unimplemented mechanism is refused' );
+  like( $out, qr/'env' and 'symlink'/,      'the message names the implemented mechanisms' );
   is( $rc, 1, 'an unimplemented mechanism exits 1' );
 }
 
@@ -857,6 +887,218 @@ touch('.ownedapp');
 {
   my ($out) = run_audit('docker');
   unlike( $out, qr/recommended:/, 'an aligned entry shows no "(recommended: ...)" note' );
+}
+
+# ------------------------------------------------------------------------------
+# Slice 3 — --migrate symlink + --fix: move a hardcoded dotfile into the repo,
+# register it in a dotlinks file, and let the REAL bin/check-dotfiles create the
+# $HOME symlink; register a loose symlink with --fix. A dedicated fixture
+# $HOME + $DOTFILES pair keeps the real filesystem side effects isolated.
+# ------------------------------------------------------------------------------
+
+my $s3home = File::Spec->catdir( $root, 's3home' );
+my $s3df   = File::Spec->catdir( $root, 's3df' );
+make_path( $s3home, $s3df );
+my $s3_dl = File::Spec->catfile( $s3home, '.dotlinks' );
+
+# The literal token written into a dotlinks line (check-dotfiles envsubst-expands
+# it); kept as a variable so it is never interpolated inside a match.
+my $DOLLAR_DOTFILES = '$DOTFILES';
+
+my $wr = sub { my ( $p, $c ) = @_; open my $fh, '>', $p or die "wr $p: $!"; print {$fh} $c; close $fh; return $p; };
+my $rd = sub { my ($p) = @_; open my $fh, '<', $p or return ''; local $/; my $c = <$fh>; close $fh; return $c // ''; };
+
+# Happy path: a hardcoded ~/.grok is moved into the repo, registered, and linked
+# back by check-dotfiles. ~/.dotlinks pre-exists (the active file), so there is
+# no bootstrap prompt — one 'y' confirms the move.
+mg_entry( 'grok', mechanism => 'symlink', rewrite => '$DOTFILES/grok' );
+{
+  $wr->( $s3_dl, '' );
+  $wr->( File::Spec->catfile( $s3home, '.grok' ), "grokcfg\n" );
+
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'grok' );
+  my $link = File::Spec->catfile( $s3home, '.grok' );
+  my $repo = File::Spec->catfile( $s3df,   'grok' );
+  is( $rc, 0, '--migrate symlink exits 0' );
+  ok( -l $link, '~/.grok is now a symlink' );
+  is( readlink($link), $repo, '~/.grok points at the repo copy' );
+  is( $rd->($repo), "grokcfg\n", 'the file content moved into the repo' );
+  like( $rd->($s3_dl), qr/\Q$DOLLAR_DOTFILES\E\/grok \.grok/, 'a dotlinks line was written (with the .grok link-name)' );
+}
+
+# The post-migrate state reports symlink / complete via --json.
+{
+  my ($out) = run_symlink( $s3home, $s3df, "", '--json', 'grok' );
+  my $rec = JSON::PP->new->decode($out)->{files}[0];
+  is( $rec->{current_mechanism},   'symlink',  'current mechanism is now symlink' );
+  is( $rec->{current_completeness}, 'complete', 'registered symlink reports complete' );
+}
+
+# Bootstrap: no ~/.dotlinks -> offer to create it, seed from dotlinks-default.
+# Input: create? y / seed? y / move? y.
+mg_entry( 'boots', mechanism => 'symlink', rewrite => '$DOTFILES/boots' );
+{
+  unlink $s3_dl;
+  $wr->( File::Spec->catfile( $s3df,   'dotlinks-default' ), "# seed\n\$DOTFILES/pre existing\n" );
+  $wr->( File::Spec->catfile( $s3home, '.boots' ),           "b\n" );
+
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\ny\ny\n", '--migrate', 'symlink', 'boots' );
+  is( $rc, 0, 'bootstrap-seed migrate exits 0' );
+  ok( -e $s3_dl, '~/.dotlinks was created' );
+  like( $rd->($s3_dl), qr/# seed/,          'the created ~/.dotlinks was seeded from dotlinks-default' );
+  like( $rd->($s3_dl), qr/\Q$DOLLAR_DOTFILES\E\/boots \.boots/, 'the new entry was appended to the seeded file' );
+  ok( -l File::Spec->catfile( $s3home, '.boots' ), '~/.boots was linked' );
+}
+
+# Bootstrap empty: create? y / seed? n / move? y -> ~/.dotlinks holds only the
+# new line, no seed content.
+mg_entry( 'boote', mechanism => 'symlink', rewrite => '$DOTFILES/boote' );
+{
+  unlink $s3_dl;
+  $wr->( File::Spec->catfile( $s3home, '.boote' ), "e\n" );
+
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\nn\ny\n", '--migrate', 'symlink', 'boote' );
+  is( $rc, 0, 'bootstrap-empty migrate exits 0' );
+  unlike( $rd->($s3_dl), qr/# seed/, 'the empty-bootstrap ~/.dotlinks has no seed content' );
+  like( $rd->($s3_dl), qr/\Q$DOLLAR_DOTFILES\E\/boote \.boote/, 'the new entry is the only line' );
+}
+
+# Decline bootstrap -> append to the shared, tracked dotlinks-default instead.
+# Input: create ~/.dotlinks? n / append to default? y / move? y.
+mg_entry( 'bootd', mechanism => 'symlink', rewrite => '$DOTFILES/bootd' );
+{
+  unlink $s3_dl;
+  my $def = File::Spec->catfile( $s3df, 'dotlinks-default' );
+  $wr->( $def, "# seed\n" );
+  $wr->( File::Spec->catfile( $s3home, '.bootd' ), "d\n" );
+
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "n\ny\ny\n", '--migrate', 'symlink', 'bootd' );
+  is( $rc, 0, 'append-to-default migrate exits 0' );
+  ok( !-e $s3_dl, '~/.dotlinks was NOT created when declined' );
+  like( $rd->($def), qr/\Q$DOLLAR_DOTFILES\E\/bootd \.bootd/, 'the entry was appended to dotlinks-default' );
+  ok( -l File::Spec->catfile( $s3home, '.bootd' ), '~/.bootd was linked from the default file' );
+}
+
+# Decline everything -> nothing happens, no ~/.dotlinks left behind.
+mg_entry( 'bootn', mechanism => 'symlink', rewrite => '$DOTFILES/bootn' );
+{
+  unlink $s3_dl;
+  unlink File::Spec->catfile( $s3df, 'dotlinks-default' );
+  my $src = $wr->( File::Spec->catfile( $s3home, '.bootn' ), "n\n" );
+
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "n\nn\n", '--migrate', 'symlink', 'bootn' );
+  is( $rc, 0, 'declined migrate still exits 0' );
+  ok( -f $src && !-l $src, 'the source is left as the original hardcoded file' );
+  ok( !-e $s3_dl, 'no ~/.dotlinks was created on a full decline' );
+}
+
+# Refusals (no move, message shown). ~/.dotlinks present so no bootstrap prompt.
+$wr->( $s3_dl, '' );
+
+# No repo target declared.
+mg_entry( 'norw', mechanism => 'symlink' );
+{
+  $wr->( File::Spec->catfile( $s3home, '.norw' ), "x\n" );
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'norw' );
+  like( $out, qr/no repo target declared/, 'an entry with no rewrite is refused' );
+  ok( -f File::Spec->catfile( $s3home, '.norw' ), 'the file is untouched' );
+}
+
+# rewrite is not under $DOTFILES.
+{
+  my $outside = File::Spec->catfile( $root, 'not-in-df' );
+  write_json( locl('offdf'),
+    { name => 'offdf', files => [ { path => '$HOME/.offdf', movable => JSON::PP::true, help => "o\n", mechanism => 'symlink', rewrite => $outside } ] } );
+  $wr->( File::Spec->catfile( $s3home, '.offdf' ), "o\n" );
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'offdf' );
+  like( $out, qr/is not under \$DOTFILES/, 'a rewrite outside $DOTFILES is refused' );
+}
+
+# Target already exists in the repo.
+mg_entry( 'texists', mechanism => 'symlink', rewrite => '$DOTFILES/texists' );
+{
+  $wr->( File::Spec->catfile( $s3df,   'texists' ), "already\n" );
+  $wr->( File::Spec->catfile( $s3home, '.texists' ), "x\n" );
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'texists' );
+  like( $out, qr/already exists - resolve by hand/, 'an existing repo target is refused' );
+}
+
+# Absent source -> nothing to migrate.
+mg_entry( 'gone', mechanism => 'symlink', rewrite => '$DOTFILES/gone' );
+{
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'gone' );
+  like( $out, qr/absent - nothing to migrate/, 'an absent source is refused' );
+}
+
+# env-current -> an env->symlink conversion is deferred to a later phase. The
+# rewrite target exists, so the env redirect reads as active (current = env).
+mg_entry( 'envc', mechanism => 'env', env => 'S3_ENVC', rewrite => '$DOTFILES/envc' );
+{
+  $wr->( File::Spec->catfile( $s3df,   'envc' ), "t\n" );
+  $wr->( File::Spec->catfile( $s3home, '.envc' ), "e\n" );
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'envc' );
+  like( $out, qr/env->symlink conversion is a later phase/, 'an env-current path defers to a later phase' );
+}
+
+# --fix on a loose (partial) symlink: register its current target, link unchanged.
+mg_entry( 'loose', mechanism => 'symlink', rewrite => '$DOTFILES/loosetgt' );
+{
+  my $ltgt = $wr->( File::Spec->catfile( $s3df, 'loosetgt' ), "loose\n" );
+  my $llnk = File::Spec->catfile( $s3home, '.loose' );
+  unlink $llnk;
+  symlink( $ltgt, $llnk ) or die "symlink: $!";
+  $wr->( $s3_dl, '' );
+
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--fix', 'loose' );
+  is( $rc, 0, '--fix exits 0' );
+  is( readlink($llnk), $ltgt, 'the loose symlink is unchanged' );
+  like( $rd->($s3_dl), qr/\Q$DOLLAR_DOTFILES\E\/loosetgt \.loose/, '--fix registered the loose symlink' );
+
+  my ($j) = run_symlink( $s3home, $s3df, "", '--json', 'loose' );
+  is( JSON::PP->new->decode($j)->{files}[0]{current_completeness}, 'complete', 'the fixed symlink now reports complete' );
+}
+
+# --fix refuses a hardcoded path (use --migrate).
+mg_entry( 'fixh', mechanism => 'symlink', rewrite => '$DOTFILES/fixh' );
+{
+  $wr->( File::Spec->catfile( $s3home, '.fixh' ), "h\n" );
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--fix', 'fixh' );
+  like( $out, qr/nothing to fix for a hardcoded setup - use --migrate/, '--fix refuses a hardcoded path' );
+}
+
+# --fix refuses an env leftover (use --remove). Rewrite target exists so the env
+# redirect reads as active (current = env, with a $HOME leftover).
+mg_entry( 'fixe', mechanism => 'env', env => 'S3_FIXE', rewrite => '$DOTFILES/fixe' );
+{
+  $wr->( File::Spec->catfile( $s3df,   'fixe' ), "t\n" );
+  $wr->( File::Spec->catfile( $s3home, '.fixe' ), "e\n" );
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--fix', 'fixe' );
+  like( $out, qr/overlaps --remove - use --remove/, '--fix routes an env leftover to --remove' );
+}
+
+# Cleanup on failure: check-dotfiles cannot link (~/.nochecklinks) -> the move
+# and the dotlinks line are both rolled back, leaving $HOME and the repo as they
+# were.
+mg_entry( 'rbk', mechanism => 'symlink', rewrite => '$DOTFILES/rbk' );
+{
+  $wr->( $s3_dl, '' );
+  my $src = $wr->( File::Spec->catfile( $s3home, '.rbk' ), "keepme\n" );
+  $wr->( File::Spec->catfile( $s3home, '.nochecklinks' ), '' );
+
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'rbk' );
+  like( $out, qr/did not create the link.*reverted/, 'a link failure is reported as reverted' );
+  ok( -f $src && !-l $src, 'the source is restored as the original file' );
+  is( $rd->($src), "keepme\n", 'the restored file keeps its content' );
+  ok( !-e File::Spec->catfile( $s3df, 'rbk' ), 'the repo copy was removed on rollback' );
+  is( $rd->($s3_dl), '', 'the dotlinks line was stripped on rollback' );
+  unlink File::Spec->catfile( $s3home, '.nochecklinks' );
+}
+
+# --fix with no target -> usage error.
+{
+  my ( $out, $rc ) = run_audit_merged('--fix');
+  like( $out, qr/--fix needs an app name/, '--fix with no target reports the missing target' );
+  is( $rc, 1, '--fix with no target exits 1' );
 }
 
 done_testing();

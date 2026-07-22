@@ -4,7 +4,9 @@
 # `git clone`, so this image carries git (+ ca-certificates) alongside a full
 # perl (Debian's `perl` package includes the core modules xdg-audit uses:
 # JSON::PP, Digest::SHA, File::Copy / File::Path / File::Basename, File::Temp,
-# Errno, ...). The repo under test is mounted read-only at /dotfiles at run
+# Errno, ...). It also carries gettext-base for `envsubst`, which the sibling
+# check-dotfiles (driven by `--migrate symlink` / `--fix`) uses to expand the
+# dotlinks lines. The repo under test is mounted read-only at /dotfiles at run
 # time; tests copy the vendored database to a writable path (xdg-audit builds
 # its index there) and use throwaway $HOME dirs under /tmp so a real --remove /
 # --migrate mutation can never touch the host. Tests run a plain bash command;
@@ -23,7 +25,7 @@ FROM debian:bookworm-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-       bash ca-certificates git perl \
+       bash ca-certificates gettext-base git perl \
   && rm -rf /var/lib/apt/lists/*
 
 # A non-root user with a writable HOME (xdg-audit runs as the user, not root).
