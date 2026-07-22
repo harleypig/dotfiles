@@ -11,8 +11,14 @@
 #   pre-commit autoupdate --config .pre-commit-config-fix.yaml
 
 # archive/ = retired code; .vscode/syncsettings/ = machine-synced VS Code
-# profile data.
-exclude: '^(archive/|\.vscode/syncsettings/)'
+# profile data. config/xdg-audit/{programs,json-schema}/ = the PRISTINE
+# vendored xdg-ninja mirror: upstream runs no formatter, so any fixer
+# (trailing-whitespace, end-of-file-fixer, prettier, ...) reformatting it would
+# diverge from upstream and break the upstream-digest / --update-db comparison.
+# Fenced off here so NO fix hook touches it; our own overlays (programs-local/)
+# are NOT matched and stay in scope. The vendored files are still schema-
+# validated in the check config + CI (duplicating upstream's validate-json gate).
+exclude: '^(archive/|\.vscode/syncsettings/|config/xdg-audit/(programs|json-schema)/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -86,12 +92,9 @@ repos:
     rev: v3.8.3
     hooks:
       # Markdown and YAML are owned by markdownlint / yamllint; exclude them
-      # so prettier does not fight those tools' formatting. The xdg-audit
-      # vendored mirror (programs/ + json-schema/) is a PRISTINE copy of
-      # upstream xdg-ninja, who run no formatter — reformatting it would
-      # diverge from upstream and break the upstream-digest / --update-db
-      # comparison, so it is fenced off here too. Our own overlays
-      # (programs-local/) stay in prettier's scope and are gated in the
-      # check config.
+      # so prettier does not fight those tools' formatting. (The vendored
+      # xdg-audit mirror is fenced off globally — see the top-level exclude.)
+      # Our own overlays (programs-local/) stay in prettier's scope and are
+      # gated in the check config.
       - id: prettier
-        exclude: '\.(md|markdown|ya?ml)$|^config/xdg-audit/(programs|json-schema)/'
+        exclude: '\.(md|markdown|ya?ml)$'
