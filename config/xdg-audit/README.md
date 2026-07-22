@@ -64,6 +64,44 @@ repo's prior migrations follow:
    namespace bind-mount that redirects the path (planned; see `TODO.md`).
 5. **remove** — the app is unused; delete the stray.
 
+## Current vs. recommended mechanism
+
+The `mechanism` above is the **recommended** handling — what *should* redirect
+a path. Independently, `xdg-audit` detects the **current** mechanism from
+`$HOME` state and reports where the two diverge, so you can see not just "what
+should handle this" but "what does":
+
+- **symlink** — the `$HOME` path is a symlink. It is **complete** when its
+  link-name is registered in the dotlinks file `check-dotfiles` reads
+  (`$HOME/.dotlinks`, else `$DOTFILES/dotlinks-default`), else **partial** (a
+  loose link `check-dotfiles` won't maintain).
+- **env** — a declared `env` redirect is active (the variable is set, or the
+  `rewrite` target exists). It is **clean** with no `$HOME` leftover, else
+  **leftover**.
+- **hardcoded** — a present, real, un-redirected file that is not a symlink:
+  the unmanaged state to migrate away from.
+- **unknown** — present but handled by a mechanism that can't be verified from
+  a child process (an `alias`/`wrap`, detected in a later phase), or otherwise
+  inconclusive.
+
+A lookup's detail line appends `(recommended: <mechanism>)` when the current
+mechanism diverges from the declared one, and `--json` carries
+`current_mechanism`, `recommended_mechanism`, `current_completeness`, and a
+`divergence` verdict per record. This is the reporting half of the mechanism
+state-machine ([ADR-0004](../../docs/adr/0004-xdg-audit-mechanism-state-machine.md));
+the migration transitions between mechanisms build on it in later phases.
+
+## Owner (externally-managed paths)
+
+A path an external tool manages carries an `owner` — a generic overlay
+annotation naming that manager, e.g. `"owner": "check-dotfiles"`. A declared
+`mechanism: symlink` **implies** `owner: check-dotfiles` (which owns the
+`.dotlinks` + `ln -fs` flow) without needing the field. `xdg-audit` reports
+such a path as externally managed (`[owner: <who>]` in a detail line, `owner`
+in `--json`) and, in later phases, coordinates its transitions with that owner
+rather than acting blindly. `--submit` strips the field, as with the other
+local-only annotations.
+
 ## Symlinked dotfiles
 
 A dotfile that is itself a **symlink** (a deliberate managed link, e.g. into

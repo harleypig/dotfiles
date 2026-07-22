@@ -51,15 +51,22 @@ my %cli = (
 # this setup points at $DOTFILES/config, so we honour the environment first.
 sub xdg_dirs {
   my $home = home_dir();
-  return {
+  my %dirs = (
     HOME            => $home,
     XDG_CONFIG_HOME => $ENV{XDG_CONFIG_HOME} || "$home/.config",
     XDG_CACHE_HOME  => $ENV{XDG_CACHE_HOME}  || "$home/.cache",
     XDG_DATA_HOME   => $ENV{XDG_DATA_HOME}   || "$home/.local/share",
     XDG_STATE_HOME  => $ENV{XDG_STATE_HOME}  || "$home/.local/state",
     XDG_RUNTIME_DIR => $ENV{XDG_RUNTIME_DIR} || "$home/.cache",
-  };
-}
+  );
+
+  # $DOTFILES anchors symlink `rewrite` targets and dotlinks-file sources, so
+  # expand_path must know it — but only when set (an unset $DOTFILES leaves the
+  # literal ${DOTFILES} in place, exactly as any other unknown var does).
+  $dirs{DOTFILES} = $ENV{DOTFILES} if defined $ENV{DOTFILES} && length $ENV{DOTFILES};
+
+  return \%dirs;
+} ## end sub xdg_dirs
 
 sub home_dir {
   return $cli{home} if defined $cli{home};
@@ -146,6 +153,7 @@ sub entries_from_program {
       mechanism => $file->{mechanism},
       env       => $file->{env},
       rewrite   => $file->{rewrite},
+      owner     => $file->{owner},
       ignore    => 0,
     };
   }
@@ -372,25 +380,157 @@ sub classify {
   return 'unhandled';
 }
 
+# ------------------------------------------------------------------------------
+# Mechanism state — the current (detected) mechanism vs the recommended
+# (declared) one, plus the external owner. Layered over the signals above; the
+# classify()/handling_status() vocabulary is unchanged.
+# ------------------------------------------------------------------------------
+
+# The external manager of a path, if any. An explicit overlay `owner` wins;
+# otherwise a declared `mechanism: symlink` implies check-dotfiles (which owns
+# the .dotlinks + `ln -fs` flow). Undef for everything else.
+# A single-expression return (not a `return undef` statement) so an undef result
+# stays a one-element list in the hash-value context this is called in — a bare
+# `return;` there would collapse to an empty list and shift the surrounding hash.
+sub effective_owner {
+  my ($entry) = @_;
+  return
+      ( defined $entry->{owner} && length $entry->{owner} ) ? $entry->{owner}
+    : ( ( $entry->{mechanism} // '' ) eq 'symlink' )        ? 'check-dotfiles'
+    :                                                         undef;
+}
+
+# The dotlinks file check-dotfiles actually reads: $HOME/.dotlinks when present,
+# else $DOTFILES/dotlinks-default. Undef when neither is readable (e.g. $DOTFILES
+# unset). Mirrors check-dotfiles' own resolution — deliberately NOT the private
+# set, which is a separate concern.
+sub dotlinks_file {
+  my $home = home_dir();
+  my $user = File::Spec->catfile( $home, '.dotlinks' );
+  return $user if -r $user;
+
+  my $df = $ENV{DOTFILES};
+  return unless defined $df && length $df;  # scalar/boolean caller: undef is fine
+  my $def = File::Spec->catfile( $df, 'dotlinks-default' );
+  return -r $def ? $def : undef;
+}
+
+# Is the entry's $HOME symlink one check-dotfiles maintains? True when a dotlinks
+# line's link-name (its second field, else the source basename) equals the
+# entry's $HOME dotfile name. A symlink present but NOT registered is a loose
+# link check-dotfiles won't manage — a 'partial' setup.
+sub dotlinks_registered {
+  my ($entry) = @_;
+  my $file = dotlinks_file() or return 0;
+
+  ( my $want = expand_path( $entry->{path} ) ) =~ s{.*/}{};
+
+  # Slurp then close (the read_file pattern) so the handle is released at once.
+  open my $fh, '<:encoding(UTF-8)', $file or return 0;
+  my @lines = <$fh>;
+  close $fh;
+
+  for my $line (@lines) {
+    next if $line =~ /^\s*#/;
+    $line         =~ s/\A\s+//;
+    $line         =~ s/\s+\z//;
+    next unless length $line;
+
+    my ( $src, $name ) = split /\s+/, $line, 2;
+    $name = ( defined $name && length $name ) ? $name : $src;
+    $name =~ s{.*/}{};
+    return 1 if $name eq $want;
+  }
+  return 0;
+} ## end sub dotlinks_registered
+
+# The mechanism currently handling this path, detected from $HOME state (with an
+# honest 'unknown' fallback) — distinct from the *recommended* mechanism (the
+# declared $entry->{mechanism}); the two are compared for a divergence report.
+#   symlink   : the $HOME path is a symlink (structurally detectable)
+#   env       : an env redirect is declared AND active (var set / target exists)
+#   hardcoded : present real file, no detectable redirect, not a symlink — the
+#               unmanaged state we migrate away from
+#   absent    : not present (and no active env redirect)
+#   unknown   : present but handled by a mechanism Phase 1 cannot verify from a
+#               child process (alias/wrap), or otherwise inconclusive
+sub current_mechanism {
+  my ($entry) = @_;
+  return 'symlink' if defined link_target($entry);
+
+  my $mech   = $entry->{mechanism} // '';
+  my $exists = path_exists($entry);
+
+  if ( $mech eq 'env' ) {
+    return 'env' if handling_status($entry) eq 'handled';
+    return $exists ? 'hardcoded' : 'absent';
+  }
+
+  return 'absent' unless $exists;
+
+  # Present, real, not a symlink. An alias/wrap redirect can't be confirmed from
+  # a child process (that lands in a later phase), so those stay 'unknown';
+  # everything else — no annotation, 'remove', or a 'symlink' recommendation not
+  # yet realised as an actual link — is the unmanaged 'hardcoded' state.
+  return 'unknown' if $mech eq 'alias' || $mech eq 'wrap';
+  return 'hardcoded';
+} ## end sub current_mechanism
+
+# The completeness sub-state of the current mechanism, or undef when it has
+# none. A symlink is 'complete' when registered in the dotlinks file, else
+# 'partial'; an env redirect is 'leftover' when a $HOME copy remains, else
+# 'clean'.
+sub current_completeness {
+  my ( $entry, $cur ) = @_;
+  $cur //= current_mechanism($entry);
+
+  # A single-expression return (see effective_owner) so an undef completeness
+  # stays a one-element list in its hash-value call site.
+  return
+      $cur eq 'symlink' ? ( dotlinks_registered($entry) ? 'complete' : 'partial' )
+    : $cur eq 'env'     ? ( path_exists($entry) ? 'leftover' : 'clean' )
+    :                     undef;
+}
+
+# A short recommended-vs-actual verdict for the reports: "using recommended"
+# when they agree, "using X, recommended Y" when they differ, and the bare
+# state for unknown/absent (nothing installed to compare).
+sub divergence_flag {
+  my ( $cur, $rec ) = @_;
+  return 'unknown' if $cur eq 'unknown';
+  return 'absent'  if $cur eq 'absent';
+
+  my $have_rec = defined $rec && length $rec;
+  return 'using recommended' if $have_rec && $cur eq $rec;
+  return "using $cur, recommended $rec" if $have_rec;
+  return "using $cur";
+}
+
 # Assemble a report record for one entry.
 sub report_record {
   my ($entry) = @_;
-  my $link = link_target($entry);
+  my $link    = link_target($entry);
+  my $cur     = current_mechanism($entry);
   return {
-    name        => $entry->{name},
-    source      => $entry->{source},
-    path        => $entry->{path},
-    display     => home_relative( $entry->{path} ),
-    resolved    => expand_path( $entry->{path} ),
-    exists      => ( path_exists($entry) ? JSON::PP::true : JSON::PP::false ),
-    movable     => ( $entry->{movable}   ? JSON::PP::true : JSON::PP::false ),
-    mechanism   => $entry->{mechanism},
-    env         => $entry->{env},
-    rewrite     => $entry->{rewrite},
-    reason      => $entry->{reason},
-    link_target => $link,
-    status      => ( defined $link ? 'linked' : handling_status($entry) ),
-    group       => classify($entry),
+    name                  => $entry->{name},
+    source                => $entry->{source},
+    path                  => $entry->{path},
+    display               => home_relative( $entry->{path} ),
+    resolved              => expand_path( $entry->{path} ),
+    exists                => ( path_exists($entry) ? JSON::PP::true : JSON::PP::false ),
+    movable               => ( $entry->{movable}   ? JSON::PP::true : JSON::PP::false ),
+    mechanism             => $entry->{mechanism},
+    env                   => $entry->{env},
+    rewrite               => $entry->{rewrite},
+    reason                => $entry->{reason},
+    link_target           => $link,
+    status                => ( defined $link ? 'linked' : handling_status($entry) ),
+    group                 => classify($entry),
+    current_mechanism     => $cur,
+    current_completeness  => current_completeness( $entry, $cur ),
+    recommended_mechanism => $entry->{mechanism},
+    divergence            => divergence_flag( $cur, $entry->{mechanism} ),
+    owner                 => effective_owner($entry),
   };
 } ## end sub report_record
 
@@ -582,21 +722,27 @@ sub print_app_detail {
   for my $e (@$entries) {
     my $exists = path_exists($e);
     my $link   = link_target($e);
+    my $cur    = current_mechanism($e);
     push @out, {
-      name        => $e->{name},
-      source      => $e->{source},
-      path        => home_relative( $e->{path} ),
-      exists      => ( $exists ? JSON::PP::true : JSON::PP::false ),
-      movable     => $e->{movable},
-      mechanism   => $e->{mechanism},
-      env         => $e->{env},
-      rewrite     => $e->{rewrite},
-      link_target => $link,
-      reason      => $e->{reason},
-      ignore      => ( $e->{ignore}  ? JSON::PP::true : JSON::PP::false ),
-      group       => ( $e->{ignore}  ? 'ignore'       : classify($e) ),
-      status      => ( defined $link ? 'linked'       : $exists ? handling_status($e) : 'not present' ),
-      help        => $e->{help},
+      name                  => $e->{name},
+      source                => $e->{source},
+      path                  => home_relative( $e->{path} ),
+      exists                => ( $exists ? JSON::PP::true : JSON::PP::false ),
+      movable               => $e->{movable},
+      mechanism             => $e->{mechanism},
+      env                   => $e->{env},
+      rewrite               => $e->{rewrite},
+      link_target           => $link,
+      reason                => $e->{reason},
+      ignore                => ( $e->{ignore}  ? JSON::PP::true : JSON::PP::false ),
+      group                 => ( $e->{ignore}  ? 'ignore'       : classify($e) ),
+      status                => ( defined $link ? 'linked'       : $exists ? handling_status($e) : 'not present' ),
+      current_mechanism     => $cur,
+      current_completeness  => current_completeness( $e, $cur ),
+      recommended_mechanism => $e->{mechanism},
+      divergence            => divergence_flag( $cur, $e->{mechanism} ),
+      owner                 => effective_owner($e),
+      help                  => $e->{help},
     };
   } ## end for my $e (@$entries)
 
@@ -618,8 +764,19 @@ sub print_app_detail {
       : !$f->{exists} && $f->{group} && $f->{group} eq 'handled' ? 'handled'
       : !$f->{exists}                                            ? 'absent'
       :                                                            $f->{group};
+
+    # Surface the recommended mechanism when the current one diverges from it
+    # ("this should be a symlink but isn't"), and the external owner when set.
+    # Aligned or unannotated paths append nothing, so the group word still
+    # leads the line.
+    my ( $cur, $rec ) = ( $f->{current_mechanism}, $f->{recommended_mechanism} );
+    if ( !$f->{ignore} && defined $rec && length $rec && defined $cur && $cur ne $rec ) {
+      $detail .= " (recommended: $rec)";
+    }
+    $detail .= " [owner: $f->{owner}]" if $f->{owner};
+
     printf "  %-*s  %s\n", $w, $f->{path}, $detail;
-  }
+  } ## end for my $f (@out)
 
   # Then each path's migration help (ignored paths need none).
   for my $f (@out) {
@@ -657,18 +814,23 @@ sub scan_unknown {
 
     my $link = -l $abs ? readlink($abs) : undef;
     push @recs, {
-      name        => q{},
-      path        => $abs,
-      display     => $name,
-      resolved    => $abs,
-      exists      => JSON::PP::true,
-      movable     => JSON::PP::false,
-      mechanism   => undef,
-      source      => undef,
-      reason      => undef,
-      link_target => $link,
-      status      => 'unknown',
-      group       => 'unknown',
+      name                  => q{},
+      path                  => $abs,
+      display               => $name,
+      resolved              => $abs,
+      exists                => JSON::PP::true,
+      movable               => JSON::PP::false,
+      mechanism             => undef,
+      source                => undef,
+      reason                => undef,
+      link_target           => $link,
+      status                => 'unknown',
+      group                 => 'unknown',
+      current_mechanism     => ( defined $link ? 'symlink' : 'unknown' ),
+      current_completeness  => undef,
+      recommended_mechanism => undef,
+      divergence            => ( defined $link ? 'using symlink' : 'unknown' ),
+      owner                 => undef,
     };
   } ## end for my $name ( readdir ...)
   closedir $dh;
@@ -1287,10 +1449,16 @@ OUTPUT
   migration help); so does a fragment that matches only one app. A fragment
   matching several apps shows a per-app list. In a detail view a path reads as
   "-> target" (linked), "absent", "ignored" (with its reason), or its group
-  word.
+  word. When the CURRENT (detected) mechanism diverges from the RECOMMENDED
+  (declared) one, the line appends "(recommended: <mechanism>)"; an externally
+  managed path appends "[owner: <who>]" (e.g. a symlink -> check-dotfiles).
 
   --json emits a flat array; every record (handled, ignored, and unknown
-  included) carries its "group" for tooling and agents.
+  included) carries its "group" for tooling and agents, plus the mechanism
+  state: "current_mechanism" (symlink / env / hardcoded / unknown / absent),
+  "recommended_mechanism" (the declared one), "current_completeness"
+  (complete/partial for a symlink, clean/leftover for an env redirect),
+  "divergence" (a recommended-vs-actual verdict), and "owner".
 
 REMOVE
   --remove <app|$HOME-path> deletes a confirmed leftover: a 'stray' (present,
@@ -1358,6 +1526,8 @@ exit $exit;
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 xdg-audit - audit $HOME for dotfiles that could move to XDG locations
@@ -1380,8 +1550,15 @@ C<xdg-audit> reports dotfiles in C<$HOME> that a program supports relocating to
 an XDG base directory, using a vendored, schema-validated mirror of xdg-ninja's
 program database plus a local overlay (C<programs-local/>) that overrides stale
 upstream entries, adds programs upstream does not cover, marks paths to ignore,
-and annotates each path with a handling I<mechanism> (env / alias / symlink /
-wrap / remove).
+and annotates each path with a recommended handling I<mechanism> (env / alias /
+symlink / wrap / remove).
+
+Alongside that recommended mechanism, xdg-audit detects the I<current>
+mechanism from C<$HOME> state — C<symlink>, C<env>, C<hardcoded> (a present,
+unmanaged file, the state to migrate away from), or C<unknown> — and reports
+where the two diverge, so a lookup or the C<--json> feed shows both "what
+should handle this" and "what does". A path an external tool manages (a
+C<symlink> is owned by C<check-dotfiles>) is tagged with its C<owner>.
 
 Every reporting mode honours C<--json> so both a human and an agent can
 consume the output. The scan and lookups never touch C<$HOME>; the two

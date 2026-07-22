@@ -564,14 +564,22 @@ relocation (moving an install, symlinking) is a separate step.
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
 - [ ] **Mechanism state-machine — Phase 1**
-  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)). The `owner`
-  overlay field + reporting; current-mechanism detection for `symlink` (+
-  in-dotlinks completeness) and `env`; recommended-vs-actual display;
-  `hardcoded`/`unknown` classification. `--migrate symlink` (move → `.dotlinks`
-  → `check-dotfiles`, interactive dotlinks-file selection, auto-run
-  `check-dotfiles`) + `--fix` for a symlink-not-in-dotlinks. Reframe the shipped
-  env `--migrate` as `--migrate env` (a breaking change to PR #280's signature
-  — its own commit + changelog note).
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)), split into
+  three reviewable slices:
+  - [x] **Slice 1 — detection + reporting + `owner`.** The `owner` overlay
+    field + reporting; `$DOTFILES`-aware `expand_path`; current-mechanism
+    detection for `symlink` (+ in-dotlinks completeness) and `env`;
+    recommended-vs-actual display + divergence; `hardcoded`/`unknown`
+    classification. Read-only/additive — no mutation changes.
+  - [ ] **Slice 2 — `--migrate env` reframe.** Change `--migrate <app>` to
+    `--migrate <mechanism> <app>` (mechanism required; bare `--migrate`
+    errors); a breaking change to PR #280's signature — its own commit +
+    changelog note. Depends on Slice 1.
+  - [ ] **Slice 3 — `--migrate symlink` + `--fix`.** move → `.dotlinks` →
+    `check-dotfiles`, interactive dotlinks-file selection/bootstrap, auto-run
+    `check-dotfiles`; `--fix` for a symlink-not-in-dotlinks;
+    cleanup-on-failure; a docker integration test for the real
+    check-dotfiles interaction. Depends on Slices 1 and 2.
 - [ ] **Mechanism state-machine — Phase 2** (ADR-0004). `--migrate recommended`
   dispatch; the automatable transition-matrix cells; `--migrate env` with
   instruct-the-`export`; `env`↔`symlink` conversions; `--remove` as teardown
