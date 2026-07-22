@@ -467,15 +467,6 @@ integrated into `shell-startup` (guarded so a failure can't blank PATH).
 
 ### Shell Helpers
 
-- [x] **Fix `bin/where`** — it classifies a command via `type -t`
-  (keyword/builtin/file/function/alias) and reports where it's defined, but its
-  hardcoded `location` search array (`/etc/bash*`, `/etc/profile*`, `/etc/skel`,
-  `$HOME/.bash*`, `$HOME/.profile*`) misses this setup's real config dirs, so it
-  detects an alias/function's *type* but can't find *where* it's defined when
-  the definition lives in `$DOTFILES/config/shell-startup/*`, `dot-general/*`,
-  etc. Fix = expand the search locations (the logic is fine). Prerequisite for
-  the xdg-audit mechanism model's `type`/`where`-based `alias` detection
-  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md), Phase 3).
 - [ ] Evaluate creating a reusable `select`/menu helper (sibling to
   `yesno`) for enumerated-option prompts
   - Survey existing callers in `bin/` and `config/shell-startup/` that
@@ -591,8 +582,8 @@ relocation (moving an install, symlinking) is a separate step.
   transitions (alias as a migrate target — instruct/suggest, with `bin/where`
   confirming it's active; `wrap` *suggests* creating the `bin/<app>` wrapper);
   the full N×N transition matrix; inferring the recommended mechanism from
-  xdg-ninja `help` prose. Depends on the **`bin/where` fix** (see *Shell
-  Helpers* → Features & fixes).
+  xdg-ninja `help` prose. The `bin/where` prerequisite for alias detection is
+  done (PR #286).
 - [ ] **`--migrate` cross-filesystem *directory* move** — v1 refuses an EXDEV
   directory move (a recursive copy needs a non-core module; the script is
   core-only). Add an `mv`-shell-out or core recursive strategy if a real case
