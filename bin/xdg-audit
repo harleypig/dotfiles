@@ -1071,11 +1071,37 @@ sub remove_path {
   return unlink($abs) ? 1 : 0;
 }
 
-# --remove <app|$HOME-path>: delete a confirmed leftover. Only a 'stray'
-# (present + redirect active) or a 'remove'-mechanism (unused app) file is
-# eligible; a symlink or an un-redirected file is refused. Every deletion is
-# confined to $HOME and confirmed interactively (default No). Never scan-wide —
-# the target must be named.
+# Tear down a check-dotfiles-managed symlink: unlink ~/.x and drop its dotlinks
+# line (so check-dotfiles won't recreate it). The canonical repo file is LEFT
+# INTACT — only the link and its registration go. Recreates the link if the
+# dotlinks edit fails (the file itself is restored by remove_dotlinks_line).
+# Returns (ok, message).
+sub teardown_symlink {
+  my ( $abs, $dl ) = @_;
+
+  ( my $linkname = $abs ) =~ s{.*/}{};
+  my $link_text = readlink($abs);
+
+  return ( 0, "could not remove the symlink $abs: $!" )
+    unless unlink $abs;
+
+  my ( $ok, $err ) = remove_dotlinks_line( $dl, $linkname );
+  unless ($ok) {
+    symlink( $link_text, $abs );       # recreate the link on rollback
+    return ( 0, "could not update $dl ($err) - reverted (symlink restored)" );
+  }
+
+  return ( 1, "removed the symlink $abs and its dotlinks entry in $dl (repo file left intact)" );
+}
+
+# --remove <app|$HOME-path>: delete a confirmed leftover, or tear down a managed
+# symlink. Eligible: a 'stray' (present, redirect active AND its target exists —
+# a stray whose redirect target was never created is refused, since the $HOME
+# copy would be the only one) or a 'remove'-mechanism (unused app) file; a
+# check-dotfiles-managed (registered) symlink is TORN DOWN (link + its dotlinks
+# entry dropped, the repo file kept). A loose/external symlink or an
+# un-redirected file is refused. Every change is confined to $HOME and confirmed
+# interactively (default No). Never scan-wide — the target must be named.
 sub mode_remove {
   my ($query) = @_;
 
@@ -1101,10 +1127,11 @@ sub mode_remove {
   my $home = home_dir();
   print "$entries[0]{name}\n\n";
 
-  # First pass: show every path's disposition and collect the eligible ones.
-  # Prompting in a second pass keeps the status block from interleaving with
-  # the confirmation prompts when an app owns several paths.
-  my @eligible;
+  # First pass: show every path's disposition and collect the eligible actions
+  # (a plain 'delete' of a leftover, or a symlink 'teardown'). Prompting in a
+  # second pass keeps the status block from interleaving with the confirmation
+  # prompts when an app owns several paths.
+  my @actions;
   for my $e ( sort { $a->{path} cmp $b->{path} } @entries ) {
     my $abs  = expand_path( $e->{path} );
     my $disp = home_relative( $e->{path} );
@@ -1116,10 +1143,22 @@ sub mode_remove {
 
     my $group = classify($e) // ( path_exists($e) ? 'unhandled' : 'absent' );
 
+    # A symlink: tear down only a check-dotfiles-managed (registered) link; a
+    # loose or external link is refused — we unlink only what we understand and
+    # never touch the canonical repo file.
     if ( $group eq 'linked' ) {
-      printf "  %-24s linked (managed symlink) - not removed\n", $disp;
+      my $dl = dotlinks_file();
+      if ( defined $dl && dotlinks_registered($e) ) {
+        printf "  %-24s linked (check-dotfiles) - drop the link + its dotlinks entry (repo file %s kept)\n",
+          $disp, ( link_target($e) // '' );
+        push @actions, { type => 'teardown', abs => $abs, dl => $dl };
+      } else {
+        printf "  %-24s linked (external / not check-dotfiles-managed) - not removed (use --fix to register a loose link)\n",
+          $disp;
+      }
       next;
     }
+
     if ( $group eq 'unhandled' ) {
       printf "  %-24s unhandled - migrate it first (not a removal)\n", $disp;
       next;
@@ -1127,6 +1166,19 @@ sub mode_remove {
     if ( $group ne 'stray' && $group ne 'remove' ) {
       printf "  %-24s %s - nothing to remove\n", $disp, $group;
       next;
+    }
+
+    # A 'stray' is only safe to delete when its redirect target actually exists;
+    # otherwise the $HOME copy is the ONLY copy (the env var is set but the
+    # redirected file was never created) — migrate it, don't delete it. A
+    # 'remove'-marked file (an unused app) has no target and is exempt.
+    if ( $group eq 'stray' ) {
+      my $tgt = $e->{rewrite} ? expand_path( $e->{rewrite} ) : undef;
+      unless ( defined $tgt && -e $tgt ) {
+        printf "  %-24s stray, but its redirect target %s does not exist - migrate it (--migrate env), don't delete\n",
+          $disp, ( defined $tgt ? $tgt : '(none declared)' );
+        next;
+      }
     }
 
     # Eligible leftover — but never delete outside $HOME.
@@ -1137,24 +1189,38 @@ sub mode_remove {
 
     my $kind = ( -d $abs && !-l $abs ) ? 'directory' : 'file';
     printf "  %-24s %s - a leftover %s\n", $disp, $group, $kind;
-    push @eligible, $abs;
+    push @actions, { type => 'delete', abs => $abs };
   } ## end for my $e ( sort { $a->...})
 
-  # Second pass: confirm and delete each eligible leftover (default No).
+  # Second pass: confirm and perform each action (default No).
   my $removed = 0;
-  if (@eligible) {
+  if (@actions) {
     print "\n";
-    for my $abs (@eligible) {
-      next unless prompt_yes("  Delete $abs? [y/N] ");
+    for my $a (@actions) {
+      if ( $a->{type} eq 'teardown' ) {
+        next
+          unless prompt_yes("  Remove the symlink $a->{abs} and its dotlinks entry (the repo file stays)? [y/N] ");
 
-      if ( remove_path($abs) ) {
-        print "  removed $abs\n";
+        my ( $ok, $msg ) = teardown_symlink( $a->{abs}, $a->{dl} );
+        if ($ok) {
+  print "  $msg\n";
+  $removed++;
+        } else {
+  print {*STDERR} "  $PROG: $msg\n";
+        }
+        next;
+      }
+
+      next unless prompt_yes("  Delete $a->{abs}? [y/N] ");
+
+      if ( remove_path( $a->{abs} ) ) {
+        print "  removed $a->{abs}\n";
         $removed++;
       } else {
-        print {*STDERR} "  $PROG: could not remove $abs: $!\n";
+        print {*STDERR} "  $PROG: could not remove $a->{abs}: $!\n";
       }
-    }
-  }
+    } ## end for my $a (@actions)
+  } ## end if (@actions)
 
   print "\n$PROG: removed $removed item(s).\n";
   return 0;
@@ -2194,12 +2260,16 @@ OUTPUT
   empty once the redirect is active).
 
 REMOVE
-  --remove <app|$HOME-path> deletes a confirmed leftover: a 'stray' (present,
-  its redirect already active) or a 'remove'-marked (unused app) file. It
-  shows the status, then asks before each deletion (default No). A symlink or
-  an un-redirected ('unhandled') file is refused - migrate those, do not
-  delete them - and every deletion is confined to $HOME. Name the app or
-  path; --remove never sweeps the whole scan.
+  --remove <app|$HOME-path> deletes a confirmed leftover, or tears down a
+  managed symlink. Deletable: a 'stray' (present, redirect active AND its
+  target actually exists) or a 'remove'-marked (unused app) file. A stray whose
+  redirect target does NOT exist is refused (its $HOME copy is the only one -
+  migrate it with --migrate env, don't delete). A check-dotfiles-managed
+  (registered) symlink is TORN DOWN - the link is removed and its dotlinks
+  entry dropped, while the canonical repo file is left intact; a loose or
+  external symlink, or an un-redirected ('unhandled') file, is refused. It
+  shows the status, then asks before each change (default No); every change is
+  confined to $HOME. Name the app or path; --remove never sweeps the whole scan.
 
 MIGRATE
   --migrate <mechanism> <app|$HOME-path> transitions the target to <mechanism>.
@@ -2343,8 +2413,10 @@ C<symlink> is owned by C<check-dotfiles>) is tagged with its C<owner>.
 
 Every reporting mode honours C<--json> so both a human and an agent can
 consume the output. The scan and lookups never touch C<$HOME>; the mutating
-modes are C<--remove>, which deletes a confirmed leftover (a I<stray> or a
-I<remove>-marked file); C<--migrate> C<< <mechanism> >>, which transitions a
+modes are C<--remove>, which deletes a confirmed leftover (a I<stray> whose
+redirect target exists, or a I<remove>-marked file) or tears down a
+check-dotfiles-managed symlink (dropping the link + its dotlinks entry, keeping
+the repo file); C<--migrate> C<< <mechanism> >>, which transitions a
 target to a mechanism (the mechanism is required — C<env> I<moves> a present
 dotfile to its declared XDG target, and when the redirect is not yet active it
 emits the C<export> line to add as a dual-audience suggestion; C<symlink> puts a

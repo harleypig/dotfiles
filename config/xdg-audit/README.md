@@ -144,11 +144,25 @@ xdg-audit --remove docker      # shows status, asks before each deletion
 ```
 
 Only an eligible path is deletable: a **stray** (present, its redirect already
-active — a duplicate) or a **remove**-marked (unused app) file. A **symlink**
-(`linked`) or an **un-redirected** (`unhandled`) file is refused — migrate
-those, do not delete them. Every deletion is confined to `$HOME` and confirmed
-interactively (default No); `--remove` never sweeps the whole scan, so a
-target must be named.
+active — a duplicate) or a **remove**-marked (unused app) file. An
+**un-redirected** (`unhandled`) file is refused — migrate it, don't delete it.
+Every deletion is confined to `$HOME` and confirmed interactively (default No);
+`--remove` never sweeps the whole scan, so a target must be named.
+
+**Stray-target safety:** a `stray` is only deletable when its redirect
+**target actually exists**. An env entry whose variable is set but whose
+redirected copy was *never created* would otherwise read as a stray — deleting
+its `$HOME` copy (the only copy) is data loss, so `--remove` refuses it and
+points you at `--migrate env` (move the file to the target instead).
+
+**Symlink teardown:** a **check-dotfiles-managed** symlink (one whose link-name
+is *registered* in the dotlinks file) is **torn down** — the `~/.x` link is
+removed and its `.dotlinks` entry dropped, so `check-dotfiles` won't recreate
+it; the **canonical repo file is left intact** (never touched). A **loose**
+(unregistered) or **external** symlink (e.g. `~/.vim` → the dotvim repo) is
+refused — `--remove` only tears down a link it demonstrably manages. When the
+active dotlinks file is the tracked `dotlinks-default`, the teardown edits a
+tracked file (as `--migrate symlink` does); the git commit stays yours.
 
 ## Migrating a leftover
 

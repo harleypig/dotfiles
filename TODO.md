@@ -572,7 +572,7 @@ relocation (moving an install, symlinking) is a separate step.
 - [ ] **Mechanism state-machine — Phase 2** (ADR-0004) — Slice 1
   (`--migrate recommended` + hardcoded→env instruct-the-export) and Slice 2
   (`env`↔`symlink` conversions) shipped (see CHANGELOG); the remaining slice:
-  - [ ] **Slice 3 — `--remove` teardown + stray-without-target fix.** `--remove`
+  - [x] **Slice 3 — `--remove` teardown + stray-without-target fix.** `--remove`
     on a `symlink`-current entry removes the link *and* drops its `.dotlinks`
     entry; require the redirect target to actually exist before a `stray` is
     deletable (env `handling_status` currently marks handled even when the
