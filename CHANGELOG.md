@@ -10,6 +10,21 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-22
+
+### Fixed
+
+- **`bin/where` now finds aliases defined in the dotfiles shell modules.**
+  `where` classifies a command via `type -t` (keyword / builtin / file /
+  function / alias) and reports where it is defined, but its hardcoded search
+  locations covered only the classic `~/.bash*` / `~/.profile*` files — so an
+  alias defined in `$DOTFILES/config/shell-startup/*` was detected by *type*
+  yet reported with no location. Added the dotfiles shell-module dirs
+  (`$DOTFILES/shell-startup`, `$DOTFILES/config/shell-startup`) to the alias
+  search list, guarded on `$DOTFILES`. Prerequisite for the xdg-audit
+  mechanism model's `type`/`where`-based alias detection
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)). (PR #286)
+
 ## 2026-07-21
 
 ### Added
