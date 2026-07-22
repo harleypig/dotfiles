@@ -569,15 +569,6 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **Mechanism state-machine — Phase 2** (ADR-0004) — Slice 1
-  (`--migrate recommended` + hardcoded→env instruct-the-export) and Slice 2
-  (`env`↔`symlink` conversions) shipped (see CHANGELOG); the remaining slice:
-  - [x] **Slice 3 — `--remove` teardown + stray-without-target fix.** `--remove`
-    on a `symlink`-current entry removes the link *and* drops its `.dotlinks`
-    entry; require the redirect target to actually exist before a `stray` is
-    deletable (env `handling_status` currently marks handled even when the
-    redirected copy was never created, so `--remove` could delete a file whose
-    redirected copy was never made — a data-loss footgun this fixes).
 - [ ] **Mechanism state-machine — Phase 3** (ADR-0004; ICEBOX-candidate).
   General installation-method detection beyond the easy signals; `alias`/`wrap`
   transitions (alias as a migrate target — instruct/suggest, with `bin/where`
