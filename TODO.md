@@ -467,7 +467,7 @@ integrated into `shell-startup` (guarded so a failure can't blank PATH).
 
 ### Shell Helpers
 
-- [ ] **Fix `bin/where`** — it classifies a command via `type -t`
+- [x] **Fix `bin/where`** — it classifies a command via `type -t`
   (keyword/builtin/file/function/alias) and reports where it's defined, but its
   hardcoded `location` search array (`/etc/bash*`, `/etc/profile*`, `/etc/skel`,
   `$HOME/.bash*`, `$HOME/.profile*`) misses this setup's real config dirs, so it

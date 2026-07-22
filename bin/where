@@ -11,6 +11,14 @@ function where() {
   location+=("$HOME/.bash*")
   location+=("$HOME/.profile*")
 
+  # This setup defines its aliases in the dotfiles shell modules, not the
+  # classic ~/.bash* files, so search there too. (Only the alias branch uses
+  # this list — functions are located directly via extdebug below.)
+  [[ -n $DOTFILES ]] && {
+    location+=("$DOTFILES/shell-startup")
+    location+=("$DOTFILES/config/shell-startup")
+  }
+
   skip_location=("$HOME/.bash_history")
   skip_location+=("$HOME/.bash_logout")
 
