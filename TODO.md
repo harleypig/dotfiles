@@ -569,16 +569,6 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **Mechanism state-machine — Phase 1**
-  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)) — the
-  detection + reporting + `owner` slice (Slice 1) and the `--migrate <mechanism>`
-  reframe (Slice 2) shipped (see CHANGELOG); the remaining slice:
-  - [x] **Slice 3 — `--migrate symlink` + `--fix`.** move → `.dotlinks` →
-    `check-dotfiles`, interactive dotlinks-file selection/bootstrap, auto-run
-    `check-dotfiles`; `--fix` for a symlink-not-in-dotlinks;
-    cleanup-on-failure; a docker integration test for the real
-    check-dotfiles interaction. Builds on the Slice 2 signature (adds
-    `symlink` as an accepted `--migrate` mechanism).
 - [ ] **Mechanism state-machine — Phase 2** (ADR-0004). `--migrate recommended`
   dispatch; the automatable transition-matrix cells; `--migrate env` with
   instruct-the-`export`; `env`↔`symlink` conversions; `--remove` as teardown
