@@ -192,3 +192,43 @@ repos:
         language: system
         entry: python3 tests/lint/prose_wrap.py
         files: ^\.claude/.*\.md$
+
+  # xdg-audit program database. Prettier is the JSON formatter (fix config),
+  # but was fix-only — so our overlays drifted between 2-space and 3-space.
+  # Gate the 2-space form for our OWN overlays (programs-local/) with a
+  # check-only `prettier --check`, pinned to the same prettier the fix hook
+  # (mirrors-prettier v3.8.3) bundles so the gate and the fixer never disagree.
+  # Prettier has no docker_image variant, so it stays a node hook like the
+  # fixer. The vendored programs/ + json-schema/ mirror is deliberately NOT
+  # gated here (xdg-ninja runs no formatter; we keep it pristine for
+  # --update-db) — see the prettier exclude in .pre-commit-config-fix.yaml.
+  - repo: local
+    hooks:
+      - id: prettier-check-overlays
+        name: prettier --check (xdg-audit overlays)
+        language: node
+        additional_dependencies: ['prettier@3.8.3']
+        entry: prettier --check --ignore-unknown
+        files: ^config/xdg-audit/programs-local/.*\.json$
+
+  # Validate the xdg-audit program database against its schemas — local parity
+  # with the CI `json-schema` job (and with xdg-ninja's own walbo/validate-json
+  # gate, draft-07 strict). check-jsonschema has no docker_image variant, so it
+  # is the pip-backed hook the CI job also uses. Two entries: the pristine
+  # vendored mirror against xdg-ninja's schema, and our overlays against the
+  # overlay superset schema (the schema file itself is not a program instance,
+  # so it is excluded from the second).
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.37.4
+    hooks:
+      - id: check-jsonschema
+        alias: check-jsonschema-programs
+        name: check-jsonschema (vendored programs)
+        args: [--schemafile, config/xdg-audit/json-schema/program.json]
+        files: ^config/xdg-audit/programs/.*\.json$
+      - id: check-jsonschema
+        alias: check-jsonschema-overlay
+        name: check-jsonschema (local overlay)
+        args: [--schemafile, config/xdg-audit/programs-local/.schema.json]
+        files: ^config/xdg-audit/programs-local/.*\.json$
+        exclude: ^config/xdg-audit/programs-local/\.schema\.json$

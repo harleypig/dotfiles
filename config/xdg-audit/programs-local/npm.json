@@ -1,23 +1,23 @@
 {
-   "files" : [
-      {
-         "movable" : true,
-         "path" : "$HOME/.node-gyp"
-      },
-      {
-         "env" : "npm_config_cache",
-         "mechanism" : "env",
-         "movable" : true,
-         "path" : "$HOME/.npm"
-      },
-      {
-         "env" : "NPM_CONFIG_USERCONFIG",
-         "mechanism" : "env",
-         "movable" : true,
-         "path" : "$HOME/.npmrc"
-      }
-   ],
-   "name" : "npm",
-   "override-of" : "npm",
-   "upstream-digest" : "2870232024f7a9ed0f679dab25b993055d7b7feb5fa40e4f940ea7291d0bd235"
+  "files": [
+    {
+      "movable": true,
+      "path": "$HOME/.node-gyp"
+    },
+    {
+      "env": "npm_config_cache",
+      "mechanism": "env",
+      "movable": true,
+      "path": "$HOME/.npm"
+    },
+    {
+      "env": "NPM_CONFIG_USERCONFIG",
+      "mechanism": "env",
+      "movable": true,
+      "path": "$HOME/.npmrc"
+    }
+  ],
+  "name": "npm",
+  "override-of": "npm",
+  "upstream-digest": "2870232024f7a9ed0f679dab25b993055d7b7feb5fa40e4f940ea7291d0bd235"
 }

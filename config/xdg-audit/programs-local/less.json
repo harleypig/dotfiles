@@ -1,17 +1,17 @@
 {
-   "files" : [
-      {
-         "env" : "LESSHISTFILE",
-         "mechanism" : "env",
-         "movable" : true,
-         "path" : "$HOME/.lesshst"
-      },
-      {
-         "movable" : true,
-         "path" : "$HOME/.lesskey"
-      }
-   ],
-   "name" : "less",
-   "override-of" : "less",
-   "upstream-digest" : "a6fa75793afa3d139bf023e2cc2f7a3cc2f01d15c047374ed49662a7c43aed1c"
+  "files": [
+    {
+      "env": "LESSHISTFILE",
+      "mechanism": "env",
+      "movable": true,
+      "path": "$HOME/.lesshst"
+    },
+    {
+      "movable": true,
+      "path": "$HOME/.lesskey"
+    }
+  ],
+  "name": "less",
+  "override-of": "less",
+  "upstream-digest": "a6fa75793afa3d139bf023e2cc2f7a3cc2f01d15c047374ed49662a7c43aed1c"
 }

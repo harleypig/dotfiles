@@ -203,8 +203,9 @@ jobs:
 
   # Validate the xdg-audit program database: the pristine vendored mirror
   # against xdg-ninja's schema, and our local overlay against the overlay
-  # superset schema. check-jsonschema is the same validator we can run locally
-  # (pre-commit parity is a follow-up in TODO.md).
+  # superset schema. check-jsonschema is the same validator the local
+  # pre-commit `check-jsonschema-programs` / `check-jsonschema-overlay` hooks
+  # run, so this CI gate and commit-time checks stay in lock-step.
   json-schema:
     runs-on: ubuntu-latest
     steps:
