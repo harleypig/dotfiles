@@ -220,12 +220,13 @@ xdg_audit_harness_image() {
 #------------------------------------------------------------------------------
 # Run a command in a throwaway xdg-audit container with the repo mounted
 # read-only at /dotfiles and a tmpfs at /altfs (a genuinely separate
-# filesystem, for the cross-filesystem --migrate cases). Sets $output/$status
-# via bats `run`.
-#   xdg_audit_run "$IMAGE" 'xdg-audit --db /tmp/db --home /h --json'
+# filesystem, for the cross-filesystem --migrate cases). The tmpfs is
+# world-writable (mode 1777) so the image's non-root user can write to it.
+# Sets $output/$status via bats `run`.
+#   xdg_audit_run "$IMAGE" 'xdg-audit --db /tmp/db --home /tmp/h --json'
 
 xdg_audit_run() {
   local image=$1 cmd=$2
-  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" --tmpfs /altfs \
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" --tmpfs /altfs:rw,mode=1777 \
     "$image" bash -c "$cmd"
 }

@@ -65,8 +65,10 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   the profile comes up (`DOTFILES` set, `powershell/startup/*` modules loaded)
   with no parser errors. Same skip-if-no-docker guard.
 - `tests/docker/xdg-audit/` + `tests/shell/test_integration_xdg_audit.bats` —
-  a **fourth** harness image (Debian slim + `perl` + **git**) for
-  `bin/xdg-audit`, exercising what the hermetic unit suite
+  a **fourth** harness image (Debian slim + `perl` + **git**, run as a
+  **non-root** user since xdg-audit operates on a real user's `$HOME`, not
+  root's; throwaway dirs live under `/tmp`) for `bin/xdg-audit`, exercising
+  what the hermetic unit suite
   (`tests/perl/xdg-audit.t`, one synthetic tempdir) structurally cannot.
   `common.bash` provides `xdg_audit_harness_image` and `xdg_audit_run` (which
   also mounts a **`--tmpfs /altfs`** — a genuinely separate filesystem — for

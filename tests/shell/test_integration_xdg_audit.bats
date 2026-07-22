@@ -35,10 +35,10 @@ setup() {
   xdg_audit_run "$IMAGE" '
     # A writable copy of the real database (xdg-audit builds its index there).
     cp -r /dotfiles/config/xdg-audit /tmp/db
-    export HOME=/smokehome; mkdir -p "$HOME"
+    export HOME=/tmp/smokehome; mkdir -p "$HOME"
     # A couple of real-db-owned dotfiles so the scan actually finds something.
     mkdir -p "$HOME/.gradle"; : > "$HOME/.wget-hsts"
-    X() { /dotfiles/bin/xdg-audit --db /tmp/db --home /smokehome "$@"; }
+    X() { /dotfiles/bin/xdg-audit --db /tmp/db --home "$HOME" "$@"; }
 
     X --reindex > /tmp/ri.txt 2>&1; echo "REINDEX_RC=$?"
     grep -q "rebuilt index" /tmp/ri.txt && echo "REINDEX_MSG=y"
@@ -96,7 +96,7 @@ setup() {
 
 @test "--remove deletes a real leftover stray in an isolated \$HOME" {
   xdg_audit_run "$IMAGE" '
-    DB=/tmp/db; export HOME=/rmhome
+    DB=/tmp/db; export HOME=/tmp/rmhome
     mkdir -p "$DB/programs-local" "$HOME"
     cat > "$DB/programs-local/rmapp.json" <<"J"
 { "name":"rmapp","files":[{"path":"$HOME/.rmapp","movable":true,"mechanism":"env","env":"RM_ACTIVE","rewrite":"/tmp/rmtgt"}] }
@@ -114,7 +114,7 @@ J
 
 @test "--remove refuses a symlinked dotfile" {
   xdg_audit_run "$IMAGE" '
-    DB=/tmp/db; export HOME=/rmhome2
+    DB=/tmp/db; export HOME=/tmp/rmhome2
     mkdir -p "$DB/programs-local" "$HOME" /tmp/lnktgt
     cat > "$DB/programs-local/lnkapp.json" <<"J"
 { "name":"lnkapp","files":[{"path":"$HOME/.lnkapp","movable":true,"mechanism":"env","env":"LNK","rewrite":"/tmp/x"}] }
@@ -135,7 +135,7 @@ J
 
 @test "--migrate moves a real file to its XDG target (same filesystem)" {
   xdg_audit_run "$IMAGE" '
-    DB=/tmp/db; export HOME=/mghome
+    DB=/tmp/db; export HOME=/tmp/mghome
     mkdir -p "$DB/programs-local" "$HOME"
     cat > "$DB/programs-local/mgapp.json" <<"J"
 { "name":"mgapp","files":[{"path":"$HOME/.mgapp","movable":true,"mechanism":"env","env":"MG_ACTIVE","rewrite":"/tmp/mgdata/mgapp"}] }
@@ -156,7 +156,7 @@ J
 
 @test "--migrate across filesystems: a FILE move succeeds (copy + unlink)" {
   xdg_audit_run "$IMAGE" '
-    DB=/tmp/db; export HOME=/xfhome
+    DB=/tmp/db; export HOME=/tmp/xfhome
     mkdir -p "$DB/programs-local" "$HOME"
     cat > "$DB/programs-local/xfile.json" <<"J"
 { "name":"xfile","files":[{"path":"$HOME/.xfile","movable":true,"mechanism":"env","env":"XF","rewrite":"/altfs/xfile"}] }
@@ -177,7 +177,7 @@ J
 
 @test "--migrate across filesystems: a DIRECTORY move is refused, source intact" {
   xdg_audit_run "$IMAGE" '
-    DB=/tmp/db; export HOME=/xdhome
+    DB=/tmp/db; export HOME=/tmp/xdhome
     mkdir -p "$DB/programs-local" "$HOME/.xdir"
     printf inside > "$HOME/.xdir/inner"
     cat > "$DB/programs-local/xdir.json" <<"J"
@@ -226,7 +226,7 @@ J
     cat > "$DB/programs-local/widget.json" <<"J"
 { "name":"widget","override-of":"widget","upstream-digest":"deadbeefstale","files":[{"path":"$HOME/.widget","help":"LOCAL"}] }
 J
-    export HOME=/uhome; mkdir -p "$HOME"
+    export HOME=/tmp/uhome; mkdir -p "$HOME"
 
     set +e
     /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --update-db > /tmp/upd.txt 2>&1
