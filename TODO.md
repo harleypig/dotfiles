@@ -569,11 +569,24 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **Mechanism state-machine — Phase 2** (ADR-0004). `--migrate recommended`
-  dispatch; the automatable transition-matrix cells; `--migrate env` with
-  instruct-the-`export`; `env`↔`symlink` conversions; `--remove` as teardown
-  (drop the `.dotlinks` entry for a `symlink`-current entry — folds in the
-  stray-without-target fix below).
+- [ ] **Mechanism state-machine — Phase 2** (ADR-0004), in three slices:
+  - [x] **Slice 1 — `--migrate recommended` + hardcoded→env instruct-export.**
+    `--migrate recommended <app>` resolves the entry's declared mechanism and
+    dispatches to env/symlink. Rework `--migrate env` so a hardcoded entry with
+    no active redirect is *automated* (the move) with the exact `export VAR=…`
+    line *instructed* as a dual-audience suggestion (human + agent, also in
+    `--json`), instead of refusing.
+  - [ ] **Slice 2 — `env`↔`symlink` conversions.** `symlink → env` (drop the
+    symlink + `.dotlinks` entry, move canonical → XDG target, instruct the
+    export); `env → symlink` (move canonical → repo, register in `.dotlinks`,
+    run check-dotfiles, instruct *removing* the export). Builds on Slice 1's
+    instruct mechanism.
+  - [ ] **Slice 3 — `--remove` teardown + stray-without-target fix.** `--remove`
+    on a `symlink`-current entry removes the link *and* drops its `.dotlinks`
+    entry; require the redirect target to actually exist before a `stray` is
+    deletable (env `handling_status` currently marks handled even when the
+    redirected copy was never created, so `--remove` could delete a file whose
+    redirected copy was never made — a data-loss footgun this fixes).
 - [ ] **Mechanism state-machine — Phase 3** (ADR-0004; ICEBOX-candidate).
   General installation-method detection beyond the easy signals; `alias`/`wrap`
   transitions (alias as a migrate target — instruct/suggest, with `bin/where`
@@ -585,11 +598,6 @@ relocation (moving an install, symlinking) is a separate step.
   directory move (a recursive copy needs a non-core module; the script is
   core-only). Add an `mv`-shell-out or core recursive strategy if a real case
   appears (e.g. jbang, a 471M dir).
-- [ ] **`--remove` stray-without-target tightening** — env `handling_status`
-  marks an env-set entry `handled` even when the `rewrite` target does not
-  exist, so `--remove` can delete a file whose redirected copy was never
-  created (data loss). Require the redirected copy to exist for `stray`
-  eligibility, or route target-absent strays to `--migrate`.
 - [ ] **`--submit`** — open an upstream xdg-ninja PR from a local
   addition/override (gh OAuth fallback; strip local-only fields).
 - [ ] **Multiple apps, one dotfile** — several programs can own the same `$HOME`

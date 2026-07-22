@@ -532,6 +532,7 @@ sub report_record {
     recommended_mechanism => $entry->{mechanism},
     divergence            => divergence_flag( $cur, $entry->{mechanism} ),
     owner                 => effective_owner($entry),
+    suggested_steps       => suggested_steps($entry),
   };
 } ## end sub report_record
 
@@ -743,6 +744,7 @@ sub print_app_detail {
       recommended_mechanism => $e->{mechanism},
       divergence            => divergence_flag( $cur, $e->{mechanism} ),
       owner                 => effective_owner($e),
+      suggested_steps       => suggested_steps($e),
       help                  => $e->{help},
     };
   } ## end for my $e (@$entries)
@@ -1202,14 +1204,14 @@ sub mode_migrate {
     return 1;
   }
 
-  # env/symlink are implemented. Reject anything else — a planned-but-unbuilt
-  # mechanism, or the old bare `--migrate <app>` syntax where the app name lands
-  # here as the mechanism — with a message that teaches the new signature rather
-  # than silently mis-reading the app as a mechanism.
-  my %supported = ( env => 1, symlink => 1 );
+  # env/symlink/recommended are implemented. Reject anything else — a planned-
+  # but-unbuilt mechanism, or the old bare `--migrate <app>` syntax where the
+  # app name lands here as the mechanism — with a message that teaches the new
+  # signature rather than silently mis-reading the app as a mechanism.
+  my %supported = ( env => 1, symlink => 1, recommended => 1 );
   unless ( $supported{$mechanism} ) {
     print {*STDERR} "$PROG: --migrate takes a target mechanism first: --migrate <mechanism> <app|\$HOME path>.\n"
-      . "  Implemented mechanisms are 'env' and 'symlink' (e.g. --migrate env bash); '$mechanism' is not one.\n";
+      . "  Implemented mechanisms are 'env', 'symlink', and 'recommended' (e.g. --migrate env bash); '$mechanism' is not one.\n";
     return 1;
   }
 
@@ -1218,10 +1220,105 @@ sub mode_migrate {
     return 1;
   }
 
-  return mode_migrate_env($query)     if $mechanism eq 'env';
-  return mode_migrate_symlink($query) if $mechanism eq 'symlink';
+  return mode_migrate_recommended($query) if $mechanism eq 'recommended';
+  return mode_migrate_env($query)         if $mechanism eq 'env';
+  return mode_migrate_symlink($query)     if $mechanism eq 'symlink';
   return 1;                            # unreachable: %supported gates the mechanism above
 } ## end sub mode_migrate
+
+# --migrate recommended: resolve the target's declared (recommended) mechanism
+# and dispatch to that mechanism's transition. An app must resolve to a single
+# recommended mechanism (env/symlink); a heterogeneous app, an unimplementable
+# recommendation (alias/wrap/remove), or a mechanism-less entry is refused with
+# a message. Name a single $HOME path to pin one mechanism.
+sub mode_migrate_recommended {
+  my ($query) = @_;
+
+  my @entries = resolve_one_app( $query, '--migrate recommended' ) or return 1;
+
+  my ( $mech, $err ) = resolve_recommended_mechanism( \@entries );
+  if ( defined $err ) {
+    print {*STDERR} "$PROG: $err\n";
+    return 1;
+  }
+
+  # The resolver only ever yields an implemented target; re-passing $query lets
+  # the chosen executor re-resolve (cheap, idempotent) and run unchanged.
+  return mode_migrate_env($query)     if $mech eq 'env';
+  return mode_migrate_symlink($query) if $mech eq 'symlink';
+  return 1;                            # unreachable: resolver returns only env/symlink
+}
+
+# Resolve the single recommended mechanism for an app's entries, or an error.
+# Returns ($mech, undef) when exactly one implementable mechanism is declared
+# across the non-ignored entries, else (undef, message). alias/wrap/remove are
+# declared-but-not-yet-migratable; several distinct mechanisms are ambiguous.
+sub resolve_recommended_mechanism {
+  my ($entries) = @_;
+  my $name = $entries->[0]{name};
+
+  my @named = grep { !$_->{ignore} && defined $_->{mechanism} && length $_->{mechanism} } @$entries;
+  my %seen  = map  { $_->{mechanism} => 1 } @named;
+  my @mechs = sort keys %seen;
+
+  return ( undef, "no recommended mechanism is declared for $name (add an overlay 'mechanism') - nothing to resolve" )
+    unless @mechs;
+
+  if ( @mechs > 1 ) {
+    my $breakdown = join "\n",
+      map { sprintf "    %-24s %s", home_relative( $_->{path} ), $_->{mechanism} }
+      sort { $a->{path} cmp $b->{path} } @named;
+    return (
+      undef,
+      "$name owns paths with different recommended mechanisms:\n$breakdown\n"
+        . "  run --migrate <mechanism> $name per mechanism, or name a single \$HOME path"
+    );
+  }
+
+  my $only = $mechs[0];
+  return ( $only, undef ) if $only eq 'env' || $only eq 'symlink';
+  return (
+    undef,
+    "the recommended mechanism for $name is '$only', which --migrate cannot yet perform"
+      . " (alias/wrap/remove arrive in a later phase - see ADR-0004)"
+  );
+} ## end sub resolve_recommended_mechanism
+
+# The exact shell line that activates an entry's env redirect, or undef when the
+# entry lacks the variable or rewrite. The declared `rewrite` token is written
+# verbatim in double quotes so the user's shell expands it (portable, ready to
+# paste), e.g. export LESSHISTFILE="$XDG_STATE_HOME/less/history".
+sub env_export_command {
+  my ($entry) = @_;
+  return unless $entry->{env} && $entry->{rewrite};
+  return qq{export $entry->{env}="$entry->{rewrite}"};
+}
+
+# The dual-audience "instruct the rest" steps for an entry, as structured data
+# for --json (the human sibling is printed by --migrate env). The one step today
+# is the export a hardcoded, env-recommended path needs to activate its
+# redirect; once that redirect is active the path is no longer hardcoded and
+# this collapses to []. Computed at runtime (depends on live $ENV / fs state).
+sub suggested_steps {
+  my ($entry) = @_;
+
+  my $mech = $entry->{mechanism} // '';
+  return []
+    unless $mech eq 'env'
+    && current_mechanism($entry) eq 'hardcoded'
+    && $entry->{env}
+    && $entry->{rewrite};
+
+  return [
+    { mechanism => 'env',
+      action    => 'export',
+      variable  => $entry->{env},
+      value     => $entry->{rewrite},
+      resolved  => expand_path( $entry->{rewrite} ),
+      command   => env_export_command($entry),
+      note      => "add to your shell config before running $entry->{name} again",
+    } ];
+} ## end sub suggested_steps
 
 # --migrate env: move a present dotfile to its declared XDG target (`rewrite`)
 # so an already-active redirect finds it there. Gated on concrete preconditions
@@ -1267,16 +1364,6 @@ sub mode_migrate_env {
       next;
     }
 
-    # THE ORDERING GATE: the redirect must be active in this shell, or the app
-    # would look at the old $HOME path (now empty) after the move.
-    my $var = $e->{env} // '';
-    my $val = length $var ? $ENV{$var} : undef;
-    unless ( defined $val && length $val ) {
-      printf "  %-24s redirect \$%s is not active here - export it first, then re-run\n",
-        $disp, $var;
-      next;
-    }
-
     my $tgt = expand_path( $e->{rewrite} );
 
     # The target must resolve to an absolute path with every $VAR expanded.
@@ -1286,12 +1373,29 @@ sub mode_migrate_env {
       next;
     }
 
-    # The app reads wherever the exported var points; it must equal the declared
-    # target, or moving there leaves the app looking elsewhere.
-    if ( File::Spec->canonpath($val) ne File::Spec->canonpath($tgt) ) {
-      printf "  %-24s redirect \$%s points at %s, not the declared %s - reconcile first\n",
-        $disp, $var, $val, $tgt;
-      next;
+    # The redirect's activity decides automate-only vs automate-and-instruct.
+    # Active: it must point at the declared target, or the app looks elsewhere
+    # after the move (refuse). Inactive: we still move, but emit the `export`
+    # line for the user/agent to add (ADR-0004's automate-move + instruct-the-
+    # export) — provided the entry names a variable we can actually instruct.
+    my $var    = $e->{env} // '';
+    my $val    = length $var ? $ENV{$var} : undef;
+    my $active = defined $val && length $val;
+    my $export;
+
+    if ($active) {
+      if ( File::Spec->canonpath($val) ne File::Spec->canonpath($tgt) ) {
+        printf "  %-24s redirect \$%s points at %s, not the declared %s - reconcile first\n",
+          $disp, $var, $val, $tgt;
+        next;
+      }
+    } else {
+      unless ( length $var ) {
+        printf "  %-24s env mechanism declares no variable - cannot instruct an export - refused\n",
+          $disp;
+        next;
+      }
+      $export = env_export_command($e);
     }
 
     if ( -e $tgt || -l $tgt ) {
@@ -1305,27 +1409,36 @@ sub mode_migrate_env {
       next;
     }
 
-    printf "  %-24s move to %s\n", $disp, $tgt;
-    push @moves, [ $abs, $tgt ];
+    if ($active) {
+      printf "  %-24s move to %s\n", $disp, $tgt;
+    } else {
+      printf "  %-24s move to %s  (redirect \$%s inactive - export suggested)\n",
+        $disp, $tgt, $var;
+    }
+    push @moves, { abs => $abs, tgt => $tgt, app => $e->{name}, export => $export };
   } ## end for my $e ( sort { $a->...})
 
-  # Second pass: confirm and move each eligible file (default No).
+  # Second pass: confirm and move each eligible file (default No). After a move
+  # whose redirect was inactive, print the dual-audience export suggestion.
   my $migrated = 0;
   if (@moves) {
     print "\n";
     for my $m (@moves) {
-      my ( $abs, $tgt ) = @$m;
-      next unless prompt_yes("  Move $abs -> $tgt? [y/N] ");
+      next unless prompt_yes("  Move $m->{abs} -> $m->{tgt}? [y/N] ");
 
-      my ( $ok, $err ) = move_path( $abs, $tgt );
+      my ( $ok, $err ) = move_path( $m->{abs}, $m->{tgt} );
       if ($ok) {
-        print "  migrated $abs -> $tgt\n";
+        print "  migrated $m->{abs} -> $m->{tgt}\n";
+        if ( defined $m->{export} ) {
+  print "  next: add this to your shell config BEFORE running $m->{app} again:\n";
+  print "      $m->{export}\n";
+        }
         $migrated++;
       } else {
         print {*STDERR} "  $PROG: $err\n";
       }
     }
-  }
+  } ## end if (@moves)
 
   print "\n$PROG: migrated $migrated item(s).\n";
   return 0;
@@ -1797,6 +1910,7 @@ USAGE
   xdg-audit --remove <app|path>    delete a confirmed leftover (asks first)
   xdg-audit --migrate env <app|path>      move a dotfile to its XDG target (asks)
   xdg-audit --migrate symlink <app|path>  move into the repo + symlink (asks)
+  xdg-audit --migrate recommended <app>   use the declared mechanism (asks)
   xdg-audit --fix <app|path>       complete/repair the current setup (asks)
   xdg-audit --reindex              rebuild the enriched index cache
   xdg-audit --update-db [<ref>]    refresh the vendored mirror from upstream
@@ -1806,7 +1920,8 @@ OPTIONS
   --json                   machine-readable output (for tooling / AI)
   --search <term>          substring search across name, path, and help
   --remove                 delete a confirmed leftover for <app|path> (asks)
-  --migrate <mechanism>    transition <app|path> to <mechanism> (env, symlink; asks)
+  --migrate <mechanism>    transition <app|path> to <mechanism>
+                           (env, symlink, recommended; asks)
   --fix                    complete/repair <app|path>'s current setup (asks)
   --mechanism <m>          restrict the scan to one mechanism (env/alias/wrap)
   --movable / --immovable  filter the scan by movability
@@ -1848,7 +1963,10 @@ OUTPUT
   state: "current_mechanism" (symlink / env / hardcoded / unknown / absent),
   "recommended_mechanism" (the declared one), "current_completeness"
   (complete/partial for a symlink, clean/leftover for an env redirect),
-  "divergence" (a recommended-vs-actual verdict), and "owner".
+  "divergence" (a recommended-vs-actual verdict), "owner", and
+  "suggested_steps" - an array of the "instruct the rest" steps an agent can
+  apply (currently the "export VAR=..." a hardcoded env-recommended path needs;
+  empty once the redirect is active).
 
 REMOVE
   --remove <app|$HOME-path> deletes a confirmed leftover: a 'stray' (present,
@@ -1860,18 +1978,27 @@ REMOVE
 
 MIGRATE
   --migrate <mechanism> <app|$HOME-path> transitions the target to <mechanism>.
-  The mechanism is required (no default); 'env' and 'symlink' are implemented
-  (the rest come in later phases - see ADR-0004), so the old bare
-  'xdg-audit --migrate <app>' is now 'xdg-audit --migrate env <app>'.
+  The mechanism is required (no default); 'env', 'symlink', and 'recommended'
+  are implemented (the rest come in later phases - see ADR-0004), so the old
+  bare 'xdg-audit --migrate <app>' is now 'xdg-audit --migrate env <app>'.
+
+  --migrate recommended <app|path> resolves the target's declared mechanism (the
+  overlay 'mechanism') and dispatches to it (env/symlink). It refuses when an
+  app owns paths with different recommended mechanisms (run --migrate <mechanism>
+  per mechanism, or name a single $HOME path), when the recommendation is one
+  --migrate cannot yet perform (alias/wrap/remove), or when no mechanism is
+  declared.
 
   --migrate env moves a present dotfile to its declared XDG target (the
-  overlay's 'rewrite'), so an already-active redirect finds it there. It gates
-  on the ordering the move depends on: the redirect must be exported and active
-  in THIS shell and point at the declared target - otherwise it refuses and
-  tells you to add the export first (move the file before the redirect is live
-  and the app looks at the old, now-empty path). It also refuses when the
-  target already exists (a redundant leftover - use --remove), when the file is
-  a symlink, or when either path escapes $HOME.
+  overlay's 'rewrite'), so an already-active redirect finds it there. When the
+  redirect is active it must point at the declared target (else it refuses -
+  reconcile first). When the redirect is NOT active it still moves the file and
+  prints the exact 'export VAR=<target>' line to add to your shell config
+  BEFORE running the app again (automate the move, instruct the export - the
+  same step also rides in --json's suggested_steps for an agent to apply). It
+  refuses when the target already exists (a redundant leftover - use --remove),
+  when the file is a symlink, when either path escapes $HOME, or when an
+  env-recommended entry declares no variable to export.
 
   --migrate symlink puts a HARDCODED dotfile (a present real file, no redirect)
   under check-dotfiles management: it moves the file into the repo at its
@@ -1988,15 +2115,19 @@ consume the output. The scan and lookups never touch C<$HOME>; the mutating
 modes are C<--remove>, which deletes a confirmed leftover (a I<stray> or a
 I<remove>-marked file); C<--migrate> C<< <mechanism> >>, which transitions a
 target to a mechanism (the mechanism is required — C<env> I<moves> a present
-dotfile to its declared XDG target once the redirect is active, and C<symlink>
-puts a hardcoded dotfile under C<check-dotfiles> management by moving it into
-the repo, registering it in a dotlinks file, and letting C<check-dotfiles> link
-it back; the rest arrive in later phases, see C<ADR-0004>); and C<--fix>, which
-completes or repairs the current setup without changing mechanism (sugar for
+dotfile to its declared XDG target, and when the redirect is not yet active it
+emits the C<export> line to add as a dual-audience suggestion; C<symlink> puts a
+hardcoded dotfile under C<check-dotfiles> management by moving it into the repo,
+registering it in a dotlinks file, and letting C<check-dotfiles> link it back;
+C<recommended> resolves the declared mechanism and dispatches to it; the rest
+arrive in later phases, see C<ADR-0004>); and C<--fix>, which completes or
+repairs the current setup without changing mechanism (sugar for
 C<< --migrate <current-mechanism> >>, e.g. registering a loose symlink). Each
 acts on a named app or path and asks for confirmation first (see the B<REMOVE>,
-B<MIGRATE>, and B<FIX> sections of C<--help>). See the B<OUTPUT> section for
-what each reported status means.
+B<MIGRATE>, and B<FIX> sections of C<--help>). The C<--json> feed carries a
+C<suggested_steps> array per record — the instructed steps (e.g. the C<export>)
+an agent can apply. See the B<OUTPUT> section for what each reported status
+means.
 
 =head2 Loading strategy
 

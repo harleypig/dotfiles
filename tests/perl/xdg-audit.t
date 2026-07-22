@@ -684,13 +684,14 @@ my $mgo_tgt = File::Spec->catfile( $xdgdata, 'mgout' );
 write_json( locl('mgoutside'),
   { name => 'mgoutside', files => [ { path => $mgo_src, movable => JSON::PP::true, help => "o\n", mechanism => 'env', env => 'FIXTURE_MG_OUT', rewrite => $mgo_tgt } ] } );
 
-# Clean move accepted.
+# Clean move accepted (redirect active) -> no export suggestion.
 {
   my ( $out, $rc ) = run_audit_env( { FIXTURE_MG => $mg_tgt }, "y\n", '--migrate', 'env', 'mgstray' );
   like( $out, qr/move to \Q$mg_tgt\E/,             '--migrate shows the planned move' );
   like( $out, qr/migrated \Q$mgstray\E -> \Q$mg_tgt\E/, '--migrate reports the move' );
   ok( !-e $mgstray, 'source is gone from $HOME after migrate' );
   ok( -e $mg_tgt,   'file now exists at the XDG target' );
+  unlike( $out, qr/\bexport /, 'an active redirect prints no export suggestion' );
   is( $rc, 0, '--migrate exits 0 on success' );
 }
 
@@ -702,12 +703,16 @@ write_json( locl('mgoutside'),
   unlike( $out, qr/migrated \S+ ->/, 'no move reported on decline' );
 }
 
-# The ordering gate: redirect not active -> refused, file untouched.
+# Redirect not active -> the file is still moved AND the exact export line is
+# printed as a dual-audience suggestion (Phase 2 Slice 1's instruct-the-export).
 {
   my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'env', 'mgunset' );
-  like( $out, qr/redirect \$FIXTURE_MG_UNSET is not active here/, 'inactive redirect is refused with a pointer to export first' );
-  ok( -e $mgunset,  'file kept when the redirect is not active' );
-  ok( !-e $mgu_tgt, 'no move happened when the redirect is not active' );
+  like( $out, qr/move to \Q$mgu_tgt\E\s+\(redirect \$FIXTURE_MG_UNSET inactive/, 'an inactive redirect still plans the move, flagged' );
+  like( $out, qr/export FIXTURE_MG_UNSET="\Q$mgu_tgt\E"/, 'the exact export line is printed' );
+  like( $out, qr/BEFORE running mgunset again/, 'the ordering caveat is printed' );
+  ok( !-e $mgunset, 'the file is moved even though the redirect was inactive' );
+  ok( -e $mgu_tgt,  'the file now exists at the XDG target' );
+  is( $rc, 0, 'inactive-redirect migrate exits 0' );
 }
 
 # Redirect points elsewhere than the declared target -> refused.
@@ -781,13 +786,13 @@ write_json( locl('mgoutside'),
   is( $rc, 1, 'the old syntax exits 1' );
 }
 
-# A planned-but-unimplemented mechanism (recommended) is refused for now
-# (env and symlink are the implemented ones).
+# A mechanism the CLI does not accept (alias) is refused; the message names the
+# implemented set (env/symlink/recommended).
 {
-  my ( $out, $rc ) = run_audit_merged( '--migrate', 'recommended', 'mgstray' );
-  like( $out, qr/'recommended' is not one/, 'an unimplemented mechanism is refused' );
-  like( $out, qr/'env' and 'symlink'/,      'the message names the implemented mechanisms' );
-  is( $rc, 1, 'an unimplemented mechanism exits 1' );
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'alias', 'mgstray' );
+  like( $out, qr/'alias' is not one/,                    'an unaccepted mechanism is refused' );
+  like( $out, qr/'env', 'symlink', and 'recommended'/,   'the message names the implemented mechanisms' );
+  is( $rc, 1, 'an unaccepted mechanism exits 1' );
 }
 
 # A mechanism with no app -> usage error.
@@ -1099,6 +1104,107 @@ mg_entry( 'rbk', mechanism => 'symlink', rewrite => '$DOTFILES/rbk' );
   my ( $out, $rc ) = run_audit_merged('--fix');
   like( $out, qr/--fix needs an app name/, '--fix with no target reports the missing target' );
   is( $rc, 1, '--fix with no target exits 1' );
+}
+
+# ------------------------------------------------------------------------------
+# Phase 2 Slice 1 — --migrate recommended (resolve declared mechanism, dispatch)
+# and the hardcoded->env "instruct-the-export" JSON surface. Fixtures added late.
+# ------------------------------------------------------------------------------
+
+# --migrate recommended routes to env: an env-recommended app with the redirect
+# active migrates as --migrate env would (moves, no export suggestion).
+my $rec_tgt = File::Spec->catfile( $xdgdata, 'recenv' );
+mg_entry( 'recenv', mechanism => 'env', env => 'FIXTURE_REC', rewrite => $rec_tgt );
+my $recenv_src = touch('.recenv');
+{
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_REC => $rec_tgt }, "y\n", '--migrate', 'recommended', 'recenv' );
+  like( $out, qr/migrated \Q$recenv_src\E -> \Q$rec_tgt\E/, '--migrate recommended routes to the env transition' );
+  ok( !-e $recenv_src, 'the file moved via recommended->env' );
+  is( $rc, 0, 'recommended->env exits 0' );
+}
+
+# --migrate recommended refuses a heterogeneous app (paths with differing
+# recommended mechanisms) with a per-path breakdown.
+{
+  write_json( locl('rechet'),
+    { name  => 'rechet',
+      files => [
+        { path => '$HOME/.rechet_e', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'FIXTURE_RH', rewrite => File::Spec->catfile( $xdgdata, 'rh' ) },
+        { path => '$HOME/.rechet_s', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', rewrite => '$DOTFILES/rechet_s' },
+      ],
+    } );
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'recommended', 'rechet' );
+  like( $out, qr/owns paths with different recommended mechanisms/, 'a heterogeneous app is refused' );
+  like( $out, qr/\.rechet_e\s+env/, 'the breakdown names the env path' );
+  like( $out, qr/\.rechet_s\s+symlink/, 'the breakdown names the symlink path' );
+  is( $rc, 1, 'a heterogeneous recommended exits 1' );
+}
+
+# --migrate recommended refuses an unimplementable recommendation (alias).
+{
+  write_json( locl('recalias'),
+    { name => 'recalias', files => [ { path => '$HOME/.recalias', movable => JSON::PP::true, help => "h\n", mechanism => 'alias' } ] } );
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'recommended', 'recalias' );
+  like( $out, qr/recommended mechanism for recalias is 'alias', which --migrate cannot yet perform/, 'an alias recommendation is refused' );
+  is( $rc, 1, 'an unimplementable recommended exits 1' );
+}
+
+# --migrate recommended refuses an entry with no declared mechanism.
+{
+  write_json( locl('recnone'),
+    { name => 'recnone', files => [ { path => '$HOME/.recnone', movable => JSON::PP::true, help => "h\n" } ] } );
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'recommended', 'recnone' );
+  like( $out, qr/no recommended mechanism is declared for recnone/, 'a mechanism-less entry is refused' );
+  is( $rc, 1, 'a mechanism-less recommended exits 1' );
+}
+
+# --migrate recommended with no app -> usage error.
+{
+  my ( $out, $rc ) = run_audit_merged( '--migrate', 'recommended' );
+  like( $out, qr/--migrate recommended needs an app name/, 'recommended with no app reports the missing target' );
+  is( $rc, 1, 'recommended with no app exits 1' );
+}
+
+# --migrate recommended routes to symlink: reuse the real-check-dotfiles harness
+# so a symlink-recommended hardcoded file is migrated as --migrate symlink would.
+{
+  write_json( locl('recsym'),
+    { name => 'recsym', files => [ { path => '$HOME/.recsym', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', rewrite => '$DOTFILES/recsym' } ] } );
+  open my $fh, '>', File::Spec->catfile( $s3home, '.recsym' ) or die "recsym: $!";
+  print {$fh} "rs\n";
+  close $fh;
+  open my $dl, '>', $s3_dl or die "dl: $!";
+  close $dl;    # empty active dotlinks file
+
+  my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'recommended', 'recsym' );
+  is( $rc, 0, 'recommended->symlink exits 0' );
+  ok( -l File::Spec->catfile( $s3home, '.recsym' ), '--migrate recommended routed to the symlink transition' );
+}
+
+# The hardcoded->env instruct-the-export step surfaces in --json as
+# suggested_steps; an active (handled) env redirect has none.
+mg_entry( 'recjson', mechanism => 'env', env => 'FIXTURE_RJ', rewrite => File::Spec->catfile( $xdgdata, 'recjson' ) );
+touch('.recjson');
+{
+  my ($data) = run_json('recjson');    # redirect inactive -> hardcoded
+  my $step = $data->{files}[0]{suggested_steps}[0];
+  is( $step->{action},   'export',     'suggested_steps action is export' );
+  is( $step->{variable}, 'FIXTURE_RJ', 'suggested_steps names the variable' );
+  is( $step->{command}, 'export FIXTURE_RJ="' . File::Spec->catfile( $xdgdata, 'recjson' ) . '"', 'suggested_steps command is the exact export line' );
+}
+{
+  my ($data) = run_json('docker');    # an active env redirect (FIXTURE_DOCKER_CONFIG set)
+  is_deeply( $data->{files}[0]{suggested_steps}, [], 'an active env redirect has no suggested_steps' );
+}
+
+# An env-recommended entry with NO variable declared + inactive -> refused (we
+# cannot name an export to instruct).
+mg_entry( 'recnovar', mechanism => 'env', rewrite => File::Spec->catfile( $xdgdata, 'recnovar' ) );
+my $recnovar_src = touch('.recnovar');
+{
+  my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'env', 'recnovar' );
+  like( $out, qr/declares no variable - cannot instruct an export/, 'an env entry with no variable is refused' );
+  ok( -e $recnovar_src, 'the file is kept when no export can be named' );
 }
 
 done_testing();

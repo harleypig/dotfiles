@@ -86,9 +86,12 @@ should handle this" but "what does":
 
 A lookup's detail line appends `(recommended: <mechanism>)` when the current
 mechanism diverges from the declared one, and `--json` carries
-`current_mechanism`, `recommended_mechanism`, `current_completeness`, and a
-`divergence` verdict per record. This is the reporting half of the mechanism
-state-machine ([ADR-0004](../../docs/adr/0004-xdg-audit-mechanism-state-machine.md));
+`current_mechanism`, `recommended_mechanism`, `current_completeness`, a
+`divergence` verdict, and a `suggested_steps` array per record. `suggested_steps`
+holds the "instruct the rest" steps an agent can apply — currently the
+`export VAR=<target>` a hardcoded, env-recommended path needs to activate its
+redirect (empty once the redirect is active). This is the reporting half of the
+mechanism state-machine ([ADR-0004](../../docs/adr/0004-xdg-audit-mechanism-state-machine.md));
 the migration transitions between mechanisms build on it in later phases.
 
 ## Owner (externally-managed paths)
@@ -147,12 +150,19 @@ target must be named.
 ## Migrating a leftover
 
 `--migrate <mechanism> <app|path>` transitions a target to `<mechanism>`. The
-mechanism is a **required positional** (no silent default); `env` and `symlink`
-are implemented — the rest arrive in later phases (see
+mechanism is a **required positional** (no silent default); `env`, `symlink`,
+and `recommended` are implemented — the rest arrive in later phases (see
 [ADR-0004](../../docs/adr/0004-xdg-audit-mechanism-state-machine.md)). So the
 old bare `xdg-audit --migrate bash` is now `xdg-audit --migrate env bash`;
 a bare `--migrate`, an unknown/unimplemented mechanism, or the old bare-app
 form is a usage error that names the new signature.
+
+`--migrate recommended <app|path>` resolves the target's **declared** mechanism
+(the overlay `mechanism`) and dispatches to it (`env`/`symlink`). It refuses
+when an app owns paths with *different* recommended mechanisms (run
+`--migrate <mechanism>` per mechanism, or name a single `$HOME` path), when the
+recommendation is one `--migrate` cannot yet perform (`alias`/`wrap`/`remove`),
+or when no mechanism is declared.
 
 `--migrate env` *moves* a present dotfile to its declared XDG target (the
 overlay's `rewrite`), so an already-active redirect finds it there:
@@ -161,13 +171,16 @@ overlay's `rewrite`), so an already-active redirect finds it there:
 xdg-audit --migrate env bash   # move ~/.<file> to its rewrite target, asks
 ```
 
-It gates on the ordering the move depends on: the redirect (e.g. the `export`)
-must be **active in this shell and point at the declared target** — otherwise
-it refuses and tells you to add the export first, because moving the file
-before the redirect is live leaves the app looking at the old, now-empty path.
-It also refuses when the **target already exists** (a redundant leftover — use
-`--remove`), when the file is a **symlink**, or when either path escapes
-`$HOME`. A cross-filesystem *directory* move is refused (move it by hand).
+When the redirect is **active** it must point at the declared target (else it
+refuses — reconcile first). When the redirect is **not active** it still moves
+the file and **prints the exact `export VAR=<target>` line** to add to your
+shell config *before running the app again* — automate the move, instruct the
+export (ADR-0004's "automate the automatable, instruct the rest"; the same step
+also rides in `--json`'s `suggested_steps` for an agent to apply). It refuses
+when the **target already exists** (a redundant leftover — use `--remove`), when
+the file is a **symlink**, when either path escapes `$HOME`, or when an
+env-recommended entry declares **no variable** to export. A cross-filesystem
+*directory* move is refused (move it by hand).
 
 Note: a `rewrite` under `$XDG_CONFIG_HOME` lands in the **tracked repo** (this
 setup's `$XDG_CONFIG_HOME` is `$DOTFILES/config`) — the confirmation shows the
