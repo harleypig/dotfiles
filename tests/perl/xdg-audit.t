@@ -543,14 +543,20 @@ sub run_symlink_env {
 # not disturb the scan assertions above).
 # ------------------------------------------------------------------------------
 
-# A stray (present + env redirect active via FIXTURE_RM) to accept-delete.
+# A stray (present + env redirect active via FIXTURE_RM) to accept-delete. Its
+# rewrite target must EXIST for the stray to be deletable (Slice 3's data-loss
+# guard); create it so this is a genuine stray, not a target-less one.
+my $rmstray_tgt = File::Spec->catfile( $root, 'rmstray-tgt' );
+{ open my $fh, '>', $rmstray_tgt or die "rmstray-tgt: $!"; close $fh; }
 write_json( locl('rmstray'),
-  { name => 'rmstray', files => [ { path => '$HOME/.rmstray', movable => JSON::PP::true, help => "r\n", mechanism => 'env', env => 'FIXTURE_RM' } ] } );
+  { name => 'rmstray', files => [ { path => '$HOME/.rmstray', movable => JSON::PP::true, help => "r\n", mechanism => 'env', env => 'FIXTURE_RM', rewrite => $rmstray_tgt } ] } );
 my $rmstray = touch('.rmstray');
 
-# A second stray, to decline (must be kept).
+# A second stray, to decline (must be kept). Same: give it an existing target.
+my $rmkeep_tgt = File::Spec->catfile( $root, 'rmkeep-tgt' );
+{ open my $fh, '>', $rmkeep_tgt or die "rmkeep-tgt: $!"; close $fh; }
 write_json( locl('rmkeep'),
-  { name => 'rmkeep', files => [ { path => '$HOME/.rmkeep', movable => JSON::PP::true, help => "k\n", mechanism => 'env', env => 'FIXTURE_RM' } ] } );
+  { name => 'rmkeep', files => [ { path => '$HOME/.rmkeep', movable => JSON::PP::true, help => "k\n", mechanism => 'env', env => 'FIXTURE_RM', rewrite => $rmkeep_tgt } ] } );
 my $rmkeep = touch('.rmkeep');
 
 # An unhandled file (present, no redirect) -> refused, never deleted.
@@ -605,10 +611,11 @@ write_json( locl('rmdirapp'),
   ok( -e $rmunh, 'refused unhandled file is kept even when confirmed' );
 }
 
-# Refuse a symlink: a managed link is never deleted or followed.
+# Refuse an external / unregistered symlink: only a check-dotfiles-managed
+# (registered) link is torn down; this one is not in any dotlinks file.
 {
   my ( $out, $rc ) = run_audit_stdin( "y\n", '--remove', 'rmlinky' );
-  like( $out, qr/linked \(managed symlink\) - not removed/, 'symlink is refused' );
+  like( $out, qr/linked \(external \/ not check-dotfiles-managed\) - not removed/, 'an unregistered symlink is refused' );
   ok( -l $rmlink,        'the symlink itself is intact' );
   ok( -d $rmlink_target, 'the symlink target is intact' );
 }
@@ -1477,6 +1484,92 @@ SKIP: {
   my ( $out, $rc ) = run_symlink_env( { S2_FXC => $src }, $s2home, $s2df, "y\n", '--fix', 'fxc' );
   like( $out, qr/using env, recommended symlink - run --migrate symlink/, '--fix points an env->symlink divergence at --migrate' );
   ok( -e $src && !-l File::Spec->catfile( $s2home, '.fxc' ), '--fix did not convert' );
+}
+
+# ------------------------------------------------------------------------------
+# Phase 2 Slice 3 — --remove teardown of a check-dotfiles-managed symlink, and
+# the stray-without-target data-loss guard. A dedicated fixture $HOME+$DOTFILES.
+# ------------------------------------------------------------------------------
+
+my $tdhome = File::Spec->catdir( $root, 'tdhome' );
+my $tddf   = File::Spec->catdir( $root, 'tddf' );
+make_path( $tdhome, $tddf );
+my $td_dl = File::Spec->catfile( $tdhome, '.dotlinks' );
+
+# Teardown happy path: a REGISTERED managed symlink -> link + its dotlinks entry
+# dropped, the canonical repo file left intact.
+{
+  my $repo = $wr->( File::Spec->catfile( $tddf, 'tdok' ), "keep-me\n" );
+  my $link = File::Spec->catfile( $tdhome, '.tdok' );
+  symlink( $repo, $link ) or die "symlink: $!";
+  $wr->( $td_dl, "$DOLLAR_DOTFILES/tdok .tdok\n" );
+  write_json( locl('tdok'),
+    { name => 'tdok', files => [ { path => '$HOME/.tdok', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', rewrite => '$DOTFILES/tdok' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( {}, $tdhome, $tddf, "y\n", '--remove', 'tdok' );
+  is( $rc, 0, 'teardown exits 0' );
+  ok( !-e $link, 'the symlink is removed' );
+  ok( -f $repo,  'the canonical repo file is left intact' );
+  is( $rd->($repo), "keep-me\n", 'the repo file content is unchanged' );
+  is( $rd->($td_dl), '', 'the dotlinks entry was dropped' );
+  like( $out, qr/removed the symlink .* and its dotlinks entry/, 'the teardown is reported' );
+}
+
+# A LOOSE (unregistered) symlink under $DOTFILES is refused -- eligibility is
+# registration, not $DOTFILES membership.
+{
+  my $repo = $wr->( File::Spec->catfile( $tddf, 'tdloose' ), "l\n" );
+  my $link = File::Spec->catfile( $tdhome, '.tdloose' );
+  symlink( $repo, $link ) or die "symlink: $!";
+  $wr->( $td_dl, '' );    # not registered
+  write_json( locl('tdloose'),
+    { name => 'tdloose', files => [ { path => '$HOME/.tdloose', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', rewrite => '$DOTFILES/tdloose' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( {}, $tdhome, $tddf, "y\n", '--remove', 'tdloose' );
+  like( $out, qr/external \/ not check-dotfiles-managed/, 'an unregistered link is refused' );
+  ok( -l $link, 'the loose symlink is left intact' );
+}
+
+# Teardown decline -> link + dotlinks entry kept.
+{
+  my $repo = $wr->( File::Spec->catfile( $tddf, 'tdno' ), "n\n" );
+  my $link = File::Spec->catfile( $tdhome, '.tdno' );
+  symlink( $repo, $link ) or die "symlink: $!";
+  $wr->( $td_dl, "$DOLLAR_DOTFILES/tdno .tdno\n" );
+  write_json( locl('tdno'),
+    { name => 'tdno', files => [ { path => '$HOME/.tdno', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', rewrite => '$DOTFILES/tdno' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( {}, $tdhome, $tddf, "n\n", '--remove', 'tdno' );
+  ok( -l $link, 'a declined teardown keeps the symlink' );
+  like( $rd->($td_dl), qr/\.tdno/, 'a declined teardown keeps the dotlinks entry' );
+}
+
+# Teardown rollback: the dotlinks edit fails (read-only file) -> the symlink is
+# recreated. Skipped as root (perms ignored).
+SKIP: {
+  skip 'runs as root (file perms ignored)', 2 if $> == 0;
+  my $repo = $wr->( File::Spec->catfile( $tddf, 'tdrb' ), "rb\n" );
+  my $link = File::Spec->catfile( $tdhome, '.tdrb' );
+  symlink( $repo, $link ) or die "symlink: $!";
+  $wr->( $td_dl, "$DOLLAR_DOTFILES/tdrb .tdrb\n" );
+  chmod 0444, $td_dl;
+  write_json( locl('tdrb'),
+    { name => 'tdrb', files => [ { path => '$HOME/.tdrb', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', rewrite => '$DOTFILES/tdrb' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( {}, $tdhome, $tddf, "y\n", '--remove', 'tdrb' );
+  like( $out, qr/reverted \(symlink restored\)/, 'a dotlinks-edit failure reports revert' );
+  ok( -l $link, 'the symlink is recreated on rollback' );
+  chmod 0644, $td_dl;
+}
+
+# The stray-without-target data-loss guard: an env stray whose redirect target
+# does NOT exist is refused (its $HOME copy is the only one) -> migrate it.
+{
+  mg_entry( 'straynt', mechanism => 'env', env => 'FIXTURE_STRAYNT', rewrite => File::Spec->catfile( $root, 'straynt-missing' ) );
+  my $src = touch('.straynt');
+  my ( $out, $rc ) = run_audit_env( { FIXTURE_STRAYNT => '1' }, "y\n", '--remove', 'straynt' );
+  like( $out, qr/redirect target .* does not exist - migrate it/, 'a target-less stray is refused to prevent data loss' );
+  ok( -e $src, 'the only copy is kept' );
 }
 
 done_testing();

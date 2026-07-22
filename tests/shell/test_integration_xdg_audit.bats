@@ -115,7 +115,7 @@ J
   [[ "$output" == *"SRC=gone"* ]]
 }
 
-@test "--remove refuses a symlinked dotfile" {
+@test "--remove refuses an unregistered/external symlinked dotfile" {
   xdg_audit_run "$IMAGE" '
     DB=/tmp/db; export HOME=/tmp/rmhome2
     mkdir -p "$DB/programs-local" "$HOME" /tmp/lnktgt
@@ -128,8 +128,31 @@ J
     echo "LINK=$([ -L "$HOME/.lnkapp" ] && echo intact || echo gone)"
   '
   [ "$status" -eq 0 ]
-  [[ "$output" == *"linked (managed symlink) - not removed"* ]]
+  [[ "$output" == *"external / not check-dotfiles-managed"* ]]
   [[ "$output" == *"LINK=intact"* ]]
+}
+
+@test "--remove tears down a check-dotfiles-managed symlink + its dotlinks line (real state)" {
+  xdg_audit_run "$IMAGE" '
+    DB=/tmp/db; export DOTFILES=/tmp/df; export HOME=/tmp/tdhome
+    mkdir -p "$DB/programs-local" "$DOTFILES" "$HOME"
+    cat > "$DB/programs-local/tdapp.json" <<"J"
+{ "name":"tdapp","files":[{"path":"$HOME/.tdapp","movable":true,"mechanism":"symlink","rewrite":"$DOTFILES/tdcfg"}] }
+J
+    printf keepme > "$DOTFILES/tdcfg"                 # the canonical repo file
+    ln -s "$DOTFILES/tdcfg" "$HOME/.tdapp"            # the check-dotfiles link
+    printf "\$DOTFILES/tdcfg .tdapp\n" > "$HOME/.dotlinks"   # registered
+    printf "y\n" | env HOME="$HOME" DOTFILES="$DOTFILES" \
+      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --remove tdapp 2>&1
+    echo "LINK=$([ -e "$HOME/.tdapp" ] && echo present || echo gone)"
+    echo "REPO=$(cat "$DOTFILES/tdcfg" 2>/dev/null)"
+    echo "DL=[$(cat "$HOME/.dotlinks")]"
+  '
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"removed the symlink"* ]]
+  [[ "$output" == *"LINK=gone"* ]]
+  [[ "$output" == *"REPO=keepme"* ]]
+  [[ "$output" == *"DL=[]"* ]]
 }
 
 # ---------------------------------------------------------------------------

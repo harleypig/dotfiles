@@ -14,6 +14,20 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **`xdg-audit --remove` symlink teardown + stray-target safety.** Phase 2
+  Slice 3 of the mechanism state-machine
+  ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)), completing
+  Phase 2. `--remove` now tears down a **check-dotfiles-managed** symlink —
+  unlinks `~/.x`, drops its `.dotlinks` entry (reusing `remove_dotlinks_line`),
+  and leaves the canonical repo file intact; eligibility is
+  `dotlinks_registered()`, so an external/loose link is refused (use `--fix` to
+  register it first) and a dotlinks-write failure recreates the symlink
+  (rollback). It also closes a data-loss gap: `--remove` now **refuses** to
+  delete a stray `$HOME` copy whose declared redirect target does not exist,
+  directing the user to `--migrate env` rather than destroying the only copy —
+  the gate lives in `mode_remove` (env-stray only; `remove`-marked entries
+  exempt) so scan/classify semantics are untouched. (PR #293)
+
 - **`xdg-audit` `env`↔`symlink` conversions.** Phase 2 Slice 2 of the mechanism
   state-machine ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)):
   `--migrate` now performs the two cross-mechanism conversions, using the
