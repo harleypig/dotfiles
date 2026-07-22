@@ -572,7 +572,7 @@ relocation (moving an install, symlinking) is a separate step.
 - [ ] **Mechanism state-machine — Phase 2** (ADR-0004) — Slice 1
   (`--migrate recommended` + hardcoded→env instruct-the-export) shipped (see
   CHANGELOG); the remaining slices:
-  - [ ] **Slice 2 — `env`↔`symlink` conversions.** `symlink → env` (drop the
+  - [x] **Slice 2 — `env`↔`symlink` conversions.** `symlink → env` (drop the
     symlink + `.dotlinks` entry, move canonical → XDG target, instruct the
     export); `env → symlink` (move canonical → repo, register in `.dotlinks`,
     run check-dotfiles, instruct *removing* the export). Builds on Slice 1's

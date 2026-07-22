@@ -111,7 +111,7 @@
           },
           "env": {
             "title": "env",
-            "description": "For `mechanism: env`, the environment variable that performs the\nredirect (e.g. DOCKER_CONFIG). xdg-audit reports the path as handled\nwhen this variable is set, so a leftover $HOME copy reads as 'stray'\nrather than 'unhandled'.",
+            "description": "For `mechanism: env`, the environment variable that performs the\nredirect (e.g. DOCKER_CONFIG). xdg-audit reports the path as handled\nwhen this variable is set, so a leftover $HOME copy reads as 'stray'\nrather than 'unhandled'.\n\nMay ALSO annotate a `mechanism: symlink` entry to name the env variable\nthat currently redirects the path (a divergence from the recommended\nsymlink). `xdg-audit --migrate symlink` then converts env -> symlink: it\nlocates the file from this variable's live value, moves it into the repo\n`rewrite`, links it via check-dotfiles, and instructs removing the export.",
             "type": "string",
             "minLength": 1,
             "not": { "$ref": "#/definitions/empty" }

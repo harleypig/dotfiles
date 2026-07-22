@@ -291,6 +291,27 @@ sub run_symlink {
   return ( $out, $rc );
 } ## end sub run_symlink
 
+# Like run_symlink, but applies a per-case env override (%$extra) around the run
+# (as run_audit_env does): the env->symlink conversion needs both $DOTFILES set
+# (for real check-dotfiles) and the redirect var set to locate the source file.
+sub run_symlink_env {
+  my ( $extra, $h, $df, $input, @args ) = @_;
+  my %saved;
+  for my $k ( keys %$extra ) {
+    $saved{$k} = exists $ENV{$k} ? $ENV{$k} : undef;
+    if   ( defined $extra->{$k} ) { $ENV{$k} = $extra->{$k} }
+    else                          { delete $ENV{$k} }
+  }
+
+  my ( $out, $rc ) = run_symlink( $h, $df, $input, @args );
+
+  for my $k ( keys %saved ) {
+    if   ( defined $saved{$k} ) { $ENV{$k} = $saved{$k} }
+    else                        { delete $ENV{$k} }
+  }
+  return ( $out, $rc );
+} ## end sub run_symlink_env
+
 # ------------------------------------------------------------------------------
 # Scan
 # ------------------------------------------------------------------------------
@@ -743,12 +764,16 @@ write_json( locl('mgoutside'),
   like( $out, qr/recommended mechanism is alias, not env - not migrated/, 'a non-env recommended mechanism is refused' );
 }
 
-# Symlink -> refused, link + target intact.
+# A managed symlink (here, to a directory) with a mechanism:env entry now
+# CONVERTS to an env redirect (Slice 2) rather than being refused: the link is
+# dropped and its canonical target moved to the XDG target.
 {
+  my $mgl_xdg = File::Spec->catdir( $xdgdata, 'mglink' );
   my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'env', 'mglink' );
-  like( $out, qr/linked \(managed symlink\) - not migrated/, 'a symlink is refused' );
-  ok( -l $mglink,  'the symlink itself is intact' );
-  ok( -d $mgl_tgt, 'the symlink target is intact' );
+  like( $out, qr/convert symlink ->/,      'a managed symlink converts to env' );
+  like( $out, qr/export FIXTURE_MG_LN=/,   'the export is instructed (redirect inactive)' );
+  ok( !-e $mglink, 'the symlink is dropped after conversion' );
+  ok( -d $mgl_xdg, 'the canonical directory moved to the XDG target' );
 }
 
 # Directory leftover moved recursively.
@@ -1035,14 +1060,15 @@ mg_entry( 'gone', mechanism => 'symlink', rewrite => '$DOTFILES/gone' );
   like( $out, qr/absent - nothing to migrate/, 'an absent source is refused' );
 }
 
-# env-current -> an env->symlink conversion is deferred to a later phase. The
-# rewrite target exists, so the env redirect reads as active (current = env).
+# env-current but the entry RECOMMENDS env (not symlink) -> --migrate symlink has
+# nothing to convert. The rewrite target exists, so the redirect reads as active.
 mg_entry( 'envc', mechanism => 'env', env => 'S3_ENVC', rewrite => '$DOTFILES/envc' );
 {
   $wr->( File::Spec->catfile( $s3df,   'envc' ), "t\n" );
   $wr->( File::Spec->catfile( $s3home, '.envc' ), "e\n" );
   my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'envc' );
-  like( $out, qr/env->symlink conversion is a later phase/, 'an env-current path defers to a later phase' );
+  like( $out, qr/recommended mechanism is env, not symlink - nothing to convert/,
+    'an env-recommended, env-current path is refused under --migrate symlink' );
 }
 
 # --fix on a loose (partial) symlink: register its current target, link unchanged.
@@ -1205,6 +1231,252 @@ my $recnovar_src = touch('.recnovar');
   my ( $out, $rc ) = run_audit_env( {}, "y\n", '--migrate', 'env', 'recnovar' );
   like( $out, qr/declares no variable - cannot instruct an export/, 'an env entry with no variable is refused' );
   ok( -e $recnovar_src, 'the file is kept when no export can be named' );
+}
+
+# ------------------------------------------------------------------------------
+# Phase 2 Slice 2 — env<->symlink conversions. A dedicated fixture $HOME+$DOTFILES
+# pair; the entry's DECLARED mechanism is the conversion target, the current
+# ($HOME) state is the divergence being converged.
+# ------------------------------------------------------------------------------
+
+my $s2home = File::Spec->catdir( $root, 's2home' );
+my $s2df   = File::Spec->catdir( $root, 's2df' );
+my $s2xdg  = File::Spec->catdir( $root, 's2xdg' );
+make_path( $s2home, $s2df, $s2xdg );
+my $s2_dl = File::Spec->catfile( $s2home, '.dotlinks' );
+
+# --- reporting: current_mechanism + suggested_steps for both divergences ---
+
+# A mechanism:env entry whose $HOME path is a symlink -> current symlink,
+# recommended env, an 'export' suggested step.
+{
+  my $c = $wr->( File::Spec->catfile( $s2df, 'rsym' ), "c\n" );
+  symlink( $c, File::Spec->catfile( $s2home, '.rsym' ) ) or die "symlink: $!";
+  write_json( locl('rsym'),
+    { name => 'rsym', files => [ { path => '$HOME/.rsym', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'S2_RSYM', rewrite => File::Spec->catfile( $s2xdg, 'rsym' ) } ] } );
+
+  my ($out) = run_symlink_env( { S2_RSYM => undef }, $s2home, $s2df, '', '--json', 'rsym' );
+  my $r = JSON::PP->new->decode($out)->{files}[0];
+  is( $r->{current_mechanism}, 'symlink',                 'a symlinked env-recommended path reports current symlink' );
+  is( $r->{divergence},        'using symlink, recommended env', 'divergence names the symlink->env gap' );
+  is( $r->{suggested_steps}[0]{action}, 'export',         'it suggests the export it will need' );
+}
+
+# A mechanism:symlink entry with an ACTIVE declared env var -> current env,
+# recommended symlink, a 'remove-export' suggested step.
+{
+  my $src = $wr->( File::Spec->catfile( $s2xdg, 'renv-src' ), "c\n" );
+  write_json( locl('renv'),
+    { name => 'renv', files => [ { path => '$HOME/.renv', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', env => 'S2_RENV', rewrite => '$DOTFILES/renv' } ] } );
+
+  my ($out) = run_symlink_env( { S2_RENV => $src }, $s2home, $s2df, '', '--json', 'renv' );
+  my $r = JSON::PP->new->decode($out)->{files}[0];
+  is( $r->{current_mechanism}, 'env',                      'a symlink-recommended path with an active env var reports current env' );
+  is( $r->{divergence},        'using env, recommended symlink', 'divergence names the env->symlink gap' );
+  is( $r->{suggested_steps}[0]{action},   'remove-export', 'it suggests removing the export' );
+  is( $r->{suggested_steps}[0]{variable}, 'S2_RENV',       'the remove-export step names the variable' );
+
+  # Same entry, var UNSET -> not detectable as env (documented limitation).
+  my ($out2) = run_symlink_env( { S2_RENV => undef }, $s2home, $s2df, '', '--json', 'renv' );
+  my $r2 = JSON::PP->new->decode($out2)->{files}[0];
+  isnt( $r2->{current_mechanism}, 'env', 'an unexported redirect is not detected as env' );
+  is_deeply( $r2->{suggested_steps}, [], 'no remove-export step without a live redirect' );
+}
+
+# --- symlink -> env conversion (--migrate env on a managed symlink) ---
+
+# Happy path, redirect inactive: canonical moved to the XDG target, symlink and
+# its dotlinks entry dropped, export instructed.
+{
+  my $canon = $wr->( File::Spec->catfile( $s2df, 'sev' ), "sevdata\n" );
+  my $link  = File::Spec->catfile( $s2home, '.sev' );
+  symlink( $canon, $link ) or die "symlink: $!";
+  $wr->( $s2_dl, "$DOLLAR_DOTFILES/sev .sev\n" );
+  my $tgt = File::Spec->catfile( $s2xdg, 'sev' );
+  write_json( locl('sev'),
+    { name => 'sev', files => [ { path => '$HOME/.sev', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'S2_SEV', rewrite => $tgt } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_SEV => undef }, $s2home, $s2df, "y\n", '--migrate', 'env', 'sev' );
+  is( $rc, 0, 'symlink->env exits 0' );
+  ok( !-e $link,  'the symlink is dropped' );
+  ok( -e $tgt,    'the canonical file is at the XDG target' );
+  is( $rd->($tgt), "sevdata\n", 'the content moved' );
+  ok( !-e $canon, 'the repo copy is vacated (moved out)' );
+  is( $rd->($s2_dl), '', 'the dotlinks entry was removed' );
+  like( $out, qr/export S2_SEV="\Q$tgt\E"/, 'the export line is printed' );
+}
+
+# Redirect active & matching -> converts, but no export suggestion.
+{
+  my $canon = $wr->( File::Spec->catfile( $s2df, 'seva' ), "a\n" );
+  symlink( $canon, File::Spec->catfile( $s2home, '.seva' ) ) or die "symlink: $!";
+  $wr->( $s2_dl, '' );
+  my $tgt = File::Spec->catfile( $s2xdg, 'seva' );
+  write_json( locl('seva'),
+    { name => 'seva', files => [ { path => '$HOME/.seva', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'S2_SEVA', rewrite => $tgt } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_SEVA => $tgt }, $s2home, $s2df, "y\n", '--migrate', 'env', 'seva' );
+  ok( -e $tgt, 'an active-redirect symlink still converts (moves)' );
+  unlike( $out, qr/\bexport /, 'an active matching redirect prints no export suggestion' );
+}
+
+# Redirect active & MISMATCHED -> refused, symlink + repo file intact.
+{
+  my $canon = $wr->( File::Spec->catfile( $s2df, 'sevm' ), "m\n" );
+  my $link  = File::Spec->catfile( $s2home, '.sevm' );
+  symlink( $canon, $link ) or die "symlink: $!";
+  $wr->( $s2_dl, '' );
+  write_json( locl('sevm'),
+    { name => 'sevm', files => [ { path => '$HOME/.sevm', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'S2_SEVM', rewrite => File::Spec->catfile( $s2xdg, 'sevm' ) } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_SEVM => File::Spec->catfile( $root, 'elsewhere2' ) }, $s2home, $s2df, "y\n", '--migrate', 'env', 'sevm' );
+  like( $out, qr/points at .* not the declared/, 'a mismatched active redirect is refused' );
+  ok( -l $link,  'the symlink is intact' );
+  ok( -e $canon, 'the repo file is intact' );
+}
+
+# Broken symlink (canonical missing) -> refused.
+{
+  my $link = File::Spec->catfile( $s2home, '.sevb' );
+  symlink( File::Spec->catfile( $s2df, 'no-such-file' ), $link ) or die "symlink: $!";
+  write_json( locl('sevb'),
+    { name => 'sevb', files => [ { path => '$HOME/.sevb', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'S2_SEVB', rewrite => File::Spec->catfile( $s2xdg, 'sevb' ) } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_SEVB => undef }, $s2home, $s2df, "y\n", '--migrate', 'env', 'sevb' );
+  like( $out, qr/broken symlink \(target missing\)/, 'a broken symlink is refused' );
+}
+
+# A symlink whose entry recommends something other than env -> refined refusal.
+{
+  my $canon = $wr->( File::Spec->catfile( $s2df, 'sevn' ), "n\n" );
+  symlink( $canon, File::Spec->catfile( $s2home, '.sevn' ) ) or die "symlink: $!";
+  write_json( locl('sevn'),
+    { name => 'sevn', files => [ { path => '$HOME/.sevn', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', rewrite => '$DOTFILES/sevn' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( {}, $s2home, $s2df, "y\n", '--migrate', 'env', 'sevn' );
+  like( $out, qr/linked \(managed symlink\), recommended symlink not env/, 'a non-env symlink is refused under --migrate env' );
+}
+
+# Cleanup on failure: the dotlinks removal fails (read-only file) -> the symlink
+# is recreated and the file moved back. Skipped as root (perms ignored).
+SKIP: {
+  skip 'runs as root (file perms ignored)', 3 if $> == 0;
+  my $canon = $wr->( File::Spec->catfile( $s2df, 'sevr' ), "r\n" );
+  my $link  = File::Spec->catfile( $s2home, '.sevr' );
+  symlink( $canon, $link ) or die "symlink: $!";
+  $wr->( $s2_dl, "$DOLLAR_DOTFILES/sevr .sevr\n" );
+  chmod 0444, $s2_dl;
+  my $tgt = File::Spec->catfile( $s2xdg, 'sevr' );
+  write_json( locl('sevr'),
+    { name => 'sevr', files => [ { path => '$HOME/.sevr', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'S2_SEVR', rewrite => $tgt } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_SEVR => undef }, $s2home, $s2df, "y\n", '--migrate', 'env', 'sevr' );
+  like( $out, qr/could not update .* reverted/, 'a dotlinks-removal failure reports revert' );
+  ok( -l $link,  'the symlink is recreated on rollback' );
+  ok( -e $canon, 'the repo file is moved back on rollback' );
+  chmod 0644, $s2_dl;
+}
+
+# --- env -> symlink conversion (--migrate symlink on an env-redirected path) ---
+
+# Happy path (real check-dotfiles): source moved into the repo, linked, export
+# instructed for removal.
+{
+  my $src = $wr->( File::Spec->catfile( $s2xdg, 'esrc' ), "esdata\n" );
+  $wr->( $s2_dl, '' );
+  write_json( locl('esym'),
+    { name => 'esym', files => [ { path => '$HOME/.esym', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', env => 'S2_ESYM', rewrite => '$DOTFILES/esym' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_ESYM => $src }, $s2home, $s2df, "y\n", '--migrate', 'symlink', 'esym' );
+  my $link = File::Spec->catfile( $s2home, '.esym' );
+  my $repo = File::Spec->catfile( $s2df,   'esym' );
+  is( $rc, 0, 'env->symlink exits 0' );
+  ok( -l $link, '~/.esym is now a symlink' );
+  is( readlink($link), $repo, 'it points at the repo copy' );
+  is( $rd->($repo), "esdata\n", 'the file moved into the repo' );
+  ok( !-e $src, 'the env-redirect source was moved out' );
+  like( $rd->($s2_dl), qr/\Q$DOLLAR_DOTFILES\E\/esym \.esym/, 'a dotlinks entry was written' );
+  like( $out, qr/unset S2_ESYM/, 'the remove-export instruction is printed' );
+}
+
+# A $HOME leftover blocks the link -> refused.
+{
+  my $src = $wr->( File::Spec->catfile( $s2xdg, 'elsrc' ), "x\n" );
+  $wr->( File::Spec->catfile( $s2home, '.eleft' ), "leftover\n" );    # blocks the link
+  $wr->( $s2_dl, '' );
+  write_json( locl('eleft'),
+    { name => 'eleft', files => [ { path => '$HOME/.eleft', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', env => 'S2_ELEFT', rewrite => '$DOTFILES/eleft' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_ELEFT => $src }, $s2home, $s2df, "y\n", '--migrate', 'symlink', 'eleft' );
+  like( $out, qr/leftover.*blocks the link - --remove it first/, 'a $HOME leftover is refused' );
+  ok( -e $src, 'nothing moved when the link is blocked' );
+}
+
+# The redirect target no longer exists -> refused.
+{
+  $wr->( $s2_dl, '' );
+  write_json( locl('egone'),
+    { name => 'egone', files => [ { path => '$HOME/.egone', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', env => 'S2_EGONE', rewrite => '$DOTFILES/egone' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_EGONE => File::Spec->catfile( $s2xdg, 'missing' ) }, $s2home, $s2df, "y\n", '--migrate', 'symlink', 'egone' );
+  like( $out, qr/which does not exist - nothing to move/, 'a missing redirect target is refused' );
+}
+
+# Cleanup on failure: check-dotfiles cannot link (~/.nochecklinks) -> full
+# rollback (source restored, repo copy removed, dotlinks line stripped).
+{
+  my $src = $wr->( File::Spec->catfile( $s2xdg, 'ercsrc' ), "keep\n" );
+  $wr->( $s2_dl, '' );
+  $wr->( File::Spec->catfile( $s2home, '.nochecklinks' ), '' );
+  write_json( locl('erc'),
+    { name => 'erc', files => [ { path => '$HOME/.erc', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', env => 'S2_ERC', rewrite => '$DOTFILES/erc' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_ERC => $src }, $s2home, $s2df, "y\n", '--migrate', 'symlink', 'erc' );
+  like( $out, qr/did not create the link.*reverted/, 'a link failure reports revert' );
+  ok( -e $src, 'the source is restored on rollback' );
+  is( $rd->($src), "keep\n", 'the restored source keeps its content' );
+  ok( !-e File::Spec->catfile( $s2df, 'erc' ), 'the repo copy was removed on rollback' );
+  is( $rd->($s2_dl), '', 'the dotlinks line was stripped on rollback' );
+  unlink File::Spec->catfile( $s2home, '.nochecklinks' );
+}
+
+# --- --migrate recommended routes the conversions; --fix refuses them ---
+
+# recommended on a symlink-current mechanism:env entry converts (symlink->env).
+{
+  my $canon = $wr->( File::Spec->catfile( $s2df, 'recs' ), "rc\n" );
+  symlink( $canon, File::Spec->catfile( $s2home, '.recs' ) ) or die "symlink: $!";
+  $wr->( $s2_dl, '' );
+  my $tgt = File::Spec->catfile( $s2xdg, 'recs' );
+  write_json( locl('recs'),
+    { name => 'recs', files => [ { path => '$HOME/.recs', movable => JSON::PP::true, help => "h\n", mechanism => 'env', env => 'S2_RECS', rewrite => $tgt } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_RECS => undef }, $s2home, $s2df, "y\n", '--migrate', 'recommended', 'recs' );
+  ok( !-e File::Spec->catfile( $s2home, '.recs' ), '--migrate recommended converted symlink->env' );
+  ok( -e $tgt, 'the file reached the XDG target via recommended' );
+}
+
+# recommended on an env-current mechanism:symlink+env entry converts (env->symlink).
+{
+  my $src = $wr->( File::Spec->catfile( $s2xdg, 'recesrc' ), "re\n" );
+  $wr->( $s2_dl, '' );
+  write_json( locl('rece'),
+    { name => 'rece', files => [ { path => '$HOME/.rece', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', env => 'S2_RECE', rewrite => '$DOTFILES/rece' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_RECE => $src }, $s2home, $s2df, "y\n", '--migrate', 'recommended', 'rece' );
+  ok( -l File::Spec->catfile( $s2home, '.rece' ), '--migrate recommended converted env->symlink' );
+}
+
+# --fix must NOT convert: a symlink-recommended, env-current path points at
+# --migrate, it does not convert under --fix.
+{
+  my $src = $wr->( File::Spec->catfile( $s2xdg, 'fxsrc' ), "fx\n" );
+  write_json( locl('fxc'),
+    { name => 'fxc', files => [ { path => '$HOME/.fxc', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', env => 'S2_FXC', rewrite => '$DOTFILES/fxc' } ] } );
+
+  my ( $out, $rc ) = run_symlink_env( { S2_FXC => $src }, $s2home, $s2df, "y\n", '--fix', 'fxc' );
+  like( $out, qr/using env, recommended symlink - run --migrate symlink/, '--fix points an env->symlink divergence at --migrate' );
+  ok( -e $src && !-l File::Spec->catfile( $s2home, '.fxc' ), '--fix did not convert' );
 }
 
 done_testing();

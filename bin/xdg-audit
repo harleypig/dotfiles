@@ -462,6 +462,13 @@ sub current_mechanism {
   my $mech   = $entry->{mechanism} // '';
   my $exists = path_exists($entry);
 
+  # A symlink-recommended path presently redirected by its declared (exported)
+  # env var — an env->symlink conversion candidate (Slice 2). A non-exported
+  # redirect is invisible to a child process and falls through to hardcoded/
+  # absent below (the documented same-child-process limitation).
+  return 'env'
+    if $mech eq 'symlink' && $entry->{env} && length( $ENV{ $entry->{env} } // '' );
+
   if ( $mech eq 'env' ) {
     return 'env' if handling_status($entry) eq 'handled';
     return $exists ? 'hardcoded' : 'absent';
@@ -1294,31 +1301,169 @@ sub env_export_command {
   return qq{export $entry->{env}="$entry->{rewrite}"};
 }
 
+# The shell line that tears down an entry's env redirect (the env->symlink
+# sibling of env_export_command). `unset` clears the live shell; the note tells
+# the user to also delete the persistent `export` line. Undef without an `env`.
+sub env_unset_command {
+  my ($entry) = @_;
+  return unless $entry->{env};
+  return "unset $entry->{env}";
+}
+
 # The dual-audience "instruct the rest" steps for an entry, as structured data
-# for --json (the human sibling is printed by --migrate env). The one step today
-# is the export a hardcoded, env-recommended path needs to activate its
-# redirect; once that redirect is active the path is no longer hardcoded and
-# this collapses to []. Computed at runtime (depends on live $ENV / fs state).
+# for --json (the human sibling is printed by the mutating modes). Two shapes,
+# both runtime-computed (they depend on live $ENV / fs state):
+#   * an 'export' step — the redirect a hardcoded/symlink-current env-recommended
+#     path needs to become env (Slice 1, broadened to the symlink-current case);
+#   * a 'remove-export' step — the export a symlink-recommended path currently
+#     redirected by env must drop when it converts to a symlink (Slice 2).
 sub suggested_steps {
   my ($entry) = @_;
 
   my $mech = $entry->{mechanism} // '';
-  return []
-    unless $mech eq 'env'
-    && current_mechanism($entry) eq 'hardcoded'
-    && $entry->{env}
-    && $entry->{rewrite};
+  my $cur  = current_mechanism($entry);
 
-  return [
-    { mechanism => 'env',
-      action    => 'export',
-      variable  => $entry->{env},
-      value     => $entry->{rewrite},
-      resolved  => expand_path( $entry->{rewrite} ),
-      command   => env_export_command($entry),
-      note      => "add to your shell config before running $entry->{name} again",
-    } ];
+  if ( $mech eq 'env' && $entry->{env} && $entry->{rewrite} && ( $cur eq 'hardcoded' || $cur eq 'symlink' ) ) {
+    return [
+      { mechanism => 'env',
+        action    => 'export',
+        variable  => $entry->{env},
+        value     => $entry->{rewrite},
+        resolved  => expand_path( $entry->{rewrite} ),
+        command   => env_export_command($entry),
+        note      => "add to your shell config before running $entry->{name} again",
+      } ];
+  }
+
+  if ( $mech eq 'symlink' && $cur eq 'env' && $entry->{env} ) {
+    return [
+      { mechanism => 'symlink',
+        action    => 'remove-export',
+        variable  => $entry->{env},
+        command   => env_unset_command($entry),
+        note      => "remove the 'export $entry->{env}=...' line from your shell config; the app then reads its symlink",
+      } ];
+  }
+
+  return [];
 } ## end sub suggested_steps
+
+# Validate and plan an env move: the declared `rewrite` must resolve to an
+# absolute XDG target that does not yet exist, and the redirect (its `env` var)
+# is reconciled — an active var must point at the target (else refuse), an
+# inactive one needs a named variable to instruct the export. Shared by the
+# hardcoded move and the symlink->env conversion. Returns a hashref
+# { tgt, active, export, err }; a defined `err` (a message) means refuse.
+sub resolve_env_move {
+  my ($entry) = @_;
+
+  return { err => "no XDG target declared (needs an overlay 'rewrite')" }
+    unless $entry->{rewrite};
+
+  my $tgt = expand_path( $entry->{rewrite} );
+  return { err => "target does not resolve to an absolute path ($tgt) - refused" }
+    if $tgt =~ /\$\{?\w+\}?/ || !File::Spec->file_name_is_absolute($tgt);
+
+  my $var    = $entry->{env} // '';
+  my $val    = length $var ? $ENV{$var} : undef;
+  my $active = defined $val && length $val;
+  my $export;
+
+  if ($active) {
+    return { tgt => $tgt, err => "redirect \$$var points at $val, not the declared $tgt - reconcile first" }
+      if File::Spec->canonpath($val) ne File::Spec->canonpath($tgt);
+  } else {
+    return { tgt => $tgt, err => 'env mechanism declares no variable - cannot instruct an export - refused' }
+      unless length $var;
+    $export = env_export_command($entry);
+  }
+
+  return { tgt => $tgt, err => "target $tgt already exists - a redundant leftover; use --remove" }
+    if -e $tgt || -l $tgt;
+
+  return { tgt => $tgt, active => $active, export => $export };
+} ## end sub resolve_env_move
+
+# Print the dual-audience "add the export" suggestion after an env move whose
+# redirect was inactive (a human line; the same step also rides in --json's
+# suggested_steps).
+sub print_export_suggestion {
+  my ($m) = @_;
+  print "  next: add this to your shell config BEFORE running $m->{app} again:\n";
+  print "      $m->{export}\n";
+  return;
+}
+
+# Convert a managed symlink to an env redirect: move the dereferenced canonical
+# file to the XDG target, drop the ~/.x symlink, and remove its dotlinks line.
+# Reverse-order rollback on any partial failure leaves $HOME and the repo
+# as they were. Returns (ok, message).
+sub convert_symlink_to_env {
+  my ($m) = @_;
+
+  my ( $mok, $merr ) = move_path( $m->{canon}, $m->{tgt} );
+  return ( 0, $merr ) unless $mok;
+
+  unless ( unlink $m->{abs} ) {
+    my $err = "$!";
+    move_path( $m->{tgt}, $m->{canon} );  # rollback the move
+    return ( 0, "could not drop the symlink $m->{abs}: $err" );
+  }
+
+  my $dl = dotlinks_file();
+  if ( defined $dl ) {
+    my ( $ok, $err ) = remove_dotlinks_line( $dl, $m->{linkname} );
+    unless ($ok) {
+      symlink( $m->{link_text}, $m->{abs} );  # recreate the link
+      move_path( $m->{tgt}, $m->{canon} );
+      return ( 0, "could not update $dl ($err) - reverted" );
+    }
+  }
+
+  return ( 1, "converted $m->{abs} to an env redirect at $m->{tgt} (dropped the symlink + dotlinks entry)" );
+} ## end sub convert_symlink_to_env
+
+# Drop the dotlinks line(s) whose link-name matches $linkname from $file (a
+# minimal, Slice-2-scoped edit; Slice 3 owns the general --remove teardown). A
+# no-op when nothing matches. Returns (1, undef) on success, or (0, err) — the
+# file restored to its original content on a write failure.
+sub remove_dotlinks_line {
+  my ( $file, $linkname ) = @_;
+  return ( 1, undef ) unless defined $file && -e $file;
+
+  my $orig = read_file($file);
+  my @keep;
+  for my $line ( split /^/m, $orig ) {
+    my $t = $line;
+    $t =~ s/\A\s+//;
+    $t =~ s/\s+\z//;
+    if ( length $t && $t !~ /^#/ ) {
+      my ( $src, $name ) = split /\s+/, $t, 2;
+      $name = ( defined $name && length $name ) ? $name : $src;
+      $name =~ s{.*/}{};
+      next if $name eq $linkname;
+    }
+    push @keep, $line;
+  }
+
+  open my $fh, '>:encoding(UTF-8)', $file or return ( 0, "$!" );
+  my $ok = print {$fh} join( '', @keep );
+  unless ( $ok && close $fh ) {
+    my $err = "$!";
+    restore_file( $file, $orig );
+    return ( 0, $err );
+  }
+  return ( 1, undef );
+} ## end sub remove_dotlinks_line
+
+# Overwrite $file with $content (rollback helper). Best-effort.
+sub restore_file {
+  my ( $file, $content ) = @_;
+  open my $fh, '>:encoding(UTF-8)', $file or return 0;
+  print {$fh} $content;
+  close $fh;
+  return 1;
+}
 
 # --migrate env: move a present dotfile to its declared XDG target (`rewrite`)
 # so an already-active redirect finds it there. Gated on concrete preconditions
@@ -1334,110 +1479,114 @@ sub mode_migrate_env {
   my $home = home_dir();
   print "$entries[0]{name}\n\n";
 
-  # First pass: show each path's disposition; collect the eligible moves.
+  # First pass: show each path's disposition; collect the eligible moves. A
+  # managed symlink whose entry recommends env converts (symlink->env); a real
+  # hardcoded file moves (Slice 1); every other case refuses.
   my @moves;
   for my $e ( sort { $a->{path} cmp $b->{path} } @entries ) {
     my $abs  = expand_path( $e->{path} );
     my $disp = home_relative( $e->{path} );
+    my $mech = $e->{mechanism} // '';
 
     if ( $e->{ignore} ) {
       printf "  %-24s ignored (left in place)\n", $disp;
       next;
     }
+
+    # symlink -> env conversion: drop the link + its dotlinks entry and move the
+    # dereferenced canonical file to the XDG target (Slice 2).
     if ( defined link_target($e) ) {
-      printf "  %-24s linked (managed symlink) - not migrated\n", $disp;
+      if ( $mech ne 'env' ) {
+        printf "  %-24s linked (managed symlink), recommended %s not env - not migrated\n",
+          $disp, ( length $mech ? $mech : 'none' );
+        next;
+      }
+
+      require Cwd;
+      my $canon = Cwd::abs_path($abs);
+      unless ( defined $canon && -e $canon ) {
+        printf "  %-24s broken symlink (target missing) - resolve by hand\n", $disp;
+        next;
+      }
+
+      my $plan = resolve_env_move($e);
+      if ( defined $plan->{err} ) { printf "  %-24s %s\n", $disp, $plan->{err}; next; }
+
+      ( my $linkname = $abs ) =~ s{.*/}{};
+      printf "  %-24s convert symlink -> move %s to %s (drop the link + dotlinks entry)\n",
+        $disp, $canon, $plan->{tgt};
+      push @moves, {
+        convert   => 1,
+        abs       => $abs,
+        canon     => $canon,
+        tgt       => $plan->{tgt},
+        link_text => readlink($abs),
+        linkname  => $linkname,
+        app       => $e->{name},
+        export    => $plan->{export},
+      };
       next;
-    }
+    } ## end if ( defined link_target...)
+
     if ( !path_exists($e) ) {
       printf "  %-24s absent - nothing to migrate\n", $disp;
       next;
     }
-
-    my $mech = $e->{mechanism} // '';
     if ( $mech ne 'env' ) {
       printf "  %-24s recommended mechanism is %s, not env - not migrated\n",
         $disp, ( length $mech ? $mech : 'none' );
       next;
     }
-    unless ( $e->{rewrite} ) {
-      printf "  %-24s no XDG target declared (needs an overlay 'rewrite')\n", $disp;
-      next;
-    }
 
-    my $tgt = expand_path( $e->{rewrite} );
-
-    # The target must resolve to an absolute path with every $VAR expanded.
-    if ( $tgt =~ /\$\{?\w+\}?/ || !File::Spec->file_name_is_absolute($tgt) ) {
-      printf "  %-24s target does not resolve to an absolute path (%s) - refused\n",
-        $disp, $tgt;
-      next;
-    }
-
-    # The redirect's activity decides automate-only vs automate-and-instruct.
-    # Active: it must point at the declared target, or the app looks elsewhere
-    # after the move (refuse). Inactive: we still move, but emit the `export`
-    # line for the user/agent to add (ADR-0004's automate-move + instruct-the-
-    # export) — provided the entry names a variable we can actually instruct.
-    my $var    = $e->{env} // '';
-    my $val    = length $var ? $ENV{$var} : undef;
-    my $active = defined $val && length $val;
-    my $export;
-
-    if ($active) {
-      if ( File::Spec->canonpath($val) ne File::Spec->canonpath($tgt) ) {
-        printf "  %-24s redirect \$%s points at %s, not the declared %s - reconcile first\n",
-          $disp, $var, $val, $tgt;
-        next;
-      }
-    } else {
-      unless ( length $var ) {
-        printf "  %-24s env mechanism declares no variable - cannot instruct an export - refused\n",
-          $disp;
-        next;
-      }
-      $export = env_export_command($e);
-    }
-
-    if ( -e $tgt || -l $tgt ) {
-      printf "  %-24s target %s already exists - a redundant leftover; use --remove\n",
-        $disp, $tgt;
-      next;
-    }
+    my $plan = resolve_env_move($e);
+    if ( defined $plan->{err} ) { printf "  %-24s %s\n", $disp, $plan->{err}; next; }
+    my $tgt = $plan->{tgt};
 
     unless ( index( $abs, "$home/" ) == 0 ) {
       printf "  %-24s resolves outside \$HOME (%s) - refused\n", $disp, $abs;
       next;
     }
 
-    if ($active) {
+    if ( $plan->{active} ) {
       printf "  %-24s move to %s\n", $disp, $tgt;
     } else {
       printf "  %-24s move to %s  (redirect \$%s inactive - export suggested)\n",
-        $disp, $tgt, $var;
+        $disp, $tgt, $e->{env};
     }
-    push @moves, { abs => $abs, tgt => $tgt, app => $e->{name}, export => $export };
+    push @moves, { abs => $abs, tgt => $tgt, app => $e->{name}, export => $plan->{export} };
   } ## end for my $e ( sort { $a->...})
 
-  # Second pass: confirm and move each eligible file (default No). After a move
-  # whose redirect was inactive, print the dual-audience export suggestion.
+  # Second pass: confirm and perform each planned move/conversion (default No).
+  # An inactive-redirect move (or a conversion needing one) prints the export.
   my $migrated = 0;
   if (@moves) {
     print "\n";
     for my $m (@moves) {
+      if ( $m->{convert} ) {
+        next unless prompt_yes("  Convert $m->{abs} (symlink) to an env redirect at $m->{tgt}? [y/N] ");
+
+        my ( $ok, $msg ) = convert_symlink_to_env($m);
+        if ($ok) {
+  print "  $msg\n";
+  print_export_suggestion($m) if defined $m->{export};
+  $migrated++;
+        } else {
+  print {*STDERR} "  $PROG: $msg\n";
+        }
+        next;
+      }
+
       next unless prompt_yes("  Move $m->{abs} -> $m->{tgt}? [y/N] ");
 
       my ( $ok, $err ) = move_path( $m->{abs}, $m->{tgt} );
       if ($ok) {
         print "  migrated $m->{abs} -> $m->{tgt}\n";
-        if ( defined $m->{export} ) {
-  print "  next: add this to your shell config BEFORE running $m->{app} again:\n";
-  print "      $m->{export}\n";
-        }
+        print_export_suggestion($m) if defined $m->{export};
         $migrated++;
       } else {
         print {*STDERR} "  $PROG: $err\n";
       }
-    }
+    } ## end for my $m (@moves)
   } ## end if (@moves)
 
   print "\n$PROG: migrated $migrated item(s).\n";
@@ -1502,11 +1651,39 @@ sub mode_fix {
   return run_symlink_actions( \@actions, 'fixed' );
 } ## end sub mode_fix
 
+# Validate the repo (symlink) target for an entry: $DOTFILES set, a `rewrite`
+# that resolves absolute, lives under $DOTFILES, and does not already exist.
+# Returns ($tgt, undef) or (undef, message). Shared by the hardcoded move and
+# the env->symlink conversion (both link a repo-resident file).
+sub resolve_repo_target {
+  my ($e) = @_;
+
+  my $df = $ENV{DOTFILES};
+  return ( undef, '$DOTFILES is not set - required for a symlink migrate' )
+    unless defined $df && length $df;
+
+  return ( undef, "no repo target declared (needs an overlay 'rewrite' under \$DOTFILES)" )
+    unless $e->{rewrite};
+
+  my $tgt = expand_path( $e->{rewrite} );
+  return ( undef, "target does not resolve to an absolute path ($tgt) - refused" )
+    if $tgt =~ /\$\{?\w+\}?/ || !File::Spec->file_name_is_absolute($tgt);
+
+  return ( undef, "target $tgt is not under \$DOTFILES - a symlink source must live in the repo" )
+    unless index( $tgt, "$df/" ) == 0;
+
+  return ( undef, "target $tgt already exists - resolve by hand" )
+    if -e $tgt || -l $tgt;
+
+  return ( $tgt, undef );
+} ## end sub resolve_repo_target
+
 # Decide what --migrate symlink should do with one entry, and the disposition
 # line to show. Returns ($action, $message): $action is a hashref
-# { entry, kind => 'full'|'register', source, linkname, abs[, tgt] } when the
-# entry is actionable, else (undef, refusal-message). 'full' moves a hardcoded
-# file into the repo then links it; 'register' just records a loose symlink.
+# { entry, kind => 'full'|'register', source, linkname, abs[, tgt, move_src,
+# unset] } when actionable, else (undef, refusal-message). 'full' moves a file
+# into the repo then links it (a hardcoded ~/.x, or — for an env->symlink
+# conversion — the file at $ENV{<env>}); 'register' records a loose symlink.
 sub plan_symlink_action {
   my ( $e, $home ) = @_;
 
@@ -1532,28 +1709,52 @@ sub plan_symlink_action {
 
   return ( undef, 'absent - nothing to migrate' )                if $cur eq 'absent';
   return ( undef, 'current mechanism unknown - cannot migrate' ) if $cur eq 'unknown';
-  return ( undef, 'using env; an env->symlink conversion is a later phase (ADR-0004)' )
-    if $cur eq 'env';
+
+  # env -> symlink conversion (Slice 2): the entry must RECOMMEND symlink (its
+  # `rewrite` is the repo target), name the `env` var currently redirecting it,
+  # that var must point at an existing file (the one to move into the repo), and
+  # ~/.x must be free for check-dotfiles to create the link.
+  if ( $cur eq 'env' ) {
+    return (
+      undef,
+      'using env; recommended mechanism is '
+        . ( length( $e->{mechanism} // '' ) ? $e->{mechanism} : 'none' )
+        . ', not symlink - nothing to convert (use --migrate env, or --remove a leftover)'
+    ) unless ( $e->{mechanism} // '' ) eq 'symlink';
+
+    my ( $ctgt, $cerr ) = resolve_repo_target($e);
+    return ( undef, $cerr ) if defined $cerr;
+
+    my $src = $ENV{ $e->{env} };
+    return (
+      undef,
+      "redirect \$$e->{env} points at "
+        . ( defined $src && length $src ? $src : '(unset)' )
+        . ', which does not exist - nothing to move'
+    ) unless defined $src && length $src && -e $src;
+
+    return ( undef, 'a $HOME leftover at ' . home_relative( $e->{path} ) . ' blocks the link - --remove it first' )
+      if path_exists($e) || defined link_target($e);
+
+    return (
+      { entry    => $e,
+        kind     => 'full',
+        move_src => $src,
+        source   => $e->{rewrite},
+        linkname => $linkname,
+        abs      => $abs,
+        tgt      => $ctgt,
+        unset    => $e->{env},
+      },
+      "using env -> convert: move $src into repo -> $ctgt, link, then remove export \$$e->{env}"
+    );
+  } ## end if ( $cur eq 'env' )
 
   # $cur eq 'hardcoded' — the prize. The source must physically live in the repo
   # for check-dotfiles to link from it, so require a `rewrite` under $DOTFILES.
-  my $df = $ENV{DOTFILES};
-  return ( undef, '$DOTFILES is not set - required for a symlink migrate' )
-    unless defined $df && length $df;
+  my ( $tgt, $err ) = resolve_repo_target($e);
+  return ( undef, $err ) if defined $err;
 
-  return ( undef, "no repo target declared (needs an overlay 'rewrite' under \$DOTFILES)" )
-    unless $e->{rewrite};
-
-  my $tgt = expand_path( $e->{rewrite} );
-  if ( $tgt =~ /\$\{?\w+\}?/ || !File::Spec->file_name_is_absolute($tgt) ) {
-    return ( undef, "target does not resolve to an absolute path ($tgt) - refused" );
-  }
-  unless ( index( $tgt, "$df/" ) == 0 ) {
-    return ( undef, "target $tgt is not under \$DOTFILES - a symlink source must live in the repo" );
-  }
-  if ( -e $tgt || -l $tgt ) {
-    return ( undef, "target $tgt already exists - resolve by hand" );
-  }
   unless ( index( $abs, "$home/" ) == 0 ) {
     return ( undef, "resolves outside \$HOME ($abs) - refused" );
   }
@@ -1565,9 +1766,10 @@ sub plan_symlink_action {
 } ## end sub plan_symlink_action
 
 # Decide what --fix should do with one entry. A symlink defers to the migrate-
-# symlink planner (complete -> nothing to do; partial -> register). Everything
-# else has nothing to *fix* (a hardcoded/absent/unknown needs --migrate; an env
-# leftover overlaps --remove).
+# symlink planner (complete -> nothing to do; partial -> register). --fix never
+# changes mechanism, so a divergence points at --migrate; everything else has
+# nothing to *fix* (hardcoded/absent/unknown needs --migrate; an env leftover
+# overlaps --remove).
 sub plan_fix_action {
   my ( $e, $home ) = @_;
 
@@ -1576,8 +1778,12 @@ sub plan_fix_action {
   my $cur = current_mechanism($e);
   return plan_symlink_action( $e, $home ) if $cur eq 'symlink';
 
-  return ( undef, 'using env; fixing an env leftover overlaps --remove - use --remove' )
-    if $cur eq 'env';
+  if ( $cur eq 'env' ) {
+    return ( undef, 'using env, recommended symlink - run --migrate symlink (or --migrate recommended) to convert' )
+      if ( $e->{mechanism} // '' ) eq 'symlink';
+    return ( undef, 'using env; fixing an env leftover overlaps --remove - use --remove' );
+  }
+
   return ( undef, "nothing to fix for a $cur setup - use --migrate <target> to choose a mechanism" );
 }
 
@@ -1590,6 +1796,16 @@ sub dotlinks_source_token {
   return '$DOTFILES' . substr( $path, length $df )
     if defined $df && length $df && index( $path, "$df/" ) == 0;
   return $path;
+}
+
+# Print the dual-audience "remove the export" suggestion after an env->symlink
+# conversion (the sibling of print_export_suggestion; the step also rides in
+# --json's suggested_steps as a 'remove-export' action).
+sub print_unset_suggestion {
+  my ($action) = @_;
+  print "  next: remove the export from your shell config (the app now reads its symlink):\n";
+  print "      unset $action->{unset}    # and delete its 'export $action->{unset}=...' line\n";
+  return;
 }
 
 # Execute the collected symlink actions: resolve the dotlinks file once (may
@@ -1613,20 +1829,25 @@ sub run_symlink_actions {
   print "\n";
   my $done = 0;
   for my $action (@$actions) {
-    my $prompt =
-      $action->{kind} eq 'full'
-      ? "  Move $action->{abs} into the repo and link it? [y/N] "
-      : "  Register $action->{abs} in $dl_file? [y/N] ";
+    my $prompt;
+    if ( $action->{unset} ) {
+      $prompt = "  Move $action->{move_src} into the repo, link $action->{abs}, and drop export \$$action->{unset}? [y/N] ";
+    } elsif ( $action->{kind} eq 'full' ) {
+      $prompt = "  Move $action->{abs} into the repo and link it? [y/N] ";
+    } else {
+      $prompt = "  Register $action->{abs} in $dl_file? [y/N] ";
+    }
     next unless prompt_yes($prompt);
 
     my ( $ok, $msg ) = do_symlink_action( $action, $dl_file );
     if ($ok) {
       print "  $msg\n";
+      print_unset_suggestion($action) if $action->{unset};
       $done++;
     } else {
       print {*STDERR} "  $PROG: $msg\n";
     }
-  }
+  } ## end for my $action (@$actions)
 
   # Undo a bootstrapped ~/.dotlinks that nothing landed in (restore the state).
   unlink $dl_file if !$preexisted && $done == 0 && -e $dl_file;
@@ -1644,14 +1865,18 @@ sub do_symlink_action {
   my ( $action, $dl_file ) = @_;
   my $abs = $action->{abs};
 
+  # The file to move: ~/.x for a hardcoded migrate, or $ENV{<env>} for an
+  # env->symlink conversion (move_src). The rollback destination is the same.
+  my $move_src = $action->{move_src} // $abs;
+
   if ( $action->{kind} eq 'full' ) {
-    my ( $mok, $merr ) = move_path( $abs, $action->{tgt} );
+    my ( $mok, $merr ) = move_path( $move_src, $action->{tgt} );
     return ( 0, $merr ) unless $mok;
   }
 
   my ( $aok, $prior ) = append_dotlinks_line( $dl_file, $action->{source}, $action->{linkname} );
   unless ($aok) {
-    move_path( $action->{tgt}, $abs ) if $action->{kind} eq 'full';  # roll the move back
+    move_path( $action->{tgt}, $move_src ) if $action->{kind} eq 'full';  # roll the move back
     return ( 0, "could not update $dl_file: $prior" );
   }
 
@@ -1661,7 +1886,7 @@ sub do_symlink_action {
     return (
       1,
       $action->{kind} eq 'full'
-      ? "migrated $abs -> $action->{tgt} (linked, registered in $dl_file)"
+      ? "migrated $move_src -> $action->{tgt} (linked, registered in $dl_file)"
       : "registered $abs in $dl_file"
     );
   }
@@ -1671,7 +1896,7 @@ sub do_symlink_action {
   truncate_file( $dl_file, $prior );
   if ( $action->{kind} eq 'full' ) {
     remove_path($abs) if -l $abs;
-    move_path( $action->{tgt}, $abs );
+    move_path( $action->{tgt}, $move_src );
   }
   return ( 0, "check-dotfiles did not create the link for $abs (rc=$rc) - reverted" );
 } ## end sub do_symlink_action
@@ -1997,8 +2222,11 @@ MIGRATE
   BEFORE running the app again (automate the move, instruct the export - the
   same step also rides in --json's suggested_steps for an agent to apply). It
   refuses when the target already exists (a redundant leftover - use --remove),
-  when the file is a symlink, when either path escapes $HOME, or when an
-  env-recommended entry declares no variable to export.
+  when either path escapes $HOME, or when an env-recommended entry declares no
+  variable to export. When the $HOME path is instead a MANAGED SYMLINK and the
+  entry recommends env, --migrate env CONVERTS it (symlink -> env): it drops the
+  link + its dotlinks entry, moves the dereferenced canonical file to the XDG
+  target, and instructs the export (rolling back on any partial failure).
 
   --migrate symlink puts a HARDCODED dotfile (a present real file, no redirect)
   under check-dotfiles management: it moves the file into the repo at its
@@ -2011,7 +2239,10 @@ MIGRATE
   - the git commit stays yours. A partial-failure rolls back (the file is moved
   back and the dotlinks line stripped). It refuses when no repo 'rewrite' is
   declared, the target is outside $DOTFILES or already exists, or the source
-  escapes $HOME.
+  escapes $HOME. When the path is instead currently redirected by an env var and
+  the entry recommends symlink (declaring that 'env' var), --migrate symlink
+  CONVERTS it (env -> symlink): it moves the file at $ENV{<env>} into the repo,
+  links it, and instructs REMOVING the export (a 'remove-export' suggested step).
 
   Both --migrate modes ask before each change (default No) and never sweep the
   whole scan.
@@ -2120,14 +2351,18 @@ emits the C<export> line to add as a dual-audience suggestion; C<symlink> puts a
 hardcoded dotfile under C<check-dotfiles> management by moving it into the repo,
 registering it in a dotlinks file, and letting C<check-dotfiles> link it back;
 C<recommended> resolves the declared mechanism and dispatches to it; the rest
-arrive in later phases, see C<ADR-0004>); and C<--fix>, which completes or
-repairs the current setup without changing mechanism (sugar for
+arrive in later phases, see C<ADR-0004>). C<--migrate> also performs the
+C<< env <-> symlink >> conversions between those states: a managed symlink whose
+entry recommends env converts to an env redirect, and an env-redirected path
+whose entry recommends symlink converts to a repo symlink (instructing the
+C<export> to add or the export to remove). Finally C<--fix> completes or repairs
+the current setup without changing mechanism (sugar for
 C<< --migrate <current-mechanism> >>, e.g. registering a loose symlink). Each
 acts on a named app or path and asks for confirmation first (see the B<REMOVE>,
 B<MIGRATE>, and B<FIX> sections of C<--help>). The C<--json> feed carries a
-C<suggested_steps> array per record — the instructed steps (e.g. the C<export>)
-an agent can apply. See the B<OUTPUT> section for what each reported status
-means.
+C<suggested_steps> array per record — the instructed steps (an C<export> to add
+or C<remove-export> to drop) an agent can apply. See the B<OUTPUT> section for
+what each reported status means.
 
 =head2 Loading strategy
 
