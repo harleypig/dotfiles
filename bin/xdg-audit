@@ -1164,18 +1164,36 @@ sub move_path {
   return File::Copy::move( $abs, $tgt ) ? ( 1, undef ) : ( 0, "could not move: $!" );
 } ## end sub move_path
 
-# --migrate <app|$HOME-path>: move a present dotfile to its declared XDG target
-# (`rewrite`) so an already-active redirect finds it there. env-mechanism only
-# in this cut. Gated on concrete preconditions (NOT the display group, since
-# the clean case classifies as 'stray'): the redirect must be active in THIS
-# shell and point at the declared target, the target must not already exist,
-# and the source must be a real file/dir under $HOME (never a symlink). Every
-# move is confirmed interactively (default No); never scan-wide.
+# --migrate <mechanism> <app|$HOME-path>: transition the target to <mechanism>.
+# The mechanism is a REQUIRED positional (no silent default) — only `env` is
+# implemented in this cut; `symlink` and the rest arrive in later slices/phases
+# (see ADR-0004). `--migrate env` moves a present dotfile to its declared XDG
+# target (`rewrite`) so an already-active redirect finds it there. Gated on
+# concrete preconditions (NOT the display group, since the clean case
+# classifies as 'stray'): the redirect must be active in THIS shell and point
+# at the declared target, the target must not already exist, and the source
+# must be a real file/dir under $HOME (never a symlink). Every move is confirmed
+# interactively (default No); never scan-wide.
 sub mode_migrate {
-  my ($query) = @_;
+  my ( $mechanism, $query ) = @_;
+
+  unless ( defined $mechanism && length $mechanism ) {
+    print {*STDERR} "$PROG: --migrate needs a target mechanism and an app|\$HOME path (e.g. --migrate env bash)\n";
+    return 1;
+  }
+
+  # env is the only implemented target. Reject anything else — a planned-but-
+  # unbuilt mechanism (symlink/…) or the old bare `--migrate <app>` syntax,
+  # where the app name lands here as the mechanism — with a message that teaches
+  # the new signature rather than silently mis-reading the app as a mechanism.
+  if ( $mechanism ne 'env' ) {
+    print {*STDERR} "$PROG: --migrate now takes a target mechanism first: --migrate <mechanism> <app|\$HOME path>.\n"
+      . "  Only 'env' is implemented so far (e.g. --migrate env bash); '$mechanism' is not a supported mechanism.\n";
+    return 1;
+  }
 
   unless ( defined $query && length $query ) {
-    print {*STDERR} "$PROG: --migrate needs an app name or \$HOME path\n";
+    print {*STDERR} "$PROG: --migrate env needs an app name or \$HOME path\n";
     return 1;
   }
 
@@ -1188,7 +1206,7 @@ sub mode_migrate {
   my %apps = map { $_->{name} => 1 } @entries;
   if ( keys %apps > 1 ) {
     print_matches( \@entries, $query );
-    print "\nName one app (or a specific \$HOME path) to --migrate.\n";
+    print "\nName one app (or a specific \$HOME path) to --migrate env.\n";
     return 1;
   }
 
@@ -1216,8 +1234,8 @@ sub mode_migrate {
 
     my $mech = $e->{mechanism} // '';
     if ( $mech ne 'env' ) {
-      printf "  %-24s migrate supports env-redirect entries; %s not yet\n",
-        $disp, ( length $mech ? $mech : 'no mechanism' );
+      printf "  %-24s recommended mechanism is %s, not env - not migrated\n",
+        $disp, ( length $mech ? $mech : 'none' );
       next;
     }
     unless ( $e->{rewrite} ) {
@@ -1408,7 +1426,7 @@ USAGE
   xdg-audit [options] <$HOME-path> reverse-map a dotfile to its app
   xdg-audit --search <term>        search name/path/help text
   xdg-audit --remove <app|path>    delete a confirmed leftover (asks first)
-  xdg-audit --migrate <app|path>   move a dotfile to its XDG target (asks)
+  xdg-audit --migrate env <app|path>  move a dotfile to its XDG target (asks)
   xdg-audit --reindex              rebuild the enriched index cache
   xdg-audit --update-db [<ref>]    refresh the vendored mirror from upstream
 
@@ -1417,7 +1435,7 @@ OPTIONS
   --json                   machine-readable output (for tooling / AI)
   --search <term>          substring search across name, path, and help
   --remove                 delete a confirmed leftover for <app|path> (asks)
-  --migrate                move <app|path> to its XDG rewrite target (asks)
+  --migrate <mechanism>    transition <app|path> to <mechanism> (env only; asks)
   --mechanism <m>          restrict the scan to one mechanism (env/alias/wrap)
   --movable / --immovable  filter the scan by movability
   --db <dir>               database dir (default: $XDG_CONFIG_HOME/xdg-audit)
@@ -1469,16 +1487,20 @@ REMOVE
   path; --remove never sweeps the whole scan.
 
 MIGRATE
-  --migrate <app|$HOME-path> moves a present dotfile to its declared XDG
-  target (the overlay's 'rewrite'), so an already-active redirect finds it
-  there. env-mechanism entries only, for now. It gates on the ordering the
-  move depends on: the redirect must be exported and active in THIS shell and
-  point at the declared target - otherwise it refuses and tells you to add the
-  export first (move the file before the redirect is live and the app looks at
-  the old, now-empty path). It also refuses when the target already exists (a
-  redundant leftover - use --remove), when the file is a symlink, or when
-  either path escapes $HOME. Asks before each move (default No); never sweeps
-  the whole scan.
+  --migrate <mechanism> <app|$HOME-path> transitions the target to <mechanism>.
+  The mechanism is required (no default); only 'env' is implemented so far
+  (symlink and the rest come in later phases - see ADR-0004), so the old bare
+  'xdg-audit --migrate <app>' is now 'xdg-audit --migrate env <app>'.
+
+  --migrate env moves a present dotfile to its declared XDG target (the
+  overlay's 'rewrite'), so an already-active redirect finds it there. It gates
+  on the ordering the move depends on: the redirect must be exported and active
+  in THIS shell and point at the declared target - otherwise it refuses and
+  tells you to add the export first (move the file before the redirect is live
+  and the app looks at the old, now-empty path). It also refuses when the
+  target already exists (a redundant leftover - use --remove), when the file is
+  a symlink, or when either path escapes $HOME. Asks before each move (default
+  No); never sweeps the whole scan.
 
 EXIT STATUS
   0  nothing actionable (no unhandled / stray / remove found)
@@ -1511,7 +1533,7 @@ GetOptions(
 my $exit = eval {
   if    ( $cli{update_db} )         { mode_update_db( $ARGV[0] ) }
   elsif ( $cli{remove} )            { mode_remove( $ARGV[0] ) }
-  elsif ( $cli{migrate} )           { mode_migrate( $ARGV[0] ) }
+  elsif ( $cli{migrate} )           { mode_migrate( $ARGV[0], $ARGV[1] ) }
   elsif ( defined $cli{search} )    { mode_search( $cli{search} ) }
   elsif ( $cli{reindex} && !@ARGV ) { mode_reindex() }
   elsif (@ARGV)                     { mode_lookup( $ARGV[0] ) }
@@ -1539,7 +1561,7 @@ xdg-audit - audit $HOME for dotfiles that could move to XDG locations
   xdg-audit .some-dir              # reverse-map a $HOME path to its app
   xdg-audit --search gradle        # search name/path/help
   xdg-audit --remove docker        # delete a confirmed leftover (asks first)
-  xdg-audit --migrate bash         # move a dotfile to its XDG target (asks)
+  xdg-audit --migrate env bash     # move a dotfile to its XDG target (asks)
   xdg-audit --json                 # machine-readable output
   xdg-audit --reindex              # rebuild the index cache
   xdg-audit --update-db            # refresh the vendored xdg-ninja mirror
@@ -1563,11 +1585,14 @@ C<symlink> is owned by C<check-dotfiles>) is tagged with its C<owner>.
 Every reporting mode honours C<--json> so both a human and an agent can
 consume the output. The scan and lookups never touch C<$HOME>; the two
 mutating modes are C<--remove>, which deletes a confirmed leftover (a I<stray>
-or a I<remove>-marked file), and C<--migrate>, which I<moves> a present dotfile
-to its declared XDG target once the redirect is active (env-mechanism only in
-this cut) — both for a named app or path, and both showing status and asking
-for confirmation first (see the B<REMOVE> and B<MIGRATE> sections of
-C<--help>). See the B<OUTPUT> section for what each reported status means.
+or a I<remove>-marked file), and C<--migrate> C<< <mechanism> >>, which
+transitions a target to a mechanism. The mechanism is required — only C<env> is
+implemented in this cut (so C<--migrate env> I<moves> a present dotfile to its
+declared XDG target once the redirect is active; C<symlink> and the rest arrive
+in later phases, see C<ADR-0004>) — both for a named app or path, and both
+showing status and asking for confirmation first (see the B<REMOVE> and
+B<MIGRATE> sections of C<--help>). See the B<OUTPUT> section for what each
+reported status means.
 
 =head2 Loading strategy
 

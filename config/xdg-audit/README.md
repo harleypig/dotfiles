@@ -146,21 +146,28 @@ target must be named.
 
 ## Migrating a leftover
 
-`--migrate` *moves* a present dotfile to its declared XDG target (the overlay's
-`rewrite`), so an already-active redirect finds it there:
+`--migrate <mechanism> <app|path>` transitions a target to `<mechanism>`. The
+mechanism is a **required positional** (no silent default); only `env` is
+implemented so far — `symlink` and the rest arrive in later phases (see
+[ADR-0004](../../docs/adr/0004-xdg-audit-mechanism-state-machine.md)). So the
+old bare `xdg-audit --migrate bash` is now `xdg-audit --migrate env bash`;
+a bare `--migrate`, an unknown/unimplemented mechanism, or the old bare-app
+form is a usage error that names the new signature.
+
+`--migrate env` *moves* a present dotfile to its declared XDG target (the
+overlay's `rewrite`), so an already-active redirect finds it there:
 
 ```bash
-xdg-audit --migrate bash       # move ~/.<file> to its rewrite target, asks
+xdg-audit --migrate env bash   # move ~/.<file> to its rewrite target, asks
 ```
 
-It is env-mechanism-only for now, and gates on the ordering the move depends
-on: the redirect (e.g. the `export`) must be **active in this shell and point
-at the declared target** — otherwise it refuses and tells you to add the
-export first, because moving the file before the redirect is live leaves the
-app looking at the old, now-empty path. It also refuses when the **target
-already exists** (a redundant leftover — use `--remove`), when the file is a
-**symlink**, or when either path escapes `$HOME`. A cross-filesystem
-*directory* move is refused (move it by hand).
+It gates on the ordering the move depends on: the redirect (e.g. the `export`)
+must be **active in this shell and point at the declared target** — otherwise
+it refuses and tells you to add the export first, because moving the file
+before the redirect is live leaves the app looking at the old, now-empty path.
+It also refuses when the **target already exists** (a redundant leftover — use
+`--remove`), when the file is a **symlink**, or when either path escapes
+`$HOME`. A cross-filesystem *directory* move is refused (move it by hand).
 
 Note: a `rewrite` under `$XDG_CONFIG_HOME` lands in the **tracked repo** (this
 setup's `$XDG_CONFIG_HOME` is `$DOTFILES/config`) — the confirmation shows the
