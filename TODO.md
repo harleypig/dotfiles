@@ -558,18 +558,11 @@ relocation (moving an install, symlinking) is a separate step.
 
 ### xdg-audit follow-ups
 
-- [x] **Normalize `programs-local/*.json` formatting** — normalized to 2-space
-  (prettier) and made a check gate scoped to the overlays; the vendored mirror
-  is fenced off from prettier (upstream runs no formatter — keep it pristine
-  for `--update-db`).
 - [ ] **Self-wrap tier** — implement `mechanism: wrap`: a `bin/<app>` wrapper
   using `unshare --user --map-root-user --mount` + `mount --bind` (confirmed
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [x] **`--remove`** — guarded, confirmation-gated deletion of a leftover (a
-  `stray` or `remove`-marked file), confined to `$HOME`; a symlink or
-  un-redirected file is refused, and it never sweeps the whole scan.
 - [ ] **`--migrate`** — guarded, confirmation-gated *move* of an unhandled file
   to its XDG rewrite target. Subtler than `--remove`: the redirect (e.g. the
   env export) must be active first, or the app won't find the moved file —
@@ -578,9 +571,6 @@ relocation (moving an install, symlinking) is a separate step.
   addition/override (gh OAuth fallback; strip local-only fields).
 - [ ] **`--update-db`** — exercise against upstream and verify obsolete-override
   detection (needs network; not unit-tested yet).
-- [x] **pre-commit `check-jsonschema`** — added check-only hooks validating
-  `programs/` and `programs-local/` on commit, local parity with the CI
-  `json-schema` job.
 - [ ] **Multiple apps, one dotfile** — several programs can own the same `$HOME`
   path (e.g. `.m2` → maven + leiningen). `xdg-audit` currently shows a per-app
   list for such a query. See how common this is across the db; if frequent,

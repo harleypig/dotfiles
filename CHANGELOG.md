@@ -10,6 +10,32 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-21
+
+### Added
+
+- **`xdg-audit --remove` — guarded `$HOME` cleanup.** The first mutating mode:
+  `xdg-audit --remove <app|$HOME-path>` deletes a confirmed leftover (a `stray`,
+  or a `remove`-marked unused-app file) after showing each path's status and
+  asking per file (default No). A symlink (`linked`) or an un-redirected
+  (`unhandled`) file is refused, every deletion is confined to `$HOME`, and it
+  never sweeps the whole scan — the target must be named. A directory leftover
+  is removed recursively. (`--migrate`, which *moves* an unhandled file to its
+  XDG target, is deferred — its redirect-activation ordering is subtler.)
+  (PR #279)
+- **Local pre-commit gates for the xdg-audit database.** Added check-only
+  `check-jsonschema` hooks validating `programs/` against xdg-ninja's schema
+  and `programs-local/` against the overlay superset schema — local parity with
+  the CI `json-schema` job. Added a `prettier --check` gate scoped to the
+  overlays so their formatting can't drift. (PR #279)
+
+### Changed
+
+- **Normalized the `programs-local/` overlays to 2-space** and fenced the
+  pristine vendored mirror (`programs/` + `json-schema/`) off our prettier —
+  xdg-ninja runs no formatter, and keeping the mirror byte-identical to
+  upstream preserves the `upstream-digest` / `--update-db` comparison. (PR #279)
+
 ## 2026-07-20
 
 ### Added
