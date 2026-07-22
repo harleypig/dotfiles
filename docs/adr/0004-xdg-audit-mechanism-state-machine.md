@@ -73,8 +73,8 @@ Reframe xdg-audit around a **state-machine over dotfile mechanisms**.
   symlink/env detection + divergence display, `--migrate symlink` + `--fix`,
   and the `--migrate env` reframe. **Phase 2** — `--migrate recommended`, the
   automatable matrix cells, `env`↔`symlink`, `--remove` teardown. **Phase 3**
-  (candidate ICEBOX) — general installation-method detection, `alias`/`wrap`
-  transitions, the full matrix.
+  (**iceboxed 2026-07-22** — see *Phase 3 status* below) — general
+  installation-method detection, `alias`/`wrap` transitions, the full matrix.
 
 ## Alternatives considered
 
@@ -108,3 +108,39 @@ Reframe xdg-audit around a **state-machine over dotfile mechanisms**.
   candidate) rather than built speculatively.
 - The concrete per-phase build detail lives in `TODO.md` (`### xdg-audit
   follow-ups`); this ADR records the *direction* and the load-bearing choices.
+
+## Phase 3 status: iceboxed (2026-07-22)
+
+Phases 1 and 2 shipped (PRs #279–#293), delivering the state-machine for the
+mechanisms with real demand: `env` and `symlink` detection, divergence
+display, `--migrate env|symlink|recommended`, `--fix`, and `--remove`
+teardown. **Phase 3 is iceboxed** — deferred, revisited only on a concrete
+demand signal — after evaluating its pieces against the actual overlay corpus
+(655 programs):
+
+- **Near-zero demand.** Exactly **1** entry declares `mechanism: alias`
+  (`wget`'s `.wget-hsts`) and **0** declare `mechanism: wrap`. Everything with
+  real demand (`env`, `symlink`) is already handled by Phases 1–2. There is no
+  body of unhandled `alias`/`wrap` dotfiles for Phase 3 to serve.
+- **The tractable piece (`alias` detection) is not even cheap.** It is blocked
+  twice: (1) the entry schema carries **no command field** — `alias` detection
+  must know *which command* to feed `bin/where`, and `name`/`path` don't
+  reliably supply it (it would need a schema addition or fragile help-prose
+  parsing); (2) the shell-context constraint above — aliases aren't exported to
+  a child, so xdg-audit would have to shell into `bash -ic 'where …'`. A schema
+  change plus a shell-context invocation for a single, questionable case (wget
+  redirects via `--hsts-file` / `WGETRC`, not truly an alias).
+- **`wrap` is a separate project, not a slice.** It depends on the unbuilt
+  "self-wrap tier" (`unshare --map-root-user --mount` + `mount --bind`
+  wrapper + a `bin/<app>` scaffold), which stands alone from this state-machine
+  and has 0 current entries.
+- **The remainder is speculative** — help-prose mechanism inference (brittle
+  NLP over markdown an overlay can just declare) and the full N×N matrix (rare
+  cells) — exactly the "demand-pulled, don't build speculatively" work the
+  Consequences above call out.
+
+**Revisit trigger:** a real `alias`/`wrap` entry (or several) with an actual
+unhandled dotfile, or a decision to build the self-wrap tier. Until then the
+in-code `ICEBOX:` markers in `bin/xdg-audit` (at the `alias`/`wrap`
+fall-through points in `current_mechanism` and `resolve_recommended_mechanism`)
+carry the keyword-dense pointer back here.
