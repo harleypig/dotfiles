@@ -86,6 +86,12 @@ repos:
     rev: v3.8.3
     hooks:
       # Markdown and YAML are owned by markdownlint / yamllint; exclude them
-      # so prettier does not fight those tools' formatting.
+      # so prettier does not fight those tools' formatting. The xdg-audit
+      # vendored mirror (programs/ + json-schema/) is a PRISTINE copy of
+      # upstream xdg-ninja, who run no formatter — reformatting it would
+      # diverge from upstream and break the upstream-digest / --update-db
+      # comparison, so it is fenced off here too. Our own overlays
+      # (programs-local/) stay in prettier's scope and are gated in the
+      # check config.
       - id: prettier
-        exclude: '\.(md|markdown|ya?ml)$'
+        exclude: '\.(md|markdown|ya?ml)$|^config/xdg-audit/(programs|json-schema)/'

@@ -87,6 +87,23 @@ Only genuine **config** belongs under `config/` (tracked). Runtime
 **state / cache / data** must target `$XDG_STATE_HOME` / `$XDG_CACHE_HOME` /
 `$XDG_DATA_HOME` (which point into `$HOME`, untracked) — never the repo.
 
+## Removing a leftover
+
+The scan and lookups are read-only. The one mutating mode is `--remove`, which
+deletes a **confirmed leftover** for a named app or `$HOME` path:
+
+```bash
+xdg-audit --remove docker      # shows status, asks before each deletion
+```
+
+Only an eligible path is deletable: a **stray** (present, its redirect already
+active — a duplicate) or a **remove**-marked (unused app) file. A **symlink**
+(`linked`) or an **un-redirected** (`unhandled`) file is refused — migrate
+those, do not delete them. Every deletion is confined to `$HOME` and confirmed
+interactively (default No); `--remove` never sweeps the whole scan, so a
+target must be named. (A guarded `--migrate` that *moves* an unhandled file to
+its XDG target is planned; see `TODO.md`.)
+
 ## Keeping the mirror current
 
 ```bash

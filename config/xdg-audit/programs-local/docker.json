@@ -1,13 +1,13 @@
 {
-   "files" : [
-      {
-         "env" : "DOCKER_CONFIG",
-         "mechanism" : "env",
-         "movable" : true,
-         "path" : "$HOME/.docker"
-      }
-   ],
-   "name" : "docker",
-   "override-of" : "docker",
-   "upstream-digest" : "92127a8782f5c55eb32de9edafd0a46a403ec11949472adb5da192b024cdd3db"
+  "files": [
+    {
+      "env": "DOCKER_CONFIG",
+      "mechanism": "env",
+      "movable": true,
+      "path": "$HOME/.docker"
+    }
+  ],
+  "name": "docker",
+  "override-of": "docker",
+  "upstream-digest": "92127a8782f5c55eb32de9edafd0a46a403ec11949472adb5da192b024cdd3db"
 }

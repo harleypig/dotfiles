@@ -558,25 +558,19 @@ relocation (moving an install, symlinking) is a separate step.
 
 ### xdg-audit follow-ups
 
-- [ ] **Normalize `programs-local/*.json` formatting** — the overlays are a
-  mix of 3-space (JSON::PP, the older files) and 2-space (prettier, the ones
-  touched since prettier landed in the fix config). Pick one canonical form:
-  run prettier over the whole dir once (2-space), or exclude the dir from
-  prettier so the JSON::PP 3-space stays canonical. Cosmetic — prettier is
-  fix-only, not a check gate.
 - [ ] **Self-wrap tier** — implement `mechanism: wrap`: a `bin/<app>` wrapper
   using `unshare --user --map-root-user --mount` + `mount --bind` (confirmed
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **`--migrate` / `--remove`** — guarded, confirmation-gated `$HOME`
-  mutation (move a stray to its XDG target / delete it).
+- [ ] **`--migrate`** — guarded, confirmation-gated *move* of an unhandled file
+  to its XDG rewrite target. Subtler than `--remove`: the redirect (e.g. the
+  env export) must be active first, or the app won't find the moved file —
+  surface that ordering / gate on it. Deferred from the `--remove` PR.
 - [ ] **`--submit`** — open an upstream xdg-ninja PR from a local
   addition/override (gh OAuth fallback; strip local-only fields).
 - [ ] **`--update-db`** — exercise against upstream and verify obsolete-override
   detection (needs network; not unit-tested yet).
-- [ ] **pre-commit `check-jsonschema`** — local parity with the CI `json-schema`
-  job (validate `programs/` + `programs-local/` on commit).
 - [ ] **Multiple apps, one dotfile** — several programs can own the same `$HOME`
   path (e.g. `.m2` → maven + leiningen). `xdg-audit` currently shows a per-app
   list for such a query. See how common this is across the db; if frequent,

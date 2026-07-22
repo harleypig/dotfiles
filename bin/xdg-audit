@@ -39,6 +39,7 @@ my %cli = (
   movable   => undef,                  # tri-state: undef=any, 1=only movable, 0=only immovable
   reindex   => 0,
   update_db => 0,
+  remove    => 0,
 );
 
 # ------------------------------------------------------------------------------
@@ -832,6 +833,138 @@ sub mode_search {
 } ## end sub mode_search
 
 # ------------------------------------------------------------------------------
+# Removal (guarded $HOME mutation)
+# ------------------------------------------------------------------------------
+
+# Resolve a --remove target (app name or $HOME path) to its path entries,
+# reusing the lookup resolution: a path-ish query maps by owned path, an exact
+# app name loads that app, and otherwise a name fragment resolves by
+# find_by_name (the caller refuses an ambiguous multi-app match).
+sub resolve_target_entries {
+  my ($query) = @_;
+
+  return find_by_path($query) if $query =~ m{/} || $query =~ /^\./;
+
+  my $exact = load_app($query);
+  return @$exact if $exact;
+
+  return find_by_name($query);
+}
+
+# Prompt on STDIN, defaulting to No; returns true only on an explicit yes.
+sub prompt_yes {
+  my ($msg) = @_;
+  local $| = 1;
+  print $msg;
+
+  # An interactive confirmation must read the terminal, so STDIN is deliberate.
+  my $ans = <STDIN>; ## no critic (InputOutput::ProhibitExplicitStdin)
+  return defined $ans && $ans =~ /\A\s*y(?:es)?\s*\z/i ? 1 : 0;
+}
+
+# Delete a regular file, or a directory tree. Returns true on success.
+sub remove_path {
+  my ($abs) = @_;
+
+  if ( -d $abs && !-l $abs ) {
+    require File::Path;
+    my $err;
+    File::Path::remove_tree( $abs, { error => \$err } );
+    return ( $err && @$err ) ? 0 : 1;
+  }
+  return unlink($abs) ? 1 : 0;
+}
+
+# --remove <app|$HOME-path>: delete a confirmed leftover. Only a 'stray'
+# (present + redirect active) or a 'remove'-mechanism (unused app) file is
+# eligible; a symlink or an un-redirected file is refused. Every deletion is
+# confined to $HOME and confirmed interactively (default No). Never scan-wide —
+# the target must be named.
+sub mode_remove {
+  my ($query) = @_;
+
+  unless ( defined $query && length $query ) {
+    print {*STDERR} "$PROG: --remove needs an app name or \$HOME path\n";
+    return 1;
+  }
+
+  my @entries = resolve_target_entries($query);
+  unless (@entries) {
+    print "No known program or path matches '$query'.\n";
+    return 1;
+  }
+
+  # A mutation must be unambiguous: refuse a fragment spanning several apps.
+  my %apps = map { $_->{name} => 1 } @entries;
+  if ( keys %apps > 1 ) {
+    print_matches( \@entries, $query );
+    print "\nName one app (or a specific \$HOME path) to --remove.\n";
+    return 1;
+  }
+
+  my $home = home_dir();
+  print "$entries[0]{name}\n\n";
+
+  # First pass: show every path's disposition and collect the eligible ones.
+  # Prompting in a second pass keeps the status block from interleaving with
+  # the confirmation prompts when an app owns several paths.
+  my @eligible;
+  for my $e ( sort { $a->{path} cmp $b->{path} } @entries ) {
+    my $abs  = expand_path( $e->{path} );
+    my $disp = home_relative( $e->{path} );
+
+    if ( $e->{ignore} ) {
+      printf "  %-24s ignored (left in place)\n", $disp;
+      next;
+    }
+
+    my $group = classify($e) // ( path_exists($e) ? 'unhandled' : 'absent' );
+
+    if ( $group eq 'linked' ) {
+      printf "  %-24s linked (managed symlink) - not removed\n", $disp;
+      next;
+    }
+    if ( $group eq 'unhandled' ) {
+      printf "  %-24s unhandled - migrate it first (not a removal)\n", $disp;
+      next;
+    }
+    if ( $group ne 'stray' && $group ne 'remove' ) {
+      printf "  %-24s %s - nothing to remove\n", $disp, $group;
+      next;
+    }
+
+    # Eligible leftover — but never delete outside $HOME.
+    unless ( index( $abs, "$home/" ) == 0 ) {
+      printf "  %-24s resolves outside \$HOME (%s) - refused\n", $disp, $abs;
+      next;
+    }
+
+    my $kind = ( -d $abs && !-l $abs ) ? 'directory' : 'file';
+    printf "  %-24s %s - a leftover %s\n", $disp, $group, $kind;
+    push @eligible, $abs;
+  } ## end for my $e ( sort { $a->...})
+
+  # Second pass: confirm and delete each eligible leftover (default No).
+  my $removed = 0;
+  if (@eligible) {
+    print "\n";
+    for my $abs (@eligible) {
+      next unless prompt_yes("  Delete $abs? [y/N] ");
+
+      if ( remove_path($abs) ) {
+        print "  removed $abs\n";
+        $removed++;
+      } else {
+        print {*STDERR} "  $PROG: could not remove $abs: $!\n";
+      }
+    }
+  }
+
+  print "\n$PROG: removed $removed item(s).\n";
+  return 0;
+} ## end sub mode_remove
+
+# ------------------------------------------------------------------------------
 # Database lifecycle
 # ------------------------------------------------------------------------------
 
@@ -949,6 +1082,7 @@ USAGE
   xdg-audit [options] <app>        show what one app needs + live status
   xdg-audit [options] <$HOME-path> reverse-map a dotfile to its app
   xdg-audit --search <term>        search name/path/help text
+  xdg-audit --remove <app|path>    delete a confirmed leftover (asks first)
   xdg-audit --reindex              rebuild the enriched index cache
   xdg-audit --update-db [<ref>]    refresh the vendored mirror from upstream
 
@@ -956,6 +1090,7 @@ OPTIONS
   -a, --all                also show handled/ignored/linked/unknown, tagged
   --json                   machine-readable output (for tooling / AI)
   --search <term>          substring search across name, path, and help
+  --remove                 delete a confirmed leftover for <app|path> (asks)
   --mechanism <m>          restrict the scan to one mechanism (env/alias/wrap)
   --movable / --immovable  filter the scan by movability
   --db <dir>               database dir (default: $XDG_CONFIG_HOME/xdg-audit)
@@ -992,6 +1127,14 @@ OUTPUT
   --json emits a flat array; every record (handled, ignored, and unknown
   included) carries its "group" for tooling and agents.
 
+REMOVE
+  --remove <app|$HOME-path> deletes a confirmed leftover: a 'stray' (present,
+  its redirect already active) or a 'remove'-marked (unused app) file. It
+  shows the status, then asks before each deletion (default No). A symlink or
+  an un-redirected ('unhandled') file is refused - migrate those, do not
+  delete them - and every deletion is confined to $HOME. Name the app or
+  path; --remove never sweeps the whole scan.
+
 EXIT STATUS
   0  nothing actionable (no unhandled / stray / remove found)
   2  actionable findings (any unhandled / stray / remove)
@@ -1013,6 +1156,7 @@ GetOptions(
   'home=s'      => \$cli{home},
   'reindex'     => \$cli{reindex},
   'update-db'   => \$cli{update_db},
+  'remove'      => \$cli{remove},
   'help|h'      => sub { usage(0) },
 ) or usage(1);
 
@@ -1020,6 +1164,7 @@ GetOptions(
 # a scan with actionable findings returns 2; a clean run returns 0.
 my $exit = eval {
   if    ( $cli{update_db} )         { mode_update_db( $ARGV[0] ) }
+  elsif ( $cli{remove} )            { mode_remove( $ARGV[0] ) }
   elsif ( defined $cli{search} )    { mode_search( $cli{search} ) }
   elsif ( $cli{reindex} && !@ARGV ) { mode_reindex() }
   elsif (@ARGV)                     { mode_lookup( $ARGV[0] ) }
@@ -1044,6 +1189,7 @@ xdg-audit - audit $HOME for dotfiles that could move to XDG locations
   xdg-audit vim                    # what vim needs + live status
   xdg-audit .some-dir              # reverse-map a $HOME path to its app
   xdg-audit --search gradle        # search name/path/help
+  xdg-audit --remove docker        # delete a confirmed leftover (asks first)
   xdg-audit --json                 # machine-readable output
   xdg-audit --reindex              # rebuild the index cache
   xdg-audit --update-db            # refresh the vendored xdg-ninja mirror
@@ -1057,9 +1203,12 @@ upstream entries, adds programs upstream does not cover, marks paths to ignore,
 and annotates each path with a handling I<mechanism> (env / alias / symlink /
 wrap / remove).
 
-Every mode honours C<--json> so both a human and an agent can consume the
-output. Report-only: this first cut never moves or deletes files. See the
-B<OUTPUT> section of C<--help> for what each reported status means.
+Every reporting mode honours C<--json> so both a human and an agent can
+consume the output. The scan and lookups never touch C<$HOME>; the one
+mutating mode is C<--remove>, which deletes a confirmed leftover (a I<stray>
+or a I<remove>-marked file) for a named app or path, after showing its status
+and asking for confirmation (see the B<REMOVE> section of C<--help>). See the
+B<OUTPUT> section for what each reported status means.
 
 =head2 Loading strategy
 
