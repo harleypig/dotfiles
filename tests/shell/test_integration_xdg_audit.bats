@@ -250,6 +250,32 @@ J
   [[ "$output" == *'DL=$DOTFILES/mgloose .mgloose'* ]]
 }
 
+@test "--migrate symlink converts an env-redirected dotfile to a repo symlink (real check-dotfiles)" {
+  xdg_audit_run "$IMAGE" '
+    DB=/tmp/db; export DOTFILES=/tmp/df; export HOME=/tmp/cvthome
+    mkdir -p "$DB/programs-local" "$DOTFILES" "$HOME" /tmp/xdgcfg
+    cat > "$DB/programs-local/cvt.json" <<"J"
+{ "name":"cvt","files":[{"path":"$HOME/.cvt","movable":true,"mechanism":"symlink","env":"CVT_ENV","rewrite":"$DOTFILES/cvtcfg"}] }
+J
+    : > "$HOME/.dotlinks"
+    printf cvtdata > /tmp/xdgcfg/cvtcfg          # the file the env var points at
+    printf "y\n" | env HOME="$HOME" DOTFILES="$DOTFILES" CVT_ENV=/tmp/xdgcfg/cvtcfg \
+      /dotfiles/bin/xdg-audit --db "$DB" --home "$HOME" --migrate symlink cvt 2>&1
+    echo "LINK=$([ -L "$HOME/.cvt" ] && echo yes || echo no)"
+    echo "TARGET=$(readlink "$HOME/.cvt")"
+    echo "REPO=$(cat "$DOTFILES/cvtcfg" 2>/dev/null)"
+    echo "SRC=$([ -e /tmp/xdgcfg/cvtcfg ] && echo present || echo gone)"
+    echo "DL=$(cat "$HOME/.dotlinks")"
+  '
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"unset CVT_ENV"* ]]
+  [[ "$output" == *"LINK=yes"* ]]
+  [[ "$output" == *"TARGET=/tmp/df/cvtcfg"* ]]
+  [[ "$output" == *"REPO=cvtdata"* ]]
+  [[ "$output" == *"SRC=gone"* ]]
+  [[ "$output" == *'DL=$DOTFILES/cvtcfg .cvt'* ]]
+}
+
 # ---------------------------------------------------------------------------
 # --update-db against a local git upstream (hermetic; no network)
 # ---------------------------------------------------------------------------

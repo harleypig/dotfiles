@@ -77,7 +77,9 @@ should handle this" but "what does":
   loose link `check-dotfiles` won't maintain).
 - **env** — a declared `env` redirect is active (the variable is set, or the
   `rewrite` target exists). It is **clean** with no `$HOME` leftover, else
-  **leftover**.
+  **leftover**. A `symlink`-recommended path whose declared `env` var is
+  **exported and active** also reports current `env` (a divergence — an
+  `env → symlink` conversion candidate).
 - **hardcoded** — a present, real, un-redirected file that is not a symlink:
   the unmanaged state to migrate away from.
 - **unknown** — present but handled by a mechanism that can't be verified from
@@ -88,9 +90,10 @@ A lookup's detail line appends `(recommended: <mechanism>)` when the current
 mechanism diverges from the declared one, and `--json` carries
 `current_mechanism`, `recommended_mechanism`, `current_completeness`, a
 `divergence` verdict, and a `suggested_steps` array per record. `suggested_steps`
-holds the "instruct the rest" steps an agent can apply — currently the
-`export VAR=<target>` a hardcoded, env-recommended path needs to activate its
-redirect (empty once the redirect is active). This is the reporting half of the
+holds the "instruct the rest" steps an agent can apply — an `export VAR=<target>`
+(`action: export`) a hardcoded/symlink-current env-recommended path needs, or an
+`unset VAR` (`action: remove-export`) a symlink-recommended path currently
+redirected by env must drop when it converts (empty when no step applies). This is the reporting half of the
 mechanism state-machine ([ADR-0004](../../docs/adr/0004-xdg-audit-mechanism-state-machine.md));
 the migration transitions between mechanisms build on it in later phases.
 
@@ -178,9 +181,16 @@ shell config *before running the app again* — automate the move, instruct the
 export (ADR-0004's "automate the automatable, instruct the rest"; the same step
 also rides in `--json`'s `suggested_steps` for an agent to apply). It refuses
 when the **target already exists** (a redundant leftover — use `--remove`), when
-the file is a **symlink**, when either path escapes `$HOME`, or when an
-env-recommended entry declares **no variable** to export. A cross-filesystem
-*directory* move is refused (move it by hand).
+either path escapes `$HOME`, or when an env-recommended entry declares **no
+variable** to export. A cross-filesystem *directory* move is refused (move it by
+hand).
+
+**`symlink → env` conversion:** when the `$HOME` path is currently a **managed
+symlink** and the entry recommends `env`, `--migrate env` converts it — it drops
+the `~/.x` symlink and its `.dotlinks` entry, moves the dereferenced canonical
+file to the XDG `rewrite`, and instructs the export (rolling back the move + the
+dropped link/line on any partial failure). A broken symlink, or a `mechanism`
+other than `env`, is refused.
 
 Note: a `rewrite` under `$XDG_CONFIG_HOME` lands in the **tracked repo** (this
 setup's `$XDG_CONFIG_HOME` is `$DOTFILES/config`) — the confirmation shows the
@@ -206,6 +216,18 @@ git commit stays yours), and a partial failure **rolls back** (the file is moved
 back and the dotlinks line stripped). It refuses when no repo `rewrite` is
 declared, the target is outside `$DOTFILES` or already exists, or the source
 escapes `$HOME`.
+
+**`env → symlink` conversion:** when the path is currently redirected by an
+**env** variable and the entry recommends `symlink` (declaring both a
+`$DOTFILES` `rewrite` and the `env` var naming the live redirect), `--migrate
+symlink` converts it — it moves the file at `$ENV{<env>}` into the repo,
+registers it in `.dotlinks`, links it via `check-dotfiles`, and instructs
+**removing** the export (`unset VAR` + deleting the shell-config line; the same
+step rides in `--json` as a `remove-export` action). It refuses when a `$HOME`
+leftover blocks the link (`--remove` it first) or the redirect's target no
+longer exists. Because the redirect must be **visible** to xdg-audit, a
+non-exported variable can't be detected — such a path reads as `hardcoded` and
+the conversion is not offered.
 
 ## Fixing a partial setup
 
