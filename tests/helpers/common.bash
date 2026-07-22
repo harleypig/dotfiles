@@ -199,3 +199,33 @@ perl_run() {
   local image=$1 cmd=$2
   run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" "$image" bash -c "$cmd"
 }
+
+#------------------------------------------------------------------------------
+# xdg-audit integration harness. Build (cached) the xdg-audit test image and
+# echo its tag; skip the calling test when docker is unavailable or the build
+# fails. Carries git so `xdg-audit --update-db` (a git clone) can run against a
+# local upstream, and full perl for the core modules xdg-audit uses (see
+# tests/docker/xdg-audit/).
+
+xdg_audit_harness_image() {
+  command -v docker > /dev/null 2>&1 || skip "docker not available"
+
+  local tag=dotfiles-xdg-audit-test:latest
+  docker build -q -t "$tag" "$(dotfiles_root)/tests/docker/xdg-audit" > /dev/null 2>&1 \
+    || skip "could not build the xdg-audit test image"
+
+  printf '%s' "$tag"
+}
+
+#------------------------------------------------------------------------------
+# Run a command in a throwaway xdg-audit container with the repo mounted
+# read-only at /dotfiles and a tmpfs at /altfs (a genuinely separate
+# filesystem, for the cross-filesystem --migrate cases). Sets $output/$status
+# via bats `run`.
+#   xdg_audit_run "$IMAGE" 'xdg-audit --db /tmp/db --home /h --json'
+
+xdg_audit_run() {
+  local image=$1 cmd=$2
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" --tmpfs /altfs \
+    "$image" bash -c "$cmd"
+}

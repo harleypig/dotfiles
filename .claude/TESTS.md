@@ -64,16 +64,24 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`, and asserts
   the profile comes up (`DOTFILES` set, `powershell/startup/*` modules loaded)
   with no parser errors. Same skip-if-no-docker guard.
-- `tests/shell/test_integration_xdg_migrate.bats` — drives the **stock**
-  `perl:5.40-slim` image directly with a **`--tmpfs /altfs`** mount (a
-  genuinely separate filesystem) to exercise `xdg-audit --migrate` **across a
-  real filesystem boundary**, which the single-tempdir `tests/perl/xdg-audit.t`
-  cannot: a cross-fs FILE move must still succeed (`File::Copy::move`
-  copy+unlink) and a cross-fs DIRECTORY move must be **refused** (core-only,
-  no recursive copy). The directory case is the regression guard for an
-  `EXDEV`-detection bug (a deferred `require Errno` clobbered `$!` before the
-  check) — it fails against the buggy code and passes against the fix. Same
-  skip-if-no-docker guard.
+- `tests/docker/xdg-audit/` + `tests/shell/test_integration_xdg_audit.bats` —
+  a **fourth** harness image (Debian slim + `perl` + **git**) for
+  `bin/xdg-audit`, exercising what the hermetic unit suite
+  (`tests/perl/xdg-audit.t`, one synthetic tempdir) structurally cannot.
+  `common.bash` provides `xdg_audit_harness_image` and `xdg_audit_run` (which
+  also mounts a **`--tmpfs /altfs`** — a genuinely separate filesystem — for
+  the cross-fs cases). It covers: the read-only modes end-to-end against the
+  **real vendored database** in a clean env (index build over the real corpus,
+  plus `--json`, `--all`, lookup, reverse, `--search`, the filters, `--help`);
+  the mutating modes with **real filesystem side effects** in a throwaway
+  `$HOME` (`--remove` deletes a stray / refuses a symlink; `--migrate` moves a
+  file to its XDG target); `--migrate` **across a filesystem boundary** — a
+  FILE move must still succeed (`File::Copy::move` copy+unlink) and a DIRECTORY
+  move must be **refused** (`EXDEV`, core-only) — the regression guard for the
+  errno-clobbering bug the tempdir suite can't reach; and `--update-db`
+  against a **local git upstream** (hermetic, no network) proving the mirror
+  refresh + obsolete-override detection. The image carries git because
+  `--update-db` shells out to `git clone`. Same skip-if-no-docker guard.
 - `tests/docker/vmgr/` + `tests/shell/test_integration_vmgr.bats` — a
   **second** harness image (Debian slim + git/curl/xz) because `bin/vmgr`
   installs **real** toolchains: the test actually clones nvm and downloads a
