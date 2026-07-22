@@ -201,7 +201,7 @@ repos:
   # Prettier has no docker_image variant, so it stays a node hook like the
   # fixer. The vendored programs/ + json-schema/ mirror is deliberately NOT
   # gated here (xdg-ninja runs no formatter; we keep it pristine for
-  # --update-db) — see the prettier exclude in .pre-commit-config-fix.yaml.
+  # --update-db) — see the top-level exclude in .pre-commit-config-fix.yaml.
   - repo: local
     hooks:
       - id: prettier-check-overlays
