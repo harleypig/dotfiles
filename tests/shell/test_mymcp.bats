@@ -55,6 +55,25 @@ teardown() {
   assert_output --partial "api-key file not found"
 }
 
+@test "serena dispatches to docker with the image, project mount, config volume, and stdio flags" {
+  cat > "$STUB/docker" << EOF
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$STUB/docker.args"
+exit 0
+EOF
+  chmod +x "$STUB/docker"
+
+  run env PROJECTS_DIR="$BATS_TEST_TMPDIR/projects" DOTFILES="$FAKE" \
+    "PATH=$STUB:$PATH" "$ROOT/bin/mymcp" serena
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "run --rm -i"
+  assert_output --partial "-v $BATS_TEST_TMPDIR/projects:/workspaces/projects"
+  assert_output --partial "-v serena-config:/workspaces/serena/config"
+  assert_output --partial "ghcr.io/oraios/serena:latest serena start-mcp-server --transport stdio --enable-web-dashboard false"
+}
+
 @test "github reads its mcp-github token file and passes it to docker" {
   local keydir="$BATS_TEST_TMPDIR/projects/private_dotfiles/api-key"
   mkdir -p "$keydir"

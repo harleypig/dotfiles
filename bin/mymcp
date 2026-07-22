@@ -122,6 +122,35 @@ known_cmd['spec_dashboard']=1
 known_cmd['spec_client']=1
 
 #------------------------------------------------------------------------------
+# https://github.com/oraios/serena — dockerized stdio MCP server (coding-agent
+# toolkit driving language servers over your code). Runs the official image
+# headless: stdio transport with the web dashboard disabled, so no port or
+# --network host is needed. The projects tree ($PROJECTS_DIR) is mounted
+# read-write at /workspaces/projects so serena can operate on your code (refer
+# to a project by its in-container path, e.g. /workspaces/projects/<name>).
+# Serena's own state — config, logs, and the downloaded language servers (the
+# image's SERENA_HOME=/workspaces/serena/config) — lives in the named docker
+# volume `serena-config` (auto-created on first run), so there is NO host
+# ~/.serena footprint and language servers are not re-downloaded each session.
+# Register once at user scope (MCP servers are not configured in settings.json):
+#   claude mcp add serena --scope user -- mymcp serena
+# NOTE: the container runs as root (its config volume is root-initialized, so
+# --user cannot write it). Activating a project therefore writes a root-owned
+# <project>/.serena/ into it; redirect that via project_serena_folder_location
+# in the volume's serena_config.yml to keep host projects clean.
+serena() {
+  docker_run \
+    '-v' "${PROJECTS_DIR:-$(dirname "$DOTFILES")}:/workspaces/projects" \
+    '-v' 'serena-config:/workspaces/serena/config' \
+    'ghcr.io/oraios/serena:latest' \
+    'serena' 'start-mcp-server' \
+    '--transport' 'stdio' \
+    '--enable-web-dashboard' 'false'
+}
+
+known_cmd['serena']=1
+
+#------------------------------------------------------------------------------
 (($#)) || dw_die 2 "Usage: $selfname <${!known_cmd[*]}>"
 
 cmd="$1"
