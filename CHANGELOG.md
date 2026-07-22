@@ -14,6 +14,26 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **`xdg-audit` `env`↔`symlink` conversions.** Phase 2 Slice 2 of the mechanism
+  state-machine ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)):
+  `--migrate` now performs the two cross-mechanism conversions, using the
+  entry's *declared* mechanism as the target and the current `$HOME` state as
+  the divergence being converged. `symlink → env` (`--migrate env` on a managed
+  symlink whose entry recommends env) drops the link + its `.dotlinks` entry,
+  moves the dereferenced canonical file to the XDG target, and instructs the
+  export; `env → symlink` (`--migrate symlink` on an env-redirected path whose
+  entry recommends symlink and names its `env` var) moves the file at
+  `$ENV{<env>}` into the repo, registers it in `.dotlinks`, links it via
+  `check-dotfiles`, and instructs *removing* the export (a new `remove-export`
+  suggested step) — both confirmation-gated with full reverse-order rollback on
+  partial failure. `current_mechanism` now detects env-current for a
+  symlink-recommended entry whose declared (exported) `env` var is active, so
+  the divergence + its `suggested_steps` surface in the scan / `--json` / detail;
+  `--migrate recommended` routes the conversions and `--fix` still never
+  converts. No structural schema change — a `mechanism: symlink` entry may carry
+  `env` to name the variable it converts away from (description-only
+  clarification). (PR #292)
+
 - **`xdg-audit --migrate recommended` + hardcoded→env "instruct-the-export".**
   Phase 2 Slice 1 of the mechanism state-machine
   ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)).
