@@ -477,9 +477,16 @@ sub current_mechanism {
   return 'absent' unless $exists;
 
   # Present, real, not a symlink. An alias/wrap redirect can't be confirmed from
-  # a child process (that lands in a later phase), so those stay 'unknown';
-  # everything else — no annotation, 'remove', or a 'symlink' recommendation not
-  # yet realised as an actual link — is the unmanaged 'hardcoded' state.
+  # a child process, so those stay 'unknown'; everything else — no annotation,
+  # 'remove', or a 'symlink' recommendation not realised as a link — is the
+  # unmanaged 'hardcoded' state.
+  #
+  # ICEBOX: alias/wrap current-mechanism detection (installation-method
+  # detection, `bin/where` classification, `type -t`, aliased command, wrapper
+  # on PATH) is Phase 3 of ADR-0004 and is ICEBOXED (2026-07-22) — near-zero
+  # demand (1 alias entry, 0 wrap) + no command field in the schema + the
+  # shell-context (bash -ic) constraint. Revisit only on a real alias/wrap
+  # entry. See docs/adr/0004 *Phase 3 status*.
   return 'unknown' if $mech eq 'alias' || $mech eq 'wrap';
   return 'hardcoded';
 } ## end sub current_mechanism
@@ -1325,7 +1332,14 @@ sub mode_migrate_recommended {
 # Resolve the single recommended mechanism for an app's entries, or an error.
 # Returns ($mech, undef) when exactly one implementable mechanism is declared
 # across the non-ignored entries, else (undef, message). alias/wrap/remove are
-# declared-but-not-yet-migratable; several distinct mechanisms are ambiguous.
+# not `--migrate` targets; several distinct mechanisms are ambiguous.
+#
+# ICEBOX: alias/wrap as --migrate targets (the alias/wrap transition cells,
+# the full N×N mechanism matrix, instruct-the-alias-line, the bin/<app>
+# self-wrap tier) are Phase 3 of ADR-0004 and are ICEBOXED (2026-07-22) —
+# near-zero demand (1 alias entry, 0 wrap across the corpus). Revisit only on
+# real alias/wrap entries or a decision to build the self-wrap tier. See
+# docs/adr/0004 *Phase 3 status*.
 sub resolve_recommended_mechanism {
   my ($entries) = @_;
   my $name = $entries->[0]{name};
@@ -1353,7 +1367,7 @@ sub resolve_recommended_mechanism {
   return (
     undef,
     "the recommended mechanism for $name is '$only', which --migrate cannot yet perform"
-      . " (alias/wrap/remove arrive in a later phase - see ADR-0004)"
+      . " (alias/wrap are iceboxed, remove is via --remove - see ADR-0004 Phase 3 status)"
   );
 } ## end sub resolve_recommended_mechanism
 

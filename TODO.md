@@ -569,13 +569,13 @@ relocation (moving an install, symlinking) is a separate step.
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
   `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
   (Java/Maven/cpan).
-- [ ] **Mechanism state-machine — Phase 3** (ADR-0004; ICEBOX-candidate).
-  General installation-method detection beyond the easy signals; `alias`/`wrap`
-  transitions (alias as a migrate target — instruct/suggest, with `bin/where`
-  confirming it's active; `wrap` *suggests* creating the `bin/<app>` wrapper);
-  the full N×N transition matrix; inferring the recommended mechanism from
-  xdg-ninja `help` prose. The `bin/where` prerequisite for alias detection is
-  done (PR #286).
+- [ ] **Vendored `programs/*.json` are prettier-dirty (~140 files).** The
+  check config deliberately doesn't prettier-gate the vendored upstream db
+  (only the local overlays), but the *fix* config's broad `prettier` hook
+  reformats ~140 `config/xdg-audit/programs/*.json` on any `--all-files` run —
+  noise that masks real diffs. Either exclude `programs/` from the fix-config
+  prettier hook, or prettier-format on `--update-db` vendoring so the tree
+  stays clean. (Surfaced while iceboxing Phase 3.)
 - [ ] **`--migrate` cross-filesystem *directory* move** — v1 refuses an EXDEV
   directory move (a recursive copy needs a non-core module; the script is
   core-only). Add an `mv`-shell-out or core recursive strategy if a real case
