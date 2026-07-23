@@ -232,7 +232,7 @@ and documentation:
 - **Development**: ansible, binenv, docker, gh, git, go, npm, perl, python,
   pypoetry, rustup
 - **CLI Tools**: act, glow, htop, linode-cli, opencode, pgcli, snyk, yamllint
-- **Applications**: audacity, calibre, Cursor, cursor, gnome-initial-setup-done
+- **Applications**: audacity, Cursor, cursor, gnome-initial-setup-done
 - **Configuration**: completions, configstore, readline, shell-startup, subdir
 - **Task Management**: task (taskwarrior)
 - **Other**: Bitwarden CLI, burn-my-windows, coc, pudb, test, user-dirs.dirs,

@@ -22,6 +22,10 @@ goes green (see the merge-time finalization in
   entry, and the README module bullet (rather than fold a dead setting into
   `app_env_vars`). The calibre application config dir `config/calibre/` is a
   separate concern, left in place. (PR #311)
+- **Removed the calibre application config too.** Follow-up to the module
+  removal above: with calibre unused in this setup, its GUI config dir
+  `config/calibre/` (untracked, gitignored local state) was deleted, and its
+  entry dropped from the README config-directory map. (PR #312)
 
 ### Fixed
 
