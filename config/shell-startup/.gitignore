@@ -11,7 +11,6 @@
 !app_env_vars
 !bash_prompt
 !binenv
-!calibre
 !claude
 !cuda
 !docker

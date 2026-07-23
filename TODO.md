@@ -148,8 +148,6 @@ audit.
   `ANSIBLE_CONFIG` (+ `mkdir`), nothing shell-facing. Cover the siblings
   (`ansible-playbook` / `-galaxy` / `-vault`) via a shared `bin/_ansible-env`
   the wrappers source.
-- [ ] **calibre** → fold its single `CALIBRE_USE_DARK_PALETTE=1` into
-  `app_env_vars` (1 setting), or a `bin/calibre` wrapper.
 - [ ] **claude** → a `bin/claude` wrapper candidate for
   `CLAUDE_CODE_NO_FLICKER`. First **verify** nothing (hook/tool) reads
   `CLAUDE_CONFIG_DIR` from the ambient env, and coordinate `CLAUDE_CONFIG_DIR`

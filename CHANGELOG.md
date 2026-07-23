@@ -12,6 +12,17 @@ goes green (see the merge-time finalization in
 
 ## 2026-07-23
 
+### Removed
+
+- **Dropped the unused `config/shell-startup/calibre` module.** It exported
+  `CALIBRE_USE_DARK_PALETTE=1` (a GUI-only dark-palette flag) into every shell
+  where `/usr/bin/calibre` exists, but calibre is not used in the dotfiles
+  setup — the only calibre use is calibre-web on the production server, which
+  needs no GUI palette flag. Removed the module, its `.gitignore` allowlist
+  entry, and the README module bullet (rather than fold a dead setting into
+  `app_env_vars`). The calibre application config dir `config/calibre/` is a
+  separate concern, left in place. (PR #311)
+
 ### Fixed
 
 - **Silenced the shell-startup link-checks in non-interactive shells.**
