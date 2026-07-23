@@ -131,9 +131,6 @@ from the audit. Each is its own task:
 
 ### Shell-startup follow-ups (from audit)
 
-- [ ] **gcloud completion cost** — `010-general`'s gcloud block runs
-  `gcloud info --format=…` every login to locate `completion.bash.inc`. Cache
-  the resolved `sdk_root` path so the subprocess doesn't run on every shell.
 - [ ] **non-interactive startup** — `shell-startup` runs to completion
   regardless of interactivity; `zzz-check-dotfiles` / `zzz-check-dotvim` run
   their checks even in a non-interactive shell. Verify nothing prints to

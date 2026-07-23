@@ -203,6 +203,11 @@ fi
 # shell-facing completion (which must be sourced) stays here.
 # shellcheck disable=SC1091
 if havecmd gcloud; then
+  # ICEBOX: startup cost — this `gcloud info` spawns a subprocess every login
+  # just to resolve installation.sdk_root and locate completion.bash.inc.
+  # Considered caching the resolved sdk_root so it doesn't run per-login;
+  # deferred (not now); revisit on request. Keywords: gcloud completion
+  # cache, sdk_root, per-login shell-startup speed.
   gcpath="$(gcloud info --format='value(installation.sdk_root)')"
   completion_file="$gcpath/completion.bash.inc"
   [[ -f $completion_file ]] && source "$completion_file"
