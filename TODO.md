@@ -543,13 +543,6 @@ relocation (moving an install, symlinking) is a separate step.
 - [ ] **grok** — convert `~/.grok` to a managed symlink into a repo, like
   `~/.claude` (grok hardcodes `~/.grok` with no relocation env). Tracked via
   overlay; the symlink itself is a per-machine action.
-- [ ] **serena** — dockerized MCP wiring added: `mymcp serena` runs the
-  official `ghcr.io/oraios/serena` image over stdio, with serena's state (config,
-  logs, language servers) in the `serena-config` docker volume and `$PROJECTS_DIR`
-  mounted at `/workspaces/projects` — no host `~/.serena` footprint. (Serena had
-  actually been *dropped* as an MCP server on 2026-06-10, so it isn't currently
-  running.) Remaining per-machine: remove the stale `~/.serena` leftover, and
-  register it if wanted (`claude mcp add serena --scope user -- mymcp serena`).
 - [ ] Per-machine: clear the leftover strays for the already-redirected tools
   once their new XDG locations are populated.
 
