@@ -29,6 +29,18 @@ goes green (see the merge-time finalization in
 
 ### Fixed
 
+- **Pinned the `bin/shfmt` docker-wrapper image to the gate's shfmt version.**
+  The wrapper used a floating `mvdan/shfmt:v3` tag while the pre-commit hooks
+  (`pre-commit-shfmt` `rev: v3.13.1-1`) and the CI meta suite
+  (`SHFMT_VER=v3.13.1`) pin shfmt v3.13.1. The floating tag resolved to
+  v3.13.1 today (the reported `f() { a; b; }` divergence was really a flag
+  omission — `bin/shfmt` matches the gate when passed `-i 2 -s -bn -ci -sr`),
+  but the next shfmt minor would silently drift the wrapper off the gate.
+  Pinned `image[shfmt]` to `v3.13.1` with a `# SYNC:` note, corrected the
+  stale `tests.yml` reference, and added a regression test asserting the shfmt
+  version agrees across `bin/docker_wrapper`, both pre-commit configs, and
+  `tests.yml`. (PR #315)
+
 - **Silenced the shell-startup link-checks in non-interactive shells.**
   `zzz-check-dotfiles` / `zzz-check-dotvim` invoked `check-dotfiles` /
   `check-dotvim` unconditionally, so a non-interactive login shell — what
