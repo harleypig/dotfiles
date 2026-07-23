@@ -136,9 +136,6 @@ from the audit. Each is its own task:
   their checks even in a non-interactive shell. Verify nothing prints to
   stdout on a non-interactive source (would corrupt `scp`/`rsync` if `BASH_ENV`
   ever points here); guard with `[[ $- == *i* ]]` if so.
-- [x] **Document the module-placement convention** in `.claude/` — done:
-  [`.claude/CONVENTIONS.md`](.claude/CONVENTIONS.md) *Shell-startup Module
-  Placement* (the env-vs-bin split + hygiene rules).
 
 ### Move env-polluting shell-startup setup into bin wrappers
 
@@ -150,9 +147,6 @@ polluting the global environment. The convention is now written down in
 Placement*; the per-module items below are the actionable findings of the
 audit.
 
-- [x] **Audit every `config/shell-startup/` module** — done; the per-module
-  move/keep/partial report is in the PR that added these items, and its
-  actionable findings are the tasks below.
 - [ ] **aider** — folds into the **AGENTS.md migration** (dotagents
   `audit/BACKLOG.md`), *not* a `bin/aider` wrapper: aider reads AGENTS.md, so
   its `AIDER_*` / `AIDER_EDITOR` / `AIDER_COMMIT_PROMPT` env is made
