@@ -17,6 +17,22 @@ git rev-parse &> /dev/null || exit 0
 plain=0
 [[ ${1:-} == --plain ]] && plain=1
 
+# ICEBOX: unified statusline strategy across the four surfaces — bash prompt,
+# tmux status bar, vim statusline, and the Claude statusline
+# (bin/statusline.sh in the dotagents repo, the one surface already built).
+# Goal: no surface duplicates another's info; each owns a distinct slice and
+# suppresses what another layer already shows. Proposed ownership — bash
+# prompt: exit code, venv, git branch+dirty (only when not in tmux/vim);
+# tmux: host, session, clock, weather; vim: filename, filetype, lint errors,
+# mode, git branch (only when not in tmux); Claude: model, ctx %, cost,
+# worktree (drop git branch — and possibly the model name — when the tmux bar
+# already shows them). Mechanism: detect context via $TMUX / $VIM|$VIMRUNTIME
+# / $CLAUDE_SESSION_ID and make THIS script (git-status) respect context flags
+# so each caller can suppress duplicate git info per surface; then document
+# the ownership split. Deferred to icebox 2026-07-23 at the user's request
+# (revisit on request); hoisted from the repo's TODO.md "Statusline Setup"
+# section (unified-statusline / prompt-vs-tmux-vs-vim duplicate-suppression).
+
 # Are we in a bare repo?
 [[ $(git rev-parse --is-bare-repository) == 'true' ]] && {
   bare_color=$(ansi bg red fg yellow)
