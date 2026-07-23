@@ -158,3 +158,12 @@ setup() {
   dw_tty_if_attached args
   assert_equal "${args[*]}" ""
 }
+
+#------------------------------------------------------------------------------
+# dw_stdin_if_piped (stdin is not a tty under bats -> keeps stdin open)
+
+@test "dw_stdin_if_piped adds --interactive when stdin is not a tty" {
+  local -a args=()
+  dw_stdin_if_piped args
+  assert_equal "${args[*]}" "--interactive"
+}

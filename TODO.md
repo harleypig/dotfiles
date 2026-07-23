@@ -171,16 +171,6 @@ audit.
 
 ## 🐳 Docker tooling Setup
 
-### Audit other wrappers for the piped-stdin gap (LOW PRIORITY)
-
-- [ ] PR #175 fixed `docker_wrapper`'s `shfmt()` dropping piped stdin (it ran
-  `docker run` without `-i`, so `shfmt … < file` saw an empty stream). The
-  same latent bug exists in any other wrapper that a caller might pipe into —
-  `shellcheck -`, `prettier` via stdin, etc. Nothing in the repo pipes to them
-  today, so it's theoretical, but a one-line `[[ -t 0 ]] || args+=(-i)` per
-  affected `<tool>()` would make the dispatcher uniformly stdin-safe. Audit
-  the wrappers, decide which genuinely accept stdin, and add `-i` to those.
-
 ### Research: run more linters/formatters via Docker
 
 Today only some tools have a `bin/` docker wrapper (shellcheck, shfmt,

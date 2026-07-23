@@ -209,6 +209,22 @@ dw_tty_if_attached() {
 }
 
 #-----------------------------------------------------------------------------
+# Keep stdin open (--interactive) when the tool is being piped into, so a
+# filter invocation reaches the container instead of an empty stream — e.g.
+# `shellcheck -`, `shfmt < file`, `perltidy`, `prettier --stdin-filepath`.
+# No-op when stdin is a terminal (a normal file-argument invocation), so an
+# interactive run is unaffected. Add this only to tools with a real stdin/`-`
+# mode; a tool that ignores stdin has no use for it.
+
+dw_stdin_if_piped() {
+  local -n _a=$1
+
+  [[ -t 0 ]] && return 0
+
+  _a+=(--interactive)
+}
+
+#-----------------------------------------------------------------------------
 # Fail fast: every non-flag argument naming an EXISTING path must live under
 # $PWD (the only directory mounted into the container). $1 is the tool name
 # (for the message); the rest are the tool's argv. Flags are skipped.

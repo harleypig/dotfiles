@@ -107,6 +107,57 @@ teardown() {
   assert_output --partial "doc.md"
 }
 
+# --- stdin-safety (the piped-stdin gap) ---------------------------------------
+
+@test "stdin-accepting wrappers keep stdin open (--interactive) when piped" {
+  # Each tool has a real stdin/`-` filter mode, so the wrapper must forward
+  # stdin (via dw_stdin_if_piped). `run` gives a non-tty stdin, so the -t 0
+  # guard is false and --interactive must be added. Tools without a stdin mode
+  # (trivy, dive, tflint, terraform-docs) deliberately omit it — see below.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf '#!/usr/bin/env bash\necho hi\n' > f.sh
+
+  local t
+  for t in shellcheck shfmt yamllint prettier hadolint markdownlint \
+    perltidy perlcritic packer; do
+    rm -f "$STUB/docker.args"
+    run env "PATH=$STUB:$PATH" "$ROOT/bin/$t" f.sh
+    assert_success
+    run cat "$STUB/docker.args"
+    assert_output --partial "--interactive"
+  done
+}
+
+@test "a non-stdin wrapper does not add --interactive when piped" {
+  # tflint operates on a directory, not stdin, so it must NOT forward stdin.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/tflint" --version
+  assert_success
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "--interactive"
+}
+
+@test "a stdin wrapper omits --interactive when stdin is a terminal" {
+  command -v script > /dev/null || skip "no script(1) to allocate a pty"
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf '#!/usr/bin/env bash\necho hi\n' > f.sh
+
+  # script(1) gives the wrapper a pty on stdin, so the -t 0 guard is true and
+  # dw_stdin_if_piped is a no-op — an interactive run must not be turned
+  # non-interactive. Skip where a pty can't be allocated (sandbox/CI).
+  script -qec "env PATH=$STUB:$PATH $ROOT/bin/shellcheck f.sh" /dev/null \
+    > /dev/null 2>&1 || true
+  [[ -f "$STUB/docker.args" ]] || skip "pty allocation unavailable here"
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "--interactive"
+}
+
 @test "the path guard blocks a file outside PWD before docker runs" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
