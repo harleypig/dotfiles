@@ -155,7 +155,19 @@ audit.
 - [ ] **binenv** (partial) — move `BINENV_CACHEDIR` / `CONFDIR` / `LINKDIR`
   (+ `mkdir`) to a `bin/binenv` wrapper; keep the completion but gate it
   `[[ $- == *i* ]]` and **vendor** it to `config/completions/binenv` (it
-  currently forks `binenv` on every shell).
+  currently forks `binenv` on every shell). **Gated on the binenv keep/drop
+  decision below** — binenv isn't used on this box (not installed, so the
+  module is inert), so whether this hygiene is worth doing at all is
+  ansible-stuff's call.
+  - → **ansible-stuff**: decide whether binenv stays in the provisioning
+    strategy. It is the active package manager there (its `package_manager`
+    role installs binenv, defines a binenv packages map, and has roadmap
+    items for it), but is unused for dotfiles and golden-image. The dotfiles
+    side is binenv's config half — `config/binenv/distributions.yaml` (the
+    sources catalog) and `config/shell-startup/binenv` (`BINENV_CONFDIR`,
+    etc.). If kept, own that coupling; if dropped, remove ansible-stuff's
+    binenv role and the dotfiles binenv config together. Cross-repo: migrate
+    to ansible-stuff's `BACKLOG.md` when next working that repo.
 
 ### Surfaced from comment cleanup
 
