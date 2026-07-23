@@ -167,28 +167,13 @@ audit.
   `[[ $- == *i* ]]` and **vendor** it to `config/completions/binenv` (it
   currently forks `binenv` on every shell).
 
-### Shell-startup env-pollution hygiene (from audit)
-
-Keep the module, but fix the pollution it leaves in the interactive shell:
-
-- [x] **perl** — `unset -f setup_perlbrew setup_dzil setup_prove` at the
-  module's end; they linger in the shell namespace after startup.
-- [x] **ssh-config-completion** — make `SSH_KNOWN_HOSTS` / `SSH_CONFIG_HOSTS`
-  `local` in the `_ssh` function (they leak to the global shell on each
-  completion). *(tmux's `export -f` / `circled_digits` pollution is tracked
-  under* Surfaced from comment cleanup *below.)*
-
 ### Surfaced from comment cleanup
 
 - [ ] `config/shell-startup/tmux` - when multiple tmux sessions exist, have
   `ta` list them and let the user choose, instead of always attaching the
-  `$USER` session. (Marker at the `ta` definition.)
-  - [x] From the shell-startup audit: trim env pollution — `export -f ta`
-    (and `set_title`/`unset_title`) pushes interactive helpers into every
-    child process, and `circled_digits` is set at module scope but never
-    unset. Scope or unset them while reworking `ta`. *(Done independently of
-    the `ta` chooser rework above: dropped the `export -f`s and made
-    `circled_digits` function-local.)*
+  `$USER` session. (Marker at the `ta` definition.) The env-pollution trim
+  (dropping `export -f`, scoping `circled_digits`) is already done; this is
+  the interactive chooser rework, which needs a terminal session to verify.
 
 ## 🐳 Docker tooling Setup
 
