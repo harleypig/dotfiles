@@ -12,6 +12,24 @@ goes green (see the merge-time finalization in
 
 ## 2026-07-23
 
+### Fixed
+
+- **Stopped three shell-startup modules polluting the shell environment.** The
+  module audit flagged scratch left in every login shell — and, for
+  `export -f`ed functions, in every child process. `config/shell-startup/perl`
+  now `unset -f`s its load-time `setup_perlbrew`/`setup_dzil`/`setup_prove`
+  helpers once they've run (`setup_perlbrew` before the interactive guard, so
+  a non-interactive source is cleaned too); `ssh-config-completion` scopes
+  `SSH_KNOWN_HOSTS`/`SSH_CONFIG_HOSTS` `local` in `_ssh` so they no longer
+  leak globally on each completion; and `tmux` drops the `export -f` on
+  `set_title`/`unset_title`/`ta` (no child needs them) and moves the
+  `circled_digits` glyph table inside `tmux_winidx_circled` so it stops
+  polluting module scope. Regression coverage in
+  `test_ssh_config_completion.bats`, `test_shell_startup_perl.bats`, and two
+  source-level guards in `test_tmux.bats`. The tmux `ta` multi-session-chooser
+  rework stays open (needs interactive testing); only its pollution trim
+  landed here. (PR #309)
+
 ### Changed
 
 - **Iced the unified-statusline strategy.** At the user's request, removed the

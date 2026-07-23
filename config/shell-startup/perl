@@ -103,6 +103,12 @@ setup_prove() {
 # it before the interactive guard.
 setup_perlbrew
 
+# setup_perlbrew is a load-time helper; drop it so it does not linger in the
+# shell namespace. Unset it before the interactive guard so non-interactive
+# shells are cleaned too; the interactive-only setup_dzil/setup_prove are
+# unset at the module's end.
+unset -f setup_perlbrew
+
 ##############################################################################
 # Interactive-only below - aliases and helpers.
 
@@ -123,3 +129,7 @@ havecmd cpanm && {
 
 setup_dzil
 setup_prove
+
+# The setup_* helpers only defined aliases (which persist); the functions
+# themselves are load-time scratch, so drop them from the shell namespace.
+unset -f setup_dzil setup_prove
