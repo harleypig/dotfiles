@@ -6,15 +6,19 @@
 # `tmux display-message`, so the tests stub `tmux` to feed a chosen index and
 # assert the boundary + per-index glyph selection.
 #
-# The function and its `circled_digits` table are extracted from the module
-# and eval'd in isolation (the module also wires aliases/exports/`ta`); this is
-# the same in-isolation approach as test_havecmd.
+# The function is extracted from the module and eval'd in isolation (the module
+# also wires aliases/`ta`); this is the same in-isolation approach as
+# test_havecmd. The `circled_digits` glyph table lives *inside* the function
+# (function-local, so it doesn't pollute module scope), so extracting the
+# function body carries the table with it.
 
 load ../helpers/common
 
-# Pull the circled_digits table line plus the function body out of the module.
+TMUX_MODULE_REL="config/shell-startup/tmux"
+
+# Pull the tmux_winidx_circled function (table included) out of the module.
 extract_winidx() {
-  sed -n '/^circled_digits=/,/^}/p' "$(dotfiles_root)/config/shell-startup/tmux"
+  sed -n '/^tmux_winidx_circled()/,/^}/p' "$(dotfiles_root)/$TMUX_MODULE_REL"
 }
 
 setup() {
@@ -54,4 +58,19 @@ setup() {
 
   [ -n "$g5" ]
   [ "$g5" != "$g6" ]
+}
+
+# Env-pollution hygiene guards (source-level): the interactive helpers must not
+# be pushed into child processes, and no module-scope scratch var should leak.
+
+@test "the tmux module does not export helpers into child processes" {
+  run grep -nE '^[[:space:]]*export -f' "$(dotfiles_root)/$TMUX_MODULE_REL"
+  assert_failure
+}
+
+@test "circled_digits is function-local, not a module-scope global" {
+  # A module-scope assignment would be a line beginning `circled_digits=`;
+  # inside the function it is preceded by `local`.
+  run grep -nE '^circled_digits=' "$(dotfiles_root)/$TMUX_MODULE_REL"
+  assert_failure
 }

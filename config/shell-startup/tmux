@@ -14,14 +14,12 @@ alias swapr='tmux swap-window -t +1 ; tmux select_window -t +'
 # swap this window with the one passed in
 alias swapw='tmux swap-window -t'
 
+# Interactive helpers the user calls; no child needs them, so they are not
+# `export -f`ed (that would push them into every child process's env).
 # shellcheck disable=SC1003  # literal \e in the printf format, not a quote
 set_title() { printf '\ek%s\e\\' "$1"; }
 # shellcheck disable=SC1003  # literal \e in the printf format, not a quote
 unset_title() { printf '\ek\e\\'; }
-export -f set_title unset_title
-
-# shellcheck disable=SC1083
-circled_digits=$(printf %s \${$'\xEA',\`,{a..s}} | iconv -f UTF-16BE)
 
 tmux_winidx_circled() {
   local winidx
@@ -29,7 +27,15 @@ tmux_winidx_circled() {
 
   if ((winidx > 20)); then
     echo "($winidx)"
+
   else
+    # The circled-digit table is function-local so it doesn't pollute module
+    # scope. This helper isn't wired into the status line (not a hot path), so
+    # rebuilding the table per call is fine.
+    local circled_digits
+    # shellcheck disable=SC1083
+    circled_digits=$(printf %s \${$'\xEA',\`,{a..s}} | iconv -f UTF-16BE)
+
     echo "${circled_digits:winidx:1}"
   fi
 }
@@ -45,10 +51,10 @@ if havecmd ta; then
   :
 
 else
+  # Not `export -f`ed: ta is an interactive attach helper; a child interactive
+  # shell defines its own via startup, so no child needs it in its env.
   ta() {
     tmux has-session -t "$USER" &> /dev/null || tmux new-session -d -s "$USER"
     tmux -2 a -t "$USER"
   }
-
-  export -f ta
 fi
