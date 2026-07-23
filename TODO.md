@@ -97,39 +97,21 @@ pattern** they share.
   (e.g. nvm vs an alternative Node manager) plus a regression test, once such
   a language actually exists.
 
-## 📦 Package Install Setup
+## 📦 Machine Provisioning Setup
 
-Automate listing and installing the **packages/tools** a fresh machine needs,
-distinct from the version/tool *managers* themselves (*Tool/Version Manager
-Setup*). The managers provide the runtime; this provides the things installed
-*through* them.
-
-- [ ] Build the idempotent **installer** (a `bin/` tool) that consumes
-  `config/packages/manifest.json` and installs each package by its priority
-  list, like vmgr's per-manager fallback — including `taskwarrior-scalpel`'s
-  first-party source install. Needs a docker integration test (real installs,
-  no mocking), per the vmgr precedent.
-- [ ] **Revisit the manifest evaluation for each remaining language.** The
-  catalog currently covers only node- and python-installable apps (so the
-  `bin/docker_wrapper` tools get a non-Docker fallback recorded). Still to
-  evaluate, as each language's vmgr module lands: the docker_wrapper tools
-  built on other toolchains — `shellcheck` + `hadolint` (Haskell),
-  `shfmt` + `trivy` + `dive` (Go). Add a `language` entry + install priority
-  for each when its toolchain is tackled. (Services — `ollama`, `openwebui` —
-  are out of scope: managed separately, mostly on the Linode server; recorded
-  in the manifest's excluded list, not here.)
+- [ ] Convert this box's provisioning to **ansible-stuff**
+  (`$PROJECTS_DIR/ansible-stuff`): adopt its live-machine playbook (once it
+  lands) to upgrade/convert this machine's package set. Package installation
+  now lives in ansible-stuff — it superseded the former bespoke `bin/`
+  installer plan, and that repo owns the forward roadmap (the
+  `manifest.json`-injection seam, `taskwarrior-scalpel` first-party install,
+  remaining-language coverage, apt/system packages). This item is the
+  dotfiles-side hook into that work. `config/packages/manifest.json` stays
+  maintained for now as a candidate source-of-truth an ansible role may
+  consume.
 - [ ] Vim's needs: install what vim requires that isn't self-provided (coc
   installs most of its own dependencies — scope this to the gaps coc doesn't
   cover, don't duplicate it).
-- [ ] **System/apt packages — rule + installer coverage** (retrospective,
-  PR #193). `docs/system-packages.md` now documents apt-installed native
-  binaries (gh first), but two gaps remain: (a) the manifest-driven installer
-  above covers only version-manager packages — decide whether apt/system
-  packages get a parallel manifest/installer or stay doc-only; (b) the global
-  `rules/gh.md` (v1.3.0) has no install/minimum-version guidance — add a note
-  that `gh` should come from the vendor apt repo, since the distro package can
-  be too old and break on sunset GraphQL fields like `projectCards`
-  (cli/cli#11983).
 
 ## 🐚 Shell-startup Setup
 
