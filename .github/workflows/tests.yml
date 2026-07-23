@@ -45,7 +45,7 @@ jobs:
   # The generated meta suite: static checks (shebang, bash -n, shellcheck,
   # shfmt) over bin/, lib/, and skill helpers. shellcheck + shfmt are pinned to
   # the SAME versions the repo uses locally — the docker wrappers
-  # (koalaman/shellcheck:stable, mvdan/shfmt:v3) and the pre-commit hooks
+  # (koalaman/shellcheck:stable, mvdan/shfmt:v3.13.1) and the pre-commit hooks
   # (shellcheck v0.11.0, shfmt v3.13.1) — so results match what runs locally,
   # no version skew. Installed as native binaries (no docker) to stay fast and
   # avoid Docker Hub pull flakiness.
