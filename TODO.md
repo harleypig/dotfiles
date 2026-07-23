@@ -548,13 +548,6 @@ relocation (moving an install, symlinking) is a separate step.
 
 ### xdg-audit follow-ups
 
-- [ ] **`--submit`** — open an upstream xdg-ninja PR from a local
-  addition/override (gh OAuth fallback; strip local-only fields).
-- [ ] **Multiple apps, one dotfile** — several programs can own the same `$HOME`
-  path (e.g. `.m2` → maven + leiningen). `xdg-audit` currently shows a per-app
-  list for such a query. See how common this is across the db; if frequent,
-  decide on better handling (merge into one finding, disambiguate, or annotate
-  which app "owns" the path).
 - [ ] → **dotagents**: teach the agent config to use `xdg-audit` as part of
   tool setup/configuration — when standing up a tool, check its `$HOME`
   footprint and create the appropriate `programs-local/` overlay entry

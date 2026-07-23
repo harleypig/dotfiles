@@ -953,6 +953,12 @@ sub find_by_name {
 }
 
 # One distinct app → its detail; none → no-match; several → a per-app list.
+#
+# A $HOME path claimed by several programs (e.g. .node-gyp by node-gyp + npm,
+# 42 such shared paths in the db) intentionally shows this per-app list rather
+# than merging into one finding or annotating a single "owner": the list is the
+# clearest disambiguation, and no program truly "owns" a shared path. Decided
+# 2026-07-23; do not re-file as "multiple apps, one dotfile".
 sub resolve_and_show {
   my ( $hits, $query ) = @_;
   my %apps;
@@ -2123,6 +2129,14 @@ sub mode_reindex {
 
 # Refresh the pristine mirror from upstream, then flag overrides whose recorded
 # upstream digest no longer matches (i.e. upstream likely caught up).
+#
+# ICEBOX: the reverse operation, `--submit` (open an upstream xdg-ninja PR
+# from a local addition/override — strip the local-only fields per the overlay
+# .schema.json, validate against the pristine json-schema/program.json, fork
+# b3nj5m1n/xdg-ninja + PR via gh OAuth fallback) is ICEBOXED (2026-07-23):
+# no local addition currently needs upstreaming, and it auto-contributes to
+# a third-party public repo. Revisit when there is something to submit; the
+# strip-to-pristine semantics are already documented in the overlay schema.
 sub mode_update_db {
   my ($ref_arg) = @_;
   my $dbd       = db_dir();
