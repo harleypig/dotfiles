@@ -548,15 +548,6 @@ relocation (moving an install, symlinking) is a separate step.
 
 ### xdg-audit follow-ups
 
-- [ ] **Self-wrap tier** — implement `mechanism: wrap`: a `bin/<app>` wrapper
-  using `unshare --user --map-root-user --mount` + `mount --bind` (confirmed
-  working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
-  `rules/<wrap-mechanism>.md`. For apps that hardcode paths with no env var
-  (Java/Maven/cpan).
-- [ ] **`--migrate` cross-filesystem *directory* move** — v1 refuses an EXDEV
-  directory move (a recursive copy needs a non-core module; the script is
-  core-only). Add an `mv`-shell-out or core recursive strategy if a real case
-  appears (e.g. jbang, a 471M dir).
 - [ ] **`--submit`** — open an upstream xdg-ninja PR from a local
   addition/override (gh OAuth fallback; strip local-only fields).
 - [ ] **Multiple apps, one dotfile** — several programs can own the same `$HOME`
@@ -564,9 +555,6 @@ relocation (moving an install, symlinking) is a separate step.
   list for such a query. See how common this is across the db; if frequent,
   decide on better handling (merge into one finding, disambiguate, or annotate
   which app "owns" the path).
-- [ ] **ephemeral-style cache relocator** (consideration) — a generic
-  symlink-to-`$XDG_CACHE_HOME`/`$XDG_RUNTIME_DIR` helper (dry-run, env-config)
-  for chromium/electron caches; build only when a second real case appears.
 - [ ] → **dotagents**: teach the agent config to use `xdg-audit` as part of
   tool setup/configuration — when standing up a tool, check its `$HOME`
   footprint and create the appropriate `programs-local/` overlay entry
