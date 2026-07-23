@@ -180,61 +180,6 @@ shell?" lens on the *config/shell-startup Audit* section above.
     child process, and `circled_digits` is set at module scope but never
     unset. Scope or unset them while reworking `ta`.
 
-## 🖥️ Statusline Setup
-
-Goal: avoid repeating the same information across the four statusline surfaces
-(bash prompt, tmux status bar, vim statusline, Claude statusline). Each surface
-should own a distinct slice of context.
-
-Proposed ownership split (to be refined during implementation):
-
-- **bash prompt** — exit code, venv/conda name, git branch+dirty state (when
-  not in tmux or vim)
-- **tmux status bar** — host, session name (multi-session only), clock, weather
-- **vim statusline** — filename, filetype, linting errors, vim mode; git branch
-  only when not in tmux
-- **Claude statusline** — model name, context window %, session cost, worktree
-  name; suppress anything already shown by tmux (e.g. git branch) when $TMUX
-  is set
-
-Context detection: use `$TMUX`, `$VIM`/`$VIMRUNTIME`, and
-`$CLAUDE_SESSION_ID` (if available) to suppress duplicate info at each layer.
-
-### Task 1: Claude Statusline Script
-
-*Scope note (TODO-routing):* the dotagents repo's `bin/statusline.sh` is
-Claude-agent config, but this stays here because it's one surface of a four-way
-coordination (bash / tmux / vim / Claude) — kept whole, not split to
-the dotagents repo's `audit/BACKLOG.md`. **The urgent display bug** in that script (malformed
-layout, context-% prominence) is tracked separately in the dotagents repo's `audit/BACKLOG.md` →
-*Claude statusline fix*; this Task 1 is the longer-horizon coordination work.
-
-Docs: <https://code.claude.com/docs/en/statusline>
-
-Built: the dotagents repo's `bin/statusline.sh` (`model | ctx N% | $cost`; context %
-colored by threshold; graceful jq-missing exit), wired in `settings.json`,
-worktree marker via `bin/git-status`. Remaining:
-
-- [ ] Observe in a live session and tune (model name length, field order, colors)
-- [ ] Consider suppressing model name when $TMUX is set (if tmux bar shows it)
-
-### Task 2: Unified Statusline Strategy (do after Task 1)
-
-Once the Claude statusline exists, audit all four surfaces together:
-
-- [ ] Inventory what each surface currently shows:
-  - bash prompt (`config/bash_prompt`, `bin/git-status`)
-  - tmux (`config/tmux/tmux.conf` status-left/right)
-  - vim (vimrc / airline / lightline config in `../dotvim`)
-  - claude (the dotagents repo's `bin/statusline.sh` — built in Task 1)
-- [ ] Identify duplicates and decide canonical owner for each piece of info
-- [ ] Implement suppression logic using context env vars (`$TMUX`, `$VIM`, etc.)
-  - This subsumes the existing "if in tmux, disable git-status in bash prompt"
-    and "consider adding git-status to vim status line (except when in tmux)"
-    items from the old Prompt Enhancements list
-- [ ] Update `bin/git-status` to respect context flags
-- [ ] Document the ownership split in a comment block or inline README
-
 ## 🐳 Docker tooling Setup
 
 ### Align `bin/shfmt` with the pre-commit shfmt version

@@ -10,6 +10,20 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-23
+
+### Changed
+
+- **Iced the unified-statusline strategy.** At the user's request, removed the
+  `## 🖥️ Statusline Setup` section from `TODO.md` — the four-surface
+  coordination (bash prompt / tmux / vim / the Claude statusline) meant to
+  keep each surface from duplicating another's info — and distilled its goal,
+  proposed ownership split, and env-var suppression mechanism into a
+  keyword-dense `ICEBOX:` marker in `bin/git-status`, the shared git-info hub
+  every surface calls. Revisit on request. Part of a cross-repo
+  statusline-icebox sweep (the dotagents audit backlog and dotvim's vim
+  "statusline notifier" were iced in their own repos the same day). (PR #308)
+
 ## 2026-07-22
 
 ### Added
