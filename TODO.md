@@ -136,39 +136,47 @@ from the audit. Each is its own task:
   their checks even in a non-interactive shell. Verify nothing prints to
   stdout on a non-interactive source (would corrupt `scp`/`rsync` if `BASH_ENV`
   ever points here); guard with `[[ $- == *i* ]]` if so.
-- [ ] **Document the module-placement convention** in `.claude/` (retrospective
-  from the audit): a tool with only 1–2 settings goes in `010-general` or
-  `app_env_vars`; more than that earns its own module; tool-only on-demand
-  commands belong in a `bin/` wrapper, not shell-startup (the env-vs-bin
-  split). It drove several audit decisions but is written down nowhere.
 
 ### Move env-polluting shell-startup setup into bin wrappers
 
 Some `config/shell-startup/` modules export tool-specific environment into
 *every* interactive shell for a tool that's rarely run — the setup belongs in
 an on-demand `bin/` wrapper (set the env, then `exec <tool> "$@"`) so it stops
-polluting the global environment. This is the "should this even live in the
-shell?" lens on the *config/shell-startup Audit* section above.
+polluting the global environment. The convention is now written down in
+[`.claude/CONVENTIONS.md`](.claude/CONVENTIONS.md) *Shell-startup Module
+Placement*; the per-module items below are the actionable findings of the
+audit.
 
-- [ ] **aider** — move `config/shell-startup/aider` into a `bin/aider`
-  wrapper. It currently parses `$DOTFILES/aider.env` and exports `AIDER_*`
-  (plus `AIDER_EDITOR`, `AIDER_COMMIT_PROMPT`) into every shell, though only
-  aider needs them. A wrapper that builds that env and `exec`s the real
-  `aider` scopes it to invocation; remove the shell-startup module once moved
-  (its new `shellcheck-sourced` / `shfmt-sourced` pre-commit coverage follows
-  it to `bin/`, where the executable shebang makes it tagged automatically).
-- [ ] **Audit every `config/shell-startup/` module** for the same opportunity
-  and **report on each one** — including the ones that should *stay*. For each,
-  classify:
-  - **move** — purely tool-only env/config, safe to lazy-load via a wrapper;
-  - **keep** — a genuine interactive-shell feature (e.g. `git`'s aliases and
-    functions, prompt/`less`/completion wiring) that *must* live in the
-    environment;
-  - **partial** — split the tool-only env into a wrapper but keep the
-    shell-facing bits in the module.
+- [ ] **aider** — folds into the **AGENTS.md migration** (dotagents
+  `audit/BACKLOG.md`), *not* a `bin/aider` wrapper: aider reads AGENTS.md, so
+  its `AIDER_*` / `AIDER_EDITOR` / `AIDER_COMMIT_PROMPT` env is made
+  client-agnostic there. Remove `config/shell-startup/aider` when that
+  migration lands.
+- [ ] **ansible** → `bin/ansible` wrapper: it exports only `ANSIBLE_HOME` /
+  `ANSIBLE_CONFIG` (+ `mkdir`), nothing shell-facing. Cover the siblings
+  (`ansible-playbook` / `-galaxy` / `-vault`) via a shared `bin/_ansible-env`
+  the wrappers source.
+- [ ] **calibre** → fold its single `CALIBRE_USE_DARK_PALETTE=1` into
+  `app_env_vars` (1 setting), or a `bin/calibre` wrapper.
+- [ ] **claude** → a `bin/claude` wrapper candidate for
+  `CLAUDE_CODE_NO_FLICKER`. First **verify** nothing (hook/tool) reads
+  `CLAUDE_CONFIG_DIR` from the ambient env, and coordinate `CLAUDE_CONFIG_DIR`
+  with the AGENTS.md migration (client-config).
+- [ ] **binenv** (partial) — move `BINENV_CACHEDIR` / `CONFDIR` / `LINKDIR`
+  (+ `mkdir`) to a `bin/binenv` wrapper; keep the completion but gate it
+  `[[ $- == *i* ]]` and **vendor** it to `config/completions/binenv` (it
+  currently forks `binenv` on every shell).
 
-  Partial moves are expected and fine. The deliverable is the per-module
-  report (move / keep / partial, with the reason); acting on it is follow-up.
+### Shell-startup env-pollution hygiene (from audit)
+
+Keep the module, but fix the pollution it leaves in the interactive shell:
+
+- [ ] **perl** — `unset -f setup_perlbrew setup_dzil setup_prove` at the
+  module's end; they linger in the shell namespace after startup.
+- [ ] **ssh-config-completion** — make `SSH_KNOWN_HOSTS` / `SSH_CONFIG_HOSTS`
+  `local` in the `_ssh` function (they leak to the global shell on each
+  completion). *(tmux's `export -f` / `circled_digits` pollution is tracked
+  under* Surfaced from comment cleanup *below.)*
 
 ### Surfaced from comment cleanup
 
