@@ -1572,4 +1572,26 @@ SKIP: {
   ok( -e $src, 'the only copy is kept' );
 }
 
+# -h prints the brief help (synopsis + options only); --help prints the full
+# help, which adds the OUTPUT/REMOVE/MIGRATE/EXIT STATUS sections. Both come
+# from one heredoc (truncated at OUTPUT for -h) and exit 0.
+{
+  my ( $brief, $brc ) = run_audit('-h');
+  is( $brc, 0, '-h exits 0' );
+  like( $brief, qr/^USAGE$/m,   '-h shows the USAGE section' );
+  like( $brief, qr/^OPTIONS$/m, '-h shows the OPTIONS section' );
+  unlike( $brief, qr/^OUTPUT$/m,      '-h omits the OUTPUT section' );
+  unlike( $brief, qr/^REMOVE$/m,      '-h omits the REMOVE section' );
+  unlike( $brief, qr/^MIGRATE$/m,     '-h omits the MIGRATE section' );
+  unlike( $brief, qr/^EXIT STATUS$/m, '-h omits the EXIT STATUS section' );
+
+  my ( $full, $frc ) = run_audit('--help');
+  is( $frc, 0, '--help exits 0' );
+  like( $full, qr/^USAGE$/m,       '--help shows the USAGE section' );
+  like( $full, qr/^OUTPUT$/m,      '--help shows the OUTPUT section' );
+  like( $full, qr/^REMOVE$/m,      '--help shows the REMOVE section' );
+  like( $full, qr/^MIGRATE$/m,     '--help shows the MIGRATE section' );
+  like( $full, qr/^EXIT STATUS$/m, '--help shows the EXIT STATUS section' );
+}
+
 done_testing();

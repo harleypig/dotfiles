@@ -118,6 +118,12 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **`xdg-audit -h` is now brief; `--help` is full.** The two flags previously
+  printed the same text. `-h` (and a usage error) now shows just the synopsis
+  and options; `--help` shows the full manual (OUTPUT / REMOVE / MIGRATE / EXIT
+  STATUS). One heredoc source, truncated at the OUTPUT section for `-h`, keeps
+  the two from drifting. (PR #300)
+
 - **`xdg-audit --migrate` now takes a required target mechanism** (breaking).
   Phase 1 Slice 2 of the mechanism state-machine
   ([ADR-0004](docs/adr/0004-xdg-audit-mechanism-state-machine.md)): the signature

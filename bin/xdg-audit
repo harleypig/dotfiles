@@ -2202,9 +2202,9 @@ sub _copy {
 # ------------------------------------------------------------------------------
 
 sub usage {
-  my ($code) = @_;
+  my ( $code, $brief ) = @_;
   $code //= 0;
-  print <<'END_USAGE';
+  my $help = <<'END_USAGE';
 xdg-audit - audit $HOME for dotfiles that could move to XDG locations.
 
 USAGE
@@ -2233,7 +2233,8 @@ OPTIONS
   --db <dir>               database dir (default: $XDG_CONFIG_HOME/xdg-audit)
   --home <dir>             treat <dir> as $HOME (testing)
   --reindex                force-rebuild the index before running
-  -h, --help               this message
+  -h                       brief usage (synopsis + options)
+  --help                   full help (adds OUTPUT/REMOVE/MIGRATE/EXIT STATUS)
 
 OUTPUT
   The default scan lists only actionable dotfiles, grouped by type (empty
@@ -2346,6 +2347,12 @@ EXIT STATUS
   2  actionable findings (any unhandled / stray / remove)
   1  a usage or runtime error
 END_USAGE
+
+  # -h prints the brief form (synopsis + options); --help prints all. Keeping
+  # one heredoc and truncating it at the OUTPUT section keeps the two in sync.
+  $help =~ s/\nOUTPUT\n.*//s if $brief;
+
+  print $help;
   exit $code;
 } ## end sub usage
 
@@ -2365,8 +2372,9 @@ GetOptions(
   'remove'      => \$cli{remove},
   'migrate'     => \$cli{migrate},
   'fix'         => \$cli{fix},
-  'help|h'      => sub { usage(0) },
-) or usage(1);
+  'help'        => sub { usage( 0, 0 ) },
+  'h'           => sub { usage( 0, 1 ) },
+) or usage( 1, 1 );
 
 # Dispatch. A runtime failure (e.g. missing database) reports and exits 1;
 # a scan with actionable findings returns 2; a clean run returns 0.
