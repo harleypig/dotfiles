@@ -74,6 +74,24 @@ teardown() {
   assert_equal "$dw" "$ci"
 }
 
+@test "the shellcheck wrapper image is version-pinned in sync with the gate" {
+  # Same version-drift guard as shfmt above: bin/shellcheck used a floating
+  # koalaman/shellcheck:stable tag while the pre-commit hook and the CI meta
+  # suite pin shellcheck v0.11.0. shellcheck is check-only, so it lives in
+  # .pre-commit-config.yaml only (not -fix.yaml) — three sources, not four.
+  local dw pc ci
+  dw=$(grep -oE 'image\[shellcheck\]="koalaman/shellcheck:v[0-9.]+"' \
+    "$ROOT/bin/docker_wrapper" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+  pc=$(awk '/koalaman\/shellcheck-precommit/{f=1} f&&/rev:/{print;exit}' \
+    "$ROOT/.pre-commit-config.yaml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+  ci=$(grep -oE 'SC_VER=v[0-9]+\.[0-9]+\.[0-9]+' \
+    "$ROOT/.github/workflows/tests.yml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+
+  [ -n "$dw" ] && [ -n "$pc" ] && [ -n "$ci" ]
+  assert_equal "$dw" "$pc"
+  assert_equal "$dw" "$ci"
+}
+
 @test "markdownlint dispatch assembles the expected docker run command" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"

@@ -173,7 +173,7 @@ audit.
 
 ### Pin the shellcheck docker-wrapper image (same drift as shfmt)
 
-- [ ] `bin/docker_wrapper`'s `image[shellcheck]="koalaman/shellcheck:stable"`
+- [x] `bin/docker_wrapper`'s `image[shellcheck]="koalaman/shellcheck:stable"`
   is a floating tag, while the pre-commit hook and the CI meta suite pin
   `shellcheck v0.11.0` — the identical version-drift the shfmt pin fixed.
   `stable` currently resolves to v0.11.0, but a future shellcheck release
