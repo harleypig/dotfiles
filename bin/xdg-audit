@@ -1242,6 +1242,13 @@ sub mode_remove {
 # unlink). A directory is moved with a same-filesystem rename only; a
 # cross-device directory move is refused rather than risking a half-copy (a
 # recursive copy would need a non-core module, and this script is core-only).
+#
+# ICEBOX: supporting a cross-filesystem (EXDEV) DIRECTORY move — via an `mv`
+# shell-out or a core recursive-copy strategy — is deferred until a real case
+# appears. None has: jbang (the cited 471M ~/.jbang candidate) migrated
+# same-filesystem (instant rename). Revisit only on a genuine cross-device
+# directory-migration case.
+#
 # Returns (ok, err): ok truthy on success, else err is a human message.
 sub move_path {
   my ( $abs, $tgt ) = @_;
@@ -1269,6 +1276,12 @@ sub move_path {
   require File::Copy;
   return File::Copy::move( $abs, $tgt ) ? ( 1, undef ) : ( 0, "could not move: $!" );
 } ## end sub move_path
+
+# ICEBOX: an "ephemeral-cache relocator" — a standalone helper (separate from
+# xdg-audit) that symlinks an app's cache dir to $XDG_CACHE_HOME /
+# $XDG_RUNTIME_DIR with a dry-run + env-config, for chromium/electron-style
+# caches — is a considered "not now": build only when a SECOND real case
+# appears (one case does not justify the generic tool). Revisit then.
 
 # --migrate <mechanism> <app|$HOME-path>: transition the target to <mechanism>.
 # The mechanism is a REQUIRED positional (no silent default). `env` and
@@ -1335,11 +1348,14 @@ sub mode_migrate_recommended {
 # not `--migrate` targets; several distinct mechanisms are ambiguous.
 #
 # ICEBOX: alias/wrap as --migrate targets (the alias/wrap transition cells,
-# the full N×N mechanism matrix, instruct-the-alias-line, the bin/<app>
-# self-wrap tier) are Phase 3 of ADR-0004 and are ICEBOXED (2026-07-22) —
-# near-zero demand (1 alias entry, 0 wrap across the corpus). Revisit only on
-# real alias/wrap entries or a decision to build the self-wrap tier. See
-# docs/adr/0004 *Phase 3 status*.
+# the full N×N mechanism matrix, instruct-the-alias-line, and the bin/<app>
+# self-wrap tier — a `mechanism: wrap` wrapper via `unshare --user
+# --map-root-user --mount` + `mount --bind`, an `xdg-audit --wrap <app>`
+# scaffold, and a global rules/<wrap-mechanism>.md, for apps that hardcode
+# paths with no env var like Java/Maven/cpan) are Phase 3 of ADR-0004 and are
+# ICEBOXED (2026-07-22) — near-zero demand (1 alias entry, 0 wrap across the
+# corpus). Revisit only on real alias/wrap entries or a decision to build the
+# self-wrap tier. See docs/adr/0004 *Phase 3 status*.
 sub resolve_recommended_mechanism {
   my ($entries) = @_;
   my $name = $entries->[0]{name};
