@@ -129,14 +129,6 @@ from the audit. Each is its own task:
 - [ ] **`run-help`** — get the Alt+h "help for word under cursor" binding
   working (commented in `010-general`:184; needs the inputrc macro).
 
-### Shell-startup follow-ups (from audit)
-
-- [ ] **non-interactive startup** — `shell-startup` runs to completion
-  regardless of interactivity; `zzz-check-dotfiles` / `zzz-check-dotvim` run
-  their checks even in a non-interactive shell. Verify nothing prints to
-  stdout on a non-interactive source (would corrupt `scp`/`rsync` if `BASH_ENV`
-  ever points here); guard with `[[ $- == *i* ]]` if so.
-
 ### Move env-polluting shell-startup setup into bin wrappers
 
 Some `config/shell-startup/` modules export tool-specific environment into
