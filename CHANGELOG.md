@@ -29,6 +29,17 @@ goes green (see the merge-time finalization in
 
 ### Fixed
 
+- **Made the stdin-accepting `docker_wrapper` tools uniformly stdin-safe.**
+  PR #175 fixed `shfmt()` dropping piped stdin (`docker run` without `-i`
+  hands the container an empty stream); the same latent gap existed in every
+  other wrapper with a real stdin/`-` filter mode. Added a `dw_stdin_if_piped`
+  helper (keeps stdin open with `--interactive` when fd 0 isn't a tty, no-op
+  otherwise) and applied it to `shellcheck`, `yamllint`, `prettier`,
+  `hadolint`, `markdownlint`, `packer`, `perltidy`, `perlcritic`, and `shfmt`
+  (consolidated off its inline `-i`). Tools with no stdin mode (`trivy`,
+  `dive`, `tflint`, `terraform-docs`, the daemons) are deliberately left out;
+  `terraform` already forwards `-i`. (PR #317)
+
 - **Pinned the `bin/shellcheck` docker-wrapper image to the gate's version.**
   Same drift as the shfmt pin below: the wrapper used a floating
   `koalaman/shellcheck:stable` tag while the pre-commit hook
