@@ -169,14 +169,6 @@ audit.
     binenv role and the dotfiles binenv config together. Cross-repo: migrate
     to ansible-stuff's `BACKLOG.md` when next working that repo.
 
-### Surfaced from comment cleanup
-
-- [ ] `config/shell-startup/tmux` - when multiple tmux sessions exist, have
-  `ta` list them and let the user choose, instead of always attaching the
-  `$USER` session. (Marker at the `ta` definition.) The env-pollution trim
-  (dropping `export -f`, scoping `circled_digits`) is already done; this is
-  the interactive chooser rework, which needs a terminal session to verify.
-
 ## 🐳 Docker tooling Setup
 
 ### Align `bin/shfmt` with the pre-commit shfmt version
@@ -435,7 +427,16 @@ isolating tmux + its plugin submodules avoids tangling submodules into the
 main dotfiles checkout.
 
 - [ ] Carve out the tmux config (`config/tmux/`, `bin/tmux_*`, related
-  completions) into a standalone repo.
+  completions) into a standalone repo. `config/shell-startup/tmux` (the
+  `ta`/alias/`set_title` helpers) is tmux config too — decide whether it
+  moves to the new repo with the rest.
+- [ ] **`ta` multi-session chooser** (from the shell-startup audit) — when
+  multiple tmux sessions exist, have `ta` (in `config/shell-startup/tmux`)
+  list them and let the user choose instead of always attaching the `$USER`
+  session. (Marker at the `ta` definition.) The env-pollution trim (dropping
+  `export -f`, scoping `circled_digits`) is already done; this is the
+  interactive chooser rework, which needs a terminal session to verify. Do it
+  as part of / alongside the carve-out.
 - [ ] Wire `tmux-plugins/*` (e.g. tpm) as submodules in that repo.
 - [ ] Decide how dotfiles references it (submodule of dotfiles, sibling
   clone, or independent) and update the deploy/symlink steps accordingly.
