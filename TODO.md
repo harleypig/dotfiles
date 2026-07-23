@@ -437,23 +437,6 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
 
 ## ✨ Features & fixes
 
-- [ ] → **dotagents**: fix the `worktree-enforce.py` hook's Bash-command
-  parsing — it false-positive-blocks legitimate worktree commits (confirmed by
-  probing the live hook). Two cases: (1) a `cd <worktree>` on its **own line**
-  isn't recognized — `CD_PREFIX_RE` only matches a `&&`/`;` terminator, not a
-  newline — so a multiline command falls back to the main-checkout cwd and is
-  denied; (2) `git -C "$VAR"` / `cd "$VAR"` with a **shell variable** isn't
-  expanded, so it resolves to a nonexistent path, `_existing_ancestor` climbs
-  to the main checkout, and it's denied. Related: a command merely *containing*
-  "git commit" as string data (an echo/heredoc/test harness) is blocked from
-  the main checkout. Fix: (a) add a newline / end terminator to `CD_PREFIX_RE`
-  (`\s*(?:&&|;|\||\n|$)`); (b) in `_target_repo`, when a parsed `cd`/`-C` path
-  does not exist, return `None` (fail open) rather than climbing to the main
-  checkout — matching the hook's "fail safe on ambiguity → allow" philosophy.
-  Workarounds meanwhile: `cd <wt> && git …` or `git -C <literal-abs-path> …`.
-  (push-pr's merge/cleanup worktree-awareness was the separate half, already
-  fixed in dotagents #19.) Cross-repo: migrate to dotagents' `audit/BACKLOG.md`
-  when next working that repo.
 - [ ] **Consider converting `bin/cleanpath` to perl** (same kind of text
   munging). Constraint: core perl modules only — no CPAN (keeps it runnable
   anywhere; avoids the Perl::Tidy/XML::LibXML install gap).
