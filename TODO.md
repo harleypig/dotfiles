@@ -173,7 +173,7 @@ audit.
 
 ### Align `bin/shfmt` with the pre-commit shfmt version
 
-- [ ] The docker `bin/shfmt` wrapper and the pre-commit `shfmt (sourced
+- [x] The docker `bin/shfmt` wrapper and the pre-commit `shfmt (sourced
   shell)` hook disagree on formatting: `bin/shfmt -d` passed a file whose
   multi-statement one-line function bodies (`f() { a; b; }`) the pre-commit
   hook then reformatted to multi-line, failing the commit. TESTS.md says the
@@ -181,6 +181,18 @@ audit.
   so this is drift (a version or flag difference). Reconcile them: pin
   `bin/shfmt`'s image to the same shfmt version the pre-commit hook uses (and
   confirm flags match), so a local `bin/shfmt` check predicts the gate.
+
+### Pin the shellcheck docker-wrapper image (same drift as shfmt)
+
+- [ ] `bin/docker_wrapper`'s `image[shellcheck]="koalaman/shellcheck:stable"`
+  is a floating tag, while the pre-commit hook and the CI meta suite pin
+  `shellcheck v0.11.0` — the identical version-drift the shfmt pin fixed.
+  `stable` currently resolves to v0.11.0, but a future shellcheck release
+  would silently move the wrapper off the gate. Pin `image[shellcheck]` to
+  `koalaman/shellcheck:v0.11.0`, add the `# SYNC:` note (mirroring shfmt /
+  markdownlint), and extend the `test_docker_wrapper.bats` version-sync guard
+  to cover shellcheck too (docker_wrapper vs both pre-commit configs vs
+  `tests.yml` `SC_VER`).
 
 ### Audit other wrappers for the piped-stdin gap (LOW PRIORITY)
 

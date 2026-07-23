@@ -111,7 +111,12 @@ shfmt() {
 
   exec docker run "${args[@]}" "${image[shfmt]}" "$@"
 }
-image[shfmt]="mvdan/shfmt:v3"
+# SYNC: keep this tag in lock-step with the pre-commit-shfmt `rev:` in
+# .pre-commit-config.yaml / -fix.yaml (v3.13.1-1) and SHFMT_VER in
+# .github/workflows/tests.yml; bump all together so the wrapper CLI, the
+# pre-commit hook, and the CI meta suite run the same shfmt. A floating `v3`
+# tag would drift the wrapper off the pinned gate on the next shfmt release.
+image[shfmt]="mvdan/shfmt:v3.13.1"
 
 #------------------------------------------------------------------------------
 yamllint() {

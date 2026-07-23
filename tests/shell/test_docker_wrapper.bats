@@ -47,8 +47,31 @@ teardown() {
   assert_output --partial "run"
   assert_output --partial "--rm"
   assert_output --partial "--workdir /mnt"
-  assert_output --partial "mvdan/shfmt:v3"
+  assert_output --partial "mvdan/shfmt:v3.13.1"
   assert_output --partial "-d script.sh"
+}
+
+@test "the shfmt wrapper image is version-pinned in sync with the gate" {
+  # Regression for the version-drift bug: bin/shfmt used a floating
+  # mvdan/shfmt:v3 tag while the pre-commit hooks and the CI meta suite pin
+  # shfmt v3.13.1, so a local `bin/shfmt` check could silently diverge from
+  # the gate on a future shfmt release. All four sources must name the same
+  # version. (SC/shfmt SYNC note lives in bin/docker_wrapper + tests.yml.)
+  local dw pc pcf ci
+  dw=$(grep -oE 'image\[shfmt\]="mvdan/shfmt:v[0-9.]+"' "$ROOT/bin/docker_wrapper" \
+    | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+  pc=$(awk '/scop\/pre-commit-shfmt/{f=1} f&&/rev:/{print;exit}' \
+    "$ROOT/.pre-commit-config.yaml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+  pcf=$(awk '/scop\/pre-commit-shfmt/{f=1} f&&/rev:/{print;exit}' \
+    "$ROOT/.pre-commit-config-fix.yaml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+  ci=$(grep -oE 'SHFMT_VER=v[0-9]+\.[0-9]+\.[0-9]+' \
+    "$ROOT/.github/workflows/tests.yml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+
+  # Every source must resolve to a version, and they must all agree.
+  [ -n "$dw" ] && [ -n "$pc" ] && [ -n "$pcf" ] && [ -n "$ci" ]
+  assert_equal "$dw" "$pc"
+  assert_equal "$dw" "$pcf"
+  assert_equal "$dw" "$ci"
 }
 
 @test "markdownlint dispatch assembles the expected docker run command" {
