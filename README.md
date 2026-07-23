@@ -213,7 +213,6 @@ for specific tools:
 
 **Applications:**
 
-- **`calibre`**: Calibre ebook management
 - **`cuda`**: NVIDIA CUDA configuration
 - **`less`**: Less pager configuration
 - **`taskwarrior`**: Task management configuration
