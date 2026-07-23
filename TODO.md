@@ -548,12 +548,6 @@ relocation (moving an install, symlinking) is a separate step.
 
 ### xdg-audit follow-ups
 
-- [x] **Split `-h` (brief) vs `--help` (full) output.** Both flags map to the
-  same `usage()` today. Make `-h` show only the CLI synopsis + options
-  (everything up to the `OUTPUT` section) and `--help` show the full current
-  help (OUTPUT / REMOVE / MIGRATE / EXIT STATUS). Wire the two flags to
-  distinct handlers (a short-vs-full switch), keeping the single heredoc as the
-  source so the two stay in sync; update the POD `SYNOPSIS` note if needed.
 - [ ] **Self-wrap tier** — implement `mechanism: wrap`: a `bin/<app>` wrapper
   using `unshare --user --map-root-user --mount` + `mount --bind` (confirmed
   working on WSL2), an `xdg-audit --wrap <app>` scaffold, and a global
