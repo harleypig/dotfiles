@@ -14,6 +14,17 @@ goes green (see the merge-time finalization in
 
 ### Fixed
 
+- **Silenced the shell-startup link-checks in non-interactive shells.**
+  `zzz-check-dotfiles` / `zzz-check-dotvim` invoked `check-dotfiles` /
+  `check-dotvim` unconditionally, so a non-interactive login shell — what
+  `BASH_ENV`, `ssh host cmd`, or an scp/rsync session runs — printed
+  link-status notices to stdout, enough to corrupt a transfer. Both are
+  meaningful only interactively, so the invocation is now gated with
+  `[[ $- == *i* ]] || return 0` (in the modules, where `$-` reflects the login
+  shell — not in the `bin/` scripts, which must still work when invoked
+  directly). A `test_integration_startup.bats` case asserts a non-interactive
+  login emits nothing. (PR #310)
+
 - **Stopped three shell-startup modules polluting the shell environment.** The
   module audit flagged scratch left in every login shell — and, for
   `export -f`ed functions, in every child process. `config/shell-startup/perl`
