@@ -548,7 +548,7 @@ relocation (moving an install, symlinking) is a separate step.
 
 ### xdg-audit follow-ups
 
-- [ ] **Split `-h` (brief) vs `--help` (full) output.** Both flags map to the
+- [x] **Split `-h` (brief) vs `--help` (full) output.** Both flags map to the
   same `usage()` today. Make `-h` show only the CLI synopsis + options
   (everything up to the `OUTPUT` section) and `--help` show the full current
   help (OUTPUT / REMOVE / MIGRATE / EXIT STATUS). Wire the two flags to
