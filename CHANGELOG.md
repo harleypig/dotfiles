@@ -14,6 +14,16 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Dockerized Serena MCP server via `mymcp`.** `mymcp serena` runs the
+  official `ghcr.io/oraios/serena` image as a stdio MCP server with the web
+  dashboard disabled, so the Serena coding-agent/LSP toolkit leaves **no host
+  `~/.serena` footprint** — its config, logs, and downloaded language servers
+  live in the named docker volume `serena-config`, and `$PROJECTS_DIR` mounts
+  at `/workspaces/projects` so it can operate on your code. Register per machine
+  with `claude mcp add serena --scope user -- mymcp serena`. Verified against
+  the running image (stdio `initialize` handshake, state in the volume not the
+  host). (PR #298)
+
 - **jbang shell-startup module auto-adopts its XDG dir.** Extracted jbang out
   of the `010-general` catch-all into its own `config/shell-startup/jbang`
   module (matching the per-tool pattern of `node`/`go`/`rust`/…), then taught
