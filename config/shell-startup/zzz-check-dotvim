@@ -6,4 +6,10 @@
 # the check by touching ~/.nocheckdotvim, or set it up with `check-dotvim
 # --setup`.
 
+# Interactive shells only: check-dotvim prints to stdout (link notices, clone
+# progress), which would corrupt a non-interactive session (scp/rsync, `ssh
+# host cmd`) if this file were reached via BASH_ENV. The interactive login
+# still warns/sets up.
+[[ $- == *i* ]] || return 0
+
 havecmd check-dotvim && check-dotvim

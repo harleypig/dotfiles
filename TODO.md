@@ -131,7 +131,7 @@ from the audit. Each is its own task:
 
 ### Shell-startup follow-ups (from audit)
 
-- [ ] **non-interactive startup** — `shell-startup` runs to completion
+- [x] **non-interactive startup** — `shell-startup` runs to completion
   regardless of interactivity; `zzz-check-dotfiles` / `zzz-check-dotvim` run
   their checks even in a non-interactive shell. Verify nothing prints to
   stdout on a non-interactive source (would corrupt `scp`/`rsync` if `BASH_ENV`

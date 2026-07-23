@@ -54,10 +54,22 @@ setup() {
 }
 
 @test "PATH has no duplicate /dotfiles/bin entry (cleanpath integrated)" {
-  # Label the count so it is distinguishable from any startup stdout (e.g.
-  # check-dotfiles notices).
+  # Label the count so it is distinguishable from any other startup stdout;
+  # --partial keeps this robust regardless.
   dotfiles_login "$IMAGE" \
     'echo "dupcount=$(tr ":" "\n" <<< "$PATH" | grep -c "^/dotfiles/bin$")"'
   assert_success
   assert_output --partial 'dupcount=1'
+}
+
+@test "a non-interactive login shell emits nothing (BASH_ENV-safe)" {
+  # Regression: zzz-check-dotfiles / zzz-check-dotvim invoked their checks
+  # unconditionally, so a non-interactive login (what BASH_ENV, `ssh host cmd`,
+  # or an scp/rsync session runs) spat link-status notices onto stdout —
+  # corrupting the transfer. They are now guarded to interactive shells, so a
+  # non-interactive login is silent. `run` captures stdout+stderr, so this
+  # asserts both are clean; the no-op command contributes nothing itself.
+  dotfiles_login "$IMAGE" ':'
+  assert_success
+  assert_output ''
 }

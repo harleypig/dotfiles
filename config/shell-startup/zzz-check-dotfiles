@@ -4,4 +4,9 @@
 # loader sorts module names), ensuring every env var set by earlier modules is
 # available for the dotlinks entries check-dotfiles evaluates.
 
+# Interactive shells only: check-dotfiles prints link notices to stdout, which
+# would corrupt a non-interactive session (scp/rsync, `ssh host cmd`) if this
+# file were ever reached via BASH_ENV. The interactive login still warns.
+[[ $- == *i* ]] || return 0
+
 havecmd check-dotfiles && check-dotfiles
