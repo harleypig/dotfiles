@@ -171,18 +171,6 @@ audit.
 
 ## 🐳 Docker tooling Setup
 
-### Pin the shellcheck docker-wrapper image (same drift as shfmt)
-
-- [ ] `bin/docker_wrapper`'s `image[shellcheck]="koalaman/shellcheck:stable"`
-  is a floating tag, while the pre-commit hook and the CI meta suite pin
-  `shellcheck v0.11.0` — the identical version-drift the shfmt pin fixed.
-  `stable` currently resolves to v0.11.0, but a future shellcheck release
-  would silently move the wrapper off the gate. Pin `image[shellcheck]` to
-  `koalaman/shellcheck:v0.11.0`, add the `# SYNC:` note (mirroring shfmt /
-  markdownlint), and extend the `test_docker_wrapper.bats` version-sync guard
-  to cover shellcheck too (docker_wrapper vs both pre-commit configs vs
-  `tests.yml` `SC_VER`).
-
 ### Audit other wrappers for the piped-stdin gap (LOW PRIORITY)
 
 - [ ] PR #175 fixed `docker_wrapper`'s `shfmt()` dropping piped stdin (it ran

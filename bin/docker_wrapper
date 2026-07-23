@@ -92,7 +92,11 @@ shellcheck() {
 
   exec docker run "${args[@]}" "${image[shellcheck]}" "$@"
 }
-image[shellcheck]="koalaman/shellcheck:stable"
+# SYNC: keep this tag in lock-step with the shellcheck-precommit `rev:` in
+# .pre-commit-config.yaml (v0.11.0; check-only, so not in -fix.yaml) and
+# SC_VER in .github/workflows/tests.yml; bump all together. A floating
+# `stable` tag would drift the wrapper off the gate on a new release.
+image[shellcheck]="koalaman/shellcheck:v0.11.0"
 
 #------------------------------------------------------------------------------
 shfmt() {

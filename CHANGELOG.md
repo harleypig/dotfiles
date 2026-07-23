@@ -29,6 +29,17 @@ goes green (see the merge-time finalization in
 
 ### Fixed
 
+- **Pinned the `bin/shellcheck` docker-wrapper image to the gate's version.**
+  Same drift as the shfmt pin below: the wrapper used a floating
+  `koalaman/shellcheck:stable` tag while the pre-commit hook
+  (`shellcheck-precommit rev: v0.11.0`) and the CI meta suite
+  (`SC_VER=v0.11.0`) pin shellcheck v0.11.0, so a local `bin/shellcheck` check
+  could silently drift off the gate on a future release. Pinned
+  `image[shellcheck]` to `v0.11.0` with a `# SYNC:` note, fixed the stale
+  `tests.yml` reference, and added a version-sync regression test (three
+  sources — shellcheck is check-only, so it's in `.pre-commit-config.yaml`
+  but not `-fix.yaml`). (PR #316)
+
 - **Pinned the `bin/shfmt` docker-wrapper image to the gate's shfmt version.**
   The wrapper used a floating `mvdan/shfmt:v3` tag while the pre-commit hooks
   (`pre-commit-shfmt` `rev: v3.13.1-1`) and the CI meta suite

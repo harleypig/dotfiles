@@ -47,7 +47,7 @@ EOF
   run "$ROOT/bin/docker_wrapper" --images
   assert_success
   assert_output --partial "shellcheck"
-  assert_output --partial "koalaman/shellcheck:stable"
+  assert_output --partial "koalaman/shellcheck:v0.11.0"
 
   # the tool column is exactly the registry
   run bash -c 'diff <("$1" --known-tools) <("$1" --images | cut -d" " -f1)' \
