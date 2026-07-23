@@ -173,7 +173,7 @@ audit.
 
 ### Audit other wrappers for the piped-stdin gap (LOW PRIORITY)
 
-- [ ] PR #175 fixed `docker_wrapper`'s `shfmt()` dropping piped stdin (it ran
+- [x] PR #175 fixed `docker_wrapper`'s `shfmt()` dropping piped stdin (it ran
   `docker run` without `-i`, so `shfmt … < file` saw an empty stream). The
   same latent bug exists in any other wrapper that a caller might pipe into —
   `shellcheck -`, `prettier` via stdin, etc. Nothing in the repo pipes to them

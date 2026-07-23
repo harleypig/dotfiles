@@ -81,6 +81,9 @@ shellcheck() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
+  # `shellcheck -` reads a script from stdin.
+  dw_stdin_if_piped args
+
   # Forward SHELLCHECK_OPTS if set; the tool honours it in-container.
   [[ -n ${SHELLCHECK_OPTS-} ]] && args+=(--env "SHELLCHECK_OPTS=$SHELLCHECK_OPTS")
 
@@ -108,10 +111,8 @@ shfmt() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
-  # Forward stdin when it is piped (not a TTY), so `shfmt ... < file` reaches
-  # the container instead of an empty stream. bin/showvars relies on this with
-  # `shfmt -tojson < script`; without -i the AST comes back empty.
-  [[ -t 0 ]] || args+=(-i)
+  # shfmt is a filter (bin/showvars pipes `shfmt -tojson < script`).
+  dw_stdin_if_piped args
 
   exec docker run "${args[@]}" "${image[shfmt]}" "$@"
 }
@@ -131,6 +132,9 @@ yamllint() {
   dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
+
+  # yamllint reads from stdin with `yamllint -`.
+  dw_stdin_if_piped args
 
   # Mount XDG config so yamllint finds /config/yamllint/config inside.
   local xdg="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -215,6 +219,9 @@ packer() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
+  # packer reads a template from stdin with `packer fmt -`.
+  dw_stdin_if_piped args
+
   exec docker run "${args[@]}" "${image[packer]}" "$@"
 }
 image[packer]="hashicorp/packer:1.15"
@@ -259,6 +266,9 @@ prettier() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
+  # prettier reads from stdin with `--stdin-filepath <name>`.
+  dw_stdin_if_piped args
+
   exec docker run "${args[@]}" "${image[prettier]}" "$@"
 }
 image[prettier]="prettier:latest"
@@ -272,6 +282,9 @@ hadolint() {
   dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
+
+  # hadolint reads a Dockerfile from stdin with `hadolint -`.
+  dw_stdin_if_piped args
 
   # A repo-local .hadolint.yaml in $PWD wins (hadolint searches cwd
   # first); the global config is the fallback under $HOME/.config.
@@ -297,6 +310,9 @@ markdownlint() {
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
 
+  # markdownlint reads from stdin with `--stdin`.
+  dw_stdin_if_piped args
+
   # The image entrypoint is markdownlint; the repo-local .markdownlint.json
   # is auto-discovered from /mnt (= $PWD).
   exec docker run "${args[@]}" "${image[markdownlint]}" "$@"
@@ -315,6 +331,9 @@ perltidy() {
   dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
+
+  # perltidy is a filter: with no file it reformats stdin -> stdout.
+  dw_stdin_if_piped args
 
   # The perl-tools image has no entrypoint (one image can host several tools),
   # so name the tool. The repo-root .perltidyrc (-> config/perl/perltidyrc) is
@@ -337,6 +356,9 @@ perlcritic() {
   dw_env args "${DW_ENV[@]}"
   dw_mount args "$PWD" /mnt
   args+=(--workdir /mnt)
+
+  # perlcritic reads from stdin with `perlcritic -`.
+  dw_stdin_if_piped args
 
   # The perl-tools image has no entrypoint, so name the tool. The repo-root
   # .perlcriticrc (-> config/perl/perlcriticrc) is auto-discovered from /mnt
