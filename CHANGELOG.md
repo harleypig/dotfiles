@@ -36,7 +36,7 @@ goes green (see the merge-time finalization in
   *Changed* below). The perceived costs dissolved: the version-sync test is a
   *change* not added complexity (one image-string invariant; version in the
   Dockerfile `FROM` tags), the bump flow is the same one already used for the
-  perl/ansible images, and a non-entrypoint `lint-run` runner lets one image
+  perl/ansible images, and a non-entrypoint `run-tools` runner lets one image
   back `docker_wrapper` + pre-commit (check *and* fix) + CI. Reshaped the TODO
   into the implementation steps; implementation is queued, not yet done.
 - **Added `bin/ruff`, backed by the combined `lint-tools` image (ADR-0005

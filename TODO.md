@@ -194,9 +194,9 @@ supersedes the earlier "leave shellcheck/shfmt/markdownlint on upstream hooks"
 call). The mechanism is proven in-repo (perltidy/perlcritic already run as
 local `docker_image` hooks against our entrypoint-less ghcr images). Work:
 
-- [ ] **Add a non-entrypoint `lint-run` runner to the image** (e.g.
-  `/usr/local/bin/lint-run`) for a batched CI pass. Keep the image
-  entrypoint-less so tool-by-name (wrapper, pre-commit) and `lint-run` (CI)
+- [ ] **Add a non-entrypoint `run-tools` runner to the image** (e.g.
+  `/usr/local/bin/run-tools`) for a batched CI pass. Keep the image
+  entrypoint-less so tool-by-name (wrapper, pre-commit) and `run-tools` (CI)
   both work. Rebuild → bump the `lint-tools` tag; re-pin the digest across
   consumers.
 - [ ] **Convert `shellcheck` / `shfmt` / `markdownlint` to local
@@ -210,7 +210,7 @@ local `docker_image` hooks against our entrypoint-less ghcr images). Work:
   `rev:` / CI env var.
 - [ ] **(Follow-on, needs a design call) CI-meta integration.** Decide whether
   to keep the meta suite on pinned binaries (already fast) or restructure it
-  into a batched `lint-run` over `lint-tools`. Not required for the wrapper +
+  into a batched `run-tools` over `lint-tools`. Not required for the wrapper +
   pre-commit consolidation, which stands alone.
 - [ ] **(Orthogonal) Harden the Docker Hub pull flakiness** via
   `docker/login-action` / env caching — a separate quick win that lifts the
