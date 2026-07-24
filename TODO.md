@@ -188,12 +188,25 @@ already does). Remaining work is the phased rollout:
 **non-Python linters only** — Python-*runtime* tools are a separate, later
 batch (see below and the ADR-0005 2026-07-24 update).
 
-- [ ] **Re-point the non-Python existing consumers** (`shellcheck`, `shfmt`,
-  `hadolint`, `prettier`, `markdownlint`) from their standalone images to the
-  combined image, one at a time — updating **both** `test_docker_wrapper.bats`
-  and `test_docker_wrapper_links.bats` per change and re-pinning the digest.
-  Do this only *after* `lint-tools` is published, so the working tools never
-  regress.
+- [x] **Re-point `hadolint` + `prettier` to the combined image.** Both
+  re-point cleanly: `hadolint` has no pre-commit hook and already named the
+  tool; `prettier` was on an unpinned `prettier:latest` (now digest-pinned via
+  `lint-tools`). Both name the tool on the entrypoint-less image; added
+  dispatch tests for each.
+- [ ] **`shellcheck` / `shfmt` / `markdownlint` stay on their upstream
+  `docker_image` pre-commit hooks** (decision, 2026-07-24). Re-pointing them
+  would mean converting those well-maintained upstream hooks to local
+  `docker run lint-tools <tool>` hooks and rewriting the tag-based
+  version-sync bats tests, for marginal gain — `markdownlint` is already ghcr
+  (no Docker Hub flakiness), and the `shellcheck`/`shfmt` Docker Hub pulls
+  have lighter mitigations queued (auth / cache). Their wrapper CLIs stay on
+  the pinned upstream images that already match the gate.
+- [ ] **Investigate building our own pre-commit hooks for the `lint-tools`
+  image** — it's not hard (even just ripping off the upstream `docker_image`
+  hooks' structure). Local hooks that run `docker run lint-tools <tool>` would
+  let us fully consolidate `shellcheck` / `shfmt` / `markdownlint` onto the
+  one image without depending on the upstream hook repos; revisit the item
+  above once these exist.
 - [ ] **Measure with `dive`** against a ~500 MB budget; split by runtime
   (`lint-static` / `lint-node` / reuse `perl-tools`) only if exceeded.
   (Phase-1 image measured 428 MB with `yamllint`; it shrinks once `yamllint`

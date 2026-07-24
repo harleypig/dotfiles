@@ -145,6 +145,38 @@ teardown() {
   assert_output --partial "ruff check mod.py"
 }
 
+@test "hadolint dispatch names the tool on the combined lint-tools image" {
+  # Re-pointed (ADR-0005 Phase 2) off the standalone hadolint image onto
+  # lint-tools; the image has no ENTRYPOINT, so the binary is named after it.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf 'FROM alpine:3.19\n' > Dockerfile
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/hadolint" Dockerfile
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--workdir /mnt"
+  assert_output --partial "ghcr.io/harleypig/lint-tools"
+  assert_output --partial "hadolint Dockerfile"
+}
+
+@test "prettier dispatch names the tool on the combined lint-tools image" {
+  # Re-pointed (ADR-0005 Phase 2) off the unpinned prettier:latest onto
+  # lint-tools; no ENTRYPOINT, so the binary is named after it.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf 'const x = 1\n' > f.js
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/prettier" --check f.js
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--workdir /mnt"
+  assert_output --partial "ghcr.io/harleypig/lint-tools"
+  assert_output --partial "prettier --check f.js"
+}
+
 # --- stdin-safety (the piped-stdin gap) ---------------------------------------
 
 @test "stdin-accepting wrappers keep stdin open (--interactive) when piped" {

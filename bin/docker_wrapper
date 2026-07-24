@@ -269,9 +269,16 @@ prettier() {
   # prettier reads from stdin with `--stdin-filepath <name>`.
   dw_stdin_if_piped args
 
-  exec docker run "${args[@]}" "${image[prettier]}" "$@"
+  # The combined lint-tools image (ADR-0005) has no ENTRYPOINT, so name the
+  # tool. A repo-local .prettierrc / prettier config is auto-discovered from
+  # /mnt (= $PWD). Re-pointed off the old unpinned `prettier:latest`.
+  exec docker run "${args[@]}" "${image[prettier]}" prettier "$@"
 }
-image[prettier]="prettier:latest"
+# SYNC: lint-tools is the combined ADR-0005 image (re-pin tag+digest after a
+# publish). prettier's pre-commit gate is a SEPARATE node hook (mirrors-prettier
+# in -fix.yaml), not tied to this wrapper — but keep the prettier version in the
+# lint-tools Dockerfile roughly aligned with that hook's.
+image[prettier]="ghcr.io/harleypig/lint-tools:0.1.0@sha256:b472f5a491ff9a0e3fbfaa342dd1717c462805a32f145cbb585560da7f7cceae"
 
 #------------------------------------------------------------------------------
 hadolint() {
@@ -294,11 +301,16 @@ hadolint() {
     dw_mount args "$cfg" /home/hadolint/.config/hadolint.yaml ro
   fi
 
-  # The -alpine image has no ENTRYPOINT (its CMD reads stdin), so name
-  # the binary explicitly to pass file arguments through.
+  # The combined lint-tools image (ADR-0005) has no ENTRYPOINT, so name the
+  # binary explicitly to pass file arguments through (hadolint's own image is
+  # likewise entrypoint-less).
   exec docker run "${args[@]}" "${image[hadolint]}" hadolint "$@"
 }
-image[hadolint]="hadolint/hadolint:v2.14.0-alpine@sha256:7aba693c1442eb31c0b015c129697cb3b6cb7da589d85c7562f9deb435a6657c"
+# SYNC: lint-tools is the combined ADR-0005 image, digest-pinned per docker.md
+# (re-pin tag+digest after a publish). It carries hadolint v2.14.0 (built FROM
+# hadolint/hadolint:v2.14.0-alpine). hadolint has no pre-commit hook — the
+# wrapper is its only consumer.
+image[hadolint]="ghcr.io/harleypig/lint-tools:0.1.0@sha256:b472f5a491ff9a0e3fbfaa342dd1717c462805a32f145cbb585560da7f7cceae"
 
 #------------------------------------------------------------------------------
 markdownlint() {
