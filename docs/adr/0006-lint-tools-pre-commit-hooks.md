@@ -41,7 +41,7 @@ Re-examining the three "costs":
   *removes* a second one (tracking upstream `rev:`s), giving one bump flow for
   every image-backed tool.
 - **A non-entrypoint runner dissolves the CI per-file concern.** A plain
-  on-`PATH` script in the image (e.g. `/usr/local/bin/lint-run`) that loops
+  on-`PATH` script in the image (e.g. `/usr/local/bin/run-tools`) that loops
   over tools/files internally lets CI do a batched pass in **one** container —
   while, because it is *not* an ENTRYPOINT, the tool-by-name path still works
   for the wrapper and pre-commit.
@@ -58,8 +58,8 @@ coexist:
   `shellcheck`, `shfmt`, `markdownlint` (preserving each hook's `args` /
   `types` / `files` / `*-sourced` aliases). pre-commit already batches all
   matched files into one run, so **no runner is needed here**.
-- **CI** → `docker run lint-tools lint-run <…>` for a batched "lint
-  everything" pass.
+- **CI** → `docker run lint-tools run-tools <…>` for a batched pass over all
+  the tools.
 
 Also re-point those three `docker_wrapper` `image[]` entries onto `lint-tools`
 (as `hadolint` / `prettier` / `ruff` already are). The version source of truth
@@ -101,7 +101,7 @@ how upstream hook repos are already structured).
 - **The CI-meta integration is the one deferred design call.** The runner
   *enables* a batched meta pass, but the current meta suite is per-file
   generated `bats` tests; choosing "keep meta on pinned binaries (already
-  fast)" vs "restructure meta into a batched `lint-run`" is separate work and
+  fast)" vs "restructure meta into a batched `run-tools`" is separate work and
   not required for the wrapper + pre-commit consolidation, which stands alone.
 - Python-*runtime* tools (`yamllint`, `ansible-lint`) remain **out** of scope
   here — they stay separate and are handled in the python setup (ADR-0005
