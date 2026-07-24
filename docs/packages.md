@@ -89,7 +89,7 @@ it is pointless (a per-project dev dependency).
 
 - **Apps:** `markdownlint`
 - **Language:** node
-- **Docker:** yes — `bin/docker_wrapper` — Wrapped in this repo's bin/docker_wrapper (ghcr.io/igorshubovych/markdownlint-cli).
+- **Docker:** yes — `bin/docker_wrapper` — Wrapped in this repo's bin/docker_wrapper (ghcr.io/harleypig/code-tools).
 - **Install (priority order):**
   1. `markdownlint <file>` — via bin/docker_wrapper
   2. `npm install -g markdownlint-cli`

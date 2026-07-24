@@ -14,6 +14,24 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **Consolidated `shellcheck` / `shfmt` / `markdownlint` onto the `code-tools`
+  image (ADR-0006 implementation, PR B).** Replaced the upstream
+  `docker_image` pre-commit hooks (koalaman/shellcheck-precommit,
+  scop/pre-commit-shfmt, igorshubovych/markdownlint-cli) with local
+  `docker_image` hooks running the combined `code-tools` image in **both** the
+  check and fix configs — same tools/flags/file-selection (incl. the
+  `*-sourced` variants), only the image source changed. Re-pointed the
+  `shellcheck`/`shfmt`/`markdownlint` `docker_wrapper` entries onto
+  `code-tools` and **pinned the published digest across every consumer** (the
+  three PR-A wrappers too). Rewrote the version-sync tests to the new
+  invariant: each
+  tool's version lives in one place — the `code-tools` Dockerfile `FROM` tag —
+  checked against the CI meta `SC_VER`/`SHFMT_VER`, plus a guard that every
+  consumer names one identical image ref. All hooks verified against the
+  published image; the CI `pre-commit` job already logs into ghcr for the
+  private image. Now one image backs the wrapper CLI **and** pre-commit for
+  every non-Python tool. (PR #327)
+
 - **Rebuilt the combined image as `code-tools` and added the `run-tools`
   runner (ADR-0006 implementation, PR A).** Renamed `lint-tools` →
   `code-tools` (it holds formatters as well as linters) across the config dir,

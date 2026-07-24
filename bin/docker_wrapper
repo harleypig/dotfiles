@@ -39,12 +39,13 @@
 #   scanners             trivy (pwd + socket)  dive (socket only)
 #   daemons              ollama openwebui (host-gated, detached)
 #
-# IMAGE PINNING: trivy/hadolint/dive are pinned by digest per
-# rules/docker.md (trivy was supply-chain compromised twice in 03/2026 —
-# pin + run the image directly, never the marketplace actions). The
-# linter images still use rolling tags; pinning them is queued in TODO.md.
-# Each tool's image lives in the image[] array beside its function. Bump a
-# tag + digest together with:
+# IMAGE PINNING: the code-tools-backed tools (shellcheck, shfmt, hadolint,
+# markdownlint, prettier, ruff) plus trivy/dive are pinned by digest per
+# rules/docker.md (trivy was supply-chain compromised twice in 03/2026 — pin +
+# run the image directly, never the marketplace actions). Only yamllint still
+# uses a rolling tag (deferred to the python setup — ADR-0005). Each tool's
+# image lives in the image[] array beside its function. Bump a tag + digest
+# together with:
 #   docker buildx imagetools inspect <image>:<tag>
 
 set -uo pipefail
@@ -93,13 +94,17 @@ shellcheck() {
     dw_mount args "$cfg" /home/shellcheck/.shellcheckrc ro
   fi
 
-  exec docker run "${args[@]}" "${image[shellcheck]}" "$@"
+  # code-tools has no ENTRYPOINT, so name the tool (ADR-0006).
+  exec docker run "${args[@]}" "${image[shellcheck]}" shellcheck "$@"
 }
-# SYNC: keep this tag in lock-step with the shellcheck-precommit `rev:` in
-# .pre-commit-config.yaml (v0.11.0; check-only, so not in -fix.yaml) and
-# SC_VER in .github/workflows/tests.yml; bump all together. A floating
-# `stable` tag would drift the wrapper off the gate on a new release.
-image[shellcheck]="koalaman/shellcheck:v0.11.0"
+# SYNC (ADR-0006): shellcheck runs from the combined code-tools image here AND
+# in the pre-commit `shellcheck` hook — both reference this same image, so they
+# can't drift. The shellcheck VERSION lives in ONE place, the code-tools
+# Dockerfile (`FROM koalaman/shellcheck:v0.11.0`); the CI meta suite still
+# installs a pinned binary, so keep SC_VER in tests.yml in step with that FROM
+# tag (test_docker_wrapper.bats guards it). Re-pin the digest when code-tools
+# republishes.
+image[shellcheck]="ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45"
 
 #------------------------------------------------------------------------------
 shfmt() {
@@ -114,14 +119,17 @@ shfmt() {
   # shfmt is a filter (bin/showvars pipes `shfmt -tojson < script`).
   dw_stdin_if_piped args
 
-  exec docker run "${args[@]}" "${image[shfmt]}" "$@"
+  # code-tools has no ENTRYPOINT, so name the tool (ADR-0006).
+  exec docker run "${args[@]}" "${image[shfmt]}" shfmt "$@"
 }
-# SYNC: keep this tag in lock-step with the pre-commit-shfmt `rev:` in
-# .pre-commit-config.yaml / -fix.yaml (v3.13.1-1) and SHFMT_VER in
-# .github/workflows/tests.yml; bump all together so the wrapper CLI, the
-# pre-commit hook, and the CI meta suite run the same shfmt. A floating `v3`
-# tag would drift the wrapper off the pinned gate on the next shfmt release.
-image[shfmt]="mvdan/shfmt:v3.13.1"
+# SYNC (ADR-0006): shfmt runs from the combined code-tools image here AND in the
+# pre-commit `shfmt` hooks (check + fix) — all reference this same image, so
+# they can't drift. The shfmt VERSION lives in ONE place, the code-tools
+# Dockerfile (`FROM mvdan/shfmt:v3.13.1`); the CI meta suite still installs a
+# pinned binary, so keep SHFMT_VER in tests.yml in step with that FROM tag
+# (test_docker_wrapper.bats guards it). Re-pin the digest when code-tools
+# republishes.
+image[shfmt]="ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45"
 
 #------------------------------------------------------------------------------
 yamllint() {
@@ -278,7 +286,7 @@ prettier() {
 # publish). prettier's pre-commit gate is a SEPARATE node hook (mirrors-prettier
 # in -fix.yaml), not tied to this wrapper — but keep the prettier version in the
 # code-tools Dockerfile roughly aligned with that hook's.
-image[prettier]="ghcr.io/harleypig/code-tools:0.1.0"
+image[prettier]="ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45"
 
 #------------------------------------------------------------------------------
 hadolint() {
@@ -306,12 +314,11 @@ hadolint() {
   # likewise entrypoint-less).
   exec docker run "${args[@]}" "${image[hadolint]}" hadolint "$@"
 }
-# SYNC: code-tools is the combined ADR-0005 image. Tag-only for now — the
-# renamed image (with run-tools) republishes on merge; ADR-0006 Phase B pins
-# the new digest (docker.md prefers a digest). It carries hadolint v2.14.0
-# (built FROM hadolint/hadolint:v2.14.0-alpine). hadolint has no pre-commit
-# hook — the wrapper is its only consumer.
-image[hadolint]="ghcr.io/harleypig/code-tools:0.1.0"
+# SYNC: code-tools is the combined ADR-0005 image, digest-pinned per docker.md
+# (re-pin the digest when it republishes). It carries hadolint v2.14.0 (built
+# FROM hadolint/hadolint:v2.14.0-alpine). hadolint has no pre-commit hook — the
+# wrapper is its only consumer.
+image[hadolint]="ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45"
 
 #------------------------------------------------------------------------------
 markdownlint() {
@@ -326,14 +333,15 @@ markdownlint() {
   # markdownlint reads from stdin with `--stdin`.
   dw_stdin_if_piped args
 
-  # The image entrypoint is markdownlint; the repo-local .markdownlint.json
-  # is auto-discovered from /mnt (= $PWD).
-  exec docker run "${args[@]}" "${image[markdownlint]}" "$@"
+  # code-tools has no ENTRYPOINT, so name the tool (ADR-0006). The repo-local
+  # .markdownlint.json is auto-discovered from /mnt (= $PWD).
+  exec docker run "${args[@]}" "${image[markdownlint]}" markdownlint "$@"
 }
-# SYNC: keep this tag in lock-step with the markdownlint-cli `rev:` in
-# .pre-commit-config.yaml and .pre-commit-config-fix.yaml; bump all three
-# together so the wrapper CLI and the pre-commit hook stay identical.
-image[markdownlint]="ghcr.io/igorshubovych/markdownlint-cli:v0.48.0"
+# SYNC (ADR-0006): markdownlint runs from the combined code-tools image here AND
+# in the pre-commit `markdownlint` hooks (check + fix) — all reference this same
+# image, so they can't drift. Its version lives in the code-tools Dockerfile
+# (`ARG MARKDOWNLINT_VERSION`); re-pin the digest when code-tools republishes.
+image[markdownlint]="ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45"
 
 #------------------------------------------------------------------------------
 ansible-lint() {
@@ -387,7 +395,7 @@ ruff() {
 # Python-runtime linters (yamllint, ansible-lint) stay on their own images,
 # handled together in the future python setup. ruff has no pre-commit hook yet
 # (added with that python setup).
-image[ruff]="ghcr.io/harleypig/code-tools:0.1.0"
+image[ruff]="ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45"
 
 #------------------------------------------------------------------------------
 perltidy() {

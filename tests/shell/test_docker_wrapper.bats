@@ -47,49 +47,51 @@ teardown() {
   assert_output --partial "run"
   assert_output --partial "--rm"
   assert_output --partial "--workdir /mnt"
-  assert_output --partial "mvdan/shfmt:v3.13.1"
-  assert_output --partial "-d script.sh"
+  # code-tools has no ENTRYPOINT, so the tool is named after the image.
+  assert_output --partial "ghcr.io/harleypig/code-tools"
+  assert_output --partial "shfmt -d script.sh"
 }
 
-@test "the shfmt wrapper image is version-pinned in sync with the gate" {
-  # Regression for the version-drift bug: bin/shfmt used a floating
-  # mvdan/shfmt:v3 tag while the pre-commit hooks and the CI meta suite pin
-  # shfmt v3.13.1, so a local `bin/shfmt` check could silently diverge from
-  # the gate on a future shfmt release. All four sources must name the same
-  # version. (SC/shfmt SYNC note lives in bin/docker_wrapper + tests.yml.)
-  local dw pc pcf ci
-  dw=$(grep -oE 'image\[shfmt\]="mvdan/shfmt:v[0-9.]+"' "$ROOT/bin/docker_wrapper" \
-    | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
-  pc=$(awk '/scop\/pre-commit-shfmt/{f=1} f&&/rev:/{print;exit}' \
-    "$ROOT/.pre-commit-config.yaml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
-  pcf=$(awk '/scop\/pre-commit-shfmt/{f=1} f&&/rev:/{print;exit}' \
-    "$ROOT/.pre-commit-config-fix.yaml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+# Version-sync: after ADR-0006 shfmt/shellcheck run from the code-tools image
+# (the wrapper AND the pre-commit hooks reference the SAME image, so they can't
+# drift), and the tool VERSION lives in ONE place — the code-tools Dockerfile
+# FROM tag. The CI meta suite still installs a pinned binary, so its
+# SHFMT_VER/SC_VER must stay in step with the Dockerfile.
+@test "the shfmt version matches across the code-tools Dockerfile and the CI meta gate" {
+  local df ci
+  df=$(grep -oE 'FROM mvdan/shfmt:v[0-9.]+' \
+    "$ROOT/config/docker/code-tools/Dockerfile" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
   ci=$(grep -oE 'SHFMT_VER=v[0-9]+\.[0-9]+\.[0-9]+' \
     "$ROOT/.github/workflows/tests.yml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
 
-  # Every source must resolve to a version, and they must all agree.
-  [ -n "$dw" ] && [ -n "$pc" ] && [ -n "$pcf" ] && [ -n "$ci" ]
-  assert_equal "$dw" "$pc"
-  assert_equal "$dw" "$pcf"
-  assert_equal "$dw" "$ci"
+  [ -n "$df" ] && [ -n "$ci" ]
+  assert_equal "$df" "$ci"
 }
 
-@test "the shellcheck wrapper image is version-pinned in sync with the gate" {
-  # Same version-drift guard as shfmt above: bin/shellcheck used a floating
-  # koalaman/shellcheck:stable tag while the pre-commit hook and the CI meta
-  # suite pin shellcheck v0.11.0. shellcheck is check-only, so it lives in
-  # .pre-commit-config.yaml only (not -fix.yaml) — three sources, not four.
-  local dw pc ci
-  dw=$(grep -oE 'image\[shellcheck\]="koalaman/shellcheck:v[0-9.]+"' \
-    "$ROOT/bin/docker_wrapper" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
-  pc=$(awk '/koalaman\/shellcheck-precommit/{f=1} f&&/rev:/{print;exit}' \
-    "$ROOT/.pre-commit-config.yaml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+@test "the shellcheck version matches across the code-tools Dockerfile and the CI meta gate" {
+  local df ci
+  df=$(grep -oE 'FROM koalaman/shellcheck:v[0-9.]+' \
+    "$ROOT/config/docker/code-tools/Dockerfile" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
   ci=$(grep -oE 'SC_VER=v[0-9]+\.[0-9]+\.[0-9]+' \
     "$ROOT/.github/workflows/tests.yml" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
 
-  [ -n "$dw" ] && [ -n "$pc" ] && [ -n "$ci" ]
-  assert_equal "$dw" "$pc"
-  assert_equal "$dw" "$ci"
+  [ -n "$df" ] && [ -n "$ci" ]
+  assert_equal "$df" "$ci"
+}
+
+@test "every code-tools consumer references one identical image ref" {
+  # The consolidation invariant (ADR-0006): the docker_wrapper image[] entries
+  # and the pre-commit hook entries all name the SAME code-tools image, so a
+  # digest bump can't leave one behind. Collect every code-tools ref across the
+  # three files; there must be exactly one distinct value.
+  local -a refs
+  mapfile -t refs < <(
+    grep -hoE 'ghcr.io/harleypig/code-tools:[^" ]+' \
+      "$ROOT/bin/docker_wrapper" \
+      "$ROOT/.pre-commit-config.yaml" \
+      "$ROOT/.pre-commit-config-fix.yaml" | sort -u
+  )
+  assert_equal "${#refs[@]}" 1
 }
 
 @test "markdownlint dispatch assembles the expected docker run command" {
@@ -103,8 +105,9 @@ teardown() {
   run cat "$STUB/docker.args"
   assert_output --partial "run"
   assert_output --partial "--workdir /mnt"
-  assert_output --partial "ghcr.io/igorshubovych/markdownlint-cli:v0.48.0"
-  assert_output --partial "doc.md"
+  # code-tools has no ENTRYPOINT, so the tool is named after the image.
+  assert_output --partial "ghcr.io/harleypig/code-tools"
+  assert_output --partial "markdownlint doc.md"
 }
 
 @test "ansible-lint dispatch assembles the expected docker run command" {
