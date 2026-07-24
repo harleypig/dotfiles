@@ -8,3 +8,5 @@
 !perl-tools/**
 !ansible-lint/
 !ansible-lint/**
+!lint-tools/
+!lint-tools/**
