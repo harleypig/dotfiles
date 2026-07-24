@@ -35,7 +35,7 @@
 #
 # Families (how each function is shaped):
 #   pwd-mounted linters  shellcheck shfmt yamllint prettier hadolint
-#                        markdownlint
+#                        markdownlint ansible-lint
 #   scanners             trivy (pwd + socket)  dive (socket only)
 #   daemons              ollama openwebui (host-gated, detached)
 #
@@ -321,6 +321,32 @@ markdownlint() {
 # .pre-commit-config.yaml and .pre-commit-config-fix.yaml; bump all three
 # together so the wrapper CLI and the pre-commit hook stay identical.
 image[markdownlint]="ghcr.io/igorshubovych/markdownlint-cli:v0.48.0"
+
+#------------------------------------------------------------------------------
+ansible-lint() {
+  dw_guard_pwd_paths ansible-lint "$@" || exit 1
+
+  local -a args=(--rm --env HOME=/tmp --env ANSIBLE_HOME=/tmp/.ansible)
+  dw_user args
+  dw_env args "${DW_ENV[@]}"
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # No ENTRYPOINT in the image (one image, tool named explicitly, like the
+  # perl-tools images); the repo-local .ansible-lint is auto-discovered from
+  # /mnt (= $PWD). HOME=/tmp + ANSIBLE_HOME=/tmp/.ansible give ansible-lint a
+  # writable cache OUTSIDE the mount under --user — without ANSIBLE_HOME it
+  # would cache into $PWD/.ansible and litter the caller's repo. Quote the
+  # array key: shfmt reads a bare `-` in an associative-array subscript as
+  # arithmetic (see terraform-docs).
+  exec docker run "${args[@]}" "${image["ansible-lint"]}" ansible-lint "$@"
+}
+# SYNC: the tag tracks ANSIBLE_LINT_VERSION in config/docker/ansible-lint/
+# Dockerfile and the publish-tool-images.yml matrix; bump all three together.
+# Tag-only for now (rolling, like the other linter images — digest-pinning is
+# queued in TODO.md); the image publishes on merge, so bin/ansible-lint works
+# once this lands on master.
+image["ansible-lint"]="ghcr.io/harleypig/ansible-lint:26.6.0"
 
 #------------------------------------------------------------------------------
 perltidy() {

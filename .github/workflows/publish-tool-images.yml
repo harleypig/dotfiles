@@ -1,26 +1,29 @@
 ---
 name: publish-tool-images
 
-# Build and push the repo's pinned Perl QA tool images to ghcr (PRIVATE
-# packages). Each image is the shared config/docker/perl-tools/Dockerfile built
-# with a tool-specific MODULES list - the seed of the roadmap's single combined
-# tool image (add a matrix entry per tool; the combined image is one entry with
-# the full module list).
+# Build and push the repo's pinned QA tool images to ghcr (PRIVATE packages).
+# Each matrix entry names a tool, its build context (Dockerfile dir), and its
+# tag. The Perl tools (perltidy, perlcritic) share the parameterized
+# config/docker/perl-tools/Dockerfile via a per-tool MODULES list - the seed of
+# the roadmap's single combined tool image. ansible-lint has its own Python
+# Dockerfile (config/docker/ansible-lint) and needs no MODULES.
 #
 # On a PR it BUILDS only (verify the Dockerfile); it pushes only on a push to
 # master, so unmerged changes never publish. The docker_wrapper image[] pins +
 # the pre-commit hooks consume these images (see bin/docker_wrapper and
-# .pre-commit-config*.yaml); bump a module version here and re-pin there.
+# .pre-commit-config*.yaml); bump a version here and re-pin there.
 
 on:
   push:
     branches: [master]
     paths:
       - config/docker/perl-tools/**
+      - config/docker/ansible-lint/**
       - .github/workflows/publish-tool-images.yml
   pull_request:
     paths:
       - config/docker/perl-tools/**
+      - config/docker/ansible-lint/**
       - .github/workflows/publish-tool-images.yml
   workflow_dispatch:
 
@@ -33,11 +36,17 @@ jobs:
       matrix:
         include:
           - tool: perltidy
+            context: config/docker/perl-tools
             modules: Perl::Tidy@20250912
             tag: '20250912'
           - tool: perlcritic
+            context: config/docker/perl-tools
             modules: Perl::Critic@1.156
             tag: '1.156'
+          - tool: ansible-lint
+            context: config/docker/ansible-lint
+            modules: ''
+            tag: '26.6.0'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -45,8 +54,12 @@ jobs:
       - name: Build ${{ matrix.tool }}
         run: |
           image="ghcr.io/${{ github.repository_owner }}/${{ matrix.tool }}"
-          docker build --build-arg MODULES="${{ matrix.modules }}" \
-            -t "$image:${{ matrix.tag }}" config/docker/perl-tools
+          args=()
+          if [ -n "${{ matrix.modules }}" ]; then
+            args+=(--build-arg "MODULES=${{ matrix.modules }}")
+          fi
+          docker build "${args[@]}" \
+            -t "$image:${{ matrix.tag }}" "${{ matrix.context }}"
 
       # Push only from master (not PRs); a fork PR has no packages:write anyway.
       - name: Log in to ghcr

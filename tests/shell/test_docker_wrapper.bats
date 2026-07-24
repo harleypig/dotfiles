@@ -107,6 +107,25 @@ teardown() {
   assert_output --partial "doc.md"
 }
 
+@test "ansible-lint dispatch assembles the expected docker run command" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf -- '---\n- hosts: all\n' > playbook.yml
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/ansible-lint" playbook.yml
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "run"
+  assert_output --partial "--workdir /mnt"
+  assert_output --partial "--env HOME=/tmp"
+  # No ENTRYPOINT in the image, so the binary is named explicitly after it.
+  assert_output --partial "ghcr.io/harleypig/ansible-lint:26.6.0 ansible-lint"
+  assert_output --partial "playbook.yml"
+  # ansible-lint operates on paths, not stdin — no --interactive.
+  refute_output --partial "--interactive"
+}
+
 # --- stdin-safety (the piped-stdin gap) ---------------------------------------
 
 @test "stdin-accepting wrappers keep stdin open (--interactive) when piped" {
