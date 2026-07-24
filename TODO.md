@@ -188,11 +188,6 @@ already does). Remaining work is the phased rollout:
 **non-Python linters only** — Python-*runtime* tools are a separate, later
 batch (see below and the ADR-0005 2026-07-24 update).
 
-- [x] **Add `ruff` as a new `bin/ruff`** (purely additive — replaces the old
-  yapf/isort/flake8 plan; ruff lints *and* formats, and is a static Rust
-  binary needing no Python runtime, so it lives in the combined image). Backed
-  by `ghcr.io/harleypig/lint-tools` (digest-pinned), invoked by tool name (no
-  ENTRYPOINT), cache kept out of the mount via `RUFF_CACHE_DIR=/tmp`.
 - [ ] **Re-point the non-Python existing consumers** (`shellcheck`, `shfmt`,
   `hadolint`, `prettier`, `markdownlint`) from their standalone images to the
   combined image, one at a time — updating **both** `test_docker_wrapper.bats`

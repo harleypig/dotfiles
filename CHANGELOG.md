@@ -14,6 +14,21 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Added `bin/ruff`, backed by the combined `lint-tools` image (ADR-0005
+  Phase 2 start).** ruff is a static Rust binary that lints *and* formats
+  Python but needs no Python runtime, so it lives in the combined image
+  (`ghcr.io/harleypig/lint-tools`, digest-pinned) — invoked by tool name (no
+  ENTRYPOINT), with `RUFF_CACHE_DIR=/tmp` keeping the cache out of the mounted
+  repo and stdin (`ruff check -` / `format -`) forwarded via
+  `dw_stdin_if_piped`. Verified end-to-end against the published image; adds a
+  dispatch test and the stdin-safety loop. Also recorded the Phase-2
+  refinement in ADR-0005: Python-*runtime* linters (`yamllint`,
+  `ansible-lint`) stay **out** of the combined image and are handled together
+  later in the python setup (`pipx`/`uv`); `ansible-lint` is not folded (needs
+  Python ≥3.12 vs the base's 3.11, and its ~540 MB footprint would ~double the
+  image).
+  (PR #321)
+
 - **Recorded the multi-linter Docker image decision as
   [ADR-0005](docs/adr/0005-multi-linter-docker-image.md).** Completed the
   "run more linters/formatters via Docker" research (surveying MegaLinter,
