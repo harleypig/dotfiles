@@ -188,20 +188,34 @@ already does). Remaining work is the phased rollout:
 **non-Python linters only** — Python-*runtime* tools are a separate, later
 batch (see below and the ADR-0005 2026-07-24 update).
 
-- [ ] **`shellcheck` / `shfmt` / `markdownlint` stay on their upstream
-  `docker_image` pre-commit hooks** (decision, 2026-07-24). Re-pointing them
-  would mean converting those well-maintained upstream hooks to local
-  `docker run lint-tools <tool>` hooks and rewriting the tag-based
-  version-sync bats tests, for marginal gain — `markdownlint` is already ghcr
-  (no Docker Hub flakiness), and the `shellcheck`/`shfmt` Docker Hub pulls
-  have lighter mitigations queued (auth / cache). Their wrapper CLIs stay on
-  the pinned upstream images that already match the gate.
-- [ ] **Investigate building our own pre-commit hooks for the `lint-tools`
-  image** — it's not hard (even just ripping off the upstream `docker_image`
-  hooks' structure). Local hooks that run `docker run lint-tools <tool>` would
-  let us fully consolidate `shellcheck` / `shfmt` / `markdownlint` onto the
-  one image without depending on the upstream hook repos; revisit the item
-  above once these exist.
+Decided — build our own hooks and consolidate all non-Python tools onto the
+one image (see [ADR-0006](docs/adr/0006-lint-tools-pre-commit-hooks.md); this
+supersedes the earlier "leave shellcheck/shfmt/markdownlint on upstream hooks"
+call). The mechanism is proven in-repo (perltidy/perlcritic already run as
+local `docker_image` hooks against our entrypoint-less ghcr images). Work:
+
+- [ ] **Add a non-entrypoint `lint-run` runner to the image** (e.g.
+  `/usr/local/bin/lint-run`) for a batched CI pass. Keep the image
+  entrypoint-less so tool-by-name (wrapper, pre-commit) and `lint-run` (CI)
+  both work. Rebuild → bump the `lint-tools` tag; re-pin the digest across
+  consumers.
+- [ ] **Convert `shellcheck` / `shfmt` / `markdownlint` to local
+  `docker_image` hooks** on `lint-tools` in **both** `.pre-commit-config.yaml`
+  and `.pre-commit-config-fix.yaml`, replacing the upstream hooks — preserving
+  each hook's `args` / `types` / `files` / `*-sourced` aliases. Re-point their
+  `docker_wrapper` `image[]` entries onto `lint-tools` too.
+- [ ] **Rewrite the version-sync bats tests** to the new invariant: consumers
+  reference the same `lint-tools` image; the tool version lives in the
+  Dockerfile `FROM` tags (one source of truth), not a wrapper tag / hook
+  `rev:` / CI env var.
+- [ ] **(Follow-on, needs a design call) CI-meta integration.** Decide whether
+  to keep the meta suite on pinned binaries (already fast) or restructure it
+  into a batched `lint-run` over `lint-tools`. Not required for the wrapper +
+  pre-commit consolidation, which stands alone.
+- [ ] **(Orthogonal) Harden the Docker Hub pull flakiness** via
+  `docker/login-action` / env caching — a separate quick win that lifts the
+  anonymous rate-limit for *all* Docker Hub hooks (gitleaks too), independent
+  of this consolidation. (Cross-refs the CI-reliability item below.)
 - [ ] **Measure with `dive`** against a ~500 MB budget; split by runtime
   (`lint-static` / `lint-node` / reuse `perl-tools`) only if exceeded.
   (Phase-1 image measured 428 MB with `yamllint`; it shrinks once `yamllint`

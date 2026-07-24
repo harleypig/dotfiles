@@ -18,3 +18,4 @@ repo's `adr/`.
 | [0003](0003-home-config-symlink.md) | Whether to symlink `~/.config` to `$DOTFILES/config` | Accepted |
 | [0004](0004-xdg-audit-mechanism-state-machine.md) | xdg-audit as a dotfile "mechanism" state-machine | Accepted |
 | [0005](0005-multi-linter-docker-image.md) | A self-owned multi-linter Docker image (toolbox, not orchestrator) | Accepted |
+| [0006](0006-lint-tools-pre-commit-hooks.md) | Consolidate non-Python lint tooling onto lint-tools via a non-entrypoint runner | Accepted |
