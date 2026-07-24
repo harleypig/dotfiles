@@ -123,3 +123,30 @@ in is trivial later (same slim base family). Expansion slots (a build stage, a
 - The rollout is reversible per step — deleting the image and reverting the
   registry pins restores the per-tool images. The decision is recorded here so
   it is not silently re-litigated as the TODO research thread is pruned.
+
+## Update (2026-07-24): Python-runtime tools stay out of the combined image
+
+Measuring the Phase-2 consolidation refined the "split by runtime" escape
+hatch above into a standing rule: **a tool that needs a Python *runtime* is
+kept out of the combined image and handled with the other Python tools later,
+in the python setup (likely via `pipx` / `uv`).** Two consequences:
+
+- **`ruff` stays in the combined image** — it is a static Rust binary that
+  lints Python but needs *no* Python runtime, so it folds in like the other
+  static binaries. Phase 2 exposes it as a new `bin/ruff` backed by the
+  published image.
+- **`ansible-lint` is not folded** (the trigger for this refinement).
+  Evidence: `ansible==14.2.0` needs **Python ≥ 3.12**, but the `node:22-slim`
+  base ships Python 3.11 (so the fold would need a *copied* Python 3.13
+  runtime); and the standalone ansible-lint image is **540 MB** on its own
+  (ansible + collections ≈ 420 MB), which would push the combined image to
+  ~850 MB — nearly double, and far over the ~500 MB budget. It keeps its own
+  image, digest-pinned in Phase 2.
+- **`yamllint`** (Python) was included in the Phase-1 image; it too belongs
+  with the Python tools. Extracting it (rebuilding the combined image without
+  the Python runtime) is deferred to the python-setup work that re-homes
+  `yamllint` + `ansible-lint` together via `pipx` / `uv`.
+
+So the combined image trends toward **non-Python linters only** (static
+binaries + Node tools + `ruff`); the Python-runtime linters are a separate,
+later batch.
