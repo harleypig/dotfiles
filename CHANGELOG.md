@@ -28,6 +28,17 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Recorded [ADR-0006](docs/adr/0006-lint-tools-pre-commit-hooks.md): build
+  our own `lint-tools` pre-commit hooks + a non-entrypoint runner.**
+  Investigated converting `shellcheck` / `shfmt` / `markdownlint` off their
+  upstream `docker_image` hooks onto the combined image and decided to do it
+  (reversing the provisional "leave them on upstream" call recorded under
+  *Changed* below). The perceived costs dissolved: the version-sync test is a
+  *change* not added complexity (one image-string invariant; version in the
+  Dockerfile `FROM` tags), the bump flow is the same one already used for the
+  perl/ansible images, and a non-entrypoint `lint-run` runner lets one image
+  back `docker_wrapper` + pre-commit (check *and* fix) + CI. Reshaped the TODO
+  into the implementation steps; implementation is queued, not yet done.
 - **Added `bin/ruff`, backed by the combined `lint-tools` image (ADR-0005
   Phase 2 start).** ruff is a static Rust binary that lints *and* formats
   Python but needs no Python runtime, so it lives in the combined image
