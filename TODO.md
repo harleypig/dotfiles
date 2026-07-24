@@ -194,10 +194,6 @@ supersedes the earlier "leave shellcheck/shfmt/markdownlint on upstream hooks"
 call). The mechanism is proven in-repo (perltidy/perlcritic already run as
 local `docker_image` hooks against our entrypoint-less ghcr images). Work:
 
-- [ ] **Delete the old `lint-tools` ghcr package** — a post-merge step: after
-  PR A/B are on master nothing references `lint-tools`, so the orphaned
-  package can be deleted (irreversible/outward — done as an explicit step once
-  CI is green).
 - [ ] **Cleanup — remove folded-in standalone images from the repo AND ghcr.**
   As each existing `config/docker/<tool>` image is folded into `code-tools`
   and the result is green **all the way through CI**, delete that image's

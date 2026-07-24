@@ -30,7 +30,9 @@ goes green (see the merge-time finalization in
   consumer names one identical image ref. All hooks verified against the
   published image; the CI `pre-commit` job already logs into ghcr for the
   private image. Now one image backs the wrapper CLI **and** pre-commit for
-  every non-Python tool. (PR #327)
+  every non-Python tool. The orphaned `ghcr.io/harleypig/lint-tools` package
+  (unreferenced after the rename) was then deleted, completing the rebuild.
+  (PR #327)
 
 - **Rebuilt the combined image as `code-tools` and added the `run-tools`
   runner (ADR-0006 implementation, PR A).** Renamed `lint-tools` →
