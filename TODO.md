@@ -194,17 +194,6 @@ supersedes the earlier "leave shellcheck/shfmt/markdownlint on upstream hooks"
 call). The mechanism is proven in-repo (perltidy/perlcritic already run as
 local `docker_image` hooks against our entrypoint-less ghcr images). Work:
 
-- [x] **Rebuild the image as `code-tools` + add the `run-tools` runner.**
-  Renamed `lint-tools` → `code-tools`
-  ([ADR-0005](docs/adr/0005-multi-linter-docker-image.md) update): the config
-  dir, the `Dockerfile`, the `publish-tool-images.yml` matrix + trigger paths,
-  and the `config/docker/.gitignore` allowlist. Added the non-entrypoint
-  `/usr/local/bin/run-tools` batch runner (runs several tool invocations in
-  one container, aggregating status; `test_run_tools.bats`) — the image stays
-  entrypoint-less so tool-by-name still works. Re-pointed the
-  `hadolint`/`prettier`/`ruff` wrappers to `code-tools` (tag-only) + updated
-  their dispatch tests. Publishes `ghcr.io/harleypig/code-tools:0.1.0` on
-  merge (PR A).
 - [ ] **Finish the rename in PR B:** once `code-tools:0.1.0` is published,
   **re-pin its digest** across the consumers (tag-only for now) and **delete
   the old `lint-tools` ghcr package** once nothing references it. Rides with
