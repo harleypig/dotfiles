@@ -171,38 +171,34 @@ audit.
 
 ## 🐳 Docker tooling Setup
 
-### Research: run more linters/formatters via Docker
+### Run more linters/formatters via Docker
 
-Today only some tools have a `bin/` docker wrapper (shellcheck, shfmt,
-yamllint, prettier, hadolint, trivy, dive, markdownlint — via
-`bin/docker_wrapper`). Others (yapf, isort, flake8, perltidy, perlcritic) are
-"command not found" unless installed on the host, so a fresh machine is
-inconsistent and pre-commit's isolated envs are the only thing that runs them.
+**Decided — see [ADR-0005](docs/adr/0005-multi-linter-docker-image.md).** The
+research (survey of MegaLinter, Super-Linter, AZLint, Code Cleaner Buffet, and
+cytopia awesome-ci) and the architecture decision are recorded there: build
+our own multi-stage **toolbox** image (no orchestrator — pre-commit and CI
+already orchestrate), on debian-slim, published to ghcr, backing the
+`bin/<tool>` wrappers + pre-commit + CI on one pinned artifact. This resolves
+the former
+"evaluate aggregate images" and "decide the boundary" questions (avoid
+MegaLinter/Super-Linter as bundles; expose each tool by name, as `perl-tools`
+already does). Remaining work is the phased rollout:
 
-- [ ] **Per-tool wrappers**: identify which remaining tools have a trustworthy
-  official/pinned image and add them to the `docker_wrapper` dispatcher (yapf,
-  isort, flake8, perltidy, perlcritic, …) — same pattern as the existing
-  wrappers, mounting `$PWD` + the relevant `config/` files. Ties into the
-  "bin/markdownlint docker wrapper" and docker_wrapper symlink-automation items.
-- [ ] **Evaluate aggregate linter images — Super-Linter vs MegaLinter.** Both
-  bundle many linters in one image:
-  - `github/super-linter` — simplest; check-only.
-  - `oxsecurity/megalinter` — a more configurable fork: select linters via
-    `ENABLE_LINTERS`, language-specific "flavors" (smaller images), reporters/
-    SARIF, and it can **apply fixes** (`APPLY_FIXES`), unlike super-linter.
-  - The shared tension: both are built to scan a **whole repo** (CI), not to
-    expose each linter as an individual command, so neither maps cleanly onto
-    the per-tool `bin/<tool>` model or pre-commit's per-file hooks. Research
-    whether their bundled linters can be invoked individually
-    (`docker run … <linter> <args>`) and whether that's worth it vs. pinning
-    each tool's own image. Likely roles: a CI "lint everything" aggregate pass
-    (MegaLinter's configurability makes it the stronger candidate), or a
-    convenience wrapper — **not** a replacement for per-tool wrappers /
-    pre-commit hooks.
-- [ ] **Decide the boundary**: which tools are best as standalone pinned
-  images, which (if any) via an aggregate (Super-Linter/MegaLinter), and how
-  this interacts with pre-commit (which already runs tools in isolated envs —
-  a host wrapper is mainly for ad-hoc CLI use outside a commit).
+- [ ] **Phase 1 — build + publish the combined image.** Add
+  `config/docker/lint-tools/Dockerfile` (multi-stage: static binaries `COPY`ed
+  from upstream pinned images + Node/Python tool stages → debian-slim), a
+  `publish-tool-images.yml` matrix entry, and the `config/docker/.gitignore`
+  allowlist. Core set: shellcheck, shfmt, yamllint, hadolint, markdownlint,
+  prettier, ruff. No consumers re-pointed yet (the PR-build verifies the
+  Dockerfile; merge publishes to ghcr).
+- [ ] **Phase 2 — wire consumers incrementally.** Add `ruff` as a new
+  `bin/ruff` (purely additive — replaces the old yapf/isort/flake8 plan; ruff
+  lints *and* formats), then re-point the existing `docker_wrapper` entries
+  and pre-commit hooks to the combined image one at a time — updating **both**
+  `test_docker_wrapper.bats` and `test_docker_wrapper_links.bats` per change
+  and re-pinning the digest after the first publish.
+- [ ] **Measure with `dive`** against a ~500 MB budget; split by runtime
+  (`lint-static` / `lint-node` / reuse `perl-tools`) only if exceeded.
 
 ## 🚀 CI/CD Setup
 

@@ -17,3 +17,4 @@ repo's `adr/`.
 | [0002](0002-perl-qa-tooling-scope.md) | Scope of the Perl QA tooling — what to gate, skip, and defer | Accepted |
 | [0003](0003-home-config-symlink.md) | Whether to symlink `~/.config` to `$DOTFILES/config` | Accepted |
 | [0004](0004-xdg-audit-mechanism-state-machine.md) | xdg-audit as a dotfile "mechanism" state-machine | Accepted |
+| [0005](0005-multi-linter-docker-image.md) | A self-owned multi-linter Docker image (toolbox, not orchestrator) | Accepted |
