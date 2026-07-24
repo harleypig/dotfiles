@@ -10,6 +10,23 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-24
+
+### Added
+
+- **Recorded the multi-linter Docker image decision as
+  [ADR-0005](docs/adr/0005-multi-linter-docker-image.md).** Completed the
+  "run more linters/formatters via Docker" research (surveying MegaLinter,
+  Super-Linter, AZLint, Code Cleaner Buffet, and cytopia awesome-ci) and
+  decided to build our own multi-stage **toolbox** image — no orchestrator
+  (pre-commit and CI already orchestrate), debian-slim runtime, published to
+  ghcr, backing the `bin/<tool>` wrappers + pre-commit + CI on one pinned
+  artifact. Generalizes the existing `perl-tools` seed and deliberately avoids
+  MegaLinter/Super-Linter as bundles. Reshaped the `TODO.md` research thread
+  into the decided phased rollout (build+publish the image, then wire
+  consumers incrementally) and adopted `ruff` for Python (retiring the
+  yapf/isort/flake8 plan). (PR #319)
+
 ## 2026-07-23
 
 ### Removed
