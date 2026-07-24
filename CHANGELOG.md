@@ -12,6 +12,20 @@ goes green (see the merge-time finalization in
 
 ## 2026-07-24
 
+### Changed
+
+- **Re-pointed `bin/hadolint` + `bin/prettier` to the combined `lint-tools`
+  image (ADR-0005 Phase 2).** Both non-Python tools now run from
+  `ghcr.io/harleypig/lint-tools` (digest-pinned), naming the tool on the
+  entrypoint-less image: `hadolint` (v2.14.0) is a pure swap (no pre-commit
+  hook, already named the tool), and `prettier` (3.9.6) moves off the unpinned
+  `prettier:latest` onto a pinned image — its pre-commit gate is a separate
+  node hook, left as-is. Added dispatch tests for both.
+  `shellcheck`/`shfmt`/`markdownlint` deliberately stay on their upstream
+  `docker_image` pre-commit hooks (converting them + rewriting the tag-based
+  version-sync tests isn't worth it now); a TODO tracks investigating our own
+  `lint-tools` hooks to enable full consolidation later. (PR #322)
+
 ### Added
 
 - **Added `bin/ruff`, backed by the combined `lint-tools` image (ADR-0005
