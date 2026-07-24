@@ -184,15 +184,6 @@ the former
 MegaLinter/Super-Linter as bundles; expose each tool by name, as `perl-tools`
 already does). Remaining work is the phased rollout:
 
-- [x] **Phase 1 — build + publish the combined image.** Add
-  `config/docker/lint-tools/Dockerfile` (multi-stage: the shellcheck, shfmt,
-  hadolint, and ruff static binaries `COPY`ed from upstream pinned images onto
-  a `node:22-slim` base — Node 20+ for prettier/markdownlint — plus a yamllint
-  venv built with the image's own python3), a `publish-tool-images.yml` matrix
-  entry, and the `config/docker/.gitignore` allowlist. Core set: shellcheck,
-  shfmt, yamllint, hadolint, markdownlint, prettier, ruff. No consumers
-  re-pointed yet (the PR-build verifies the Dockerfile; merge publishes to
-  ghcr). Built: 7 tools, non-root, 428 MB, `dive` PASS, `hadolint` clean.
 - [ ] **Phase 2 — wire consumers incrementally.** Add `ruff` as a new
   `bin/ruff` (purely additive — replaces the old yapf/isort/flake8 plan; ruff
   lints *and* formats), then re-point the existing `docker_wrapper` entries
@@ -291,6 +282,18 @@ Pre-commit can progress independently. CI/CD cannot lead pre-commit.
   leaving fenced code, tables, headings, and lists untouched — wired into
   `.pre-commit-config-fix.yaml`. Weigh against the risk of mangling intentional
   line breaks.
+- [ ] **Widen the `prose-wrap` check to the repo's own authored docs
+  (retrospective, PRs #319/#320).** `tests/lint/prose_wrap.py` already does
+  exactly the right thing — counts *characters* (no em-dash byte-count trap)
+  and exempts code/frontmatter/tables/reference-links/headings/URLs — but the
+  hook is scoped `files: ^\.claude/.*\.md$`, so `TODO.md`, `CHANGELOG.md`, and
+  `docs/adr/*.md` get no automated 78-col gate. Authoring those docs meant
+  hand-counting with `perl -CSD` and iterating on overflows (hit in both the
+  ADR-0005 PR and this one). Widen the hook's `files` pattern to cover the
+  repo's authored Markdown (`TODO.md`, `CHANGELOG.md`, `docs/**.md`,
+  `README.md`, `.claude/**.md`). **Prereq:** the hook gates on a clean corpus,
+  so first fix the pre-existing >78-col prose lines in those files (several
+  exist in `TODO.md`) or the widened hook blocks every commit.
 
 ### Prose linting: adopt Vale for Phase 4
 

@@ -26,6 +26,18 @@ goes green (see the merge-time finalization in
   into the decided phased rollout (build+publish the image, then wire
   consumers incrementally) and adopted `ruff` for Python (retiring the
   yapf/isort/flake8 plan). (PR #319)
+- **Built the combined `lint-tools` Docker image (ADR-0005 Phase 1).** Added
+  `config/docker/lint-tools/Dockerfile` — a multi-stage **toolbox** image
+  holding this repo's cross-language linters: the `shellcheck`, `shfmt`,
+  `hadolint`, and `ruff` static binaries `COPY`ed from their official pinned
+  images onto a `node:22-slim` base (Node 20+ for `prettier`/`markdownlint`),
+  plus a `yamllint` venv built with the image's own `python3`. No ENTRYPOINT,
+  so `docker_wrapper` invokes each tool by name (the `perl-tools` model).
+  Wired into `publish-tool-images.yml` (build on PR, push to
+  `ghcr.io/harleypig/lint-tools` on master) with the
+  `config/docker/.gitignore` allowlist entry. Verified: all 7 tools run,
+  non-root, 428 MB (< ~500 MB budget), `dive` PASS, `hadolint` clean. No
+  consumers re-pointed yet (that is Phase 2). (PR #320)
 
 ## 2026-07-23
 
