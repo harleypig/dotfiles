@@ -194,23 +194,42 @@ supersedes the earlier "leave shellcheck/shfmt/markdownlint on upstream hooks"
 call). The mechanism is proven in-repo (perltidy/perlcritic already run as
 local `docker_image` hooks against our entrypoint-less ghcr images). Work:
 
+- [ ] **Rename the image `lint-tools` → `code-tools`, bundled with this
+  rebuild** ([ADR-0005](docs/adr/0005-multi-linter-docker-image.md) update).
+  `lint-tools` misleads (formatters + linters); `code-tools` = tools that
+  operate on code. The rebuild below is the single point that republishes as
+  `ghcr.io/harleypig/code-tools`, re-pins **every** consumer at once
+  (`docker_wrapper` `image[]`, the pre-commit hooks, the tests asserting the
+  string), and **deletes the old `lint-tools` ghcr package** once nothing
+  references it. Touch list: `bin/docker_wrapper`, `config/docker/` (dir
+  rename + `.gitignore`), `publish-tool-images.yml`,
+  `tests/shell/test_docker_wrapper.bats`, and the docs.
 - [ ] **Add a non-entrypoint `run-tools` runner to the image** (e.g.
   `/usr/local/bin/run-tools`) for a batched CI pass. Keep the image
   entrypoint-less so tool-by-name (wrapper, pre-commit) and `run-tools` (CI)
-  both work. Rebuild → bump the `lint-tools` tag; re-pin the digest across
+  both work. Rebuild → publish `code-tools`; re-pin the digest across
   consumers.
 - [ ] **Convert `shellcheck` / `shfmt` / `markdownlint` to local
-  `docker_image` hooks** on `lint-tools` in **both** `.pre-commit-config.yaml`
+  `docker_image` hooks** on `code-tools` in **both** `.pre-commit-config.yaml`
   and `.pre-commit-config-fix.yaml`, replacing the upstream hooks — preserving
   each hook's `args` / `types` / `files` / `*-sourced` aliases. Re-point their
-  `docker_wrapper` `image[]` entries onto `lint-tools` too.
+  `docker_wrapper` `image[]` entries onto `code-tools` too.
 - [ ] **Rewrite the version-sync bats tests** to the new invariant: consumers
-  reference the same `lint-tools` image; the tool version lives in the
+  reference the same `code-tools` image; the tool version lives in the
   Dockerfile `FROM` tags (one source of truth), not a wrapper tag / hook
   `rev:` / CI env var.
+- [ ] **Cleanup — remove folded-in standalone images from the repo AND ghcr.**
+  As each existing `config/docker/<tool>` image is folded into `code-tools`
+  and the result is green **all the way through CI**, delete that image's
+  Dockerfile + dir, its `config/docker/.gitignore` allowlist entry, and its
+  `publish-tool-images.yml` matrix entry, **and delete its `ghcr.io/harleypig`
+  package**. Which images actually fold in is governed by the runtime-
+  separation rule (ADR-0005): today the Python/Perl-runtime images
+  (`ansible-lint`, `perl-tools`) stay separate, so this triggers per-image
+  only when one is genuinely absorbed — not preemptively.
 - [ ] **(Follow-on, needs a design call) CI-meta integration.** Decide whether
   to keep the meta suite on pinned binaries (already fast) or restructure it
-  into a batched `run-tools` over `lint-tools`. Not required for the wrapper +
+  into a batched `run-tools` over `code-tools`. Not required for the wrapper +
   pre-commit consolidation, which stands alone.
 - [ ] **(Orthogonal) Harden the Docker Hub pull flakiness** via
   `docker/login-action` / env caching — a separate quick win that lifts the

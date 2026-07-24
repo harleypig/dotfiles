@@ -28,6 +28,17 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **Decided to rename the combined image `lint-tools` → `code-tools`, and
+  added a fold-in cleanup task**
+  ([ADR-0005](docs/adr/0005-multi-linter-docker-image.md) update).
+  `lint-tools` misleads (it holds formatters, not just linters — same
+  reason the runner became `run-tools`); `code-tools` = tools that operate on
+  code. The rename is bundled with the next image rebuild (the ADR-0006
+  implementation), so consumers are re-pinned and the old ghcr package deleted
+  in one pass rather than twice. The cleanup task: as each standalone
+  `config/docker/<tool>` image is folded into `code-tools` and green through
+  CI, remove it from the repo **and** its ghcr package (per-image, governed by
+  the runtime-separation rule). Decision + tasks only; no rebuild yet.
 - **Recorded [ADR-0006](docs/adr/0006-lint-tools-pre-commit-hooks.md): build
   our own `lint-tools` pre-commit hooks + a non-entrypoint runner.**
   Investigated converting `shellcheck` / `shfmt` / `markdownlint` off their

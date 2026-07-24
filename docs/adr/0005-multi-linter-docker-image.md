@@ -150,3 +150,20 @@ in the python setup (likely via `pipx` / `uv`).** Two consequences:
 So the combined image trends toward **non-Python linters only** (static
 binaries + Node tools + `ruff`); the Python-runtime linters are a separate,
 later batch.
+
+## Update (2026-07-24): rename `lint-tools` → `code-tools`
+
+`lint-tools` misleads for the same reason the runner did (renamed `run-tools`,
+ADR-0006): the image holds **formatters** (`shfmt`, `prettier`) as well as
+linters, and `ruff` is both. The image is renamed **`code-tools`** — tools
+that operate on code — published as `ghcr.io/harleypig/code-tools`.
+
+The rename is **bundled with the next image rebuild** (the ADR-0006
+implementation — adding the `run-tools` runner, converting hooks, and
+extracting `yamllint`), not done standalone: that rebuild already republishes
+and re-pins the image, so renaming there means **one** republish + **one**
+re-pin of every consumer (the `docker_wrapper` `image[]` entries, the
+pre-commit hooks) + **one** ghcr cleanup, instead of two. Until then, the
+live references stay `lint-tools` (the published `0.1.0` image); the rebuild
+flips them all to `code-tools` atomically and deletes the old `lint-tools`
+ghcr package. Tracked in `TODO.md`.
