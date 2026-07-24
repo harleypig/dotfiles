@@ -139,15 +139,15 @@ teardown() {
   assert_output --partial "--workdir /mnt"
   # Cache is kept out of the mounted repo.
   assert_output --partial "--env RUFF_CACHE_DIR=/tmp/ruff-cache"
-  # The combined lint-tools image has no ENTRYPOINT, so the tool is named after
+  # The combined code-tools image has no ENTRYPOINT, so the tool is named after
   # it (like ansible-lint / perltidy).
-  assert_output --partial "ghcr.io/harleypig/lint-tools"
+  assert_output --partial "ghcr.io/harleypig/code-tools"
   assert_output --partial "ruff check mod.py"
 }
 
-@test "hadolint dispatch names the tool on the combined lint-tools image" {
+@test "hadolint dispatch names the tool on the combined code-tools image" {
   # Re-pointed (ADR-0005 Phase 2) off the standalone hadolint image onto
-  # lint-tools; the image has no ENTRYPOINT, so the binary is named after it.
+  # code-tools; the image has no ENTRYPOINT, so the binary is named after it.
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
   printf 'FROM alpine:3.19\n' > Dockerfile
@@ -157,13 +157,13 @@ teardown() {
 
   run cat "$STUB/docker.args"
   assert_output --partial "--workdir /mnt"
-  assert_output --partial "ghcr.io/harleypig/lint-tools"
+  assert_output --partial "ghcr.io/harleypig/code-tools"
   assert_output --partial "hadolint Dockerfile"
 }
 
-@test "prettier dispatch names the tool on the combined lint-tools image" {
+@test "prettier dispatch names the tool on the combined code-tools image" {
   # Re-pointed (ADR-0005 Phase 2) off the unpinned prettier:latest onto
-  # lint-tools; no ENTRYPOINT, so the binary is named after it.
+  # code-tools; no ENTRYPOINT, so the binary is named after it.
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
   printf 'const x = 1\n' > f.js
@@ -173,7 +173,7 @@ teardown() {
 
   run cat "$STUB/docker.args"
   assert_output --partial "--workdir /mnt"
-  assert_output --partial "ghcr.io/harleypig/lint-tools"
+  assert_output --partial "ghcr.io/harleypig/code-tools"
   assert_output --partial "prettier --check f.js"
 }
 

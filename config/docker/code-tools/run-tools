@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+# run-tools — batched runner for the code-tools image (ADR-0006). Runs several
+# tool invocations in ONE container and aggregates their exit status, so CI can
+# check the repo in a single `docker run` instead of one container per tool.
+#
+# It is deliberately NOT the image ENTRYPOINT: the image is still invoked
+# tool-by-name (`docker run code-tools <tool> ...`) by docker_wrapper and the
+# pre-commit hooks; run-tools is an ADDITIONAL on-PATH helper for the batched
+# CI path.
+#
+# Which tools / files CI batches through it is the caller's choice — the
+# CI-meta integration is a separate, deferred design decision (see ADR-0006 /
+# TODO). This runner only provides the batch-in-one-container primitive.
+
+set -uo pipefail
+
+usage() {
+  cat << 'EOF'
+run-tools — run several tool invocations in one container, aggregating status.
+
+Usage:
+  run-tools <tool> [args...] [-- <tool> [args...]]...
+      Run each `--`-separated invocation in order. Every invocation runs (a
+      failure does not short-circuit the rest, so one pass reports all of
+      them); exits 1 if ANY invocation failed, 0 if all passed.
+  run-tools -h | --help
+EOF
+}
+
+case "${1-}" in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  '')
+    echo "run-tools: no invocation given (try --help)" >&2
+    exit 2
+    ;;
+esac
+
+# Split "$@" on `--` into invocations, running each and OR-ing its status into
+# rc. run_one is a no-op on an empty group (leading/trailing/doubled `--`).
+rc=0
+cmd=()
+
+run_one() {
+  ((${#cmd[@]})) || return 0
+
+  "${cmd[@]}" || rc=1
+  cmd=()
+}
+
+for arg in "$@"; do
+  if [[ $arg == -- ]]; then
+    run_one
+
+  else
+    cmd+=("$arg")
+  fi
+done
+
+run_one
+
+exit "$rc"
