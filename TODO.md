@@ -188,11 +188,6 @@ already does). Remaining work is the phased rollout:
 **non-Python linters only** — Python-*runtime* tools are a separate, later
 batch (see below and the ADR-0005 2026-07-24 update).
 
-- [x] **Re-point `hadolint` + `prettier` to the combined image.** Both
-  re-point cleanly: `hadolint` has no pre-commit hook and already named the
-  tool; `prettier` was on an unpinned `prettier:latest` (now digest-pinned via
-  `lint-tools`). Both name the tool on the entrypoint-less image; added
-  dispatch tests for each.
 - [ ] **`shellcheck` / `shfmt` / `markdownlint` stay on their upstream
   `docker_image` pre-commit hooks** (decision, 2026-07-24). Re-pointing them
   would mean converting those well-maintained upstream hooks to local
