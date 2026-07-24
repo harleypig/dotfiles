@@ -184,14 +184,32 @@ the former
 MegaLinter/Super-Linter as bundles; expose each tool by name, as `perl-tools`
 already does). Remaining work is the phased rollout:
 
-- [ ] **Phase 2 — wire consumers incrementally.** Add `ruff` as a new
-  `bin/ruff` (purely additive — replaces the old yapf/isort/flake8 plan; ruff
-  lints *and* formats), then re-point the existing `docker_wrapper` entries
-  and pre-commit hooks to the combined image one at a time — updating **both**
-  `test_docker_wrapper.bats` and `test_docker_wrapper_links.bats` per change
-  and re-pinning the digest after the first publish.
+**Phase 2 — wire consumers incrementally.** The combined image holds
+**non-Python linters only** — Python-*runtime* tools are a separate, later
+batch (see below and the ADR-0005 2026-07-24 update).
+
+- [ ] **Re-point the non-Python existing consumers** (`shellcheck`, `shfmt`,
+  `hadolint`, `prettier`, `markdownlint`) from their standalone images to the
+  combined image, one at a time — updating **both** `test_docker_wrapper.bats`
+  and `test_docker_wrapper_links.bats` per change and re-pinning the digest.
+  Do this only *after* `lint-tools` is published, so the working tools never
+  regress.
 - [ ] **Measure with `dive`** against a ~500 MB budget; split by runtime
   (`lint-static` / `lint-node` / reuse `perl-tools`) only if exceeded.
+  (Phase-1 image measured 428 MB with `yamllint`; it shrinks once `yamllint`
+  is extracted — next item.)
+
+**Python-runtime tools — deferred to the python setup, handled as one batch.**
+`yamllint` and `ansible-lint` need a Python runtime, so per ADR-0005 they stay
+*out* of the combined image and are re-homed together later — likely via
+`pipx` / `uv` in a dedicated Python-tools image (or images):
+
+- [ ] **Re-home `yamllint` + `ansible-lint` (and any future Python linter) as
+  a Python-tools batch** during the python setup. `ansible-lint` is not folded
+  into `lint-tools` (needs Python ≥ 3.12 vs the base's 3.11, and its ~540 MB
+  footprint would ~double the image — ADR-0005). Extract `yamllint` from the
+  Phase-1 `lint-tools` image (rebuild without the Python runtime, bump the
+  tag) as part of this batch. Digest-pin `ansible-lint`'s wrapper here too.
 
 ## 🚀 CI/CD Setup
 

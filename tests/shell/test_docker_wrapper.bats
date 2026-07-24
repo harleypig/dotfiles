@@ -126,6 +126,25 @@ teardown() {
   refute_output --partial "--interactive"
 }
 
+@test "ruff dispatch assembles the expected docker run command" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf 'import os\n' > mod.py
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/ruff" check mod.py
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "run"
+  assert_output --partial "--workdir /mnt"
+  # Cache is kept out of the mounted repo.
+  assert_output --partial "--env RUFF_CACHE_DIR=/tmp/ruff-cache"
+  # The combined lint-tools image has no ENTRYPOINT, so the tool is named after
+  # it (like ansible-lint / perltidy).
+  assert_output --partial "ghcr.io/harleypig/lint-tools"
+  assert_output --partial "ruff check mod.py"
+}
+
 # --- stdin-safety (the piped-stdin gap) ---------------------------------------
 
 @test "stdin-accepting wrappers keep stdin open (--interactive) when piped" {
@@ -139,7 +158,7 @@ teardown() {
 
   local t
   for t in shellcheck shfmt yamllint prettier hadolint markdownlint \
-    perltidy perlcritic packer; do
+    perltidy perlcritic packer ruff; do
     rm -f "$STUB/docker.args"
     run env "PATH=$STUB:$PATH" "$ROOT/bin/$t" f.sh
     assert_success

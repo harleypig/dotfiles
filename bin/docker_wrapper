@@ -35,7 +35,7 @@
 #
 # Families (how each function is shaped):
 #   pwd-mounted linters  shellcheck shfmt yamllint prettier hadolint
-#                        markdownlint ansible-lint
+#                        markdownlint ansible-lint ruff
 #   scanners             trivy (pwd + socket)  dive (socket only)
 #   daemons              ollama openwebui (host-gated, detached)
 #
@@ -347,6 +347,34 @@ ansible-lint() {
 # queued in TODO.md); the image publishes on merge, so bin/ansible-lint works
 # once this lands on master.
 image["ansible-lint"]="ghcr.io/harleypig/ansible-lint:26.6.0"
+
+#------------------------------------------------------------------------------
+ruff() {
+  dw_guard_pwd_paths ruff "$@" || exit 1
+
+  local -a args=(--rm --env HOME=/tmp --env RUFF_CACHE_DIR=/tmp/ruff-cache)
+  dw_user args
+  dw_env args "${DW_ENV[@]}"
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # `ruff check -` / `ruff format -` read source from stdin.
+  dw_stdin_if_piped args
+
+  # The lint-tools image (ADR-0005) has no entrypoint — it holds many tools —
+  # so name the tool. A repo-local ruff.toml / .ruff.toml / pyproject.toml is
+  # auto-discovered from /mnt (= $PWD). RUFF_CACHE_DIR=/tmp keeps the cache OUT
+  # of the mounted repo (ruff otherwise writes $PWD/.ruff_cache under --user).
+  exec docker run "${args[@]}" "${image[ruff]}" ruff "$@"
+}
+# SYNC: lint-tools is the combined ADR-0005 image; re-pin this tag+digest after
+# a publish (docker pull, then `docker inspect --format '{{index .RepoDigests
+# 0}}'`) together with the publish-tool-images.yml matrix tag. ruff is a static
+# binary (needs no Python runtime), so it lives in the combined image; the
+# Python-runtime linters (yamllint, ansible-lint) stay on their own images,
+# handled together in the future python setup. ruff has no pre-commit hook yet
+# (added with that python setup).
+image[ruff]="ghcr.io/harleypig/lint-tools:0.1.0@sha256:b472f5a491ff9a0e3fbfaa342dd1717c462805a32f145cbb585560da7f7cceae"
 
 #------------------------------------------------------------------------------
 perltidy() {
