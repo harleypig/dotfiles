@@ -47,7 +47,8 @@ EOF
   run "$ROOT/bin/docker_wrapper" --images
   assert_success
   assert_output --partial "shellcheck"
-  assert_output --partial "koalaman/shellcheck:v0.11.0"
+  # The shellcheck entry now points at the combined code-tools image (ADR-0006).
+  assert_output --partial "ghcr.io/harleypig/code-tools"
 
   # the tool column is exactly the registry
   run bash -c 'diff <("$1" --known-tools) <("$1" --images | cut -d" " -f1)' \
