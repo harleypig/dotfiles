@@ -184,13 +184,15 @@ the former
 MegaLinter/Super-Linter as bundles; expose each tool by name, as `perl-tools`
 already does). Remaining work is the phased rollout:
 
-- [ ] **Phase 1 — build + publish the combined image.** Add
-  `config/docker/lint-tools/Dockerfile` (multi-stage: static binaries `COPY`ed
-  from upstream pinned images + Node/Python tool stages → debian-slim), a
-  `publish-tool-images.yml` matrix entry, and the `config/docker/.gitignore`
-  allowlist. Core set: shellcheck, shfmt, yamllint, hadolint, markdownlint,
-  prettier, ruff. No consumers re-pointed yet (the PR-build verifies the
-  Dockerfile; merge publishes to ghcr).
+- [x] **Phase 1 — build + publish the combined image.** Add
+  `config/docker/lint-tools/Dockerfile` (multi-stage: the shellcheck, shfmt,
+  hadolint, and ruff static binaries `COPY`ed from upstream pinned images onto
+  a `node:22-slim` base — Node 20+ for prettier/markdownlint — plus a yamllint
+  venv built with the image's own python3), a `publish-tool-images.yml` matrix
+  entry, and the `config/docker/.gitignore` allowlist. Core set: shellcheck,
+  shfmt, yamllint, hadolint, markdownlint, prettier, ruff. No consumers
+  re-pointed yet (the PR-build verifies the Dockerfile; merge publishes to
+  ghcr). Built: 7 tools, non-root, 428 MB, `dive` PASS, `hadolint` clean.
 - [ ] **Phase 2 — wire consumers incrementally.** Add `ruff` as a new
   `bin/ruff` (purely additive — replaces the old yapf/isort/flake8 plan; ruff
   lints *and* formats), then re-point the existing `docker_wrapper` entries

@@ -6,7 +6,11 @@ name: publish-tool-images
 # tag. The Perl tools (perltidy, perlcritic) share the parameterized
 # config/docker/perl-tools/Dockerfile via a per-tool MODULES list - the seed of
 # the roadmap's single combined tool image. ansible-lint has its own Python
-# Dockerfile (config/docker/ansible-lint) and needs no MODULES.
+# Dockerfile (config/docker/ansible-lint) and needs no MODULES. lint-tools is
+# the combined cross-language linter image (config/docker/lint-tools) decided
+# in ADR-0005 — its own multi-stage Dockerfile, no MODULES; tool versions are
+# baked as ARG/FROM pins there, and its image tag is bumped when any of them
+# changes.
 #
 # On a PR it BUILDS only (verify the Dockerfile); it pushes only on a push to
 # master, so unmerged changes never publish. The docker_wrapper image[] pins +
@@ -19,11 +23,13 @@ on:
     paths:
       - config/docker/perl-tools/**
       - config/docker/ansible-lint/**
+      - config/docker/lint-tools/**
       - .github/workflows/publish-tool-images.yml
   pull_request:
     paths:
       - config/docker/perl-tools/**
       - config/docker/ansible-lint/**
+      - config/docker/lint-tools/**
       - .github/workflows/publish-tool-images.yml
   workflow_dispatch:
 
@@ -47,6 +53,10 @@ jobs:
             context: config/docker/ansible-lint
             modules: ''
             tag: '26.6.0'
+          - tool: lint-tools
+            context: config/docker/lint-tools
+            modules: ''
+            tag: 0.1.0
     steps:
       - name: Checkout
         uses: actions/checkout@v7
