@@ -269,16 +269,16 @@ prettier() {
   # prettier reads from stdin with `--stdin-filepath <name>`.
   dw_stdin_if_piped args
 
-  # The combined lint-tools image (ADR-0005) has no ENTRYPOINT, so name the
+  # The combined code-tools image (ADR-0005) has no ENTRYPOINT, so name the
   # tool. A repo-local .prettierrc / prettier config is auto-discovered from
   # /mnt (= $PWD). Re-pointed off the old unpinned `prettier:latest`.
   exec docker run "${args[@]}" "${image[prettier]}" prettier "$@"
 }
-# SYNC: lint-tools is the combined ADR-0005 image (re-pin tag+digest after a
+# SYNC: code-tools is the combined ADR-0005 image (re-pin tag+digest after a
 # publish). prettier's pre-commit gate is a SEPARATE node hook (mirrors-prettier
 # in -fix.yaml), not tied to this wrapper — but keep the prettier version in the
-# lint-tools Dockerfile roughly aligned with that hook's.
-image[prettier]="ghcr.io/harleypig/lint-tools:0.1.0@sha256:b472f5a491ff9a0e3fbfaa342dd1717c462805a32f145cbb585560da7f7cceae"
+# code-tools Dockerfile roughly aligned with that hook's.
+image[prettier]="ghcr.io/harleypig/code-tools:0.1.0"
 
 #------------------------------------------------------------------------------
 hadolint() {
@@ -301,16 +301,17 @@ hadolint() {
     dw_mount args "$cfg" /home/hadolint/.config/hadolint.yaml ro
   fi
 
-  # The combined lint-tools image (ADR-0005) has no ENTRYPOINT, so name the
+  # The combined code-tools image (ADR-0005) has no ENTRYPOINT, so name the
   # binary explicitly to pass file arguments through (hadolint's own image is
   # likewise entrypoint-less).
   exec docker run "${args[@]}" "${image[hadolint]}" hadolint "$@"
 }
-# SYNC: lint-tools is the combined ADR-0005 image, digest-pinned per docker.md
-# (re-pin tag+digest after a publish). It carries hadolint v2.14.0 (built FROM
-# hadolint/hadolint:v2.14.0-alpine). hadolint has no pre-commit hook — the
-# wrapper is its only consumer.
-image[hadolint]="ghcr.io/harleypig/lint-tools:0.1.0@sha256:b472f5a491ff9a0e3fbfaa342dd1717c462805a32f145cbb585560da7f7cceae"
+# SYNC: code-tools is the combined ADR-0005 image. Tag-only for now — the
+# renamed image (with run-tools) republishes on merge; ADR-0006 Phase B pins
+# the new digest (docker.md prefers a digest). It carries hadolint v2.14.0
+# (built FROM hadolint/hadolint:v2.14.0-alpine). hadolint has no pre-commit
+# hook — the wrapper is its only consumer.
+image[hadolint]="ghcr.io/harleypig/code-tools:0.1.0"
 
 #------------------------------------------------------------------------------
 markdownlint() {
@@ -373,20 +374,20 @@ ruff() {
   # `ruff check -` / `ruff format -` read source from stdin.
   dw_stdin_if_piped args
 
-  # The lint-tools image (ADR-0005) has no entrypoint — it holds many tools —
+  # The code-tools image (ADR-0005) has no entrypoint — it holds many tools —
   # so name the tool. A repo-local ruff.toml / .ruff.toml / pyproject.toml is
   # auto-discovered from /mnt (= $PWD). RUFF_CACHE_DIR=/tmp keeps the cache OUT
   # of the mounted repo (ruff otherwise writes $PWD/.ruff_cache under --user).
   exec docker run "${args[@]}" "${image[ruff]}" ruff "$@"
 }
-# SYNC: lint-tools is the combined ADR-0005 image; re-pin this tag+digest after
+# SYNC: code-tools is the combined ADR-0005 image; re-pin this tag+digest after
 # a publish (docker pull, then `docker inspect --format '{{index .RepoDigests
 # 0}}'`) together with the publish-tool-images.yml matrix tag. ruff is a static
 # binary (needs no Python runtime), so it lives in the combined image; the
 # Python-runtime linters (yamllint, ansible-lint) stay on their own images,
 # handled together in the future python setup. ruff has no pre-commit hook yet
 # (added with that python setup).
-image[ruff]="ghcr.io/harleypig/lint-tools:0.1.0@sha256:b472f5a491ff9a0e3fbfaa342dd1717c462805a32f145cbb585560da7f7cceae"
+image[ruff]="ghcr.io/harleypig/code-tools:0.1.0"
 
 #------------------------------------------------------------------------------
 perltidy() {

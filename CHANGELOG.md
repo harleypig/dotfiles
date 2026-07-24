@@ -14,6 +14,20 @@ goes green (see the merge-time finalization in
 
 ### Changed
 
+- **Rebuilt the combined image as `code-tools` and added the `run-tools`
+  runner (ADR-0006 implementation, PR A).** Renamed `lint-tools` →
+  `code-tools` (it holds formatters as well as linters) across the config dir,
+  Dockerfile, `publish-tool-images.yml`, and the `.gitignore` allowlist;
+  published as `ghcr.io/harleypig/code-tools`. Added a non-entrypoint
+  `/usr/local/bin/run-tools` batch runner (runs several tool invocations in
+  one container, aggregating exit status — for the deferred CI-meta path; the
+  tool-by-name path is unaffected), with `test_run_tools.bats`. Re-pointed the
+  `hadolint` / `prettier` / `ruff` wrappers to `code-tools` (tag-only; the
+  digest is re-pinned in PR B once the renamed image publishes). All 7 tools +
+  `run-tools` verified in the built image; 428 MB; `hadolint` clean.
+  shellcheck/shfmt/markdownlint hook conversion + the old `lint-tools` ghcr
+  package deletion follow in PR B. (PR #326)
+
 - **Re-pointed `bin/hadolint` + `bin/prettier` to the combined `lint-tools`
   image (ADR-0005 Phase 2).** Both non-Python tools now run from
   `ghcr.io/harleypig/lint-tools` (digest-pinned), naming the tool on the

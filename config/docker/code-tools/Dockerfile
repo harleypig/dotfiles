@@ -1,8 +1,10 @@
-# Combined multi-linter "toolbox" image for this repo's cross-language QA tools
-# (shellcheck, shfmt, yamllint, hadolint, markdownlint, prettier, ruff). One
-# image holds many tools; there is NO ENTRYPOINT, so bin/docker_wrapper invokes
-# each by name (`docker run <image> shellcheck ...`) — the same model as
-# config/docker/perl-tools and ansible-lint. See ADR-0005.
+# Combined "toolbox" image (code-tools) for this repo's cross-language QA
+# tools — formatters AND linters: shellcheck, shfmt, yamllint, hadolint,
+# markdownlint, prettier, ruff. One image holds many tools; there is NO
+# ENTRYPOINT, so bin/docker_wrapper invokes each by name
+# (`docker run <image> shellcheck ...`) — the same model as
+# config/docker/perl-tools and ansible-lint. See ADR-0005 (and its rename +
+# ADR-0006 hook-consolidation updates).
 #
 # Multi-stage: each static binary is COPYed straight from its official pinned
 # image (no compiling); the Node runtime (node:22-slim) is the final base since
@@ -11,12 +13,16 @@
 # Only artifacts land in the final image — no compilers, no package caches
 # (docker.md).
 #
-# Built + pushed to ghcr.io/harleypig/lint-tools by
+# `run-tools` is a non-entrypoint on-PATH helper (ADR-0006) for a batched CI
+# pass — it runs several tool invocations in one container; the tool-by-name
+# path above is unaffected.
+#
+# Built + pushed to ghcr.io/harleypig/code-tools by
 # .github/workflows/publish-tool-images.yml (private package). The image is
 # versioned independently of the tools it holds (bump its tag when any pinned
 # tool version below changes); the tool versions are the ARGs + FROM tags here,
 # kept in SYNC with the docker_wrapper image[] pins and the pre-commit hooks
-# when consumers are re-pointed (ADR-0005 Phase 2).
+# when consumers are re-pointed (ADR-0005 Phase 2 / ADR-0006).
 
 FROM koalaman/shellcheck:v0.11.0 AS shellcheck
 FROM mvdan/shfmt:v3.13.1 AS shfmt
@@ -52,6 +58,10 @@ RUN apt-get update \
   && npm install -g "prettier@${PRETTIER_VERSION}" "markdownlint-cli@${MARKDOWNLINT_VERSION}" \
   && npm cache clean --force \
   && useradd --create-home --shell /bin/bash tool
+
+# The batched-CI runner (ADR-0006). Non-entrypoint, on PATH; world-executable
+# so it works under the wrapper's --user (arbitrary host uid).
+COPY --chmod=755 run-tools /usr/local/bin/run-tools
 
 ENV PATH="/opt/venv/bin:${PATH}"
 USER tool
