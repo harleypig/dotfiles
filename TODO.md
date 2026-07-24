@@ -194,16 +194,6 @@ supersedes the earlier "leave shellcheck/shfmt/markdownlint on upstream hooks"
 call). The mechanism is proven in-repo (perltidy/perlcritic already run as
 local `docker_image` hooks against our entrypoint-less ghcr images). Work:
 
-- [x] **Convert the hooks + re-pin the digest (PR B).** Converted `shellcheck`
-  / `shfmt` / `markdownlint` to local `docker_image` hooks on `code-tools` in
-  **both** configs (replacing the upstream hooks; args / types / files /
-  `*-sourced` variants preserved), re-pointed their `docker_wrapper` `image[]`
-  entries + named the tool, and **pinned the published `code-tools` digest
-  across every consumer**. Rewrote the version-sync tests to the new invariant
-  (tool version lives in the code-tools Dockerfile `FROM` tags, checked
-  against CI `SC_VER`/`SHFMT_VER`; plus a "every consumer names one identical
-  image ref" guard). All hooks (check + fix, incl. `*-sourced`) verified
-  against the published image; CI already logs into ghcr for the private image.
 - [ ] **Delete the old `lint-tools` ghcr package** — a post-merge step: after
   PR A/B are on master nothing references `lint-tools`, so the orphaned
   package can be deleted (irreversible/outward — done as an explicit step once
