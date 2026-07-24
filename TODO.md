@@ -194,20 +194,10 @@ supersedes the earlier "leave shellcheck/shfmt/markdownlint on upstream hooks"
 call). The mechanism is proven in-repo (perltidy/perlcritic already run as
 local `docker_image` hooks against our entrypoint-less ghcr images). Work:
 
-- [ ] **Finish the rename in PR B:** once `code-tools:0.1.0` is published,
-  **re-pin its digest** across the consumers (tag-only for now) and **delete
-  the old `lint-tools` ghcr package** once nothing references it. Rides with
-  the hook conversion below.
-- [ ] **Convert `shellcheck` / `shfmt` / `markdownlint` to local
-  `docker_image` hooks** on `code-tools` in **both** `.pre-commit-config.yaml`
-  and `.pre-commit-config-fix.yaml`, replacing the upstream hooks — preserving
-  each hook's `args` / `types` / `files` / `*-sourced` aliases. Re-point their
-  `docker_wrapper` `image[]` entries onto `code-tools` too. (PR B — needs
-  `code-tools` published first, since these hooks pull it in CI.)
-- [ ] **Rewrite the version-sync bats tests** to the new invariant: consumers
-  reference the same `code-tools` image; the tool version lives in the
-  Dockerfile `FROM` tags (one source of truth), not a wrapper tag / hook
-  `rev:` / CI env var.
+- [ ] **Delete the old `lint-tools` ghcr package** — a post-merge step: after
+  PR A/B are on master nothing references `lint-tools`, so the orphaned
+  package can be deleted (irreversible/outward — done as an explicit step once
+  CI is green).
 - [ ] **Cleanup — remove folded-in standalone images from the repo AND ghcr.**
   As each existing `config/docker/<tool>` image is folded into `code-tools`
   and the result is green **all the way through CI**, delete that image's

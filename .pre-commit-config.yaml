@@ -35,37 +35,50 @@ repos:
       # Secret detection (Phase 2): catch committed private keys.
       - id: detect-private-key
 
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    # Already a docker_image hook upstream (docker.io/koalaman/shellcheck) —
-    # runs the pinned image at commit time, matching CI; nothing to convert.
-    rev: v0.11.0
+  # shellcheck via the combined code-tools image (ADR-0006 — replaces the
+  # upstream koalaman/shellcheck-precommit docker_image hook). Same shellcheck
+  # (v0.11.0, from the code-tools Dockerfile FROM), same --external-sources,
+  # same file selection — only the image SOURCE changed. code-tools has no
+  # ENTRYPOINT, so the tool is named in `entry`. SYNC: the digest matches
+  # image[shellcheck] in bin/docker_wrapper (re-pin together on a republish).
+  - repo: local
     hooks:
       - id: shellcheck
+        name: shellcheck
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 shellcheck
         args: [--external-sources]
+        types: [shell]
       # Extensionless SOURCED shell files (shell-startup, config/shell-startup/*,
       # lib/*) are NOT tagged `shell` by identify — it only reads a shebang for
       # *executable* files, and these are non-executable. Select them by path.
-      - id: shellcheck
-        alias: shellcheck-sourced
+      - id: shellcheck-sourced
         name: shellcheck (sourced shell)
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 shellcheck
         args: [--external-sources]
         types: [text]
         files: &sourced_shell '^(shell-startup|config/shell-startup/[^./]+|lib/[^./]+)$'
 
-  - repo: https://github.com/scop/pre-commit-shfmt
-    # shfmt-docker: the docker_image variant, so the pinned mvdan/shfmt image
-    # runs at commit time (matching CI), not a host-installed binary.
-    rev: v3.13.1-1
+  # shfmt via the combined code-tools image (ADR-0006 — replaces the upstream
+  # scop/pre-commit-shfmt docker_image hook). Same shfmt (v3.13.1, from the
+  # code-tools Dockerfile FROM), same flags, same file selection.
+  - repo: local
     hooks:
       # -d = diff only (non-modifying); flags match shfmt.md / .editorconfig.
       # shfmt does not parse .bats (@test); exclude them (see bats.md).
-      - id: shfmt-docker
+      - id: shfmt
+        name: shfmt
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
+        types: [shell]
         exclude: '\.bats$'
       # Same extensionless-sourced-shell coverage as shellcheck above.
-      - id: shfmt-docker
-        alias: shfmt-sourced
+      - id: shfmt-sourced
         name: shfmt (sourced shell)
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
         types: [text]
         files: *sourced_shell
@@ -76,17 +89,18 @@ repos:
       - id: yamllint
         args: [-c, config/yamllint/config]
 
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    # markdownlint-docker: the docker_image variant, so the pinned ghcr image
-    # runs at commit time (matching CI and bin/markdownlint), not the host's
-    # node — which the plain `markdownlint` (language: node) hook required.
-    # SYNC: keep this rev in lock-step with image[markdownlint] in
-    # bin/docker_wrapper and the rev in .pre-commit-config-fix.yaml; bump all
-    # three together (the rev maps to the ghcr image tag).
-    rev: v0.48.0
+  # markdownlint via the combined code-tools image (ADR-0006 — replaces the
+  # upstream igorshubovych/markdownlint-cli docker_image hook; same version,
+  # from the code-tools Dockerfile ARG). Uses the repo-local .markdownlint.json
+  # (auto-discovered at the root). SYNC: the digest matches image[markdownlint]
+  # in bin/docker_wrapper and the markdownlint hook in .pre-commit-config-fix.yaml.
+  - repo: local
     hooks:
-      # Uses the repo-local .markdownlint.json (auto-discovered at the root).
-      - id: markdownlint-docker
+      - id: markdownlint
+        name: markdownlint
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 markdownlint
+        types: [markdown]
 
   # Phase 3 (Language) — Python: import order, format, lint. Tools match the
   # repo's yapf + isort + flake8 choice (python.md), not black/ruff.

@@ -136,7 +136,7 @@
       "docker": {
         "viable": true,
         "image": "bin/docker_wrapper",
-        "note": "Wrapped in this repo's bin/docker_wrapper (ghcr.io/igorshubovych/markdownlint-cli)."
+        "note": "Wrapped in this repo's bin/docker_wrapper (ghcr.io/harleypig/code-tools)."
       },
       "install": [
         {
