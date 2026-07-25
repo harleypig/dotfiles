@@ -25,6 +25,14 @@ goes green (see the merge-time finalization in
   paths, via a `hostname`/`docker` stub). A follow-up to run it automatically
   at boot on beaker is queued in `TODO.md`. (PR #329)
 
+### Changed
+
+- **Disabled the tmux plugin stack.** Commented out the tpm-managed plugins
+  (sidebar, weather, mode-indicator, menus, and tpm itself) in
+  `config/tmux/tmux.conf` — left as comments so they can be re-enabled — and
+  added a `^` binding for a vertical split (`%` already handles horizontal).
+  (PR #330)
+
 ## 2026-07-24
 
 ### Changed
