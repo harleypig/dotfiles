@@ -10,6 +10,21 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-25
+
+### Added
+
+- **`bin/start-openwebui` — a host-gated, startup-safe launcher for Open
+  WebUI.** `bin/openwebui` (→ `docker_wrapper`) starts Open WebUI + its Ollama
+  dependency detached, but its `dw_require_host` gate *dies loudly* off
+  the target host — wrong for something meant to run unconditionally at boot.
+  This launcher soft-gates instead: off `beaker` it quietly no-ops (exit 0),
+  so it is safe to call on any machine; on `beaker` it delegates to
+  `bin/openwebui` (the single source of truth for the container config), which
+  runs the service detached. Covered by `test_start_openwebui.bats` (both
+  paths, via a `hostname`/`docker` stub). A follow-up to run it automatically
+  at boot on beaker is queued in `TODO.md`. (PR #329)
+
 ## 2026-07-24
 
 ### Changed

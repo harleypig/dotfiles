@@ -228,6 +228,17 @@ local `docker_image` hooks against our entrypoint-less ghcr images). Work:
   Phase-1 `lint-tools` image (rebuild without the Python runtime, bump the
   tag) as part of this batch. Digest-pin `ansible-lint`'s wrapper here too.
 
+### Auto-start Open WebUI on boot (beaker)
+
+- [ ] **Run `bin/start-openwebui` automatically at system startup on beaker.**
+  The launcher is host-gated + startup-safe (no-ops off beaker), so it can be
+  invoked unconditionally. Wire it into boot — a user systemd unit
+  (`~/.config/systemd/user/`, `WantedBy=default.target`) is the natural fit on
+  beaker; the containers already carry `--restart always`, so this only needs
+  to run once after a fresh boot to (re)create them. Decide systemd-user vs a
+  login-shell hook and add the unit (likely a per-host file, not tracked for
+  every machine).
+
 ## 🚀 CI/CD Setup
 
 **Dependency:** Each CI/CD phase requires corresponding Pre-commit phase.

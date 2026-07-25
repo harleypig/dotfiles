@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# start-openwebui — host-gated, startup-safe launcher for Open WebUI.
+#
+# bin/openwebui (-> docker_wrapper) already starts Open WebUI and its Ollama
+# dependency detached, but its dw_require_host gate DIES loudly off the target
+# host — wrong for something meant to run unconditionally (e.g. a future
+# system-startup hook). This launcher soft-gates instead: off the target host
+# it quietly no-ops (exit 0), so it is safe to call on any machine. On the
+# target host it delegates to bin/openwebui, which owns the container config
+# and runs the service detached (docker run -d) — so this returns immediately
+# and Open WebUI keeps running in the background.
+
+set -euo pipefail
+
+# The only host that runs Open WebUI (has the GPU + NVIDIA toolkit).
+readonly want_host=beaker
+
+host=$(hostname -s)
+
+if [[ $host != "$want_host" ]]; then
+  echo "start-openwebui: host is ${host}, not ${want_host}; nothing to do." >&2
+  exit 0
+fi
+
+# Delegate to the docker_wrapper launcher — the single source of truth for the
+# Ollama + Open WebUI container definitions. Resolve the sibling by path (not
+# via PATH) so it works under a minimal startup environment.
+self=$(readlink -f "${BASH_SOURCE[0]}")
+
+exec "$(dirname "$self")/openwebui"
