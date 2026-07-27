@@ -151,6 +151,55 @@ serena() {
 known_cmd['serena']=1
 
 #------------------------------------------------------------------------------
+# https://docs.superhuman.com/apis/mcp — Superhuman Docs, a REMOTE http MCP
+# server. mymcp execs a local stdio process, so it cannot host an http
+# server directly; mcp-remote bridges the two (stdio to the client, https
+# to Superhuman). Auth is a Personal Access Token (restriction type MCP)
+# read from the private store, so the token at rest lives only in
+# api-key/superhuman and never in .claude.json (the native
+# `--header "Authorization: Bearer <token>"` registration persists it there).
+#
+# LIMITATION: mcp-remote does not read the header from the environment nor
+# expand ${VAR} inside a --header value — the shell must expand it — so,
+# unlike github() which hands its token to the container via an env var,
+# the PAT is passed as an argv element and is visible in `ps` /
+# /proc/<pid>/cmdline while the process runs (same-user/root only, and
+# ephemeral).
+#
+# Register once at LOCAL scope in the repo that needs it (docs lookup is
+# per-repo, like context7 — MCP servers are not configured in settings.json):
+#   claude mcp add SuperhumanDocs -- mymcp superhuman
+# NOTE: the server also advertises OAuth; if a client ignores this header and
+# falls back to OAuth discovery, that is the known upstream quirk to check.
+superhuman() {
+  local token nvm_dir node_default node_bin
+
+  # mcp-remote needs Node >=20.18.1, but Claude Code execs mymcp directly, so
+  # the login shims that lazy-load nvm and put its Node on PATH never run —
+  # npx would resolve to an old system Node. Select nvm's default Node here
+  # (fail fast if the toolchain isn't provisioned: vmgr install node).
+  nvm_dir="${NVM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nvm}"
+
+  local alias_file="$nvm_dir/alias/default"
+  [[ -r $alias_file ]] && node_default="$(< "$alias_file")"
+  [[ -n $node_default ]] \
+    || dw_die 1 "no nvm default Node (run: vmgr install node)"
+
+  node_bin="$nvm_dir/versions/node/$node_default/bin"
+  [[ -x $node_bin/npx ]] \
+    || dw_die 1 "Node $node_default npx not found at $node_bin"
+
+  PATH="$node_bin:$PATH"
+
+  token="$(read_api_key superhuman)"
+
+  npx_run 'mcp-remote' 'https://docs.superhuman.com/apis/mcp' \
+    '--header' "Authorization: Bearer $token"
+}
+
+known_cmd['superhuman']=1
+
+#------------------------------------------------------------------------------
 (($#)) || dw_die 2 "Usage: $selfname <${!known_cmd[*]}>"
 
 cmd="$1"
