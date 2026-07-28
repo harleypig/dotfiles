@@ -35,6 +35,9 @@ cache_file="$cache_dir/commands"
 
 refresh=0
 
+# How close to expiry --expiry starts flagging a token.
+expiry_warn_days=14
+
 # gh's own subcommands and aliases, populated by load_keywords. When the
 # probe cannot be parsed this stays empty and every invocation falls through
 # to gh untouched -- see is_keyword.
@@ -54,6 +57,8 @@ show_help() {
   cat << EOF
 Usage: $selfname [scope] <gh arguments...>
        $selfname --list
+       $selfname --expiry
+       $selfname --rotate <scope>
        $selfname --refresh [gh arguments...]
 
 Runs gh under a per-scope GitHub credential.
@@ -75,9 +80,23 @@ alias for another scope; an empty file declares the scope but leaves gh to
 use its own stored credential.
 
 Options (recognized only as the first argument):
-  -h, --help    show this help
-  --list        list the configured scopes
-  --refresh     rebuild the cached list of gh commands
+  -h, --help       show this help
+  --list           list the configured scopes
+  --expiry         report when each scope's token expires
+  --rotate SCOPE   read a new token for SCOPE and store it
+  --refresh        rebuild the cached list of gh commands
+
+--expiry costs one API request per scope, which is why it is separate from
+--list. GitHub has no endpoint for a token's expiry; it returns it as a
+response header on any authenticated request, so that is what this reads.
+
+--rotate reads the token from stdin rather than the command line, so it
+never reaches your shell history or the process list, and writes it 0600.
+It creates the scope if it does not exist yet. GitHub has no API for
+minting a token, so the token itself still comes from the browser:
+
+  $selfname --rotate harleypig          prompts, input hidden
+  pass show gh | $selfname --rotate mp  or piped
 
 Caveat: an option VALUE that precedes the gh command (--foo bar pr list)
 would be read as the scope name. gh has no such global option in practice.
@@ -118,6 +137,179 @@ list_scopes() {
       printf '  %-20s token\n' "$name"
     fi
   done
+}
+
+#-----------------------------------------------------------------------------
+# Echo a scope's raw expiry timestamp, or "never" when the token carries no
+# expiry at all. Returns 1 if the token was rejected.
+#
+# GitHub exposes this only as a response header on an authenticated request --
+# there is no endpoint to ask -- so make the cheapest request there is and
+# read the header off it.
+scope_expiry() {
+  local scope=$1
+  local out line
+
+  out=$(
+    unset GITHUB_TOKEN
+    GH_TOKEN=$(< "$token_dir/$scope") gh api -i user 2> /dev/null
+  ) || return 1
+
+  line=$(grep -i '^github-authentication-token-expiration:' <<< "$out") \
+    || {
+      printf 'never'
+      return 0
+    }
+
+  line=${line#*: }
+  printf '%s' "${line%$'\r'}"
+}
+
+#-----------------------------------------------------------------------------
+# Report each scope's token expiry, flagging the ones worth acting on. One
+# request per scope, so this is deliberately not folded into --list.
+expiry_report() {
+  if [[ ! -d $token_dir ]]; then
+    printf 'No scopes configured (%s does not exist).\n' "$token_dir"
+    return 0
+  fi
+
+  local -a paths=("$token_dir"/*)
+
+  if ((${#paths[@]} == 0)); then
+    printf 'No scopes configured (%s is empty).\n' "$token_dir"
+    return 0
+  fi
+
+  printf '%-20s %-25s %s\n' Scope Expires In
+
+  local now
+  now=$(date +%s)
+
+  local path name raw stamp left note
+  for path in "${paths[@]}"; do
+    name=${path##*/}
+
+    if [[ -L $path && ! -e $path ]]; then
+      printf '%-20s -- (broken alias -> %s)\n' "$name" "$(readlink "$path")"
+      continue
+    fi
+
+    if [[ -L $path ]]; then
+      printf '%-20s -- (alias -> %s)\n' "$name" "$(readlink "$path")"
+      continue
+    fi
+
+    if [[ ! -s $path ]]; then
+      printf '%-20s -- (stored credential)\n' "$name"
+      continue
+    fi
+
+    raw=$(scope_expiry "$name") || {
+      printf '%-20s -- (token rejected)\n' "$name"
+      continue
+    }
+
+    if [[ $raw == never ]]; then
+      printf '%-20s -- (no expiry)\n' "$name"
+      continue
+    fi
+
+    stamp=$(date -d "$raw" +%s 2> /dev/null) || {
+      printf '%-20s %s\n' "$name" "$raw"
+      continue
+    }
+
+    left=$(((stamp - now) / 86400))
+    note=''
+
+    if ((left < 0)); then
+      note='  ** EXPIRED'
+
+    elif ((left <= expiry_warn_days)); then
+      note='  ** expiring soon'
+    fi
+
+    printf '%-20s %-25s %4dd%s\n' \
+      "$name" "$(date -u -d "$raw" '+%Y-%m-%d %H:%M UTC')" "$left" "$note"
+  done
+}
+
+#-----------------------------------------------------------------------------
+# Best-effort check that a freshly written token actually authenticates, so a
+# bad paste surfaces now rather than at the next real call. Never fatal: the
+# token is already stored, and the network may simply be down.
+verify_scope() {
+  local scope=$1
+  local login
+
+  login=$(
+    unset GITHUB_TOKEN
+    GH_TOKEN=$(< "$token_dir/$scope") gh api user --jq '.login' 2>&1
+  ) || {
+    printf '%s: warning: %s did not authenticate: %s\n' \
+      "$selfname" "$scope" "$login" >&2
+    return 0
+  }
+
+  printf 'authenticated as %s\n' "$login" >&2
+}
+
+#-----------------------------------------------------------------------------
+# Store a new token for a scope, read from stdin so it never reaches the shell
+# history, the process list, or this terminal. Creates the scope when it does
+# not exist yet -- that is how a new one is added.
+#
+# GitHub has no API for minting a PAT (classic or fine-grained), so this
+# automates only the half that can be: getting the value onto disk safely.
+rotate_scope() {
+  local scope=${1-}
+
+  [[ -n $scope ]] || die "--rotate needs a scope name (see: $selfname --list)"
+
+  case $scope in
+    */* | .. | . | -*) die "invalid scope name: $scope" ;;
+  esac
+
+  local token_file="$token_dir/$scope"
+
+  # Writing through an alias would silently rotate whatever it points at.
+  if [[ -L $token_file ]]; then
+    die "'$scope' is an alias for '$(readlink "$token_file")'; rotate that instead"
+  fi
+
+  local action=rotated
+  [[ -e $token_file ]] || action=created
+
+  local token
+
+  if [[ -t 0 ]]; then
+    printf 'Token for %s (input hidden): ' "$scope" >&2
+    read -rs token || true
+    printf '\n' >&2
+
+  else
+    read -r token || true
+  fi
+
+  # An empty write would blank a working credential. Declaring a scope with no
+  # token of its own is a deliberate act, so make it an explicit one.
+  [[ -n $token ]] \
+    || die "no token given, nothing written (to declare $scope with no token of its own: : > $token_file)"
+
+  mkdir -p "$token_dir"
+
+  # Stage in a temp file so an interrupted write cannot leave a truncated
+  # token in place, and so the mode is already right before any content is.
+  local tmp
+  tmp=$(mktemp "$token_dir/.$scope.XXXXXX")
+  chmod 600 "$tmp"
+  printf '%s' "$token" > "$tmp"
+  mv "$tmp" "$token_file"
+
+  printf '%s %s\n' "$action" "$token_file" >&2
+
+  verify_scope "$scope"
 }
 
 #-----------------------------------------------------------------------------
@@ -242,6 +434,17 @@ case "${1-}" in
 
   --list)
     list_scopes
+    exit 0
+    ;;
+
+  --expiry)
+    expiry_report
+    exit 0
+    ;;
+
+  --rotate)
+    shift
+    rotate_scope "${1-}"
     exit 0
     ;;
 

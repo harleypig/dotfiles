@@ -14,6 +14,21 @@ goes green (see the merge-time finalization in
 
 ### Added
 
+- **`ghx --rotate <scope>` and `ghx --expiry` — the scriptable half of token
+  rotation.** GitHub has no API to mint a personal access token (classic or
+  fine-grained), and the org-level PAT endpoints are GitHub-App-only, so the
+  browser step cannot be automated. Everything after it can be. `--rotate`
+  reads the new token from stdin — hidden at a prompt, or piped — so it never
+  reaches shell history or the process list, stages it through a temp file so
+  an interrupted write cannot truncate a live credential, stores it `0600`,
+  and verifies it authenticates before reporting. It creates the scope if it
+  is new, and refuses an alias rather than silently rotating whatever the
+  symlink points at. `--expiry` answers the question that prompts a rotation:
+  it reads the `github-authentication-token-expiration` response header (there
+  is no endpoint for it) and reports each scope's remaining days, flagging
+  anything within 14 days or already expired; aliases and empty scopes are
+  reported without spending an API call. (PR #334)
+
 - **`bin/ghx` — run `gh` under a per-scope GitHub credential.** The single
   wide-open PAT exported as `GH_TOKEN` was minted on the personal account, so
   it covered personal repos, worked awkwardly in our own org, and had no
