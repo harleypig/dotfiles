@@ -31,6 +31,7 @@ config/completions/          # Vendored completion files (committed)
 ├── poetry                   # Poetry
 ├── proj                     # proj (first-party)
 ├── gh                       # GitHub CLI — `gh completion -s bash`
+├── ghx                      # ghx (first-party; delegates to gh's)
 ├── docker                   # Docker — `docker completion bash`
 ├── npm                      # npm — `npm completion`
 ├── rustup                   # rustup — `rustup completions bash`
@@ -38,7 +39,7 @@ config/completions/          # Vendored completion files (committed)
 
 config/shell-startup/         # Shell startup files that load completions
 ├── git                      # Loads git completion
-├── gh                       # Loads gh completion
+├── gh                       # Loads gh + ghx completion
 ├── docker                   # Loads docker completion
 ├── rust                     # Loads rustup + cargo completion
 ├── nodejs                   # Loads NVM + npm completion
@@ -62,6 +63,12 @@ enough to not bother vendoring.
 The trade-off is staleness — a vendored completion reflects the tool version
 it was generated from, so regenerate it after a tool upgrade (see
 *Regenerating vendored completions* below).
+
+**First-party** completions are the third category: `proj` and `ghx` are ours,
+so there is no upstream `completion` output to vendor and nothing to
+regenerate — they are edited by hand. `ghx`'s delegates to gh's `__start_gh`
+after rewriting the word list, so `config/shell-startup/gh` sources it *after*
+`config/completions/gh`.
 
 ## How It Works
 

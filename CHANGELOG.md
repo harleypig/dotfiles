@@ -10,6 +10,42 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-07-28
+
+### Added
+
+- **`bin/ghx` — run `gh` under a per-scope GitHub credential.** The single
+  wide-open PAT exported as `GH_TOKEN` was minted on the personal account, so
+  it covered personal repos, worked awkwardly in our own org, and had no
+  standing at all in an org that owns its own resources — a limit no scope
+  grant can lift, since a personal-owner token has no rights over org
+  resources. `ghx <scope> pr list` now runs `gh pr list` under that scope's
+  token from `private_dotfiles/github/tokens/<scope>`, while `ghx pr list` — a
+  gh command in first position — passes straight through. The dispatch turns
+  on the first non-dash argument, checked against gh's own command list, which
+  is parsed from its unknown-command output and cached under
+  `XDG_CACHE_HOME` keyed on the gh version. When that list can't be read
+  `ghx` passes everything through and says so, since misreading a subcommand
+  as a scope name would be worse than not scoping. There is no mapping file:
+  `tokens/<scope>` existing *is* the registry, a symlink there is a short
+  alias, and an empty file declares a scope that defers to the stored
+  credential. Completion (`config/completions/ghx`, first-party) rewrites the
+  word list before delegating to gh's `__start_gh`, which is cobra-generated
+  and would otherwise re-invoke `ghx __complete`. Covered by
+  `test_ghx.bats`. (PR #333)
+
+### Changed
+
+- **Stopped exporting `GH_TOKEN`.** Removed from `api-keys.cfg`, so a plain
+  `gh` call now uses gh's own stored OAuth credential
+  (`config/gh/hosts.yml`) — which reaches more than the PAT did. The
+  `GH_TOKEN= GITHUB_TOKEN=` fallback prefix that appeared throughout the
+  workflow docs is a no-op as a result and has been dropped. GitHub
+  credentials moved to their own store in `private_dotfiles/github/`;
+  `bin/creds-helper` now reads the personal scope there (retiring the
+  duplicate `api-key/github` it had been reading), and `bin/mymcp` reads its
+  MCP PAT from the same store. (PR #333)
+
 ## 2026-07-25
 
 ### Added

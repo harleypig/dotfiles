@@ -31,8 +31,10 @@ done
   found && $1 == "password" {print $2; exit}
 ' ~/.netrc)"
 
-# If not found in .netrc, fall back to the PAT file.
-pat_file="$PROJECTS_DIR/private_dotfiles/api-key/github"
+# If not found in .netrc, fall back to the PAT file. This is the personal
+# scope from the ghx token store (see bin/ghx); the old api-key/github file
+# it used to read was a retired duplicate.
+pat_file="$PROJECTS_DIR/private_dotfiles/github/tokens/harleypig"
 [[ -z $GIT_CREDENTIALS ]] \
   && [[ -r $pat_file ]] \
   && GIT_CREDENTIALS=$(< "$pat_file")

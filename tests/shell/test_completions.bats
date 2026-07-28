@@ -21,6 +21,10 @@ setup() {
 # (unlike the large third-party git/packwiz/poetry scripts).
 GENERATED="gh docker npm rustup cargo"
 
+# First-party completions — hand-maintained, not regenerated from a tool
+# (proj is a shell wrapper; ghx has no `completion` subcommand of its own).
+FIRST_PARTY="proj ghx"
+
 @test "every vendored completion file parses as bash" {
   local f
   for f in "$(dotfiles_root)"/config/completions/*; do
@@ -33,6 +37,15 @@ GENERATED="gh docker npm rustup cargo"
 @test "each generated completion registers its command when sourced" {
   local t
   for t in $GENERATED; do
+    run bash -c "source '$(dotfiles_root)/config/completions/$t' && complete -p $t"
+    assert_success
+    assert_output --partial " $t"
+  done
+}
+
+@test "each first-party completion registers its command when sourced" {
+  local t
+  for t in $FIRST_PARTY; do
     run bash -c "source '$(dotfiles_root)/config/completions/$t' && complete -p $t"
     assert_success
     assert_output --partial " $t"
