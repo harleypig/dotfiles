@@ -47,6 +47,14 @@ _ghx() {
   local -a words=("${COMP_WORDS[@]}")
   local cword=$COMP_CWORD
 
+  # --rotate takes a scope, not a gh command line -- gh has nothing to say
+  # about it, so answer here and don't delegate at all.
+  if ((cword == 2)) && [[ ${words[1]-} == --rotate ]]; then
+    ((${#scopes[@]})) \
+      && mapfile -t COMPREPLY < <(compgen -W "${scopes[*]}" -- "${words[2]-}")
+    return 0
+  fi
+
   words[0]=gh
 
   # Past the scope word: splice it out so gh's completion sees the command
@@ -65,12 +73,13 @@ _ghx() {
   ((cword == 1)) || return 0
 
   # On the first word ghx offers more than gh does: the scope names, and its
-  # own three options.
+  # own options.
   local cur="${words[1]-}"
   local -a extra=()
 
   if [[ $cur == -* ]]; then
-    mapfile -t extra < <(compgen -W '--help --list --refresh' -- "$cur")
+    mapfile -t extra \
+      < <(compgen -W '--help --list --expiry --rotate --refresh' -- "$cur")
 
   elif ((${#scopes[@]})); then
     mapfile -t extra < <(compgen -W "${scopes[*]}" -- "$cur")

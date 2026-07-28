@@ -47,6 +47,29 @@ if [[ \${1-} == --version ]]; then
   exit 0
 fi
 
+# The identity check --rotate makes to verify a freshly stored token, and the
+# header request --expiry reads the expiry off. \$GHX_EXP lets a test choose
+# the expiry the stub reports (empty = the header is absent entirely).
+if [[ \${1-} == api && \${2-} == -i ]]; then
+  case "\${GH_TOKEN-}" in
+    acme-fixture | rotated-fixture) ;;
+    *) echo 'HTTP 401: Bad credentials' >&2; exit 1 ;;
+  esac
+
+  printf 'HTTP/2.0 200 OK\r\n'
+  [[ -n \${GHX_EXP-} ]] \
+    && printf 'Github-Authentication-Token-Expiration: %s\r\n' "\$GHX_EXP"
+  printf 'X-Oauth-Scopes: repo\r\n\r\n{"login":"octocat"}\n'
+  exit 0
+fi
+
+if [[ \${1-} == api && \${2-} == user ]]; then
+  case "\${GH_TOKEN-}" in
+    acme-fixture | rotated-fixture) echo octocat; exit 0 ;;
+    *) echo 'HTTP 401: Bad credentials' >&2; exit 1 ;;
+  esac
+fi
+
 case "\${1-}" in
   api | auth | issue | pr | release | repo | run) ;;
   *)
@@ -211,4 +234,150 @@ EOF
   assert_success
   assert_output --partial 'Usage: ghx'
   assert_output --partial 'scope'
+}
+
+#-----------------------------------------------------------------------------
+# --expiry
+#
+# GitHub has no endpoint for a token's expiry — it comes back as a response
+# header on an authenticated request, so these drive the stub's header.
+
+@test "--expiry reports each token's expiry and days remaining" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  local when
+  when=$(date -u -d '+90 days' '+%Y-%m-%d %H:%M:%S UTC')
+
+  run env "PATH=$PATH" "GHX_EXP=$when" "$GHX" --expiry
+  assert_success
+  assert_output --partial 'acme'
+  assert_output --partial "$(date -u -d '+90 days' '+%Y-%m-%d')"
+  assert_output --regexp '9[01]d'
+  refute_output --partial 'expiring soon'
+}
+
+@test "--expiry flags a token close to expiry" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  local when
+  when=$(date -u -d '+3 days' '+%Y-%m-%d %H:%M:%S UTC')
+
+  run env "PATH=$PATH" "GHX_EXP=$when" "$GHX" --expiry
+  assert_success
+  assert_output --partial 'expiring soon'
+}
+
+@test "--expiry flags a token that already expired" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  local when
+  when=$(date -u -d '-2 days' '+%Y-%m-%d %H:%M:%S UTC')
+
+  run env "PATH=$PATH" "GHX_EXP=$when" "$GHX" --expiry
+  assert_success
+  assert_output --partial 'EXPIRED'
+}
+
+@test "--expiry reports a token with no expiry header as non-expiring" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  run env "PATH=$PATH" "GHX_EXP=" "$GHX" --expiry
+  assert_success
+  assert_output --partial 'no expiry'
+}
+
+@test "--expiry reports a rejected token rather than failing" {
+  printf 'dud-fixture' > "$TOKENS/dud"
+
+  run env "PATH=$PATH" "$GHX" --expiry
+  assert_success
+  assert_output --partial 'token rejected'
+}
+
+@test "--expiry does not call the API for aliases or empty scopes" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+  ln -s acme "$TOKENS/ac"
+  : > "$TOKENS/ldteam"
+
+  run env "PATH=$PATH" "GHX_EXP=2099-01-01 00:00:00 UTC" "$GHX" --expiry
+  assert_success
+  assert_output --partial 'alias -> acme'
+  assert_output --partial 'stored credential'
+  refute_output --partial 'acme-fixture'
+}
+
+#-----------------------------------------------------------------------------
+# --rotate
+#
+# GitHub has no API for minting a PAT, so --rotate automates only the half
+# that can be: getting the value onto disk without it passing through the
+# shell history, the process list, or the terminal.
+
+@test "--rotate stores a token from stdin, 0600, without echoing it" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  run env "PATH=$PATH" "$GHX" --rotate acme <<< 'rotated-fixture'
+  assert_success
+  assert_output --partial 'rotated'
+  assert_output --partial 'authenticated as octocat'
+  refute_output --partial 'rotated-fixture'
+
+  assert_equal "$(< "$TOKENS/acme")" 'rotated-fixture'
+  assert_equal "$(stat -c '%a' "$TOKENS/acme")" '600'
+}
+
+@test "--rotate creates a scope that does not exist yet" {
+  run env "PATH=$PATH" "$GHX" --rotate brandnew <<< 'rotated-fixture'
+  assert_success
+  assert_output --partial 'created'
+
+  assert_equal "$(< "$TOKENS/brandnew")" 'rotated-fixture'
+  assert_equal "$(stat -c '%a' "$TOKENS/brandnew")" '600'
+}
+
+@test "--rotate refuses an alias rather than rotating its target" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+  ln -s acme "$TOKENS/ac"
+
+  run env "PATH=$PATH" "$GHX" --rotate ac <<< 'rotated-fixture'
+  assert_failure
+  assert_output --partial "'ac' is an alias for 'acme'"
+
+  # The target is untouched.
+  assert_equal "$(< "$TOKENS/acme")" 'acme-fixture'
+}
+
+@test "--rotate refuses empty input and leaves the old token intact" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  run env "PATH=$PATH" "$GHX" --rotate acme < /dev/null
+  assert_failure
+  assert_output --partial 'nothing written'
+
+  assert_equal "$(< "$TOKENS/acme")" 'acme-fixture'
+}
+
+@test "--rotate needs a scope name" {
+  run env "PATH=$PATH" "$GHX" --rotate < /dev/null
+  assert_failure
+  assert_output --partial 'needs a scope name'
+}
+
+@test "--rotate warns when the new token does not authenticate" {
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  run env "PATH=$PATH" "$GHX" --rotate acme <<< 'dud-fixture'
+  assert_success
+  assert_output --partial 'did not authenticate'
+
+  # Stored anyway — the warning is advisory, not a rollback.
+  assert_equal "$(< "$TOKENS/acme")" 'dud-fixture'
+}
+
+@test "--rotate leaves no staging file behind" {
+  run env "PATH=$PATH" "$GHX" --rotate acme <<< 'rotated-fixture'
+  assert_success
+
+  run bash -c "ls -A '$TOKENS'"
+  assert_output 'acme'
 }

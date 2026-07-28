@@ -99,7 +99,11 @@ configuration. Reads `~/.netrc` first, then falls back to the personal PAT in
 Run `gh` under a per-scope GitHub credential. `ghx <scope> pr list` uses
 `private_dotfiles/github/tokens/<scope>`; `ghx pr list` — a gh command in
 first position — passes straight through to plain `gh`. `ghx --list` shows
-the configured scopes; that directory's `README.md` covers minting tokens.
+the configured scopes and `ghx --expiry` reports when each one's token runs
+out, flagging any that are close or past. `ghx --rotate <scope>` reads a
+replacement from stdin (hidden, never in shell history) and stores it `0600`,
+creating the scope if it is new. That directory's `README.md` covers minting
+the tokens themselves, which GitHub offers no API for.
 
 **git-all**
 Execute git commands across multiple repositories.
