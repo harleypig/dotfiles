@@ -415,6 +415,36 @@ integrated into `shell-startup` (guarded so a failure can't blank PATH).
   - Required behavior: numbered options, re-prompt on invalid input,
     optional default, quiet mode, return selected value on stdout
 
+### GitHub credential tooling (surfaced by ghx, PRs #333/#334)
+
+Three gaps the per-scope credential work exposed. Only the first is ours; the
+other two are agent config and belong to dotagents.
+
+- [ ] **Guard against a test stub echoing a secret-bearing variable.** While
+  building `bin/ghx` a throwaway `gh` stub did `printf '%s' "$GH_TOKEN"` to
+  show which credential arrived and — because the real `GH_TOKEN` was still
+  exported at the time — printed the live PAT into the session transcript,
+  forcing a rotation. The secret-handling rule already says never emit a
+  secret's value, but nothing connects that to *test doubles*, which is
+  exactly where it feels harmless. Document the safe shape at
+  `tests/helpers/common.bash` beside `make_stub` / `make_script_stub` (report
+  `set`/`unset`, or a fixture *name*, never the value) and consider a guard
+  test that greps the suite for a stub interpolating a `*_TOKEN` / `*_KEY` /
+  `*_PASSWORD` variable into its output.
+- [ ] → **dotagents**: `push.sh`'s gh fallback only retries on a **scope**
+  error, so it never fires on `HTTP 401: Bad credentials`. When the exported
+  `GH_TOKEN` was revoked mid-session, `pr-create` and the merge both failed
+  outright and needed the env cleared by hand. Widen the retry to cover 401,
+  or fall back whenever the env-var credential fails for *any* auth reason.
+  Cross-repo: migrate to a dotagents issue when next working that repo (noted
+  on [dotagents#215](https://github.com/harleypig/dotagents/issues/215)).
+- [ ] → **dotagents**: the standing `Bash(gh pr merge:*)` allow rule does
+  **not** match a `ghx`-fronted merge — the harness matcher sees the literal
+  command. Both PRs above were merged with `ghx personal pr merge`, which is
+  the normal path whenever the session has no usable `GH_TOKEN`. Decide
+  whether `ghx` should front a merge at all and, if so, add a matching allow
+  entry. Cross-repo: same migration as above.
+
 ### Surfaced from comment cleanup
 
 - [ ] the dotagents repo's `bin/statusline.sh` + `bin/ansi` - check whether tput /
