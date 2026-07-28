@@ -445,6 +445,22 @@ other two are agent config and belong to dotagents.
   whether `ghx` should front a merge at all and, if so, add a matching allow
   entry. Cross-repo: same migration as above.
 
+### Shell idioms (→ dotagents)
+
+- [ ] → **dotagents**: **`pgrep -f` self-matches when the pattern is written
+  literally in the calling command.** Two background waiters spun forever on
+  `until ... && ! pgrep -f "pre-commit run --all-files"; do sleep 5; done` —
+  `-f` matches full command lines, and the waiter's own `bash -c` string
+  contains that literal text, so each loop matched *itself*, concluded the
+  job was still running, and never exited. Nothing depended on them, but they
+  idled for the rest of the session. Add to `bash.md` *Anti-patterns* (and a
+  recipe in the **bash-patterns** skill): bracket a character to break the
+  self-match (`pgrep -f '[p]re-commit run'`), use `pgrep -x` against the
+  process name, or drop the process check and wait on the artifact the job
+  produces — which is what the guard was redundantly doing anyway. Cross-repo:
+  migrate to a dotagents issue when next working that repo. (No dotfiles
+  script uses `pgrep`; this is purely agent-authored-command behaviour.)
+
 ### Surfaced from comment cleanup
 
 - [ ] the dotagents repo's `bin/statusline.sh` + `bin/ansi` - check whether tput /
@@ -543,6 +559,37 @@ auto-wired into dotlinks (`~/.config` already exists on every machine, so
 
 - [ ] Per-machine: migrate an existing `~/.config` into `config/` and replace
   it with the `~/.config -> $DOTFILES/config` symlink, where wanted.
+
+## 📋 Move task tracking to GitHub issues
+
+This repo has no `tracker:` sentinel, so it falls back to the pre-sentinel
+default: this file. Switching to issues gets the things a flat file cannot
+give — per-task state and assignment, cross-repo links (the `→ dotagents`
+items below are a workaround for exactly that), labels for the `role:*` /
+`type:*` / nature axes, and blocking relationships.
+
+- [ ] **Declare `tracker: github`** in `.claude/WORKFLOW.md`. Read from the
+  working tree, so it takes effect as soon as the line lands. Do this
+  *after* the migration, not before — otherwise new captures land in issues
+  while 115 open items still sit in the file, and the backlog is split
+  across two places.
+- [ ] **Migrate the open items by disposition**, per `gh.md` *Legacy backlog
+  → issues / ICEBOX*: an **active, will-do** task becomes a GitHub issue; a
+  **future / deferred** one is **iceboxed, never issued** — promoted only
+  when it is time to work it. This is the whole point of the exercise: 115
+  open bullets is not a backlog, it is a pile, and a straight file→issue
+  conversion would just move the pile.
+- [ ] **Triage what survives** — label per the taxonomy (`labels.md`): a
+  mandatory `role:*`, `type:new` / `type:change`, nature, and any meta
+  marker. Reconcile each against current code first; several are likely
+  already done (this file has entries predating work that shipped).
+- [ ] **Decide what happens to `TODO.md` itself** — delete it, or leave a
+  stub pointing at the issue list. Also update `.claude/WORKFLOW.md` *TODO
+  Routing*, which currently sends everything here, and the `CHANGELOG.md`
+  header, which describes `TODO.md` as its open-work counterpart.
+
+Sizeable enough to be an epic in its own right; the migration should probably
+be its own issue tree once `tracker: github` is live.
 
 ## 🐙 GitHub repository audit
 
