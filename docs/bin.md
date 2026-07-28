@@ -92,7 +92,14 @@ Locate and display all instances of a command in PATH (like `which -a`).
 
 **creds-helper**
 Git credentials helper for secure credential management. Used by git
-configuration.
+configuration. Reads `~/.netrc` first, then falls back to the personal PAT in
+`private_dotfiles/github/tokens/harleypig`.
+
+**ghx**
+Run `gh` under a per-scope GitHub credential. `ghx <scope> pr list` uses
+`private_dotfiles/github/tokens/<scope>`; `ghx pr list` — a gh command in
+first position — passes straight through to plain `gh`. `ghx --list` shows
+the configured scopes; that directory's `README.md` covers minting tokens.
 
 **git-all**
 Execute git commands across multiple repositories.

@@ -22,6 +22,10 @@ log_dir="$DOTFILES/.mymcp"
 # read_api_key); servers that share permission needs read the same file.
 api_key_dir="${PROJECTS_DIR:-$(dirname "$DOTFILES")}/private_dotfiles/api-key"
 
+# GitHub credentials live in their own store instead (bin/ghx owns it); the
+# MCP server's narrow read-only PAT is one of them.
+github_key_dir="${PROJECTS_DIR:-$(dirname "$DOTFILES")}/private_dotfiles/github"
+
 # Create log directory if it doesn't exist
 mkdir -p "$log_dir"
 
@@ -48,7 +52,15 @@ declare -A known_cmd
 # same name and share one token.
 read_api_key() {
   local name="$1"
-  local file="$api_key_dir/$name"
+
+  read_key_file "$api_key_dir/$name"
+}
+
+#------------------------------------------------------------------------------
+# Read a token from an arbitrary path in the private store, for credentials
+# that do not live under api-key/ (see github_key_dir).
+read_key_file() {
+  local file="$1"
 
   [[ -r $file ]] || dw_die 1 "api-key file not found or unreadable: $file"
 
@@ -75,7 +87,7 @@ npx_run() {
 # https://github.com/github/github-mcp-server/blob/main/docs/server-configuration.md
 github() {
   export GITHUB_PERSONAL_ACCESS_TOKEN
-  GITHUB_PERSONAL_ACCESS_TOKEN="$(read_api_key mcp-github)"
+  GITHUB_PERSONAL_ACCESS_TOKEN="$(read_key_file "$github_key_dir/mcp-github")"
   docker_run \
     '-e' 'GITHUB_PERSONAL_ACCESS_TOKEN' \
     'ghcr.io/github/github-mcp-server' \

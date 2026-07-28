@@ -194,13 +194,34 @@ advisory — the remote enforces it:
   automatically. See the dotagents repo's `rules/git.md` *Protecting the Default
   Branch*.
 
-To change the ruleset, edit the JSON and re-apply with the OAuth token (the
-narrow PAT lacks admin):
+To change the ruleset, edit the JSON and re-apply. A plain `gh` uses the
+stored OAuth credential, which has the admin rights this needs — the old
+`GH_TOKEN= GITHUB_TOKEN=` prefix is gone because nothing exports those any
+more (see *GitHub credentials* below):
 
 ```bash
-GH_TOKEN= GITHUB_TOKEN= gh api repos/harleypig/dotfiles/rulesets/17364459 \
+gh api repos/harleypig/dotfiles/rulesets/17364459 \
   --method PUT --input ../private_dotfiles/github-rulesets/protect-master-solo.json
 ```
+
+**GitHub credentials:**
+
+A single ambient PAT could not reach an org that owns its own resources, so
+`GH_TOKEN` is no longer exported. Instead:
+
+* **`gh …`** uses gh's own stored OAuth credential
+  (`config/gh/hosts.yml`) — the broadest reach on the personal account.
+* **`ghx <scope> …`** (`bin/ghx`) runs the same command under that scope's
+  token from `../private_dotfiles/github/tokens/<scope>`. The token directory
+  *is* the registry: a scope exists when its file does, a symlink is a short
+  alias, and an empty file declares a scope that defers to the stored
+  credential. `ghx --list` shows what is configured.
+* The first non-dash argument decides: a gh command (or none) passes
+  straight through untouched; anything else is the scope.
+
+See `../private_dotfiles/github/README.md` for minting each token — in
+particular that an org scope needs a **fine-grained PAT with the org as
+resource owner**, which may require org-owner approval.
 
 **Auto-merge (`auto-merge: enabled`):**
 

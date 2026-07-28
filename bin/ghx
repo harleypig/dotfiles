@@ -1,0 +1,287 @@
+#!/usr/bin/env bash
+
+# ghx - run `gh` under a per-scope GitHub credential.
+#
+# A single ambient PAT cannot reach every account we work in: a token minted
+# on the personal account has no standing in an org that owns its own
+# resources. So instead of exporting one GH_TOKEN into every shell, each
+# scope keeps its own token in the private store and ghx loads the right one
+# for the invocation at hand.
+#
+#   ghx pr list              -> plain `gh pr list` (no token injected)
+#   ghx <scope> pr list      -> `gh pr list` under <scope>'s token
+#
+# The registry IS the token directory: a scope exists when
+# private_dotfiles/github/tokens/<scope> exists. Short names are symlinks
+# (mp -> methodsprime); an empty file means "declared, but use gh's own
+# stored credential". See that directory's README.md for how to mint each
+# token.
+
+set -euo pipefail
+shopt -s nullglob
+
+###############################################################################
+# Setup and settings
+
+selfname="${0##*/}"
+
+# The private store sits alongside the dotfiles checkout, same as the
+# api-key store bin/mymcp reads.
+projects_dir="${PROJECTS_DIR:-$(dirname "${DOTFILES:-$HOME/projects/dotfiles}")}"
+token_dir="$projects_dir/private_dotfiles/github/tokens"
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/ghx"
+cache_file="$cache_dir/commands"
+
+refresh=0
+
+# gh's own subcommands and aliases, populated by load_keywords. When the
+# probe cannot be parsed this stays empty and every invocation falls through
+# to gh untouched -- see is_keyword.
+declare -A keyword=()
+
+###############################################################################
+# Utility functions
+
+#-----------------------------------------------------------------------------
+die() {
+  printf '%s: %s\n' "$selfname" "$1" >&2
+  exit "${2:-1}"
+}
+
+#-----------------------------------------------------------------------------
+show_help() {
+  cat << EOF
+Usage: $selfname [scope] <gh arguments...>
+       $selfname --list
+       $selfname --refresh [gh arguments...]
+
+Runs gh under a per-scope GitHub credential.
+
+The first argument that does not begin with '-' decides what happens. If it
+is one of gh's own commands -- or there is no such argument at all -- every
+argument is passed straight through to gh, exactly as if you had typed gh
+yourself. Otherwise it is taken as a scope name, removed from the argument
+list, and gh runs with that scope's token in GH_TOKEN.
+
+  $selfname pr list                 same as: gh pr list
+  $selfname harleypig pr list       gh pr list, under the personal token
+  $selfname acme repo list acme     gh repo list acme, under acme's token
+
+Scopes live in
+  $token_dir
+one file per scope, holding only the token. A symlink there is a short
+alias for another scope; an empty file declares the scope but leaves gh to
+use its own stored credential.
+
+Options (recognized only as the first argument):
+  -h, --help    show this help
+  --list        list the configured scopes
+  --refresh     rebuild the cached list of gh commands
+
+Caveat: an option VALUE that precedes the gh command (--foo bar pr list)
+would be read as the scope name. gh has no such global option in practice.
+EOF
+}
+
+#-----------------------------------------------------------------------------
+# Print the configured scopes and what each one is. Never prints a token.
+list_scopes() {
+  if [[ ! -d $token_dir ]]; then
+    printf 'No scopes configured (%s does not exist).\n' "$token_dir"
+    return 0
+  fi
+
+  local -a paths=("$token_dir"/*)
+
+  if ((${#paths[@]} == 0)); then
+    printf 'No scopes configured (%s is empty).\n' "$token_dir"
+    return 0
+  fi
+
+  printf 'Scopes in %s:\n' "$token_dir"
+
+  local path name
+  for path in "${paths[@]}"; do
+    name=${path##*/}
+
+    if [[ -L $path && ! -e $path ]]; then
+      printf '  %-20s broken alias -> %s\n' "$name" "$(readlink "$path")"
+
+    elif [[ -L $path ]]; then
+      printf '  %-20s alias -> %s\n' "$name" "$(readlink "$path")"
+
+    elif [[ ! -s $path ]]; then
+      printf '  %-20s declared; uses the stored credential\n' "$name"
+
+    else
+      printf '  %-20s token\n' "$name"
+    fi
+  done
+}
+
+#-----------------------------------------------------------------------------
+# gh has no command that lists its commands, but it prints them when handed
+# one it does not recognize:
+#
+#   unknown command "..." for "gh"
+#   ...
+#   Available commands:
+#     api
+#     auth
+#
+# The indented block after that header is what we want. User-defined gh
+# aliases show up there too, which is correct -- an alias is as much a
+# command as a builtin.
+probe_commands() {
+  local out
+
+  out=$(gh __ghx_probe_unknown_command__ 2>&1) || true
+
+  sed -n '/^Available commands:$/,$ s/^  \([A-Za-z0-9][A-Za-z0-9_-]*\)[[:space:]]*$/\1/p' \
+    <<< "$out"
+}
+
+#-----------------------------------------------------------------------------
+# Populate `keyword` from the cache, rebuilding it when it is missing, stale,
+# or --refresh was given. The cache's first line is the gh version it was
+# built from, so a gh upgrade invalidates it on its own.
+load_keywords() {
+  local version cached
+  local -a commands=()
+
+  version=$(gh --version 2> /dev/null) || true
+  version=${version%%$'\n'*}
+
+  cached=''
+
+  if [[ -r $cache_file ]]; then
+    read -r cached < "$cache_file" || true
+  fi
+
+  if ((refresh)) || [[ $cached != "$version" ]]; then
+    mapfile -t commands < <(probe_commands)
+
+    # An unparseable probe must not turn every gh command into a scope
+    # name, so leave the cache alone and run with no keywords -- which
+    # makes is_keyword true for everything. Say so, because the visible
+    # effect is that scope selection quietly stops working.
+    if ((${#commands[@]} == 0)); then
+      printf '%s: could not read gh'"'"'s command list; passing through\n' \
+        "$selfname" >&2
+      return 0
+    fi
+
+    mkdir -p "$cache_dir"
+    printf '%s\n' "$version" "${commands[@]}" > "$cache_file"
+
+  else
+    mapfile -t commands < <(tail -n +2 "$cache_file")
+  fi
+
+  local command
+  for command in "${commands[@]}"; do
+    keyword["$command"]=1
+  done
+}
+
+#-----------------------------------------------------------------------------
+# True for a gh command, and for anything at all when the keyword list could
+# not be built -- passthrough is always the safe guess.
+is_keyword() {
+  ((${#keyword[@]})) || return 0
+  [[ -n ${keyword[$1]-} ]]
+}
+
+#-----------------------------------------------------------------------------
+# Run gh under a scope's token. An empty token file means the scope is
+# declared but deliberately has none, so gh uses its own stored credential.
+run_scoped() {
+  local scope=$1
+  shift
+
+  local token_file="$token_dir/$scope"
+
+  if [[ -L $token_file && ! -e $token_file ]]; then
+    die "alias '$scope' points at a missing scope: $(readlink "$token_file")"
+  fi
+
+  if [[ ! -e $token_file ]]; then
+    printf '%s: no token defined for %s (expected %s)\n' \
+      "$selfname" "'$scope'" "$token_file" >&2
+    list_scopes >&2
+    exit 1
+  fi
+
+  [[ -r $token_file ]] \
+    || die "token file for '$scope' is not readable: $token_file"
+
+  unset GITHUB_TOKEN
+
+  if [[ -s $token_file ]]; then
+    GH_TOKEN=$(< "$token_file")
+    export GH_TOKEN
+  fi
+
+  exec gh "$@"
+}
+
+###############################################################################
+# Main
+
+command -v gh > /dev/null 2>&1 \
+  || die 'gh is not installed or not on PATH'
+
+# ghx's own options are recognized only in first position; everything else on
+# the command line belongs to gh.
+case "${1-}" in
+  -h | --help)
+    show_help
+    exit 0
+    ;;
+
+  --list)
+    list_scopes
+    exit 0
+    ;;
+
+  --refresh)
+    refresh=1
+    shift
+    ;;
+esac
+
+if (($# == 0)); then
+  if ((refresh)); then
+    load_keywords
+  fi
+
+  exec gh
+fi
+
+args=("$@")
+
+# The first argument that is not an option decides scope vs. passthrough.
+scope_index=-1
+
+for ((i = 0; i < ${#args[@]}; i++)); do
+  if [[ ${args[i]} != -* ]]; then
+    scope_index=$i
+    break
+  fi
+done
+
+((scope_index >= 0)) || exec gh "${args[@]}"
+
+load_keywords
+
+if is_keyword "${args[scope_index]}"; then
+  exec gh "${args[@]}"
+fi
+
+scope=${args[scope_index]}
+
+unset 'args[scope_index]'
+args=("${args[@]}")
+
+run_scoped "$scope" "${args[@]}"

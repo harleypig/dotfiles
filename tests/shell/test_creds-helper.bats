@@ -2,7 +2,7 @@
 
 # Tests for bin/creds-helper — a git credential helper: emit "password=..."
 # from ~/.netrc for the requested host, falling back to the
-# $PROJECTS_DIR/private_dotfiles/api-key/github PAT file.
+# $PROJECTS_DIR/private_dotfiles/github/tokens/harleypig PAT file.
 
 load ../helpers/common
 
@@ -11,7 +11,7 @@ setup() {
   CREDS="$(dotfiles_root)/bin/creds-helper"
   export HOME="$BATS_TEST_TMPDIR/home"
   export PROJECTS_DIR="$BATS_TEST_TMPDIR/projects"
-  mkdir -p "$HOME" "$PROJECTS_DIR/private_dotfiles/api-key"
+  mkdir -p "$HOME" "$PROJECTS_DIR/private_dotfiles/github/tokens"
 }
 
 @test "emits the .netrc password for the host" {
@@ -25,7 +25,7 @@ setup() {
 @test "falls back to the PAT file when .netrc has no match" {
   # No ~/.netrc; the PAT file should be used (regression: it used to read an
   # unset $PAT_FILE and error instead of this file).
-  printf 'pattoken' > "$PROJECTS_DIR/private_dotfiles/api-key/github"
+  printf 'pattoken' > "$PROJECTS_DIR/private_dotfiles/github/tokens/harleypig"
   run "$CREDS" <<< "host=github.com"
   assert_success
   assert_output 'password=pattoken'
@@ -33,7 +33,7 @@ setup() {
 
 @test ".netrc wins over the PAT file" {
   printf 'machine github.com\n  password netrcsecret\n' > "$HOME/.netrc"
-  printf 'pattoken' > "$PROJECTS_DIR/private_dotfiles/api-key/github"
+  printf 'pattoken' > "$PROJECTS_DIR/private_dotfiles/github/tokens/harleypig"
   run "$CREDS" <<< "host=github.com"
   assert_output 'password=netrcsecret'
 }

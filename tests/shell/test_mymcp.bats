@@ -75,7 +75,9 @@ EOF
 }
 
 @test "github reads its mcp-github token file and passes it to docker" {
-  local keydir="$BATS_TEST_TMPDIR/projects/private_dotfiles/api-key"
+  # GitHub credentials live in their own store, not under api-key/ (bin/ghx
+  # owns it); mymcp reads this one by full path.
+  local keydir="$BATS_TEST_TMPDIR/projects/private_dotfiles/github"
   mkdir -p "$keydir"
   printf 'tok-abc123' > "$keydir/mcp-github"
 

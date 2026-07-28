@@ -1,0 +1,88 @@
+# shellcheck shell=bash
+
+#-----------------------------------------------------------------------------
+# Bash completion for ghx (bin/ghx) -- gh under a per-scope credential.
+#
+# First-party, like config/completions/proj: ghx has no `completion`
+# subcommand to vendor output from, so this file is maintained by hand rather
+# than regenerated (see config/completions/README.md).
+#
+# ghx accepts an optional scope word ahead of gh's own arguments, so
+# completion has to hide that word from gh before delegating. Registering
+# gh's __start_gh against ghx directly does NOT work: it is cobra-generated
+# and re-invokes ${words[0]} __complete ..., which would run
+# `ghx __complete pr ''`. __complete is a hidden command, absent from the
+# list ghx caches, so ghx would read it as a scope name and fail.
+#
+# So rewrite the word list first -- argv0 to gh, splice out the scope word,
+# move the cursor index back -- and only then hand off to __start_gh. gh's
+# completion must already be sourced; config/shell-startup/gh sources this
+# file after it.
+
+#-----------------------------------------------------------------------------
+# The configured scopes, one per line. The token directory IS the registry;
+# a symlink there is a short alias and an empty file is a scope that uses
+# gh's stored credential. Names only -- never read a token file's contents.
+_ghx_scopes() {
+  local dir
+  dir="${PROJECTS_DIR:-$(dirname "${DOTFILES:-$HOME/projects/dotfiles}")}"
+  dir="$dir/private_dotfiles/github/tokens"
+
+  [[ -d $dir ]] || return 0
+
+  local path
+  for path in "$dir"/*; do
+    [[ -e $path || -L $path ]] || continue
+    printf '%s\n' "${path##*/}"
+  done
+}
+
+#-----------------------------------------------------------------------------
+_ghx() {
+  declare -F __start_gh > /dev/null 2>&1 || return 1
+
+  local -a scopes=()
+  mapfile -t scopes < <(_ghx_scopes)
+
+  local -a words=("${COMP_WORDS[@]}")
+  local cword=$COMP_CWORD
+
+  words[0]=gh
+
+  # Past the scope word: splice it out so gh's completion sees the command
+  # line it would have gotten had the scope never been typed.
+  if ((cword > 1)) && ((${#scopes[@]})) \
+    && [[ " ${scopes[*]} " == *" ${words[1]} "* ]]; then
+    words=("${words[0]}" "${words[@]:2}")
+    ((cword--))
+  fi
+
+  local -a COMP_WORDS=("${words[@]}")
+  local COMP_CWORD=$cword
+
+  __start_gh
+
+  ((cword == 1)) || return 0
+
+  # On the first word ghx offers more than gh does: the scope names, and its
+  # own three options.
+  local cur="${words[1]-}"
+  local -a extra=()
+
+  if [[ $cur == -* ]]; then
+    mapfile -t extra < <(compgen -W '--help --list --refresh' -- "$cur")
+
+  elif ((${#scopes[@]})); then
+    mapfile -t extra < <(compgen -W "${scopes[*]}" -- "$cur")
+  fi
+
+  ((${#extra[@]})) && COMPREPLY+=("${extra[@]}")
+
+  return 0
+}
+
+if [[ $(type -t compopt) == "builtin" ]]; then
+  complete -o default -F _ghx ghx
+else
+  complete -o default -o nospace -F _ghx ghx
+fi

@@ -6,9 +6,16 @@
 # Vendored from `gh completion -s bash` into config/completions/gh (sourcing
 # the static file avoids forking gh on every interactive shell). Regenerate on
 # upgrade — see config/completions/README.md.
+#
+# ghx (bin/ghx, gh under a per-scope credential) is completed too. Its
+# completion delegates to gh's __start_gh, so it must be sourced after it.
 
 [[ $- == *i* ]] || return 0
 
 havecmd gh \
   && [[ -r "$XDG_CONFIG_HOME/completions/gh" ]] \
   && source "$XDG_CONFIG_HOME/completions/gh"
+
+havecmd ghx \
+  && [[ -r "$XDG_CONFIG_HOME/completions/ghx" ]] \
+  && source "$XDG_CONFIG_HOME/completions/ghx"
