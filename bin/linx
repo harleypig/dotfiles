@@ -1,0 +1,626 @@
+#!/usr/bin/env bash
+
+# linx - run `linode-cli` under a per-scope Linode credential.
+#
+# The sibling of bin/ghx, for the same reason: one ambient token cannot serve
+# every account we work in, and exporting it into every shell puts a live
+# credential everywhere whether or not it is wanted. Each scope keeps its own
+# token in the private store and linx loads the right one for the invocation
+# at hand.
+#
+#   linx linodes list              -> plain `linode-cli linodes list`
+#   linx <scope> linodes list      -> the same, under <scope>'s token
+#
+# The registry IS the token directory: a scope exists when
+# private_dotfiles/linode/tokens/<scope> exists. Short names are symlinks
+# (hd -> harleydev); an empty file means "declared, but use linode-cli's own
+# configured user". See that directory's README.md for how to mint each token.
+#
+# Three things differ from ghx, each forced by what the Linode side offers:
+#
+#   - linode-cli does not list its commands when handed an unknown one, so
+#     the keyword probe reads `linode-cli commands` instead (see
+#     probe_commands).
+#   - The Linode API has no endpoint for "which token am I?", so --expiry
+#     identifies the token by prefix against /profile/tokens (see
+#     scope_expiry).
+#   - linode-cli runs its interactive setup wizard whenever it finds no
+#     configuration, which would hang an unattended probe. Any call that does
+#     not otherwise carry a token gets a dummy one to suppress that.
+
+set -euo pipefail
+shopt -s nullglob
+
+###############################################################################
+# Setup and settings
+
+selfname="${0##*/}"
+
+# The private store sits alongside the dotfiles checkout, same as the token
+# store bin/ghx reads.
+projects_dir="${PROJECTS_DIR:-$(dirname "${DOTFILES:-$HOME/projects/dotfiles}")}"
+token_dir="$projects_dir/private_dotfiles/linode/tokens"
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/linx"
+cache_file="$cache_dir/commands"
+
+refresh=0
+
+# How close to expiry --expiry starts flagging a token.
+expiry_warn_days=14
+
+# Linode represents a token that never expires as a date far enough out never
+# to arrive, rather than as a null. Treat that as "no expiry" instead of
+# reporting a term of several hundred thousand days.
+never_expires_year=2999
+
+# Stands in for a real token on calls that need no credential, purely to keep
+# linode-cli from deciding it is unconfigured and launching its setup wizard.
+# It never reaches the network.
+unused_token=linx-no-credential-required
+
+# linode-cli's own commands, populated by load_keywords. When the probe cannot
+# be parsed this stays empty and every invocation falls through to linode-cli
+# untouched -- see is_keyword.
+declare -A keyword=()
+
+# The global options that consume a following argument (--format FORMAT,
+# --as-user USERNAME, ...), also populated by load_keywords. Their VALUES must
+# not be mistaken for the scope name: in `linx --format id regions list` the
+# first non-option argument is `id`, which is a column name, not a scope.
+declare -A takes_value=()
+
+###############################################################################
+# Utility functions
+
+#-----------------------------------------------------------------------------
+die() {
+  printf '%s: %s\n' "$selfname" "$1" >&2
+  exit "${2:-1}"
+}
+
+#-----------------------------------------------------------------------------
+show_help() {
+  cat << EOF
+Usage: $selfname [scope] <linode-cli arguments...>
+       $selfname --list
+       $selfname --expiry
+       $selfname --rotate <scope>
+       $selfname --refresh [linode-cli arguments...]
+
+Runs linode-cli under a per-scope Linode credential.
+
+The first argument that does not begin with '-' decides what happens. If it
+is one of linode-cli's own commands -- or there is no such argument at all --
+every argument is passed straight through to linode-cli, exactly as if you
+had typed linode-cli yourself. Otherwise it is taken as a scope name, removed
+from the argument list, and linode-cli runs with that scope's token in
+LINODE_CLI_TOKEN.
+
+  $selfname linodes list            same as: linode-cli linodes list
+  $selfname harleydev linodes list  linode-cli linodes list, as harleydev
+  $selfname acme volumes list       linode-cli volumes list, under acme's token
+
+Scopes live in
+  $token_dir
+one file per scope, holding only the token. A symlink there is a short alias
+for another scope; an empty file declares the scope but leaves linode-cli to
+use its own configured user.
+
+Options (recognized only as the first argument):
+  -h, --help       show this help
+  --list           list the configured scopes
+  --expiry         report when each scope's token expires
+  --rotate SCOPE   read a new token for SCOPE and store it
+  --refresh        rebuild the cached list of linode-cli commands
+
+--expiry costs one API request per scope, which is why it is separate from
+--list. The Linode API cannot say which token a request was made with, but it
+does return the first characters of every token on the account, so --expiry
+matches the stored token against that list. Each token therefore needs at
+least profile:read_only to report its own expiry; one without it is listed as
+unreadable rather than treated as an error.
+
+--rotate reads the token from stdin rather than the command line, so it never
+reaches your shell history or the process list, and writes it 0600. It creates
+the scope if it does not exist yet. Mint the token itself at
+https://cloud.linode.com/profile/tokens:
+
+  $selfname --rotate harleydev               prompts, input hidden
+  pass show linode | $selfname --rotate acme    or piped
+
+Caveats:
+
+  Global options that take a value are skipped along with their values, so
+  '$selfname --format id regions list' reads 'regions', not 'id', as the
+  command. That list is read from linode-cli's own usage line and cached, so
+  a new option is picked up on the next version bump. An option it has not
+  learned about would still have its value read as a scope name -- write it
+  as --opt=value if you hit that.
+
+  A scope changes the credential, not the defaults. linode-cli still reads
+  region, type, image and authorized_users from its own config file, which
+  belong to whichever user is configured there -- so an omitted argument is
+  filled in from that user's defaults even while running as another. Pass
+  --no-defaults, or name the argument explicitly, when that matters.
+EOF
+}
+
+#-----------------------------------------------------------------------------
+# Print the configured scopes and what each one is. Never prints a token.
+list_scopes() {
+  if [[ ! -d $token_dir ]]; then
+    printf 'No scopes configured (%s does not exist).\n' "$token_dir"
+    return 0
+  fi
+
+  local -a paths=("$token_dir"/*)
+
+  if ((${#paths[@]} == 0)); then
+    printf 'No scopes configured (%s is empty).\n' "$token_dir"
+    return 0
+  fi
+
+  printf 'Scopes in %s:\n' "$token_dir"
+
+  local path name
+  for path in "${paths[@]}"; do
+    name=${path##*/}
+
+    if [[ -L $path && ! -e $path ]]; then
+      printf '  %-20s broken alias -> %s\n' "$name" "$(readlink "$path")"
+
+    elif [[ -L $path ]]; then
+      printf '  %-20s alias -> %s\n' "$name" "$(readlink "$path")"
+
+    elif [[ ! -s $path ]]; then
+      printf '  %-20s declared; uses the configured user\n' "$name"
+
+    else
+      printf '  %-20s token\n' "$name"
+    fi
+  done
+}
+
+#-----------------------------------------------------------------------------
+# Echo a scope's raw expiry timestamp, or "never" when the token does not
+# expire. Returns 1 if the token was rejected or could not read the token
+# list, and 2 if it authenticated but is not a personal access token on this
+# account.
+#
+# The Linode API has no "describe the token I just authenticated with"
+# endpoint, so this asks for every token on the account and picks ours out.
+# What makes that possible is that the list returns the leading characters of
+# each token -- enough to match against, never enough to reconstruct.
+scope_expiry() {
+  local scope=$1
+  local token out shown when
+
+  token=$(< "$token_dir/$scope")
+
+  out=$(
+    LINODE_CLI_TOKEN=$token linode-cli \
+      --text --no-headers --suppress-warnings \
+      --format 'token,expiry' profile tokens-list 2> /dev/null
+  ) || return 1
+
+  while IFS=$'\t' read -r shown when; do
+    [[ -n $shown ]] || continue
+    [[ $token == "$shown"* ]] || continue
+
+    # A null expiry and the far-future sentinel both mean the same thing.
+    if [[ -z $when || $when == "$never_expires_year"-* ]]; then
+      printf 'never'
+
+    else
+      printf '%s' "$when"
+    fi
+
+    return 0
+  done <<< "$out"
+
+  return 2
+}
+
+#-----------------------------------------------------------------------------
+# Report each scope's token expiry, flagging the ones worth acting on. One
+# request per scope, so this is deliberately not folded into --list.
+expiry_report() {
+  if [[ ! -d $token_dir ]]; then
+    printf 'No scopes configured (%s does not exist).\n' "$token_dir"
+    return 0
+  fi
+
+  local -a paths=("$token_dir"/*)
+
+  if ((${#paths[@]} == 0)); then
+    printf 'No scopes configured (%s is empty).\n' "$token_dir"
+    return 0
+  fi
+
+  printf '%-20s %-25s %s\n' Scope Expires In
+
+  local now
+  now=$(date +%s)
+
+  local path name raw status stamp left note
+  for path in "${paths[@]}"; do
+    name=${path##*/}
+
+    if [[ -L $path && ! -e $path ]]; then
+      printf '%-20s -- (broken alias -> %s)\n' "$name" "$(readlink "$path")"
+      continue
+    fi
+
+    if [[ -L $path ]]; then
+      printf '%-20s -- (alias -> %s)\n' "$name" "$(readlink "$path")"
+      continue
+    fi
+
+    if [[ ! -s $path ]]; then
+      printf '%-20s -- (configured user)\n' "$name"
+      continue
+    fi
+
+    status=0
+    raw=$(scope_expiry "$name") || status=$?
+
+    if ((status == 1)); then
+      printf '%-20s -- (rejected, or lacks profile:read_only)\n' "$name"
+      continue
+    fi
+
+    if ((status != 0)); then
+      printf '%-20s -- (not a token on this account)\n' "$name"
+      continue
+    fi
+
+    if [[ $raw == never ]]; then
+      printf '%-20s -- (no expiry)\n' "$name"
+      continue
+    fi
+
+    stamp=$(date -d "$raw" +%s 2> /dev/null) || {
+      printf '%-20s %s\n' "$name" "$raw"
+      continue
+    }
+
+    left=$(((stamp - now) / 86400))
+    note=''
+
+    if ((left < 0)); then
+      note='  ** EXPIRED'
+
+    elif ((left <= expiry_warn_days)); then
+      note='  ** expiring soon'
+    fi
+
+    printf '%-20s %-25s %4dd%s\n' \
+      "$name" "$(date -u -d "$raw" '+%Y-%m-%d %H:%M UTC')" "$left" "$note"
+  done
+}
+
+#-----------------------------------------------------------------------------
+# Best-effort check that a freshly written token actually authenticates, so a
+# bad paste surfaces now rather than at the next real call. Never fatal: the
+# token is already stored, and the network may simply be down.
+verify_scope() {
+  local scope=$1
+  local username
+
+  username=$(
+    LINODE_CLI_TOKEN=$(< "$token_dir/$scope") linode-cli \
+      --text --no-headers --suppress-warnings \
+      --format username profile view 2>&1
+  ) || {
+    printf '%s: warning: %s did not authenticate: %s\n' \
+      "$selfname" "$scope" "$username" >&2
+    return 0
+  }
+
+  printf 'authenticated as %s\n' "$username" >&2
+}
+
+#-----------------------------------------------------------------------------
+# Store a new token for a scope, read from stdin so it never reaches the shell
+# history, the process list, or this terminal. Creates the scope when it does
+# not exist yet -- that is how a new one is added.
+#
+# Linode can mint a token over the API, unlike GitHub, but doing so would
+# require the outgoing token to carry profile:read_write and could never
+# bootstrap a scope that has no working token yet. So this automates the half
+# that always works: getting the value onto disk safely.
+rotate_scope() {
+  local scope=${1-}
+
+  [[ -n $scope ]] || die "--rotate needs a scope name (see: $selfname --list)"
+
+  case $scope in
+    */* | .. | . | -*) die "invalid scope name: $scope" ;;
+  esac
+
+  local token_file="$token_dir/$scope"
+
+  # Writing through an alias would silently rotate whatever it points at.
+  if [[ -L $token_file ]]; then
+    die "'$scope' is an alias for '$(readlink "$token_file")'; rotate that instead"
+  fi
+
+  local action=rotated
+  [[ -e $token_file ]] || action=created
+
+  local token
+
+  if [[ -t 0 ]]; then
+    printf 'Token for %s (input hidden): ' "$scope" >&2
+    read -rs token || true
+    printf '\n' >&2
+
+  else
+    read -r token || true
+  fi
+
+  # An empty write would blank a working credential. Declaring a scope with no
+  # token of its own is a deliberate act, so make it an explicit one.
+  [[ -n $token ]] \
+    || die "no token given, nothing written (to declare $scope with no token of its own: : > $token_file)"
+
+  mkdir -p "$token_dir"
+
+  # Stage in a temp file so an interrupted write cannot leave a truncated
+  # token in place, and so the mode is already right before any content is.
+  local tmp
+  tmp=$(mktemp "$token_dir/.$scope.XXXXXX")
+  chmod 600 "$tmp"
+  printf '%s' "$token" > "$tmp"
+  mv "$tmp" "$token_file"
+
+  printf '%s %s\n' "$action" "$token_file" >&2
+
+  verify_scope "$scope"
+}
+
+#-----------------------------------------------------------------------------
+# linode-cli does not print its commands when handed one it does not
+# recognize -- it says only "Unrecognized command" -- so ghx's probe does not
+# transfer. It does have a help topic that prints all of them, including the
+# CLI-management ones that are not in the API spec:
+#
+#   $ linode-cli commands
+#   CLI user management commands:
+#   +-------------+----------+------------+
+#   | configure   | set-user | show-users |
+#   ...
+#
+# The cells of those tables are what we want. Column widths grow to fit their
+# contents, so nothing is ever truncated into an unusable form.
+probe_commands() {
+  local out
+
+  out=$(LINODE_CLI_TOKEN=$unused_token linode-cli commands 2>&1) || true
+
+  tr '│' '\n' <<< "$out" \
+    | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+    | grep -E '^[a-z0-9][a-z0-9-]*$' \
+    | sort -u \
+    || true
+}
+
+#-----------------------------------------------------------------------------
+# The global options that take a value, so their values are never read as a
+# scope name.
+#
+# The options block of --help cannot answer this: a metavar and the start of a
+# description are both capitalised, so `--format FORMAT` and `--all Deprecated
+# flag...` are indistinguishable. The usage line can -- there an option and its
+# value share one bracket group:
+#
+#   usage: linode-cli [--help] [--text] [--format FORMAT] [--alias [ALIAS]] ...
+#                              ^ no value    ^ value        ^ optional value
+#
+# Reading it from linode-cli itself rather than hardcoding ten names means a
+# release that adds one is picked up by the same version-keyed cache refresh
+# that picks up new commands.
+probe_options() {
+  local out
+
+  out=$(LINODE_CLI_TOKEN=$unused_token linode-cli --help 2>&1) || true
+
+  sed -n '/^usage:/,/^$/p' <<< "$out" \
+    | tr '\n' ' ' \
+    | tr -s ' ' \
+    | grep -oE '\[--[a-z0-9-]+ \[?[A-Z][A-Z_]*\]?\]' \
+    | sed -E 's/^\[(--[a-z0-9-]+) .*/\1/' \
+    | sort -u \
+    || true
+}
+
+#-----------------------------------------------------------------------------
+# Populate `keyword` from the cache, rebuilding it when it is missing, stale,
+# or --refresh was given. The cache's first line is the linode-cli version it
+# was built from, so an upgrade invalidates it on its own -- which matters
+# more here than for gh, since linode-cli's commands come from a bundled API
+# spec that changes with the release.
+load_keywords() {
+  local version cached
+  local -a entries=()
+
+  version=$(linode-cli --version 2> /dev/null) || true
+  version=${version%%$'\n'*}
+
+  cached=''
+
+  if [[ -r $cache_file ]]; then
+    read -r cached < "$cache_file" || true
+  fi
+
+  if ((refresh)) || [[ $cached != "$version" ]]; then
+    local -a commands=() options=()
+    mapfile -t commands < <(probe_commands)
+    mapfile -t options < <(probe_options)
+
+    # An unparseable probe must not turn every linode-cli command into a
+    # scope name, so leave the cache alone and run with no keywords -- which
+    # makes is_keyword true for everything. Say so, because the visible
+    # effect is that scope selection quietly stops working.
+    if ((${#commands[@]} == 0)); then
+      printf '%s: could not read linode-cli'"'"'s command list; passing through\n' \
+        "$selfname" >&2
+      return 0
+    fi
+
+    entries=("${commands[@]}")
+
+    if ((${#options[@]})); then
+      entries+=("${options[@]}")
+    fi
+
+    mkdir -p "$cache_dir"
+    printf '%s\n' "$version" "${entries[@]}" > "$cache_file"
+
+  else
+    mapfile -t entries < <(tail -n +2 "$cache_file")
+  fi
+
+  # Commands and options share one cache file; the leading dashes tell them
+  # apart, since no linode-cli command starts with one.
+  local entry
+  for entry in "${entries[@]}"; do
+    if [[ $entry == --* ]]; then
+      takes_value["$entry"]=1
+
+    else
+      keyword["$entry"]=1
+    fi
+  done
+}
+
+#-----------------------------------------------------------------------------
+# True for a linode-cli command, and for anything at all when the keyword list
+# could not be built -- passthrough is always the safe guess.
+is_keyword() {
+  ((${#keyword[@]})) || return 0
+  [[ -n ${keyword[$1]-} ]]
+}
+
+#-----------------------------------------------------------------------------
+# Run linode-cli under a scope's token. An empty token file means the scope is
+# declared but deliberately has none, so linode-cli uses its own configured
+# user -- which means clearing any ambient LINODE_CLI_TOKEN that would
+# otherwise override it.
+run_scoped() {
+  local scope=$1
+  shift
+
+  local token_file="$token_dir/$scope"
+
+  if [[ -L $token_file && ! -e $token_file ]]; then
+    die "alias '$scope' points at a missing scope: $(readlink "$token_file")"
+  fi
+
+  if [[ ! -e $token_file ]]; then
+    printf '%s: no token defined for %s (expected %s)\n' \
+      "$selfname" "'$scope'" "$token_file" >&2
+    list_scopes >&2
+    exit 1
+  fi
+
+  [[ -r $token_file ]] \
+    || die "token file for '$scope' is not readable: $token_file"
+
+  if [[ -s $token_file ]]; then
+    LINODE_CLI_TOKEN=$(< "$token_file")
+    export LINODE_CLI_TOKEN
+
+  else
+    unset LINODE_CLI_TOKEN
+  fi
+
+  exec linode-cli "$@"
+}
+
+###############################################################################
+# Main
+
+command -v linode-cli > /dev/null 2>&1 \
+  || die 'linode-cli is not installed or not on PATH'
+
+# linx's own options are recognized only in first position; everything else on
+# the command line belongs to linode-cli.
+case "${1-}" in
+  -h | --help)
+    show_help
+    exit 0
+    ;;
+
+  --list)
+    list_scopes
+    exit 0
+    ;;
+
+  --expiry)
+    expiry_report
+    exit 0
+    ;;
+
+  --rotate)
+    shift
+    rotate_scope "${1-}"
+    exit 0
+    ;;
+
+  --refresh)
+    refresh=1
+    shift
+    ;;
+esac
+
+if (($# == 0)); then
+  if ((refresh)); then
+    load_keywords
+  fi
+
+  exec linode-cli
+fi
+
+args=("$@")
+
+load_keywords
+
+# The first argument that is neither an option nor an option's VALUE decides
+# scope vs. passthrough.
+scope_index=-1
+skip_next=0
+
+for ((i = 0; i < ${#args[@]}; i++)); do
+  if ((skip_next)); then
+    skip_next=0
+    continue
+  fi
+
+  if [[ ${args[i]} == -* ]]; then
+    # --opt=value carries its value inline; --opt value takes the next
+    # argument with it, and that argument is not the scope name.
+    if [[ ${args[i]} != *=* && -n ${takes_value[${args[i]}]-} ]]; then
+      skip_next=1
+    fi
+
+    continue
+  fi
+
+  scope_index=$i
+  break
+done
+
+((scope_index >= 0)) || exec linode-cli "${args[@]}"
+
+if is_keyword "${args[scope_index]}"; then
+  exec linode-cli "${args[@]}"
+fi
+
+scope=${args[scope_index]}
+
+unset 'args[scope_index]'
+args=("${args[@]}")
+
+run_scoped "$scope" "${args[@]}"

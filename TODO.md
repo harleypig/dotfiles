@@ -152,6 +152,22 @@ audit.
   `CLAUDE_CODE_NO_FLICKER`. First **verify** nothing (hook/tool) reads
   `CLAUDE_CONFIG_DIR` from the ambient env, and coordinate `CLAUDE_CONFIG_DIR`
   with the AGENTS.md migration (client-config).
+- [ ] **`LINODE_TOKEN`** — retire the ambient export the way `GH_TOKEN` was
+  retired. `000-loadtokens` puts a live Linode PAT in *every* shell for one
+  consumer: `bin/docker_wrapper` forwards it to the terraform container for
+  state-backend / provider auth. Now that `bin/linx` exists the pattern is
+  established — have `docker_wrapper` read the token itself at the point of
+  use (a `linx`-style scope file, or `private_dotfiles/api-key/linode`
+  directly) and drop `LINODE_TOKEN=linode` from `api-keys.cfg`. Note that
+  `LINODE_TOKEN` (terraform provider) and `LINODE_CLI_TOKEN` (linode-cli,
+  what `linx` sets) are different variables — retiring one does not affect
+  the other.
+- [ ] **`config/linode-cli` is mode 0666** — a live Linode token, world-
+  readable. Untracked (the `config/` allowlist ignores it), so nothing is
+  committed, but `chmod 600` it. While there, consider whether that file
+  should hold a token at all now that `linx` exists: declaring an empty-token
+  scope and using `linx <scope>` keeps the credential in the 0600 private
+  store instead of in `$XDG_CONFIG_HOME`.
 - [ ] **binenv** (partial) — move `BINENV_CACHEDIR` / `CONFDIR` / `LINKDIR`
   (+ `mkdir`) to a `bin/binenv` wrapper; keep the completion but gate it
   `[[ $- == *i* ]]` and **vendor** it to `config/completions/binenv` (it
