@@ -152,26 +152,27 @@ audit.
   `CLAUDE_CODE_NO_FLICKER`. First **verify** nothing (hook/tool) reads
   `CLAUDE_CONFIG_DIR` from the ambient env, and coordinate `CLAUDE_CONFIG_DIR`
   with the AGENTS.md migration (client-config).
-- [ ] **`LINODE_TOKEN` — the wrong-account hazard, and the other half of
-  two-account access.** `bin/linx` scopes `LINODE_CLI_TOKEN` per invocation,
-  but **terraform reads a different variable**, `LINODE_TOKEN`, which
-  `000-loadtokens` still exports into *every* shell from
-  `api-key/linode` — a symlink to the **personal** scope
-  (`private_dotfiles/linode/tokens/harleypig`). `bin/docker_wrapper` forwards
-  it to the terraform container for state-backend / provider auth.
-  - **Why this matters now:** `methodsprime-provisioning` is terraform against
-    a **customer's** Linode account. With the ambient value in place, a
-    `terraform apply` there authenticates as the *personal* account. The
-    account is the blast radius, so this is the load-bearing piece — `linx`
-    alone does not make two-account access safe.
+- [ ] **Finish moving `LINODE_TOKEN` into each terraform repo's `set_env`.**
+  The ambient export is gone from `api-keys.cfg` (its value selects a whole
+  Linode **account**, so an ambient one meant terraform in a customer's repo
+  authenticated as the *personal* account). `harleydev/bin/set_env` already
+  loads it; the remaining work is per-repo:
+  - **`harleydev/bin/set_env`** — repoint at the scope store
+    (`private_dotfiles/linode/tokens/harleypig`) rather than the
+    `api-key/linode` symlink, and fix its stale
+    `LINODE_CLI_CONFIG="$PRIVATE_DOTFILES/linode"`, which now names the store
+    *directory* instead of the retired config file. Harmless today — every
+    `linode-cli` call in that repo passes explicit flags, and
+    `LINODE_CLI_TOKEN` short-circuits the config — but it is a trap for the
+    next reader.
+  - **`methodsprime-provisioning`** — copy `set_env` in, bound to the
+    `methodsprime` scope. Blocked until that token is minted.
   - **Keep the contract agnostic.** That repo's README already specifies the
     token "supplied via the environment as `LINODE_TOKEN`", which is correct
-    and should stay: CI and other developers supply it their own way. What is
-    missing is only the *local* mechanism that puts the **right** token in
-    that variable per context.
-  - **Shape to decide:** have `docker_wrapper` resolve a `linx` scope at the
-    point of use, or a small scope-selector that exports `LINODE_TOKEN` for an
-    arbitrary command; then drop `LINODE_TOKEN=linode` from `api-keys.cfg`.
+    and stays: CI and other developers supply it their own way. `set_env` is
+    only the workstation's way of satisfying it.
+  - Standardising the pattern across terraform repos is
+    [dotagents#229](https://github.com/harleypig/dotagents/issues/229).
 - [ ] **`config/linode-cli` is a stale per-user file at mode 0666** — it holds
   a Linode token that **no longer authenticates** (verified), so the loose mode
   exposes nothing; the file is untracked and created per-user, not deployed
