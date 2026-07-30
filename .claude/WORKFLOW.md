@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.9.0
+**Version:** v1.10.0
 
 ## Purpose
 
@@ -222,6 +222,37 @@ A single ambient PAT could not reach an org that owns its own resources, so
 See `../private_dotfiles/github/README.md` for minting each token — in
 particular that an org scope needs a **fine-grained PAT with the org as
 resource owner**, which may require org-owner approval.
+
+**Linode credentials:**
+
+`bin/linx` is the same wrapper for `linode-cli`, reading
+`../private_dotfiles/linode/tokens/<scope>` and running the command with that
+token in `LINODE_CLI_TOKEN`. Same registry-is-the-directory rule, same
+dispatch (a linode-cli command passes through; anything else is the scope),
+same `--list` / `--expiry` / `--rotate` / `--refresh`.
+
+Three differences follow from what the Linode side offers, all handled inside
+`linx` — see its header comment:
+
+* linode-cli names its commands only via `linode-cli commands`, not on an
+  unknown command, so the keyword probe reads that table.
+* linode-cli **does** have global options that take a value (`--format`,
+  `--as-user`, …), which `gh` does not, so `linx` learns them from
+  linode-cli's own usage line and skips their values when looking for the
+  scope.
+* The Linode API cannot say which token authenticated a request, so
+  `--expiry` matches the stored token against the leading characters
+  `/profile/tokens` returns for each. That needs `profile:read_only` on the
+  token; one without it is reported as unreadable, not as an error.
+
+An empty scope file means "use whatever user `linode-cli` itself is
+configured with" — and clears any ambient `LINODE_CLI_TOKEN`, which would
+otherwise override that config.
+
+**`LINODE_TOKEN` is a separate thing** and is still exported ambiently by
+`config/shell-startup/000-loadtokens`: it is what the **Terraform** Linode
+provider reads (via `bin/docker_wrapper`), not linode-cli. Retiring that
+ambient export the way `GH_TOKEN` was retired is tracked in `TODO.md`.
 
 **Auto-merge (`auto-merge: enabled`):**
 
