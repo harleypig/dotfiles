@@ -152,22 +152,33 @@ audit.
   `CLAUDE_CODE_NO_FLICKER`. First **verify** nothing (hook/tool) reads
   `CLAUDE_CONFIG_DIR` from the ambient env, and coordinate `CLAUDE_CONFIG_DIR`
   with the AGENTS.md migration (client-config).
-- [ ] **`LINODE_TOKEN`** — retire the ambient export the way `GH_TOKEN` was
-  retired. `000-loadtokens` puts a live Linode PAT in *every* shell for one
-  consumer: `bin/docker_wrapper` forwards it to the terraform container for
-  state-backend / provider auth. Now that `bin/linx` exists the pattern is
-  established — have `docker_wrapper` read the token itself at the point of
-  use (a `linx`-style scope file, or `private_dotfiles/api-key/linode`
-  directly) and drop `LINODE_TOKEN=linode` from `api-keys.cfg`. Note that
-  `LINODE_TOKEN` (terraform provider) and `LINODE_CLI_TOKEN` (linode-cli,
-  what `linx` sets) are different variables — retiring one does not affect
-  the other.
-- [ ] **`config/linode-cli` is mode 0666** — a live Linode token, world-
-  readable. Untracked (the `config/` allowlist ignores it), so nothing is
-  committed, but `chmod 600` it. While there, consider whether that file
-  should hold a token at all now that `linx` exists: declaring an empty-token
-  scope and using `linx <scope>` keeps the credential in the 0600 private
-  store instead of in `$XDG_CONFIG_HOME`.
+- [ ] **`LINODE_TOKEN` — the wrong-account hazard, and the other half of
+  two-account access.** `bin/linx` scopes `LINODE_CLI_TOKEN` per invocation,
+  but **terraform reads a different variable**, `LINODE_TOKEN`, which
+  `000-loadtokens` still exports into *every* shell from
+  `api-key/linode` — a symlink to the **personal** scope
+  (`private_dotfiles/linode/tokens/harleypig`). `bin/docker_wrapper` forwards
+  it to the terraform container for state-backend / provider auth.
+  - **Why this matters now:** `methodsprime-provisioning` is terraform against
+    a **customer's** Linode account. With the ambient value in place, a
+    `terraform apply` there authenticates as the *personal* account. The
+    account is the blast radius, so this is the load-bearing piece — `linx`
+    alone does not make two-account access safe.
+  - **Keep the contract agnostic.** That repo's README already specifies the
+    token "supplied via the environment as `LINODE_TOKEN`", which is correct
+    and should stay: CI and other developers supply it their own way. What is
+    missing is only the *local* mechanism that puts the **right** token in
+    that variable per context.
+  - **Shape to decide:** have `docker_wrapper` resolve a `linx` scope at the
+    point of use, or a small scope-selector that exports `LINODE_TOKEN` for an
+    arbitrary command; then drop `LINODE_TOKEN=linode` from `api-keys.cfg`.
+- [ ] **`config/linode-cli` is a stale per-user file at mode 0666** — it holds
+  a Linode token that **no longer authenticates** (verified), so the loose mode
+  exposes nothing; the file is untracked and created per-user, not deployed
+  from the repo. Either `chmod 600` it or delete it outright — now that `linx`
+  and the `private_dotfiles/linode/tokens/` store exist, the credential belongs
+  there at 0600 rather than in `$XDG_CONFIG_HOME`. linode-cli only needs this
+  file at all when it is *not* handed a `LINODE_CLI_TOKEN`.
 - [ ] **binenv** (partial) — move `BINENV_CACHEDIR` / `CONFDIR` / `LINKDIR`
   (+ `mkdir`) to a `bin/binenv` wrapper; keep the completion but gate it
   `[[ $- == *i* ]]` and **vendor** it to `config/completions/binenv` (it
