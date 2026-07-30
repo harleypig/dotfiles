@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.11.0
+**Version:** v1.12.0
 
 ## Purpose
 
@@ -248,6 +248,17 @@ Three differences follow from what the Linode side offers, all handled inside
 An empty scope file means "use whatever user `linode-cli` itself is
 configured with" — and clears any ambient `LINODE_CLI_TOKEN`, which would
 otherwise override that config.
+
+**`config/linode-cli` holds no credential.** It is a per-user file (not on the
+`config/` allowlist, so it is never committed), reduced to a `default-user`
+line and an empty section. That is deliberate: linode-cli runs its
+**interactive setup wizard** whenever it finds neither a configured user nor a
+token, which hangs any non-interactive call — so the file exists purely to
+suppress that. Every credential comes from a `linx` scope instead.
+Consequently `linx <command>` with **no** scope gets a clean `401` on an
+authenticated call rather than a wizard, while unauthenticated calls
+(`regions list`) just work. Name a scope whenever the call must reach an
+account.
 
 **`LINODE_TOKEN` is a separate variable, loaded per repo — not ambient.**
 It is what the **Terraform** Linode provider reads (forwarded into the

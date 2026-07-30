@@ -173,13 +173,6 @@ audit.
     only the workstation's way of satisfying it.
   - Standardising the pattern across terraform repos is
     [dotagents#229](https://github.com/harleypig/dotagents/issues/229).
-- [ ] **`config/linode-cli` is a stale per-user file at mode 0666** — it holds
-  a Linode token that **no longer authenticates** (verified), so the loose mode
-  exposes nothing; the file is untracked and created per-user, not deployed
-  from the repo. Either `chmod 600` it or delete it outright — now that `linx`
-  and the `private_dotfiles/linode/tokens/` store exist, the credential belongs
-  there at 0600 rather than in `$XDG_CONFIG_HOME`. linode-cli only needs this
-  file at all when it is *not* handed a `LINODE_CLI_TOKEN`.
 - [ ] **binenv** (partial) — move `BINENV_CACHEDIR` / `CONFDIR` / `LINKDIR`
   (+ `mkdir`) to a `bin/binenv` wrapper; keep the completion but gate it
   `[[ $- == *i* ]]` and **vendor** it to `config/completions/binenv` (it
