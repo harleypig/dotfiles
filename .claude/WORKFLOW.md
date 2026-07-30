@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.10.0
+**Version:** v1.11.0
 
 ## Purpose
 
@@ -249,10 +249,30 @@ An empty scope file means "use whatever user `linode-cli` itself is
 configured with" — and clears any ambient `LINODE_CLI_TOKEN`, which would
 otherwise override that config.
 
-**`LINODE_TOKEN` is a separate thing** and is still exported ambiently by
-`config/shell-startup/000-loadtokens`: it is what the **Terraform** Linode
-provider reads (via `bin/docker_wrapper`), not linode-cli. Retiring that
-ambient export the way `GH_TOKEN` was retired is tracked in `TODO.md`.
+**`LINODE_TOKEN` is a separate variable, loaded per repo — not ambient.**
+It is what the **Terraform** Linode provider reads (forwarded into the
+container by `bin/docker_wrapper`), where `LINODE_CLI_TOKEN` is what
+`linode-cli` reads. They are not interchangeable.
+
+It is no longer exported at login. Its value selects an entire Linode
+**account**, so an ambient one meant terraform in a customer's repo
+authenticated as the *personal* account — the same class of problem that
+retired `GH_TOKEN`. Each terraform repo instead loads it in its own sourced
+`bin/set_env`, binding that repo to the right scope under
+`private_dotfiles/linode/tokens/`:
+
+```bash
+. bin/set_env        # from the repo root, before any terraform/packer work
+```
+
+The infrastructure code stays agnostic — it only knows the variable. CI and
+other developers supply the same variable their own way; `set_env` is just the
+workstation's way. `bin/docker_wrapper` forwards `LINODE_TOKEN` only when it
+is set, so a shell that never sourced `set_env` simply has no Linode
+credential, which is the intent.
+
+Standardising `set_env` across terraform repos is
+[dotagents#229](https://github.com/harleypig/dotagents/issues/229).
 
 **Auto-merge (`auto-merge: enabled`):**
 
