@@ -165,14 +165,53 @@ audit.
     `linode-cli` call in that repo passes explicit flags, and
     `LINODE_CLI_TOKEN` short-circuits the config — but it is a trap for the
     next reader.
-  - **`methodsprime-provisioning`** — copy `set_env` in, bound to the
-    `methodsprime` scope. Blocked until that token is minted.
+  - **`methodsprime-provisioning`** — **done.** `bin/set_env` is in place,
+    bound to the `methodsprime` scope and reading
+    `private_dotfiles/linode/tokens/methodsprime`. It skipped the
+    `api-key/linode` path harleydev still uses, which no longer exists.
   - **Keep the contract agnostic.** That repo's README already specifies the
     token "supplied via the environment as `LINODE_TOKEN`", which is correct
     and stays: CI and other developers supply it their own way. `set_env` is
     only the workstation's way of satisfying it.
   - Standardising the pattern across terraform repos is
     [dotagents#229](https://github.com/harleypig/dotagents/issues/229).
+- [ ] **Scope `.s3cfg` per Linode account, the way tokens already are.**
+  The same account-selection problem as `LINODE_TOKEN` above, on the *other*
+  credential axis — and it has already caused a real mistake.
+
+  Object Storage authenticates with an **access-key/secret-key pair**, not the
+  API token. There is exactly one `private_dotfiles/.s3cfg`, and it holds the
+  **harleypig** account's pair. So while `LINODE_TOKEN` correctly selects a
+  customer account, the S3 state backend silently uses the personal one.
+
+  **What that already cost:** a `methodsprime-terraform-state` bucket was
+  created in the *personal* account rather than MethodsPrime's. It looked
+  right from the terminal — the bucket exists, `plan` works, locking works —
+  and was only caught by logging into the customer's console and seeing an
+  empty Object Storage page. Nothing errors, because both credentials are
+  individually valid; they just point at different accounts. Caught while
+  empty, so nothing had to be migrated.
+
+  The shape almost certainly mirrors `linx` / `ghx`:
+
+  - a per-scope store (`private_dotfiles/linode/objectstorage/<scope>`, or
+    `.s3cfg-<scope>`) holding one s3cmd-format file per account, so
+    `s3cmd -c <file>` and the `AWS_*` exports both read the same source;
+  - a scope-aware way to reach it — either a small `s3x`-style wrapper or
+    just each repo's `set_env` naming its own scope, which is enough if
+    nothing needs ad-hoc cross-account s3cmd;
+  - a `README.md` beside `linode/README.md`, whose *"`LINODE_TOKEN` is a
+    different thing"* section is the model for explaining the split.
+
+  **Watch the scope names.** A Linode *username* is the natural scope key for
+  API tokens (a user belongs to exactly one account), but an Object Storage
+  key belongs to the **account** and can be region-scoped. Whether the two
+  registries can share one key space or need separate ones is the first thing
+  to settle.
+
+  Blocking `methodsprime-provisioning` right now: its state cannot move to the
+  customer's account until MethodsPrime has an Object Storage key pair and
+  somewhere to keep it.
 - [ ] **binenv** (partial) — move `BINENV_CACHEDIR` / `CONFDIR` / `LINKDIR`
   (+ `mkdir`) to a `bin/binenv` wrapper; keep the completion but gate it
   `[[ $- == *i* ]]` and **vendor** it to `config/completions/binenv` (it
