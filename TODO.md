@@ -171,76 +171,6 @@ audit.
     binenv role and the dotfiles binenv config together. Cross-repo: migrate
     to ansible-stuff's `BACKLOG.md` when next working that repo.
 
-## 🐳 Docker tooling Setup
-
-### Run more linters/formatters via Docker
-
-**Decided — see [ADR-0005](docs/adr/0005-multi-linter-docker-image.md).** The
-research (survey of MegaLinter, Super-Linter, AZLint, Code Cleaner Buffet, and
-cytopia awesome-ci) and the architecture decision are recorded there: build
-our own multi-stage **toolbox** image (no orchestrator — pre-commit and CI
-already orchestrate), on debian-slim, published to ghcr, backing the
-`bin/<tool>` wrappers + pre-commit + CI on one pinned artifact. This resolves
-the former
-"evaluate aggregate images" and "decide the boundary" questions (avoid
-MegaLinter/Super-Linter as bundles; expose each tool by name, as `perl-tools`
-already does). Remaining work is the phased rollout:
-
-**Phase 2 — wire consumers incrementally.** The combined image holds
-**non-Python linters only** — Python-*runtime* tools are a separate, later
-batch (see below and the ADR-0005 2026-07-24 update).
-
-Decided — build our own hooks and consolidate all non-Python tools onto the
-one image (see [ADR-0006](docs/adr/0006-lint-tools-pre-commit-hooks.md); this
-supersedes the earlier "leave shellcheck/shfmt/markdownlint on upstream hooks"
-call). The mechanism is proven in-repo (perltidy/perlcritic already run as
-local `docker_image` hooks against our entrypoint-less ghcr images). Work:
-
-- [ ] **Cleanup — remove folded-in standalone images from the repo AND ghcr.**
-  As each existing `config/docker/<tool>` image is folded into `code-tools`
-  and the result is green **all the way through CI**, delete that image's
-  Dockerfile + dir, its `config/docker/.gitignore` allowlist entry, and its
-  `publish-tool-images.yml` matrix entry, **and delete its `ghcr.io/harleypig`
-  package**. Which images actually fold in is governed by the runtime-
-  separation rule (ADR-0005): today the Python/Perl-runtime images
-  (`ansible-lint`, `perl-tools`) stay separate, so this triggers per-image
-  only when one is genuinely absorbed — not preemptively.
-- [ ] **(Follow-on, needs a design call) CI-meta integration.** Decide whether
-  to keep the meta suite on pinned binaries (already fast) or restructure it
-  into a batched `run-tools` over `code-tools`. Not required for the wrapper +
-  pre-commit consolidation, which stands alone.
-- [ ] **(Orthogonal) Harden the Docker Hub pull flakiness** via
-  `docker/login-action` / env caching — a separate quick win that lifts the
-  anonymous rate-limit for *all* Docker Hub hooks (gitleaks too), independent
-  of this consolidation. (Cross-refs the CI-reliability item below.)
-- [ ] **Measure with `dive`** against a ~500 MB budget; split by runtime
-  (`lint-static` / `lint-node` / reuse `perl-tools`) only if exceeded.
-  (Phase-1 image measured 428 MB with `yamllint`; it shrinks once `yamllint`
-  is extracted — next item.)
-
-**Python-runtime tools — deferred to the python setup, handled as one batch.**
-`yamllint` and `ansible-lint` need a Python runtime, so per ADR-0005 they stay
-*out* of the combined image and are re-homed together later — likely via
-`pipx` / `uv` in a dedicated Python-tools image (or images):
-
-- [ ] **Re-home `yamllint` + `ansible-lint` (and any future Python linter) as
-  a Python-tools batch** during the python setup. `ansible-lint` is not folded
-  into `lint-tools` (needs Python ≥ 3.12 vs the base's 3.11, and its ~540 MB
-  footprint would ~double the image — ADR-0005). Extract `yamllint` from the
-  Phase-1 `lint-tools` image (rebuild without the Python runtime, bump the
-  tag) as part of this batch. Digest-pin `ansible-lint`'s wrapper here too.
-
-### Auto-start Open WebUI on boot (beaker)
-
-- [ ] **Run `bin/start-openwebui` automatically at system startup on beaker.**
-  The launcher is host-gated + startup-safe (no-ops off beaker), so it can be
-  invoked unconditionally. Wire it into boot — a user systemd unit
-  (`~/.config/systemd/user/`, `WantedBy=default.target`) is the natural fit on
-  beaker; the containers already carry `--restart always`, so this only needs
-  to run once after a fresh boot to (re)create them. Decide systemd-user vs a
-  login-shell hook and add the unit (likely a per-host file, not tracked for
-  every machine).
-
 ## 📝 Documentation Setup
 
 - [ ] **Auto-fix companion for `prose_wrap.py` (78-col reflow).** The
@@ -298,50 +228,6 @@ Implementation follow-up (do when Pre-commit **Phase 4** lands):
 - [ ] Test on repository documentation
 - [ ] Update documentation
 
-## 🏠 $HOME dotfile audit
-
-Reduce $HOME clutter by moving dotfiles to XDG directories where supported and
-removing unused ones. The repeatable auditor is [`bin/xdg-audit`](bin/xdg-audit)
-(data + model in [`config/xdg-audit/README.md`](config/xdg-audit/README.md)):
-plain `xdg-audit` scans `$HOME`; passing an app name shows one app's status;
-`--json` emits machine-readable output. Redirects for
-Gradle/Kivy/SQLite/Parallel are landed; docker/cpanm/less/npm/wget (and bash
-history) are annotated as redirected in `programs-local/`, and the
-immovable/unsupported set (Java, nss .pki, cpan, sudo, vscode-server,
-redhat) is annotated as ignored.
-
-### Remaining per-app migrations
-
-Each present `$HOME` dotfile gets a `programs-local/<app>.json` entry (redirect
-/ ignore / addition) so `xdg-audit` tracks it; the actual per-machine
-relocation (moving an install, symlinking) is a separate step.
-
-- [ ] **grok** — convert `~/.grok` to a managed symlink into a repo, like
-  `~/.claude` (grok hardcodes `~/.grok` with no relocation env). Tracked via
-  overlay; the symlink itself is a per-machine action.
-- [ ] Per-machine: clear the leftover strays for the already-redirected tools
-  once their new XDG locations are populated.
-
-### xdg-audit follow-ups
-
-- [ ] → **dotagents**: teach the agent config to use `xdg-audit` as part of
-  tool setup/configuration — when standing up a tool, check its `$HOME`
-  footprint and create the appropriate `programs-local/` overlay entry
-  (redirect / ignore / addition) so new tools are XDG-audited by default.
-  Cross-repo: migrate to dotagents' `audit/BACKLOG.md` when next working that
-  repo.
-
-### `~/.config` symlink — decided in ADR-0003
-
-Adopt in principle (safe: the `config/.gitignore` allowlist keeps stray writes
-untracked), but establishing it is a deliberate per-machine migration, not
-auto-wired into dotlinks (`~/.config` already exists on every machine, so
-`check-dotfiles` would only warn). See
-[`docs/adr/0003-home-config-symlink.md`](docs/adr/0003-home-config-symlink.md).
-
-- [ ] Per-machine: migrate an existing `~/.config` into `config/` and replace
-  it with the `~/.config -> $DOTFILES/config` symlink, where wanted.
-
 ## 📋 Move task tracking to GitHub issues
 
 This repo has no `tracker:` sentinel, so it falls back to the pre-sentinel
@@ -372,12 +258,6 @@ items below are a workaround for exactly that), labels for the `role:*` /
 
 Sizeable enough to be an epic in its own right; the migration should probably
 be its own issue tree once `tracker: github` is live.
-
-## 🐙 GitHub repository audit
-
-- [ ] Go through all my GitHub repositories and decide each one's
-  disposition — **delete**, **make a public archive**, **bring up to date**,
-  or **leave alone**. One-time triage; record the decision per repo.
 
 ## 🔄 Upstream / update tracking
 
