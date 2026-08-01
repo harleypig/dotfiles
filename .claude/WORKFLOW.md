@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.13.0
+**Version:** v1.14.0
 
 ## Purpose
 
@@ -346,6 +346,37 @@ Two things to know about how it behaves in practice:
   or `bin/` script is felt immediately, so a dispatched subagent's work still
   wants the same review a direct edit would get. The sentinel changes who
   writes, not whether it is checked.
+
+**Autonomous task resolution (`resolve-task: autonomous`):**
+
+The **resolve-task** skill may skip its present-and-ask gate before applying
+edits. It does **not** skip any guardrail: it auto-proceeds only when the
+disposition is *do-now*, the task-type is *trivial or small*, a bug was
+reproduced (or a feature's approach is clear) with no dead end or clarifying
+question, `qa-check` passes, and CI is green (`ci-watch` exit **0** — never on
+1, and it stops on 2 or warnings). Any failure, non-trivial verdict, or
+ambiguity falls back to the gated path: stop and ask. Still one task, one PR —
+there is no queue-draining loop.
+
+Merge autonomy remains push-pr's, via `auto-merge: enabled` above; a
+zero-touch resolve needs **both** sentinels, and this repo has both. Every
+push-pr
+guardrail still applies — the ruleset-obeying `push.sh merge`, the five
+required checks, and the `merge-finalization.py` hook.
+
+Read from the **default branch**, not the working tree — so the PR that
+*introduces* this line cannot autonomize itself, and it takes effect from the
+next task onward. That is the opposite of `team-managed` above, deliberately:
+skipping an approval gate is consequential in a way a nudge is not.
+
+**Judged trivial by the agent, and that is the residual risk.** The required
+checks are strong, but "trivial" is the agent's call and this repo *is* the
+live shell environment. Two changes in the session that added this sentinel
+looked trivial and were not — removing a stale `config/linode-cli` regressed
+the no-scope `linx` path into an interactive wizard, and relocating a token
+turned a backup into a phantom credential scope. Both were caught by
+verification, not by CI. Prefer the gated path for anything touching
+`shell-startup`, `config/shell-startup/`, or `lib/`.
 
 ### TODO Routing
 
