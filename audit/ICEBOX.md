@@ -64,3 +64,18 @@ Whether a tool exists for this is also unknown — shellcheck does not flag
 version-gated syntax by default, though it does accept a `# shellcheck
 shell=bash` directive and has some version awareness worth investigating
 before building anything.
+
+## Extending `cleanpath` to other path variables
+
+**Revisit if** duplicates actually show up in `LD_LIBRARY_PATH`, `MANPATH`, or
+another path-shaped variable.
+
+Migrated from `TODO.md` *Features & fixes*, where it was already marked
+*(Optional)*. `bin/cleanpath` is fixed, tested
+(`tests/shell/test_cleanpath.bats`), and integrated into `shell-startup`
+behind a guard so a failure cannot blank `PATH`. Extending it to other
+variables is speculative — the item's own wording is "if duplicates show up
+there too", and none have been observed.
+
+Deferred rather than issued because there is no evidence of the problem it
+would solve. The trigger is concrete enough to notice if it ever fires.
