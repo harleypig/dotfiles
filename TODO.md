@@ -299,84 +299,6 @@ local `docker_image` hooks against our entrypoint-less ghcr images). Work:
   login-shell hook and add the unit (likely a per-host file, not tracked for
   every machine).
 
-## 🚀 CI/CD Setup
-
-**Dependency:** Each CI/CD phase requires corresponding Pre-commit phase.
-Current state: `tests.yml` runs bats (gating), perl (non-gating), and python
-(self-activating), plus a `pre-commit` job (`--all-files`). The phased plan
-below is the remaining buildout.
-
-**Key Rule:** CI/CD Phase N requires Pre-commit Phase N completed first.
-Pre-commit can progress independently. CI/CD cannot lead pre-commit.
-
-### CI reliability
-
-- [ ] **Harden the `pre-commit` job against Docker Hub pull flakiness.** The
-  `shellcheck` hook (koalaman/shellcheck image) and any other docker-based
-  hooks pull from Docker Hub on every CI run; an anonymous-pull timeout
-  failed PR #146's `pre-commit` job (`exit 125`, registry `Client.Timeout`)
-  and needed a manual `gh run rerun --failed`. Mitigate so it doesn't recur:
-  cache the pre-commit environments (`actions/cache` on `~/.cache/pre-commit`),
-  and/or authenticate to Docker Hub (`docker/login-action`) to lift the
-  anonymous rate limit, and/or switch the shellcheck hook to an apt-installed
-  binary in CI. Pick the lightest reliable option.
-
-- [ ] **Decouple the `markdownlint` pre-commit hook from the host Node
-  (retrospective, PR #181).** The `markdownlint-cli@0.48.0` hook uses
-  `language: node` against whatever `node` is on `PATH`; it needs Node ≥ 20.
-  When the nvm Node was removed during the vmgr migration, pre-commit fell
-  back to the system `node v18` and **every commit in the repo was blocked**
-  (`EBADENGINE` rebuilding the hook env) until Node 22 was reinstalled. Pin
-  the hook's Node so it doesn't depend on the ambient version — set
-  `language_version` on the hook (pre-commit installs that Node), or run
-  markdownlint via the pinned `bin/markdownlint` docker wrapper instead (ties
-  into *Docker tooling Setup*). Lightest reliable option wins.
-
-### Phase 1: Basic CI (requires Pre-commit Phase 1)
-
-- [ ] Consolidate/confirm the CI workflow:
-  - [ ] Report results as job status (confirm coverage matches the plan)
-- [ ] Document CI workflow
-
-### Phase 2: Security Checks (requires Pre-commit Phase 2)
-
-- [ ] Add security job to CI workflow:
-  - [ ] Run gitleaks
-  - [ ] Run detect-private-key
-  - [ ] Block merge on security failures
-- [ ] Test security checks
-- [ ] Document security workflow
-
-### Phase 3: Language Checks (requires Pre-commit Phase 3)
-
-→ Python jobs are done (see CHANGELOG); Perl linting → *Perl Setup* ›
-*Pre-commit & CI integration*; Rust is N/A.
-
-- [ ] Matrix testing for multiple bash versions (optional)
-- [ ] Test language-specific jobs
-- [ ] Document language workflows
-
-### Phase 4: Documentation Validation (requires Pre-commit Phase 4)
-
-→ see *Documentation Setup* for the doc-linting phase context.
-
-- [ ] Add documentation quality job:
-  - [ ] Prose linting
-  - [ ] Link checking
-  - [ ] Documentation build tests
-- [ ] Test documentation workflow
-- [ ] Document validation process
-
-### Optional: Dependency Updates
-
-- [ ] Create `.github/workflows/update-deps.yml`:
-  - [ ] Check for git-completion.bash updates
-  - [ ] Check for git-prompt.sh updates
-  - [ ] Create PR if updates available
-  - [ ] Weekly schedule
-- [ ] Test update workflow
-- [ ] Document update process
-
 ## 📝 Documentation Setup
 
 - [ ] **Auto-fix companion for `prose_wrap.py` (78-col reflow).** The
@@ -686,7 +608,9 @@ we can stay current.
 - [ ] Consider folding the git-completion `check4update` item below into
   this same mechanism (give those files a `SOURCE.md` too).
 - [ ] Optional: wire it to a periodic nudge (Claude `/schedule` or a CI
-  `update-deps.yml` job — see CI/CD "Dependency Updates").
+  `update-deps.yml` job — now issue
+  [#351](https://github.com/harleypig/dotfiles/issues/351), which records that
+  this mechanism subsumes it).
 
 ### Git-completion dependency checker
 
