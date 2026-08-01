@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.12.0
+**Version:** v1.13.0
 
 ## Purpose
 
@@ -319,6 +319,33 @@ The agent-config planning backlog now lives in the **dotagents** repo (it was
 extracted there with `config/claude`), so this repo's merge-finalization only
 enforces its own `TODO.md` (and `ROADMAP.md` if one exists) — no extra
 `merge-finalization-docs` are declared.
+
+**Team-managed (`team-managed: enabled`):**
+
+This repo is run under the team-of-roles model: the main-thread session is the
+**Project-Manager seat** and dispatches substantive edits — `bin/`, `lib/`,
+`config/`, `shell-startup`, tests, docs — to the owning role-subagent rather
+than authoring them directly. The `team-managed-delegation.py` `PreToolUse`
+hook (the dotagents repo's `rules/team-managed-delegation.md`) backstops this
+as a **nudge**: an advisory reminder that still allows the edit. Subagents
+edit freely; config / CI / lockfiles, plan files, agent memory, and untracked
+scratch are exempt.
+
+Unlike `auto-merge`, this sentinel is read from the **working tree** (a nudge
+is neither outward nor irreversible), so it takes effect as soon as it lands
+on `master` and the checkout is updated.
+
+Two things to know about how it behaves in practice:
+
+* **It is advisory, and an explicit session instruction outranks it.** A
+  session told not to spawn subagents will author directly and the nudge will
+  fire on every substantive edit without changing the outcome. That is the
+  hook working as designed, not a fault — but it means enabling the sentinel
+  does not by itself guarantee delegation.
+* **The shell is this machine's live environment.** A broken `shell-startup`
+  or `bin/` script is felt immediately, so a dispatched subagent's work still
+  wants the same review a direct edit would get. The sentinel changes who
+  writes, not whether it is checked.
 
 ### TODO Routing
 
