@@ -1,25 +1,5 @@
 # TODO
 
-## 🐫 Perl Setup
-
-The Perl QA toolchain is stood up and gated (perlbrew toolchain; curated
-core-severity-4 perlcritic; docker-image perltidy + perlcritic gates;
-Test::Pod; non-gating Devel::Cover coverage; setup docs — shipped across
-PRs #265–#271, see [CHANGELOG.md](CHANGELOG.md)). Scope decisions on what was
-skipped / declined / deferred are recorded in
-[ADR-0002](docs/adr/0002-perl-qa-tooling-scope.md). Remaining:
-
-- [ ] **Ratchet the perlcritic severity toward 1, in stages.** The gate is at
-  severity 4 (`config/perl/perlcriticrc`); tighten in steps (4 → 3 → 2 → 1),
-  cleaning each level's findings before the next. As part of a step, review the
-  installed third-party policies for any worth adopting (added to the
-  perlcritic docker image + the profile). Bump `severity` in the profile.
-- [ ] **Combined tool image (roadmap).** perltidy + perlcritic build from one
-  parameterized Dockerfile (`config/docker/perl-tools/`); fold them into a
-  single combined image (one build with the full `MODULES` list), and longer
-  term investigate one image spanning multiple languages' QA tools. Extend the
-  existing layout + `publish-tool-images.yml` — don't restart.
-
 ## 🪟 PowerShell Setup
 
 ### PowerShell ↔ Bash Feature Parity
@@ -74,44 +54,6 @@ research:
 - [ ] Whether a Windows container is needed to test true Windows PowerShell
   5.1 behavior, and whether that's practical (requires a Windows host for
   Windows containers).
-
-## 🔧 Tool/Version Manager Setup
-
-Install and configure per-language version/tool managers consistently: one
-documented, idempotent, XDG-aware install + shell-init pattern per manager,
-lazy-loaded in `config/shell-startup/<lang>` to keep shell startup fast. Each
-language's specific manager lives in its `## <Language> Setup` (perlbrew →
-*Perl Setup*; nvm → *Node Setup*); this section owns the **cross-language
-pattern** they share.
-
-- [ ] Evaluate/standardize **Ruby** and **rustup** (rustup already in use)
-  under the same pattern — a `config/shell-startup/<lang>` module plus a
-  `lib/version-managers/<lang>` module. (Node, Python, and Perl are done.)
-- [ ] **Pre-installed global manager** (when first needed): handle a machine
-  that already has a manager installed system-wide — detect it and decide
-  adopt / skip / coexist rather than blindly re-installing.
-- [ ] **Mutually-exclusive managers within a language** — the *model* is now
-  settled: managers coexist by default (python's pipx/uv/pip), the dispatcher
-  allows naming several, and a module enforces any mutual exclusivity in its
-  own install logic (not the dispatcher). What remains is the concrete case
-  (e.g. nvm vs an alternative Node manager) plus a regression test, once such
-  a language actually exists.
-
-## 📦 Machine Provisioning Setup
-
-- [ ] Convert this box's provisioning to **ansible-stuff**
-  (`$PROJECTS_DIR/ansible-stuff`): adopt its live-machine playbook (once it
-  lands) to upgrade/convert this machine's package set. Package installation
-  now lives in ansible-stuff — it superseded the former bespoke `bin/`
-  installer plan, and that repo owns the forward roadmap (the
-  `manifest.json`-injection seam, `taskwarrior-scalpel` first-party install,
-  remaining-language coverage, apt/system packages). This item is the
-  dotfiles-side hook into that work. `config/packages/manifest.json` stays
-  maintained for now as a candidate source-of-truth an ansible role may
-  consume.
-- [ ] Vim's needs: install what vim requires that isn't self-provided (coc
-  installs most of its own dependencies — scope this to the gaps coc doesn't
-  cover, don't duplicate it).
 
 ## 🐚 Shell-startup Setup
 
