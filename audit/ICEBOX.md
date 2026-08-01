@@ -79,3 +79,30 @@ there too", and none have been observed.
 
 Deferred rather than issued because there is no evidence of the problem it
 would solve. The trigger is concrete enough to notice if it ever fires.
+
+## Version managers: adopting a pre-installed global manager
+
+**Revisit when** a machine actually turns up with one installed system-wide.
+
+Migrated from `TODO.md` *Tool/Version Manager Setup*, whose own wording was
+"when first needed". Handle a machine that already has a manager installed
+globally — detect it and decide adopt / skip / coexist rather than blindly
+re-installing.
+
+Deferred because the case is hypothetical: every machine `vmgr` currently
+provisions starts without one. Writing detection-and-adopt logic against an
+imagined layout is how the wrong abstraction gets built.
+
+## Version managers: mutual exclusivity within one language
+
+**Revisit when** a language actually has two managers that cannot coexist —
+the item names nvm vs an alternative Node manager as the likely first case.
+
+Migrated from `TODO.md` *Tool/Version Manager Setup*. The **model is already
+settled**: managers coexist by default (python's pipx / uv / pip), the
+dispatcher allows naming several, and a module enforces any mutual exclusivity
+in its own install logic rather than the dispatcher doing it.
+
+What remains is only the concrete case plus a regression test — and it cannot
+be written until such a language exists here. Iceboxed rather than issued
+because there is nothing to implement, only a decision already made.
