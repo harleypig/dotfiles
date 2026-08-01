@@ -106,3 +106,33 @@ in its own install logic rather than the dispatcher doing it.
 What remains is only the concrete case plus a regression test — and it cannot
 be written until such a language exists here. Iceboxed rather than issued
 because there is nothing to implement, only a decision already made.
+
+## Template creation — config/tooling template library
+
+**Revisit on request**, or if a second repo actually needs the same scaffold
+and copying it by hand becomes the friction.
+
+Migrated wholesale from `TODO.md` *Template Creation*, whose own heading
+marked both subsections **"(Deferred)"** and warned the work "is extensive
+future work and may warrant its own project/branch". Iceboxed rather than
+issued, per `gh.md`: a future/deferred task is never filed as an issue.
+
+The scope as written:
+
+- **Pre-commit templates** — a comprehensive hook registry, language-specific
+  hook collections, and documented configurations
+- **Configuration templates** — Python tooling (`pyproject.toml`, `.flake8`),
+  general development (`.editorconfig`, `.gitignore`), documentation and
+  markup, infrastructure/DevOps, per-language, IDE/editor, and CI/CD
+
+Detailed specifications are in the archived original TODO, referenced from the
+section, if the work is ever picked up.
+
+**One item did not stay here.** Scaffolding `.github/ISSUE_TEMPLATE/` during
+project setup is concrete, small, and owned by the `new-project` skill — filed
+as [dotagents#259](https://github.com/harleypig/dotagents/issues/259) instead.
+
+The honest reason this is deferred rather than planned: a template library is
+only worth its maintenance when several repos consume it, and the pattern here
+has been the opposite — each repo's config has been tuned to that repo. The
+Rule of Three has not fired.
