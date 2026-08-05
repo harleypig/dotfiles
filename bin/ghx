@@ -14,8 +14,9 @@
 # The registry IS the token directory: a scope exists when
 # private_dotfiles/github/tokens/<scope> exists. Short names are symlinks
 # (mp -> methodsprime); an empty file means "declared, but use gh's own
-# stored credential". See that directory's README.md for how to mint each
-# token.
+# stored credential". A file holding only `app:<slug>` is App-backed: the
+# token comes from bin/gh-app-token instead of the file itself. See that
+# directory's README.md for how to mint each token.
 
 set -euo pipefail
 shopt -s nullglob
@@ -77,7 +78,9 @@ Scopes live in
   $token_dir
 one file per scope, holding only the token. A symlink there is a short
 alias for another scope; an empty file declares the scope but leaves gh to
-use its own stored credential.
+use its own stored credential; a file holding only \`app:<slug>\` is
+App-backed -- the token is minted/reused via gh-app-token instead of being
+read from the file.
 
 Options (recognized only as the first argument):
   -h, --help       show this help
@@ -134,7 +137,12 @@ list_scopes() {
       printf '  %-20s declared; uses the stored credential\n' "$name"
 
     else
-      printf '  %-20s token\n' "$name"
+      local slug
+      if slug=$(app_scope_slug "$path"); then
+        printf '  %-20s App (%s)\n' "$name" "$slug"
+      else
+        printf '  %-20s token\n' "$name"
+      fi
     fi
   done
 }
@@ -202,6 +210,19 @@ expiry_report() {
 
     if [[ ! -s $path ]]; then
       printf '%-20s -- (stored credential)\n' "$name"
+      continue
+    fi
+
+    local slug
+    if slug=$(app_scope_slug "$path"); then
+      printf '%-20s App -> %s\n' "$name" "$slug"
+
+      if command -v gh-app-token > /dev/null 2>&1; then
+        gh-app-token "$slug" --status | sed 's/^/  /'
+      else
+        printf '  gh-app-token not found on PATH\n'
+      fi
+
       continue
     fi
 
@@ -386,8 +407,39 @@ is_keyword() {
 }
 
 #-----------------------------------------------------------------------------
+# Echo the slug when a scope file is App-backed -- its sole content is
+# `app:<slug>` -- and fail otherwise. A plain PAT and an empty declared-scope
+# file are not App-backed, so this is the one place that distinguishes the
+# fourth scope-file kind from the first three.
+app_scope_slug() {
+  local token_file=$1
+  local content
+
+  content=$(< "$token_file")
+
+  [[ $content == app:* ]] || return 1
+
+  printf '%s' "${content#app:}"
+}
+
+#-----------------------------------------------------------------------------
+# Mint (or reuse) a GitHub App installation token for slug, via gh-app-token.
+# Never touches a file directly -- gh-app-token owns that credential's whole
+# lifecycle, including its own cache.
+gh_app_token() {
+  local slug=$1
+
+  command -v gh-app-token > /dev/null 2>&1 \
+    || die "gh-app-token not found on PATH (needed for an App-backed scope: $slug)"
+
+  gh-app-token "$slug"
+}
+
+#-----------------------------------------------------------------------------
 # Run gh under a scope's token. An empty token file means the scope is
 # declared but deliberately has none, so gh uses its own stored credential.
+# An App-backed file (app_scope_slug) mints/reuses an installation token via
+# gh-app-token instead of reading a literal PAT.
 run_scoped() {
   local scope=$1
   shift
@@ -410,7 +462,13 @@ run_scoped() {
 
   unset GITHUB_TOKEN
 
-  if [[ -s $token_file ]]; then
+  local slug
+  if slug=$(app_scope_slug "$token_file"); then
+    GH_TOKEN=$(gh_app_token "$slug") \
+      || die "could not mint an App token for '$scope' (slug: $slug)"
+    export GH_TOKEN
+
+  elif [[ -s $token_file ]]; then
     GH_TOKEN=$(< "$token_file")
     export GH_TOKEN
   fi

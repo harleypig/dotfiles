@@ -85,6 +85,8 @@ if [[ -z \${GH_TOKEN-} ]]; then
   seen=unset
 elif [[ \$GH_TOKEN == acme-fixture ]]; then
   seen=acme
+elif [[ \$GH_TOKEN == app-token-fixture ]]; then
+  seen=app
 else
   seen=other
 fi
@@ -380,4 +382,109 @@ EOF
 
   run bash -c "ls -A '$TOKENS'"
   assert_output 'acme'
+}
+
+#-----------------------------------------------------------------------------
+# App-backed scopes (a token file holding only `app:<slug>`)
+#
+# gh-app-token itself is stubbed here too -- its own behaviour (minting,
+# caching, fail-closed) is covered by tests/shell/test_gh_app_token.bats;
+# these tests only prove ghx dispatches to it correctly.
+
+write_gh_app_token_stub() {
+  cat > "$STUB/gh-app-token" << 'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$GAT_CALLS"
+
+if [[ ${2-} == --status ]]; then
+  printf '%-20s valid, 1234s left (fixture)\n' "$1"
+  exit 0
+fi
+
+printf 'app-token-fixture\n'
+EOF
+  chmod +x "$STUB/gh-app-token"
+}
+
+@test "an App-backed scope dispatches through gh-app-token" {
+  GAT_CALLS="$BATS_TEST_TMPDIR/gat.calls"
+  export GAT_CALLS
+  write_gh_app_token_stub
+
+  printf 'app:acme-app' > "$TOKENS/bot"
+
+  run env "PATH=$PATH" "GAT_CALLS=$GAT_CALLS" "$GHX" bot pr list
+  assert_success
+  assert_output --partial 'token=app args=[pr list]'
+}
+
+@test "gh-app-token is called with the slug from the scope file, not the scope name" {
+  GAT_CALLS="$BATS_TEST_TMPDIR/gat.calls"
+  export GAT_CALLS
+  write_gh_app_token_stub
+
+  printf 'app:acme-app' > "$TOKENS/bot"
+
+  run env "PATH=$PATH" "GAT_CALLS=$GAT_CALLS" "$GHX" bot pr list
+  assert_success
+
+  run cat "$GAT_CALLS"
+  assert_output 'acme-app'
+}
+
+@test "an App-backed scope fails clearly when gh-app-token is not on PATH" {
+  printf 'app:acme-app' > "$TOKENS/bot"
+
+  run env "PATH=$PATH" "$GHX" bot pr list
+  assert_failure
+  assert_output --partial 'gh-app-token not found on PATH'
+  assert_output --partial 'acme-app'
+}
+
+@test "an App-backed scope fails clearly when gh-app-token fails to mint" {
+  cat > "$STUB/gh-app-token" << 'EOF'
+#!/usr/bin/env bash
+echo 'gh-app-token: private key not found or unreadable: x' >&2
+exit 1
+EOF
+  chmod +x "$STUB/gh-app-token"
+
+  printf 'app:acme-app' > "$TOKENS/bot"
+
+  run env "PATH=$PATH" "$GHX" bot pr list
+  assert_failure
+  assert_output --partial "could not mint an App token for 'bot'"
+  assert_output --partial 'acme-app'
+}
+
+@test "--list flags an App-backed scope distinctly, and never prints a token" {
+  printf 'app:acme-app' > "$TOKENS/bot"
+
+  run env "PATH=$PATH" "$GHX" --list
+  assert_success
+  assert_output --partial 'bot'
+  assert_output --partial 'App (acme-app)'
+  refute_output --partial 'app-token-fixture'
+}
+
+@test "--expiry delegates an App-backed scope to gh-app-token --status" {
+  write_gh_app_token_stub
+
+  printf 'app:acme-app' > "$TOKENS/bot"
+
+  run env "PATH=$PATH" "$GHX" --expiry
+  assert_success
+  assert_output --partial 'bot'
+  assert_output --partial 'App -> acme-app'
+  assert_output --partial 'acme-app'
+  assert_output --partial 'valid, 1234s left'
+}
+
+@test "--expiry reports when gh-app-token is missing for an App-backed scope" {
+  printf 'app:acme-app' > "$TOKENS/bot"
+
+  run env "PATH=$PATH" "$GHX" --expiry
+  assert_success
+  assert_output --partial 'App -> acme-app'
+  assert_output --partial 'gh-app-token not found on PATH'
 }

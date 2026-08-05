@@ -1,0 +1,336 @@
+#!/usr/bin/env bash
+
+# gh-app-token - mint and cache a GitHub App installation access token.
+#
+# Builds a short-lived (RS256, <=10 min) JWT from the App's private key,
+# trades it for a 1-hour installation access token via GitHub's REST API,
+# and caches the result so most invocations cost no network call at all.
+# bin/ghx dispatches here for a scope file marked `app:<slug>`; run this
+# directly for anything else (a CI job, a one-off curl).
+#
+#   gh-app-token <slug>            -> a currently-valid token, minting one
+#                                      if the cache is empty, corrupt, or
+#                                      close to expiry
+#   gh-app-token <slug> --status   -> the cached token's remaining validity;
+#                                      never prints the token itself
+#
+# Threat model (see docs/github-app-auth.md for the full writeup):
+#   - A missing or unreadable private key / app-id / installation-id fails
+#     closed with a clear error. It never falls back to an unauthenticated
+#     call or a stale credential.
+#   - The cache dir is created 0700 and the cache file 0600, staged through
+#     a temp file so a killed write can never leave a truncated token in
+#     place -- the same dance bin/ghx's --rotate uses for a PAT. Nothing
+#     here relies on the machine's umask; both modes are set explicitly.
+#   - A corrupt or partially-written cache file (wrong line count, a
+#     non-numeric expiry) is treated as a cache miss and reminted -- never
+#     trusted partially.
+#   - The JWT and the minted token are bearer credentials exactly like a
+#     PAT; neither is ever echoed, logged, or passed on the command line --
+#     both stay inside command substitutions and the deliberate `token`
+#     action's own stdout.
+#   - The private key itself has no expiry GitHub can enforce; rotating it
+#     is a manual step (--status says so on every call).
+
+set -euo pipefail
+
+###############################################################################
+# Setup and settings
+
+selfname="${0##*/}"
+
+# The App's credential inputs live alongside the dotfiles checkout, in the
+# same private store bin/ghx reads its PATs from.
+projects_dir="${PROJECTS_DIR:-$(dirname "${DOTFILES:-$HOME/projects/dotfiles}")}"
+apps_dir="$projects_dir/private_dotfiles/github/apps"
+
+cache_root="${XDG_CACHE_HOME:-$HOME/.cache}/gh-app-token"
+
+# How much validity a cached token must have left to be handed out as-is;
+# below this, mint a fresh one rather than risk it expiring mid-use.
+refresh_buffer=300
+
+# GitHub REST API version, pinned -- see docs/github-app-auth.md.
+api_version=2022-11-28
+
+###############################################################################
+# Utility functions
+
+#-------------------------------------------------------------------------
+die() {
+  printf '%s: %s\n' "$selfname" "$1" >&2
+  exit "${2:-1}"
+}
+
+#-------------------------------------------------------------------------
+require_cmd() {
+  command -v "$1" > /dev/null 2>&1 \
+    || die "$1 is required but not found on PATH"
+}
+
+#-------------------------------------------------------------------------
+show_help() {
+  cat << EOF
+Usage: $selfname <slug>
+       $selfname <slug> --status
+       $selfname -h|--help
+
+Prints a valid GitHub App installation access token for <slug>, minting a
+fresh one when the cache is empty, corrupt, or within ${refresh_buffer}s
+of expiry, and printing the cached one otherwise.
+
+<slug> names a directory under
+  $apps_dir
+holding:
+  private-key.pem    the App's private key, mode 600
+  app-id             the App's numeric ID (the JWT "iss" claim)
+  installation-id    the numeric ID of the installation to mint a token for
+
+--status reports the cached token's remaining validity WITHOUT ever
+printing the token itself, and reminds that the private key has no expiry
+of its own -- GitHub gives no API to rotate it; that stays a manual step.
+
+Nothing here is scheduled: the cache is refreshed on demand, on whichever
+call finds it within ${refresh_buffer}s of expiry.
+EOF
+}
+
+#-------------------------------------------------------------------------
+# Base64url-encode stdin: standard base64, then strip padding and swap the
+# two characters that differ from the URL-safe alphabet.
+b64url() {
+  openssl base64 | tr -d '=' | tr '/+' '_-' | tr -d '\n'
+}
+
+#-------------------------------------------------------------------------
+# Build and sign a short-lived App JWT (RS256, iss=<app-id>). Valid for 9.5
+# minutes -- GitHub allows at most 10; the margin covers clock drift and the
+# round trip to mint an installation token. Never echoes the JWT: it is a
+# bearer credential exactly like the token it is traded for.
+build_jwt() {
+  local app_id=$1 key_file=$2
+
+  require_cmd openssl
+
+  local now iat exp
+  now=$(date +%s)
+  iat=$((now - 60))
+  exp=$((now + 570))
+
+  local header payload
+  header=$(printf '{"typ":"JWT","alg":"RS256"}' | b64url)
+  payload=$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$iat" "$exp" "$app_id" | b64url)
+
+  local signing_input="${header}.${payload}"
+  local signature
+  signature=$(printf '%s' "$signing_input" | openssl dgst -sha256 -sign "$key_file" | b64url) \
+    || die "failed to sign the App JWT with $key_file"
+
+  printf '%s.%s' "$signing_input" "$signature"
+}
+
+#-------------------------------------------------------------------------
+# Exchange a freshly built App JWT for an installation access token (REST:
+# POST /app/installations/{id}/access_tokens), cache it, and print it. Fails
+# closed: any missing/unreadable credential input, or a malformed API
+# response, stops here rather than falling back to something unauthenticated.
+mint_token() {
+  local slug=$1
+
+  local app_dir="$apps_dir/$slug"
+  local key_file="$app_dir/private-key.pem"
+  local app_id_file="$app_dir/app-id"
+  local install_id_file="$app_dir/installation-id"
+
+  [[ -r $key_file ]] \
+    || die "private key not found or unreadable: $key_file"
+
+  [[ -r $app_id_file ]] \
+    || die "app-id not found or unreadable: $app_id_file"
+
+  [[ -r $install_id_file ]] \
+    || die "installation-id not found or unreadable: $install_id_file"
+
+  local app_id installation_id
+  app_id=$(< "$app_id_file")
+  installation_id=$(< "$install_id_file")
+
+  [[ -n $app_id ]] || die "app-id file is empty: $app_id_file"
+  [[ -n $installation_id ]] || die "installation-id file is empty: $install_id_file"
+
+  require_cmd curl
+  require_cmd jq
+
+  local jwt
+  jwt=$(build_jwt "$app_id" "$key_file")
+
+  local response
+  response=$(
+    curl --silent --show-error --fail \
+      --request POST \
+      --url "https://api.github.com/app/installations/${installation_id}/access_tokens" \
+      --header 'Accept: application/vnd.github+json' \
+      --header "Authorization: Bearer ${jwt}" \
+      --header "X-GitHub-Api-Version: ${api_version}"
+  ) || die "could not mint an installation token for '$slug' (installation $installation_id) -- check the app/installation IDs, the app's permissions, and the network"
+
+  local token expires_at
+  token=$(jq -r '.token // empty' <<< "$response")
+  expires_at=$(jq -r '.expires_at // empty' <<< "$response")
+
+  [[ -n $token && -n $expires_at ]] \
+    || die "unexpected response minting an installation token for '$slug'"
+
+  write_cache "$slug" "$token" "$expires_at"
+
+  printf '%s' "$token"
+}
+
+#-------------------------------------------------------------------------
+cache_file_for() {
+  printf '%s/%s.token' "$cache_root" "$1"
+}
+
+#-------------------------------------------------------------------------
+ensure_cache_dir() {
+  mkdir -p "$cache_root"
+  chmod 700 "$cache_root"
+}
+
+#-------------------------------------------------------------------------
+# Store a freshly minted token, staged in a temp file so an interrupted
+# write can never leave a truncated token in place, and so the mode is
+# already right before any content is -- the same dance ghx --rotate uses.
+write_cache() {
+  local slug=$1 token=$2 expires_at=$3
+
+  local epoch
+  epoch=$(date -d "$expires_at" +%s 2> /dev/null) \
+    || die "could not parse token expiry from the API response: $expires_at"
+
+  ensure_cache_dir
+
+  local tmp
+  tmp=$(mktemp "$cache_root/.$slug.XXXXXX")
+  chmod 600 "$tmp"
+  printf '%s\n%s\n' "$token" "$epoch" > "$tmp"
+  mv "$tmp" "$(cache_file_for "$slug")"
+}
+
+#-------------------------------------------------------------------------
+# Print a cached token to stdout and return 0 when one exists with more than
+# refresh_buffer seconds left; return 1 on any miss -- absent, unreadable,
+# corrupt, or too close to expiry -- so the caller always remints rather
+# than risk a token that expires mid-use.
+cached_token() {
+  local slug=$1
+  local file
+  file=$(cache_file_for "$slug")
+
+  [[ -r $file ]] || return 1
+
+  local token epoch
+  { read -r token && read -r epoch; } < "$file" || return 1
+
+  [[ -n $token && $epoch =~ ^[0-9]+$ ]] || return 1
+
+  local now
+  now=$(date +%s)
+
+  ((epoch - now > refresh_buffer)) || return 1
+
+  printf '%s' "$token"
+}
+
+#-------------------------------------------------------------------------
+action_token() {
+  local slug=$1
+  local token
+
+  if token=$(cached_token "$slug"); then
+    printf '%s\n' "$token"
+    return 0
+  fi
+
+  token=$(mint_token "$slug")
+  printf '%s\n' "$token"
+}
+
+#-------------------------------------------------------------------------
+# Report a cached token's remaining validity -- never the token itself.
+# Also reminds that the private key has no expiry of its own and must be
+# rotated by hand.
+action_status() {
+  local slug=$1
+  local file
+  file=$(cache_file_for "$slug")
+
+  if [[ ! -r $file ]]; then
+    printf '%-20s no cached token (mint one with: %s %s)\n' \
+      "$slug" "$selfname" "$slug"
+
+  else
+    local token epoch
+    if { read -r token && read -r epoch; } < "$file" \
+      && [[ -n $token && $epoch =~ ^[0-9]+$ ]]; then
+      local now left
+      now=$(date +%s)
+      left=$((epoch - now))
+
+      if ((left <= 0)); then
+        printf '%-20s EXPIRED (%s)\n' \
+          "$slug" "$(date -u -d "@$epoch" '+%Y-%m-%d %H:%M UTC')"
+
+      elif ((left <= refresh_buffer)); then
+        printf '%-20s expiring soon, %ds left (%s)\n' \
+          "$slug" "$left" "$(date -u -d "@$epoch" '+%Y-%m-%d %H:%M UTC')"
+
+      else
+        printf '%-20s valid, %ds left (%s)\n' \
+          "$slug" "$left" "$(date -u -d "@$epoch" '+%Y-%m-%d %H:%M UTC')"
+      fi
+
+    else
+      printf '%-20s cache file is corrupt; next use remints\n' "$slug"
+    fi
+  fi
+
+  printf '%-20s private key never expires -- rotate by hand: %s\n' \
+    '' "$apps_dir/$slug/private-key.pem"
+}
+
+###############################################################################
+# Main
+
+case "${1-}" in
+  -h | --help)
+    show_help
+    exit 0
+    ;;
+esac
+
+slug=${1-}
+[[ -n $slug ]] || {
+  show_help >&2
+  exit 2
+}
+
+case $slug in
+  */* | .. | . | -*) die "invalid slug: $slug" 2 ;;
+esac
+
+shift
+
+case "${1-}" in
+  '')
+    action_token "$slug"
+    ;;
+
+  --status)
+    action_status "$slug"
+    ;;
+
+  *)
+    die "unknown argument: $1 (see: $selfname --help)" 2
+    ;;
+esac

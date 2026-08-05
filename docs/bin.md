@@ -103,7 +103,21 @@ the configured scopes and `ghx --expiry` reports when each one's token runs
 out, flagging any that are close or past. `ghx --rotate <scope>` reads a
 replacement from stdin (hidden, never in shell history) and stores it `0600`,
 creating the scope if it is new. That directory's `README.md` covers minting
-the tokens themselves, which GitHub offers no API for.
+the tokens themselves, which GitHub offers no API for. A scope file holding
+only `app:<slug>` is GitHub-App-backed instead of a plain PAT — `ghx`
+dispatches those through **gh-app-token**; see
+[`docs/github-app-auth.md`](github-app-auth.md).
+
+**gh-app-token**
+Mint and cache a GitHub App installation access token. `gh-app-token <slug>`
+prints a currently-valid token, minting a fresh one (via a short-lived,
+openssl-signed JWT traded for a 1-hour installation token) only when the
+cache is empty, corrupt, or within 5 minutes of expiry; otherwise nothing
+touches the network. `gh-app-token <slug> --status` reports the cached
+token's remaining validity without ever printing the token itself. Reads its
+credential inputs from `private_dotfiles/github/apps/<slug>/` — see
+[`docs/github-app-auth.md`](github-app-auth.md) for the App
+registration walkthrough and the threat model.
 
 **git-all**
 Execute git commands across multiple repositories.
