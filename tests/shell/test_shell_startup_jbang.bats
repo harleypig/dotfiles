@@ -15,6 +15,11 @@ setup() {
   export XDG_DATA_HOME="$BATS_TEST_TMPDIR/data"
   mkdir -p "$HOME" "$XDG_DATA_HOME"
 
+  # The module only ever SETS JBANG_DIR, never unsets it -- so a developer
+  # whose real jbang install already lives at the XDG path inherits it here
+  # via the ambient shell, and the fallback-path test sees a stale value.
+  unset JBANG_DIR
+
   ADDPATH_LOG="$BATS_TEST_TMPDIR/addpath.log"
   : > "$ADDPATH_LOG"
 
