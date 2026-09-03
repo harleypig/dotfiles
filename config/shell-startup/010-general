@@ -26,6 +26,12 @@ export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
 #-----------------------------------------------------------------------------
 havecmd chromium-browser && export BROWSER='chromium-browser'
 
+# wslview opens the Windows default browser and is the correct launcher
+# under WSL2; override chromium-browser above when both are present.
+if grep -qi wsl2 /proc/version && havecmd wslview; then
+  export BROWSER='wslview'
+fi
+
 #-----------------------------------------------------------------------------
 umask 022
 
