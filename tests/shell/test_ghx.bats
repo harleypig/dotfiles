@@ -432,10 +432,29 @@ EOF
   assert_output 'acme-app'
 }
 
+#-----------------------------------------------------------------------------
+# A "not on PATH" test must guarantee gh-app-token is truly absent -- but a
+# developer's own dotfiles checkout ships a real one, and it can sit anywhere
+# on the ambient PATH (the main clone, a worktree, an alternate clone), not
+# just under dotfiles_root(). Filter by what each PATH entry actually
+# contains rather than guessing which directory is "the" dotfiles bin.
+
+path_without_gh_app_token() {
+  local out="" d
+  local IFS=':'
+
+  for d in $PATH; do
+    [[ -x "$d/gh-app-token" ]] && continue
+    out+="${out:+:}$d"
+  done
+
+  printf '%s' "$out"
+}
+
 @test "an App-backed scope fails clearly when gh-app-token is not on PATH" {
   printf 'app:acme-app' > "$TOKENS/bot"
 
-  run env "PATH=$PATH" "$GHX" bot pr list
+  run env "PATH=$(path_without_gh_app_token)" "$GHX" bot pr list
   assert_failure
   assert_output --partial 'gh-app-token not found on PATH'
   assert_output --partial 'acme-app'
@@ -483,7 +502,7 @@ EOF
 @test "--expiry reports when gh-app-token is missing for an App-backed scope" {
   printf 'app:acme-app' > "$TOKENS/bot"
 
-  run env "PATH=$PATH" "$GHX" --expiry
+  run env "PATH=$(path_without_gh_app_token)" "$GHX" --expiry
   assert_success
   assert_output --partial 'App -> acme-app'
   assert_output --partial 'gh-app-token not found on PATH'
