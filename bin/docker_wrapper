@@ -212,6 +212,15 @@ terraform() {
         LINODE_TOKEN; do
         [[ -n ${!var-} ]] && args+=(--env "$var")
       done
+
+      # A TF_VAR_name in the host env feeds var.name automatically
+      # (terraform's own convention), so forward the whole set by pattern
+      # rather than by a fixed list like the six above — a repo's variables
+      # grow without a wrapper edit. ${!TF_VAR_@} lists only names that are
+      # actually set.
+      for var in "${!TF_VAR_@}"; do
+        args+=(--env "$var")
+      done
       ;;
   esac
 

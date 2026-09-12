@@ -404,6 +404,39 @@ teardown() {
   refute_output --partial "TF_CLI_CONFIG_FILE"
 }
 
+@test "terraform plan forwards every TF_VAR_* by pattern, unlike the fixed credential list" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" \
+    TF_VAR_region=canary_region TF_VAR_instance_type=canary_type \
+    "$ROOT/bin/terraform" plan
+  assert_success
+
+  run cat "$STUB/docker.args"
+  # Forwarded by name only — the value never reaches the command line.
+  assert_output --partial "--env TF_VAR_region"
+  assert_output --partial "--env TF_VAR_instance_type"
+  refute_output --partial "canary_region"
+  refute_output --partial "canary_type"
+}
+
+@test "terraform validate does not forward TF_VAR_* even when set" {
+  # validate is credential-free on purpose (rules/terraform.md runs it with
+  # dummy AWS creds), so a repo's real TF_VAR_* values must not leak into it
+  # either — same gate as the six-name credential list.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" TF_VAR_region=canary_region \
+    "$ROOT/bin/terraform" validate
+  assert_success
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "--env TF_VAR_region"
+  refute_output --partial "canary_region"
+}
+
 # Leading -e/--env NAME wrapper flags forward named host vars into the container
 # (by name, never the value) and are stripped from the tool's own argv.
 
