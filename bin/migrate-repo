@@ -25,7 +25,8 @@
 # Local state is never touched until the remote is confirmed to hold
 # everything: every worktree must be clean and pushed before anything runs,
 # copy stops after the remote sync, and migrate removes local state only
-# after that sync reports success.
+# after that sync reports success. Migrate also refuses at preflight when
+# anything under the repo or its worktrees is owned by another user.
 
 # shellcheck disable=SC2154  # migrate/copy/reponame/remote_host are set by the parse_params eval
 
@@ -42,8 +43,9 @@ worktrees_dir="$projects_dir/worktrees"
 
 ssh_opts=(-o BatchMode=yes -o ConnectTimeout=5)
 
-# Filled in by find_repo / get_remotes / scan_worktrees for the flat flow
-# below; blockers collects every reason a real run could not proceed.
+# Filled in by find_repo / get_remotes / scan_worktrees / check_ownership
+# for the flat flow below; blockers collects every reason a real run could
+# not proceed.
 relpath=''
 repo_dir=''
 owner_repo=''
@@ -54,6 +56,7 @@ wt_dirs=()
 wt_branches=()
 wt_locked=()
 wt_states=()
+foreign_owned=()
 blockers=()
 
 ##############################################################################
@@ -305,6 +308,30 @@ scan_worktrees() {
 }
 
 #-----------------------------------------------------------------------------
+# One line into foreign_owned for each of the repo and its mirrored
+# worktrees tree that holds anything not owned by the invoking user. Such
+# files (root-owned docker build artifacts are the known case) make the
+# migrate-time `rm -rf` fail after the remote sync and the worktree
+# unregistering have already run, so migrate refuses up front instead.
+# Whether that blocks is the caller's call: --copy removes nothing.
+check_ownership() {
+  local user dir
+  local -a paths
+
+  user=$(id -un)
+
+  for dir in "$repo_dir" "$worktrees_dir/$relpath"; do
+    [[ -e $dir ]] || continue
+
+    mapfile -t paths < <(find "$dir" -not -user "$user")
+
+    ((${#paths[@]} > 0)) || continue
+
+    foreign_owned+=("${#paths[@]} file(s) under $dir are not owned by $user (e.g. ${paths[0]}); remove them (sudo rm -rf) before migrating")
+  done
+}
+
+#-----------------------------------------------------------------------------
 # PATH / BRANCH / STATE table; blocked rows carry a leading `**`.
 report_worktree_state() {
   local i dw=4 bw=6
@@ -546,6 +573,13 @@ print_dry_run_report() {
   echo "Worktrees (** = blocks a real run):"
   report_worktree_state
   echo
+
+  if ((${#foreign_owned[@]} > 0)); then
+    echo "Ownership (blocks --migrate only):"
+    printf '  ** %s\n' "${foreign_owned[@]}"
+    echo
+  fi
+
   echo "Would do, in order:"
   echo "  $step. check $remote_host:\$PROJECTS_DIR/$relpath; clone $owner_repo if absent," \
     "else fetch --all --prune + pull --ff-only (origin must match $origin_url)"
@@ -636,6 +670,21 @@ fi
 ##############################################################################
 # Worktree state: every worktree must be clean and pushed
 scan_worktrees
+
+##############################################################################
+# Ownership: a foreign-owned file blocks migrate, which has to remove it;
+# copy is unaffected, and the dry run has no mode, so it flags the finding
+# as migrate-only
+check_ownership
+
+if ((migrate)); then
+  blockers+=("${foreign_owned[@]}")
+
+elif ((dry_run)); then
+  for msg in "${foreign_owned[@]}"; do
+    blockers+=("$msg (--migrate only)")
+  done
+fi
 
 if ((!dry_run && ${#blockers[@]} > 0)); then
   warn "$relpath is not ready to leave this machine:"

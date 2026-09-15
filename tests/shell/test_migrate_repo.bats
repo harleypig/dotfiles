@@ -132,6 +132,22 @@ assert_local_intact() {
   assert_dir_exists "$PROJECTS_DIR/worktrees/$relpath"
 }
 
+# A test cannot create a file owned by someone else, so the ownership
+# preflight is exercised through a find on PATH that answers the script's
+# `-not -user` query with one canned path under the searched dir and passes
+# every other invocation through to the real find.
+write_foreign_find_stub() {
+  cat > "$STUB/find" << EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *' -not -user '*) printf '%s\n' "\$1/frontend/node_modules/x" ;;
+  *) exec /usr/bin/find "\$@" ;;
+esac
+EOF
+
+  chmod +x "$STUB/find"
+}
+
 #-----------------------------------------------------------------------------
 # Execute the remote script the ssh stub captured, in a throwaway "remote"
 # PROJECTS_DIR, with the args it was sent. gh is a stub whose `repo clone`
@@ -411,6 +427,52 @@ make_remote_clone() {
   assert_dir_exists "$PROJECTS_DIR/worktrees/flat/feat"
   assert_dir_exists "$PROJECTS_DIR/worktrees/flat/other"
   assert_file_exists "$PROJECTS_DIR/worktrees/flat/feat/scratch"
+}
+
+#-----------------------------------------------------------------------------
+# Ownership preflight: a foreign-owned file blocks --migrate only
+
+@test "--migrate aborts at preflight on a file not owned by the user" {
+  make_repo flat
+  add_worktree flat feat clean
+  write_foreign_find_stub
+  run "$MR" --migrate flat box <<< Y
+  assert_failure
+  assert_output --partial "under $PROJECTS_DIR/flat are not owned by $(id -un)"
+  assert_output --partial "(e.g. $PROJECTS_DIR/flat/frontend/node_modules/x)"
+  assert_output --partial "under $PROJECTS_DIR/worktrees/flat are not owned by"
+  assert_output --partial 'sudo rm -rf'
+  refute_output --partial 'aborted'
+  assert_file_not_exists "$STUB/ssh_sync.stdin"
+  assert_local_intact flat
+  assert_dir_exists "$PROJECTS_DIR/worktrees/flat/feat"
+}
+
+@test "--copy proceeds despite a file not owned by the user" {
+  make_repo flat
+  add_worktree flat feat clean
+  write_foreign_find_stub
+  run "$MR" --copy flat box <<< Y
+  assert_success
+  refute_output --partial 'not owned by'
+  assert_output --partial 'remote: clone ok'
+  assert_output --partial 'copied flat to box'
+  assert_file_exists "$STUB/ssh_sync.stdin"
+  assert_local_intact flat
+}
+
+@test "a dry run reports a file not owned by the user as a migrate-only blocker" {
+  make_repo flat
+  add_worktree flat feat clean
+  write_foreign_find_stub
+  run "$MR" flat box
+  assert_failure
+  assert_output --partial 'Ownership (blocks --migrate only):'
+  assert_output --partial "  ** 1 file(s) under $PROJECTS_DIR/flat are not owned by"
+  assert_output --partial 'Verdict: BLOCKED'
+  assert_output --partial 'before migrating (--migrate only)'
+  assert_file_not_exists "$STUB/ssh_sync.stdin"
+  assert_local_intact flat
 }
 
 #-----------------------------------------------------------------------------
