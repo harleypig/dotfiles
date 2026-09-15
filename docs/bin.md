@@ -136,7 +136,8 @@ Copy (`--copy`) or migrate (`--migrate`) a repo under `$PROJECTS_DIR` to
 another host over ssh, mirroring its relative path (flat or `customer/repo`)
 and its extra remotes. With neither flag it is a dry run: it reports the
 preflight checks, remotes, and worktree state and changes nothing. Refuses
-to proceed while any worktree is dirty, unpushed, or detached; `--migrate`
+to proceed while any worktree is dirty, unpushed, detached, or locked, and
+refuses `--migrate` while any local file is not owned by you; `--migrate`
 removes the local repo and worktrees only after the remote sync succeeds.
 
 ### Formatting and Development Tools
