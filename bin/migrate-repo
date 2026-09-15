@@ -1,0 +1,690 @@
+#!/usr/bin/env bash
+
+# migrate-repo - copy or migrate a git repo from this machine to another box
+#
+# Usage: migrate-repo [--migrate|--copy] <reponame> <remote-host>
+#
+#   (no flag)   dry run: report what would happen and change nothing, here
+#               or on the remote (exit 0 if a real run would proceed, 1 if
+#               the report shows a blocker)
+#   --copy      clone the repo on <remote-host> (or fast-forward it if it is
+#               already there) and add its extra remotes; local left intact
+#   --migrate   --copy, then remove the local repo and its worktrees
+#
+# <reponame> is a directory under $PROJECTS_DIR: a flat name (`dotagents`),
+# one level down in a customer folder (`methodsprime/infrastructure`, or the
+# bare `infrastructure` when exactly one folder holds it), or — when no
+# directory matches — the basename of a repo's remote URL. The remote path
+# mirrors the same relative path under its own $PROJECTS_DIR.
+#
+# The remote gets the main checkout only; worktrees are not recreated there.
+# The origin is assumed to be a GitHub repo: OWNER/REPO is read off its URL
+# and the remote clones it with its own `gh` credential (no scope or token
+# is forwarded from here).
+#
+# Local state is never touched until the remote is confirmed to hold
+# everything: every worktree must be clean and pushed before anything runs,
+# copy stops after the remote sync, and migrate removes local state only
+# after that sync reports success.
+
+# shellcheck disable=SC2154  # migrate/copy/reponame/remote_host are set by the parse_params eval
+
+##############################################################################
+# Setup and Sanity
+set -euo pipefail
+shopt -s nullglob
+
+bindir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+selfname="${0##*/}"
+
+projects_dir="${PROJECTS_DIR:-$HOME/projects}"
+worktrees_dir="$projects_dir/worktrees"
+
+ssh_opts=(-o BatchMode=yes -o ConnectTimeout=5)
+
+# Filled in by find_repo / get_remotes / scan_worktrees for the flat flow
+# below; blockers collects every reason a real run could not proceed.
+relpath=''
+repo_dir=''
+owner_repo=''
+origin_url=''
+remote_names=()
+remote_urls=()
+wt_dirs=()
+wt_branches=()
+wt_locked=()
+wt_states=()
+blockers=()
+
+##############################################################################
+# Utility functions
+
+#-----------------------------------------------------------------------------
+warn() {
+  printf '%s: %s\n' "$selfname" "$*" >&2
+}
+
+#-----------------------------------------------------------------------------
+die() {
+  warn "$@"
+  exit 1
+}
+
+#-----------------------------------------------------------------------------
+# Every git repo (main checkout, `.git` a directory) at depth 1 and 2 under
+# $projects_dir, as relative paths. A depth-1 repo is not descended into, and
+# worktrees/ is skipped: a linked worktree carries a `.git` file, so `-d`
+# also keeps any stray worktree out of the candidate set.
+list_repos() {
+  local dir sub
+
+  for dir in "$projects_dir"/*/; do
+    dir=${dir%/}
+
+    [[ ${dir##*/} == worktrees ]] && continue
+
+    if [[ -d $dir/.git ]]; then
+      printf '%s\n' "${dir##*/}"
+      continue
+    fi
+
+    for sub in "$dir"/*/; do
+      sub=${sub%/}
+
+      [[ -d $sub/.git ]] && printf '%s\n' "${dir##*/}/${sub##*/}"
+    done
+  done
+}
+
+#-----------------------------------------------------------------------------
+# Resolve <reponame> to relpath + repo_dir. A qualified name is looked up
+# directly; a bare name is matched against the flat and the one-level-nested
+# layout, then against every repo's remote URL basename. More than one hit
+# is an error rather than a preference for the top-level one.
+find_repo() {
+  local name=$1
+  local -a candidates=() repos fetch_lines
+  local repo line url url_base
+
+  if [[ $name == */* ]]; then
+    [[ -d $projects_dir/$name/.git ]] || die "no repo named '$name' under $projects_dir"
+
+    relpath=$name
+    repo_dir=$projects_dir/$name
+    return 0
+  fi
+
+  mapfile -t repos < <(list_repos)
+
+  for repo in "${repos[@]}"; do
+    [[ ${repo##*/} == "$name" ]] && candidates+=("$repo")
+  done
+
+  if ((${#candidates[@]} == 0)); then
+    for repo in "${repos[@]}"; do
+      mapfile -t fetch_lines < <(git -C "$projects_dir/$repo" remote -v | grep '(fetch)$' || true)
+
+      for line in "${fetch_lines[@]}"; do
+        read -r _ url _ <<< "$line"
+
+        url_base=${url##*/}
+        url_base=${url_base##*:}
+        url_base=${url_base%.git}
+
+        if [[ $url_base == "$name" ]]; then
+          candidates+=("$repo")
+          break
+        fi
+      done
+    done
+  fi
+
+  if ((${#candidates[@]} == 0)); then
+    die "no repo named '$name' under $projects_dir"
+
+  elif ((${#candidates[@]} > 1)); then
+    warn "'$name' is ambiguous; re-run with the qualified name:"
+    printf '  %s\n' "${candidates[@]}" >&2
+    exit 1
+  fi
+
+  relpath=${candidates[0]}
+  repo_dir=$projects_dir/$relpath
+}
+
+#-----------------------------------------------------------------------------
+# OWNER/REPO from a GitHub origin URL (ssh or https form); fails on anything
+# else.
+owner_repo_from_url() {
+  local url=$1 rest
+
+  case $url in
+    git@github.com:*) rest=${url#git@github.com:} ;;
+    https://github.com/*) rest=${url#https://github.com/} ;;
+    *) return 1 ;;
+  esac
+
+  rest=${rest%/}
+
+  printf '%s\n' "${rest%.git}"
+}
+
+#-----------------------------------------------------------------------------
+check_ssh() {
+  ssh "${ssh_opts[@]}" "$remote_host" true > /dev/null 2>&1
+}
+
+#-----------------------------------------------------------------------------
+check_gh_remote() {
+  ssh "${ssh_opts[@]}" "$remote_host" gh auth status > /dev/null 2>&1
+}
+
+#-----------------------------------------------------------------------------
+# The local repo's remotes into remote_names / remote_urls, and origin's URL
+# into origin_url. Read from config rather than `git remote -v` so the URL
+# sent to the remote is the one configured, not one an insteadOf rewrite on
+# this machine expanded; the remote compares against its own raw config the
+# same way. Origin is found by name, never by position.
+get_remotes() {
+  local -a lines
+  local line key url name
+
+  mapfile -t lines < <(git -C "$repo_dir" config --get-regexp '^remote\.[^.]+\.url$' || true)
+
+  for line in "${lines[@]}"; do
+    read -r key url <<< "$line"
+
+    name=${key#remote.}
+    name=${name%.url}
+
+    remote_names+=("$name")
+    remote_urls+=("$url")
+
+    if [[ $name == origin ]]; then
+      origin_url=$url
+    fi
+  done
+}
+
+#-----------------------------------------------------------------------------
+# Parse `git worktree list --porcelain` into wt_dirs / wt_branches /
+# wt_locked. Records are `worktree <dir>` followed by its attributes; git
+# lists the main worktree first, which remove_local_worktrees relies on.
+list_worktrees() {
+  local -a lines
+  local line last
+
+  mapfile -t lines < <(git -C "$repo_dir" worktree list --porcelain)
+
+  for line in "${lines[@]}"; do
+    case $line in
+      'worktree '*)
+        wt_dirs+=("${line#worktree }")
+        wt_branches+=('')
+        wt_locked+=(0)
+        ;;
+      'branch refs/heads/'*)
+        last=$((${#wt_branches[@]} - 1))
+        wt_branches[last]=${line#branch refs/heads/}
+        ;;
+      detached)
+        last=$((${#wt_branches[@]} - 1))
+        wt_branches[last]='(detached)'
+        ;;
+      locked | 'locked '*)
+        last=$((${#wt_locked[@]} - 1))
+        wt_locked[last]=1
+        ;;
+    esac
+  done
+}
+
+#-----------------------------------------------------------------------------
+# Print one worktree's state; return 1 when it blocks a real run. Behind is
+# informational only — a fast-forward is safe to lose. A lock blocks because
+# `git worktree remove` refuses a locked worktree, which would otherwise
+# only surface after the remote sync.
+worktree_state() {
+  local dir=$1 branch=$2 locked=$3
+  local -a problems=()
+  local info='' ahead behind
+
+  if [[ -n $(git -C "$dir" status --porcelain) ]]; then
+    problems+=(dirty)
+  fi
+
+  if ((locked)); then
+    problems+=(locked)
+  fi
+
+  if [[ $branch == '(detached)' ]]; then
+    problems+=(detached)
+
+  elif ! git -C "$dir" rev-parse --abbrev-ref '@{u}' > /dev/null 2>&1; then
+    problems+=(no-upstream)
+
+  else
+    ahead=$(git -C "$dir" rev-list --count '@{u}..HEAD')
+    behind=$(git -C "$dir" rev-list --count 'HEAD..@{u}')
+
+    if ((ahead > 0)); then
+      problems+=("unpushed($ahead)")
+    fi
+
+    if ((behind > 0)); then
+      info=" behind($behind)"
+    fi
+  fi
+
+  if ((${#problems[@]} == 0)); then
+    printf 'clean%s\n' "$info"
+    return 0
+  fi
+
+  local IFS=,
+
+  printf '** %s%s\n' "${problems[*]}" "$info"
+
+  return 1
+}
+
+#-----------------------------------------------------------------------------
+# Enumerate the worktrees and record each one's state, adding a blocker for
+# every one that is not clean and pushed.
+scan_worktrees() {
+  local i state
+
+  list_worktrees
+
+  for i in "${!wt_dirs[@]}"; do
+    state=$(worktree_state "${wt_dirs[i]}" "${wt_branches[i]}" "${wt_locked[i]}") \
+      || blockers+=("worktree ${wt_dirs[i]} is ${state#\*\* }")
+
+    wt_states+=("$state")
+  done
+}
+
+#-----------------------------------------------------------------------------
+# PATH / BRANCH / STATE table; blocked rows carry a leading `**`.
+report_worktree_state() {
+  local i dw=4 bw=6
+
+  for i in "${!wt_dirs[@]}"; do
+    ((${#wt_dirs[i]} > dw)) && dw=${#wt_dirs[i]}
+    ((${#wt_branches[i]} > bw)) && bw=${#wt_branches[i]}
+  done
+
+  printf '  %-*s  %-*s  %s\n' "$dw" PATH "$bw" BRANCH STATE
+
+  for i in "${!wt_dirs[@]}"; do
+    printf '  %-*s  %-*s  %s\n' \
+      "$dw" "${wt_dirs[i]}" "$bw" "${wt_branches[i]}" "${wt_states[i]}"
+  done
+}
+
+#-----------------------------------------------------------------------------
+confirm() {
+  local answer
+
+  answer=$("$bindir/yesno" "$1")
+
+  [[ $answer == Y ]]
+}
+
+#-----------------------------------------------------------------------------
+# The script run on the remote. It is a fixed string: the repo's relative
+# path, the OWNER/REPO to clone, the origin URL, and the extra remotes travel
+# as positional arguments to `bash -s --`, never interpolated into the text,
+# so no value the local repo supplies can become code on the remote.
+#
+# Marker contract with run_remote_sync (one per stdout line; anything else
+# is passed through as remote chatter):
+#   REPO_EXISTS | REPO_ABSENT            what was found at the mirrored path
+#   ORIGIN_MISMATCH:<theirs>:<ours>      existing repo has a different origin
+#   UPDATE_OK | UPDATE_FAILED            fetch --all --prune + pull --ff-only
+#   CLONE_OK | CLONE_FAILED              gh repo clone OWNER/REPO
+#   REMOTE_OK:<name>                     extra remote present, same URL
+#   REMOTE_ADDED:<name>                  extra remote was missing; added
+#   REMOTE_MISMATCH:<name>:<theirs>:<ours>
+#                                        present with a different URL; never
+#                                        overwritten, and the run fails
+# The remote exits non-zero on any mismatch or failure, and that exit status
+# — not the markers — is what decides whether the sync succeeded.
+remote_script() {
+  cat << 'EOF'
+set -euo pipefail
+
+relpath=$1
+owner_repo=$2
+origin_url=$3
+shift 3
+
+projects_dir=${PROJECTS_DIR:-$HOME/projects}
+repo_dir=$projects_dir/$relpath
+failed=0
+
+if [[ -d $repo_dir/.git ]]; then
+  echo REPO_EXISTS
+
+  theirs=$(git -C "$repo_dir" config --get remote.origin.url || true)
+
+  if [[ $theirs != "$origin_url" ]]; then
+    echo "ORIGIN_MISMATCH:$theirs:$origin_url"
+    exit 1
+  fi
+
+  if git -C "$repo_dir" fetch --all --prune && git -C "$repo_dir" pull --ff-only; then
+    echo UPDATE_OK
+
+  else
+    echo UPDATE_FAILED
+    exit 1
+  fi
+
+else
+  echo REPO_ABSENT
+
+  mkdir -p "${repo_dir%/*}"
+
+  if gh repo clone "$owner_repo" "$repo_dir"; then
+    echo CLONE_OK
+
+  else
+    echo CLONE_FAILED
+    exit 1
+  fi
+fi
+
+while (($# >= 2)); do
+  name=$1
+  url=$2
+  shift 2
+
+  if theirs=$(git -C "$repo_dir" config --get "remote.$name.url"); then
+    if [[ $theirs == "$url" ]]; then
+      echo "REMOTE_OK:$name"
+
+    else
+      echo "REMOTE_MISMATCH:$name:$theirs:$url"
+      failed=1
+    fi
+
+  else
+    git -C "$repo_dir" remote add "$name" "$url"
+    echo "REMOTE_ADDED:$name"
+  fi
+done
+
+exit "$failed"
+EOF
+}
+
+#-----------------------------------------------------------------------------
+# Run the remote script in one ssh call and translate its markers; return
+# its exit status.
+run_remote_sync() {
+  local -a args=("$relpath" "$owner_repo" "$origin_url") lines
+  local i line rc=0
+
+  for i in "${!remote_names[@]}"; do
+    [[ ${remote_names[i]} == origin ]] && continue
+
+    args+=("${remote_names[i]}" "${remote_urls[i]}")
+  done
+
+  mapfile -t lines < <(remote_script | ssh "$remote_host" bash -s -- "${args[@]}" || echo "SYNC_EXIT:$?")
+
+  for line in "${lines[@]}"; do
+    case $line in
+      REPO_EXISTS) echo "remote: repo already present; updating" ;;
+      REPO_ABSENT) echo "remote: repo absent; cloning $owner_repo" ;;
+      ORIGIN_MISMATCH:*) echo "remote: origin URL mismatch (theirs:ours) ${line#ORIGIN_MISMATCH:}" ;;
+      UPDATE_OK) echo "remote: fetch + fast-forward ok" ;;
+      UPDATE_FAILED) echo "remote: fetch + fast-forward FAILED" ;;
+      CLONE_OK) echo "remote: clone ok" ;;
+      CLONE_FAILED) echo "remote: clone FAILED" ;;
+      REMOTE_OK:*) echo "remote: remote '${line#REMOTE_OK:}' present" ;;
+      REMOTE_ADDED:*) echo "remote: remote '${line#REMOTE_ADDED:}' added" ;;
+      REMOTE_MISMATCH:*) echo "remote: remote URL mismatch (name:theirs:ours) ${line#REMOTE_MISMATCH:}" ;;
+      SYNC_EXIT:*) rc=${line#SYNC_EXIT:} ;;
+      *) echo "remote: $line" ;;
+    esac
+  done
+
+  return "$rc"
+}
+
+#-----------------------------------------------------------------------------
+# Remove every linked worktree (never --force: a refusal means the state
+# changed since the scan), then the mirrored worktrees/<relpath> tree and a
+# convenience symlink worktrees/<basename> if it points into it.
+remove_local_worktrees() {
+  local i mirror="$worktrees_dir/$relpath" mirror_real=''
+  local link="$worktrees_dir/${relpath##*/}" link_target=''
+
+  for ((i = 1; i < ${#wt_dirs[@]}; i++)); do
+    echo "removing worktree ${wt_dirs[i]}"
+
+    git -C "$repo_dir" worktree remove "${wt_dirs[i]}" \
+      || die "git refused to remove worktree ${wt_dirs[i]}; state changed since the scan"
+  done
+
+  git -C "$repo_dir" worktree prune
+
+  if [[ -e $mirror ]]; then
+    mirror_real=$(readlink -f "$mirror")
+  fi
+
+  if [[ $relpath == */* && -L $link ]]; then
+    link_target=$(readlink -f "$link" || true)
+  fi
+
+  if [[ -e $mirror ]]; then
+    echo "removing $mirror"
+    rm -rf "$mirror"
+  fi
+
+  if [[ -n $mirror_real && -n $link_target && ($link_target == "$mirror_real" || $link_target == "$mirror_real"/*) ]]; then
+    echo "removing symlink $link"
+    rm "$link"
+  fi
+}
+
+#-----------------------------------------------------------------------------
+remove_local_repo() {
+  local parent
+
+  echo "removing $repo_dir"
+  rm -rf "$repo_dir"
+
+  if [[ $relpath == */* ]]; then
+    parent="$projects_dir/${relpath%/*}"
+
+    if [[ -z $(ls -A "$parent") ]]; then
+      echo "note: $parent is now empty; left in place"
+    fi
+  fi
+}
+
+#-----------------------------------------------------------------------------
+print_dry_run_report() {
+  local i step=1
+
+  echo "DRY RUN — no changes will be made locally or on $remote_host."
+  echo "Re-run with --copy or --migrate to act."
+  echo
+  echo "Repo:        $relpath"
+  echo "Local path:  $repo_dir"
+  echo "Remote host: $remote_host"
+  echo "Remote path: \${PROJECTS_DIR:-\$HOME/projects}/$relpath"
+  echo
+  echo "Preflight:"
+
+  if ((ssh_ok)); then
+    echo "  [ok]   ssh $remote_host"
+
+    if ((gh_ok)); then
+      echo "  [ok]   gh auth status on $remote_host"
+
+    else
+      echo "  [FAIL] gh auth status on $remote_host"
+    fi
+
+  else
+    echo "  [FAIL] ssh $remote_host (BatchMode)"
+    echo "  [skip] gh auth status on $remote_host"
+  fi
+
+  echo
+  echo "Local remotes:"
+
+  for i in "${!remote_names[@]}"; do
+    printf '  %-10s %s\n' "${remote_names[i]}" "${remote_urls[i]}"
+  done
+
+  echo
+  echo "Worktrees (** = blocks a real run):"
+  report_worktree_state
+  echo
+  echo "Would do, in order:"
+  echo "  $step. check $remote_host:\$PROJECTS_DIR/$relpath; clone $owner_repo if absent," \
+    "else fetch --all --prune + pull --ff-only (origin must match $origin_url)"
+
+  for i in "${!remote_names[@]}"; do
+    [[ ${remote_names[i]} == origin ]] && continue
+
+    step=$((step + 1))
+
+    echo "  $step. add remote '${remote_names[i]}' (${remote_urls[i]}) if absent;" \
+      "abort if present with a different URL"
+  done
+
+  step=$((step + 1))
+
+  echo "  $step. remove local worktrees and $repo_dir   [would NOT run: --migrate not given]"
+  echo
+
+  if ((${#blockers[@]} == 0)); then
+    echo "Verdict: a real run would proceed."
+
+  else
+    echo "Verdict: BLOCKED —"
+    printf '  - %s\n' "${blockers[@]}"
+  fi
+}
+
+##############################################################################
+# Parse options. parse_params supplies -h/--help and the --migrate/--copy
+# exclusion; neither flag is the dry run. Positionals carry no required
+# flag in parse_params, so their presence is checked here.
+PARM_DEF='
+migrate,boolean
+copy,boolean
+%,exclusive,migrate,copy
+#,string,reponame
+#,string,remote_host
+'
+
+eval "$("$bindir/parse_params" --auto --prog "$selfname" "$PARM_DEF" "$@")"
+
+if [[ -z $reponame || -z $remote_host ]]; then
+  "$bindir/parse_params" --usage --prog "$selfname" "$PARM_DEF" >&2
+  exit 2
+fi
+
+dry_run=1
+
+if ((migrate || copy)); then
+  dry_run=0
+fi
+
+##############################################################################
+# Locate the repo and its remotes
+find_repo "$reponame"
+
+get_remotes
+
+[[ -n $origin_url ]] || die "$relpath has no 'origin' remote"
+
+owner_repo=$(owner_repo_from_url "$origin_url") \
+  || die "origin of $relpath is not a GitHub URL: $origin_url"
+
+##############################################################################
+# Preflight (read-only): can we reach the host, and is its gh authenticated?
+ssh_ok=0
+gh_ok=0
+
+if check_ssh; then
+  ssh_ok=1
+
+  if check_gh_remote; then
+    gh_ok=1
+  fi
+fi
+
+if ((!ssh_ok)); then
+  ((dry_run)) || die "cannot ssh to $remote_host non-interactively (BatchMode)"
+
+  blockers+=("cannot ssh to $remote_host non-interactively (BatchMode)")
+
+elif ((!gh_ok)); then
+  ((dry_run)) || die "gh is not authenticated on $remote_host (gh auth status failed)"
+
+  blockers+=("gh is not authenticated on $remote_host (gh auth status failed)")
+fi
+
+##############################################################################
+# Worktree state: every worktree must be clean and pushed
+scan_worktrees
+
+if ((!dry_run && ${#blockers[@]} > 0)); then
+  warn "$relpath is not ready to leave this machine:"
+  printf '  - %s\n' "${blockers[@]}" >&2
+  echo >&2
+  report_worktree_state >&2
+
+  exit 1
+fi
+
+##############################################################################
+# Dry run: report and stop
+if ((dry_run)); then
+  print_dry_run_report
+
+  if ((${#blockers[@]} > 0)); then
+    exit 1
+  fi
+
+  exit 0
+fi
+
+##############################################################################
+# Confirm
+if ((migrate)); then
+  prompt="Migrate $relpath to $remote_host (local copy will be removed)? "
+
+else
+  prompt="Copy $relpath to $remote_host? "
+fi
+
+confirm "$prompt" || {
+  echo "aborted"
+  exit 0
+}
+
+##############################################################################
+# Remote sync — nothing local has been touched yet, and copy stops here
+run_remote_sync || die "remote sync failed; $relpath left intact on this machine"
+
+if ((copy)); then
+  echo "copied $relpath to $remote_host"
+  exit 0
+fi
+
+##############################################################################
+# Local removal (migrate only, after the remote holds everything)
+remove_local_worktrees
+
+remove_local_repo
+
+echo "migrated $relpath to $remote_host"
