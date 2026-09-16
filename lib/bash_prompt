@@ -218,6 +218,7 @@ _update_prompt() {
 
 if _bash_prompt_supports_hooks; then
   [[ -n $PS1 ]] && PROMPT_COMMAND=(_capture_exit_status _update_prompt)
+
 else
   # shellcheck disable=SC2178  # deliberate: pre-5.1 bash can't hold
   # PROMPT_COMMAND as an array, so this branch intentionally uses the
