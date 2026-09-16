@@ -89,3 +89,53 @@ true"
   assert_success
   assert_output ''
 }
+
+# _capture_exit_status must run as the very next statement after the command
+# whose PIPESTATUS it captures -- any intervening command (even `local`)
+# resets PIPESTATUS first and the function would capture the wrong thing.
+# `if false; then :; fi` runs `false` as the condition (leaving PIPESTATUS
+# from that evaluation) without executing a `then` body that would reset it,
+# and without the bare `false` aborting the test under bats' errexit
+# behavior.
+
+@test "_capture_exit_status captures a single command's exit status" {
+  if false; then :; fi
+  _capture_exit_status
+  # shellcheck disable=SC2154  # _prompt_pipestatus is set by the call above
+  assert_equal "${#_prompt_pipestatus[@]}" 1
+  assert_equal "${_prompt_pipestatus[0]}" 1
+}
+
+@test "_capture_exit_status captures every stage of a pipeline" {
+  false | true
+  _capture_exit_status
+  # shellcheck disable=SC2154  # _prompt_pipestatus is set by the call above
+  assert_equal "${#_prompt_pipestatus[@]}" 2
+  assert_equal "${_prompt_pipestatus[0]}" 1
+  assert_equal "${_prompt_pipestatus[1]}" 0
+}
+
+@test "_bash_prompt_reorder_hooks pins the two prompt hooks first, keeps a real extra hook, and drops a bogus entry" {
+  _fake_tool_hook() { :; }
+
+  PROMPT_COMMAND=(_fake_tool_hook _nonexistent_hook_xyz _update_prompt _capture_exit_status)
+
+  _bash_prompt_reorder_hooks
+
+  local -a expected=(_capture_exit_status _update_prompt _fake_tool_hook)
+  assert_equal "${#PROMPT_COMMAND[@]}" "${#expected[@]}"
+
+  local i
+  for i in "${!expected[@]}"; do
+    assert_equal "${PROMPT_COMMAND[$i]}" "${expected[$i]}"
+  done
+}
+
+# BASH_VERSINFO is readonly, so the pre-5.1 false branch can't be exercised
+# here without a separate bash binary -- documented as a known gap rather
+# than silently omitted.
+
+@test "_bash_prompt_supports_hooks succeeds on this bash (5.1+)" {
+  run _bash_prompt_supports_hooks
+  assert_success
+}
