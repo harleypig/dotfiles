@@ -131,9 +131,47 @@ _get_next_prompt_char() {
 }
 
 #----------------------------------------------------------------------------
+# Runs first in PROMPT_COMMAND, before anything a later-loaded tool module
+# (mise, ...) adds -- those may run arbitrary commands of their own, which
+# would otherwise overwrite PIPESTATUS before _update_prompt gets to read it.
+_capture_exit_status() {
+  _prompt_pipestatus=("${PIPESTATUS[@]}")
+}
+
+#----------------------------------------------------------------------------
+# True (exit 0) when this bash build supports PROMPT_COMMAND as an array
+# (5.1+), the only form _bash_prompt_reorder_hooks can compose against. A
+# tool module on a pre-5.1 bash should skip hooking PROMPT_COMMAND rather
+# than call that function.
+_bash_prompt_supports_hooks() {
+  ((BASH_VERSINFO[0] > 5 || (BASH_VERSINFO[0] == 5 && BASH_VERSINFO[1] >= 1)))
+}
+
+#----------------------------------------------------------------------------
+# Re-pins _capture_exit_status/_update_prompt to the front of PROMPT_COMMAND
+# and drops any other entry that isn't a real function. A tool's own
+# activation script (mise, ...) always prepends its hook wherever
+# PROMPT_COMMAND currently stands, so anything it adds needs to be moved
+# back behind these two; a dropped entry means that tool's own guard left a
+# dead reference, which would otherwise fail on every prompt. Assumes every
+# legitimate entry is a bare function name (true of every tool activation
+# script seen so far); a raw command-line entry would be dropped too.
+_bash_prompt_reorder_hooks() {
+  local -a kept=()
+  local entry
+
+  for entry in "${PROMPT_COMMAND[@]}"; do
+    [[ $entry == _capture_exit_status || $entry == _update_prompt ]] && continue
+    declare -F "$entry" > /dev/null && kept+=("$entry")
+  done
+
+  PROMPT_COMMAND=(_capture_exit_status _update_prompt "${kept[@]}")
+}
+
+#----------------------------------------------------------------------------
 _update_prompt() {
-  # don't use 'local exit_status' here because it wipes out PIPESTATUS.
-  exit_status=$(_exit_status "${PIPESTATUS[@]}")
+  exit_status=$(_exit_status "${_prompt_pipestatus[@]}")
+  unset _prompt_pipestatus
 
   # Append the last command, clear the history cache and reread the history
   # file
@@ -178,4 +216,11 @@ _update_prompt() {
   unset exit_status
 }
 
-[[ -n $PS1 ]] && PROMPT_COMMAND='_update_prompt'
+if _bash_prompt_supports_hooks; then
+  [[ -n $PS1 ]] && PROMPT_COMMAND=(_capture_exit_status _update_prompt)
+else
+  # shellcheck disable=SC2178  # deliberate: pre-5.1 bash can't hold
+  # PROMPT_COMMAND as an array, so this branch intentionally uses the
+  # legacy string form instead of the array form used above.
+  [[ -n $PS1 ]] && PROMPT_COMMAND='_capture_exit_status;_update_prompt'
+fi
