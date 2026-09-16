@@ -163,6 +163,33 @@ serena() {
 known_cmd['serena']=1
 
 #------------------------------------------------------------------------------
+# https://github.com/microsoft/playwright-mcp — dockerized stdio MCP server
+# that drives a real browser (Chromium) via Playwright. Runs Microsoft's
+# official image, which bundles Chromium, so the host needs no node/npx for
+# this server at all. --isolated starts each session from a clean browser
+# profile instead of a persistent one — a safer default for a tool shared
+# across engagements. --headless is passed explicitly even though it's the
+# image's own default, for the same reason serena() above states
+# --enable-web-dashboard explicitly. The stack under test is typically
+# served on a LAN address rather than localhost, so the container reaches it
+# over the network like any other host — no --network host is needed.
+# Extra arguments are forwarded ("$@", same pattern as spec_workflow() above)
+# so a caller can add engagement-specific flags — e.g. --allowed-origins to
+# restrict the server to the stack under test — without editing this file.
+# Register per-repo at LOCAL scope (like context7 — this is per-engagement,
+# not always-on):
+#   claude mcp add playwright -- mymcp playwright
+playwright() {
+  docker_run \
+    'mcr.microsoft.com/playwright/mcp' \
+    '--headless' \
+    '--isolated' \
+    "$@"
+}
+
+known_cmd['playwright']=1
+
+#------------------------------------------------------------------------------
 # https://docs.superhuman.com/apis/mcp — Superhuman Docs, a REMOTE http MCP
 # server. mymcp execs a local stdio process, so it cannot host an http
 # server directly; mcp-remote bridges the two (stdio to the client, https

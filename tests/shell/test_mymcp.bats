@@ -74,6 +74,28 @@ EOF
   assert_output --partial "ghcr.io/oraios/serena:latest serena start-mcp-server --transport stdio --enable-web-dashboard false"
 }
 
+@test "playwright dispatches to docker with the image, headless/isolated flags, and forwards extra args" {
+  cat > "$STUB/docker" << EOF
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$STUB/docker.args"
+exit 0
+EOF
+  chmod +x "$STUB/docker"
+
+  run env DOTFILES="$FAKE" "PATH=$STUB:$PATH" "$ROOT/bin/mymcp" playwright
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "run --rm -i mcr.microsoft.com/playwright/mcp --headless --isolated"
+
+  run env DOTFILES="$FAKE" "PATH=$STUB:$PATH" "$ROOT/bin/mymcp" playwright \
+    --allowed-origins http://localhost:3000
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "run --rm -i mcr.microsoft.com/playwright/mcp --headless --isolated --allowed-origins http://localhost:3000"
+}
+
 @test "github reads its mcp-github token file and passes it to docker" {
   # GitHub credentials live in their own store, not under api-key/ (bin/ghx
   # owns it); mymcp reads this one by full path.
