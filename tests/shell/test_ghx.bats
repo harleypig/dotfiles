@@ -98,6 +98,58 @@ EOF
 }
 
 #-----------------------------------------------------------------------------
+# gh >= 2.100.0 stopped printing the plain "Available commands:" block for an
+# unknown command; it prints the same COMMANDS-heading shape `gh --help`
+# always has (dotfiles#402). HELP TOPICS is included in the fixture on
+# purpose -- probe_commands must skip it, since a topic is not a runnable
+# gh command.
+
+write_gh_stub_current_help_format() {
+  local version=$1
+
+  cat > "$STUB/gh" << EOF
+#!/usr/bin/env bash
+
+if [[ \${1-} == --version ]]; then
+  printf 'gh version %s (2026-01-01)\nhttps://example.invalid/\n' '$version'
+  exit 0
+fi
+
+case "\${1-}" in
+  api | auth | issue | pr | release | repo | run) ;;
+  *)
+    printf 'unknown command "%s" for "gh"\n\n' "\${1-}"
+    printf 'Usage:  gh <command> <subcommand> [flags]\n\n'
+    printf 'CORE COMMANDS\n'
+    printf '  auth:        Authenticate gh and git with GitHub\n'
+    printf '  issue:       Manage issues\n'
+    printf '  pr:          Manage pull requests\n'
+    printf '  repo:        Manage repositories\n\n'
+    printf 'ADDITIONAL COMMANDS\n'
+    printf '  api:         Make an authenticated GitHub API request\n'
+    printf '  release:     Manage releases\n'
+    printf '  run:         View details about workflow runs\n\n'
+    printf 'HELP TOPICS\n'
+    printf '  environment: Environment variables usable with gh\n'
+    exit 1
+    ;;
+esac
+
+if [[ -z \${GH_TOKEN-} ]]; then
+  seen=unset
+elif [[ \$GH_TOKEN == acme-fixture ]]; then
+  seen=acme
+else
+  seen=other
+fi
+
+printf 'token=%s args=[%s]\n' "\$seen" "\$*"
+EOF
+
+  chmod +x "$STUB/gh"
+}
+
+#-----------------------------------------------------------------------------
 # Dispatch: gh command vs scope name
 
 @test "a gh command in first position passes straight through" {
@@ -213,6 +265,26 @@ EOF
   assert_success
   assert_output --partial "could not read gh's command list"
   assert_output --partial 'args=[acme pr list]'
+}
+
+@test "gh's current COMMANDS-heading help shape is parsed (dotfiles#402)" {
+  write_gh_stub_current_help_format '2.100.0'
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  run env "PATH=$PATH" "$GHX" pr list
+  assert_success
+  assert_output --partial 'token=unset args=[pr list]'
+
+  run grep -cx pr "$CACHE"
+  assert_output '1'
+
+  # HELP TOPICS is not a runnable gh command -- it must not have leaked in.
+  run grep -cx environment "$CACHE"
+  assert_output '0'
+
+  run env "PATH=$PATH" "$GHX" acme pr list
+  assert_success
+  assert_output --partial 'token=acme args=[pr list]'
 }
 
 #-----------------------------------------------------------------------------
