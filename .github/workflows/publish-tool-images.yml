@@ -4,8 +4,11 @@ name: publish-tool-images
 # Build and push the repo's pinned QA tool images to ghcr (PRIVATE packages).
 # Each matrix entry names a tool, its build context (Dockerfile dir), and its
 # tag. The Perl tools (perltidy, perlcritic) share the parameterized
-# config/docker/perl-tools/Dockerfile via a per-tool MODULES list - the seed of
-# the roadmap's single combined tool image. ansible-lint has its own Python
+# config/docker/perl-tools/Dockerfile via a per-tool MODULES list. The
+# perl-tools entry builds both into one combined image from that same
+# Dockerfile (#362 phase 1) — unconsumed so far; re-pointing docker_wrapper +
+# the pre-commit hooks to it and retiring the two separate images is phase 2,
+# tracked as a follow-up in TODO.md. ansible-lint has its own Python
 # Dockerfile (config/docker/ansible-lint) and needs no MODULES. code-tools is
 # the combined cross-language QA-tool image (config/docker/code-tools) decided
 # in ADR-0005 — its own multi-stage Dockerfile, no MODULES; tool versions are
@@ -49,6 +52,10 @@ jobs:
             context: config/docker/perl-tools
             modules: Perl::Critic@1.156
             tag: '1.156'
+          - tool: perl-tools
+            context: config/docker/perl-tools
+            modules: 'Perl::Tidy@20250912 Perl::Critic@1.156'
+            tag: '1.0.0'
           - tool: ansible-lint
             context: config/docker/ansible-lint
             modules: ''

@@ -7,6 +7,17 @@ record going forward; entries below are historical (#407).
 
 ### Added
 
+- **`publish-tool-images.yml` — a combined `perl-tools` image matrix entry
+  (phase 1 of #362).** ADR-0005's runtime-separation rule already forecloses
+  folding `perltidy`/`perlcritic` into `code-tools`, leaving "build one
+  combined perl image" as the only remaining option; this builds it from the
+  same parameterized `config/docker/perl-tools/Dockerfile` with both module
+  specs (`Perl::Tidy@20250912 Perl::Critic@1.156`), published as
+  `ghcr.io/harleypig/perl-tools:1.0.0`. Purely additive — the existing
+  `perltidy`/`perlcritic` images and their consumers are untouched; wiring
+  `bin/docker_wrapper` + the pre-commit hooks to the new image and retiring
+  the two separate ones is phase 2, tracked in `TODO.md`. (#362, PR #416)
+
 - **`config/shell-startup/mise` — activate `mise` when installed.** Runs
   `mise activate bash` for the directory-based tool-switching hook on an
   interactive bash 5.1+ shell, falling back to a `--shims`-only PATH
