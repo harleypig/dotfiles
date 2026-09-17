@@ -46,7 +46,8 @@ my ( $OPTS, $POSITIONALS );
 # the caller's `|| show_usage` handle it.
 sub bail_input {
   my @msgs = @_;
-  print STDERR "$PROG: $_\n" for @msgs;
+  my $prog = length $PROG_NAME ? $PROG_NAME : $PROG;
+  print STDERR "$prog: $_\n" for @msgs;
   if ($AUTO) {
     print STDERR "\n", build_usage( $OPTS, $POSITIONALS ) if defined $OPTS;
     print "exit 2\n";
@@ -58,7 +59,8 @@ sub bail_input {
 # Broken definition -- a developer error in PARM_DEF. In --auto mode also emit
 # `exit 2` so the caller's `eval` stops rather than running with unset vars.
 sub def_err {
-  print STDERR "$PROG: definition error: $_[0]\n";
+  my $prog = length $PROG_NAME ? $PROG_NAME : $PROG;
+  print STDERR "$prog: definition error: $_[0]\n";
   if ($AUTO) { print "exit 2\n"; exit 0; }
   exit 2;
 }
