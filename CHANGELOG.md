@@ -1,14 +1,7 @@
 # Changelog
 
-All notable completed work in this repository. The format follows
-[Keep a Changelog]; this repo is not release-versioned (it is a dotfiles
-checkout), so entries are grouped by completion date rather than by a
-semantic version. Open work lives in [TODO.md](TODO.md); this file is its
-finalized counterpart — items land here when the PR that completes them
-goes green (see the merge-time finalization in
-[ship-pr](config/claude/skills/ship-pr/SKILL.md) Step 4.5).
-
-[Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
+**Frozen 2026-09-16.** No longer maintained — git log and PR bodies are the
+record going forward; entries below are historical (#407).
 
 ## 2026-09-16
 

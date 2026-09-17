@@ -307,13 +307,13 @@ the dotagents repo's `skills/push-pr/SKILL.md` Step 5 and
 
 This repo opts in to the merge-time documentation finalization (push-pr
 Step 4.5). Completed items are **pruned outright** from `TODO.md` (and
-`ROADMAP.md` if one exists) once the PR that finishes them goes green —
-finalized work is migrated to [`CHANGELOG.md`](../CHANGELOG.md), not left as
-`[x]` markers. The `merge-finalization: enforce` sentinel in the heading above
-activates the `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`),
-which **blocks** a `gh pr merge` / `push.sh merge` while any completed `- [x]`
-items still remain in the planning docs. See the dotagents repo's
-`skills/push-pr/SKILL.md` and `rules/git.md`.
+`ROADMAP.md` if one exists) once the PR that finishes them goes green,
+rather than left as `[x]` markers. The `merge-finalization: enforce`
+sentinel in the heading above activates the `PreToolUse` hook
+(`~/.claude/hooks/merge-finalization.py`), which **blocks** a `gh pr merge`
+/ `push.sh merge` while any completed `- [x]` items still remain in the
+planning docs. See the dotagents repo's `skills/push-pr/SKILL.md` and
+`rules/git.md`.
 
 The agent-config planning backlog now lives in the **dotagents** repo (it was
 extracted there with `config/claude`), so this repo's merge-finalization only

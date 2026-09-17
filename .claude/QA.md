@@ -54,10 +54,10 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 7 | UI/UX & accessibility | **N/A** | Headless dotfiles / CLI — no UI. |
 | 8 | End-to-end | **N/A** | No application. Docker integration tests that bring up a real login shell / pwsh profile live under Tests (`TESTS.md`). |
 | 9 | Compatibility | **N/A** | No external API / data-format contracts. Cross-shell (bash + PowerShell) and the docker context matrix are exercised under Tests. |
-| 10 | Performance & load | **Off** | Not a service. Login-shell startup perf is handled ad hoc, measure-first (resolved — see `CHANGELOG.md`). |
+| 10 | Performance & load | **Off** | Not a service. Login-shell startup perf is handled ad hoc, measure-first (resolved — see git log, PRs #59/#60). |
 | 11 | Reliability & observability | **N/A** | Not a deployed service. |
 | 12 | Build | **N/A** | Nothing compiles / bundles. The test docker harness image is test infra, not a product artifact. |
-| 13 | Documentation | **Active** | `markdownlint` (prose); inline-first doc philosophy (`WORKFLOW.md`); changelog is **hand-written** (`CHANGELOG.md`). `Vale` (prose; chosen over proselint) / link-validation **Planned** — TODO *Pre-commit Phase 4*. |
+| 13 | Documentation | **Active** | `markdownlint` (prose); inline-first doc philosophy (`WORKFLOW.md`); no changelog is kept — `CHANGELOG.md` is frozen, git log + PR bodies are the record. `Vale` (prose; chosen over proselint) / link-validation **Planned** — TODO *Pre-commit Phase 4*. |
 | 14 | Code review | **Active (solo)** | `master` ruleset requires a PR (no bypass) with review-thread resolution; **0 required approvals** (solo repo) — review is self-review. |
 | 15 | CI | **Active** | `tests.yml` jobs bats / meta / perl / perl-compile / python / pre-commit (+ `publish-tool-images.yml`); required checks **bats + meta + perl + perl-compile + pre-commit** gate merges. `perl-compile` builds a real pinned Perl only when a PR touches the perl toolchain (else early-green). Watch via the `push-pr` skill's `ci-watch`. |
 
@@ -70,10 +70,10 @@ code changed (see `CHANGELOG.md`).
 
 ## Notes
 
-- **Generated changelog: N/A.** `CHANGELOG.md` is maintained by hand at the
-  merge-time finalization step (`WORKFLOW.md`; push-pr Step 4.5), not
-  generated from git history — so there is no regenerate-and-commit prep
-  action in the QA pipeline.
+- **Generated changelog: N/A.** This repo keeps no changelog going
+  forward — `CHANGELOG.md` is frozen (2026-09-16) and git log + PR bodies
+  are the record — so there is no regenerate-and-commit prep action in the
+  QA pipeline.
 - **Perl QA is Active** — `perltidy` + `perlcritic` gate via pinned private
   ghcr docker-image pre-commit hooks (dim 2), `Test::Pod` + non-gating
   Devel::Cover coverage in the suite (dim 6). Tooling *scope* decisions (what
