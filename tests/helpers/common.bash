@@ -72,6 +72,25 @@ make_script_stub() {
 }
 
 #------------------------------------------------------------------------------
+# Secret-bearing stubs: report presence, never value.
+#
+# A stub built with make_stub / make_script_stub often exists to show which
+# credential a command received — and that shape once leaked a live GH_TOKEN
+# into a session transcript (#355), because "show what arrived" is exactly
+# what a stub's own output does. Report one of these instead of ever
+# interpolating a *_TOKEN / *_KEY / *_PASSWORD variable's value:
+#   - presence:  [[ -n $VAR ]] && echo set || echo unset
+#   - presence:  echo "${VAR:+set}"           (prints nothing when unset)
+#   - length:    echo "${#VAR}"
+#   - identity:  printf '%s' "$VAR" | sha256sum | cut -c1-8
+#   - fixture:   compare $VAR against known fixture values in a `case` and
+#                report which one matched, BY NAME (see write_gh_stub in
+#                test_ghx.bats and write_curl_stub in test_gh_app_token.bats)
+# `${VAR:-placeholder}` is the trap: the `-` fallback prints VAR's value
+# whenever it is set, so it reads as a safe default and is not one.
+# test_secret_stub_guard.bats greps the committed suite for this shape.
+
+#------------------------------------------------------------------------------
 # Create a throwaway git repo at <dir> with a pinned test identity and one
 # empty initial commit. The git-* test files all need a real repo to run
 # against; this centralizes the init + identity + first-commit boilerplate they
