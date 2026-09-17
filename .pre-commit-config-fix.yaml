@@ -69,6 +69,20 @@ repos:
         args: [--fix]
         types: [markdown]
 
+  # prose-wrap --fix: the auto-fix companion to the check-only prose-wrap
+  # hook in .pre-commit-config.yaml. Reflows plain prose paragraphs to 78
+  # columns; leaves fenced code, frontmatter, headings, tables, reference
+  # links, list items, and blockquotes untouched (see
+  # tests/lint/prose_wrap.py). Same `files` scope as the check hook — #384
+  # tracks widening both together.
+  - repo: local
+    hooks:
+      - id: prose-wrap-fix
+        name: agent-config markdown hygiene (78-col prose reflow)
+        language: system
+        entry: python3 tests/lint/prose_wrap.py --fix
+        files: ^\.claude/.*\.md$
+
   # Phase 3 (Language) — Python fixers (manual). Same scope-exclude as the
   # check config; flake8 has no fix variant (lint-only). Run isort before yapf.
   - repo: https://github.com/pycqa/isort
