@@ -61,6 +61,7 @@ Usage: $selfname [scope] <gh arguments...>
        $selfname --expiry
        $selfname --rotate <scope>
        $selfname --refresh [gh arguments...]
+       $selfname --test [--write] <scope> [<owner>]
 
 Runs gh under a per-scope GitHub credential.
 
@@ -88,10 +89,21 @@ Options (recognized only as the first argument):
   --expiry         report when each scope's token expires
   --rotate SCOPE   read a new token for SCOPE and store it
   --refresh        rebuild the cached list of gh commands
+  --test SCOPE [OWNER]           report what SCOPE's token can reach
+  --test --write SCOPE [OWNER]   also prove create/delete reach
 
 --expiry costs one API request per scope, which is why it is separate from
 --list. GitHub has no endpoint for a token's expiry; it returns it as a
 response header on any authenticated request, so that is what this reads.
+
+--test reports a scope's identity, expiry, and whether OWNER (default: the
+scope name, since a scope is usually named for the account it reaches) is
+visible to it -- an org or user account, membership, and how many private
+repos it can list. GitHub gives no API to read a fine-grained PAT's resource
+owner, so trying is the only way to know. It exits non-zero when the scope
+cannot reach OWNER at all, so it can gate a script. It never prints the
+token. --write additionally creates a throwaway private repo under OWNER and
+deletes it, to prove create/delete reach -- omit it and nothing is created.
 
 --rotate reads the token from stdin rather than the command line, so it
 never reaches your shell history or the process list, and writes it 0600.
@@ -254,6 +266,205 @@ expiry_report() {
     printf '%-20s %-25s %4dd%s\n' \
       "$name" "$(date -u -d "$raw" '+%Y-%m-%d %H:%M UTC')" "$left" "$note"
   done
+}
+
+#-----------------------------------------------------------------------------
+# Run gh under a resolved token, or under gh's own stored credential when the
+# token is empty -- the same "declared, but defer to gh" convention
+# run_scoped honors. Every --test API call goes through this, so none of
+# them exports GH_TOKEN beyond the one invocation.
+gh_as() {
+  local token=$1
+  shift
+
+  if [[ -n $token ]]; then
+    GH_TOKEN="$token" gh "$@"
+
+  else
+    gh "$@"
+  fi
+}
+
+#-----------------------------------------------------------------------------
+# Resolve the token a scope would run gh under, exactly as run_scoped does --
+# alias, empty (defer to stored credential), App-backed (mint via
+# gh-app-token), or a literal PAT. Echoes the token, or nothing for an empty
+# scope; returns 1 when the scope has no file at all.
+scope_token() {
+  local scope=$1
+  local token_file="$token_dir/$scope"
+
+  if [[ -L $token_file && ! -e $token_file ]]; then
+    die "alias '$scope' points at a missing scope: $(readlink "$token_file")"
+  fi
+
+  [[ -e $token_file ]] || return 1
+
+  local slug
+  if slug=$(app_scope_slug "$token_file"); then
+    gh_app_token "$slug" \
+      || die "could not mint an App token for '$scope' (slug: $slug)"
+    return 0
+  fi
+
+  [[ -s $token_file ]] && cat "$token_file"
+
+  return 0
+}
+
+#-----------------------------------------------------------------------------
+# Report what a scope's token can actually reach, never its value: identity
+# (user login, or an App's installation account), expiry, and whether
+# <owner> (default: the scope name, since a scope is usually named for the
+# account it reaches) is visible -- an org or user account, membership, and
+# how many private repos it can list. GitHub gives no API to read a
+# fine-grained PAT's resource owner, so trying is the only way to know.
+# --write additionally round-trips a throwaway repo to prove create/delete
+# reach; without it nothing is created. Exits non-zero when the scope cannot
+# reach <owner> at all.
+test_scope() {
+  local scope=$1
+  local owner=${2:-$scope}
+  local do_write=$3
+
+  [[ -n $scope ]] || die "--test needs a scope name (see: $selfname --list)"
+
+  local token_file="$token_dir/$scope"
+
+  if [[ ! -e $token_file ]]; then
+    printf '%s: no token defined for %s (expected %s)\n' \
+      "$selfname" "'$scope'" "$token_file" >&2
+    return 1
+  fi
+
+  local slug=''
+  slug=$(app_scope_slug "$token_file" 2> /dev/null) || slug=''
+
+  local token
+  token=$(scope_token "$scope") || return 1
+
+  unset GITHUB_TOKEN
+
+  local login=''
+
+  if [[ -n $slug ]]; then
+    local account
+    account=$(gh_as "$token" api installation/repositories \
+      --jq '.repositories[0].owner.login' 2> /dev/null) || account=''
+
+    if [[ -n $account ]]; then
+      printf 'scope %s: App (%s); installation account: %s\n' \
+        "$scope" "$slug" "$account"
+
+    else
+      printf 'scope %s: App (%s); installation account: unknown (no repos visible)\n' \
+        "$scope" "$slug"
+    fi
+
+  else
+    login=$(gh_as "$token" api user --jq '.login' 2> /dev/null) || {
+      printf 'scope %s: token rejected\n' "$scope"
+      return 1
+    }
+
+    local headers kind
+    headers=$(gh_as "$token" api -i user 2> /dev/null) || headers=''
+
+    if grep -qi '^x-oauth-scopes:' <<< "$headers"; then
+      local scopes
+      scopes=$(grep -i '^x-oauth-scopes:' <<< "$headers")
+      scopes=${scopes#*: }
+      scopes=${scopes%$'\r'}
+      kind="classic PAT (scopes: $scopes)"
+
+    else
+      kind='fine-grained PAT'
+    fi
+
+    local exp_raw expires=''
+    exp_raw=$(grep -i '^github-authentication-token-expiration:' \
+      <<< "$headers") || exp_raw=''
+
+    if [[ -n $exp_raw ]]; then
+      exp_raw=${exp_raw#*: }
+      exp_raw=${exp_raw%$'\r'}
+
+      local stamp
+      if stamp=$(date -d "$exp_raw" +%s 2> /dev/null); then
+        local left
+        left=$(((stamp - $(date +%s)) / 86400))
+        expires=", expires $(date -u -d "$exp_raw" '+%Y-%m-%d') (${left}d)"
+      fi
+    fi
+
+    printf 'scope %s: %s%s\n' "$scope" "$kind" "$expires"
+    printf '  as user %s\n' "$login"
+  fi
+
+  local exists='' member=''
+
+  if gh_as "$token" api "orgs/$owner" > /dev/null 2>&1; then
+    exists='org exists'
+
+    if [[ -z $slug ]]; then
+      local role
+      role=$(gh_as "$token" api "orgs/$owner/memberships/$login" \
+        --jq '.role' 2> /dev/null) || role=''
+
+      if [[ -n $role ]]; then
+        member="member ($role)"
+
+      else
+        member='not a member'
+      fi
+    fi
+
+  elif gh_as "$token" api "users/$owner" > /dev/null 2>&1; then
+    exists='user exists'
+
+  else
+    printf '  %s: does not exist, or not visible to this scope\n' "$owner"
+    return 1
+  fi
+
+  local repo_path count
+  if [[ $exists == 'org exists' ]]; then
+    repo_path="orgs/$owner/repos?type=private"
+
+  else
+    repo_path="users/$owner/repos"
+  fi
+
+  count=$(gh_as "$token" api "$repo_path" --jq 'length' 2> /dev/null) \
+    || count=0
+
+  if [[ -n $member ]]; then
+    printf '  %s: %s; %s; %s private repos listable\n' \
+      "$owner" "$exists" "$member" "$count"
+
+  else
+    printf '  %s: %s; %s private repos listable\n' "$owner" "$exists" "$count"
+  fi
+
+  if ((do_write)); then
+    local name
+    name=$(printf 'ghx-test-%04x' $((RANDOM % 65536)))
+
+    if gh_as "$token" repo create "$owner/$name" --private > /dev/null 2>&1; then
+      if gh_as "$token" repo delete "$owner/$name" --yes > /dev/null 2>&1; then
+        printf '  write: created %s/%s; deleted OK\n' "$owner" "$name"
+
+      else
+        printf '  write: created %s/%s; DELETE FAILED -- clean it up manually\n' \
+          "$owner" "$name"
+      fi
+
+    else
+      printf '  write: could not create %s/%s\n' "$owner" "$name"
+    fi
+  fi
+
+  return 0
 }
 
 #-----------------------------------------------------------------------------
@@ -503,6 +714,19 @@ case "${1-}" in
   --rotate)
     shift
     rotate_scope "${1-}"
+    exit 0
+    ;;
+
+  --test)
+    shift
+
+    test_write=0
+    if [[ ${1-} == --write ]]; then
+      test_write=1
+      shift
+    fi
+
+    test_scope "${1-}" "${2-}" "$test_write"
     exit 0
     ;;
 

@@ -507,3 +507,228 @@ EOF
   assert_output --partial 'App -> acme-app'
   assert_output --partial 'gh-app-token not found on PATH'
 }
+
+#-----------------------------------------------------------------------------
+# --test
+#
+# A dedicated stub -- --test's API surface (identity headers, org/user
+# existence, membership, repo counts, repo create/delete) is unrelated to the
+# probe/dispatch surface the main stub emulates. Controlled entirely by env
+# vars so each test states only what it needs; GH_TOKEN itself selects which
+# fixture identity responds.
+
+write_gh_stub_reach() {
+  cat > "$STUB/gh" << 'EOF'
+#!/usr/bin/env bash
+
+if [[ ${1-} == api && ${2-} == -i && ${3-} == user ]]; then
+  case "${GH_TOKEN-}" in
+    classic-fixture)
+      printf 'HTTP/2.0 200 OK\r\nX-Oauth-Scopes: repo, read:org\r\n\r\n{"login":"acmeuser"}\n'
+      exit 0
+      ;;
+    fine-fixture)
+      printf 'HTTP/2.0 200 OK\r\n\r\n{"login":"fineuser"}\n'
+      exit 0
+      ;;
+    *)
+      echo 'HTTP 401: Bad credentials' >&2
+      exit 1
+      ;;
+  esac
+fi
+
+case "${1-}:${2-}" in
+  api:user)
+    case "${GH_TOKEN-}" in
+      classic-fixture) echo acmeuser; exit 0 ;;
+      fine-fixture) echo fineuser; exit 0 ;;
+      *) echo 'HTTP 401: Bad credentials' >&2; exit 1 ;;
+    esac
+    ;;
+
+  api:installation/repositories)
+    [[ -n ${GHX_TEST_INSTALL_ACCOUNT-} ]] || exit 1
+    echo "$GHX_TEST_INSTALL_ACCOUNT"
+    exit 0
+    ;;
+
+  api:orgs/*/memberships/*)
+    [[ -n ${GHX_TEST_ROLE-} ]] || exit 1
+    echo "$GHX_TEST_ROLE"
+    exit 0
+    ;;
+
+  api:orgs/*/repos\?type=private)
+    echo "${GHX_TEST_COUNT:-0}"
+    exit 0
+    ;;
+
+  api:users/*/repos)
+    echo "${GHX_TEST_COUNT:-0}"
+    exit 0
+    ;;
+
+  api:orgs/*)
+    name=${2#orgs/}
+    [[ $name == "${GHX_TEST_ORG-}" ]] || exit 1
+    exit 0
+    ;;
+
+  api:users/*)
+    name=${2#users/}
+    [[ $name == "${GHX_TEST_USER-}" ]] || exit 1
+    exit 0
+    ;;
+
+  repo:create)
+    [[ ${GHX_TEST_CREATE:-ok} == ok ]] || exit 1
+    exit 0
+    ;;
+
+  repo:delete)
+    [[ ${GHX_TEST_DELETE:-ok} == ok ]] || exit 1
+    exit 0
+    ;;
+esac
+
+echo "unhandled stub call: $*" >&2
+exit 1
+EOF
+  chmod +x "$STUB/gh"
+}
+
+@test "--test reports a classic PAT's identity, scopes, and org reach" {
+  printf 'classic-fixture' > "$TOKENS/acme"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" \
+    "GHX_TEST_ORG=acme-org" "GHX_TEST_ROLE=admin" "GHX_TEST_COUNT=3" \
+    "$GHX" --test acme acme-org
+  assert_success
+  assert_output --partial 'classic PAT'
+  assert_output --partial 'scopes: repo, read:org'
+  assert_output --partial 'as user acmeuser'
+  assert_output --partial 'acme-org: org exists; member (admin); 3 private repos listable'
+  refute_output --partial 'classic-fixture'
+}
+
+@test "--test defaults OWNER to the scope name" {
+  printf 'classic-fixture' > "$TOKENS/acme-org"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" \
+    "GHX_TEST_ORG=acme-org" "GHX_TEST_ROLE=member" \
+    "$GHX" --test acme-org
+  assert_success
+  assert_output --partial 'acme-org: org exists'
+}
+
+@test "--test reports a fine-grained PAT and personal-user reach" {
+  printf 'fine-fixture' > "$TOKENS/mine"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "GHX_TEST_USER=fineuser" "GHX_TEST_COUNT=0" \
+    "$GHX" --test mine fineuser
+  assert_success
+  assert_output --partial 'fine-grained PAT'
+  refute_output --partial 'scopes:'
+  assert_output --partial 'fineuser: user exists; 0 private repos listable'
+}
+
+@test "--test reports an org that exists but the scope does not belong to" {
+  printf 'classic-fixture' > "$TOKENS/acme"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "GHX_TEST_ORG=other-org" "GHX_TEST_COUNT=0" \
+    "$GHX" --test acme other-org
+  assert_success
+  assert_output --partial 'not a member'
+}
+
+@test "--test fails when the token is rejected" {
+  printf 'bad-fixture' > "$TOKENS/dud"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "$GHX" --test dud
+  assert_failure
+  assert_output --partial 'token rejected'
+  refute_output --partial 'bad-fixture'
+}
+
+@test "--test fails when OWNER is not visible at all" {
+  printf 'classic-fixture' > "$TOKENS/acme"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "$GHX" --test acme nosuchowner
+  assert_failure
+  assert_output --partial 'nosuchowner: does not exist'
+}
+
+@test "--test fails clearly for an unknown scope" {
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "$GHX" --test nosuchscope
+  assert_failure
+  assert_output --partial 'no token defined for'
+}
+
+@test "--test needs a scope name" {
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "$GHX" --test
+  assert_failure
+  assert_output --partial 'needs a scope name'
+}
+
+@test "--test --write proves create and delete reach" {
+  printf 'classic-fixture' > "$TOKENS/acme"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "GHX_TEST_ORG=acme-org" "GHX_TEST_ROLE=admin" \
+    "GHX_TEST_CREATE=ok" "GHX_TEST_DELETE=ok" \
+    "$GHX" --test --write acme acme-org
+  assert_success
+  assert_output --regexp 'write: created acme-org/ghx-test-[0-9a-f]{4}; deleted OK'
+}
+
+@test "--test --write reports a create failure without touching the exit code" {
+  printf 'classic-fixture' > "$TOKENS/acme"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "GHX_TEST_ORG=acme-org" "GHX_TEST_ROLE=admin" \
+    "GHX_TEST_CREATE=fail" \
+    "$GHX" --test --write acme acme-org
+  assert_success
+  assert_output --partial 'write: could not create'
+}
+
+@test "--test --write reports a delete failure so nothing is left unnoticed" {
+  printf 'classic-fixture' > "$TOKENS/acme"
+  write_gh_stub_reach
+
+  run env "PATH=$PATH" "GHX_TEST_ORG=acme-org" "GHX_TEST_ROLE=admin" \
+    "GHX_TEST_CREATE=ok" "GHX_TEST_DELETE=fail" \
+    "$GHX" --test --write acme acme-org
+  assert_success
+  assert_output --partial 'DELETE FAILED'
+}
+
+@test "--test reports an App-backed scope's installation account" {
+  GAT_CALLS="$BATS_TEST_TMPDIR/gat.calls"
+  export GAT_CALLS
+  write_gh_app_token_stub
+  write_gh_stub_reach
+
+  printf 'app:acme-app' > "$TOKENS/bot"
+
+  run env "PATH=$PATH" "GAT_CALLS=$GAT_CALLS" \
+    "GHX_TEST_INSTALL_ACCOUNT=Harleypig-LLC" \
+    "GHX_TEST_ORG=Harleypig-LLC" "GHX_TEST_COUNT=1" \
+    "$GHX" --test bot Harleypig-LLC
+  assert_success
+  assert_output --partial 'App (acme-app)'
+  assert_output --partial 'installation account: Harleypig-LLC'
+  assert_output --partial 'Harleypig-LLC: org exists; 1 private repos listable'
+  refute_output --partial 'app-token-fixture'
+}
