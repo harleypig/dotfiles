@@ -3,8 +3,6 @@
 # Stolen from
 # https://github.com/MunifTanjim/tmux-mode-indicator
 
-set -ex
-
 # shellcheck disable=SC2034  # for the commented-out status replacement below
 declare -r mode_indicator_placeholder="\#{tmux_mode_indicator}"
 
