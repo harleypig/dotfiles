@@ -204,6 +204,7 @@ for specific tools:
 - **`binenv`**: Binary environment manager
 - **`git`**: Git configuration and aliases
 - **`go`**: Go language environment
+- **`mise`**: mise polyglot tool version manager, when installed
 - **`node`**: Node.js and NVM configuration
 - **`perl`**: Perl environment and configuration
 - **`python`**: Python environment and poetry setup

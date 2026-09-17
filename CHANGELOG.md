@@ -10,6 +10,36 @@ goes green (see the merge-time finalization in
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 
+## 2026-09-16
+
+### Added
+
+- **`config/shell-startup/mise` — activate `mise` when installed.** Runs
+  `mise activate bash` for the directory-based tool-switching hook on an
+  interactive bash 5.1+ shell, falling back to a `--shims`-only PATH
+  activation everywhere else (non-interactive shells, older bash), since
+  the hook can't be safely composed with the prompt's exit-status capture
+  outside that case. (PR #411)
+
+- **`mymcp playwright` — a dockerized Playwright MCP server.** Runs
+  Microsoft's official `mcr.microsoft.com/playwright/mcp` image
+  (`--headless --isolated`), the same pattern as the existing `serena`/
+  `github` docker-route servers; extra arguments forward through so a
+  caller can add per-engagement flags like `--allowed-origins` without
+  editing the file. (#410, PR #411)
+
+### Fixed
+
+- **`lib/bash_prompt` — the exit-status indicator survives a tool's own
+  `PROMPT_COMMAND` hook.** Any tool's shell activation script (mise's
+  included) always prepends its own hook to `PROMPT_COMMAND`, and running
+  it corrupts `PIPESTATUS` before `_update_prompt` could read it for the
+  prompt's colored exit-status digit. Exit-status capture is now its own
+  function (`_capture_exit_status`) that runs first and stores the value
+  for `_update_prompt` to read instead of live `PIPESTATUS`; a new
+  `_bash_prompt_reorder_hooks` re-pins it to the front after any later
+  tool module's own activation `eval`. (PR #411)
+
 ## 2026-07-28
 
 ### Added

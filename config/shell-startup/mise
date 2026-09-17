@@ -1,0 +1,15 @@
+# shellcheck shell=bash
+
+havecmd mise || return 0
+
+if [[ $- == *i* ]] && _bash_prompt_supports_hooks; then
+  eval "$(mise activate bash)"
+  _bash_prompt_reorder_hooks
+
+else
+  # Non-interactive shells have no PROMPT_COMMAND to hook, and pre-5.1 bash
+  # can't compose PROMPT_COMMAND as an array to safely chain mise's hook
+  # behind _capture_exit_status -- both fall back to shims-only activation
+  # (PATH-based, no directory-based auto-switching, and safe unconditionally).
+  eval "$(mise activate bash --shims)"
+fi
