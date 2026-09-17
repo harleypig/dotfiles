@@ -24,3 +24,14 @@
       `docker inspect --format '{{index .RepoDigests 0}}'`), then remove
       the now-redundant `perltidy`/`perlcritic` matrix entries and delete
       their ghcr packages. Part of #362.
+- [ ] Add `bats-support`, `bats-assert`, and `bats-file` to `WORKFLOW.md`'s
+      *Prerequisites* list alongside `bats-core` — they are separate apt
+      packages `common.bash`'s `load_bats_libs` assumes are already at
+      `/usr/lib/bats`, and a fresh environment with only `bats-core`
+      installed has no way to run the suite until someone notices and
+      vendors them by hand. Surfaced running PR #419 (issue #402) in a
+      sandbox with `bats-core` present but none of the three support libs
+      and no `sudo` to `apt-get install` them — worked around by
+      `git clone`-ing `bats-core/bats-support`, `bats-core/bats-assert`,
+      and `bats-core/bats-file` into a scratch dir and pointing
+      `BATS_LIB_PATH` at it for that one run, 2026-09-16.
