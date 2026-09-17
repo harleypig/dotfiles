@@ -169,10 +169,14 @@ repos:
   # security-scan skill's job, not this hook.
   - repo: https://github.com/gitleaks/gitleaks
     # gitleaks-docker: the docker_image variant, so the pinned gitleaks image
-    # runs at commit time (matching CI), not a host-built go binary.
+    # runs at commit time (matching CI), not a host-built go binary. entry
+    # overrides the upstream hook's Docker Hub image (zricethezav/gitleaks)
+    # with gitleaks' own ghcr.io mirror of the same build — GHCR has no
+    # anonymous-pull rate limit, unlike Docker Hub (#369).
     rev: v8.30.1
     hooks:
       - id: gitleaks-docker
+        entry: ghcr.io/gitleaks/gitleaks git --pre-commit --redact --staged --verbose
 
   # Forbid leaked tool-call markup. When a subagent is delegated a full-file
   # write, its tool-call closing tags can bleed into the file content
