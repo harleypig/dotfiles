@@ -75,6 +75,14 @@ docker_run() {
 }
 
 #------------------------------------------------------------------------------
+# Claude Code execs mymcp directly, not through a login shell, so the
+# lazy-nvm PATH shims in config/shell-startup/node never run — PATH keeps
+# whatever Node the system provides. A server needing a newer Node must
+# select one from nvm explicitly before calling npx_run: resolve
+# $NVM_DIR/alias/default, prepend its bin/ to PATH, fail fast if
+# unprovisioned. See superhuman() below for the worked example.
+# No shared helper yet — superhuman() is only the first instance (Rule
+# of Three, code-style.md).
 npx_run() {
   local opts=('-y' "$@")
   dw_warn "npx ${opts[*]}"
