@@ -335,21 +335,43 @@ rotate_scope() {
 
 #-----------------------------------------------------------------------------
 # gh has no command that lists its commands, but it prints them when handed
-# one it does not recognize:
+# one it does not recognize. Two shapes exist depending on the gh version:
 #
-#   unknown command "..." for "gh"
-#   ...
-#   Available commands:
-#     api
-#     auth
+#   legacy (gh < 2.100.0):
+#     Available commands:
+#       api
+#       auth
 #
-# The indented block after that header is what we want. User-defined gh
-# aliases show up there too, which is correct -- an alias is as much a
-# command as a builtin.
+#   current (gh >= 2.100.0, matching `gh --help`):
+#     CORE COMMANDS
+#       auth:        Authenticate gh and git with GitHub
+#     ADDITIONAL COMMANDS
+#       api:         Make an authenticated GitHub API request
+#
+# Try the current shape first -- every heading ending in "COMMANDS", so
+# HELP TOPICS and FLAGS (which don't) are excluded -- then fall back to the
+# legacy shape so an older gh still works. User-defined gh aliases show up
+# in either shape, which is correct -- an alias is as much a command as a
+# builtin.
 probe_commands() {
-  local out
+  local out current
 
   out=$(gh __ghx_probe_unknown_command__ 2>&1) || true
+
+  current=$(awk '
+    /^[A-Z][A-Z ]*COMMANDS$/ { in_block = 1; next }
+    /^[A-Z]/                 { in_block = 0 }
+    in_block && /^  [A-Za-z0-9_-]+:/ {
+      sub(/^  /, "")
+      sub(/:.*/, "")
+      print
+    }
+  ' <<< "$out")
+
+  if [[ -n $current ]]; then
+    printf '%s\n' "$current"
+    return 0
+  fi
 
   sed -n '/^Available commands:$/,$ s/^  \([A-Za-z0-9][A-Za-z0-9_-]*\)[[:space:]]*$/\1/p' \
     <<< "$out"
