@@ -106,3 +106,23 @@ how upstream hook repos are already structured).
 - Python-*runtime* tools (`yamllint`, `ansible-lint`) remain **out** of scope
   here — they stay separate and are handled in the python setup (ADR-0005
   update), so this is strictly the non-Python consolidation.
+
+## Update (2026-09-29): the CI meta suite stays on pinned binaries
+
+The one deferred design call above is settled: **the `meta` job keeps its
+pinned `shellcheck` / `shfmt` binaries** rather than moving to a batched
+`run-tools` pass over `code-tools`
+([#368](https://github.com/harleypig/dotfiles/issues/368)).
+
+- **The hand-sync cost the move would have removed is already gone.**
+  `tests/shell/test_docker_wrapper.bats` asserts that `tests.yml`'s
+  `SC_VER` / `SHFMT_VER` equal the `code-tools` Dockerfile `FROM` tags, and
+  it runs in the required `bats` job — so drift fails CI instead of relying
+  on someone remembering. The Dockerfile stays the one place a version is
+  decided; the CI pins are checked copies of it.
+- **Moving would put an image pull on a required check.** `meta` gates every
+  PR; a multi-hundred-MB private-ghcr pull (plus login) is latency and a
+  new failure mode on that critical path, for no gain in coverage.
+- **Reversible.** `run-tools` ships in the image, so switching later is a
+  CI-job change, not new tooling. Revisit if the binary install step keeps
+  breaking (it failed once, on 2026-07-30) or the sync test is removed.

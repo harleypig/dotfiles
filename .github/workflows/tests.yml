@@ -48,7 +48,8 @@ jobs:
   # code-tools image (the wrapper AND the pre-commit hooks), whose Dockerfile
   # pins `FROM koalaman/shellcheck:v0.11.0` / `FROM mvdan/shfmt:v3.13.1`. Kept
   # as native binaries here (no docker) to stay fast and avoid Docker Hub pull
-  # flakiness; the CI-meta-via-code-tools switch is a deferred design call.
+  # flakiness; staying on pinned binaries is decided (ADR-0006 update,
+  # 2026-09-29, #368).
   # SYNC (ADR-0006): keep SC_VER/SHFMT_VER below in step with those code-tools
   # Dockerfile FROM tags (config/docker/code-tools/Dockerfile);
   # test_docker_wrapper.bats guards it.
