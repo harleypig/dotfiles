@@ -481,16 +481,18 @@ once it is present, and otherwise leaves the existing Perl environment alone.
 
 **The perl gates need a ghcr login.** The pre-commit `perltidy` and
 `perlcritic` hooks (and the `bin/perltidy` / `bin/perlcritic` docker wrappers)
-pull the pinned, **private** `ghcr.io/harleypig/perltidy` and
-`ghcr.io/harleypig/perlcritic` images built by
+pull the one pinned, **private** combined `ghcr.io/harleypig/perl-tools` image
+built by
 [`publish-tool-images.yml`](../.github/workflows/publish-tool-images.yml). So a
 one-time `docker login ghcr.io -u <you>` with a `read:packages` token is
 required for those hooks to run locally; CI logs in with the workflow token.
-Both images are the one parameterized `config/docker/perl-tools/Dockerfile`
-(they differ only by the `MODULES` build-arg). Bumping a pinned module version
-is a SYNC — the publish-workflow matrix, `bin/docker_wrapper` `image[<tool>]`,
-and the tag+digest in the pre-commit config(s) — re-pin the digest after it
-publishes (perlcritic has a check hook only; perltidy has both check and fix).
+The image is `config/docker/perl-tools/Dockerfile` built with both modules in
+its `MODULES` build-arg, and has no entrypoint — each caller names the tool.
+Bumping a pinned module version is a SYNC — the `perl-tools` entry in the
+publish-workflow matrix (module version and image tag), both
+`bin/docker_wrapper` `image[perltidy]` and `image[perlcritic]`, and the
+tag+digest in the pre-commit config(s) — re-pin the digest after it publishes
+(perlcritic has a check hook only; perltidy has both check and fix).
 
 ## Agent-Specific Overrides
 

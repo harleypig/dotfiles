@@ -103,8 +103,8 @@ Reframe xdg-audit around a **state-machine over dotfile mechanisms**.
   (which must first be fixed — its search locations miss this setup's config
   dirs) and on running in a shell context that has the user's aliases loaded
   (aliases are not exported to a child process).
-- The build is **phased and demand-pulled**: the full N×N transition matrix and
-  general installation-method detection are deferred (Phase 3 / ICEBOX
+- The build is **phased and demand-pulled**: the full N×N transition matrix
+  and general installation-method detection are deferred (Phase 3 / ICEBOX
   candidate) rather than built speculatively.
 - The concrete per-phase build detail lives in `TODO.md` (`### xdg-audit
   follow-ups`); this ADR records the *direction* and the load-bearing choices.
@@ -126,10 +126,10 @@ demand signal — after evaluating its pieces against the actual overlay corpus
   twice: (1) the entry schema carries **no command field** — `alias` detection
   must know *which command* to feed `bin/where`, and `name`/`path` don't
   reliably supply it (it would need a schema addition or fragile help-prose
-  parsing); (2) the shell-context constraint above — aliases aren't exported to
-  a child, so xdg-audit would have to shell into `bash -ic 'where …'`. A schema
-  change plus a shell-context invocation for a single, questionable case (wget
-  redirects via `--hsts-file` / `WGETRC`, not truly an alias).
+  parsing); (2) the shell-context constraint above — aliases aren't exported
+  to a child, so xdg-audit would have to shell into `bash -ic 'where …'`. A
+  schema change plus a shell-context invocation for a single, questionable
+  case (wget redirects via `--hsts-file` / `WGETRC`, not truly an alias).
 - **`wrap` is a separate project, not a slice.** It depends on the unbuilt
   "self-wrap tier" (`unshare --map-root-user --mount` + `mount --bind`
   wrapper + a `bin/<app>` scaffold), which stands alone from this state-machine

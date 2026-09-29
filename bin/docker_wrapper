@@ -424,12 +424,14 @@ perltidy() {
   # auto-discovered from /mnt (= $PWD), matching how shfmt finds .editorconfig.
   exec docker run "${args[@]}" "${image[perltidy]}" perltidy "$@"
 }
-# SYNC: keep this tag+digest in lock-step with the perltidy hooks in
-# .pre-commit-config.yaml / -fix.yaml, and with the publish-tool-images matrix.
-# To bump: change the module version in .github/workflows/publish-tool-images.yml,
-# let it publish, then re-pin the tag + digest here (docker pull, then
+# SYNC: perltidy and perlcritic share the one combined perl-tools image. Keep
+# this tag+digest in lock-step with image[perlcritic] below, the perltidy and
+# perlcritic hooks in .pre-commit-config.yaml / -fix.yaml, and the perl-tools
+# entry in the publish-tool-images matrix. To bump: change the module version
+# (and the image tag) in .github/workflows/publish-tool-images.yml, let it
+# publish, then re-pin the tag + digest everywhere (docker pull, then
 # `docker inspect --format '{{index .RepoDigests 0}}'`).
-image[perltidy]="ghcr.io/harleypig/perltidy:20250912@sha256:61983dd2a1c283df0b839f8fa7a45bcbca5228c7a24495567cbabc3fa997f37b"
+image[perltidy]="ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a66991d69ce531a3984670bff9fbb1db2fe48d3e73142bd8fe"
 
 #------------------------------------------------------------------------------
 perlcritic() {
@@ -449,10 +451,9 @@ perlcritic() {
   # (= $PWD), matching how perltidy finds .perltidyrc.
   exec docker run "${args[@]}" "${image[perlcritic]}" perlcritic "$@"
 }
-# SYNC: keep this tag+digest in lock-step with the perlcritic hook in
-# .pre-commit-config.yaml and the publish-tool-images matrix (re-pin after a
-# publish; see the perltidy note above).
-image[perlcritic]="ghcr.io/harleypig/perlcritic:1.156@sha256:a1e4413ee095894c3ad5e72fadc10057fc955cb42a9ab05c54868ede915c6e26"
+# SYNC: the same combined perl-tools image as image[perltidy] above; keep the
+# two identical (see the perltidy note for every other place it is pinned).
+image[perlcritic]="ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a66991d69ce531a3984670bff9fbb1db2fe48d3e73142bd8fe"
 
 #------------------------------------------------------------------------------
 trivy() {
