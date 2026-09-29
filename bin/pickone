@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+
+warn() { printf '%s\n' "$@" >&2; }
+
+usage() {
+  cat >&2 << 'EOF'
+Usage: choice=$(pickone [-q] [-d default] [-p 'prompt'] option...)
+
+Show the options as a numbered menu and read a number. Reprompts on invalid
+input; prints the chosen option to stdout.
+
+Options:
+  -d, --default VALUE   Option chosen on empty input (must be one of them)
+  -p, --prompt TEXT     Prompt text (default: 'Choose one:')
+  -q, --quiet           Suppress warning on invalid input
+  -h, --help            Show this help
+EOF
+  exit "${1:-0}"
+}
+
+#-----------------------------------------------------------------------------
+: << POD
+=head2 pickone
+
+Usage: choice=E<36>(pickone [-q] [-d default] [-p 'prompt'] option...)
+
+C<pickone> lists its arguments as a numbered menu on stderr and waits for the
+number of one of them. Anything else is ignored and the user is reprompted;
+without C<-q>, invalid input also prints a warning to stderr. The chosen
+option, not its number, is printed to stdout.
+
+With C<-d>, an empty answer selects that option. The default must be one of
+the options; the menu marks it with C<*>.
+
+Exit status: 0 with a choice made, 1 if input ends before one is made, 2 on a
+usage error.
+
+=cut
+POD
+
+#-----------------------------------------------------------------------------
+quiet=0
+default=
+prompt='Choose one:'
+
+while [[ ${1-} == -* ]]; do
+  case $1 in
+    -q | --quiet)
+      quiet=1
+      shift
+      ;;
+
+    -d | --default)
+      [[ $# -ge 2 ]] || {
+        warn "$1 needs a value"
+        exit 2
+      }
+
+      default=$2
+      shift 2
+      ;;
+
+    -p | --prompt)
+      [[ $# -ge 2 ]] || {
+        warn "$1 needs a value"
+        exit 2
+      }
+
+      prompt=$2
+      shift 2
+      ;;
+
+    -h | --help) usage ;;
+
+    --)
+      shift
+      break
+      ;;
+
+    *)
+      warn "Unknown option: $1"
+      exit 2
+      ;;
+  esac
+done
+
+options=("$@")
+
+((${#options[@]})) || {
+  warn 'No options given'
+  usage 2
+}
+
+#-----------------------------------------------------------------------------
+# Resolve the default to its menu number, rejecting one not on the menu.
+
+default_num=0
+
+if [[ -n $default ]]; then
+  for i in "${!options[@]}"; do
+    [[ ${options[i]} == "$default" ]] && default_num=$((i + 1)) && break
+  done
+
+  ((default_num)) || {
+    warn "Default is not one of the options: $default"
+    exit 2
+  }
+fi
+
+#-----------------------------------------------------------------------------
+for i in "${!options[@]}"; do
+  mark=' '
+  ((i + 1 == default_num)) && mark='*'
+  printf '%s%2d) %s\n' "$mark" "$((i + 1))" "${options[i]}" >&2
+done
+
+while true; do
+  read -r -p "$prompt " answer || exit 1
+
+  [[ -z $answer ]] && ((default_num)) && answer=$default_num
+
+  if [[ $answer =~ ^[0-9]+$ ]] && ((10#$answer >= 1 && 10#$answer <= ${#options[@]})); then
+    printf '%s\n' "${options[10#$answer - 1]}"
+    exit 0
+  fi
+
+  ((quiet)) || warn "Please enter a number from 1 to ${#options[@]}"
+done

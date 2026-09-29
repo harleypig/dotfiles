@@ -65,6 +65,15 @@ version-gated syntax by default, though it does accept a `# shellcheck
 shell=bash` directive and has some version awareness worth investigating
 before building anything.
 
+**Data source:** the bash-hackers *bash changes* page, a version-by-version
+record of when each feature arrived — the [archived original][bashchanges-wa]
+(bash-hackers.org itself is dead) and its [community-maintained
+mirror][bashchanges-flokoe]
+([#390](https://github.com/harleypig/dotfiles/issues/390)).
+
+[bashchanges-wa]: https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges
+[bashchanges-flokoe]: https://flokoe.github.io/bash-hackers-wiki/scripting/bashchanges/
+
 ## Extending `cleanpath` to other path variables
 
 **Revisit if** duplicates actually show up in `LD_LIBRARY_PATH`, `MANPATH`, or
@@ -136,3 +145,45 @@ The honest reason this is deferred rather than planned: a template library is
 only worth its maintenance when several repos consume it, and the pattern here
 has been the opposite — each repo's config has been tuned to that repo. The
 Rule of Three has not fired.
+
+## Taskwarrior helper scripts: vendoring rejected
+
+**Revisit if** the taskwarrior shell module is reactivated (renamed off
+`_inactive` and its leading `return 0` dropped) and a script turns out to be
+wanted in daily use.
+
+Rejected strand of [#359](https://github.com/harleypig/dotfiles/issues/359):
+whether to vendor any of taskwarrior's bundled helper scripts (hooks,
+add-ons, completion, editor syntax) into this repo, with a `SOURCE.md`.
+
+The source-built task 3.3.0 here installs them under
+`/usr/local/share/doc/task/scripts/`, not the Debian
+`/usr/share/doc/task/scripts/` the item named. What is there is example
+hooks (`on-add`, `on-exit`, …), bash and fish completion, vim syntax files,
+and an `add-ons/README` that only points to taskwarrior.org/tools — samples
+and editor/shell integration, not helpers worth carrying a vendored copy of.
+
+It is rejected rather than deferred because nothing here would use it:
+`config/shell-startup/taskwarrior_inactive` opens with `return 0`, so the
+module is off, and installing taskwarrior itself (and so its bundled
+scripts) is the ansible-stuff repo's job, not this one's.
+
+## `column_ansi` for motd's colourised columns: rejected
+
+**Revisit if** motd gains a `column` input whose cells in one column carry
+colour codes of different lengths, or mixes coloured and plain cells in the
+same column.
+
+Rejected strand of [#359](https://github.com/harleypig/dotfiles/issues/359):
+<https://github.com/LukeSavefrogs/column_ansi>, a `column(1)` replacement
+that ignores ANSI escape sequences when measuring width. Plain `column`
+counts the escape bytes, so colourised table cells can misalign.
+
+It does not bite here. The only coloured `column` input in `bin/motd` is the
+Docker container table (the `column -t -s ','` near line 207): every state
+cell is wrapped in `c_ok` (green) or `c_alert` (red) plus `c_off`. Red and
+green are the same length in both branches — `\033[31m` / `\033[32m` from
+`ansi`, `\033[0;31m` / `\033[0;32m` from the fallback — so every cell in a
+column carries identical overhead and the columns still align. Checked by
+running mixed red/green rows through `column -t` and stripping the codes:
+aligned. The fail2ban tables use `column` too but are uncoloured.
