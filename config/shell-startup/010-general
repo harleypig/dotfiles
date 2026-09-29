@@ -182,11 +182,15 @@ shopt -s cmdhist histappend histreedit histverify
 alias h='history'
 
 #-----------------------------------------------------------------------------
-# Mimic Zsh run-help ability
-# Press alt+h to get help for word on cursor
-# https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
-# See inputrc for macros
-#run-help() { help "$READLINE_LINE" 2>/dev/null || man "$READLINE_LINE"; }
+# Alt+h: help for the command word (the line's first word, as zsh's
+# run-help does) via bin/run-help. READLINE_LINE exists only inside this
+# bind -x handler, so it is passed as an argument. bind needs line editing,
+# hence the tty check.
+
+if [[ -t 0 ]]; then
+  # shellcheck disable=SC2016  # expands when the key fires, not now
+  bind -x '"\eh": run-help "${READLINE_LINE%% *}"'
+fi
 
 #-----------------------------------------------------------------------------
 # Vault
