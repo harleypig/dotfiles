@@ -27,8 +27,8 @@ point at it; warns/links at login via `config/shell-startup/zzz-check-dotvim`.
 machine.
 
 **cleanpath**
-Clean and deduplicate PATH variable entries. Removes duplicate directories from
-colon-separated paths.
+Clean and deduplicate PATH variable entries. Removes duplicate directories
+from colon-separated paths.
 *Note: Needs work - see TODO comments in file*
 
 **CleanPath.tmp**
@@ -57,8 +57,8 @@ Handles various input formats (y/n, yes/no, etc.)
 ### System and Information Utilities
 
 **bash-colors**
-Display available bash color codes and formatting options. Useful reference for
-terminal color scripting.
+Display available bash color codes and formatting options. Useful reference
+for terminal color scripting.
 
 **dateh**
 Human-readable date formatting utility. Converts or displays dates in friendly
@@ -79,8 +79,8 @@ Display Unicode character information and code points. Useful for debugging
 character encoding issues.
 
 **showvars**
-Display environment variables with formatting. Useful for debugging environment
-setup.
+Display environment variables with formatting. Useful for debugging
+environment setup.
 
 **vimwhich**
 Open the script found by 'which' command in Vim. Combines `which` + `vim`.
@@ -161,11 +161,11 @@ Clean or validate perltidyrc configuration files.
 
 **gen-package-doc**
 Render [`docs/packages.md`](packages.md) from `config/packages/manifest.json`,
-the source-of-truth catalog of the standard package set installed *through* the
-version managers (pipx/uv). Run with no argument to regenerate the doc in place,
-or `--check` to fail (non-zero) when the committed doc has drifted from the
-manifest — the latter is wired into the test suite as a sync guard. Edit the
-manifest, never the generated doc.
+the source-of-truth catalog of the standard package set installed *through*
+the version managers (pipx/uv). Run with no argument to regenerate the doc in
+place, or `--check` to fail (non-zero) when the committed doc has drifted from
+the manifest — the latter is wired into the test suite as a sync guard. Edit
+the manifest, never the generated doc.
 
 ### Application-Specific Utilities
 

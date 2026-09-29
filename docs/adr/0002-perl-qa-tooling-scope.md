@@ -12,8 +12,8 @@ Not all fit this repo, which has exactly **two** Perl files — both **scripts**
 (`bin/parse_params`, `bin/perltidyrc-clean`), package `main`, no Perl modules.
 Some candidates duplicate the gate that already exists.
 
-The gate is a **pinned, private docker image per tool** (perltidy, perlcritic),
-run at pre-commit and in CI, with the curated **core-severity-4**
+The gate is a **pinned, private docker image per tool** (perltidy,
+perlcritic), run at pre-commit and in CI, with the curated **core-severity-4**
 `config/perl/perlcriticrc` as the profile. The perlbrew-managed Perl
 (`vmgr install perl`) carries the same tools for local development.
 
@@ -25,9 +25,9 @@ run at pre-commit and in CI, with the curated **core-severity-4**
   immediately caught a real bug (a non-ASCII em-dash with no `=encoding`).
 - **Test::Perl::Critic — skip.** Running perlcritic in-process in the suite is
   redundant with the docker gate and **non-deterministic**: it uses whatever
-  Perl::Critic policies are installed, so a dev machine loaded with third-party
-  policy bundles fails where CI (core-only) passes. The core-only docker gate
-  is deterministic and sufficient.
+  Perl::Critic policies are installed, so a dev machine loaded with
+  third-party policy bundles fails where CI (core-only) passes. The core-only
+  docker gate is deterministic and sufficient.
 - **Test::Pod::Coverage — skip.** Pod::Coverage checks a package's public
   subs; the CLIs are package `main` with ~25 **private** helper subs and no
   module-style public API. Their interface is the CLI, documented in the
