@@ -58,3 +58,12 @@ Test::Pod — with the heavier, redundant, or ill-fitting tools deliberately
 out. Each "defer" is anchored to a concrete revisit trigger (the Perl surface
 growing). These are reversible tooling-scope calls, recorded here so they are
 not silently re-litigated when the Perl Setup TODO items are pruned.
+
+## Update (2026-09-29): one combined image, not an image per tool
+
+The gate described under *Context* as "a pinned, private docker image per
+tool" is now **one** pinned, private image, `ghcr.io/harleypig/perl-tools`,
+holding both perltidy and perlcritic (#362). It is the same parameterized
+`config/docker/perl-tools/Dockerfile` built with both modules; the wrapper
+and the pre-commit hooks name the tool on the command line. The decisions
+above are unchanged — only the packaging of the gate moved.

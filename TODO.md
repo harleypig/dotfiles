@@ -16,15 +16,6 @@
       trick) is the only way to verify a real tool's activation today.
       (Surfaced during PR #411's manual verification, 2026-09-16.)
 
-- [ ] Re-point `bin/docker_wrapper`'s `image[perltidy]`/`image[perlcritic]`
-      and the perltidy/perlcritic pre-commit hooks
-      (`.pre-commit-config.yaml`, `.pre-commit-config-fix.yaml`) to the new
-      combined `ghcr.io/harleypig/perl-tools:1.0.0` image once it's
-      published (its digest is only known after this PR merges and CI
-      publishes it — `docker pull ghcr.io/harleypig/perl-tools:1.0.0` then
-      `docker inspect --format '{{index .RepoDigests 0}}'`), then remove
-      the now-redundant `perltidy`/`perlcritic` matrix entries and delete
-      their ghcr packages. Part of #362.
 - [ ] Add `bats-support`, `bats-assert`, and `bats-file` to `WORKFLOW.md`'s
       *Prerequisites* list alongside `bats-core` — they are separate apt
       packages `common.bash`'s `load_bats_libs` assumes are already at

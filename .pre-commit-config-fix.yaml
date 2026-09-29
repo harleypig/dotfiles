@@ -96,17 +96,18 @@ repos:
       - id: yapf
         args: [-i, --style, config/yapf/style]
 
-  # Perl fixer (perltidy): ACTIVE. Same pinned PRIVATE image as the check hook
-  # in .pre-commit-config.yaml (keep the tag+digest in SYNC with it and with
-  # bin/docker_wrapper image[perltidy]; `docker login ghcr.io` required). It
-  # formats each file in place (`-b -bext=/`, no backup); `-se` sends errors to
-  # stderr instead of a stray .ERR file. Scoped to bin/ to match the check.
+  # Perl fixer (perltidy): ACTIVE. Same pinned PRIVATE perl-tools image as the
+  # check hooks in .pre-commit-config.yaml (keep the tag+digest in SYNC with
+  # them and with bin/docker_wrapper image[perltidy] / image[perlcritic];
+  # `docker login ghcr.io` required). It formats each file in place (`-b
+  # -bext=/`, no backup); `-se` sends errors to stderr instead of a stray .ERR
+  # file. Scoped to bin/ to match the check.
   - repo: local
     hooks:
       - id: perltidy
         name: perltidy -b (format in place)
         language: docker_image
-        entry: ghcr.io/harleypig/perltidy:20250912@sha256:61983dd2a1c283df0b839f8fa7a45bcbca5228c7a24495567cbabc3fa997f37b perltidy -b -bext=/ -se
+        entry: ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a66991d69ce531a3984670bff9fbb1db2fe48d3e73142bd8fe perltidy -b -bext=/ -se
         files: ^bin/
         types: [perl]
 
