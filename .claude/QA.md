@@ -1,6 +1,6 @@
 # Quality Assurance
 
-**Version:** v1.1.0
+**Version:** v1.1.1
 
 ## Purpose
 
@@ -80,7 +80,7 @@ code changed (see `CHANGELOG.md`).
   was skipped/declined/deferred: Test::Perl::Critic, Test::Pod::Coverage, perl
   SAST, B::Lint, B::Deparse, Perl::Analyzer, a perl-QA skill) are recorded in
   [ADR-0002](../docs/adr/0002-perl-qa-tooling-scope.md). The remaining perl
-  work (perlcritic severity ratchet, combined tool image) is in `TODO.md`.
+  work is #361 - perlcritic severity ratchet and #362 - combined tool image.
 - This doc must give **every** dimension a status; when a new dimension
   becomes relevant (e.g. a UI is added), update its row rather than leaving
   it silent.

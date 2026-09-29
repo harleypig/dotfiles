@@ -45,7 +45,8 @@ tmux_winidx_circled() {
 # havecmd (command -v) reports an existing ta alias/function too, so an
 # already-defined ta is not clobbered.
 # TODO: when multiple tmux sessions exist, have `ta` list them and let the
-# user choose, instead of always attaching the $USER session. See TODO.md.
+# user choose, instead of always attaching the $USER session. See #357 -
+# extract the tmux config.
 if havecmd ta; then
   #echo 'alias ta already exists'
   :

@@ -5,7 +5,7 @@ description: Detect and resolve un-managed (out-of-band) changes to this dotfile
 
 # shell-startup Guard
 
-**Version:** v1.0.0
+**Version:** v1.0.1
 
 `shell-startup` is the orchestrator that `~/.bash_profile` and `~/.bashrc`
 symlink to. Tool installers that "add themselves to your shell profile" write
@@ -99,8 +99,8 @@ Present the diff and offer these resolutions (do **not** pick one silently):
      module already supplies it.
    - **`bin/<tool>`** — an on-demand wrapper (`set the env, then exec <tool>
      "$@"`), for tool-only env that should **not** pollute every shell. See
-     the "Move env-polluting shell-startup setup into bin wrappers" pattern in
-     `TODO.md`.
+     the env-vs-bin split in `.claude/CONVENTIONS.md` *Shell-startup Module
+     Placement*.
 
    After moving, re-run `check` to confirm clean.
 

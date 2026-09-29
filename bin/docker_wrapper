@@ -374,8 +374,8 @@ ansible-lint() {
 # SYNC: the tag tracks ANSIBLE_LINT_VERSION in config/docker/ansible-lint/
 # Dockerfile and the publish-tool-images.yml matrix; bump all three together.
 # Tag-only for now (rolling, like the other linter images — digest-pinning is
-# queued in TODO.md); the image publishes on merge, so bin/ansible-lint works
-# once this lands on master.
+# part of #370 - re-home yamllint/ansible-lint); the image publishes on
+# merge, so bin/ansible-lint works once this lands on master.
 image["ansible-lint"]="ghcr.io/harleypig/ansible-lint:26.6.0"
 
 #------------------------------------------------------------------------------

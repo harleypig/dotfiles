@@ -61,7 +61,8 @@ repo's prior migrations follow:
 3. **symlink** — the file must physically live at a `$HOME` dotpath; link it
    from the repo via `bin/check-dotfiles`.
 4. **wrap** — the app hardcodes its path and offers no knob; run it inside a
-   namespace bind-mount that redirects the path (planned; see `TODO.md`).
+   namespace bind-mount that redirects the path (iceboxed; see ADR-0004
+   *Phase 3 status*).
 5. **remove** — the app is unused; delete the stray.
 
 ## Current vs. recommended mechanism
