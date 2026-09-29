@@ -115,7 +115,49 @@ cp bin-dirs-defaults ~/.bin-dirs
 # Edit ~/.bin-dirs to customize your PATH
 ```
 
-### 4. Test the Setup
+### 4. Set Up the Sibling Repositories
+
+Dotfiles expects three companion repositories cloned beside it, in
+`$PROJECTS_DIR` — the directory holding the dotfiles checkout, which
+`shell-startup` sets from where `~/.bash_profile` points (`~/projects` by
+default). Each is optional: when one is missing, login still completes, and
+the login checks that use it skip it or warn.
+
+- **[dotvim]** — the Vim configuration, expected at `$PROJECTS_DIR/dotvim`
+  (override with `$XDG_DOTVIM`). One command clones it with its submodules
+  and links `~/.vim` and `~/.vimrc`:
+
+  ```bash
+  check-dotvim --setup
+  ```
+
+  Every interactive login re-runs the check (without `--setup`) and warns if
+  dotvim is missing or its links are wrong; touch `~/.nocheckdotvim` to skip
+  it.
+
+- **[dotagents]** — the Claude Code agent configuration, developed at
+  `$PROJECTS_DIR/dotagents`. The live installation at `~/.claude` is a
+  separate clone that dotagents installs and updates itself, with its own
+  `bin/publish-config`; dotfiles does not link it. See dotagents'
+  [installations inventory][dotagents-installs].
+
+  ```bash
+  git clone git@github.com:Harleypig-LLC/dotagents.git "$PROJECTS_DIR/dotagents"
+  ```
+
+- **private_dotfiles** — a private repository, expected at
+  `$PROJECTS_DIR/private_dotfiles`. It holds what cannot be published: the
+  API keys loaded at login, the per-scope credentials `ghx` and `linx` read,
+  and `private-dotlinks-default`, the private counterpart of
+  `dotlinks-default`. Clone it from its private remote to that path; the
+  next interactive login links its dotlinks entries. Override the list with
+  `~/.privatedotlinks`, or touch `~/.nocheckprivatelinks` to skip it.
+
+[dotvim]: https://github.com/harleypig/dotvim
+[dotagents]: https://github.com/Harleypig-LLC/dotagents
+[dotagents-installs]: https://github.com/Harleypig-LLC/dotagents/blob/master/docs/INSTALLATIONS.md
+
+### 5. Test the Setup
 
 ```bash
 # Start a new login shell to test
@@ -129,7 +171,7 @@ echo "XDG_CONFIG_HOME: $XDG_CONFIG_HOME"
 complete -p | grep git
 ```
 
-### 5. (Optional) Enable pre-commit hooks
+### 6. (Optional) Enable pre-commit hooks
 
 The repo ships two [pre-commit] configs: `.pre-commit-config.yaml`
 (check-only, gates `git commit`) and `.pre-commit-config-fix.yaml`
