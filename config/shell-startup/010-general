@@ -18,7 +18,6 @@ export CVS_RSH='ssh'
 #-----------------------------------------------------------------------------
 # https://wiki.archlinux.org/index.php/Core_Utilities#grep
 export GREP_COLORS="mt=1;33"
-#export GREP_COLOR="$GREP_COLORS"
 
 #-----------------------------------------------------------------------------
 export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
