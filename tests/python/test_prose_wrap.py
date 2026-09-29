@@ -247,3 +247,99 @@ def test_fix_is_idempotent(tmp_path):
   second = path.read_text(encoding="utf-8")
 
   assert first == second
+
+
+# --fix must not touch structure (#426) ---------------------------------
+#
+# Each case below pairs a structural shape with an overlong prose line in the
+# same run, so the fixer has a reason to reflow and the only thing keeping
+# the structure intact is its boundary rule. Without the overlong line the
+# paragraph gate alone would leave them untouched and the test would pass
+# vacuously against a fixer with no boundary rule at all.
+
+LONG = (
+  "This prose line is deliberately long so that it runs well past the "
+  "78-column wrap limit and gives the fixer a reason to act.\n"
+)
+
+
+def test_fix_keeps_list_continuation_indent(tmp_path):
+  # One continuation line is itself overlong, so the paragraph gate alone
+  # would let a reflow through; only the indented-line boundary keeps the
+  # block intact. Goes red if indented continuations are gathered into a
+  # paragraph: the join strips their indent (markdownlint MD032/MD029).
+  # The overlong line is left for hand-fixing, as a long list item is.
+  body = (
+    "1. The db says how a dotfile *should* be handled, but the tool never\n"
+    "   reports how it is *actually* handled right now, and this continuation "
+    "runs past the limit.\n"
+    "2. The second item also wraps onto a continuation line, which must keep\n"
+    "   its three-space indent to stay inside the item.\n"
+  )
+  path = _md(tmp_path, body)
+
+  assert _run_fix(path).returncode == 0
+  assert path.read_text(encoding="utf-8") == body
+
+
+def test_fix_keeps_nested_list_item(tmp_path):
+  # The docs/adr/0004 shape: nested items whose continuations sit four deep,
+  # one of them overlong. Goes red if those continuations are joined — they
+  # fold into long lines and lose their nesting.
+  body = (
+    "- **CLI as transitions:**\n"
+    "  - `xdg-audit --migrate <mechanism> <app|path>` — transition current\n"
+    "    to target; the mechanism is **required** — no silent default for a "
+    "mutation, ever.\n"
+    "    This is a breaking change to the shipped env-only form.\n"
+    "  - `xdg-audit --fix <app|path>` — sugar for the current mechanism.\n"
+  )
+  path = _md(tmp_path, body)
+
+  assert _run_fix(path).returncode == 0
+  assert path.read_text(encoding="utf-8") == body
+
+
+def test_fix_keeps_import_lines_separate(tmp_path):
+  # The .claude/CLAUDE.md shape, run straight into overlong prose with no
+  # blank line between. Goes red if `@path` lines are prose: the three
+  # imports join onto one line with the paragraph after them.
+  imports = "@WORKFLOW.md\n@CONVENTIONS.md\n@TESTS.md\n"
+  path = _md(tmp_path, imports + LONG)
+
+  assert _run_fix(path).returncode == 0
+
+  fixed = path.read_text(encoding="utf-8")
+  assert fixed.startswith(imports)
+  assert all(len(line) <= 78 for line in fixed.splitlines())
+
+
+def test_fix_leaves_compliant_paragraph_alone(tmp_path):
+  # A hand-wrapped paragraph with every line within the limit is not a
+  # defect, so --fix must not refill it. Goes red if every paragraph is
+  # rewrapped regardless: textwrap would pull "the" up onto line one.
+  body = (
+    "A paragraph its author wrapped short on\n"
+    "purpose, well within the limit, which the fixer has no business\n"
+    "refilling.\n"
+  )
+  path = _md(tmp_path, body)
+
+  assert _run_fix(path).returncode == 0
+  assert path.read_text(encoding="utf-8") == body
+
+
+def test_fix_still_reflows_overlong_paragraph_among_structure(tmp_path):
+  # Regression for the fix itself: with the new boundaries in place, an
+  # overlong plain paragraph next to a list is still reflowed. Goes red if
+  # the boundary rule swallows ordinary prose (e.g. treats every line as
+  # structure), leaving the overlong line in place.
+  body = "- a list item\n\n" + LONG
+  path = _md(tmp_path, body)
+
+  assert _run_fix(path).returncode == 0
+
+  fixed = path.read_text(encoding="utf-8")
+  assert fixed.startswith("- a list item\n\n")
+  assert len(fixed.splitlines()) > 3
+  assert _run(path).returncode == 0
