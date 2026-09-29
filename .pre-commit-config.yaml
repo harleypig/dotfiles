@@ -202,16 +202,19 @@ repos:
   # tables/reference-links/headings/URLs; and (2) flags inline-code spans
   # broken mid-identifier (an errant internal space glued to -_/. — an
   # identifier wrapped across a line). Runs on our authored docs only —
-  # vendored plugins, the cached changelog, and agent memory/plan trees are
-  # excluded. Gating: the corpus is clean, so this blocks a commit / CI on any
-  # new >78-col prose line or broken code span.
+  # TODO.md, README.md, docs/ and .claude/ (#384); docs/packages.md is
+  # excluded because bin/gen-package-doc generates it, and CHANGELOG.md is
+  # frozen history, so it is left out of the scope. Gating: the corpus is
+  # clean, so this blocks a commit / CI on any new >78-col prose line or
+  # broken code span.
   - repo: local
     hooks:
       - id: prose-wrap
         name: agent-config markdown hygiene (78-col prose + code spans)
         language: system
         entry: python3 tests/lint/prose_wrap.py
-        files: ^\.claude/.*\.md$
+        files: ^(TODO\.md|README\.md|docs/.*\.md|\.claude/.*\.md)$
+        exclude: ^docs/packages\.md$
 
   # xdg-audit program database. Prettier is the JSON formatter (fix config),
   # but was fix-only — so our overlays drifted between 2-space and 3-space.

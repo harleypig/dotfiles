@@ -73,8 +73,14 @@ repos:
   # hook in .pre-commit-config.yaml. Reflows plain prose paragraphs to 78
   # columns; leaves fenced code, frontmatter, headings, tables, reference
   # links, list items, and blockquotes untouched (see
-  # tests/lint/prose_wrap.py). Same `files` scope as the check hook — #384
-  # tracks widening both together.
+  # tests/lint/prose_wrap.py).
+  # FIXME: --fix does not leave list items alone as claimed. It strips the
+  # indent from list-item continuation lines, folds nested items into one
+  # over-long line, and joins .claude/CLAUDE.md's three @-import lines into
+  # one. So this hook keeps the narrow .claude/ scope rather than the check
+  # hook's wider one (#384) until the fixer is repaired; review its diff
+  # before committing anything it touched. Tracked in #426 - fixer mangles
+  # lists.
   - repo: local
     hooks:
       - id: prose-wrap-fix
