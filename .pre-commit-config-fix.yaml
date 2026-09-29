@@ -70,24 +70,22 @@ repos:
         types: [markdown]
 
   # prose-wrap --fix: the auto-fix companion to the check-only prose-wrap
-  # hook in .pre-commit-config.yaml. Reflows plain prose paragraphs to 78
-  # columns; leaves fenced code, frontmatter, headings, tables, reference
-  # links, list items, and blockquotes untouched (see
-  # tests/lint/prose_wrap.py).
-  # FIXME: --fix does not leave list items alone as claimed. It strips the
-  # indent from list-item continuation lines, folds nested items into one
-  # over-long line, and joins .claude/CLAUDE.md's three @-import lines into
-  # one. So this hook keeps the narrow .claude/ scope rather than the check
-  # hook's wider one (#384) until the fixer is repaired; review its diff
-  # before committing anything it touched. Tracked in #426 - fixer mangles
-  # lists.
+  # hook in .pre-commit-config.yaml. Reflows only the plain, unindented prose
+  # paragraphs the check would flag, to 78 columns; leaves fenced code,
+  # frontmatter, headings, tables, reference links, list items and their
+  # indented continuations, blockquotes, and @-import lines untouched (see
+  # tests/lint/prose_wrap.py). Its files:/exclude: match the check hook's
+  # exactly, so the two cover the same set: a fixer that reaches less leaves
+  # check failures it could have fixed, one that reaches more rewrites files
+  # nothing gates. #426 - fixer mangles lists.
   - repo: local
     hooks:
       - id: prose-wrap-fix
         name: agent-config markdown hygiene (78-col prose reflow)
         language: system
         entry: python3 tests/lint/prose_wrap.py --fix
-        files: ^\.claude/.*\.md$
+        files: ^(TODO\.md|README\.md|docs/.*\.md|\.claude/.*\.md)$
+        exclude: ^docs/packages\.md$
 
   # Phase 3 (Language) — Python fixers (manual). Same scope-exclude as the
   # check config; flake8 has no fix variant (lint-only). Run isort before yapf.

@@ -23,9 +23,12 @@ optional `--fix` mode that reflows overlong prose.
 
 **`--fix` mode** rewraps plain prose paragraphs to 78 columns, joining and
 refilling their lines. It is conservative: fenced code, frontmatter, ATX
-headings, table rows, reference-link definitions, list items, and
-blockquotes pass through untouched — only a run of plain, unindented prose
-lines (unambiguously one paragraph) is reflowed. Inline-code spans and
+headings, table rows, reference-link definitions, list items, blockquotes,
+any **indented** line (list-item continuations, nested list items, indented
+code), and `@path` import lines pass through untouched — only a run of
+plain, unindented prose lines (unambiguously one paragraph) is a candidate,
+and it is reflowed only when one of its lines is a check-1 defect, so a file
+the check already passes comes out byte-identical. Inline-code spans and
 `[text](url)` links are treated as a single unbreakable token, so a reflow
 can never split one across a line break (the exact defect check 2 above
 exists to catch).
@@ -74,6 +77,15 @@ BROKEN_SPAN_RE = re.compile(r"`[^ `]+[-_/.] [A-Za-z][^ `]*`")
 LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s")
 BLOCKQUOTE_RE = re.compile(r"^\s*>")
 
+# A line that opens with whitespace is never plain prose: it is a list-item
+# continuation, a nested item, or indented code, and its indent carries the
+# structure. Joining it into a paragraph strips that indent (#426).
+INDENTED_RE = re.compile(r"^\s")
+
+# A Claude Code memory import (`@WORKFLOW.md`) — one path per line, and the
+# line break is the separator, so joining two changes what is imported.
+IMPORT_RE = re.compile(r"^@\S+\s*$")
+
 
 def _collapse(line: str) -> str:
   """`line` with unbreakable tokens (links, inline code, URLs) reduced to a
@@ -81,6 +93,23 @@ def _collapse(line: str) -> str:
   collapsed = MDLINK_RE.sub("x", line)
   collapsed = INLINE_CODE_RE.sub("x", collapsed)
   return URL_RE.sub("x", collapsed)
+
+
+def _overlong_prose(line: str) -> bool:
+  """Whether `line` is a check-1 defect: over the limit, not an exempt
+  table row / reference link / heading, and still over once its
+  unbreakable tokens are collapsed. Shared by both modes so `--fix` touches
+  exactly what the check would flag."""
+  if len(line) <= LIMIT:
+    return False
+
+  if line.count("|") >= 2 or REF_LINK_RE.match(line):
+    return False
+
+  if HEADING_RE.match(line):
+    return False
+
+  return len(_collapse(line)) > LIMIT
 
 
 def violations(path: Path) -> list[tuple[int, str]]:
@@ -116,16 +145,7 @@ def violations(path: Path) -> list[tuple[int, str]]:
         "(identifier broken across a line?)"
       ))
 
-    if len(line) <= LIMIT:
-      continue
-
-    if line.count("|") >= 2 or REF_LINK_RE.match(line):
-      continue
-
-    if HEADING_RE.match(line):
-      continue
-
-    if len(_collapse(line)) <= LIMIT:
+    if not _overlong_prose(line):
       continue
 
     hits.append((num, f"prose line is {len(line)} cols (limit {LIMIT})"))
@@ -160,19 +180,26 @@ def _reflow_paragraph(lines: list[str]) -> list[str]:
 
 
 def reflow(text: str) -> str:
-  """`text` with its plain-prose paragraphs rewrapped to `LIMIT` columns.
-  Fenced code, frontmatter, headings, tables, reference links, list items,
-  and blockquotes pass through unchanged (see the module docstring)."""
+  """`text` with its overlong plain-prose paragraphs rewrapped to `LIMIT`
+  columns. Fenced code, frontmatter, headings, tables, reference links, list
+  items, blockquotes, indented lines, and `@path` imports pass through
+  unchanged (see the module docstring)."""
   lines = text.splitlines()
   out: list[str] = []
   para: list[str] = []
   in_code = False
   in_front = False
 
+  # A paragraph with no overlong line is left as its author wrapped it:
+  # refilling a compliant paragraph is churn the check never asked for.
   def flush() -> None:
-    if para:
+    if any(_overlong_prose(p) for p in para):
       out.extend(_reflow_paragraph(para))
-      para.clear()
+
+    else:
+      out.extend(para)
+
+    para.clear()
 
   for num, line in enumerate(lines, 1):
     stripped = line.strip()
@@ -201,7 +228,8 @@ def reflow(text: str) -> str:
     is_boundary = (
       not stripped or HEADING_RE.match(line) or line.count("|") >= 2
       or REF_LINK_RE.match(line) or LIST_ITEM_RE.match(line)
-      or BLOCKQUOTE_RE.match(line)
+      or BLOCKQUOTE_RE.match(line) or INDENTED_RE.match(line)
+      or IMPORT_RE.match(line)
     )
 
     if is_boundary:
