@@ -190,7 +190,7 @@ pre-commit run --all-files
 
 `--all-files` checks every file, as the CI `pre-commit` job does; a normal
 commit only checks the files it touches.
-See `.claude/rules/pre-commit.md` for the full command reference
+See the dotagents repo's `rules/pre-commit.md` for the full command reference
 (`install` variants, `autoupdate`, `validate-config`, `gc`).
 
 [pre-commit]: https://pre-commit.com/

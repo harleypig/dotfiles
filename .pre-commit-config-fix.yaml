@@ -1,8 +1,8 @@
 ---
 # Auto-fix pre-commit hooks (MODIFYING) — run MANUALLY, never on commit:
 #   pre-commit run --config .pre-commit-config-fix.yaml --all-files
-# The check-only gate is .pre-commit-config.yaml. Per
-# .claude/rules/pre-commit.md, run this once as a final prep step before
+# The check-only gate is .pre-commit-config.yaml. Per the dotagents repo's
+# rules/pre-commit.md, run this once as a final prep step before
 # committing, not mid-session in response to individual failures.
 #
 # Phase 1 (Core).

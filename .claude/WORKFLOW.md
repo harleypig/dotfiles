@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.16.1
+**Version:** v1.16.2
 
 ## Purpose
 
@@ -509,7 +509,8 @@ tag+digest in the pre-commit config(s) — re-pin the digest after it publishes
 * MUST follow phased implementation strategy.
 * MUST ensure CI workflows match pre-commit configuration.
 * MUST NOT advance to next phase until current phase is complete.
-* MUST document any new hooks in `.claude/rules/pre-commit.md`.
+* MUST document each new hook with a comment at its entry in the pre-commit
+  config(s), and in `.claude/QA.md`.
 
 ## Integration Points
 
