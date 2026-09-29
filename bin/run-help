@@ -1,9 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-#-----------------------------------------------------------------------------
-# Mimic Zsh run-help ability
-# Press alt+h to get help for word on cursor
+# Help for a command word: bash's builtin `help`, else its man page — the
+# zsh run-help idea, bound to Alt+h in config/shell-startup/010-general.
 # https://wiki.archlinux.org/title/Bash#Mimic_Zsh_run-help_ability
-# See inputrc for macros
+#
+# The word comes in as $1. bash sets READLINE_LINE only inside a `bind -x`
+# handler and never exports it, so this script cannot read it directly.
 
-help "$READLINE_LINE" 2> /dev/null || man "$READLINE_LINE"
+set -euo pipefail
+
+if (($# != 1)) || [[ -z $1 ]]; then
+  echo "usage: run-help <word>" >&2
+  exit 2
+fi
+
+help "$1" 2> /dev/null || man "$1"

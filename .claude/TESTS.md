@@ -134,7 +134,6 @@ pinning (the generated meta suite still static-checks them):
 - `anykey` — interactive single-key read.
 - `dateh` — date-format display; non-deterministic output.
 - `lwhich` / `vimwhich` — thin `which` / vim wrappers.
-- `run-help` — 9-line readline shim.
 - `show-unicode` — static table.
 - `bash-colors` — color-variable definitions.
 - `motd` — large pure-display system summary.
