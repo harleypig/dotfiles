@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.15.0
+**Version:** v1.16.0
 
 ## Purpose
 
@@ -380,6 +380,12 @@ verification, not by CI. Prefer the gated path for anything touching
 `shell-startup`, `config/shell-startup/`, or `lib/`.
 
 ### TODO Routing
+
+**`tracker: github`**
+
+Captured follow-ups are filed as GitHub issues, not appended to a planning
+file — the tracker sentinel (the dotagents repo's `rules/todo.md`), read from
+the working tree.
 
 This repo tracks its work as **GitHub issues** in
 [harleypig/dotfiles](https://github.com/harleypig/dotfiles/issues): `bin/`,
