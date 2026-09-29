@@ -1,7 +1,7 @@
 ---
 # Check-only pre-commit hooks (NON-MODIFYING) — run on `git commit` and gate
 # the commit. Auto-fixers live in .pre-commit-config-fix.yaml and are run
-# manually (see README + .claude/rules/pre-commit.md).
+# manually (see README + the dotagents repo's rules/pre-commit.md).
 #
 # Phased rollout (WORKFLOW.md). The remaining docs hooks are #385 - pre-commit
 # Phase 4, and must land here before CI is allowed to gate them.
@@ -11,7 +11,7 @@
 # They live in the fix config instead.
 #
 # Revs are pinned. Refresh with `pre-commit autoupdate` when drift is
-# suspected (see .claude/rules/pre-commit.md).
+# suspected (see the dotagents repo's rules/pre-commit.md).
 
 # archive/ = retired code; .vscode/syncsettings/ = machine-synced VS Code
 # profile data.

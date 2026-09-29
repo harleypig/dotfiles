@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.8
+**Version:** v2.7.0
 
 ## Purpose
 
@@ -104,6 +104,29 @@ throwaway container as a sandbox — a mistake there can never touch the host.
 
 These run wherever docker exists (CI, dev) and skip otherwise, so they sit in
 the same gating suite without breaking docker-less environments.
+
+### Verifying shell-startup by hand, on the host
+
+`shell-startup` finds the checkout only through a symlink: it sets
+`DOTFILES=$HOME`, and replaces that with the link target's directory only when
+`${BASH_SOURCE[0]}` is a symlink (its `[[ -L ${BASH_SOURCE[0]} ]]` check).
+Sourcing the file directly from a worktree path therefore leaves
+`DOTFILES=$HOME`, and `XDG_CONFIG_HOME` (`$DOTFILES/config`) with it, so the
+module directory does not exist and **every module load silently does
+nothing**. The harness gets this right because its entrypoint symlinks
+`~/.bash_profile` and `~/.bashrc` to `/dotfiles/shell-startup`.
+
+For an ad hoc host-side check, source it through a symlink the same way:
+
+```bash
+# /tmp/some-name is any throwaway path; the symlink is what matters.
+ln -sf /path/to/worktree/shell-startup /tmp/some-name && source /tmp/some-name
+```
+
+The docker harness image has no `mise`, so it cannot exercise the
+`config/shell-startup/mise` module's interactive `PROMPT_COMMAND` path. A
+host-side check with the symlink trick is the only way to verify a real
+tool's activation today.
 
 ## What must be tested here
 
