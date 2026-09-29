@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.6.7
+**Version:** v2.6.8
 
 ## Purpose
 
@@ -138,8 +138,7 @@ pinning (the generated meta suite still static-checks them):
 - `bash-colors` — color-variable definitions.
 - `motd` — large pure-display system summary.
 - `tmux_edit_buffer` — 5-line tmux glue.
-- `tmux_mode_indicator` — tmux format-string assembly only tmux evaluates
-  (its leftover `set -ex` cleanup is tracked separately in `TODO.md`).
+- `tmux_mode_indicator` — tmux format-string assembly only tmux evaluates.
 
 ## Coverage priorities (incremental)
 
@@ -209,7 +208,7 @@ check config via `pre-commit run --all-files`).
 - After adding or removing scripts, regenerate the meta tests
   (`tests/scaffold/build-meta-tests`) and review what it surfaces.
 - Never silence a failing test by ignoring it; fix the code, fix the test, or
-  record the debt in `TODO.md`.
+  file an issue for the debt.
 
 ## Questions
 

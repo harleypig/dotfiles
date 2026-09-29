@@ -3,8 +3,8 @@
 # the commit. Auto-fixers live in .pre-commit-config-fix.yaml and are run
 # manually (see README + .claude/rules/pre-commit.md).
 #
-# Phase 1 (Core). Security / language / docs hooks are tracked in TODO.md and
-# must land here before CI is allowed to gate them.
+# Phased rollout (WORKFLOW.md). The remaining docs hooks are #385 - pre-commit
+# Phase 4, and must land here before CI is allowed to gate them.
 #
 # trailing-whitespace / end-of-file-fixer are intentionally NOT here: those
 # hooks can only fix (they modify files), which would violate "check-only".

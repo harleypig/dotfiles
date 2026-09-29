@@ -19,7 +19,7 @@
 # Severity ladder (see the dotagents repo's rules/perlcritic.md): 5 = most
 # severe … 1 = brutal. We gate at 4 ("stern") and ratchet toward 1 in stages,
 # cleaning each level's findings before tightening. Bump `severity` below to
-# tighten; each step is tracked as a follow-up in TODO.md.
+# tighten; the staged ratchet is #361 - perlcritic severity ratchet.
 
 severity = 4
 verbose  = %f:%l:%c [%p] %m (severity %s)\n

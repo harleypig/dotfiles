@@ -12,10 +12,8 @@ version: 2
 
 updates:
   # Python tooling environment (Poetry manifest). cryptography is pinned
-  # directly in the manifest for alert #6; committing a poetry.lock so
-  # transitive deps are covered too is a tracked follow-up (see TODO.md).
-  # Dependabot's pip ecosystem updates the direct deps listed in
-  # pyproject.toml even without a committed lockfile.
+  # directly in the manifest for alert #6; the committed poetry.lock covers
+  # transitive deps too.
   - package-ecosystem: pip
     directory: /config/pypoetry
     schedule:

@@ -5,8 +5,7 @@ name: tests
 #   - bats:   the hand-written shell suite (tests/shell/test_*.bats) — gates
 #   - meta:   the generated static-check suite (tests/shell/*.meta.bats) over
 #             bin/, lib/, and skill helpers — shebang + bash -n + shellcheck +
-#             shfmt per file. Non-required first; promote to a required check
-#             once it has a clean track record (see TODO.md / WORKFLOW.md).
+#             shfmt per file. A required check (see WORKFLOW.md).
 #   - perl:   prove over tests/perl/ — gates (assertions are version-robust)
 #   - perl-compile: the perlbrew reconcile lifecycle (builds a real Perl +
 #             module set) — runs only when a PR touches the perl toolchain,

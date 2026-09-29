@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.14.0
+**Version:** v1.15.0
 
 ## Purpose
 
@@ -41,7 +41,8 @@ and `CLAUDE.md` for test-related operations.
 * **`CLAUDE.md`** - AI agent behavior specification
 * **`WORKFLOW.md`** - This file
 * **`TESTS.md`** - Testing framework and strategy
-* **`TODO.md`** - Consolidated task tracking
+* **`TODO.md`** - Temporary stub pointing at the GitHub issue list, where
+  work is tracked (see *TODO Routing*); #432 - remove this stub
 
 ## Development Workflow
 
@@ -83,7 +84,8 @@ When creating new configurations or modifying existing ones, agents MUST:
 
 ### Pre-commit Workflow
 
-**Policy:** See `.claude/rules/pre-commit.md` for complete rules.
+**Policy:** See the dotagents repo's `rules/pre-commit.md` for complete
+rules.
 
 **Quick reference:**
 
@@ -102,8 +104,8 @@ When creating new configurations or modifying existing ones, agents MUST:
 1. **Phase 1 (Core):** shellcheck, yamllint, markdownlint, trailing-whitespace
 2. **Phase 2 (Security):** gitleaks, detect-private-key
 3. **Phase 3 (Language):** Python, Perl, Rust hooks
-4. **Phase 4 (Docs):** Vale (prose; chosen over proselint — see `TODO.md`),
-   additional documentation linting
+4. **Phase 4 (Docs):** Vale (prose; chosen over proselint — see
+   #385 - Pre-commit Phase 4), additional documentation linting
 
 Agents MUST complete each phase before implementing the next. GitHub Actions
 CI workflows MUST NOT include hooks from a phase until that phase is complete
@@ -306,14 +308,13 @@ the dotagents repo's `skills/push-pr/SKILL.md` Step 5 and
 **Merge-time finalization (`merge-finalization: enforce`):**
 
 This repo opts in to the merge-time documentation finalization (push-pr
-Step 4.5). Completed items are **pruned outright** from `TODO.md` (and
-`ROADMAP.md` if one exists) once the PR that finishes them goes green,
-rather than left as `[x]` markers. The `merge-finalization: enforce`
-sentinel in the heading above activates the `PreToolUse` hook
-(`~/.claude/hooks/merge-finalization.py`), which **blocks** a `gh pr merge`
-/ `push.sh merge` while any completed `- [x]` items still remain in the
-planning docs. See the dotagents repo's `skills/push-pr/SKILL.md` and
-`rules/git.md`.
+Step 4.5). The `merge-finalization: enforce` sentinel in the heading above
+activates the `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`),
+which **blocks** a `gh pr merge` / `push.sh merge` while any completed
+`- [x]` items remain in the planning docs (`TODO.md`, and `ROADMAP.md` if
+one exists). Work is tracked as GitHub issues (*TODO Routing*), so `TODO.md`
+is a stub with no items: the hook finds nothing to prune and does not block.
+See the dotagents repo's `skills/push-pr/SKILL.md` and `rules/git.md`.
 
 The agent-config planning backlog now lives in the **dotagents** repo (it was
 extracted there with `config/claude`), so this repo's merge-finalization only
@@ -380,32 +381,29 @@ verification, not by CI. Prefer the gated path for anything touching
 
 ### TODO Routing
 
-This repo tracks all its work in one list, root [`TODO.md`](../TODO.md):
-`bin/`, `lib/`, `config/`, shell-startup, tests, CI, packaging, the OS/$HOME
-setup. Its former second list — the Claude-agent-config backlog — moved out
-with `config/claude` when that was extracted into the **dotagents** repo.
+This repo tracks its work as **GitHub issues** in
+[harleypig/dotfiles](https://github.com/harleypig/dotfiles/issues): `bin/`,
+`lib/`, `config/`, shell-startup, tests, CI, packaging, the OS/$HOME setup.
+Root [`TODO.md`](../TODO.md) is a stub pointing there; nothing is added to
+it.
 
-When capturing a follow-up, decide where it belongs before writing it:
+When capturing a follow-up, decide where it belongs before filing it:
 
-* **Dotfiles work** → root [`TODO.md`](../TODO.md).
+* **Dotfiles work** → an issue here, reconciled against the open issues and
+  labelled per the **github-issues** skill.
 * **Claude-agent-config work** (rules, skills, hooks, the agent-config docs,
-  plugin/MCP setup) → the **dotagents** repo, which now owns that config and
-  its own `audit/BACKLOG.md`. Capture it there directly when working in
-  dotagents; when it surfaces while you're here in dotfiles, treat it as a
-  **cross-repo** item (below).
-* **Cross-repo** → a follow-up that belongs to a **different repo than the one
-  you're in** (an agent-config item surfaced here and bound for dotagents; or
-  a global-config change spawning a per-repo evaluation for pigify /
-  scripturestudy-app). You usually can't write it into the target repo's
-  planning doc from here, so don't lose it: **capture it in the current repo's
-  `TODO.md`**, tagged with the **target repo** and a **migrate-on-next-visit
-  trigger** — e.g. "→ dotagents: migrate to its `BACKLOG.md` when next working
-  it". The reciprocal: when you **start work in a repo**, scan the other
-  repos' parking spots for items tagged to it and migrate them in. The
-  **github-tasks** sweep is the natural place to run that inbound check.
+  plugin/MCP setup) → an issue in the **dotagents** repo, which owns that
+  config. From a session here, file it with `~/.claude/bin/dotagents-capture`
+  — capture only, left untriaged for dotagents to judge (the dotagents repo's
+  `rules/todo.md`).
+* **Other cross-repo work** — a follow-up that belongs to a **different repo
+  than the one you're in**, such as a global-config change spawning a
+  per-repo evaluation for pigify / scripturestudy-app → an issue in the
+  **target repo**, filed there directly. It is not parked in this repo.
 
-`TODO.md` carries no routing preamble — only open tasks — per the global
-`rules/todo.md`.
+A deferred "not now" item is not an issue: it is an `ICEBOX:` note at the
+nearest code, or an entry in [`audit/ICEBOX.md`](../audit/ICEBOX.md) where
+no code anchors it.
 
 ## Tool Setup Procedures
 
@@ -528,7 +526,7 @@ See individual tool configurations for additional variables.
 
 ### Regular Tasks
 
-* Review and update `TODO.md` as tasks are completed
+* Review open issues and close them as tasks are completed
 * Update documentation when code changes
 * Run `pre-commit run --all-files` periodically
 * Review and address TODO/FIXME/XXX comments in code

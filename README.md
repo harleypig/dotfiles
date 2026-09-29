@@ -188,8 +188,8 @@ pre-commit run --config .pre-commit-config-fix.yaml --all-files
 pre-commit run --all-files
 ```
 
-`--all-files` surfaces pre-existing lint/format debt in legacy scripts
-(tracked in `TODO.md`); a normal commit only checks the files it touches.
+`--all-files` checks every file, as the CI `pre-commit` job does; a normal
+commit only checks the files it touches.
 See `.claude/rules/pre-commit.md` for the full command reference
 (`install` variants, `autoupdate`, `validate-config`, `gc`).
 
