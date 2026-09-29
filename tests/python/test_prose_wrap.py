@@ -343,3 +343,56 @@ def test_fix_still_reflows_overlong_paragraph_among_structure(tmp_path):
   assert fixed.startswith("- a list item\n\n")
   assert len(fixed.splitlines()) > 3
   assert _run(path).returncode == 0
+
+
+def test_fix_keeps_setext_underline_and_rules_separate(tmp_path):
+  # #439 item 1. Each marker sits flush against an overlong paragraph. Goes
+  # red if a setext underline or thematic break is read as prose: it is
+  # joined onto the refilled text and the heading or rule is lost.
+  for marker in ("=====", "---", "***", "___", "- - -"):
+    path = _md(tmp_path, LONG + marker + "\n" + LONG)
+
+    assert _run_fix(path).returncode == 0
+
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert marker in lines, marker
+    assert all(len(line) <= 78 for line in lines), marker
+
+
+def test_leading_rule_without_closing_is_not_frontmatter(tmp_path):
+  # #439 item 2. A `---` on line 1 with no closing partner is a thematic
+  # break, so the overlong line after it is prose. Goes red if it is taken
+  # as unclosed frontmatter: the check reports nothing and --fix skips it.
+  path = _md(tmp_path, "---\n" + LONG)
+
+  res = _run(path)
+  assert res.returncode == 1
+  assert "doc.md:2:" in res.stdout
+
+  assert _run_fix(path).returncode == 0
+
+  fixed = path.read_text(encoding="utf-8")
+  assert fixed.startswith("---\n")
+  assert _run(path).returncode == 0
+
+
+def test_closed_frontmatter_still_exempt_from_fix(tmp_path):
+  # Guard for the #439 frontmatter change: a closed block keeps its
+  # exemption, so an overlong value inside it is not reflowed.
+  front = "---\ndescription: " + "word " * 20 + "\n---\n"
+  path = _md(tmp_path, front + "Short prose.\n")
+
+  assert _run_fix(path).returncode == 0
+  assert path.read_text(encoding="utf-8") == front + "Short prose.\n"
+
+
+def test_fix_preserves_crlf_line_endings(tmp_path):
+  # #439 item 3. Goes red if a reflowed CRLF file is written back as LF.
+  path = tmp_path / "doc.md"
+  path.write_bytes(("Intro.\r\n\r\n" + LONG.replace("\n", "\r\n")).encode())
+
+  assert _run_fix(path).returncode == 0
+
+  raw = path.read_bytes()
+  assert raw.count(b"\n") == raw.count(b"\r\n")
+  assert raw.count(b"\r\n") > 3

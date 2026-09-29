@@ -23,12 +23,13 @@ optional `--fix` mode that reflows overlong prose.
 
 **`--fix` mode** rewraps plain prose paragraphs to 78 columns, joining and
 refilling their lines. It is conservative: fenced code, frontmatter, ATX
-headings, table rows, reference-link definitions, list items, blockquotes,
-any **indented** line (list-item continuations, nested list items, indented
-code), and `@path` import lines pass through untouched — only a run of
-plain, unindented prose lines (unambiguously one paragraph) is a candidate,
-and it is reflowed only when one of its lines is a check-1 defect, so a file
-the check already passes comes out byte-identical. Inline-code spans and
+headings, setext underlines and thematic breaks, table rows, reference-link
+definitions, list items, blockquotes, any **indented** line (list-item
+continuations, nested list items, indented code), and `@path` import lines
+pass through untouched — only a run of plain, unindented prose lines
+(unambiguously one paragraph) is a candidate, and it is reflowed only when
+one of its lines is a check-1 defect, so a file the check already passes
+comes out byte-identical. Inline-code spans and
 `[text](url)` links are treated as a single unbreakable token, so a reflow
 can never split one across a line break (the exact defect check 2 above
 exists to catch).
@@ -86,6 +87,25 @@ INDENTED_RE = re.compile(r"^\s")
 # line break is the separator, so joining two changes what is imported.
 IMPORT_RE = re.compile(r"^@\S+\s*$")
 
+# A setext underline (`===` / `---`) or a thematic break (`***`, `___`,
+# `- - -`). Either is a structural line of its own; folding it into the
+# paragraph beside it destroys a heading or a rule (#439).
+RULE_RE = re.compile(r"^(?:=+|-+|([-*_])(?: *\1){2,})\s*$")
+
+
+def _frontmatter_end(lines: list[str]) -> int:
+  """Index of the `---` closing a frontmatter block that opens the file, or
+  0 when there is none. A leading `---` with no closing partner is a
+  thematic break, not unclosed frontmatter (#439)."""
+  if not lines or lines[0].strip() != "---":
+    return 0
+
+  for index, line in enumerate(lines[1:], 1):
+    if line.strip() == "---":
+      return index
+
+  return 0
+
 
 def _collapse(line: str) -> str:
   """`line` with unbreakable tokens (links, inline code, URLs) reduced to a
@@ -116,19 +136,11 @@ def violations(path: Path) -> list[tuple[int, str]]:
   """`(line_number, message)` for every defect in `path`."""
   hits: list[tuple[int, str]] = []
   in_code = False
-  in_front = False
+  lines = path.read_text(encoding="utf-8").splitlines()
+  front_end = _frontmatter_end(lines)
 
-  for num, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-    stripped = line.strip()
-
-    # Frontmatter: a `---` fence pair opening the file.
-    if num == 1 and stripped == "---":
-      in_front = True
-      continue
-
-    if in_front:
-      if stripped == "---":
-        in_front = False
+  for num, line in enumerate(lines, 1):
+    if front_end and num <= front_end + 1:
       continue
 
     if FENCE_RE.match(line):
@@ -181,14 +193,14 @@ def _reflow_paragraph(lines: list[str]) -> list[str]:
 
 def reflow(text: str) -> str:
   """`text` with its overlong plain-prose paragraphs rewrapped to `LIMIT`
-  columns. Fenced code, frontmatter, headings, tables, reference links, list
-  items, blockquotes, indented lines, and `@path` imports pass through
-  unchanged (see the module docstring)."""
+  columns. Fenced code, frontmatter, headings, setext underlines, thematic
+  breaks, tables, reference links, list items, blockquotes, indented lines,
+  and `@path` imports pass through unchanged (see the module docstring)."""
   lines = text.splitlines()
   out: list[str] = []
   para: list[str] = []
   in_code = False
-  in_front = False
+  front_end = _frontmatter_end(lines)
 
   # A paragraph with no overlong line is left as its author wrapped it:
   # refilling a compliant paragraph is churn the check never asked for.
@@ -204,15 +216,8 @@ def reflow(text: str) -> str:
   for num, line in enumerate(lines, 1):
     stripped = line.strip()
 
-    if num == 1 and stripped == "---":
-      in_front = True
+    if front_end and num <= front_end + 1:
       out.append(line)
-      continue
-
-    if in_front:
-      out.append(line)
-      if stripped == "---":
-        in_front = False
       continue
 
     if FENCE_RE.match(line):
@@ -229,7 +234,7 @@ def reflow(text: str) -> str:
       not stripped or HEADING_RE.match(line) or line.count("|") >= 2
       or REF_LINK_RE.match(line) or LIST_ITEM_RE.match(line)
       or BLOCKQUOTE_RE.match(line) or INDENTED_RE.match(line)
-      or IMPORT_RE.match(line)
+      or IMPORT_RE.match(line) or RULE_RE.match(line)
     )
 
     if is_boundary:
@@ -271,14 +276,19 @@ def _fix_main(argv: list[str]) -> int:
   for arg in argv:
     path = Path(arg)
 
+    # Read undecoded newlines so a CRLF file is written back as CRLF;
+    # `read_text` would translate them to LF on the way in (#439).
     try:
-      original = path.read_text(encoding="utf-8")
-      fixed = reflow(original)
+      raw = path.read_bytes().decode("utf-8")
     except (OSError, UnicodeDecodeError):
       continue
 
+    newline = "\r\n" if "\r\n" in raw else "\n"
+    original = raw.replace("\r\n", "\n")
+    fixed = reflow(original)
+
     if fixed != original:
-      path.write_text(fixed, encoding="utf-8")
+      path.write_bytes(fixed.replace("\n", newline).encode("utf-8"))
       print(f"{path}: reflowed")
 
   return 0
