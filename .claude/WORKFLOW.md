@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.16.0
+**Version:** v1.16.1
 
 ## Purpose
 
@@ -420,6 +420,10 @@ Required tools for development:
 * `bash` (4.0+)
 * `git` (2.0+)
 * `bats-core` (for testing)
+* `bats-support`, `bats-assert` and `bats-file` (bats helper libraries) —
+  separate apt packages from `bats-core`. `load_bats_libs` in
+  `tests/helpers/common.bash` expects them under `/usr/lib/bats` (the
+  `BATS_LIB_PATH` default), so with `bats-core` alone the suite cannot run
 * `pre-commit` (for pre-commit hooks)
 
 Optional but recommended:
