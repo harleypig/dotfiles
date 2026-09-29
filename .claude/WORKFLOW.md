@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.16.2
+**Version:** v1.17.0
 
 ## Purpose
 
@@ -410,6 +410,29 @@ When capturing a follow-up, decide where it belongs before filing it:
 A deferred "not now" item is not an issue: it is an `ICEBOX:` note at the
 nearest code, or an entry in [`audit/ICEBOX.md`](../audit/ICEBOX.md) where
 no code anchors it.
+
+### Repo-local labels
+
+The label taxonomy is the dotagents repo's `summoned/labels.md`. This repo
+also uses the labels below, which that taxonomy does not declare. Apply them
+alongside the taxonomy's labels, never instead of them.
+
+| Label | Meaning |
+|-------|---------|
+| `configuration` | Tool, shell-startup or machine setup: `config/`, `shell-startup`, provisioning, per-machine migrations |
+| `ci` | CI and gating: GitHub Actions workflows, pre-commit phases, the pinned tool images |
+| `tests` | The test suite and its support: bats setup, the meta-test builder, the lint helpers under `tests/lint/` |
+| `code` | A change to product code in `bin/` or `lib/`, or to the code-quality bar applied to it |
+| `option parsing` | Command-line option parsing (so far only the `parse_params` library) |
+| `python` | Python code or dependencies; Dependabot applies it to its pip updates under `config/pypoetry` |
+| `codex` | A pull request opened by the OpenAI Codex agent, from a `codex/*` branch |
+| `patch` | A Dependabot pull request whose version bump is a patch release |
+
+**These names are not machine-recognised as declared.** The github-issues
+skill's step 1d label reconciliation reads a per-repo register only from
+first-cell tokens of the form `prefix:value`. Plain names like these do not
+match, so step 1d still reports them as *live, not declared*. Treat that
+finding as expected for the labels above; the fix belongs in dotagents.
 
 ## Tool Setup Procedures
 
