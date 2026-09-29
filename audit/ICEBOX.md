@@ -65,6 +65,15 @@ version-gated syntax by default, though it does accept a `# shellcheck
 shell=bash` directive and has some version awareness worth investigating
 before building anything.
 
+**Data source:** the bash-hackers *bash changes* page, a version-by-version
+record of when each feature arrived — the [archived original][bashchanges-wa]
+(bash-hackers.org itself is dead) and its [community-maintained
+mirror][bashchanges-flokoe]
+([#390](https://github.com/harleypig/dotfiles/issues/390)).
+
+[bashchanges-wa]: https://web.archive.org/web/20230401195427/https://wiki.bash-hackers.org/scripting/bashchanges
+[bashchanges-flokoe]: https://flokoe.github.io/bash-hackers-wiki/scripting/bashchanges/
+
 ## Extending `cleanpath` to other path variables
 
 **Revisit if** duplicates actually show up in `LD_LIBRARY_PATH`, `MANPATH`, or
