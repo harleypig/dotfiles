@@ -280,7 +280,7 @@ expiry_report() {
       continue
     fi
 
-    stamp=$(date -d "$raw" +%s 2> /dev/null) || {
+    stamp=$(date -u -d "$raw" +%s 2> /dev/null) || {
       printf '%-20s %s\n' "$name" "$raw"
       continue
     }
