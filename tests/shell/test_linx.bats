@@ -346,11 +346,10 @@ EOF
   # linx floors (expiry - now) / 86400, so an expiry of exactly +90 days reads
   # 89d once a second passes between building it and linx reading the clock
   # (#445). The 12-hour margin keeps the floor at 90 for any run shorter than
-  # that; it is half a day rather than an hour because linx parses the
-  # zone-less stamp as local time, which shifts it by the host's UTC offset
-  # (#446 - linx reads the UTC stamp as local time).
-  # The expected date comes from $when itself so the margin cannot push the
-  # two onto different days.
+  # that, however slow the runner.
+  # The margin can carry the stamp past midnight UTC when the host clock is
+  # late in the day, so the expected date comes from $when itself rather than
+  # from today + 90.
   local when
   when=$(date -u -d '+90 days +12 hours' '+%Y-%m-%dT%H:%M:%S')
 
@@ -360,6 +359,44 @@ EOF
   assert_output --partial "$(date -u -d "${when}Z" '+%Y-%m-%d')"
   assert_output --regexp ' 90d'
   refute_output --partial 'expiring soon'
+}
+
+#-----------------------------------------------------------------------------
+# Linode's stamps carry no zone but mean UTC (#446 - linx reads the UTC stamp
+# as local time). Each case sits 10 minutes from a day boundary, on the side
+# where misreading it as local time crosses that boundary: ahead of UTC reads
+# it early, behind UTC reads it late. 10 minutes is far longer than a run and
+# far shorter than either offset.
+
+# A zone that silently fails to load falls back to UTC, which would pass on
+# the broken code too.
+require_tz() {
+  [[ $(TZ=$1 date +%z) != +0000 ]] || skip "no tzdata for $1"
+}
+
+@test "--expiry reads the stamp as UTC on a host ahead of UTC" {
+  require_tz Asia/Tokyo
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  local when
+  when=$(date -u -d '+90 days +10 minutes' '+%Y-%m-%dT%H:%M:%S')
+
+  run env "PATH=$PATH" TZ=Asia/Tokyo "LINX_EXP=$when" "$LINX" --expiry
+  assert_success
+  assert_output --regexp ' 90d'
+}
+
+@test "--expiry reads the stamp as UTC on a host behind UTC" {
+  require_tz America/Los_Angeles
+  printf 'acme-fixture' > "$TOKENS/acme"
+
+  local when
+  when=$(date -u -d '+90 days -10 minutes' '+%Y-%m-%dT%H:%M:%S')
+
+  run env "PATH=$PATH" TZ=America/Los_Angeles "LINX_EXP=$when" "$LINX" \
+    --expiry
+  assert_success
+  assert_output --regexp ' 89d'
 }
 
 @test "--expiry flags a token close to expiry" {
