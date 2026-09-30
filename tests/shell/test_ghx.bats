@@ -319,14 +319,19 @@ EOF
 @test "--expiry reports each token's expiry and days remaining" {
   printf 'acme-fixture' > "$TOKENS/acme"
 
+  # ghx floors (expiry - now) / 86400, so an expiry of exactly +90 days reads
+  # 89d once a second passes between building it and ghx reading the clock
+  # (#445). The 12-hour margin keeps the floor at 90 for any run shorter than
+  # that, matching the linx test. The expected date comes from $when itself so
+  # the margin cannot push the two onto different days.
   local when
-  when=$(date -u -d '+90 days' '+%Y-%m-%d %H:%M:%S UTC')
+  when=$(date -u -d '+90 days +12 hours' '+%Y-%m-%d %H:%M:%S UTC')
 
   run env "PATH=$PATH" "GHX_EXP=$when" "$GHX" --expiry
   assert_success
   assert_output --partial 'acme'
-  assert_output --partial "$(date -u -d '+90 days' '+%Y-%m-%d')"
-  assert_output --regexp '9[01]d'
+  assert_output --partial "$(date -u -d "$when" '+%Y-%m-%d')"
+  assert_output --regexp ' 90d'
   refute_output --partial 'expiring soon'
 }
 
