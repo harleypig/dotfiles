@@ -343,14 +343,22 @@ EOF
 @test "--expiry reports each token's expiry and days remaining" {
   printf 'acme-fixture' > "$TOKENS/acme"
 
+  # linx floors (expiry - now) / 86400, so an expiry of exactly +90 days reads
+  # 89d once a second passes between building it and linx reading the clock
+  # (#445). The 12-hour margin keeps the floor at 90 for any run shorter than
+  # that; it is half a day rather than an hour because linx parses the
+  # zone-less stamp as local time, which shifts it by the host's UTC offset
+  # (#446 - linx reads the UTC stamp as local time).
+  # The expected date comes from $when itself so the margin cannot push the
+  # two onto different days.
   local when
-  when=$(date -u -d '+90 days' '+%Y-%m-%dT%H:%M:%S')
+  when=$(date -u -d '+90 days +12 hours' '+%Y-%m-%dT%H:%M:%S')
 
   run env "PATH=$PATH" "LINX_EXP=$when" "$LINX" --expiry
   assert_success
   assert_output --partial 'acme'
-  assert_output --partial "$(date -u -d '+90 days' '+%Y-%m-%d')"
-  assert_output --regexp '9[01]d'
+  assert_output --partial "$(date -u -d "${when}Z" '+%Y-%m-%d')"
+  assert_output --regexp ' 90d'
   refute_output --partial 'expiring soon'
 }
 
