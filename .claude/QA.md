@@ -1,15 +1,15 @@
 # Quality Assurance
 
-**Version:** v1.1.1
+**Version:** v1.1.2
 
 ## Purpose
 
 This is the **repo-specific** QA doc for the dotfiles repository: the concrete
 tools, commands, and a **per-dimension status** for every dimension in the
-global QA pipeline (the dotagents repo's `rules/qa.md`). `qa.md` owns the
-dimensions, their ordering, and the fix/check discipline (generic); this file
-records what each dimension *is* here. The **qa-check** skill reads this doc
-for the commands.
+global QA pipeline (the dotagents repo's `summoned/qa.md`). `qa.md` owns
+the dimensions, their ordering, and the fix/check discipline (generic); this
+file records what each dimension *is* here. The **qa-check** skill reads this
+doc for the commands.
 
 **Precedence:** `WORKFLOW.md` > `TESTS.md` > this file. Testing specifics live
 in `TESTS.md`; pre-commit policy in the dotagents repo's

@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.17.0
+**Version:** v1.17.1
 
 ## Purpose
 
@@ -187,14 +187,14 @@ advisory — the remote enforces it:
 * No bypass actors — even the owner goes through a PR.
 * A local `no-commit-to-branch` pre-commit hook also blocks a direct commit
   to `master` at commit time (early guard; the server ruleset is what
-  actually enforces it). See the dotagents repo's `rules/git.md`.
+  actually enforces it). See the dotagents repo's `summoned/git.md`.
 * The global `branch-protection.py` `PreToolUse` hook blocks an agent
   `Edit`/`Write`/`MultiEdit` while `master` is checked out — the earliest
   guard, at edit time (it allows plan files and gitignored, untracked files —
   local-only state that can't be committed). It derives the protected branch
   from the `no-commit-to-branch` args above, so this repo activates it
-  automatically. See the dotagents repo's `rules/git.md` *Protecting the Default
-  Branch*.
+  automatically. See the dotagents repo's `summoned/git.md` *Protecting the
+  Default Branch*.
 
 To change the ruleset, edit the JSON and re-apply. A plain `gh` uses the
 stored OAuth credential, which has the admin rights this needs — the old
@@ -299,22 +299,22 @@ merge-time finalization below (Step 4.5) is done, push-pr merges on its own —
 no separate "merge it" needed. push-pr reads this sentinel **from `master`**
 (the policy already in effect), not the working tree, so the PR that
 *introduces* the sentinel still merges manually — auto-merge applies from the
-**next** PR. The merge still goes through `push.sh merge`, which the ruleset
-gates (squash-only, required checks); the opt-in skips the prompt, **never**
-the checks. To revert to a manual merge gate, delete this sentinel. See
-the dotagents repo's `skills/push-pr/SKILL.md` Step 5 and
-`rules/gh.md`.
+**next** PR. The merge still goes through `gh pr merge --squash`, which the
+ruleset gates (squash-only, required checks); the opt-in skips the prompt,
+**never** the checks. To revert to a manual merge gate, delete this
+sentinel. See the dotagents repo's `skills/push-pr/SKILL.md` Step 5 and
+`summoned/gh.md`.
 
 **Merge-time finalization (`merge-finalization: enforce`):**
 
 This repo opts in to the merge-time documentation finalization (push-pr
 Step 4.5). The `merge-finalization: enforce` sentinel in the heading above
 activates the `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`),
-which **blocks** a `gh pr merge` / `push.sh merge` while any completed
+which **blocks** a `gh pr merge` while any completed
 `- [x]` items remain in the planning docs (`TODO.md`, and `ROADMAP.md` if
 one exists). Work is tracked as GitHub issues (*TODO Routing*), so `TODO.md`
 is a stub with no items: the hook finds nothing to prune and does not block.
-See the dotagents repo's `skills/push-pr/SKILL.md` and `rules/git.md`.
+See the dotagents repo's `skills/push-pr/SKILL.md` and `summoned/git.md`.
 
 The agent-config planning backlog now lives in the **dotagents** repo (it was
 extracted there with `config/claude`), so this repo's merge-finalization only
@@ -362,7 +362,7 @@ there is no queue-draining loop.
 Merge autonomy remains push-pr's, via `auto-merge: enabled` above; a
 zero-touch resolve needs **both** sentinels, and this repo has both. Every
 push-pr
-guardrail still applies — the ruleset-obeying `push.sh merge`, the five
+guardrail still applies — the ruleset-obeying `gh pr merge --squash`, the five
 required checks, and the `merge-finalization.py` hook.
 
 Read from the **default branch**, not the working tree — so the PR that
@@ -568,10 +568,13 @@ See individual tool configurations for additional variables.
 
 ### Versioning
 
-* `CLAUDE.md` - Versioned (see that file)
-* `WORKFLOW.md` - Versioned (this file, v1.6.0)
-* `TESTS.md` - Versioned (see that file)
-* `.claude/rules/*.md` - Individual versions
+Each of these carries its own `**Version:**` line near the top:
+
+* `WORKFLOW.md` (this file), `CONVENTIONS.md`, `TESTS.md` and `QA.md`
+* The repo-local skill, `.claude/skills/shell-startup-guard/SKILL.md`
+
+`.claude/CLAUDE.md` is unversioned: it only `@`-imports `WORKFLOW.md`,
+`CONVENTIONS.md` and `TESTS.md`.
 
 Update version numbers when making significant changes to these files.
 
