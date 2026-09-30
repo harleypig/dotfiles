@@ -1,6 +1,6 @@
 # Coding Conventions
 
-**Version:** v1.2.0
+**Version:** v1.2.1
 
 This document defines coding standards, style rules, and development
 principles for this repository. It is repository-specific and overrides
@@ -42,7 +42,8 @@ The principles below are a working subset relevant to this repository.
 
 This repo's QA map — the concrete tools, commands, and a per-dimension
 status for every dimension in the global QA pipeline (the dotagents repo's
-`rules/qa.md`) — lives in [`QA.md`](QA.md). The **qa-check** skill reads it.
+`summoned/qa.md`) — lives in [`QA.md`](QA.md). The **qa-check** skill reads
+it.
 
 ## Shell-startup Module Placement
 
