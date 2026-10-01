@@ -241,7 +241,6 @@ for specific tools:
 **Development Tools:**
 
 - **`aider`**: Aider AI coding assistant
-- **`ansible`**: Ansible automation configuration
 - **`binenv`**: Binary environment manager
 - **`git`**: Git configuration and aliases
 - **`go`**: Go language environment
