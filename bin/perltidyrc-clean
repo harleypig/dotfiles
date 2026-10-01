@@ -4,6 +4,9 @@ use warnings;
 use Getopt::Long qw(:config bundling pass_through);
 use Scalar::Util qw(looks_like_number);
 use File::Basename;
+use Carp qw(croak);
+use Cwd;
+use File::Spec;
 
 # ------------------------------------------------------------------------------
 
@@ -42,7 +45,7 @@ my $empty = "";                        # Declared here to remain valid for refer
 sub is_true {
   my ($value) = @_;
   return 0 unless defined $value;
-  return $value =~ /^[1-9]\d*$/ ? 1 : $value ? 1 : 0;
+  return $value =~ /^[1-9]\d*$/x ? 1 : $value ? 1 : 0;
 }
 
 # Checks if a value looks like an integer (not a decimal or scientific notation).
@@ -56,7 +59,7 @@ sub looks_like_integer {
 
   # Reject if string contains decimal point or scientific notation
   my $str = "$value";
-  return 0 if $str =~ /[.eE]/;
+  return 0 if $str =~ /[.eE]/x;
   return $value == int($value) ? 1 : 0;
 }
 
@@ -68,7 +71,7 @@ sub check_undefined_keys {
   return unless $hash_ref;             # Handle undef hash reference
   $context //= 'hash';
   foreach my $key ( keys %{$hash_ref} ) {
-    unless ( defined $key && $key ne '' ) {
+    if ( !defined $key || $key eq '' ) {
       die "Internal error: undefined or empty key found in $context\n";
     }
   }
@@ -80,8 +83,8 @@ sub check_undefined_keys {
 # Sections without numeric prefix return 999 to sort them at the end.
 sub section_order {
   my ($section) = @_;
-  return $1 if $section =~ /^(\d+(?:\.\d+)?)/;
-  return 999;
+  my ($order)   = $section =~ /^(\d+(?:\.\d+)?)/x;
+  return $order // 999;
 }
 
 # Calls Perl::Tidy::perltidy with parameter validation and error handling.
@@ -98,12 +101,12 @@ sub call_perltidy {
   my ( $params_ref, $context, $stderr_ref, $error_mode ) = @_;
 
   # Validate parameter hash (hashes always have even number of elements)
-  die "Internal error: invalid parameter hash for $context"
-    unless $params_ref && ref($params_ref) eq 'HASH' && keys( %{$params_ref} ) > 0;
+  croak "Internal error: invalid parameter hash for $context"
+    if !$params_ref || ref($params_ref) ne 'HASH' || !keys %{$params_ref};
 
   # Validate stderr reference
-  die "Internal error: stderr_ref must be a scalar reference for $context"
-    unless $stderr_ref && ref($stderr_ref) eq 'SCALAR';
+  croak "Internal error: stderr_ref must be a scalar reference for $context"
+    if !$stderr_ref || ref($stderr_ref) ne 'SCALAR';
 
   # Call Perl::Tidy::perltidy
   my $err = Perl::Tidy::perltidy( %{$params_ref} );
@@ -219,11 +222,11 @@ sub extract_outfile {
     # Combined regex: matches -o, --outfile, -ofilename,
     # --outfile=filename, or --outfilefilename (but we're not going to
     #document that last one)
-    if ( $arg =~ /^(?:-o|--outfile=?)(\S*)$/ ) {
+    if ( $arg =~ /^(?:-o|--outfile=?)(\S*)$/x ) {
       $outfile = $1;
 
       # If no filename attached, check next arg (if it's not an option)
-      if ( !$outfile && @$args && $args->[0] !~ /^-/ ) {
+      if ( !$outfile && @$args && $args->[0] !~ /^-/x ) {
         $outfile = shift @$args;
       } elsif ( !$outfile ) {
         die "Error: --outfile or -o requires a filename\n";
@@ -264,111 +267,89 @@ sub find_perltidyrc {
   return $config_file;
 } ## end sub find_perltidyrc
 
+# The absolute form of a path; an already-absolute path is returned as is.
+sub abs_path_of {
+  my ($path) = @_;
+  return File::Spec->file_name_is_absolute($path)
+    ? $path
+    : File::Spec->rel2abs($path);
+}
+
+# The absolute path of a named config file, dying if it cannot be read.
+sub readable_rc {
+  my ($rc_file) = @_;
+  unless ( -f $rc_file && -r $rc_file ) {
+    die "Error: config file '$rc_file' not found or not readable\n";
+  }
+  return abs_path_of($rc_file);
+}
+
+# The first --rc or --no-rc among the pass-through arguments, which Perl::Tidy
+# would honour. Returns ('rc', FILE), ('no-rc'), or an empty list for neither.
+# A trailing --rc with no value after it is ignored.
+sub rc_from_passthrough {
+  my ($perltidy_args) = @_;
+  foreach my $i ( 0 .. $#{$perltidy_args} ) {
+    my $arg = $perltidy_args->[$i];
+    if ( $arg =~ /^--rc=(.+)$/x ) {
+      return ( 'rc', $1 );
+    }
+    if ( $arg eq '--rc' && $i + 1 < @{$perltidy_args} ) {
+      return ( 'rc', $perltidy_args->[ $i + 1 ] );
+    }
+    if ( $arg eq '--no-rc' ) {
+      return ('no-rc');
+    }
+  }
+  return;
+}
+
+# The config file named by the PERLTIDY environment variable, which may be a
+# file or a directory holding a .perltidyrc. Returns undef when PERLTIDY is
+# unset or names nothing readable, so the caller falls through to a search.
+sub rc_from_env {
+  my $perltidy_env = $ENV{PERLTIDY};
+  return if !defined $perltidy_env;
+
+  if ( -f $perltidy_env && -r $perltidy_env ) {
+    return abs_path_of($perltidy_env);
+  }
+
+  if ( -d $perltidy_env ) {
+    my $rc_in_dir = File::Spec->catfile( $perltidy_env, '.perltidyrc' );
+    return abs_path_of($rc_in_dir) if -f $rc_in_dir && -r $rc_in_dir;
+  }
+
+  return;
+}
+
 # Get the config file location as Perl::Tidy sees it.
 # Returns: absolute path to config file, or 'none' if no config file.
 # If --rc is specified, use that value.
 # If --no-rc is specified, return 'none'.
-# Otherwise, find what Perl::Tidy would use.
+# Otherwise, find what Perl::Tidy would use: an --rc or --no-rc among the
+# pass-through arguments, then PERLTIDY, then Perl::Tidy's own search.
 sub get_config_location {
   my ( $rc_file, $perltidy_args ) = @_;
   $perltidy_args ||= [];
 
-  use Cwd;
-  use File::Spec;
-
   if ( defined $rc_file ) {
 
-    # If it's a scalar ref, it means --no-rc was used
-    if ( ref $rc_file eq 'SCALAR' ) {
-      return 'none';
-    }
-
-    # Otherwise, it's the --rc value
-    # Validate it exists and is readable
-    unless ( -f $rc_file && -r $rc_file ) {
-      die "Error: config file '$rc_file' not found or not readable\n";
-    }
-
-    # Use absolute path for clarity
-    my $abs_path =
-      File::Spec->file_name_is_absolute($rc_file)
-      ? $rc_file
-      : File::Spec->rel2abs($rc_file);
-    return $abs_path;
-  } ## end if ( defined $rc_file )
-
-  # No --rc specified, find what Perl::Tidy would use
-  # Check if --rc or --no-rc is in perltidy_args (pass-through args)
-  my $has_rc_in_args = 0;
-  my $rc_from_args;
-  for ( my $i = 0 ; $i < @$perltidy_args ; $i++ ) {
-    if ( $perltidy_args->[$i] =~ /^--rc=(.+)$/ ) {
-      $rc_from_args   = $1;
-      $has_rc_in_args = 1;
-      last;
-    } elsif ( $perltidy_args->[$i] eq '--rc' && $i + 1 < @$perltidy_args ) {
-      $rc_from_args   = $perltidy_args->[ $i + 1 ];
-      $has_rc_in_args = 1;
-      last;
-    } elsif ( $perltidy_args->[$i] eq '--no-rc' ) {
-      return 'none';
-    }
+    # A scalar ref means --no-rc was used; otherwise it is the --rc value.
+    return 'none' if ref $rc_file eq 'SCALAR';
+    return readable_rc($rc_file);
   }
 
-  if ($has_rc_in_args) {
-
-    # Use the --rc from perltidy_args
-    unless ( -f $rc_from_args && -r $rc_from_args ) {
-      die "Error: config file '$rc_from_args' not found or not readable\n";
-    }
-    my $abs_path =
-      File::Spec->file_name_is_absolute($rc_from_args)
-      ? $rc_from_args
-      : File::Spec->rel2abs($rc_from_args);
-    return $abs_path;
+  my ( $kind, $rc_from_args ) = rc_from_passthrough($perltidy_args);
+  if ( defined $kind ) {
+    return $kind eq 'no-rc' ? 'none' : readable_rc($rc_from_args);
   }
 
-  # No --rc in args, check PERLTIDY env var first, then find what Perl::Tidy would use
-  # PERLTIDY can be a file path or directory path
-  if ( exists $ENV{PERLTIDY} && defined $ENV{PERLTIDY} ) {
-    my $perltidy_env = $ENV{PERLTIDY};
-    if ( -f $perltidy_env && -r $perltidy_env ) {
+  my $from_env = rc_from_env();
+  return $from_env if defined $from_env;
 
-      # PERLTIDY points to a file
-      my $abs_path =
-        File::Spec->file_name_is_absolute($perltidy_env)
-        ? $perltidy_env
-        : File::Spec->rel2abs($perltidy_env);
-      return $abs_path;
-    } elsif ( -d $perltidy_env ) {
-
-      # PERLTIDY points to a directory, look for .perltidyrc in it
-      my $rc_in_dir = File::Spec->catfile( $perltidy_env, '.perltidyrc' );
-      if ( -f $rc_in_dir && -r $rc_in_dir ) {
-        my $abs_path =
-          File::Spec->file_name_is_absolute($rc_in_dir)
-          ? $rc_in_dir
-          : File::Spec->rel2abs($rc_in_dir);
-        return $abs_path;
-      }
-
-      # PERLTIDY directory exists but no .perltidyrc in it, fall through to search
-    }
-
-    # PERLTIDY is set but invalid, fall through to search
-  } ## end if ( exists $ENV{PERLTIDY...})
-
-  # No PERLTIDY or PERLTIDY didn't yield a valid config, find what Perl::Tidy would use
   my $found = find_perltidyrc();
-  if ($found) {
-    my $abs_path =
-      File::Spec->file_name_is_absolute($found)
-      ? $found
-      : File::Spec->rel2abs($found);
-    return $abs_path;
-  } else {
-    return 'none';
-  }
+  return $found ? abs_path_of($found) : 'none';
 } ## end sub get_config_location
 
 # Show the config file location as Perl::Tidy sees it.
@@ -479,222 +460,183 @@ sub user_defined_abbreviations {
   return %abbrev_user;
 }
 
+# Split 'name=value' into (name, value); anything else is (itself, undef).
+# The name is greedy, so 'a=b=c' splits as ('a=b', 'c').
+sub split_name_value {
+  my ($option) = @_;
+  if ( $option =~ /^(.+)=(.+)$/x ) {
+    return ( $1, $2 );
+  }
+  return ( $option, undef );
+}
+
+# Map each single-option abbreviation (short name) to its long name;
+# multi-option abbreviations are left out.
+sub build_short_to_long {
+  my ($abbreviations_default) = @_;
+  my %short_to_long;
+  foreach my $short ( keys %{$abbreviations_default} ) {
+    my @longs = @{ $abbreviations_default->{$short} };
+    if ( @longs == 1 ) {
+      $short_to_long{$short} = $longs[0];
+    }
+  }
+  return \%short_to_long;
+}
+
+# Map each multi-option expansion (its options, sorted and joined) to the
+# longest abbreviation name that produces it, across both the default and the
+# user-defined abbreviations: when act=0 and all-containers-tightness=0 expand
+# to the same options, the longer name wins.
+#
+# The caller iterates the returned hash, so it is returned by reference: a
+# copy would be rebuilt in a different insertion order.
+sub build_expansion_to_preferred {
+  my ( $abbreviations_default, $abbreviations ) = @_;
+  my %expansion_to_preferred;
+  my @abbr_sources = ($abbreviations_default);
+  push @abbr_sources, $abbreviations if $abbreviations;
+  foreach my $abbr_hash (@abbr_sources) {
+    foreach my $abbr_key ( keys %{$abbr_hash} ) {
+      my @mapped_opts = @{ $abbr_hash->{$abbr_key} };
+      next if @mapped_opts < 2;
+      my $expansion_key = join( '|', sort @mapped_opts );
+      my $current       = $expansion_to_preferred{$expansion_key};
+      if ( !defined $current || length($abbr_key) > length($current) ) {
+        $expansion_to_preferred{$expansion_key} = $abbr_key;
+      }
+    }
+  }
+  return \%expansion_to_preferred;
+} ## end sub build_expansion_to_preferred
+
+# Recursively expand an abbreviation to final long option names, as an array
+# ref. Handles cases like cti=2 -> cpi=2, cbi=2, csbi=2 ->
+# closing-paren-indentation=2, etc. A value on the abbreviation itself
+# (cpi=3) is carried onto every option it expands to, replacing any value
+# that option already had.
+sub expand_abbrev_to_long {
+  my ( $abbr, $abbr_hash, $short_to_long_hash ) = @_;
+  my ( $base_name, $value ) = split_name_value($abbr);
+
+  # A single-option abbreviation names its long option directly.
+  if ( exists $short_to_long_hash->{$base_name} ) {
+    my $long_name = $short_to_long_hash->{$base_name};
+    return [ defined $value ? "$long_name=$value" : $long_name ];
+  }
+
+  # A multi-option abbreviation, matched with any value it carries.
+  if ( exists $abbr_hash->{$abbr} ) {
+    return [ map { @{ expand_abbrev_to_long( $_, $abbr_hash, $short_to_long_hash ) } } @{ $abbr_hash->{$abbr} } ];
+  }
+
+  # Otherwise match on the base name alone (cpi for cpi=3).
+  return [] if !exists $abbr_hash->{$base_name};
+
+  my @expanded =
+    map { @{ expand_abbrev_to_long( $_, $abbr_hash, $short_to_long_hash ) } } @{ $abbr_hash->{$base_name} };
+  return \@expanded if !defined $value;
+  return [ map { ( split_name_value($_) )[0] . "=$value" } @expanded ];
+} ## end sub expand_abbrev_to_long
+
+# The options an abbreviation maps to, from the defaults first and then the
+# user-defined abbreviations, as an array ref; undef when neither has it.
+sub abbreviation_options {
+  my ( $abbr_key, $abbreviations_default, $abbreviations ) = @_;
+  if ( exists $abbreviations_default->{$abbr_key} ) {
+    return [ @{ $abbreviations_default->{$abbr_key} } ];
+  }
+  if ( $abbreviations && exists $abbreviations->{$abbr_key} ) {
+    return [ @{ $abbreviations->{$abbr_key} } ];
+  }
+  return;
+}
+
+# Expand each of an abbreviation's options to (long name, value) pairs. An
+# option that does not expand is tried as a direct short-to-long mapping, and
+# kept without a value if that fails too.
+sub long_name_value_pairs {
+  my ( $mapped_opt, $abbreviations_default, $short_to_long ) = @_;
+  my $expanded = expand_abbrev_to_long( $mapped_opt, $abbreviations_default, $short_to_long );
+  return map { [ split_name_value($_) ] } @{$expanded} if @{$expanded};
+
+  my ( $short, $val ) = split_name_value($mapped_opt);
+  if ( defined $val && exists $short_to_long->{$short} ) {
+    return [ $short_to_long->{$short}, $val ];
+  }
+  return [ $mapped_opt, undef ];
+}
+
+# The long names an abbreviation's options expand to, and the one value they
+# all share: (\@long_names, $value). Returns an empty list when any of them
+# has no value, the values differ, or nothing expands.
+sub collect_long_names {
+  my ( $mapped_opts, $abbreviations_default, $short_to_long ) = @_;
+  my @long_names;
+  my $expected_value;
+  foreach my $mapped_opt ( @{$mapped_opts} ) {
+    foreach my $pair ( long_name_value_pairs( $mapped_opt, $abbreviations_default, $short_to_long ) ) {
+      my ( $long_name, $val ) = @{$pair};
+      return if !defined $val;
+      return if defined $expected_value && $val ne $expected_value;
+      $expected_value = $val;
+      push @long_names, $long_name;
+    }
+  }
+  return if !@long_names;
+  return ( \@long_names, $expected_value );
+}
+
+# True when every named option is present in $opts with the given value.
+sub all_opts_equal {
+  my ( $opts, $long_names, $expected_value ) = @_;
+  foreach my $long_name ( @{$long_names} ) {
+    return 0
+      if !exists $opts->{$long_name}
+      || !defined $opts->{$long_name}
+      || $opts->{$long_name} ne $expected_value;
+  }
+  return 1;
+}
+
+# Condense options using abbreviations (e.g., pt=0, sbt=0, bt=0, bbt=0 ->
+# act=0): where every option an abbreviation expands to is set to the same
+# value, remove them and note that the abbreviation can replace them.
 sub condense_options {
   my ( $opts, $sections, $section_notes, $abbreviations, $abbreviations_default ) = @_;
+  return if !$abbreviations_default;
 
-  # Condense options using abbreviations (e.g., pt=0, sbt=0, bt=0, bbt=0 -> act=0)
-  if ($abbreviations_default) {
+  my $short_to_long          = build_short_to_long($abbreviations_default);
+  my $expansion_to_preferred = build_expansion_to_preferred( $abbreviations_default, $abbreviations );
 
-    # Build reverse mapping: short name -> long name
-    my %short_to_long;
-    foreach my $short ( keys %{$abbreviations_default} ) {
-      my @longs = @{ $abbreviations_default->{$short} };
+  # Iterate through preferred abbreviations only to find condensing
+  # opportunities; each value is already the preferred (longest) name.
+  foreach my $expansion_key ( keys %{$expansion_to_preferred} ) {
+    my $abbr_key    = $expansion_to_preferred->{$expansion_key};
+    my $mapped_opts = abbreviation_options( $abbr_key, $abbreviations_default, $abbreviations );
+    next if !$mapped_opts;
 
-      # Only map single-option abbreviations (not multi-option ones)
-      if ( @longs == 1 ) {
-        $short_to_long{$short} = $longs[0];
-      }
+    my ( $long_names, $expected_value ) = collect_long_names( $mapped_opts, $abbreviations_default, $short_to_long );
+    next if !$long_names;
+
+    # Skip if the abbreviation carries a value of its own that differs.
+    my ( undef, $abbr_value ) = split_name_value($abbr_key);
+    next if defined $abbr_value && $abbr_value ne $expected_value;
+
+    next if !all_opts_equal( $opts, $long_names, $expected_value );
+
+    # Remove the individual options and add notes
+    # Note: We don't add the abbreviation itself to $opts since abbreviations
+    # are not valid option names - they expand to multiple options.
+    # The user can use the abbreviation when writing the config file if desired.
+    foreach my $long_name ( @{$long_names} ) {
+      add_section_note(
+        $sections, $section_notes, $long_name,
+        "$long_name removed; can be condensed to $abbr_key"
+      );
+      delete $opts->{$long_name};
     }
-
-    # Build mapping of expansion patterns to preferred (longest) abbreviation name
-    # This handles recursive expansion: if act=0 and all-containers-tightness=0 expand
-    # to the same options, prefer the longer name
-    # Check both user-defined abbreviations and default abbreviations
-    my %expansion_to_preferred;
-    my @abbr_sources = ($abbreviations_default);
-    push @abbr_sources, $abbreviations if $abbreviations;
-    foreach my $abbr_hash (@abbr_sources) {
-      foreach my $abbr_key ( keys %{$abbr_hash} ) {
-        my @mapped_opts = @{ $abbr_hash->{$abbr_key} };
-        next unless @mapped_opts >= 2; # Only consider multi-option abbreviations
-                                       # Create a key from the expansion pattern (sorted for consistency)
-        my $expansion_key = join( '|', sort @mapped_opts );
-
-        # Prefer longer abbreviation names for the same expansion
-        if (!exists $expansion_to_preferred{$expansion_key}
-          || length($abbr_key) > length( $expansion_to_preferred{$expansion_key} ) ) {
-  $expansion_to_preferred{$expansion_key} = $abbr_key;
-        }
-      }
-    }
-
-    # Recursively expand abbreviations to get final long option names.
-    # A recursive lexical closure rather than a named nested sub: Perl scopes a
-    # named sub to the package regardless of nesting (perlcritic's
-    # ProhibitNestedSubs flags it), whereas an anonymous sub in a lexical stays
-    # private to condense_options. Handles cases like cti=2 -> cpi=2, cbi=2,
-    # csbi=2 -> closing-paren-indentation=2, etc.
-    my $expand_abbrev_to_long;
-    $expand_abbrev_to_long = sub {
-      my ( $abbr, $abbr_hash, $short_to_long_hash ) = @_;
-      my @result;
-
-      # Extract base name and value if present (e.g., 'cpi=3' -> 'cpi', '3')
-      my ( $base_name, $value );
-      if ( $abbr =~ /^(.+)=(.+)$/ ) {
-        $base_name = $1;
-        $value     = $2;
-      } else {
-        $base_name = $abbr;
-        $value     = undef;
-      }
-
-      # Check if base name expands to a long name (single-option abbreviation)
-      if ( exists $short_to_long_hash->{$base_name} ) {
-        my $long_name = $short_to_long_hash->{$base_name};
-        if ( defined $value ) {
-  push @result, "$long_name=$value";
-        } else {
-  push @result, $long_name;
-        }
-        return \@result;
-      }
-
-      # Check if abbreviation exists in hash (multi-option abbreviation)
-      if ( exists $abbr_hash->{$abbr} ) {
-        my @expanded = @{ $abbr_hash->{$abbr} };
-        foreach my $exp (@expanded) {
-
-  # Recursively expand each expanded option
-  my $expanded_result = $expand_abbrev_to_long->( $exp, $abbr_hash, $short_to_long_hash );
-  if (@$expanded_result) {
-    push @result, @$expanded_result;
-  }
-        }
-      }
-
-      # Also check base name without value (e.g., 'cpi' instead of 'cpi=3')
-      elsif ( exists $abbr_hash->{$base_name} ) {
-        my @expanded = @{ $abbr_hash->{$base_name} };
-        foreach my $exp (@expanded) {
-
-  # Recursively expand each expanded option, preserving value if present
-  my $expanded_result = $expand_abbrev_to_long->( $exp, $abbr_hash, $short_to_long_hash );
-  if (@$expanded_result) {
-    if ( defined $value ) {
-
-      # Apply value to each expanded option
-      foreach my $exp_opt (@$expanded_result) {
-        if ( $exp_opt =~ /^(.+)=(.+)$/ ) {
-  push @result, "$1=$value";           # Replace value
-        } else {
-  push @result, "$exp_opt=$value";     # Add value
-        }
-      }
-    } else {
-      push @result, @$expanded_result;
-    }
-  }
-        } ## end foreach my $exp (@expanded)
-      } ## end elsif ( exists $abbr_hash...)
-
-      return \@result;
-    }; ## end $expand_abbrev_to_long = sub
-
-    # Iterate through preferred abbreviations only to find condensing opportunities
-    foreach my $expansion_key ( keys %expansion_to_preferred ) {
-      my $abbr_key = $expansion_to_preferred{$expansion_key};
-
-      # Get mapped options from the correct hash (could be defaults or user-defined)
-      my @mapped_opts;
-      if ( exists $abbreviations_default->{$abbr_key} ) {
-        @mapped_opts = @{ $abbreviations_default->{$abbr_key} };
-      } elsif ( $abbreviations && exists $abbreviations->{$abbr_key} ) {
-        @mapped_opts = @{ $abbreviations->{$abbr_key} };
-      } else {
-        next;                          # Shouldn't happen, but be safe
-      }
-
-      # Extract value from abbreviation key if present (e.g., 'act=0' -> value='0')
-      my ( $abbr_name, $abbr_value );
-      if ( $abbr_key =~ /^(.+)=(.+)$/ ) {
-        $abbr_name  = $1;
-        $abbr_value = $2;
-      } else {
-        $abbr_name  = $abbr_key;
-        $abbr_value = undef;
-      }
-
-      # Recursively expand abbreviations to get final long option names
-      my @long_names;
-      my $expected_value;
-      my $all_have_values = 1;
-      foreach my $mapped_opt (@mapped_opts) {
-        my $expanded = $expand_abbrev_to_long->( $mapped_opt, $abbreviations_default, \%short_to_long );
-        if (@$expanded) {
-  foreach my $long_opt (@$expanded) {
-    if ( $long_opt =~ /^(.+)=(.+)$/ ) {
-      my $long_name = $1;
-      my $val       = $2;
-      push @long_names, $long_name;
-      if ( defined $expected_value ) {
-        $all_have_values = 0 unless $val eq $expected_value;
-      } else {
-        $expected_value = $val;
-      }
-    } else {
-      $all_have_values = 0;
-      last;
-    }
-  }
-        } else {
-
-  # Fallback: try direct mapping
-  if ( $mapped_opt =~ /^(.+)=(.+)$/ ) {
-    my $short = $1;
-    my $val   = $2;
-    if ( exists $short_to_long{$short} ) {
-      push @long_names, $short_to_long{$short};
-      if ( defined $expected_value ) {
-        $all_have_values = 0 unless $val eq $expected_value;
-      } else {
-        $expected_value = $val;
-      }
-    } else {
-      $all_have_values = 0;
-      last;
-    }
-  } else {
-    $all_have_values = 0;
-    last;
-  }
-        } ## end else [ if (@$expanded) ]
-      } ## end foreach my $mapped_opt (@mapped_opts)
-
-      # Skip if values don't match or if abbreviation value doesn't match
-      next unless $all_have_values && @long_names > 0;
-      if ( defined $abbr_value && $abbr_value ne $expected_value ) {
-        next;
-      }
-
-      # Check if all long names exist in $opts with matching values
-      my $all_match = 1;
-      foreach my $long_name (@long_names) {
-        unless ( exists $opts->{$long_name}
-          && defined $opts->{$long_name}
-          && $opts->{$long_name} eq $expected_value ) {
-  $all_match = 0;
-  last;
-        }
-      }
-      next unless $all_match;
-
-      # $abbr_key is already the preferred (longest) abbreviation name for this expansion
-      my $preferred_abbr = $abbr_key;
-
-      # Remove the individual options and add notes
-      # Note: We don't add the abbreviation itself to $opts since abbreviations
-      # are not valid option names - they expand to multiple options.
-      # The user can use the abbreviation when writing the config file if desired.
-      foreach my $long_name (@long_names) {
-        add_section_note(
-          $sections, $section_notes, $long_name,
-          "$long_name removed; can be condensed to $preferred_abbr"
-        );
-        delete $opts->{$long_name};
-      }
-    } ## end foreach my $expansion_key (...)
-  } ## end if ($abbreviations_default)
+  } ## end foreach my $expansion_key (...)
 
   return;
 } ## end sub condense_options
@@ -765,17 +707,62 @@ sub detect_conflicts {
   return;
 } ## end sub detect_conflicts
 
+# Render one option as a perltidyrc line (without the newline): --name,
+# --no-name for a false negatable flag, or --name=value with the value quoted
+# unless it is all digits. An unrecognised getopt flag is reported through
+# $append as it is met, ahead of the option itself.
+sub format_option {
+  my ( $long_name, $value, $flag, $append ) = @_;
+  my ( $prefix, $suffix ) = ( '--', '' );
+  if ($flag) {
+    if ( $flag =~ /^[=:]/x ) {
+      if ( $value !~ /^\d+$/x ) {
+        $value = '"' . $value . '"';
+      }
+      $suffix = '=' . $value;
+    } elsif ( $flag =~ /^!/x ) {
+      $prefix .= 'no-' unless $value;
+    } else {
+      $append->("# ERROR in dump_options: unrecognized flag $flag for $long_name\n");
+    }
+  }
+  return $prefix . $long_name . $suffix;
+}
+
+# Emit one section: its heading and notes (unless quiet), then its options in
+# name order, each marked when it equals its default under --keep-defaults.
+sub dump_section {
+  my ( $args, $section, $rname_value, $append ) = @_;
+
+  unless ( $args->{quiet} ) {
+    $append->("\n");
+    ( my $trimmed = $section ) =~ s/^\d+\.[ ]//x;
+    $append->("# $trimmed\n");
+    my $notes = $args->{section_notes}->{$section};
+    $append->("# NOTE: $_\n") for @{ $notes || [] };
+  }
+
+  check_undefined_keys( $rname_value, "dump_options section '$section'" ) if $rname_value;
+  foreach my $long_name ( sort keys %{$rname_value} ) {
+    my $long_option =
+      format_option( $long_name, $rname_value->{$long_name}, $args->{getopt_flags}->{$long_name}, $append );
+
+    if ( $args->{keep_defaults} && $args->{equals_default}->{$long_name} ) {
+      my $padding = 40 - length($long_option);
+      $padding = 2 if $padding < 2;    # Minimum 2 spaces
+      $long_option .= ' ' x $padding . "#  default";
+    }
+    $append->( $long_option . "\n" );
+  }
+
+  return;
+} ## end sub dump_section
+
 sub dump_options {
   my (%args) = @_;
 
-  # Extract variables needed for closure capture (used inside $append closure)
   my $destination = $args{destination};  # scalar ref or undef
-  my $cmdline     = $args{cmdline};
-  my $rc_origin   = $args{rc_origin};
-
-  # Extract variables that need default values
-  my $section_notes = $args{section_notes} // {};
-  my $keep_defaults = $args{keep_defaults} // 0;
+  $args{section_notes} //= {};
 
   check_undefined_keys( $args{opts},               'dump_options opts' )               if $args{opts};
   check_undefined_keys( $args{sections},           'dump_options sections' )           if $args{sections};
@@ -800,52 +787,13 @@ sub dump_options {
   unless ( $args{quiet} ) {
     my $date = localtime();
     $append->("# perltidy configuration file created $date\n");
-    $append->("# using: $cmdline\n");
-    $append->("# source: $rc_origin\n");
+    $append->("# using: $args{cmdline}\n");
+    $append->("# source: $args{rc_origin}\n");
   }
 
   foreach my $section ( sort { section_order($a) <=> section_order($b) || $a cmp $b } keys %saw_section ) {
-    unless ( $args{quiet} ) {
-      $append->("\n");
-      my $trimmed = $section;
-      $trimmed =~ s/^\d+\. //;
-      $append->("# $trimmed\n");
-      if ( my $notes = $section_notes->{$section} ) {
-        foreach my $note ( @{$notes} ) {
-  $append->("# NOTE: $note\n");
-        }
-      }
-    }
-
-    my $rname_value = $section_and_name{$section};
-    check_undefined_keys( $rname_value, "dump_options section '$section'" ) if $rname_value;
-    foreach my $long_name ( sort keys %{$rname_value} ) {
-      my $flag  = $args{getopt_flags}->{$long_name};
-      my $value = $rname_value->{$long_name};
-      my ( $prefix, $suffix ) = ( '--', '' );
-      if ($flag) {
-        if ( $flag =~ /^=/ || $flag =~ /^:/ ) {
-  if ( $value !~ /^\d+$/ ) {
-    $value = '"' . $value . '"';
+    dump_section( \%args, $section, $section_and_name{$section}, $append );
   }
-  $suffix = '=' . $value;
-        } elsif ( $flag =~ /^!/ ) {
-  $prefix .= 'no-' unless $value;
-        } else {
-  $append->("# ERROR in dump_options: unrecognized flag $flag for $long_name\n");
-        }
-      }
-
-      my $long_option = $prefix . $long_name . $suffix;
-
-      if ( $keep_defaults && $args{equals_default}->{$long_name} ) {
-        my $padding = 40 - length($long_option);
-        $padding = 2 if $padding < 2;  # Minimum 2 spaces
-        $long_option .= ' ' x $padding . "#  default";
-      }
-      $append->( $long_option . "\n" );
-    } ## end foreach my $long_name ( sort...)
-  } ## end foreach my $section ( sort ...)
 
   if ( %{ $args{abbreviations_user} } ) {
     unless ( $args{quiet} ) {
@@ -862,56 +810,47 @@ sub dump_options {
 } ## end sub dump_options
 
 # ------------------------------------------------------------------------------
+# Main Program
+# ------------------------------------------------------------------------------
 
-GetOptions(
-  'rc=s'                   => \$cli{rc},
-  'no-rc'                  => \$cli{no_rc},
-  'keep-defaults'          => \&set_keep_defaults,
-  'add-missing-defaults'   => \&set_add_missing_defaults,
-  'condense!'              => \$cli{condense},
-  'quiet|q'                => \$cli{quiet},
-  'showconfig'             => \$cli{showconfig},
-  'overwrite'              => \$cli{overwrite},
-  'dump-perltidy-defaults' => \$cli{dump_perltidy_defaults},
-  'dump-perltidy-config'   => \$cli{dump_perltidy_config},
-  'help|h'                 => sub { usage(0) },
-) or usage(1);
+# Parse this script's own options into %cli. Anything not recognised stays in
+# @ARGV to be passed through to Perl::Tidy.
+sub parse_cli {
+  GetOptions(
+    'rc=s'                   => \$cli{rc},
+    'no-rc'                  => \$cli{no_rc},
+    'keep-defaults'          => \&set_keep_defaults,
+    'add-missing-defaults'   => \&set_add_missing_defaults,
+    'condense!'              => \$cli{condense},
+    'quiet|q'                => \$cli{quiet},
+    'showconfig'             => \$cli{showconfig},
+    'overwrite'              => \$cli{overwrite},
+    'dump-perltidy-defaults' => \$cli{dump_perltidy_defaults},
+    'dump-perltidy-config'   => \$cli{dump_perltidy_config},
+    'help|h'                 => sub { usage(0) },
+  ) or usage(1);
 
-# Fail fast on mutually exclusive flags.
-if ( $cli{rc} && $cli{no_rc} ) {
-  die "--rc and --no-rc are mutually exclusive\n";
+  # Fail fast on mutually exclusive flags.
+  if ( $cli{rc} && $cli{no_rc} ) {
+    die "--rc and --no-rc are mutually exclusive\n";
+  }
+
+  return;
+} ## end sub parse_cli
+
+# The config file source for Perl::Tidy: an empty profile for --no-rc, the
+# --rc file, or undef to let Perl::Tidy search.
+sub rc_source {
+  return \$empty  if $cli{no_rc};
+  return $cli{rc} if $cli{rc};
+  return;
 }
 
-# Determine config file source (used by both --showconfig and main processing)
-my $rc_source;
-if ( $cli{no_rc} ) {
-  $rc_source = \$empty;
-} elsif ( $cli{rc} ) {
-  $rc_source = $cli{rc};
-}
+# Validate --overwrite requirements and conflicts, then aim the output at the
+# --rc file.
+sub validate_overwrite {
+  return if !$cli{overwrite};
 
-# else $rc_source is undef (use Perl::Tidy search)
-
-# Get the actual config file location for $rc_origin
-my $rc_origin;
-if ( $cli{no_rc} ) {
-  $rc_origin = 'none (empty profile)';
-} else {
-  $rc_origin = get_config_location( $rc_source, \@ARGV );
-}
-
-# Handle --showconfig early (after --help check, before other processing)
-if ( $cli{showconfig} ) {
-  show_config_location( $rc_source, \@ARGV );
-  exit 0;
-}
-
-# Extract outfile before any perltidy handling; remaining args pass through.
-# Extract from @ARGV since we'll pass @ARGV to Perl::Tidy
-$cli{outfile} = extract_outfile( \@ARGV );
-
-# Validate --overwrite requirements and conflicts
-if ( $cli{overwrite} ) {
   unless ( $cli{rc} ) {
     die "--overwrite requires --rc to be specified\n";
   }
@@ -919,103 +858,50 @@ if ( $cli{overwrite} ) {
     die "--overwrite and --outfile are mutually exclusive\n";
   }
 
-  # Set outfile to rc file after validation passes
   $cli{outfile} = $cli{rc};
+  return;
 }
 
-# Clean @ARGV: filter out file arguments since we're only dumping options,
-# not processing source files. Keep only option-like arguments for Perl::Tidy.
-# GetOptions already removed our CLI options, so @ARGV contains pass-through args.
-local @ARGV = grep { /^-/ } @ARGV;     # Keep only option-like arguments
-
-# Get Perl::Tidy defaults
-my ( $rOpts_default, $rabbreviations_default ) = get_perltidy_defaults();
-
-# Dump defaults if requested
-if ( $cli{dump_perltidy_defaults} ) {
-  eval { require Data::Dumper; Data::Dumper->import; 1 }
+# Debugging aid for the --dump-perltidy-* options: print $preamble, then each
+# (label, structure) pair through Data::Dumper, then exit.
+sub dump_and_exit {
+  my ( $preamble, @labelled ) = @_;
+  eval { require Data::Dumper; 1 }
     or die "Data::Dumper not installed\n";
-  local $Data::Dumper::Indent   = 1;
-  local $Data::Dumper::Sortkeys = 1;
-  local $Data::Dumper::Terse    = 1;
-  print "Opts_default:\n";
-  print Dumper($rOpts_default);
-  print "\nabbreviations_default:\n";
-  print Dumper($rabbreviations_default);
+  print $preamble;
+  my $separator = '';
+  while ( my ( $label, $data ) = splice @labelled, 0, 2 ) {
+    print "$separator$label:\n";
+    print Data::Dumper->new( [$data] )->Indent(1)->Sortkeys(1)->Terse(1)->Dump;
+    $separator = "\n";
+  }
   exit 0;
 }
 
-# Get Perl::Tidy config options
-my ( $error_message, $rOpts, $rGetopt_flags, $rsections, $rabbreviations ) = get_perltidy_config( $rc_source, \@ARGV );
+# Fill %$clean_opts with the option set to emit: defaults overlaid with the
+# loaded options for --no-rc or --add-missing-defaults; otherwise the loaded
+# options, less any equal to their default when defaults are being dropped.
+sub build_clean_opts {
+  my ( $clean_opts, $rOpts, $rOpts_default, $equals_default ) = @_;
 
-# Dump config if requested
-if ( $cli{dump_perltidy_config} ) {
-  eval { require Data::Dumper; Data::Dumper->import; 1 }
-    or die "Data::Dumper not installed\n";
-  local $Data::Dumper::Indent   = 1;
-  local $Data::Dumper::Sortkeys = 1;
-  local $Data::Dumper::Terse    = 1;
-  print "error_message: " . ( $error_message || '(empty)' ) . "\n\n";
-  print "Opts:\n";
-  print Dumper($rOpts);
-  print "\nGetopt_flags:\n";
-  print Dumper($rGetopt_flags);
-  print "\nsections:\n";
-  print Dumper($rsections);
-  print "\nabbreviations:\n";
-  print Dumper($rabbreviations);
-  exit 0;
-}
+  if ( $cli{no_rc} || $cli{add_missing_defaults} ) {
+    %{$clean_opts} = ( %{$rOpts_default}, %{$rOpts} );
+    return;
+  }
 
-die $error_message if $error_message;
-
-my %equals_default = build_equals_default( $rOpts, $rOpts_default );
-my %section_notes;
-
-my %clean_opts;
-if ( $cli{no_rc} ) {
-
-  # Start from defaults and overlay any explicit options passed through.
-  %clean_opts = ( %{$rOpts_default}, %{$rOpts} );
-} else {
-  if ( $cli{add_missing_defaults} ) {
-    %clean_opts = ( %{$rOpts_default}, %{$rOpts} );
-  } else {
-    %clean_opts = %{$rOpts};
-    if ( $cli{drop_defaults} ) {
-      foreach my $long_name ( keys %clean_opts ) {
-        delete $clean_opts{$long_name} if $equals_default{$long_name};
-      }
+  %{$clean_opts} = %{$rOpts};
+  if ( $cli{drop_defaults} ) {
+    foreach my $long_name ( keys %{$clean_opts} ) {
+      delete $clean_opts->{$long_name} if $equals_default->{$long_name};
     }
   }
+
+  return;
 }
 
-%equals_default = build_equals_default( \%clean_opts, $rOpts_default );
-
-condense_options( \%clean_opts, $rsections, \%section_notes, $rabbreviations, $rabbreviations_default )
-  if $cli{condense};
-
-detect_conflicts( \%clean_opts, $rsections, \%section_notes );
-
-my %abbreviations_user = user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
-
-if ( %clean_opts || %abbreviations_user ) {
-  my $output = "";
-  dump_options(
-    quiet              => $cli{quiet},
-    cmdline            => join( ' ', basename($0), @original_argv ),
-    rc_origin          => $rc_origin,
-    opts               => \%clean_opts,
-    getopt_flags       => $rGetopt_flags,
-    sections           => $rsections,
-    abbreviations      => $rabbreviations,
-    equals_default     => \%equals_default,
-    abbreviations_user => \%abbreviations_user,
-    section_notes      => \%section_notes,
-    keep_defaults      => $cli{keep_defaults},
-    destination        => \$output,
-  );
-
+# Write the output to --outfile (or the --overwrite target), else stdout.
+sub write_output {
+  my ($output) = @_;
   if ( $cli{outfile} ) {
     open my $fh, '>', $cli{outfile}
       or die "Cannot open $cli{outfile} for writing: $!\n";
@@ -1024,11 +910,103 @@ if ( %clean_opts || %abbreviations_user ) {
   } else {
     print $output;
   }
-} else {
-  print STDERR "No configuration parameters remain after filtering.\n";
+  return;
 }
 
-exit 0;
+sub main {
+  parse_cli();
+
+  # Determine config file source (used by both --showconfig and main processing)
+  my $rc_source = rc_source();
+
+  # Get the actual config file location for $rc_origin
+  my $rc_origin =
+    $cli{no_rc}
+    ? 'none (empty profile)'
+    : get_config_location( $rc_source, \@ARGV );
+
+  # Handle --showconfig early (after --help check, before other processing)
+  if ( $cli{showconfig} ) {
+    show_config_location( $rc_source, \@ARGV );
+    exit 0;
+  }
+
+  # Extract outfile before any perltidy handling; remaining args pass through.
+  # Extract from @ARGV since we'll pass @ARGV to Perl::Tidy
+  $cli{outfile} = extract_outfile( \@ARGV );
+  validate_overwrite();
+
+  # Clean @ARGV: filter out file arguments since we're only dumping options,
+  # not processing source files. Keep only option-like arguments for Perl::Tidy.
+  # GetOptions already removed our CLI options, so @ARGV contains pass-through args.
+  local @ARGV = grep { /^-/x } @ARGV;  # Keep only option-like arguments
+
+  my ( $rOpts_default, $rabbreviations_default ) = get_perltidy_defaults();
+  if ( $cli{dump_perltidy_defaults} ) {
+    dump_and_exit(
+      '',
+      Opts_default          => $rOpts_default,
+      abbreviations_default => $rabbreviations_default,
+    );
+  }
+
+  my ( $error_message, $rOpts, $rGetopt_flags, $rsections, $rabbreviations ) = get_perltidy_config( $rc_source, \@ARGV );
+  if ( $cli{dump_perltidy_config} ) {
+    dump_and_exit(
+      'error_message: ' . ( $error_message || '(empty)' ) . "\n\n",
+      Opts          => $rOpts,
+      Getopt_flags  => $rGetopt_flags,
+      sections      => $rsections,
+      abbreviations => $rabbreviations,
+    );
+  }
+
+  # Re-terminated so die adds no location. Perl::Tidy's messages already end
+  # in a newline, so they print exactly as Perl::Tidy wrote them.
+  if ($error_message) {
+    chomp( my $message = $error_message );
+    die "$message\n";
+  }
+
+  my %equals_default = build_equals_default( $rOpts, $rOpts_default );
+  my %section_notes;
+  my %clean_opts;
+  build_clean_opts( \%clean_opts, $rOpts, $rOpts_default, \%equals_default );
+
+  %equals_default = build_equals_default( \%clean_opts, $rOpts_default );
+
+  condense_options( \%clean_opts, $rsections, \%section_notes, $rabbreviations, $rabbreviations_default )
+    if $cli{condense};
+
+  detect_conflicts( \%clean_opts, $rsections, \%section_notes );
+
+  my %abbreviations_user = user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
+
+  if ( %clean_opts || %abbreviations_user ) {
+    my $output = "";
+    dump_options(
+      quiet              => $cli{quiet},
+      cmdline            => join( ' ', basename($0), @original_argv ),
+      rc_origin          => $rc_origin,
+      opts               => \%clean_opts,
+      getopt_flags       => $rGetopt_flags,
+      sections           => $rsections,
+      abbreviations      => $rabbreviations,
+      equals_default     => \%equals_default,
+      abbreviations_user => \%abbreviations_user,
+      section_notes      => \%section_notes,
+      keep_defaults      => $cli{keep_defaults},
+      destination        => \$output,
+    );
+    write_output($output);
+  } else {
+    print STDERR "No configuration parameters remain after filtering.\n";
+  }
+
+  exit 0;
+} ## end sub main
+
+main();
 
 __END__
 
