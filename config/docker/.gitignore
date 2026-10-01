@@ -10,3 +10,5 @@
 !ansible-lint/**
 !code-tools/
 !code-tools/**
+!python-tools/
+!python-tools/**
