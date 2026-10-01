@@ -487,17 +487,16 @@ sub build_short_to_long {
 # Map each multi-option expansion (its options, sorted and joined) to the
 # longest abbreviation name that produces it, across both the default and the
 # user-defined abbreviations: when act=0 and all-containers-tightness=0 expand
-# to the same options, the longer name wins.
-#
-# The caller iterates the returned hash, so it is returned by reference: a
-# copy would be rebuilt in a different insertion order.
+# to the same options, the longer name wins. Keys are visited in sorted order
+# and only a strictly longer name replaces the current one, so a tie in
+# length goes to the default abbreviation, then to the name that sorts first.
 sub build_expansion_to_preferred {
   my ( $abbreviations_default, $abbreviations ) = @_;
   my %expansion_to_preferred;
   my @abbr_sources = ($abbreviations_default);
   push @abbr_sources, $abbreviations if $abbreviations;
   foreach my $abbr_hash (@abbr_sources) {
-    foreach my $abbr_key ( keys %{$abbr_hash} ) {
+    foreach my $abbr_key ( sort keys %{$abbr_hash} ) {
       my @mapped_opts = @{ $abbr_hash->{$abbr_key} };
       next if @mapped_opts < 2;
       my $expansion_key = join( '|', sort @mapped_opts );
@@ -599,20 +598,20 @@ sub all_opts_equal {
   return 1;
 }
 
-# Condense options using abbreviations (e.g., pt=0, sbt=0, bt=0, bbt=0 ->
-# act=0): where every option an abbreviation expands to is set to the same
-# value, remove them and note that the abbreviation can replace them.
-sub condense_options {
-  my ( $opts, $sections, $section_notes, $abbreviations, $abbreviations_default ) = @_;
-  return if !$abbreviations_default;
-
+# The abbreviations worth trying to condense to, as [ $abbr_key,
+# \@long_names, $expected_value ], in the order condense_options applies
+# them: broadest first (most long options), then by abbreviation name. Where
+# two abbreviations share an option, the first applied removes it and the
+# other no longer matches, so broadest-first lets the notes name the
+# abbreviation that covers the most; the name settles the rest, so the order
+# never depends on hash order.
+sub condense_candidates {
+  my ( $abbreviations, $abbreviations_default ) = @_;
   my $short_to_long          = build_short_to_long($abbreviations_default);
   my $expansion_to_preferred = build_expansion_to_preferred( $abbreviations_default, $abbreviations );
 
-  # Iterate through preferred abbreviations only to find condensing
-  # opportunities; each value is already the preferred (longest) name.
-  foreach my $expansion_key ( keys %{$expansion_to_preferred} ) {
-    my $abbr_key    = $expansion_to_preferred->{$expansion_key};
+  my @candidates;
+  foreach my $abbr_key ( values %{$expansion_to_preferred} ) {
     my $mapped_opts = abbreviation_options( $abbr_key, $abbreviations_default, $abbreviations );
     next if !$mapped_opts;
 
@@ -623,6 +622,22 @@ sub condense_options {
     my ( undef, $abbr_value ) = split_name_value($abbr_key);
     next if defined $abbr_value && $abbr_value ne $expected_value;
 
+    push @candidates, [ $abbr_key, $long_names, $expected_value ];
+  }
+
+  my @ordered = sort { @{ $b->[1] } <=> @{ $a->[1] } || $a->[0] cmp $b->[0] } @candidates;
+  return @ordered;
+} ## end sub condense_candidates
+
+# Condense options using abbreviations (e.g., pt=0, sbt=0, bt=0, bbt=0 ->
+# act=0): where every option an abbreviation expands to is set to the same
+# value, remove them and note that the abbreviation can replace them.
+sub condense_options {
+  my ( $opts, $sections, $section_notes, $abbreviations, $abbreviations_default ) = @_;
+  return if !$abbreviations_default;
+
+  foreach my $candidate ( condense_candidates( $abbreviations, $abbreviations_default ) ) {
+    my ( $abbr_key, $long_names, $expected_value ) = @{$candidate};
     next if !all_opts_equal( $opts, $long_names, $expected_value );
 
     # Remove the individual options and add notes
@@ -636,7 +651,7 @@ sub condense_options {
       );
       delete $opts->{$long_name};
     }
-  } ## end foreach my $expansion_key (...)
+  }
 
   return;
 } ## end sub condense_options
