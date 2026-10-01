@@ -15,9 +15,15 @@ name: publish-tool-images
 # need a Python runtime — yamllint and ansible-lint — which ADR-0005 keeps out
 # of code-tools (#370); its tag is bumped when any of its ARG pins changes.
 #
-# On a PR it BUILDS only (verify the Dockerfile); it pushes only on a push to
-# master, so unmerged changes never publish. The docker_wrapper image[] pins +
-# the pre-commit hooks consume these images (see bin/docker_wrapper and
+# This is a REUSABLE workflow: tool-images.yml owns the triggers and calls it
+# twice, from two event-gated jobs (#482). `verify` (PRs, and any run off
+# master) holds `packages: read` and calls it with `push: false`, so it only
+# BUILDS (verify the Dockerfile). `publish` (a push or dispatch on master)
+# holds `packages: write` and calls it with `push: true`. A called workflow
+# gets no more than its calling job's grant, so a PR run never holds
+# `packages: write` at all — the grant, not a step condition, is what stops
+# unmerged changes publishing. The docker_wrapper image[] pins + the
+# pre-commit hooks consume these images (see bin/docker_wrapper and
 # .pre-commit-config*.yaml); bump a version here and re-pin there.
 #
 # Tags are IMMUTABLE (#472). Consumers pin tag@digest, so moving a tag to a
@@ -30,33 +36,20 @@ name: publish-tool-images
 # lives in this file, which every entry shares), so bump the tag with it.
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - config/docker/perl-tools/**
-      - config/docker/code-tools/**
-      - config/docker/python-tools/**
-      - .github/workflows/publish-tool-images.yml
-  pull_request:
-    paths:
-      - config/docker/perl-tools/**
-      - config/docker/code-tools/**
-      - config/docker/python-tools/**
-      - .github/workflows/publish-tool-images.yml
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      push:
+        description: Push images that do not exist yet (false = build only)
+        type: boolean
+        required: true
 
-permissions:
-  contents: read
+# Deliberately no `permissions:` here. A called workflow can only narrow its
+# caller's grant, and the two callers differ in exactly one scope, so the job
+# inherits whichever grant the calling job in tool-images.yml holds.
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # The one job, and the only one that pushes. A PR run receives the same
-    # grant (job permissions cannot vary by event); the Push step's event
-    # gate is what keeps a PR from publishing.
-    permissions:
-      contents: read
-      packages: write
     strategy:
       # One entry failing (e.g. a missing tag bump) must not cancel another
       # entry's legitimate push.
@@ -70,7 +63,7 @@ jobs:
           - tool: code-tools
             context: config/docker/code-tools
             modules: ''
-            tag: 0.4.0
+            tag: 0.5.0
           - tool: python-tools
             context: config/docker/python-tools
             modules: ''
@@ -159,9 +152,10 @@ jobs:
           docker build "${args[@]}" \
             -t "$image:${{ matrix.tag }}" "${{ matrix.context }}"
 
-      # Push only from master (not PRs); a fork PR has no packages:write anyway.
+      # Push only when the caller asked to; the verify caller also lacks
+      # packages:write, so a push from there would be refused regardless.
       - name: Push ${{ matrix.tool }}
-        if: github.event_name != 'pull_request' && steps.decide.outputs.build == 'true'
+        if: inputs.push && steps.decide.outputs.build == 'true'
         run: |
           image="ghcr.io/${{ github.repository_owner }}/${{ matrix.tool }}:${{ matrix.tag }}"
           docker push "$image"
