@@ -1,0 +1,77 @@
+---
+name: docs-links
+
+# Online link check over every tracked Markdown file (#350): lychee with
+# `--offline=false`, so external URLs are fetched as well as internal links.
+#
+# The offline half already gates every PR. The required `pre-commit` job in
+# tests.yml runs the `vale` and `lychee` hooks over all files, so prose lint
+# and internal links/#anchors are checked there. Repeating them here would
+# add nothing. This workflow covers the one thing that gate leaves out:
+# external links.
+#
+# It runs weekly and on demand, not on PRs, because a flaky or bot-blocking
+# site must never redden a PR. The one exception is a PR that edits this
+# file, so a change to the check is exercised before it merges. A broken
+# link shows up as a failed scheduled run, with the report in the run
+# summary. This is not a required check.
+#
+# It runs lychee from the pinned code-tools image through bin/lychee, so
+# the image pin and the repo's lychee.toml (fragments, no progress bar) are
+# the same ones the commit gate uses.
+
+on:
+  schedule:
+    - cron: '40 14 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/docs-links.yml
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read  # pull the private code-tools image
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Log in to ghcr (private code-tools image)
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+
+      # GITHUB_TOKEN is forwarded by name (bin/lychee -e) so lychee's
+      # github.com requests are authenticated and not rate-limited.
+      #
+      # Excluded:
+      # - The dotagents repo is private, and this workflow's token can only
+      #   read this repo, so those links always come back 404.
+      # - stackoverflow.com returns 403 to CI runners whether or not the
+      #   page exists.
+      - name: Check links (online)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mapfile -d '' files < <(git ls-files -z -- '*.md')
+          echo "checking ${#files[@]} tracked Markdown files"
+
+          rc=0
+          bin/lychee -e GITHUB_TOKEN --offline=false \
+            --exclude '^https://github\.com/(harleypig|Harleypig-LLC)/dotagents([/#?]|$)' \
+            --exclude '^https://stackoverflow\.com/' \
+            --format markdown --output lychee-report.md \
+            "${files[@]}" </dev/null || rc=$?
+
+          cat lychee-report.md >>"$GITHUB_STEP_SUMMARY"
+          exit "$rc"
