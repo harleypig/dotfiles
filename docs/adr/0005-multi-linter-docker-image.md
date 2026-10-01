@@ -167,3 +167,14 @@ pre-commit hooks) + **one** ghcr cleanup, instead of two. Until then, the
 live references stay `lint-tools` (the published `0.1.0` image); the rebuild
 flips them all to `code-tools` atomically and deletes the old `lint-tools`
 ghcr package. Tracked in `TODO.md`.
+
+## Update (2026-10-01): the Python-tools batch is `python-tools`
+
+The deferred batch landed as one image, `ghcr.io/harleypig/python-tools`
+(`config/docker/python-tools`, #370): yamllint and ansible-lint in a venv on
+`python:3.13-slim`, built in one stage and copied into a clean one. A single
+image suffices because both tools run on the same Python, and ansible-lint
+already depends on yamllint. It replaces the standalone `ansible-lint` image.
+Plain `pip` in a dedicated venv gives the isolation `pipx` / `uv` were named
+for. `code-tools` was rebuilt without its Python runtime (0.3.0), and every
+consumer of both images is digest-pinned.

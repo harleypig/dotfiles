@@ -146,11 +146,54 @@ teardown() {
   assert_output --partial "run"
   assert_output --partial "--workdir /mnt"
   assert_output --partial "--env HOME=/tmp"
-  # No ENTRYPOINT in the image, so the binary is named explicitly after it.
-  assert_output --partial "ghcr.io/harleypig/ansible-lint:26.6.0 ansible-lint"
+  # python-tools has no ENTRYPOINT, so the binary is named after the image.
+  assert_output --regexp "ghcr.io/harleypig/python-tools:[^ ]+@sha256:[0-9a-f]{64} ansible-lint "
   assert_output --partial "playbook.yml"
   # ansible-lint operates on paths, not stdin — no --interactive.
   refute_output --partial "--interactive"
+}
+
+@test "yamllint dispatch names the tool on the python-tools image" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf -- '---\nkey: value\n' > doc.yml
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/yamllint" doc.yml
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--workdir /mnt"
+  # python-tools has no ENTRYPOINT, so the binary is named after the image.
+  assert_output --regexp "ghcr.io/harleypig/python-tools:[^ ]+@sha256:[0-9a-f]{64} yamllint doc.yml"
+}
+
+@test "every python-tools consumer references one identical image ref" {
+  # Same invariant as code-tools: the wrapper's yamllint and ansible-lint
+  # entries and the yamllint pre-commit hook name the SAME python-tools image,
+  # so a digest bump can't leave one behind (#370).
+  local -a refs
+  mapfile -t refs < <(
+    grep -hoE 'ghcr.io/harleypig/python-tools:[^" ]+' \
+      "$ROOT/bin/docker_wrapper" \
+      "$ROOT/.pre-commit-config.yaml" | sort -u
+  )
+  assert_equal "${#refs[@]}" 1
+
+  # Guard against a vacuous pass: both wrapper entries and the hook must have
+  # been found.
+  run grep -cE 'ghcr.io/harleypig/python-tools:' \
+    "$ROOT/bin/docker_wrapper" "$ROOT/.pre-commit-config.yaml"
+  assert_line "$ROOT/bin/docker_wrapper:2"
+  assert_line "$ROOT/.pre-commit-config.yaml:1"
+}
+
+@test "the code-tools image carries no Python runtime" {
+  # ADR-0005: a tool that needs a Python runtime joins python-tools, never
+  # code-tools (#370). Installing python3 or building a venv there is the
+  # regression this catches.
+  run grep -nE 'python3|venv|pip install' \
+    "$ROOT/config/docker/code-tools/Dockerfile"
+  assert_failure
 }
 
 @test "ruff dispatch assembles the expected docker run command" {
@@ -537,9 +580,7 @@ teardown() {
 
 @test "every image[] entry is digest-pinned or declares a deliberate float" {
   # #443: each image is pinned tag + digest, or the line above it says it
-  # floats on purpose. yamllint and ansible-lint are known debt (#370);
-  # drop them from this list when #370 pins them.
-  local -A exempt=([yamllint]=1 [ansible-lint]=1)
+  # floats on purpose.
   local prev="" line tool seen=0
   local -a bad=()
 
@@ -548,7 +589,7 @@ teardown() {
       tool=${BASH_REMATCH[1]}
       seen=$((seen + 1))
 
-      if [[ $line != *@sha256:* && $prev != *'Floats on purpose'* && -z ${exempt[$tool]:-} ]]; then
+      if [[ $line != *@sha256:* && $prev != *'Floats on purpose'* ]]; then
         bad+=("$tool")
       fi
     fi

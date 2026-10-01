@@ -7,8 +7,7 @@ name: publish-tool-images
 # combined perl-tools image from the parameterized
 # config/docker/perl-tools/Dockerfile via its MODULES list (#362); both
 # docker_wrapper and the perl pre-commit hooks run that one image, naming the
-# tool on the command line. ansible-lint has its own Python
-# Dockerfile (config/docker/ansible-lint) and needs no MODULES. code-tools is
+# tool on the command line. code-tools is
 # the combined cross-language QA-tool image (config/docker/code-tools) decided
 # in ADR-0005 — its own multi-stage Dockerfile, no MODULES; tool versions are
 # baked as ARG/FROM pins there, and its image tag is bumped when any of them
@@ -26,14 +25,12 @@ on:
     branches: [master]
     paths:
       - config/docker/perl-tools/**
-      - config/docker/ansible-lint/**
       - config/docker/code-tools/**
       - config/docker/python-tools/**
       - .github/workflows/publish-tool-images.yml
   pull_request:
     paths:
       - config/docker/perl-tools/**
-      - config/docker/ansible-lint/**
       - config/docker/code-tools/**
       - config/docker/python-tools/**
       - .github/workflows/publish-tool-images.yml
@@ -51,10 +48,6 @@ jobs:
             context: config/docker/perl-tools
             modules: 'Perl::Tidy@20250912 Perl::Critic@1.156'
             tag: '1.0.0'
-          - tool: ansible-lint
-            context: config/docker/ansible-lint
-            modules: ''
-            tag: '26.6.0'
           - tool: code-tools
             context: config/docker/code-tools
             modules: ''

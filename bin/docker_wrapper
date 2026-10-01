@@ -40,12 +40,12 @@
 #   daemons              ollama openwebui (host-gated, detached)
 #
 # IMAGE PINNING: the code-tools-backed tools (shellcheck, shfmt, hadolint,
-# markdownlint, prettier, ruff, vale), the perl-tools pair, trivy/dive, and the IaC
+# markdownlint, prettier, ruff, vale), the python-tools pair (yamllint,
+# ansible-lint), the perl-tools pair, trivy/dive, and the IaC
 # tools (terraform, packer, tflint, terraform-docs) are pinned by tag + digest
 # per rules/docker.md (trivy was supply-chain compromised twice in 03/2026 —
-# pin + run the image directly, never the marketplace actions). yamllint and
-# ansible-lint are not digest-pinned yet (#370). ollama and openwebui float on
-# purpose (#443) and say so at their image[] lines. Each tool's
+# pin + run the image directly, never the marketplace actions). ollama and
+# openwebui float on purpose (#443) and say so at their image[] lines. Each tool's
 # image lives in the image[] array beside its function. Bump a tag + digest
 # together with:
 #   docker buildx imagetools inspect <image>:<tag>
@@ -106,7 +106,7 @@ shellcheck() {
 # installs a pinned binary, so keep SC_VER in tests.yml in step with that FROM
 # tag (test_docker_wrapper.bats guards it). Re-pin the digest when code-tools
 # republishes.
-image[shellcheck]="ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32"
+image[shellcheck]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
 
 #------------------------------------------------------------------------------
 shfmt() {
@@ -131,7 +131,7 @@ shfmt() {
 # pinned binary, so keep SHFMT_VER in tests.yml in step with that FROM tag
 # (test_docker_wrapper.bats guards it). Re-pin the digest when code-tools
 # republishes.
-image[shfmt]="ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32"
+image[shfmt]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
 
 #------------------------------------------------------------------------------
 yamllint() {
@@ -153,9 +153,15 @@ yamllint() {
     args+=(--env "XDG_CONFIG_HOME=/config")
   fi
 
-  exec docker run "${args[@]}" "${image[yamllint]}" "$@"
+  # python-tools has no ENTRYPOINT, so name the tool.
+  exec docker run "${args[@]}" "${image[yamllint]}" yamllint "$@"
 }
-image[yamllint]="cytopia/yamllint:latest"
+# SYNC (#370): yamllint runs from the python-tools image here AND in the
+# pre-commit `yamllint` hook, and image["ansible-lint"] below is the same
+# image — keep all three on one tag+digest (test_docker_wrapper.bats guards
+# it). The yamllint VERSION lives in the python-tools Dockerfile ARG; re-pin
+# the digest when python-tools republishes.
+image[yamllint]="ghcr.io/harleypig/python-tools:1.0.0@sha256:fef8150131e202bbe8ead2544b45295c12d8543fec4d8f58879e401a66414abb"
 
 #------------------------------------------------------------------------------
 # IaC tools (terraform / packer / tflint). Subcommand-driven, so they skip
@@ -297,7 +303,7 @@ prettier() {
 # publish). prettier's pre-commit gate is a SEPARATE node hook (mirrors-prettier
 # in -fix.yaml), not tied to this wrapper — but keep the prettier version in the
 # code-tools Dockerfile roughly aligned with that hook's.
-image[prettier]="ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32"
+image[prettier]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
 
 #------------------------------------------------------------------------------
 hadolint() {
@@ -329,7 +335,7 @@ hadolint() {
 # (re-pin the digest when it republishes). It carries hadolint v2.14.0 (built
 # FROM hadolint/hadolint:v2.14.0-alpine). hadolint has no pre-commit hook — the
 # wrapper is its only consumer.
-image[hadolint]="ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32"
+image[hadolint]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
 
 #------------------------------------------------------------------------------
 markdownlint() {
@@ -352,7 +358,7 @@ markdownlint() {
 # in the pre-commit `markdownlint` hooks (check + fix) — all reference this same
 # image, so they can't drift. Its version lives in the code-tools Dockerfile
 # (`ARG MARKDOWNLINT_VERSION`); re-pin the digest when code-tools republishes.
-image[markdownlint]="ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32"
+image[markdownlint]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
 
 #------------------------------------------------------------------------------
 vale() {
@@ -376,7 +382,7 @@ vale() {
 # `vale` hook — both reference this same image. Its version and the proselint
 # style's live in the code-tools Dockerfile (`ARG VALE_VERSION`,
 # `ARG PROSELINT_VERSION`); re-pin the digest when code-tools republishes.
-image[vale]="ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32"
+image[vale]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
 
 #------------------------------------------------------------------------------
 ansible-lint() {
@@ -397,12 +403,10 @@ ansible-lint() {
   # arithmetic (see terraform-docs).
   exec docker run "${args[@]}" "${image["ansible-lint"]}" ansible-lint "$@"
 }
-# SYNC: the tag tracks ANSIBLE_LINT_VERSION in config/docker/ansible-lint/
-# Dockerfile and the publish-tool-images.yml matrix; bump all three together.
-# Tag-only for now (rolling, like the other linter images — digest-pinning is
-# part of #370 - re-home yamllint/ansible-lint); the image publishes on
-# merge, so bin/ansible-lint works once this lands on master.
-image["ansible-lint"]="ghcr.io/harleypig/ansible-lint:26.6.0"
+# SYNC (#370): the same python-tools image as image[yamllint] above; keep the
+# two on one tag+digest. The ansible-lint VERSION lives in the python-tools
+# Dockerfile ARG.
+image["ansible-lint"]="ghcr.io/harleypig/python-tools:1.0.0@sha256:fef8150131e202bbe8ead2544b45295c12d8543fec4d8f58879e401a66414abb"
 
 #------------------------------------------------------------------------------
 ruff() {
@@ -427,10 +431,9 @@ ruff() {
 # a publish (docker pull, then `docker inspect --format '{{index .RepoDigests
 # 0}}'`) together with the publish-tool-images.yml matrix tag. ruff is a static
 # binary (needs no Python runtime), so it lives in the combined image; the
-# Python-runtime linters (yamllint, ansible-lint) stay on their own images,
-# handled together in the future python setup. ruff has no pre-commit hook yet
-# (added with that python setup).
-image[ruff]="ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32"
+# Python-runtime linters (yamllint, ansible-lint) live in python-tools (#370).
+# ruff has no pre-commit hook yet.
+image[ruff]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
 
 #------------------------------------------------------------------------------
 perltidy() {
