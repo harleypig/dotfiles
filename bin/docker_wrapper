@@ -40,10 +40,12 @@
 #   daemons              ollama openwebui (host-gated, detached)
 #
 # IMAGE PINNING: the code-tools-backed tools (shellcheck, shfmt, hadolint,
-# markdownlint, prettier, ruff) plus trivy/dive are pinned by digest per
-# rules/docker.md (trivy was supply-chain compromised twice in 03/2026 — pin +
-# run the image directly, never the marketplace actions). Only yamllint still
-# uses a rolling tag (deferred to the python setup — ADR-0005). Each tool's
+# markdownlint, prettier, ruff), the perl-tools pair, trivy/dive, and the IaC
+# tools (terraform, packer, tflint, terraform-docs) are pinned by tag + digest
+# per rules/docker.md (trivy was supply-chain compromised twice in 03/2026 —
+# pin + run the image directly, never the marketplace actions). yamllint and
+# ansible-lint are not digest-pinned yet (#370). ollama and openwebui float on
+# purpose (#443) and say so at their image[] lines. Each tool's
 # image lives in the image[] array beside its function. Bump a tag + digest
 # together with:
 #   docker buildx imagetools inspect <image>:<tag>
@@ -226,7 +228,7 @@ terraform() {
 
   exec docker run "${args[@]}" "${image[terraform]}" "$@"
 }
-image[terraform]="hashicorp/terraform:1.15"
+image[terraform]="hashicorp/terraform:1.15.9@sha256:fd5debae63188975d6febc6aa5bd1a982a588f55e4a4ddb7de28be923f250456"
 
 #------------------------------------------------------------------------------
 packer() {
@@ -241,7 +243,7 @@ packer() {
 
   exec docker run "${args[@]}" "${image[packer]}" "$@"
 }
-image[packer]="hashicorp/packer:1.15"
+image[packer]="hashicorp/packer:1.15.4@sha256:8be72877859e00e13124b26373f0505b2a2597c5393ecbea900be28b4be58186"
 
 #------------------------------------------------------------------------------
 tflint() {
@@ -253,7 +255,7 @@ tflint() {
 
   exec docker run "${args[@]}" "${image[tflint]}" "$@"
 }
-image[tflint]="ghcr.io/terraform-linters/tflint:v0.63.1"
+image[tflint]="ghcr.io/terraform-linters/tflint:v0.63.1@sha256:890e37827d7b5e400f26137c5189c7efa581365fe9299b5b9814e5148d5978b9"
 
 #------------------------------------------------------------------------------
 # terraform-docs generates/injects module READMEs from .tf sources (static
@@ -271,7 +273,7 @@ terraform-docs() {
   # associative-array subscript as arithmetic and mangle it (terraform - docs).
   exec docker run "${args[@]}" "${image["terraform-docs"]}" "$@"
 }
-image["terraform-docs"]="quay.io/terraform-docs/terraform-docs:0.20.0"
+image["terraform-docs"]="quay.io/terraform-docs/terraform-docs:0.20.0@sha256:37329e2dc2518e7f719a986a3954b10771c3fe000f50f83fd4d98d489df2eae2"
 
 #------------------------------------------------------------------------------
 prettier() {
@@ -540,6 +542,7 @@ ollama() {
 
   docker run "${args[@]}" "${image[ollama]}" > /dev/null
 }
+# Floats on purpose (#443): a long-running local app; tracks upstream.
 image[ollama]="ollama/ollama:latest"
 
 #------------------------------------------------------------------------------
@@ -561,6 +564,7 @@ openwebui() {
 
   exec docker run "${args[@]}" "${image[openwebui]}"
 }
+# Floats on purpose (#443): a long-running local app; tracks upstream.
 image[openwebui]="ghcr.io/open-webui/open-webui:main"
 
 ###############################################################################
