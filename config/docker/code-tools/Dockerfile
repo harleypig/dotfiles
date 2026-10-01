@@ -1,6 +1,6 @@
 # Combined "toolbox" image (code-tools) for this repo's cross-language QA
 # tools — formatters AND linters: shellcheck, shfmt, yamllint, hadolint,
-# markdownlint, prettier, ruff. One image holds many tools; there is NO
+# markdownlint, prettier, ruff, vale. One image holds many tools; there is NO
 # ENTRYPOINT, so bin/docker_wrapper invokes each by name
 # (`docker run <image> shellcheck ...`) — the same model as
 # config/docker/perl-tools and ansible-lint. See ADR-0005 (and its rename +
@@ -29,6 +29,27 @@ FROM mvdan/shfmt:v3.13.1 AS shfmt
 FROM hadolint/hadolint:v2.14.0-alpine AS hadolint
 FROM ghcr.io/astral-sh/ruff:0.16.0 AS ruff
 
+# Vale (prose linter, #385) plus the proselint style its config names. The
+# official jdkato/vale image ships a musl-linked binary that will not run on
+# this glibc base, so the glibc release tarball is fetched instead. The style
+# is baked in rather than fetched by `vale sync`, so a hook run needs no
+# network and the style version is pinned here with the binary. Every
+# download is checksum-verified (ADD --checksum): bump a version together
+# with its sha256.
+FROM busybox:1.37.0 AS vale
+ARG VALE_VERSION=3.23.0
+ARG PROSELINT_VERSION=0.3.4
+ADD --checksum=sha256:cc35445a45186b8f0b01e11c01359694cf941e72cf6ab0fc44774f0e54c9d5fc \
+  https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz \
+  /tmp/vale.tar.gz
+ADD --checksum=sha256:48b1fb481ba44f6505d44346b283f6cdc74efd234f913bbdb09bf34420fab81c \
+  https://github.com/vale-cli/proselint/releases/download/v${PROSELINT_VERSION}/proselint.zip \
+  /tmp/proselint.zip
+RUN mkdir -p /out/styles \
+  && tar -xzf /tmp/vale.tar.gz -C /out vale \
+  && unzip -q /tmp/proselint.zip -d /out/styles \
+  && chmod -R a+rX /out
+
 FROM node:22-slim
 
 # Tool version pins (SYNC target — see header). shellcheck/shfmt/hadolint/ruff
@@ -41,6 +62,8 @@ COPY --from=shellcheck /bin/shellcheck /usr/local/bin/shellcheck
 COPY --from=shfmt /bin/shfmt /usr/local/bin/shfmt
 COPY --from=hadolint /bin/hadolint /usr/local/bin/hadolint
 COPY --from=ruff /ruff /usr/local/bin/ruff
+COPY --from=vale /out/vale /usr/local/bin/vale
+COPY --from=vale /out/styles /opt/vale/styles
 
 # One layer: python runtime + yamllint venv, the two Node tools, cache cleanup,
 # and the non-root user (docker.md). npm's global prefix is /usr/local, so the
@@ -63,6 +86,9 @@ RUN apt-get update \
 # so it works under the wrapper's --user (arbitrary host uid).
 COPY --chmod=755 run-tools /usr/local/bin/run-tools
 
-ENV PATH="/opt/venv/bin:${PATH}"
+# VALE_STYLES_PATH is Vale's default StylesPath when a .vale.ini sets none,
+# so a repo config can name the baked styles without knowing where they live.
+ENV PATH="/opt/venv/bin:${PATH}" \
+  VALE_STYLES_PATH=/opt/vale/styles
 USER tool
 WORKDIR /mnt

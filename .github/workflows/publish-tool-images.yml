@@ -54,7 +54,7 @@ jobs:
           - tool: code-tools
             context: config/docker/code-tools
             modules: ''
-            tag: 0.1.0
+            tag: 0.2.0
     steps:
       - name: Checkout
         uses: actions/checkout@v7
