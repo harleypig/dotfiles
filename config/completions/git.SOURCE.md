@@ -16,9 +16,15 @@ With the local edit below removed, the file's git blob hash
 (`9f8b9b50ff834ca18ecba3db2f5ef0a69361217e`) is exactly the upstream path's
 blob at that commit.
 
-Local edits: added `# shellcheck shell=bash` as the first line, so the
-pre-commit shellcheck hook can lint this extensionless file. Re-apply it when
-updating.
+Local edits: added `# shellcheck shell=bash` as the first line. It only tells
+editors and shellcheck which dialect this extensionless file is; re-apply it
+when updating.
+
+The file is deliberately **not linted**. It is upstream code we do not
+otherwise edit, so no pre-commit hook selects it: `identify` does not tag a
+non-executable, extensionless file as shell, and the sourced-shell path
+pattern does not cover `config/completions/`. Linting it would only report
+upstream's own findings, and shfmt cannot parse its zsh-only `${(…)}` block.
 
 ## Update procedure
 

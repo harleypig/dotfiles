@@ -115,7 +115,7 @@
       "docker": {
         "viable": true,
         "image": "bin/docker_wrapper",
-        "note": "Already wrapped in this repo's bin/docker_wrapper (cytopia/yamllint)."
+        "note": "Already wrapped in this repo's bin/docker_wrapper (ghcr.io/harleypig/python-tools)."
       },
       "install": [
         {
