@@ -3,8 +3,8 @@
 # the commit. Auto-fixers live in .pre-commit-config-fix.yaml and are run
 # manually (see README + the dotagents repo's rules/pre-commit.md).
 #
-# Phased rollout (WORKFLOW.md). The remaining docs hooks are #385 - pre-commit
-# Phase 4, and must land here before CI is allowed to gate them.
+# Phased rollout (WORKFLOW.md). Phase 4 (Docs) is Vale (#385); link
+# validation is #452. A docs hook must land here before CI may gate it.
 #
 # trailing-whitespace / end-of-file-fixer are intentionally NOT here: those
 # hooks can only fix (they modify files), which would violate "check-only".
@@ -46,7 +46,7 @@ repos:
       - id: shellcheck
         name: shellcheck
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 shellcheck
+        entry: ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32 shellcheck
         args: [--external-sources]
         types: [shell]
       # Extensionless SOURCED shell files (shell-startup, config/shell-startup/*,
@@ -55,7 +55,7 @@ repos:
       - id: shellcheck-sourced
         name: shellcheck (sourced shell)
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 shellcheck
+        entry: ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32 shellcheck
         args: [--external-sources]
         types: [text]
         files: &sourced_shell '^(shell-startup|config/shell-startup/[^./]+|lib/[^./]+)$'
@@ -70,7 +70,7 @@ repos:
       - id: shfmt
         name: shfmt
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 shfmt
+        entry: ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32 shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
         types: [shell]
         exclude: '\.bats$'
@@ -78,7 +78,7 @@ repos:
       - id: shfmt-sourced
         name: shfmt (sourced shell)
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 shfmt
+        entry: ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32 shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
         types: [text]
         files: *sourced_shell
@@ -99,7 +99,20 @@ repos:
       - id: markdownlint
         name: markdownlint
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.1.0@sha256:c91e21feab4a52a2e137eb8bfa1995c006de4f719348c82bf4e6b242f85dae45 markdownlint
+        entry: ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32 markdownlint
+        types: [markdown]
+
+  # Phase 4 (Docs) — Vale prose lint via the combined code-tools image (#385).
+  # Check-only: Vale has no fix mode, so there is no fix-config twin. Uses the
+  # repo-local .vale.ini (proselint, tuned quiet for technical docs); the
+  # style is baked into the image, so no `vale sync` and no network. SYNC: the
+  # digest matches image[vale] in bin/docker_wrapper.
+  - repo: local
+    hooks:
+      - id: vale
+        name: vale
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.2.0@sha256:8d90694b985b2a7647cbc5ddb20900d3f197b71d36fed925fbe2e93d3016fc32 vale
         types: [markdown]
 
   # Phase 3 (Language) — Python: import order, format, lint. Tools match the
