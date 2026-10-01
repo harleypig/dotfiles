@@ -103,7 +103,7 @@ jobs:
           esac
           img=ghcr.io/harleypig/$TOOL
           docker buildx imagetools inspect "$img:$TAG" | grep Digest
-          docker buildx imagetools create -t "$img:$TAG" "$img@sha256:$d"
+          docker buildx imagetools create --prefer-index=false -t "$img:$TAG" "$img@sha256:$d"
           docker buildx imagetools inspect "$img:$TAG" | grep Digest
 
       - name: Decide ${{ matrix.tool }}
