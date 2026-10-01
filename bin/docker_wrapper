@@ -399,7 +399,7 @@ lychee() {
 
   # code-tools has no ENTRYPOINT, so name the tool. The repo-local
   # lychee.toml is auto-discovered from /mnt (= $PWD); it sets --offline, so
-  # an online check needs `--offline false` on the command line.
+  # an online check needs `--offline=false` on the command line.
   exec docker run "${args[@]}" "${image[lychee]}" lychee "$@"
 }
 # SYNC: lychee runs from the combined code-tools image here AND in the
