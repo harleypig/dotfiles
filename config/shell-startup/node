@@ -21,6 +21,17 @@ addpath "$XDG_DATA_HOME/npm/bin"
 # (which removes the shims and puts Node on PATH), then re-runs the original
 # command. Subsequent calls hit the real binaries directly.
 if [[ -s $NVM_DIR/nvm.sh ]]; then
+  # Put nvm's default Node on PATH now, without loading nvm, so it is ahead
+  # of mise's node whenever both are installed (vmgr wins; mise runs earlier
+  # and does not reclaim the front of PATH -- #435). Only an alias naming an
+  # installed version resolves here, which is what `vmgr install node` sets;
+  # anything else (lts/*, node) is left to the lazy loader below.
+  _node_default=
+  [[ -r $NVM_DIR/alias/default ]] && _node_default=$(< "$NVM_DIR/alias/default")
+  _node_default="$NVM_DIR/versions/node/v${_node_default#v}/bin"
+  [[ -x $_node_default/node ]] && export PATH="$_node_default:$PATH"
+  unset _node_default
+
   _node_lazy_nvm() {
     unset -f nvm node npm npx _node_lazy_nvm
 

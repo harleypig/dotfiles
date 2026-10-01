@@ -1,5 +1,9 @@
 # shellcheck shell=bash
 
+# vmgr's python manager installs uv and pipx, not a Python interpreter, so
+# nothing here is prepended ahead of mise: with mise installed, mise supplies
+# python itself (#435).
+
 export PYLINTRC="$XDG_CONFIG_HOME/pylint/pylintrc"
 export PYTHON_EGG_CACHE="$XDG_CACHE_HOME/python-eggs"
 export PYTHON_HISTORY="$XDG_STATE_HOME/python/history"
