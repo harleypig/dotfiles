@@ -1,0 +1,146 @@
+#!/bin/bash
+#
+# check-vendored - Report vendored files that have fallen behind upstream
+#
+# Usage: check-vendored [-h] [DIR...]
+#
+# Scans each DIR (default: the current directory) for provenance records —
+# files named SOURCE.md, or <name>.SOURCE.md for one vendored file in a
+# directory of others — and reports, for each one that records a vendored
+# copy, whether upstream has moved on since:
+#
+#   OK      <record>  <repo>:<path>  <vendored sha>
+#   BEHIND  <record>  <repo>:<path>  <vendored sha> -> <latest sha> (<date>)
+#           https://github.com/<repo>/compare/<vendored>...<latest>
+#   ERROR   <record>  <reason>
+#
+# A record is read from the Markdown table rows `| Upstream repo | ... |`,
+# `| Path | ... |` and `| Vendored SHA | ... |`; backticks are ignored, and a
+# `(full: <sha>)` value is preferred over the short one beside it. A record
+# with no Vendored SHA row is not a vendored copy and is skipped silently —
+# SOURCE.md is also used for plain attribution.
+#
+# Report-only: nothing is fetched, rewritten or opened as a PR.
+#
+# Exit status: 0 every vendored copy is current (or none was found), 1 at
+# least one is BEHIND, 2 at least one ERROR (a malformed record, or gh failed
+# to answer). ERROR outranks BEHIND.
+
+# shellcheck disable=SC2154  # dirs is set by the parse_params eval
+
+##############################################################################
+# Setup and Sanity
+set -euo pipefail
+
+bindir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+PARM_DEF='
+#@,string,dirs
+'
+
+eval "$("$bindir/parse_params" --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
+
+((${#dirs[@]})) || dirs=(.)
+
+##############################################################################
+# Functions
+
+#-----------------------------------------------------------------------------
+# Print the value of the table row named <field> in <file>, backticks
+# stripped, or nothing when the row is absent or empty.
+field() {
+  local file=$1 name=$2
+
+  awk -F'|' -v want="$name" '
+    NF >= 4 {
+      key = $2; val = $3
+      gsub(/^[ \t]+|[ \t]+$/, "", key)
+
+      if (key == want) {
+        gsub(/`/, "", val)
+        gsub(/^[ \t]+|[ \t]+$/, "", val)
+        print val
+        exit
+      }
+    }
+  ' "$file"
+}
+
+#-----------------------------------------------------------------------------
+# Reduce a Vendored SHA value to one hex SHA: the `full:` one when given,
+# else the first 7-40 character hex run. Prints nothing when there is none.
+sha_of() {
+  local value=$1
+
+  if [[ $value =~ full:[[:space:]]*([0-9a-f]{7,40}) ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+
+  elif [[ $value =~ (^|[^0-9a-f])([0-9a-f]{7,40})([^0-9a-f]|$) ]]; then
+    printf '%s\n' "${BASH_REMATCH[2]}"
+  fi
+}
+
+##############################################################################
+# Check each record
+
+status=0
+
+found=0
+
+while IFS= read -r -d '' record; do
+  raw_sha=$(field "$record" 'Vendored SHA')
+
+  [[ -n $raw_sha ]] || continue
+
+  found=$((found + 1))
+
+  repo=$(field "$record" 'Upstream repo')
+  path=$(field "$record" 'Path')
+  vsha=$(sha_of "$raw_sha")
+
+  missing=()
+  [[ -n $repo ]] || missing+=('Upstream repo')
+  [[ -n $path ]] || missing+=('Path')
+  [[ -n $vsha ]] || missing+=('Vendored SHA (no hex SHA in it)')
+
+  if ((${#missing[@]})); then
+    printf 'ERROR   %s  malformed: missing %s\n' "$record" "${missing[*]}"
+    status=2
+    continue
+  fi
+
+  # The newest upstream commit that touched <path>, as "<sha> <date>".
+  if ! latest=$(gh api "repos/$repo/commits?path=$path&per_page=1" \
+    --jq '.[0] | select(.) | "\(.sha) \(.commit.committer.date)"' 2>&1); then
+    printf 'ERROR   %s  gh api failed for %s: %s\n' \
+      "$record" "$repo" "${latest//$'\n'/ }"
+    status=2
+    continue
+  fi
+
+  if [[ -z $latest ]]; then
+    printf 'ERROR   %s  no upstream commits for %s:%s\n' "$record" "$repo" "$path"
+    status=2
+    continue
+  fi
+
+  lsha=${latest%% *}
+  ldate=${latest#* }
+
+  if [[ $lsha == "$vsha"* ]]; then
+    printf 'OK      %s  %s:%s  %s\n' "$record" "$repo" "$path" "${vsha:0:7}"
+
+  else
+    printf 'BEHIND  %s  %s:%s  %s -> %s (%s)\n' \
+      "$record" "$repo" "$path" "${vsha:0:7}" "${lsha:0:7}" "$ldate"
+    printf '        https://github.com/%s/compare/%s...%s\n' "$repo" "$vsha" "$lsha"
+    ((status)) || status=1
+  fi
+done < <(
+  find "${dirs[@]}" -name .git -prune -o -type f \
+    \( -name SOURCE.md -o -name '*.SOURCE.md' \) -print0 | sort -z
+)
+
+((found)) || echo "check-vendored: no vendored SOURCE.md records found" >&2
+
+exit "$status"

@@ -27,6 +27,7 @@ loading based on tool availability.
 ```text
 config/completions/          # Vendored completion files (committed)
 ├── git                      # Git (upstream git-completion.bash, ~92KB)
+├── git.SOURCE.md            # git's upstream provenance (bin/check-vendored)
 ├── packwiz                  # Packwiz
 ├── poetry                   # Poetry
 ├── proj                     # proj (first-party)
@@ -94,7 +95,8 @@ fi
 ```
 
 - **Source**: Vendored upstream `git-completion.bash` (~92KB), committed in
-  `config/completions/git`
+  `config/completions/git`; its upstream commit is pinned in
+  `config/completions/git.SOURCE.md`
 - **Condition**: Always loads if file is readable
 - **Provides**: Complete git command completion, subcommands, options, branch
   names, etc.
@@ -153,6 +155,13 @@ npm completion                                 > config/completions/npm
 rustup completions bash                        > config/completions/rustup
 cp "$(rustc --print sysroot)/etc/bash_completion.d/cargo" config/completions/cargo
 ```
+
+`git` is different: it is copied from upstream Git rather than generated
+from a local tool, so it does not track the installed `git` version. Its
+provenance — upstream repo, path, and the pinned commit — lives in
+[`git.SOURCE.md`](git.SOURCE.md), with its update procedure. Run
+`bin/check-vendored config/completions` to see whether upstream has moved
+on; it reports `OK` or `BEHIND` and changes nothing.
 
 `tests/shell/test_completions.bats` guards these — it parses every vendored
 file and checks each generated one still registers its command — so a botched
