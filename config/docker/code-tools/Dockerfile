@@ -1,6 +1,6 @@
 # Combined "toolbox" image (code-tools) for this repo's cross-language QA
 # tools — formatters AND linters: shellcheck, shfmt, hadolint, markdownlint,
-# prettier, ruff, vale. One image holds many tools; there is NO ENTRYPOINT, so
+# prettier, ruff, vale, lychee. One image holds many tools; there is NO ENTRYPOINT, so
 # bin/docker_wrapper invokes each by name (`docker run <image> shellcheck ...`)
 # — the same model as config/docker/perl-tools and python-tools. See ADR-0005
 # (and its rename + ADR-0006 hook-consolidation updates).
@@ -50,6 +50,19 @@ RUN mkdir -p /out/styles \
   && unzip -q /tmp/proselint.zip -d /out/styles \
   && chmod -R a+rX /out
 
+# lychee (link checker, #452). The musl release tarball: unlike Vale's, it is
+# static-pie linked, so it runs on this base — whose glibc (2.36) is too old
+# for the gnu build (needs 2.39). Checksum-verified like Vale's above.
+FROM busybox:1.37.0 AS lychee
+ARG LYCHEE_VERSION=0.24.2
+ADD --checksum=sha256:73657a111819a30c47c08352896796f23d64e4eb2b3ed39b6d32149241566fc5 \
+  https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-musl.tar.gz \
+  /tmp/lychee.tar.gz
+RUN mkdir -p /out \
+  && tar -xzf /tmp/lychee.tar.gz -C /tmp \
+  && mv /tmp/lychee-x86_64-unknown-linux-musl/lychee /out/lychee \
+  && chmod a+rx /out/lychee
+
 FROM node:22-slim
 
 # Tool version pins (SYNC target — see header). shellcheck/shfmt/hadolint/ruff
@@ -63,6 +76,11 @@ COPY --from=hadolint /bin/hadolint /usr/local/bin/hadolint
 COPY --from=ruff /ruff /usr/local/bin/ruff
 COPY --from=vale /out/vale /usr/local/bin/vale
 COPY --from=vale /out/styles /opt/vale/styles
+COPY --from=lychee /out/lychee /usr/local/bin/lychee
+# lychee builds its HTTP client at startup and exits without a CA bundle,
+# even under --offline, and node:22-slim ships none. The alpine hadolint
+# stage already carries the Mozilla bundle, at the path rustls probes.
+COPY --from=hadolint /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # One layer: the two Node tools, cache cleanup, and the non-root user
 # (docker.md). npm's global prefix is /usr/local, so the tool bins land on

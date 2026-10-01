@@ -63,7 +63,7 @@ jobs:
           - tool: code-tools
             context: config/docker/code-tools
             modules: ''
-            tag: 0.3.0
+            tag: 0.4.0
           - tool: python-tools
             context: config/docker/python-tools
             modules: ''
