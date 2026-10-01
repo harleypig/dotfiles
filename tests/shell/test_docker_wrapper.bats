@@ -164,6 +164,14 @@ teardown() {
   assert_success
 }
 
+@test "documented online lychee check uses the attached --offline=false form" {
+  # lychee 0.24's --offline takes an optional value, so a detached `false`
+  # is read as an input path and the run aborts (#481).
+  run git -C "$ROOT" grep -n -e '--offline[ ]false'
+  assert_failure
+  refute_output
+}
+
 @test "ansible-lint dispatch assembles the expected docker run command" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"

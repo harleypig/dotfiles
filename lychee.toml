@@ -4,7 +4,7 @@
 # Offline by default: the commit gate checks internal and relative links
 # (files and #anchors) only, so a flaky external site can never block a
 # commit. External links are reported as Excluded. Check them by hand with
-#   bin/lychee --offline false <files>
+#   bin/lychee --offline=false <files>
 # which is advisory: nothing gates on it.
 
 offline = true

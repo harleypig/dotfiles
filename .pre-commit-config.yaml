@@ -128,7 +128,7 @@ repos:
   # `offline = true`, so only relative/internal links and their #anchors are
   # checked and an external site's flakiness can never block a commit
   # (external links report as Excluded; check them by hand with
-  # `bin/lychee --offline false`). Only staged Markdown is read, so a link
+  # `bin/lychee --offline=false`). Only staged Markdown is read, so a link
   # broken by renaming its *target* surfaces on the next edit of the linking
   # file, or on a full `bin/lychee $(git ls-files '*.md')` run. SYNC: the
   # digest matches image[lychee] in bin/docker_wrapper.
