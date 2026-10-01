@@ -110,6 +110,30 @@ teardown() {
   assert_output --partial "markdownlint doc.md"
 }
 
+@test "vale dispatch assembles the expected docker run command" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf '# Title\n' > doc.md
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/vale" doc.md
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "run"
+  assert_output --partial "--workdir /mnt"
+  assert_output --partial "ghcr.io/harleypig/code-tools"
+  assert_output --partial "vale doc.md"
+}
+
+@test "vale refuses a path outside the mounted working directory" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/vale" /etc/hostname
+  assert_failure
+  refute [ -e "$STUB/docker.args" ]
+}
+
 @test "ansible-lint dispatch assembles the expected docker run command" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
