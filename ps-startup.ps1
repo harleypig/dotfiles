@@ -47,13 +47,29 @@ Import-Files
 # We want this to be after all the other files are loaded because these paths
 # take precedence.
 # XXX: Move python path to dedicated python setup file
-$env:PATH = "$DOTFILES\powershell\bin;" `
-            + "$HOME\.local\bin;" `
-            + "$HOME\AppData\Roaming\Python\Python312\Scripts;" `
-            + "$env:PATH"
+# Built with the platform's own separators so the same file works under
+# Windows and Linux pwsh, then deduplicated keeping the first occurrence so
+# these prepended entries win. Windows paths are case-insensitive, so dedup
+# there ignores case.
+$pathEntries = @(
+    [IO.Path]::Combine($DOTFILES, 'powershell', 'bin')
+    [IO.Path]::Combine($HOME, '.local', 'bin')
+    [IO.Path]::Combine($HOME, 'AppData', 'Roaming', 'Python', 'Python312', 'Scripts')
+) + ($env:PATH -split [IO.Path]::PathSeparator)
+
+$pathComparer = if ([IO.Path]::DirectorySeparatorChar -eq '\') {
+    [StringComparer]::OrdinalIgnoreCase
+} else {
+    [StringComparer]::Ordinal
+}
+
+$pathSeen = [Collections.Generic.HashSet[string]]::new($pathComparer)
+
+$env:PATH = ($pathEntries | Where-Object { $_ -and $pathSeen.Add($_) }) `
+            -join [IO.Path]::PathSeparator
 
 # Remove work or scratch variables and functions from the environment
-Remove-Variable -Name scriptPath
+Remove-Variable -Name scriptPath, pathEntries, pathComparer, pathSeen
 Remove-Item -Path Function:Import-Files
 
 #-----------------------------------------------------------------------------
