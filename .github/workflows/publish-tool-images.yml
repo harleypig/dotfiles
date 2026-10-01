@@ -88,24 +88,6 @@ jobs:
         run: |
           echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
 
-      # TEMPORARY (#472, reverted before merge): re-point each moved tag at
-      # the digest its consumers pin.
-      - name: Restore pinned tag ${{ matrix.tool }}
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          TOOL: ${{ matrix.tool }}
-          TAG: ${{ matrix.tag }}
-        run: |
-          case $TOOL in
-            perl-tools) d=878767d692b9a3a66991d69ce531a3984670bff9fbb1db2fe48d3e73142bd8fe ;;
-            python-tools) d=fef8150131e202bbe8ead2544b45295c12d8543fec4d8f58879e401a66414abb ;;
-            code-tools) d=5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3 ;;
-          esac
-          img=ghcr.io/harleypig/$TOOL
-          docker buildx imagetools inspect "$img:$TAG" | grep Digest
-          docker buildx imagetools create -t "$img:$TAG" "$img@sha256:$d"
-          docker buildx imagetools inspect "$img:$TAG" | grep Digest
-
       - name: Decide ${{ matrix.tool }}
         id: decide
         env:
