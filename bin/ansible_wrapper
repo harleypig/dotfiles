@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+
+# Multi-call dispatcher for the ansible commands. It is invoked through a
+# symlink named for the command (bin/ansible-playbook -> ansible_wrapper),
+# sets the ansible environment for that one invocation, and execs the real
+# command found further along PATH. This replaces exporting ANSIBLE_HOME /
+# ANSIBLE_CONFIG into every shell from shell-startup (#379).
+#
+# ANSIBLE_CONFIG is set only when the caller has not set it AND there is no
+# ./ansible.cfg: ansible ranks the env var above ./ansible.cfg, so setting it
+# unconditionally would make a project's own config (ansible-stuff's, say) be
+# silently ignored.
+#
+# ansible-lint is deliberately not here: bin/ansible-lint is a docker_wrapper
+# tool with its own image.
+#
+# Add a command: append it to `commands` below (kept sorted) and create the
+# symlink, ln -s ansible_wrapper bin/<command>. test_ansible_wrapper.bats
+# fails while the two disagree.
+#
+# Introspection (only when run by the real name, not a command symlink):
+#   ansible_wrapper --known-tools   list registered command names
+#   ansible_wrapper -h | --help     this usage
+
+set -euo pipefail
+
+###############################################################################
+# Setup and settings
+
+# The registry. Every entry reads ANSIBLE_CONFIG / ANSIBLE_HOME.
+commands=(
+  ansible
+  ansible-community
+  ansible-config
+  ansible-console
+  ansible-doc
+  ansible-galaxy
+  ansible-inventory
+  ansible-playbook
+  ansible-pull
+  ansible-test
+  ansible-vault
+)
+
+selfname="${0##*/}"
+
+###############################################################################
+# Functions
+
+#------------------------------------------------------------------------------
+usage() {
+  cat << EOF
+Usage: ansible_wrapper [--known-tools | -h]
+
+Run through a symlink named for an ansible command, e.g. ansible-playbook.
+Registered commands: ${commands[*]}
+EOF
+}
+
+#------------------------------------------------------------------------------
+# Print the first <name> on PATH that is not this dispatcher. Comparing with
+# -ef (same file after following symlinks) skips both the repo's own bin/
+# links and any other symlink to this script, wherever it sits on PATH —
+# otherwise the dispatcher would exec itself forever.
+find_real() {
+  local name=$1 dir cand
+
+  local -a path
+  IFS=: read -ra path <<< "$PATH"
+
+  for dir in "${path[@]}"; do
+    cand="${dir:-.}/$name"
+
+    [[ -f $cand && -x $cand ]] || continue
+    [[ $cand -ef ${BASH_SOURCE[0]} ]] && continue
+
+    printf '%s\n' "$cand"
+    return 0
+  done
+
+  return 1
+}
+
+###############################################################################
+# Dispatch
+
+if [[ $selfname == ansible_wrapper ]]; then
+  case ${1-} in
+    --known-tools) printf '%s\n' "${commands[@]}" ;;
+    -h | --help) usage ;;
+    *)
+      usage >&2
+      exit 2
+      ;;
+  esac
+
+  exit 0
+fi
+
+registered=0
+for c in "${commands[@]}"; do
+  [[ $c == "$selfname" ]] && registered=1
+done
+
+if ((!registered)); then
+  echo "ansible_wrapper: $selfname is not a registered ansible command" >&2
+  exit 2
+fi
+
+real=$(find_real "$selfname") || {
+  echo "ansible_wrapper: $selfname: not found on PATH (beyond this wrapper)" >&2
+  exit 127
+}
+
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+cache_home="${XDG_CACHE_HOME:-$HOME/.cache}"
+data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+export ANSIBLE_HOME="${ANSIBLE_HOME:-$config_home/ansible}"
+
+if [[ -z ${ANSIBLE_CONFIG-} && ! -e ansible.cfg ]]; then
+  export ANSIBLE_CONFIG="$config_home/ansible/ansible.cfg"
+fi
+
+# The dotfiles ansible.cfg points its tmp, caches, collections, inventory and
+# roles at these, and ansible does not create all of them itself.
+# shellcheck disable=SC2174  # 0700 on the leaf dirs we create here is intended
+mkdir -pm 0700 \
+  "$cache_home/ansible/"{tmp,galaxy} \
+  "$data_home/ansible/"{collections,inventory,roles}
+
+exec "$real" "$@"

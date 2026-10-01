@@ -7,7 +7,6 @@
 !000-loadtokens
 !010-general
 !aider
-!ansible
 !app_env_vars
 !bash_prompt
 !binenv
