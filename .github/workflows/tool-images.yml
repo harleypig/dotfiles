@@ -1,0 +1,60 @@
+---
+name: tool-images
+
+# Triggers for the QA tool-image build (#482). The matrix, the tag-exists /
+# immutability check (#472, #474) and the build + push steps live in the
+# reusable publish-tool-images.yml; this file only decides, per event, which
+# grant the run gets.
+#
+# A job's permissions cannot vary by event, so the grant is split across two
+# jobs whose `if:` conditions are mutually exclusive:
+#   - verify:  PRs, and a dispatch from any branch other than master.
+#              packages: read (the tag-exists check reads the private
+#              packages), push: false — build only.
+#   - publish: a push to master, or a dispatch on master.
+#              packages: write, push: true.
+# A PR run therefore never holds packages: write, and an unmerged branch
+# cannot publish even by manual dispatch.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - config/docker/perl-tools/**
+      - config/docker/code-tools/**
+      - config/docker/python-tools/**
+      - .github/workflows/publish-tool-images.yml
+      - .github/workflows/tool-images.yml
+  pull_request:
+    paths:
+      - config/docker/perl-tools/**
+      - config/docker/code-tools/**
+      - config/docker/python-tools/**
+      - .github/workflows/publish-tool-images.yml
+      - .github/workflows/tool-images.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Both calls keep the `./` form although zizmor's self-repository audit
+# prefers `$/`: actionlint 1.7.12 rejects `$/` as malformed, and on a
+# reusable-workflow call `./` already resolves to the running commit.
+jobs:
+  verify:
+    if: github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/publish-tool-images.yml  # zizmor: ignore[self-repository]
+    with:
+      push: false
+
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/publish-tool-images.yml  # zizmor: ignore[self-repository]
+    with:
+      push: true

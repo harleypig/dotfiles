@@ -1,6 +1,7 @@
 # Combined "toolbox" image (code-tools) for this repo's cross-language QA
 # tools — formatters AND linters: shellcheck, shfmt, hadolint, markdownlint,
-# prettier, ruff, vale, lychee. One image holds many tools; there is NO ENTRYPOINT, so
+# prettier, ruff, vale, lychee, actionlint, zizmor. One image holds many
+# tools; there is NO ENTRYPOINT, so
 # bin/docker_wrapper invokes each by name (`docker run <image> shellcheck ...`)
 # — the same model as config/docker/perl-tools and python-tools. See ADR-0005
 # (and its rename + ADR-0006 hook-consolidation updates).
@@ -28,6 +29,13 @@ FROM koalaman/shellcheck:v0.11.0 AS shellcheck
 FROM mvdan/shfmt:v3.13.1 AS shfmt
 FROM hadolint/hadolint:v2.14.0-alpine AS hadolint
 FROM ghcr.io/astral-sh/ruff:0.16.0 AS ruff
+# GitHub Actions linters (#482). actionlint checks workflow syntax,
+# expressions and types, and runs the shellcheck above over `run:` scripts
+# when it finds it on PATH. zizmor audits workflows and dependabot.yml for
+# security defects (template injection, persisted credentials, cooldowns);
+# its image is a glibc build, which runs on this base.
+FROM rhysd/actionlint:1.7.12 AS actionlint
+FROM ghcr.io/zizmorcore/zizmor:1.30.1 AS zizmor
 
 # Vale (prose linter, #385) plus the proselint style its config names. The
 # official jdkato/vale image ships a musl-linked binary that will not run on
@@ -65,8 +73,8 @@ RUN mkdir -p /out \
 
 FROM node:22-slim
 
-# Tool version pins (SYNC target — see header). shellcheck/shfmt/hadolint/ruff
-# are pinned by their FROM tags above.
+# Tool version pins (SYNC target — see header). shellcheck/shfmt/hadolint/ruff/
+# actionlint/zizmor are pinned by their FROM tags above.
 ARG PRETTIER_VERSION=3.9.6
 ARG MARKDOWNLINT_VERSION=0.48.0
 
@@ -74,6 +82,8 @@ COPY --from=shellcheck /bin/shellcheck /usr/local/bin/shellcheck
 COPY --from=shfmt /bin/shfmt /usr/local/bin/shfmt
 COPY --from=hadolint /bin/hadolint /usr/local/bin/hadolint
 COPY --from=ruff /ruff /usr/local/bin/ruff
+COPY --from=actionlint /usr/local/bin/actionlint /usr/local/bin/actionlint
+COPY --from=zizmor /usr/bin/zizmor /usr/local/bin/zizmor
 COPY --from=vale /out/vale /usr/local/bin/vale
 COPY --from=vale /out/styles /opt/vale/styles
 COPY --from=lychee /out/lychee /usr/local/bin/lychee

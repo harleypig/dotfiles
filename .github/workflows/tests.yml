@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # bats + helper libs come from Debian/Ubuntu packages. bats_load_library
       # resolves bats-support/assert/file from /usr/lib/bats by default; the
@@ -60,6 +62,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install bats and helper libraries
         run: |
@@ -92,6 +96,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # perl is preinstalled on the runner. Non-core deps: Test::Cmd (used by
       # the tests), Test::Pod (pod-syntax.t), and Perl::Tidy (loaded by the
@@ -120,6 +126,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Detect perl-toolchain changes
         id: changed
@@ -156,6 +163,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -182,6 +191,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -194,10 +205,14 @@ jobs:
       # Several docker_image hooks pull PRIVATE ghcr.io/harleypig images —
       # perltidy/perlcritic and, since ADR-0006, code-tools (shellcheck / shfmt
       # / markdownlint). Log in so pre-commit can pull them.
+      # The token and actor reach the shell through env, never interpolated
+      # into the script text (#482).
       - name: Log in to ghcr (private tool images)
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" \
-            | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
 
       # no-commit-to-branch is a local-only guard; skip it in CI (the run on
       # master would otherwise fail merely for being on master). The gitleaks
@@ -216,6 +231,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
