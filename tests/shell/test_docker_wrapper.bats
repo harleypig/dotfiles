@@ -508,3 +508,35 @@ teardown() {
   assert_failure 2
   assert_output --partial "requires an ENVVAR name"
 }
+
+# --- image pinning policy (#443) ----------------------------------------------
+
+@test "every image[] entry is digest-pinned or declares a deliberate float" {
+  # #443: each image is pinned tag + digest, or the line above it says it
+  # floats on purpose. yamllint and ansible-lint are known debt (#370);
+  # drop them from this list when #370 pins them.
+  local -A exempt=([yamllint]=1 [ansible-lint]=1)
+  local prev="" line tool seen=0
+  local -a bad=()
+
+  while IFS= read -r line; do
+    if [[ $line =~ ^image\[\"?([a-z-]+)\"?\]= ]]; then
+      tool=${BASH_REMATCH[1]}
+      seen=$((seen + 1))
+
+      if [[ $line != *@sha256:* && $prev != *'Floats on purpose'* && -z ${exempt[$tool]:-} ]]; then
+        bad+=("$tool")
+      fi
+    fi
+
+    prev=$line
+  done < "$ROOT/bin/docker_wrapper"
+
+  # Guard against a vacuous pass: the walk must have found the registry.
+  ((seen > 10))
+
+  if ((${#bad[@]})); then
+    echo "unpinned with no float comment: ${bad[*]}"
+    return 1
+  fi
+}
