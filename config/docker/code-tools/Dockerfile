@@ -82,4 +82,3 @@ COPY --chmod=755 run-tools /usr/local/bin/run-tools
 ENV VALE_STYLES_PATH=/opt/vale/styles
 USER tool
 WORKDIR /mnt
-# DEMO #472: context change without a tag bump (reverted before merge)
