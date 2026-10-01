@@ -195,7 +195,7 @@ perlbrew_remove() {
 # flag drift. Read-only: it inspects files and never installs or switches.
 
 perlbrew_report() {
-  local expected current bin src installed
+  local expected current bin src installed=''
   local -a perls=()
 
   _vmgr_load_pins perl PERLBREW_PIN PERL_PIN || {
