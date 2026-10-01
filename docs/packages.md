@@ -98,7 +98,7 @@ it is pointless (a per-project dev dependency).
 
 - **Apps:** `yamllint`
 - **Language:** python
-- **Docker:** yes — `bin/docker_wrapper` — Already wrapped in this repo's bin/docker_wrapper (cytopia/yamllint).
+- **Docker:** yes — `bin/docker_wrapper` — Already wrapped in this repo's bin/docker_wrapper (ghcr.io/harleypig/python-tools).
 - **Install (priority order):**
   1. `yamllint <file>` — via bin/docker_wrapper
   2. `pipx install yamllint`
