@@ -51,6 +51,9 @@ jobs:
     permissions:
       packages: write
     strategy:
+      # One entry failing (e.g. a missing tag bump) must not cancel another
+      # entry's legitimate push.
+      fail-fast: false
       matrix:
         include:
           - tool: perl-tools
