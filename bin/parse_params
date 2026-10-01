@@ -71,7 +71,7 @@ sub def_err {
 sub shq {
   my $s = shift;
   $s = '' unless defined $s;
-  $s =~ s/'/'\\''/g;
+  $s =~ s/'/'\\''/gx;
   return "'$s'";
 }
 
@@ -102,8 +102,8 @@ sub valid_date {
 # any type without an entry passes.
 my %CHECK = (
   char     => sub { length $_[0] == 1 },
-  integer  => sub { $_[0] =~ /^-?\d+$/ },
-  varname  => sub { $_[0] =~ /^[A-Za-z_]\w*$/ },
+  integer  => sub { $_[0] =~ /^-?\d+$/x },
+  varname  => sub { $_[0] =~ /^[A-Za-z_]\w*$/x },
   filename => \&valid_filename,
   date     => \&valid_date,
 );
@@ -119,143 +119,209 @@ sub valid_value {
 
 #----------------------------------------------------------------------------
 # Parse the definition string into option/positional descriptors.
+#
+# parse_definition splits the string into lines and hands each to the parser
+# for its kind; they all accumulate into one %$def hash (opts, positionals,
+# optspec, values, constraints, plus the seen-flag tables for duplicate
+# detection).
 
 sub parse_definition {
-  my $def = shift;
+  my $text = shift;
 
-  my ( @opts, @positionals, @optspec, %values, @constraints );
-  my ( %seen_short, %seen_long );
+  my %def = (
+    opts        => [],
+    positionals => [],
+    optspec     => [],
+    values      => {},
+    constraints => [],
+    seen_short  => {},
+    seen_long   => {},
+  );
 
-  for my $raw ( split /\n/, $def ) {
-    ( my $line = $raw ) =~ s/^\s+|\s+$//g;
+  for my $raw ( split /\n/x, $text ) {
+    ( my $line = $raw ) =~ s/^\s+|\s+$//gx;
     next unless length $line;
 
-    my @f = $line =~ /,/ ? split( /\s*,\s*/, $line, -1 ) : split( /\s+/, $line );
-    my ( $opt, $type, $var, $default, $req ) = @f;
+    my @f   = $line =~ /,/x ? split( /\s*,\s*/x, $line, -1 ) : split( /\s+/x, $line );
+    my $opt = $f[0];
 
     def_err("missing OPTION in: $line") unless defined $opt && length $opt;
 
-    # Constraint line. OPTION '%' declares a cross-option rule:
-    #   %, KIND, VARNAME, VARNAME[, ...]
-    # KIND is one of @CONSTRAINTS; the members are option VARNAMEs (validated
-    # against the parsed options once the whole definition is read, below).
     if ( $opt eq '%' ) {
-      my ( $kind, @vars ) = @f[ 1 .. $#f ];
-      def_err("constraint needs a KIND in: $line")
-        unless defined $kind && length $kind;
-      $kind = lc $kind;
-      def_err("unknown constraint kind ($kind) in: $line")
-        unless $IS_CONSTRAINT{$kind};
-      @vars = grep { defined && length } @vars;
-      def_err("constraint ($kind) needs at least two VARNAMEs in: $line")
-        unless @vars >= 2;
-
-      push @constraints, { kind => $kind, vars => \@vars, line => $line };
-      next;
-    }
-
-    # Positional parameter. OPTION '#' is one fixed positional; '#@' is a
-    # slurp that collects ALL remaining args into a shell array. A slurp must
-    # be the last positional, and there can be only one.
-    if ( $opt eq '#' || $opt eq '#@' ) {
-      my $slurp = $opt eq '#@';
-      def_err("positional needs a TYPE in: $line")
-        unless defined $type && length $type;
-      def_err("unknown type ($type) in: $line") unless $IS_TYPE{$type};
-      def_err("positional needs a VARNAME in: $line")
-        unless defined $var && length $var;
-      def_err("invalid variable name ($var) in: $line")
-        unless $var =~ /^[A-Za-z_]\w*$/;
-      def_err("a slurp positional (#\@) must be the last one in: $line")
-        if @positionals && $positionals[-1]{slurp};
-
-      push @positionals, { type => $type, var => $var, slurp => $slurp };
-      next;
-    }
-
-    def_err("missing TYPE in: $line") unless defined $type && length $type;
-
-    my $repeat = ( $type =~ s/\@$// );
-    def_err("unknown type ($type) in: $line") unless $IS_TYPE{$type};
-    def_err("boolean cannot be repeatable (\@) in: $line")
-      if $repeat && $type eq 'boolean';
-
-    my ( $short, $long );
-    if ( $opt =~ /\|/ ) {
-      ( $short, $long ) = split /\|/, $opt, 2;
-      def_err("short option must be one char ($opt) in: $line")
-        unless length($short) == 1;
-      def_err("long option missing after | ($opt) in: $line")
-        unless length($long);
-    } elsif ( length($opt) == 1 ) {
-      $short = $opt;
+      parse_constraint_line( \%def, $line, \@f );
+    } elsif ( $opt eq '#' || $opt eq '#@' ) {
+      parse_positional_line( \%def, $line, \@f );
     } else {
-      $long = $opt;
+      parse_option_line( \%def, $line, \@f );
     }
-
-    if ( defined $short ) {
-      def_err("repeated short option ($short) in: $line")
-        if $seen_short{$short}++;
-    }
-    if ( defined $long ) {
-      def_err("repeated long option ($long) in: $line")
-        if $seen_long{$long}++;
-    }
-
-    $var = ( defined $long ? $long : $short )
-      unless defined $var && length $var;
-    def_err("invalid variable name ($var) in: $line")
-      unless $var =~ /^[A-Za-z_]\w*$/;
-
-    $req = defined $req && length $req ? lc $req : 'optional';
-    $req = 'optional' if $type eq 'boolean';
-    def_err("REQUIRED must be required|optional ($req) in: $line")
-      unless $req eq 'required' || $req eq 'optional';
-
-    my $name = join '|', grep { defined } ( $short, $long );
-
-    if ( $type eq 'boolean' ) {
-      def_err("boolean DEFAULT must be 0 or 1 ($default) in: $line")
-        if defined $default && length $default && $default !~ /^[01]$/;
-      $values{$var} = undef;
-
-      # Negatable: -v / --verbose set 1, --no-verbose sets 0. With DEFAULT=1
-      # this gives a default-on (inverted) flag.
-      push @optspec, "$name!" => \$values{$var};
-    } elsif ($repeat) {
-      $values{$var} = [];
-      push @optspec, "$name=s@" => $values{$var};
-    } else {
-      $values{$var} = undef;
-      push @optspec, "$name=s" => \$values{$var};
-    }
-
-    push @opts,
-      { short   => $short,
-        long    => $long,
-        var     => $var,
-        type    => $type,
-        repeat  => $repeat,
-        default => ( defined $default && length $default ? $default : undef ),
-        req     => $req,
-      };
-  } ## end for my $raw ( split /\n/...)
+  }
 
   def_err('definition has no options or positionals')
-    unless @opts || @positionals;
+    unless @{ $def{opts} } || @{ $def{positionals} };
 
   # Resolve constraint members against the defined options now that every
   # option is known (so a '%' line may appear before the options it names).
-  my %opt_by_var = map { $_->{var} => 1 } @opts;
-  for my $c (@constraints) {
+  my %opt_by_var = map { $_->{var} => 1 } @{ $def{opts} };
+  for my $c ( @{ $def{constraints} } ) {
     for my $v ( @{ $c->{vars} } ) {
       def_err("constraint ($c->{kind}) references unknown option ($v) in: $c->{line}")
         unless $opt_by_var{$v};
     }
   }
 
-  return ( \@opts, \@positionals, \@optspec, \%values, \@constraints );
+  return @def{qw(opts positionals optspec values constraints)};
 } ## end sub parse_definition
+
+# Constraint line. OPTION '%' declares a cross-option rule:
+#   %, KIND, VARNAME, VARNAME[, ...]
+# KIND is one of @CONSTRAINTS; the members are option VARNAMEs (validated
+# against the parsed options once the whole definition is read).
+sub parse_constraint_line {
+  my ( $def,  $line, $f )    = @_;
+  my ( undef, $kind, @vars ) = @$f;
+
+  def_err("constraint needs a KIND in: $line")
+    unless defined $kind && length $kind;
+  $kind = lc $kind;
+  def_err("unknown constraint kind ($kind) in: $line")
+    unless $IS_CONSTRAINT{$kind};
+  @vars = grep { defined && length } @vars;
+  def_err("constraint ($kind) needs at least two VARNAMEs in: $line")
+    if @vars < 2;
+
+  push @{ $def->{constraints} }, { kind => $kind, vars => \@vars, line => $line };
+  return;
+}
+
+# Positional parameter. OPTION '#' is one fixed positional; '#@' is a slurp
+# that collects ALL remaining args into a shell array. A slurp must be the
+# last positional, and there can be only one.
+sub parse_positional_line {
+  my ( $def, $line, $f )   = @_;
+  my ( $opt, $type, $var ) = @$f;
+  my $positionals = $def->{positionals};
+  my $slurp       = $opt eq '#@';
+
+  def_err("positional needs a TYPE in: $line")
+    unless defined $type && length $type;
+  def_err("unknown type ($type) in: $line") unless $IS_TYPE{$type};
+  def_err("positional needs a VARNAME in: $line")
+    unless defined $var && length $var;
+  def_err("invalid variable name ($var) in: $line")
+    unless $var =~ /^[A-Za-z_]\w*$/x;
+  def_err("a slurp positional (#\@) must be the last one in: $line")
+    if @$positionals && $positionals->[-1]{slurp};
+
+  push @$positionals, { type => $type, var => $var, slurp => $slurp };
+  return;
+} ## end sub parse_positional_line
+
+# An option line: OPTION, TYPE[@], VARNAME, DEFAULT, REQUIRED.
+sub parse_option_line {
+  my ( $def, $line, $f ) = @_;
+  my ( $opt, $type, $var, $default, $req ) = @$f;
+
+  def_err("missing TYPE in: $line") unless defined $type && length $type;
+
+  my $repeat = ( $type =~ s/\@$//x );
+  def_err("unknown type ($type) in: $line") unless $IS_TYPE{$type};
+  def_err("boolean cannot be repeatable (\@) in: $line")
+    if $repeat && $type eq 'boolean';
+
+  my ( $short, $long ) = option_names( $def, $line, $opt );
+
+  $var = ( defined $long ? $long : $short )
+    unless defined $var && length $var;
+  def_err("invalid variable name ($var) in: $line")
+    unless $var =~ /^[A-Za-z_]\w*$/x;
+
+  $req     = option_req( $line, $type, $req );
+  $default = undef unless defined $default && length $default;
+
+  my $o = {
+    short   => $short,
+    long    => $long,
+    var     => $var,
+    type    => $type,
+    repeat  => $repeat,
+    default => $default,
+    req     => $req,
+  };
+
+  add_optspec( $def, $line, $o );
+  push @{ $def->{opts} }, $o;
+  return;
+} ## end sub parse_option_line
+
+# Split OPTION into its short and long names (either may be undef) and reject
+# a malformed or repeated flag.
+sub option_names {
+  my ( $def, $line, $opt ) = @_;
+
+  my ( $short, $long );
+  if ( $opt =~ /\|/x ) {
+    ( $short, $long ) = split /\|/x, $opt, 2;
+    def_err("short option must be one char ($opt) in: $line")
+      unless length($short) == 1;
+    def_err("long option missing after | ($opt) in: $line")
+      unless length($long);
+  } elsif ( length($opt) == 1 ) {
+    $short = $opt;
+  } else {
+    $long = $opt;
+  }
+
+  if ( defined $short ) {
+    def_err("repeated short option ($short) in: $line")
+      if $def->{seen_short}{$short}++;
+  }
+  if ( defined $long ) {
+    def_err("repeated long option ($long) in: $line")
+      if $def->{seen_long}{$long}++;
+  }
+
+  return ( $short, $long );
+} ## end sub option_names
+
+# Normalize REQUIRED: empty means optional, and a boolean is always optional.
+sub option_req {
+  my ( $line, $type, $req ) = @_;
+
+  $req = defined $req && length $req ? lc $req : 'optional';
+  $req = 'optional' if $type eq 'boolean';
+  def_err("REQUIRED must be required|optional ($req) in: $line")
+    unless $req eq 'required' || $req eq 'optional';
+
+  return $req;
+}
+
+# Register the option with Getopt::Long. %values holds undef (or [] for a
+# repeatable) until the user supplies the option, so a defaulted option is
+# distinguishable from a given one (see opt_active).
+sub add_optspec {
+  my ( $def, $line, $o )       = @_;
+  my ( $var, $type, $default ) = @{$o}{qw(var type default)};
+  my $name   = join '|', grep { defined } @{$o}{qw(short long)};
+  my $values = $def->{values};
+
+  if ( $type eq 'boolean' ) {
+    def_err("boolean DEFAULT must be 0 or 1 ($default) in: $line")
+      if defined $default && $default !~ /^[01]$/x;
+    $values->{$var} = undef;
+
+    # Negatable: -v / --verbose set 1, --no-verbose sets 0. With DEFAULT=1
+    # this gives a default-on (inverted) flag.
+    push @{ $def->{optspec} }, "$name!" => \$values->{$var};
+  } elsif ( $o->{repeat} ) {
+    $values->{$var} = [];
+    push @{ $def->{optspec} }, "$name=s@" => $values->{$var};
+  } else {
+    $values->{$var} = undef;
+    push @{ $def->{optspec} }, "$name=s" => \$values->{$var};
+  }
+
+  return;
+} ## end sub add_optspec
 
 #----------------------------------------------------------------------------
 # Build human-readable usage text from the option descriptors.
@@ -319,6 +385,35 @@ sub opt_label {
   return defined $o->{long} ? "--$o->{long}" : "-$o->{short}";
 }
 
+# KIND => sub returning the violation message for one constraint, or an empty
+# list when it holds. Each receives a hashref: group (the "(--a, --b)" label
+# list), labels, active (indexes of the given members), os (the option
+# descriptors, in declared order) and values. Keep in step with @CONSTRAINTS.
+my %CONSTRAINT_CHECK = (
+  'exclusive' => sub {
+    my $c = shift;
+    return () if @{ $c->{active} } <= 1;
+    return "only one of $c->{group} may be given (got " . join( ', ', map { $c->{labels}[$_] } @{ $c->{active} } ) . ')';
+  },
+  'require-one' => sub {
+    my $c = shift;
+    return @{ $c->{active} } ? () : "one of $c->{group} is required";
+  },
+  'together' => sub {
+    my $c = shift;
+    return () if !@{ $c->{active} } || @{ $c->{active} } >= @{ $c->{os} };
+    return "$c->{group} must be given together (all or none)";
+  },
+  'implies' => sub {
+    my $c  = shift;
+    my $os = $c->{os};
+    return () unless opt_active( $os->[0], $c->{values} );
+    my @missing = grep { !opt_active( $os->[$_], $c->{values} ) } 1 .. $#$os;
+    return () unless @missing;
+    return "$c->{labels}[0] requires (" . join( ', ', map { $c->{labels}[$_] } @missing ) . ')';
+  },
+);
+
 # Return the list of user-facing violation messages for all constraints.
 sub check_constraints {
   my ( $constraints, $opts, $values ) = @_;
@@ -329,64 +424,173 @@ sub check_constraints {
   for my $c (@$constraints) {
     my @os     = map { $by_var{$_} } @{ $c->{vars} };
     my @labels = map { opt_label($_) } @os;
-    my $set    = '(' . join( ', ', @labels ) . ')';
-    my @active = grep { opt_active( $os[$_], $values ) } 0 .. $#os;
 
-    if ( $c->{kind} eq 'exclusive' ) {
-      push @errors,
-        "only one of $set may be given (got " . join( ', ', map { $labels[$_] } @active ) . ')'
-        if @active > 1;
-
-    } elsif ( $c->{kind} eq 'require-one' ) {
-      push @errors, "one of $set is required" unless @active;
-
-    } elsif ( $c->{kind} eq 'together' ) {
-      push @errors, "$set must be given together (all or none)"
-        if @active && @active < @os;
-
-    } elsif ( $c->{kind} eq 'implies' ) {
-      if ( opt_active( $os[0], $values ) ) {
-        my @missing = grep { !opt_active( $os[$_], $values ) } 1 .. $#os;
-        push @errors,
-          "$labels[0] requires (" . join( ', ', map { $labels[$_] } @missing ) . ')'
-          if @missing;
-      }
-    }
-  } ## end for my $c (@$constraints)
+    push @errors,
+      $CONSTRAINT_CHECK{ $c->{kind} }->(
+        { group  => '(' . join( ', ', @labels ) . ')',
+          labels => \@labels,
+          active => [ grep { opt_active( $os[$_], $values ) } 0 .. $#os ],
+          os     => \@os,
+          values => $values,
+        } );
+  }
 
   return @errors;
 } ## end sub check_constraints
 
-#############################################################################
-# Main.
+#----------------------------------------------------------------------------
+# Main-program steps, called in order from Main below. The help and error
+# paths exit from inside them (directly or via the error helpers).
 
 # Leading parse_params options precede the definition string. A definition
 # line never starts with '-', so the first non-option arg is the definition.
-my $usage_mode = 0;
-while ( @ARGV && substr( $ARGV[0], 0, 1 ) eq '-' ) {
-  my $a = $ARGV[0];
+# Returns true for --usage.
+sub parse_leading_options {
+  my $usage_mode = 0;
 
-  if ( $a eq '-h' || $a eq '--help' ) {
+  # parse_params's own reference, rendered from the POD below; exits 0.
+  my $help = sub { pod2usage( -verbose => 2, -exitval => 0 ) };
 
-    # parse_params's own reference, rendered from the POD below; exits 0.
-    pod2usage( -verbose => 2, -exitval => 0 );
-  } elsif ( $a eq '--usage' ) {
-    $usage_mode = 1;
+  my %leading = (
+    '-h'      => $help,
+    '--help'  => $help,
+    '--usage' => sub { $usage_mode = 1 },
+    '--auto'  => sub { $AUTO       = 1 },
+    '--prog'  => sub {
+      @ARGV or def_err('--prog needs a value');
+      $PROG_NAME = shift @ARGV;
+    },
+  );
+
+  while ( @ARGV && substr( $ARGV[0], 0, 1 ) eq '-' ) {
+    if ( $ARGV[0] eq '--' ) {
+      shift @ARGV;
+      last;
+    }
+
+    # An unrecognized flag ends the leading options; it is the definition.
+    my $handler = $leading{ $ARGV[0] } or last;
     shift @ARGV;
-  } elsif ( $a eq '--auto' ) {
-    $AUTO = 1;
-    shift @ARGV;
-  } elsif ( $a eq '--prog' ) {
-    shift @ARGV;
-    @ARGV or def_err('--prog needs a value');
-    $PROG_NAME = shift @ARGV;
-  } elsif ( $a eq '--' ) {
-    shift @ARGV;
-    last;
-  } else {
-    last;                              # unrecognized; treat the next arg as the definition
+    $handler->();
   }
-} ## end while ( @ARGV && substr( ...))
+
+  return $usage_mode;
+} ## end sub parse_leading_options
+
+# A program built on parse_params gets --help for free: if the caller's args
+# include -h/--help (and the caller did not define its own), print the
+# generated usage and tell the caller's `eval` to stop cleanly. (parse_params's
+# own --help is the leading flag handled by parse_leading_options.)
+sub handle_caller_help {
+  my $args = shift;
+
+  my %defined_flag;
+  for my $o (@$OPTS) {
+    $defined_flag{ $o->{short} } = 1 if defined $o->{short};
+    $defined_flag{ $o->{long} }  = 1 if defined $o->{long};
+  }
+  return if $defined_flag{h} || $defined_flag{help};
+
+  for my $a (@$args) {
+    last if $a eq '--';
+    if ( $a eq '-h' || $a eq '--help' ) {
+      print STDERR build_usage( $OPTS, $POSITIONALS );
+      print "exit 0\n";
+      exit 0;
+    }
+  }
+
+  return;
+} ## end sub handle_caller_help
+
+# Each resolve_* sub turns one parsed option or positional into its shell
+# assignment, returning ( $assignment, @errors ).
+
+sub resolve_boolean {
+  my ( $o, $values ) = @_;
+  my $var = $o->{var};
+
+  my $bv =
+      defined $values->{$var} ? ( $values->{$var} ? 1 : 0 )
+    : defined $o->{default}   ? $o->{default}
+    :                           0;
+  return ("$var=$bv");
+}
+
+sub resolve_repeatable {
+  my ( $o,   $values ) = @_;
+  my ( $var, $type )   = @{$o}{qw(var type)};
+  my @errors;
+
+  my @vals = @{ $values->{$var} };
+  @vals = ( $o->{default} ) if !@vals && defined $o->{default};
+
+  for my $v (@vals) {
+    push @errors, "--$o->{long} ($v) is not a $type"
+      if !valid_value( $type, $v );
+  }
+  push @errors, "$var is required" if $o->{req} eq 'required' && !@vals;
+
+  @vals = map { File::Spec->rel2abs($_) } @vals if $type eq 'filename';
+  return ( "$var=(" . join( ' ', map { shq($_) } @vals ) . ')', @errors );
+}
+
+sub resolve_scalar {
+  my ( $o,   $values ) = @_;
+  my ( $var, $type )   = @{$o}{qw(var type)};
+  my @errors;
+
+  my $v = $values->{$var};
+  $v = $o->{default} if !defined $v && defined $o->{default};
+  my $present = defined $v && length $v;
+
+  push @errors, "value ($v) for $var is not a $type"
+    if $present && !valid_value( $type, $v );
+  push @errors, "$var is required"
+    if $o->{req} eq 'required' && !$present;
+
+  $v = File::Spec->rel2abs($v) if $type eq 'filename' && $present;
+  return ( "$var=" . shq($v), @errors );
+}
+
+sub resolve_option {
+  my ( $o, $values ) = @_;
+
+  return resolve_boolean( $o, $values )    if $o->{type} eq 'boolean';
+  return resolve_repeatable( $o, $values ) if $o->{repeat};
+  return resolve_scalar( $o, $values );
+}
+
+# Positionals: assign the leftover args in order. A slurp (#@) takes all that
+# remain, as a shell array.
+sub resolve_positional {
+  my ( $p, $args ) = @_;
+  my @errors;
+
+  if ( $p->{slurp} ) {
+    my @vals = splice @$args;
+
+    for my $v (@vals) {
+      push @errors, "positional $p->{var} ($v) is not a $p->{type}"
+        unless valid_value( $p->{type}, $v );
+    }
+    @vals = map { File::Spec->rel2abs($_) } @vals if $p->{type} eq 'filename';
+    return ( "$p->{var}=(" . join( ' ', map { shq($_) } @vals ) . ')', @errors );
+  }
+
+  my $v       = shift @$args;
+  my $present = defined $v && length $v;
+
+  push @errors, "positional $p->{var} ($v) is not a $p->{type}"
+    if $present && !valid_value( $p->{type}, $v );
+  $v = File::Spec->rel2abs($v) if $p->{type} eq 'filename' && $present;
+  return ( "$p->{var}=" . shq($v), @errors );
+} ## end sub resolve_positional
+
+#############################################################################
+# Main.
+
+my $usage_mode = parse_leading_options();
 
 @ARGV or def_err('no definition string given');
 
@@ -401,25 +605,7 @@ if ($usage_mode) {
   exit 0;
 }
 
-# A program built on parse_params gets --help for free: if the caller's args
-# include -h/--help (and the caller did not define its own), print the
-# generated usage and tell the caller's `eval` to stop cleanly. (parse_params's
-# own --help is the leading flag handled above.)
-my %defined_flag;
-for my $o (@$OPTS) {
-  $defined_flag{ $o->{short} } = 1 if defined $o->{short};
-  $defined_flag{ $o->{long} }  = 1 if defined $o->{long};
-}
-if ( !$defined_flag{h} && !$defined_flag{help} ) {
-  for my $a (@args) {
-    last if $a eq '--';
-    if ( $a eq '-h' || $a eq '--help' ) {
-      print STDERR build_usage( $OPTS, $POSITIONALS );
-      print "exit 0\n";
-      exit 0;
-    }
-  }
-}
+handle_caller_help( \@args );
 
 # ICEBOX: optional minimal/prefix matching + single-dash long options
 # (abbreviation, shorthand, fuzzy/partial flags). Idea: let unambiguous
@@ -437,75 +623,19 @@ Getopt::Long::Configure( 'no_auto_abbrev', 'no_ignore_case', 'permute' );
     or bail_input('could not parse options');
 }
 
-my @errors;
-my @out;
+my ( @out, @errors );
 
 for my $o (@$OPTS) {
-  my $var  = $o->{var};
-  my $type = $o->{type};
+  my ( $assignment, @errs ) = resolve_option( $o, $values );
+  push @out,    $assignment;
+  push @errors, @errs;
+}
 
-  if ( $type eq 'boolean' ) {
-    my $bv =
-        defined $values->{$var} ? ( $values->{$var} ? 1 : 0 )
-      : defined $o->{default}   ? $o->{default}
-      :                           0;
-    push @out, "$var=$bv";
-    next;
-  }
-
-  if ( $o->{repeat} ) {
-    my @vals = @{ $values->{$var} };
-    @vals = ( $o->{default} ) if !@vals && defined $o->{default};
-
-    for my $v (@vals) {
-      push @errors, "--$o->{long} ($v) is not a $type"
-        if !valid_value( $type, $v );
-    }
-    push @errors, "$var is required" if $o->{req} eq 'required' && !@vals;
-
-    @vals = map { $type eq 'filename' ? File::Spec->rel2abs($_) : $_ } @vals
-      if $type eq 'filename';
-    push @out, "$var=(" . join( ' ', map { shq($_) } @vals ) . ')';
-    next;
-  }
-
-  my $v = $values->{$var};
-  $v = $o->{default} if !defined $v && defined $o->{default};
-
-  if ( defined $v && length $v && !valid_value( $type, $v ) ) {
-    push @errors, "value ($v) for $var is not a $type";
-  }
-  push @errors, "$var is required"
-    if $o->{req} eq 'required' && !( defined $v && length $v );
-
-  $v = File::Spec->rel2abs($v) if $type eq 'filename' && defined $v && length $v;
-  push @out, "$var=" . shq($v);
-} ## end for my $o (@$OPTS)
-
-# Positionals: assign the leftover args in order. A slurp (#@) takes all that
-# remain, as a shell array.
 for my $p (@$POSITIONALS) {
-  if ( $p->{slurp} ) {
-    my @vals = @args;
-    @args = ();
-
-    for my $v (@vals) {
-      push @errors, "positional $p->{var} ($v) is not a $p->{type}"
-        unless valid_value( $p->{type}, $v );
-    }
-    @vals = map { File::Spec->rel2abs($_) } @vals if $p->{type} eq 'filename';
-    push @out, "$p->{var}=(" . join( ' ', map { shq($_) } @vals ) . ')';
-    next;
-  }
-
-  my $v = shift @args;
-  if ( defined $v && length $v && !valid_value( $p->{type}, $v ) ) {
-    push @errors, "positional $p->{var} ($v) is not a $p->{type}";
-  }
-  $v = File::Spec->rel2abs($v)
-    if $p->{type} eq 'filename' && defined $v && length $v;
-  push @out, "$p->{var}=" . shq($v);
-} ## end for my $p (@$POSITIONALS)
+  my ( $assignment, @errs ) = resolve_positional( $p, \@args );
+  push @out,    $assignment;
+  push @errors, @errs;
+}
 
 # Cross-option constraints, judged on what the user provided (see opt_active).
 push @errors, check_constraints( $constraints, $OPTS, $values );
