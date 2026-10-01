@@ -383,17 +383,20 @@ bash -l -c 'echo "DOTFILES: $DOTFILES"'
 
 **Core Documentation:**
 
-- **[WORKFLOW.md](WORKFLOW.md)**: Repository workflow, development guidelines,
-  and tool setup procedures
-- **[TESTS.md](TESTS.md)**: Testing framework, strategy, and how to write tests
-- **[AGENTS.md](AGENTS.md)**: AI agent behavior specification and requirements
+- **[WORKFLOW.md](.claude/WORKFLOW.md)**: Repository workflow, development
+  guidelines, and tool setup procedures
+- **[TESTS.md](.claude/TESTS.md)**: Testing framework, strategy, and how to
+  write tests
+- **[CLAUDE.md](.claude/CLAUDE.md)**: AI agent behavior specification and
+  requirements
 
 **Additional Documentation:**
 
-- **[Bash Completion](docs/bash-completion.md)**: Detailed explanation of the
-  completion system
+- **[Bash Completion](config/completions/README.md)**: Detailed explanation
+  of the completion system
 - **[Git Aliases](docs/git_aliases.md)**: List of available git aliases
-- **[Conventions](CONVENTIONS.md)**: Coding and configuration conventions
+- **[Conventions](.claude/CONVENTIONS.md)**: Coding and configuration
+  conventions
 
 ## Contributing
 
