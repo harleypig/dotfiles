@@ -46,7 +46,7 @@ repos:
       - id: shellcheck
         name: shellcheck
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shellcheck
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 shellcheck
         args: [--external-sources]
         types: [shell]
       # Extensionless SOURCED shell files (shell-startup, config/shell-startup/*,
@@ -55,7 +55,7 @@ repos:
       - id: shellcheck-sourced
         name: shellcheck (sourced shell)
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shellcheck
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 shellcheck
         args: [--external-sources]
         types: [text]
         files: &sourced_shell '^(shell-startup|config/shell-startup/[^./]+|lib/[^./]+)$'
@@ -70,7 +70,7 @@ repos:
       - id: shfmt
         name: shfmt
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shfmt
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
         types: [shell]
         exclude: '\.bats$'
@@ -78,7 +78,7 @@ repos:
       - id: shfmt-sourced
         name: shfmt (sourced shell)
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shfmt
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
         types: [text]
         files: *sourced_shell
@@ -107,7 +107,7 @@ repos:
       - id: markdownlint
         name: markdownlint
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e markdownlint
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 markdownlint
         types: [markdown]
 
   # Phase 4 (Docs) — Vale prose lint via the combined code-tools image (#385).
@@ -120,7 +120,7 @@ repos:
       - id: vale
         name: vale
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e vale
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 vale
         types: [markdown]
 
   # Phase 4 (Docs) — lychee link validation via the combined code-tools image
@@ -137,8 +137,36 @@ repos:
       - id: lychee
         name: lychee (offline links)
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e lychee
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 lychee
         types: [markdown]
+
+  # GitHub Actions linting via the combined code-tools image (#482).
+  # Check-only: neither tool has a fix mode wired here, so there is no
+  # fix-config twin. CI gates both through the pre-commit job's --all-files
+  # run (CI follows pre-commit, WORKFLOW.md).
+  # - actionlint: workflow syntax, expressions, `uses:` shape and types; it
+  #   runs the image's own shellcheck over each `run:` script. Files are
+  #   passed explicitly, so it needs no .git in the container.
+  # - zizmor: security audit of workflows and dependabot.yml (template
+  #   injection, persisted credentials, excessive permissions, unpinned
+  #   actions, missing cooldown). --offline: no GitHub API calls, so a run is
+  #   deterministic and needs no token; the online-only audits (e.g. known
+  #   vulnerable action versions) are left to Dependabot.
+  # SYNC: the digest matches the other code-tools entries here and in
+  # bin/docker_wrapper.
+  - repo: local
+    hooks:
+      - id: actionlint
+        name: actionlint (GitHub workflows)
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 actionlint
+        files: ^\.github/workflows/.*\.ya?ml$
+      - id: zizmor
+        name: zizmor (GitHub Actions security)
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 zizmor
+        args: [--offline, --no-progress]
+        files: ^\.github/(workflows/.*\.ya?ml|dependabot\.ya?ml)$
 
   # Phase 3 (Language) — Python: import order, format, lint. Tools match the
   # repo's yapf + isort + flake8 choice (python.md), not black/ruff.
