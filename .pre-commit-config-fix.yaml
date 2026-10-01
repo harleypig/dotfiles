@@ -37,7 +37,7 @@ repos:
       - id: shfmt
         name: shfmt
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shfmt
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 shfmt
         args: [-w, -i, '2', -s, -bn, -ci, -sr]
         types: [shell]
         exclude: '\.bats$'
@@ -47,7 +47,7 @@ repos:
       - id: shfmt-sourced
         name: shfmt (sourced shell)
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shfmt
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 shfmt
         args: [-w, -i, '2', -s, -bn, -ci, -sr]
         types: [text]
         files: '^(shell-startup|config/shell-startup/[^./]+|lib/[^./]+)$'
@@ -65,7 +65,7 @@ repos:
       - id: markdownlint-fix
         name: markdownlint --fix
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e markdownlint
+        entry: ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079 markdownlint
         args: [--fix]
         types: [markdown]
 

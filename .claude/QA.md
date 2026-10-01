@@ -1,6 +1,6 @@
 # Quality Assurance
 
-**Version:** v1.3.0
+**Version:** v1.4.0
 
 ## Purpose
 
@@ -34,9 +34,10 @@ Two pre-commit configs (see the dotagents repo's `rules/pre-commit.md`):
 
 CI (`.github/workflows/tests.yml`) runs on push to `master`, on PRs, and on
 manual dispatch: jobs **bats**, **meta**, **perl**, **perl-compile**,
-**python**, **pre-commit** (plus `publish-tool-images.yml` for the perl tool
-images). The `master` ruleset requires **bats + meta + perl + perl-compile +
-pre-commit** green to merge (squash-only).
+**python**, **pre-commit** (plus `tool-images.yml`, which calls the reusable
+`publish-tool-images.yml` to build and publish the tool images). The
+`master` ruleset requires **bats + meta + perl + perl-compile + pre-commit**
+green to merge (squash-only).
 
 ## Dimension status
 
@@ -59,7 +60,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 12 | Build | **N/A** | Nothing compiles / bundles. The test docker harness image is test infra, not a product artifact. |
 | 13 | Documentation | **Active** | `markdownlint` (Markdown structure); **`vale`** (prose) — a check-only pre-commit hook running the code-tools image against the repo-local `.vale.ini`: the `proselint` style, baked into the image (no `vale sync`), with `Annotations` / `Typography` / `Needless` off so technical docs stay quiet (#385). Inline-first doc philosophy (`WORKFLOW.md`); no changelog is kept — `CHANGELOG.md` is frozen, git log + PR bodies are the record. **`lychee`** (links) — a check-only pre-commit hook running the code-tools image against the repo-local `lychee.toml`, which sets `offline = true`: relative/internal links and their `#anchor` fragments are checked, external links are reported as Excluded, so a flaky site can never block a commit (#452). External links are a manual, advisory pass: `bin/lychee --offline=false <files>`. The hook reads staged Markdown only; a full pass is `bin/lychee $(git ls-files '*.md')`. CI link checking is #350. |
 | 14 | Code review | **Active (solo)** | `master` ruleset requires a PR (no bypass) with review-thread resolution; **0 required approvals** (solo repo) — review is self-review. |
-| 15 | CI | **Active** | `tests.yml` jobs bats / meta / perl / perl-compile / python / pre-commit (+ `publish-tool-images.yml`); required checks **bats + meta + perl + perl-compile + pre-commit** gate merges. `perl-compile` builds a real pinned Perl only when a PR touches the perl toolchain (else early-green). Watch via the `push-pr` skill's `ci-watch`. |
+| 15 | CI | **Active** | `tests.yml` jobs bats / meta / perl / perl-compile / python / pre-commit (+ `tool-images.yml` → `publish-tool-images.yml`: PR runs build with `packages: read` only, master runs publish with `packages: write` — #482); required checks **bats + meta + perl + perl-compile + pre-commit** gate merges. **Workflow lint** — two check-only pre-commit hooks on the code-tools image, gated in CI through the pre-commit job (#482): **`actionlint`** (workflow syntax, expressions, types; runs the image's shellcheck over `run:` scripts) over `.github/workflows/*.y*ml`, and **`zizmor --offline`** (template injection, persisted credentials, excessive permissions, unpinned actions, Dependabot cooldown) over the workflows and `.github/dependabot.yml`. A deliberate finding is suppressed inline with a reason (`# zizmor: ignore[<audit>]`). `perl-compile` builds a real pinned Perl only when a PR touches the perl toolchain (else early-green). Watch via the `push-pr` skill's `ci-watch`. |
 
 ## Optimization stance
 
