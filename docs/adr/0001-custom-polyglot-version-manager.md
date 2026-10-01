@@ -116,3 +116,11 @@ gives no single `install node python perl` entry point.
   and *Node Setup* in `TODO.md`.
 - Each new language module verifies its native manager's install/update/remove
   support before implementation.
+
+## Revised by ADR-0007
+
+[ADR-0007](0007-mise-alongside-vmgr.md) (2026-10-01) keeps this decision and
+changes mise from a rejected alternative to a supported fallback. vmgr and
+mise can both be installed. Where vmgr manages a language and its toolchain
+is installed, vmgr's toolchain wins on PATH, and mise supplies the rest. The
+trigger was a vmgr failure on another server.
