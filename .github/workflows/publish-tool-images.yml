@@ -19,6 +19,15 @@ name: publish-tool-images
 # master, so unmerged changes never publish. The docker_wrapper image[] pins +
 # the pre-commit hooks consume these images (see bin/docker_wrapper and
 # .pre-commit-config*.yaml); bump a version here and re-pin there.
+#
+# Tags are IMMUTABLE (#472). Consumers pin tag@digest, so moving a tag to a
+# rebuild orphans the pinned digest as an untagged ghcr version (one cleanup
+# away from breaking every consumer) and leaves the tag naming something the
+# pin is not. So an entry whose tag already exists on ghcr is neither built
+# nor pushed; a change ships by bumping its tag. A changed build context
+# under an existing tag fails the run rather than being skipped silently —
+# the forgot-to-bump case. A changed `modules:` value is NOT detected (it
+# lives in this file, which every entry shares), so bump the tag with it.
 
 on:
   push:
@@ -42,6 +51,9 @@ jobs:
     permissions:
       packages: write
     strategy:
+      # One entry failing (e.g. a missing tag bump) must not cancel another
+      # entry's legitimate push.
+      fail-fast: false
       matrix:
         include:
           - tool: perl-tools
@@ -59,8 +71,78 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # The changed-context check diffs against the PR base or the
+          # pre-push commit, which a shallow clone does not have.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Logged in on every event: the tag-exists check reads ghcr, and only
+      # the push step is gated to non-PR events. A PR whose token cannot log
+      # in (a fork) carries on: the check then reads anonymously.
+      - name: Log in to ghcr
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+
+      - name: Decide ${{ matrix.tool }}
+        id: decide
+        env:
+          REF: ghcr.io/${{ github.repository_owner }}/${{ matrix.tool }}:${{ matrix.tag }}
+          CONTEXT: ${{ matrix.context }}
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          # Only "not found" or an auth denial means absent (a token that
+          # cannot read a package cannot push to it either). Any other
+          # failure stops the run: reading a network error as absent would
+          # rebuild and move an existing tag, the defect this step prevents.
+          if out=$(docker buildx imagetools inspect "$REF" 2>&1); then
+            exists=1
+
+          elif grep -qiE 'not found|denied|403 forbidden' <<<"$out"; then
+            exists=0
+
+          else
+            echo "::error::cannot tell whether $REF exists: $out"
+            exit 1
+          fi
+
+          case $EVENT in
+            pull_request) base=$PR_BASE ;;
+            push) base=$PUSH_BEFORE ;;
+            *) base='' ;;
+          esac
+
+          # An all-zero "before" is a branch's first push: nothing to diff.
+          changed=0
+          if [[ -n $base && $base != *[!0]* ]]; then
+            base=''
+          fi
+
+          if [[ -n $base ]] && ! git diff --quiet "$base" HEAD -- "$CONTEXT"; then
+            changed=1
+          fi
+
+          if ((exists && changed)); then
+            echo "::error::$CONTEXT changed but $REF already exists; bump the tag"
+            exit 1
+
+          elif ((exists)); then
+            echo "skip: $REF already exists (tags are immutable)"
+            echo build=false >>"$GITHUB_OUTPUT"
+
+          else
+            echo "build: $REF does not exist yet"
+            echo build=true >>"$GITHUB_OUTPUT"
+          fi
 
       - name: Build ${{ matrix.tool }}
+        if: steps.decide.outputs.build == 'true'
         run: |
           image="ghcr.io/${{ github.repository_owner }}/${{ matrix.tool }}"
           args=()
@@ -71,14 +153,8 @@ jobs:
             -t "$image:${{ matrix.tag }}" "${{ matrix.context }}"
 
       # Push only from master (not PRs); a fork PR has no packages:write anyway.
-      - name: Log in to ghcr
-        if: github.event_name != 'pull_request'
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" \
-            | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-
       - name: Push ${{ matrix.tool }}
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.decide.outputs.build == 'true'
         run: |
           image="ghcr.io/${{ github.repository_owner }}/${{ matrix.tool }}:${{ matrix.tag }}"
           docker push "$image"
