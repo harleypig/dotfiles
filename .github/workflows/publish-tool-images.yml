@@ -12,7 +12,9 @@ name: publish-tool-images
 # the combined cross-language QA-tool image (config/docker/code-tools) decided
 # in ADR-0005 — its own multi-stage Dockerfile, no MODULES; tool versions are
 # baked as ARG/FROM pins there, and its image tag is bumped when any of them
-# changes.
+# changes. python-tools (config/docker/python-tools) holds the tools that
+# need a Python runtime — yamllint and ansible-lint — which ADR-0005 keeps out
+# of code-tools (#370); its tag is bumped when any of its ARG pins changes.
 #
 # On a PR it BUILDS only (verify the Dockerfile); it pushes only on a push to
 # master, so unmerged changes never publish. The docker_wrapper image[] pins +
@@ -26,12 +28,14 @@ on:
       - config/docker/perl-tools/**
       - config/docker/ansible-lint/**
       - config/docker/code-tools/**
+      - config/docker/python-tools/**
       - .github/workflows/publish-tool-images.yml
   pull_request:
     paths:
       - config/docker/perl-tools/**
       - config/docker/ansible-lint/**
       - config/docker/code-tools/**
+      - config/docker/python-tools/**
       - .github/workflows/publish-tool-images.yml
   workflow_dispatch:
 
@@ -54,7 +58,11 @@ jobs:
           - tool: code-tools
             context: config/docker/code-tools
             modules: ''
-            tag: 0.2.0
+            tag: 0.3.0
+          - tool: python-tools
+            context: config/docker/python-tools
+            modules: ''
+            tag: '1.0.0'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
