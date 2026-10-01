@@ -134,6 +134,36 @@ teardown() {
   refute [ -e "$STUB/docker.args" ]
 }
 
+@test "lychee dispatch assembles the expected docker run command" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+  printf '# Title\n' > doc.md
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/lychee" doc.md
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "run"
+  assert_output --partial "--workdir /mnt"
+  assert_output --partial "ghcr.io/harleypig/code-tools"
+  assert_output --partial "lychee doc.md"
+}
+
+@test "lychee refuses a path outside the mounted working directory" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/lychee" /etc/hostname
+  assert_failure
+  refute [ -e "$STUB/docker.args" ]
+}
+
+@test "lychee.toml keeps the link check offline" {
+  # The commit gate must never depend on an external site (#452).
+  run grep -E '^offline = true$' "$ROOT/lychee.toml"
+  assert_success
+}
+
 @test "ansible-lint dispatch assembles the expected docker run command" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"

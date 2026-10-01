@@ -1,6 +1,6 @@
 # Quality Assurance
 
-**Version:** v1.2.1
+**Version:** v1.3.0
 
 ## Purpose
 
@@ -57,7 +57,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 10 | Performance & load | **Off** | Not a service. Login-shell startup perf is handled ad hoc, measure-first (resolved — see git log, PRs #59/#60). |
 | 11 | Reliability & observability | **N/A** | Not a deployed service. |
 | 12 | Build | **N/A** | Nothing compiles / bundles. The test docker harness image is test infra, not a product artifact. |
-| 13 | Documentation | **Active** | `markdownlint` (Markdown structure); **`vale`** (prose) — a check-only pre-commit hook running the code-tools image against the repo-local `.vale.ini`: the `proselint` style, baked into the image (no `vale sync`), with `Annotations` / `Typography` / `Needless` off so technical docs stay quiet (#385). Inline-first doc philosophy (`WORKFLOW.md`); no changelog is kept — `CHANGELOG.md` is frozen, git log + PR bodies are the record. Link validation **Planned** — #452. |
+| 13 | Documentation | **Active** | `markdownlint` (Markdown structure); **`vale`** (prose) — a check-only pre-commit hook running the code-tools image against the repo-local `.vale.ini`: the `proselint` style, baked into the image (no `vale sync`), with `Annotations` / `Typography` / `Needless` off so technical docs stay quiet (#385). Inline-first doc philosophy (`WORKFLOW.md`); no changelog is kept — `CHANGELOG.md` is frozen, git log + PR bodies are the record. **`lychee`** (links) — a check-only pre-commit hook running the code-tools image against the repo-local `lychee.toml`, which sets `offline = true`: relative/internal links and their `#anchor` fragments are checked, external links are reported as Excluded, so a flaky site can never block a commit (#452). External links are a manual, advisory pass: `bin/lychee --offline false <files>`. The hook reads staged Markdown only; a full pass is `bin/lychee $(git ls-files '*.md')`. CI link checking is #350. |
 | 14 | Code review | **Active (solo)** | `master` ruleset requires a PR (no bypass) with review-thread resolution; **0 required approvals** (solo repo) — review is self-review. |
 | 15 | CI | **Active** | `tests.yml` jobs bats / meta / perl / perl-compile / python / pre-commit (+ `publish-tool-images.yml`); required checks **bats + meta + perl + perl-compile + pre-commit** gate merges. `perl-compile` builds a real pinned Perl only when a PR touches the perl toolchain (else early-green). Watch via the `push-pr` skill's `ci-watch`. |
 
