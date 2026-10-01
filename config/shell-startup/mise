@@ -2,6 +2,12 @@
 
 havecmd mise || return 0
 
+# vmgr wins over mise wherever both manage a language (ADR-0001, #435). That
+# rests on load order: this module runs before node/perl/python, which
+# prepend vmgr's toolchains, and mise's default activation leaves later PATH
+# changes in front. activate_aggressive (MISE_ACTIVATE_AGGRESSIVE) would push
+# mise back to the front on every prompt, so it must stay off.
+
 if [[ $- == *i* ]] && _bash_prompt_supports_hooks; then
   eval "$(mise activate bash)"
   _bash_prompt_reorder_hooks

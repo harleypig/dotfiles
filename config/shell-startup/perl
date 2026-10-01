@@ -28,6 +28,8 @@ setup_perlbrew() {
   # nvm.sh runs a slow `nvm use default`), perlbrew's bashrc is a lightweight
   # PATH/env setup, so it is sourced eagerly - the default Perl is active at
   # login, matching how the pinned Perl is meant to be the working Perl.
+  # Prepending after the mise module ran is also what puts this Perl ahead of
+  # mise's when both are installed (#435).
   if [[ -s $pb_xdg/etc/bashrc ]]; then
     export PERLBREW_ROOT="$pb_xdg"
 

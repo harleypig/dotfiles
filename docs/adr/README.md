@@ -13,9 +13,10 @@ repo's `adr/`.
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [0001](0001-custom-polyglot-version-manager.md) | Build a custom polyglot version-manager orchestrator that wraps native managers | Accepted |
+| [0001](0001-custom-polyglot-version-manager.md) | Build a custom polyglot version-manager orchestrator that wraps native managers | Accepted (revised by 0007) |
 | [0002](0002-perl-qa-tooling-scope.md) | Scope of the Perl QA tooling — what to gate, skip, and defer | Accepted |
 | [0003](0003-home-config-symlink.md) | Whether to symlink `~/.config` to `$DOTFILES/config` | Accepted |
 | [0004](0004-xdg-audit-mechanism-state-machine.md) | xdg-audit as a dotfile "mechanism" state-machine | Accepted |
 | [0005](0005-multi-linter-docker-image.md) | A self-owned multi-linter Docker image (toolbox, not orchestrator) | Accepted |
 | [0006](0006-lint-tools-pre-commit-hooks.md) | Consolidate non-Python lint tooling onto lint-tools via a non-entrypoint runner | Accepted |
+| [0007](0007-mise-alongside-vmgr.md) | Support mise alongside vmgr, with vmgr preferred per language | Accepted |
