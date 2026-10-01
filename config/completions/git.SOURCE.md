@@ -9,13 +9,12 @@ this file to report when upstream has moved on.
 | Upstream repo  | `git/git`                                                    |
 | Path           | `contrib/completion/git-completion.bash`                     |
 | License        | GPL-2.0 (see the file header)                                |
-| Vendored SHA   | `c5a7ee1` (full: `c5a7ee124d491d5fe0e3948532ca8219b3b471c0`) |
-| Vendored date  | 2024-03-14 (commit date); installed 2024-04-02               |
+| Vendored SHA   | `189ff3a` (full: `189ff3a56d34a1a23a53888e0431096a3f20436f`) |
+| Vendored date  | 2026-08-31 (commit date); installed 2026-10-01               |
 
-The SHA was pinned after the fact (2026-10-01) by blob comparison: with the
-local edit below removed, the file's git blob hash
-(`75193ded4bdeda01fc440db26b08e40ae2d3a73f`) is exactly the upstream path's
-blob at that commit, a merge on `master`.
+With the local edit below removed, the file's git blob hash
+(`9f8b9b50ff834ca18ecba3db2f5ef0a69361217e`) is exactly the upstream path's
+blob at that commit.
 
 Local edits: added `# shellcheck shell=bash` as the first line, so the
 pre-commit shellcheck hook can lint this extensionless file. Re-apply it when
