@@ -14,6 +14,9 @@ on:
 # ??? None of these sections are clear on whether the local settings are
 #     merged or override the global setting.
 
+permissions:
+  contents: read
+
 concurrency:
   # Currently, since we're only reacting to an issue comment, issue.number
   # below will always be valid. However, if we add a different event above,
@@ -46,7 +49,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # This tests for the variable in the environment, not in secrets.
       # - name: Verify required secrets
@@ -56,7 +59,7 @@ jobs:
       #     OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
       - name: Run OpenCode
-        uses: sst/opencode/github@latest
+        uses: sst/opencode/github@aec0b9a6d8898f68f923aaf08b7306d931fd9d76 # v1.18.34
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
