@@ -1,0 +1,146 @@
+---
+name: vendored-check
+
+# Weekly check of vendored files against upstream (#351). This runs
+# bin/check-vendored over the repo, which reads every SOURCE.md /
+# <name>.SOURCE.md provenance record (see bin/check-vendored for the format).
+#
+# It keeps ONE tracking issue, never a PR:
+# - BEHIND (exit 1): open the issue, or update its body if one is open.
+# - OK (exit 0): close the open issue, if any, with a comment.
+# - ERROR (exit 2): fail the run without touching the issue. A malformed
+#   record or a gh failure is a defect, not an update.
+# Applying an update is still manual (each SOURCE.md has its own update
+# procedure); auto-PRs were deferred in #389.
+#
+# The issue is found by its exact title among open issues, so renaming it
+# by hand detaches it and the next BEHIND run opens a new one.
+#
+# A PR that edits this file runs only the read-only selftest job: a
+# synthetic record pinned to an old upstream commit must come back BEHIND.
+# The issues: write grant is confined to the check job, which never runs on
+# a PR.
+
+on:
+  schedule:
+    - cron: '50 14 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/vendored-check.yml
+
+permissions:
+  contents: read
+
+env:
+  TITLE: 'Vendored files behind upstream'
+
+jobs:
+  selftest:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # git-completion.bash at its 2024-05-17 commit. Upstream has moved
+      # since, so a working checker must call this BEHIND (exit 1).
+      - name: A stale record is reported BEHIND
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          dir=$RUNNER_TEMP/selftest
+          mkdir -p "$dir"
+          cat >"$dir/SOURCE.md" <<'EOF'
+          | Field         | Value                                      |
+          |---------------|--------------------------------------------|
+          | Upstream repo | `git/git`                                  |
+          | Path          | `contrib/completion/git-completion.bash`   |
+          | Vendored SHA  | `5dd5007f8936f8d37cf95119e83039bd9237a3c5` |
+          EOF
+
+          rc=0
+          bin/check-vendored "$dir" || rc=$?
+
+          if ((rc != 1)); then
+            echo "::error::expected BEHIND (exit 1), got exit $rc"
+            exit 1
+          fi
+
+  check:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      # Two overlapping runs could each see no open issue and open two.
+      group: ${{ github.workflow }}-check
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check vendored files and sync the tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          rc=0
+          out=$(bin/check-vendored) || rc=$?
+          printf '%s\n' "$out"
+
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          # The open tracking issue, matched on its exact title. Listed rather
+          # than searched: the search index lags a just-created issue.
+          issue=$(gh issue list --state open --limit 1000 \
+            --json number,title \
+            --jq "map(select(.title == env.TITLE)) | .[0].number // empty")
+
+          case $rc in
+            0)
+              if [[ -n $issue ]]; then
+                gh issue close "$issue" \
+                  --comment "All vendored files are current as of $run_url."
+                echo "closed #$issue"
+
+              else
+                echo "all current; no open tracking issue"
+              fi
+              ;;
+
+            1)
+              # shellcheck disable=SC2016  # literal Markdown backticks
+              intro='`bin/check-vendored` reports vendored files behind'
+              intro+=' upstream. Update each one by the procedure in its'
+              intro+=' SOURCE.md record. The weekly vendored-check workflow'
+              intro+=' keeps this issue current and closes it once every'
+              intro+=' file is current.'
+
+              # shellcheck disable=SC2016  # literal Markdown backticks
+              body=$(printf '%s\n\n```text\n%s\n```\n\nLast checked: %s\n' \
+                "$intro" "$out" "$run_url")
+
+              if [[ -n $issue ]]; then
+                gh issue edit "$issue" --body "$body"
+                echo "updated #$issue"
+
+              else
+                gh issue create --title "$TITLE" --body "$body"
+              fi
+              ;;
+
+            *)
+              echo "::error::check-vendored exited $rc (ERROR); issue left as is"
+              exit "$rc"
+              ;;
+          esac
