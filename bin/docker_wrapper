@@ -106,7 +106,7 @@ shellcheck() {
 # installs a pinned binary, so keep SC_VER in tests.yml in step with that FROM
 # tag (test_docker_wrapper.bats guards it). Re-pin the digest when code-tools
 # republishes.
-image[shellcheck]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
+image[shellcheck]="ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e"
 
 #------------------------------------------------------------------------------
 shfmt() {
@@ -131,7 +131,7 @@ shfmt() {
 # pinned binary, so keep SHFMT_VER in tests.yml in step with that FROM tag
 # (test_docker_wrapper.bats guards it). Re-pin the digest when code-tools
 # republishes.
-image[shfmt]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
+image[shfmt]="ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e"
 
 #------------------------------------------------------------------------------
 yamllint() {
@@ -303,7 +303,7 @@ prettier() {
 # publish). prettier's pre-commit gate is a SEPARATE node hook (mirrors-prettier
 # in -fix.yaml), not tied to this wrapper — but keep the prettier version in the
 # code-tools Dockerfile roughly aligned with that hook's.
-image[prettier]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
+image[prettier]="ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e"
 
 #------------------------------------------------------------------------------
 hadolint() {
@@ -335,7 +335,7 @@ hadolint() {
 # (re-pin the digest when it republishes). It carries hadolint v2.14.0 (built
 # FROM hadolint/hadolint:v2.14.0-alpine). hadolint has no pre-commit hook — the
 # wrapper is its only consumer.
-image[hadolint]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
+image[hadolint]="ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e"
 
 #------------------------------------------------------------------------------
 markdownlint() {
@@ -358,7 +358,7 @@ markdownlint() {
 # in the pre-commit `markdownlint` hooks (check + fix) — all reference this same
 # image, so they can't drift. Its version lives in the code-tools Dockerfile
 # (`ARG MARKDOWNLINT_VERSION`); re-pin the digest when code-tools republishes.
-image[markdownlint]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
+image[markdownlint]="ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e"
 
 #------------------------------------------------------------------------------
 vale() {
@@ -382,7 +382,31 @@ vale() {
 # `vale` hook — both reference this same image. Its version and the proselint
 # style's live in the code-tools Dockerfile (`ARG VALE_VERSION`,
 # `ARG PROSELINT_VERSION`); re-pin the digest when code-tools republishes.
-image[vale]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
+image[vale]="ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e"
+
+#------------------------------------------------------------------------------
+lychee() {
+  dw_guard_pwd_paths lychee "$@" || exit 1
+
+  local -a args=(--rm)
+  dw_user args
+  dw_env args "${DW_ENV[@]}"
+  dw_mount args "$PWD" /mnt
+  args+=(--workdir /mnt)
+
+  # lychee reads link inputs from stdin when given `-`.
+  dw_stdin_if_piped args
+
+  # code-tools has no ENTRYPOINT, so name the tool. The repo-local
+  # lychee.toml is auto-discovered from /mnt (= $PWD); it sets --offline, so
+  # an online check needs `--offline false` on the command line.
+  exec docker run "${args[@]}" "${image[lychee]}" lychee "$@"
+}
+# SYNC: lychee runs from the combined code-tools image here AND in the
+# pre-commit `lychee` hook — both reference this same image. Its version lives
+# in the code-tools Dockerfile (`ARG LYCHEE_VERSION`); re-pin the digest when
+# code-tools republishes.
+image[lychee]="ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e"
 
 #------------------------------------------------------------------------------
 ansible-lint() {
@@ -433,7 +457,7 @@ ruff() {
 # binary (needs no Python runtime), so it lives in the combined image; the
 # Python-runtime linters (yamllint, ansible-lint) live in python-tools (#370).
 # ruff has no pre-commit hook yet.
-image[ruff]="ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3"
+image[ruff]="ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e"
 
 #------------------------------------------------------------------------------
 perltidy() {

@@ -46,7 +46,7 @@ repos:
       - id: shellcheck
         name: shellcheck
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3 shellcheck
+        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shellcheck
         args: [--external-sources]
         types: [shell]
       # Extensionless SOURCED shell files (shell-startup, config/shell-startup/*,
@@ -55,7 +55,7 @@ repos:
       - id: shellcheck-sourced
         name: shellcheck (sourced shell)
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3 shellcheck
+        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shellcheck
         args: [--external-sources]
         types: [text]
         files: &sourced_shell '^(shell-startup|config/shell-startup/[^./]+|lib/[^./]+)$'
@@ -70,7 +70,7 @@ repos:
       - id: shfmt
         name: shfmt
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3 shfmt
+        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
         types: [shell]
         exclude: '\.bats$'
@@ -78,7 +78,7 @@ repos:
       - id: shfmt-sourced
         name: shfmt (sourced shell)
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3 shfmt
+        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e shfmt
         args: [-d, -i, '2', -s, -bn, -ci, -sr]
         types: [text]
         files: *sourced_shell
@@ -107,7 +107,7 @@ repos:
       - id: markdownlint
         name: markdownlint
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3 markdownlint
+        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e markdownlint
         types: [markdown]
 
   # Phase 4 (Docs) — Vale prose lint via the combined code-tools image (#385).
@@ -120,7 +120,24 @@ repos:
       - id: vale
         name: vale
         language: docker_image
-        entry: ghcr.io/harleypig/code-tools:0.3.0@sha256:5f5d130fadc2272d00d9a86b6ecfc7564fadddb6fd4dc88633d135a2d9a922f3 vale
+        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e vale
+        types: [markdown]
+
+  # Phase 4 (Docs) — lychee link validation via the combined code-tools image
+  # (#452). Check-only, and OFFLINE: the repo-local lychee.toml sets
+  # `offline = true`, so only relative/internal links and their #anchors are
+  # checked and an external site's flakiness can never block a commit
+  # (external links report as Excluded; check them by hand with
+  # `bin/lychee --offline false`). Only staged Markdown is read, so a link
+  # broken by renaming its *target* surfaces on the next edit of the linking
+  # file, or on a full `bin/lychee $(git ls-files '*.md')` run. SYNC: the
+  # digest matches image[lychee] in bin/docker_wrapper.
+  - repo: local
+    hooks:
+      - id: lychee
+        name: lychee (offline links)
+        language: docker_image
+        entry: ghcr.io/harleypig/code-tools:0.4.0@sha256:9e2128215e86aa95aa32e0ecf60a60c72c075766fcf9ab0e0685cf938a08f47e lychee
         types: [markdown]
 
   # Phase 3 (Language) — Python: import order, format, lint. Tools match the

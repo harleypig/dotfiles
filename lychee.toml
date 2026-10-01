@@ -1,0 +1,15 @@
+# lychee link checker config (#452), read by bin/lychee and the pre-commit
+# `lychee` hook (lychee auto-discovers lychee.toml in its working directory).
+#
+# Offline by default: the commit gate checks internal and relative links
+# (files and #anchors) only, so a flaky external site can never block a
+# commit. External links are reported as Excluded. Check them by hand with
+#   bin/lychee --offline false <files>
+# which is advisory: nothing gates on it.
+
+offline = true
+
+# `#anchor` fragments in links to Markdown headings; offline-safe.
+include_fragments = "anchor-only"
+
+no_progress = true

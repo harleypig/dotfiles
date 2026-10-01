@@ -284,8 +284,8 @@ fi
 
 ## Related Documentation
 
-- **[WORKFLOW.md](../WORKFLOW.md)**: Development guidelines and conventions
-- **[TESTS.md](../TESTS.md)**: How to test scripts
+- **[WORKFLOW.md](../.claude/WORKFLOW.md)**: Development guidelines and conventions
+- **[TESTS.md](../.claude/TESTS.md)**: How to test scripts
 - **Script source**: `bin/` directory
 
 For inline documentation and usage details, read the script source files
