@@ -187,3 +187,58 @@ green are the same length in both branches — `\033[31m` / `\033[32m` from
 column carries identical overhead and the columns still align. Checked by
 running mixed red/green rows through `column -t` and stripping the codes:
 aligned. The fail2ban tables use `column` too but are uncoloured.
+
+## `cleanpath` rewritten in Perl: rejected
+
+**Revisit if** `cleanpath` grows logic that bash expresses poorly.
+
+Rejected strand 1 of [#359](https://github.com/harleypig/dotfiles/issues/359),
+measured 2026-10-02: whether to port `bin/cleanpath` to Perl, as a faster
+PATH dedup or a cleanpath rewrite in a second language.
+
+A core-only Perl port took 8.6 ms per call. A fork-free bash version built
+on `cd -P` took about 7 ms. The current script takes about 45 ms, and it
+runs once per login. So Perl is slower than the bash fix and adds a second
+language to maintain. It also does nothing for the parallel WSL `/mnt`
+lookups that [#59](https://github.com/harleypig/dotfiles/issues/59) added.
+The speed-up went to bash instead, in
+[#495](https://github.com/harleypig/dotfiles/issues/495).
+
+## pyscn for Python static analysis: rejected
+
+**Revisit if** a substantial first-party Python surface returns outside
+`tests/`.
+
+Rejected in [#390](https://github.com/harleypig/dotfiles/issues/390),
+2026-10-02: pyscn, a Python static analyser for dead code, unreachable code,
+clone (duplicate code) detection and complexity.
+
+It reported 0 findings on this repo's live Python, `tests/lint/prose_wrap.py`
+and `tests/python/test_prose_wrap.py`. Both are already clean under flake8,
+isort and yapf. Its complexity check duplicates flake8's built-in C901
+check, which [#496](https://github.com/harleypig/dotfiles/issues/496)
+enables. Its default excludes (`test_*.py`, `tests/**`) cover all of this
+repo's Python, so it scans nothing unless they are overridden. Its one
+unique check, unreachable code after `return`, has no instance here.
+Lighter options for that check, such as pylint W0101 or vulture, were not
+evaluated.
+
+## Vendoring tpm, the tmux plugin manager: rejected
+
+**Revisit if** the operator wants a tmux plugin re-enabled.
+
+Rejected in [#436](https://github.com/harleypig/dotfiles/issues/436),
+2026-10-02: whether to vendor tpm, the tmux plugin manager, or carry it and
+the tmux plugins as a git submodule.
+
+Nothing would use it. The plugin stack has been disabled since
+[#330](https://github.com/harleypig/dotfiles/issues/330), the repo has had
+no submodules since 2025-09-01, and no plugins are installed. tpm is never
+needed for a vendored plugin, which loads with
+`run-shell <dir>/<plugin>.tmux`.
+
+If plugins come back, vendor each one under `config/tmux/plugins/<name>/`
+with a `SOURCE.md` in the
+[#389](https://github.com/harleypig/dotfiles/issues/389) format. The
+exception is tmux-menus. At about 12.5k lines and about 44 commits a year,
+it is cheaper to keep as a pinned, ignored clone than to vendor.
