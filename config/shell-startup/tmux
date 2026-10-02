@@ -40,13 +40,11 @@ tmux_winidx_circled() {
   fi
 }
 
-# Start session in background if it doesn't already exist.
-# We want user to be expanded when defined.
+# Attach a tmux session: the only one if there is one, a pickone choice if
+# there are several, else the $USER session, started in the background first
+# if it doesn't exist.
 # havecmd (command -v) reports an existing ta alias/function too, so an
 # already-defined ta is not clobbered.
-# TODO: when multiple tmux sessions exist, have `ta` list them and let the
-# user choose, instead of always attaching the $USER session. See #357 -
-# extract the tmux config.
 if havecmd ta; then
   #echo 'alias ta already exists'
   :
@@ -55,7 +53,35 @@ else
   # Not `export -f`ed: ta is an interactive attach helper; a child interactive
   # shell defines its own via startup, so no child needs it in its env.
   ta() {
-    tmux has-session -t "$USER" &> /dev/null || tmux new-session -d -s "$USER"
-    tmux -2 a -t "$USER"
+    local session=$USER
+    local -a sessions=() default=()
+
+    # Inside tmux an attach is refused as nesting, so the chooser is skipped
+    # there and the $USER attach is left to fail as it always has.
+    if [[ -z $TMUX ]]; then
+      mapfile -t sessions < <(
+        tmux list-sessions -F '#{session_name}' 2> /dev/null
+      )
+    fi
+
+    if ((${#sessions[@]} == 1)); then
+      session=${sessions[0]}
+
+    # The picker needs someone at a terminal; without one, fall through to
+    # $USER rather than block on a read.
+    elif ((${#sessions[@]} > 1)) && [[ -t 0 ]] \
+      && command -v pickone &> /dev/null; then
+      printf '%s\n' "${sessions[@]}" | grep -qxF -- "$USER" \
+        && default=(-d "$USER")
+
+      session=$(
+        pickone -p 'Attach to session:' "${default[@]}" "${sessions[@]}"
+      ) || return 1
+    fi
+
+    tmux has-session -t "$session" &> /dev/null \
+      || tmux new-session -d -s "$session"
+
+    tmux -2 a -t "$session"
   }
 fi
