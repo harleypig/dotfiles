@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Stolen from
-# https://github.com/MunifTanjim/tmux-mode-indicator
+# Vendored from https://github.com/MunifTanjim/tmux-mode-indicator (MIT).
+# SHA, local edits and license notice: tmux_mode_indicator.SOURCE.md
 
 # shellcheck disable=SC2034  # for the commented-out status replacement below
 declare -r mode_indicator_placeholder="\#{tmux_mode_indicator}"
