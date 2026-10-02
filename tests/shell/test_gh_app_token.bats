@@ -99,6 +99,36 @@ write_cache() {
 }
 
 #-----------------------------------------------------------------------------
+# Freeze `date +%s` at one epoch for the test and the script alike, so a
+# boundary test compares against the same "now" the script reads. Without
+# it the two calls can straddle a second boundary: a cache written at
+# now+301 then reads as 300s left and remints (#492 - flaky reuse test),
+# and the exact-boundary case at now+300 passes even against a `>=` bug.
+# Every other date invocation (the -d / -u formatting the script and
+# write_curl_stub use) passes through to the real binary, resolved before
+# $STUB shadows it. Prints the pinned epoch.
+
+pin_clock() {
+  local real now
+
+  real=$(PATH=${PATH#"$STUB:"} command -v date)
+  now=$("$real" +%s)
+
+  cat > "$STUB/date" << EOF
+#!/usr/bin/env bash
+if [[ \$# -eq 1 && \$1 == +%s ]]; then
+  printf '%s\n' '$now'
+  exit 0
+fi
+
+exec '$real' "\$@"
+EOF
+  chmod +x "$STUB/date"
+
+  printf '%s\n' "$now"
+}
+
+#-----------------------------------------------------------------------------
 # Dispatch: usage, invalid slugs, help
 
 @test "no slug prints usage and exits 2" {
@@ -202,8 +232,10 @@ open('$BATS_TEST_TMPDIR/sig.bin', 'wb').write(b64('$sig'))
   write_curl_stub ok fresh-fixture
 
   # 300s is the refresh buffer: exactly at the boundary counts as a miss.
+  # The clock is pinned, so this goes red if the script's `>` ever becomes
+  # `>=` -- unpinned, a second elapsing would leave 299s and hide that.
   local near
-  near=$(($(date +%s) + 300))
+  near=$(($(pin_clock) + 300))
   write_cache acme stale-fixture "$near"
 
   run env "PATH=$PATH" "$GAT" acme
@@ -217,8 +249,11 @@ open('$BATS_TEST_TMPDIR/sig.bin', 'wb').write(b64('$sig'))
   write_app_dir acme
   write_curl_stub ok
 
+  # One second past the buffer, against a pinned clock: the script sees
+  # exactly 301s left. Unpinned, a second boundary between this line and
+  # the script's own `date` made this a remint (#492).
   local safe
-  safe=$(($(date +%s) + 301))
+  safe=$(($(pin_clock) + 301))
   write_cache acme cached-fixture "$safe"
 
   run env "PATH=$PATH" "$GAT" acme
