@@ -1,3 +1,7 @@
+if (-not $DOTFILES_INTERACTIVE) {
+  return
+}
+
 ##############################################################################
 function Global:Set-ParentDirectory {
   param (

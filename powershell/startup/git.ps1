@@ -4,6 +4,10 @@
 # https://gist.github.com/chrismccoy/8775224
 # https://github.com/git/git/blob/master/mergetools/vimdiff
 
+if (-not $DOTFILES_INTERACTIVE) {
+    return
+}
+
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     return
 }
