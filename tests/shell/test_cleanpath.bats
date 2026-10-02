@@ -55,3 +55,45 @@ setup() {
   assert_failure
   assert_output --partial "does not exist"
 }
+
+@test "cleanpath drops an entry whose '..' climbs out of a missing dir" {
+  # Lexical resolution (realpath -m) would keep this as /usr/bin; the kernel
+  # refuses to walk through the missing dir, so it must be dropped.
+  TESTV="/nonexistent-xyz/../usr/bin:/etc" run bin/cleanpath TESTV
+  assert_success
+  assert_output "/etc"
+}
+
+@test "cleanpath drops a dangling symlink" {
+  local dir
+  dir=$(mktemp -d)
+  ln -s "$dir/gone" "$dir/dangling"
+
+  TESTV="$dir/dangling:/etc" run bin/cleanpath TESTV
+  rm -rf "$dir"
+  assert_success
+  assert_output "/etc"
+}
+
+@test "cleanpath sends only /mnt/* entries to the parallel resolver" {
+  local dir
+  dir=$(mktemp -d)
+
+  # A pass-through xargs that logs what it is fed, so the WSL routing can be
+  # seen without a real /mnt drive.
+  # shellcheck disable=SC2016  # expanded when the stub runs, not here
+  make_script_stub "$dir" xargs '
+mapfile -d "" -t in
+((${#in[@]})) || exec "$REAL_XARGS" "$@" < /dev/null
+printf "%s\n" "${in[@]}" >> "$XARGS_LOG"
+printf "%s\0" "${in[@]}" | "$REAL_XARGS" "$@"'
+
+  REAL_XARGS=$(command -v xargs) XARGS_LOG="$dir/xargs.in" PATH="$dir:$PATH" \
+    TESTV="/mnt/c/nope-xyz:/usr/bin:/etc" run bin/cleanpath TESTV
+  assert_success
+  assert_output "/usr/bin:/etc"
+
+  run cat "$dir/xargs.in"
+  rm -rf "$dir"
+  assert_output "/mnt/c/nope-xyz"
+}

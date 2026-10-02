@@ -48,13 +48,45 @@ export -f _resolve_one
 
 #-----------------------------------------------------------------------------
 # Resolve many entries and fill the named assoc array with entry -> resolved
+# dir (existing dirs only). /mnt/* entries (WSL's slow-to-stat Windows
+# drives) go to the parallel resolver; everything else is resolved in-process
+# with `cd -P`, which forks nothing. Unlike `readlink -e`, `cd` also needs
+# execute permission on the dir, which a usable PATH entry has anyway.
+
+resolve_dirs() {
+  local name=$1
+  local -n _resolved_all=$1
+  shift
+
+  local -a slow=()
+  local e here=$PWD CDPATH=
+
+  for e in "$@"; do
+    if [[ $e == /mnt/* ]]; then
+      slow+=("$e")
+
+    else
+      # shellcheck disable=SC2004  # assoc array behind a nameref; $e is a key
+      cd -P -- "$e" 2> /dev/null && _resolved_all[$e]=$PWD
+    fi
+  done
+
+  # Only cosmetic: cleanpath runs in a subshell, so a failed return cannot
+  # leak a changed directory to the caller.
+  cd -- "$here" 2> /dev/null || debug "could not return to $here"
+
+  resolve_dirs_parallel "$name" "${slow[@]}"
+}
+
+#-----------------------------------------------------------------------------
+# Resolve many entries and fill the named assoc array with entry -> resolved
 # dir (existing dirs only). Each readlink is a subprocess and PATH can hold
 # many slow-to-stat entries (e.g. WSL /mnt/c), so fan the work out with
 # `xargs -P` when it is available, falling back to a sequential loop where it
 # is not. (GNU `parallel` is deliberately not used: for many tiny jobs its
 # per-job startup makes it slower than even the sequential loop.)
 
-resolve_dirs() {
+resolve_dirs_parallel() {
   local -n _resolved=$1
   shift
   (($#)) || return 0
@@ -120,7 +152,7 @@ cp_add() {
     return 0
   }
 
-  # Keep only real, existing directories (resolved up front, in parallel);
+  # Keep only real, existing directories (resolved up front by resolve_dirs);
   # de-duplicate by resolved path.
   r=${resolved[$e]-}
   [[ -n $r ]] || return 0
@@ -158,7 +190,7 @@ build_path() {
   for entry in "${strip_list[@]}"; do [[ -n $entry ]] && strip_set[$entry]=1; done
   for entry in "${ignore_list[@]}"; do [[ -n $entry ]] && ignore_set[$entry]=1; done
 
-  # Resolve every candidate's real directory once, in parallel. Ignored
+  # Resolve every candidate's real directory once. Ignored
   # entries are kept verbatim (cp_add never resolves them), so they are
   # excluded here; everything else (incl. strip candidates, which may be
   # stripped by their resolved path) is resolved.
@@ -206,6 +238,7 @@ printf '%s' "$NEWVAR"
 #-----------------------------------------------------------------------------
 # Don't clutter the environment in case we are being sourced.
 
-unset -f _resolve_one resolve_dirs jwc build_path debug cp_add
+unset -f _resolve_one resolve_dirs resolve_dirs_parallel jwc build_path debug \
+  cp_add
 unset NEWPATH NEWLDPATH SHOULD_BE_FIRST SHOULD_BE_LAST
 unset SHOULD_BE_IGNORED SHOULD_BE_STRIPPED f
