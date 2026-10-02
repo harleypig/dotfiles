@@ -5,7 +5,7 @@
 # (taking precedence over the chromium-browser line above it); otherwise it
 # leaves BROWSER untouched. The block is a bare `if`/`fi` with no enclosing
 # function and 010-general has many unrelated havecmd-gated side effects
-# (rust, vault, gcloud, gh, ...), so sourcing the whole file is disproportionate
+# (vault, gcloud, gh, ...), so sourcing the whole file is disproportionate
 # — extract just this block by line range and eval it in isolation, per
 # bats.md's "Testing non-independently-sourceable shell".
 
