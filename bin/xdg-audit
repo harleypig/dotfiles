@@ -79,8 +79,8 @@ sub home_dir {
 sub expand_path {
   my ($path) = @_;
   my $dirs = xdg_dirs();
-  $path =~ s{\$\{(\w+)\}}{ $dirs->{$1} // "\${$1}" }ge;
-  $path =~ s{\$(\w+)}{ $dirs->{$1} // "\$$1" }ge;
+  $path =~ s{\$\{(\w+)\}}{ $dirs->{$1} // "\${$1}" }gex;
+  $path =~ s{\$(\w+)}{ $dirs->{$1} // "\$$1" }gex;
   return $path;
 }
 
@@ -104,7 +104,7 @@ sub db_dir {
 sub read_file {
   my ($path) = @_;
   open my $fh, '<:encoding(UTF-8)', $path or die "$PROG: cannot read $path: $!\n";
-  local $/;
+  local $/ = undef;
   my $content = <$fh>;
   close $fh;
   return $content;
@@ -129,9 +129,9 @@ sub name_index {
 
   opendir my $dh, $dir or die "$PROG: cannot open $dir: $!\n";
   for my $f ( readdir $dh ) {
-    next unless $f =~ /^(.+)\.json$/;
-    next if $f     =~ /^\./;           # skip .schema.json and other dotfiles
-    $map{$1} = File::Spec->catfile( $dir, $f );
+    next if $f =~ /^\./x;              # skip .schema.json and other dotfiles
+    my ($stem) = $f =~ /^(.+)\.json$/x or next;
+    $map{$stem} = File::Spec->catfile( $dir, $f );
   }
   closedir $dh;
   return \%map;
@@ -235,7 +235,8 @@ sub load_all_entries {
     my $info = $by_name{$name};
     my $data = eval { decode_file( $info->{file} ) };
     if ( !$data ) {
-      warn "$PROG: skipping malformed $info->{file}: $@";
+      chomp( my $err = $@ );
+      warn "$PROG: skipping malformed $info->{file}: $err\n";
       next;
     }
     if ( $info->{source} eq 'override' ) {
@@ -424,7 +425,7 @@ sub dotlinks_registered {
   my ($entry) = @_;
   my $file = dotlinks_file() or return 0;
 
-  ( my $want = expand_path( $entry->{path} ) ) =~ s{.*/}{};
+  ( my $want = expand_path( $entry->{path} ) ) =~ s{.*/}{}x;
 
   # Slurp then close (the read_file pattern) so the handle is released at once.
   open my $fh, '<:encoding(UTF-8)', $file or return 0;
@@ -432,14 +433,14 @@ sub dotlinks_registered {
   close $fh;
 
   for my $line (@lines) {
-    next if $line =~ /^\s*#/;
-    $line         =~ s/\A\s+//;
-    $line         =~ s/\s+\z//;
+    next if $line =~ /^\s*\#/x;
+    $line         =~ s/\A\s+//x;
+    $line         =~ s/\s+\z//x;
     next unless length $line;
 
-    my ( $src, $name ) = split /\s+/, $line, 2;
+    my ( $src, $name ) = split /\s+/x, $line, 2;
     $name = ( defined $name && length $name ) ? $name : $src;
-    $name =~ s{.*/}{};
+    $name =~ s{.*/}{}x;
     return 1 if $name eq $want;
   }
   return 0;
@@ -562,7 +563,7 @@ sub emit_json {
 
 # Usable terminal width: $COLUMNS, else the tty size, else 80.
 sub term_width {
-  return $ENV{COLUMNS} if $ENV{COLUMNS} && $ENV{COLUMNS} =~ /^\d+$/;
+  return $ENV{COLUMNS} if $ENV{COLUMNS} && $ENV{COLUMNS} =~ /^\d+$/x;
 
   # struct winsize is 4 unsigned shorts (rows, cols, ...); TIOCGWINSZ=0x5413.
   my $ws = pack 'S4', 0, 0, 0, 0;
@@ -577,7 +578,7 @@ sub term_width {
 # only covers $HOME, so the prefix is noise.
 sub home_relative {
   my ($path) = @_;
-  $path =~ s{^\$\{?HOME\}?/}{};
+  $path =~ s{^\$\{?HOME\}?/}{}x;
   return $path;
 }
 
@@ -623,7 +624,7 @@ sub scan_tag {
   return 'external'      if defined $r->{link_target};
   return $r->{mechanism} if defined $r->{mechanism};
   return 'ignore'        if ( $r->{group}  // '' ) eq 'ignored';
-  return 'overlay'       if ( $r->{source} // '' ) =~ /^(?:override|local)$/;
+  return 'overlay'       if ( $r->{source} // '' ) =~ /^(?:override|local)$/x;
   return;
 }
 
@@ -670,8 +671,8 @@ sub print_external_rows {
   $w = $cap if $cap > 12 && $w > $cap;
 
   for my $r (@sorted) {
-    my $left = sprintf '%s (%s)', $r->{name}, $r->{display};
-    printf "  %-*s  -> %s (external)\n", $w, $left, ( $r->{link_target} // '?' );
+    my $label = sprintf '%s (%s)', $r->{name}, $r->{display};
+    printf "  %-*s  -> %s (external)\n", $w, $label, ( $r->{link_target} // '?' );
   }
   return;
 } ## end sub print_external_rows
@@ -734,34 +735,7 @@ sub print_app_detail {
 
   # Show every path — including ignored ones — so the app's full picture is
   # visible. Ignored paths are marked (they are left in place by choice).
-  my @out;
-  for my $e (@$entries) {
-    my $exists = path_exists($e);
-    my $link   = link_target($e);
-    my $cur    = current_mechanism($e);
-    push @out, {
-      name                  => $e->{name},
-      source                => $e->{source},
-      path                  => home_relative( $e->{path} ),
-      exists                => ( $exists ? JSON::PP::true : JSON::PP::false ),
-      movable               => $e->{movable},
-      mechanism             => $e->{mechanism},
-      env                   => $e->{env},
-      rewrite               => $e->{rewrite},
-      link_target           => $link,
-      reason                => $e->{reason},
-      ignore                => ( $e->{ignore}  ? JSON::PP::true : JSON::PP::false ),
-      group                 => ( $e->{ignore}  ? 'ignore'       : classify($e) ),
-      status                => ( defined $link ? 'linked'       : $exists ? handling_status($e) : 'not present' ),
-      current_mechanism     => $cur,
-      current_completeness  => current_completeness( $e, $cur ),
-      recommended_mechanism => $e->{mechanism},
-      divergence            => divergence_flag( $cur, $e->{mechanism} ),
-      owner                 => effective_owner($e),
-      suggested_steps       => suggested_steps($e),
-      help                  => $e->{help},
-    };
-  } ## end for my $e (@$entries)
+  my @out = map { detail_record($_) } @$entries;
 
   if ( $cli{json} ) {
     emit_json( { app => $app, files => \@out } );
@@ -773,39 +747,81 @@ sub print_app_detail {
   my $w = 0;
   for my $f (@out) { $w = length $f->{path} if length $f->{path} > $w }
 
-  for my $f (@out) {
-    my $ignored = 'ignored (left in place)' . ( $f->{reason} ? " - $f->{reason}" : q{} );
-    my $detail =
-        $f->{ignore}                                             ? $ignored
-      : defined $f->{link_target}                                ? "-> $f->{link_target}"
-      : !$f->{exists} && $f->{group} && $f->{group} eq 'handled' ? 'handled'
-      : !$f->{exists}                                            ? 'absent'
-      :                                                            $f->{group};
+  printf "  %-*s  %s\n", $w, $_->{path}, detail_text($_) for @out;
 
-    # Surface the recommended mechanism when the current one diverges from it
-    # ("this should be a symlink but isn't"), and the external owner when set.
-    # Aligned or unannotated paths append nothing, so the group word still
-    # leads the line.
-    my ( $cur, $rec ) = ( $f->{current_mechanism}, $f->{recommended_mechanism} );
-    if ( !$f->{ignore} && defined $rec && length $rec && defined $cur && $cur ne $rec ) {
-      $detail .= " (recommended: $rec)";
-    }
-    $detail .= " [owner: $f->{owner}]" if $f->{owner};
+  print_detail_help( \@out );
+  return;
+} ## end sub print_app_detail
 
-    printf "  %-*s  %s\n", $w, $f->{path}, $detail;
-  } ## end for my $f (@out)
+# One path's record for the detail view (and its --json feed).
+sub detail_record {
+  my ($e)    = @_;
+  my $exists = path_exists($e);
+  my $link   = link_target($e);
+  my $cur    = current_mechanism($e);
+  return {
+    name                  => $e->{name},
+    source                => $e->{source},
+    path                  => home_relative( $e->{path} ),
+    exists                => ( $exists ? JSON::PP::true : JSON::PP::false ),
+    movable               => $e->{movable},
+    mechanism             => $e->{mechanism},
+    env                   => $e->{env},
+    rewrite               => $e->{rewrite},
+    link_target           => $link,
+    reason                => $e->{reason},
+    ignore                => ( $e->{ignore}  ? JSON::PP::true : JSON::PP::false ),
+    group                 => ( $e->{ignore}  ? 'ignore'       : classify($e) ),
+    status                => ( defined $link ? 'linked'       : $exists ? handling_status($e) : 'not present' ),
+    current_mechanism     => $cur,
+    current_completeness  => current_completeness( $e, $cur ),
+    recommended_mechanism => $e->{mechanism},
+    divergence            => divergence_flag( $cur, $e->{mechanism} ),
+    owner                 => effective_owner($e),
+    suggested_steps       => suggested_steps($e),
+    help                  => $e->{help},
+  };
+} ## end sub detail_record
 
-  # Then each path's migration help (ignored paths need none).
-  for my $f (@out) {
+# The text after a path in the detail view's paths block.
+sub detail_text {
+  my ($f) = @_;
+
+  my $ignored = 'ignored (left in place)' . ( $f->{reason} ? " - $f->{reason}" : q{} );
+  my $detail =
+      $f->{ignore}                                             ? $ignored
+    : defined $f->{link_target}                                ? "-> $f->{link_target}"
+    : !$f->{exists} && $f->{group} && $f->{group} eq 'handled' ? 'handled'
+    : !$f->{exists}                                            ? 'absent'
+    :                                                            $f->{group};
+
+  # Surface the recommended mechanism when the current one diverges from it
+  # ("this should be a symlink but isn't"), and the external owner when set.
+  # Aligned or unannotated paths append nothing, so the group word still
+  # leads the line.
+  my ( $cur, $rec ) = ( $f->{current_mechanism}, $f->{recommended_mechanism} );
+  if ( !$f->{ignore} && defined $rec && length $rec && defined $cur && $cur ne $rec ) {
+    $detail .= " (recommended: $rec)";
+  }
+  $detail .= " [owner: $f->{owner}]" if $f->{owner};
+
+  return $detail;
+} ## end sub detail_text
+
+# Each path's migration help, after the paths block (ignored paths need none).
+sub print_detail_help {
+  my ($out) = @_;
+
+  for my $f (@$out) {
     next if $f->{ignore};
     next unless defined $f->{help};
     my $help = $f->{help};
-    $help =~ s/\n+\z//;
-    $help =~ s/^(?=.)/    /mg;         # indent non-empty lines only
+    $help =~ s/\n+\z//x;
+    $help =~ s/^(?=.)/    /mgx;        # indent non-empty lines only
     print "\nhelp for $f->{path}:\n$help\n";
   }
   return;
-} ## end sub print_app_detail
+}
 
 # ------------------------------------------------------------------------------
 # Modes
@@ -823,7 +839,7 @@ sub scan_unknown {
 
   my @recs;
   for my $name ( readdir $dh ) {
-    next unless $name =~ /^\./;
+    next unless $name =~ /^\./x;
     next if $skip{$name};
 
     my $abs = File::Spec->catfile( $home, $name );
@@ -917,7 +933,7 @@ sub mode_scan {
 sub mode_lookup {
   my ($query) = @_;
 
-  if ( $query =~ m{/} || $query =~ /^\./ ) {
+  if ( $query =~ m{/}x || $query =~ /^\./x ) {
     return resolve_and_show( [ find_by_path($query) ], $query );
   }
 
@@ -938,7 +954,7 @@ sub find_by_path {
   return grep {
     my $p  = $_->{path};
     my $pe = expand_path($p);
-    $p eq $query || $pe eq $qexp || $p =~ /\Q$query\E/ || $pe =~ /\Q$qexp\E/;
+    $p eq $query || $pe eq $qexp || $p =~ /\Q$query\E/x || $pe =~ /\Q$qexp\E/x;
   } @$entries;
 }
 
@@ -948,7 +964,7 @@ sub find_by_path {
 sub find_by_name {
   my ($term)  = @_;
   my $entries = load_index( force => $cli{reindex} );
-  my $re      = qr/\Q$term\E/i;
+  my $re      = qr/\Q$term\E/ix;
   return grep { $_->{name} =~ $re || home_relative( $_->{path} ) =~ $re } @$entries;
 }
 
@@ -1002,7 +1018,7 @@ sub print_matches {
 sub mode_search {
   my ($term)  = @_;
   my $entries = load_all_entries();    # search scans help → load bodies
-  my $re      = qr/\Q$term\E/i;
+  my $re      = qr/\Q$term\E/ix;
 
   my @hits = grep {
     ( join "\n", grep { defined } $_->{name}, $_->{path}, $_->{help} ) =~ $re;
@@ -1029,7 +1045,7 @@ sub mode_search {
 sub resolve_target_entries {
   my ($query) = @_;
 
-  return find_by_path($query) if $query =~ m{/} || $query =~ /^\./;
+  return find_by_path($query) if $query =~ m{/}x || $query =~ /^\./x;
 
   my $exact = load_app($query);
   return @$exact if $exact;
@@ -1068,7 +1084,7 @@ sub prompt_yes {
 
   # An interactive confirmation must read the terminal, so STDIN is deliberate.
   my $ans = <STDIN>; ## no critic (InputOutput::ProhibitExplicitStdin)
-  return defined $ans && $ans =~ /\A\s*y(?:es)?\s*\z/i ? 1 : 0;
+  return defined $ans && $ans =~ /\A\s*y(?:es)?\s*\z/ix ? 1 : 0;
 }
 
 # Delete a regular file, or a directory tree. Returns true on success.
@@ -1092,7 +1108,7 @@ sub remove_path {
 sub teardown_symlink {
   my ( $abs, $dl ) = @_;
 
-  ( my $linkname = $abs ) =~ s{.*/}{};
+  ( my $linkname = $abs ) =~ s{.*/}{}x;
   my $link_text = readlink($abs);
 
   return ( 0, "could not remove the symlink $abs: $!" )
@@ -1123,19 +1139,8 @@ sub mode_remove {
     return 1;
   }
 
-  my @entries = resolve_target_entries($query);
-  unless (@entries) {
-    print "No known program or path matches '$query'.\n";
-    return 1;
-  }
-
   # A mutation must be unambiguous: refuse a fragment spanning several apps.
-  my %apps = map { $_->{name} => 1 } @entries;
-  if ( keys %apps > 1 ) {
-    print_matches( \@entries, $query );
-    print "\nName one app (or a specific \$HOME path) to --remove.\n";
-    return 1;
-  }
+  my @entries = resolve_one_app( $query, '--remove' ) or return 1;
 
   my $home = home_dir();
   print "$entries[0]{name}\n\n";
@@ -1146,98 +1151,113 @@ sub mode_remove {
   # prompts when an app owns several paths.
   my @actions;
   for my $e ( sort { $a->{path} cmp $b->{path} } @entries ) {
-    my $abs  = expand_path( $e->{path} );
-    my $disp = home_relative( $e->{path} );
-
-    if ( $e->{ignore} ) {
-      printf "  %-24s ignored (left in place)\n", $disp;
-      next;
-    }
-
-    my $group = classify($e) // ( path_exists($e) ? 'unhandled' : 'absent' );
-
-    # A symlink: tear down only a check-dotfiles-managed (registered) link; a
-    # loose or external link is refused — we unlink only what we understand and
-    # never touch the canonical repo file.
-    if ( $group eq 'linked' ) {
-      my $dl = dotlinks_file();
-      if ( defined $dl && dotlinks_registered($e) ) {
-        printf "  %-24s linked (check-dotfiles) - drop the link + its dotlinks entry (repo file %s kept)\n",
-          $disp, ( link_target($e) // '' );
-        push @actions, { type => 'teardown', abs => $abs, dl => $dl };
-      } else {
-        printf "  %-24s linked (external / not check-dotfiles-managed) - not removed (use --fix to register a loose link)\n",
-          $disp;
-      }
-      next;
-    }
-
-    if ( $group eq 'unhandled' ) {
-      printf "  %-24s unhandled - migrate it first (not a removal)\n", $disp;
-      next;
-    }
-    if ( $group ne 'stray' && $group ne 'remove' ) {
-      printf "  %-24s %s - nothing to remove\n", $disp, $group;
-      next;
-    }
-
-    # A 'stray' is only safe to delete when its redirect target actually exists;
-    # otherwise the $HOME copy is the ONLY copy (the env var is set but the
-    # redirected file was never created) — migrate it, don't delete it. A
-    # 'remove'-marked file (an unused app) has no target and is exempt.
-    if ( $group eq 'stray' ) {
-      my $tgt = $e->{rewrite} ? expand_path( $e->{rewrite} ) : undef;
-      unless ( defined $tgt && -e $tgt ) {
-        printf "  %-24s stray, but its redirect target %s does not exist - migrate it (--migrate env), don't delete\n",
-          $disp, ( defined $tgt ? $tgt : '(none declared)' );
-        next;
-      }
-    }
-
-    # Eligible leftover — but never delete outside $HOME.
-    unless ( index( $abs, "$home/" ) == 0 ) {
-      printf "  %-24s resolves outside \$HOME (%s) - refused\n", $disp, $abs;
-      next;
-    }
-
-    my $kind = ( -d $abs && !-l $abs ) ? 'directory' : 'file';
-    printf "  %-24s %s - a leftover %s\n", $disp, $group, $kind;
-    push @actions, { type => 'delete', abs => $abs };
-  } ## end for my $e ( sort { $a->...})
+    my ( $action, $msg ) = plan_remove_action( $e, $home );
+    printf "  %-24s %s\n", home_relative( $e->{path} ), $msg;
+    push @actions, $action if $action;
+  }
 
   # Second pass: confirm and perform each action (default No).
   my $removed = 0;
   if (@actions) {
     print "\n";
-    for my $a (@actions) {
-      if ( $a->{type} eq 'teardown' ) {
-        next
-          unless prompt_yes("  Remove the symlink $a->{abs} and its dotlinks entry (the repo file stays)? [y/N] ");
-
-        my ( $ok, $msg ) = teardown_symlink( $a->{abs}, $a->{dl} );
-        if ($ok) {
-  print "  $msg\n";
-  $removed++;
-        } else {
-  print {*STDERR} "  $PROG: $msg\n";
-        }
-        next;
-      }
-
-      next unless prompt_yes("  Delete $a->{abs}? [y/N] ");
-
-      if ( remove_path( $a->{abs} ) ) {
-        print "  removed $a->{abs}\n";
-        $removed++;
-      } else {
-        print {*STDERR} "  $PROG: could not remove $a->{abs}: $!\n";
-      }
-    } ## end for my $a (@actions)
-  } ## end if (@actions)
+    $removed += do_remove_action($_) for @actions;
+  }
 
   print "\n$PROG: removed $removed item(s).\n";
   return 0;
 } ## end sub mode_remove
+
+# Decide what --remove should do with one entry, and the disposition line to
+# show. Returns ($action, $message): $action is a hashref { type => 'delete' |
+# 'teardown', abs[, dl] } when eligible, else undef.
+sub plan_remove_action {
+  my ( $e, $home ) = @_;
+
+  return ( undef, 'ignored (left in place)' ) if $e->{ignore};
+
+  my $abs   = expand_path( $e->{path} );
+  my $group = classify($e) // ( path_exists($e) ? 'unhandled' : 'absent' );
+
+  return plan_remove_link( $e, $abs ) if $group eq 'linked';
+
+  return ( undef, 'unhandled - migrate it first (not a removal)' ) if $group eq 'unhandled';
+  return ( undef, "$group - nothing to remove" )                   if $group ne 'stray' && $group ne 'remove';
+
+  # A 'stray' is only safe to delete when its redirect target actually exists;
+  # otherwise the $HOME copy is the ONLY copy (the env var is set but the
+  # redirected file was never created) — migrate it, don't delete it. A
+  # 'remove'-marked file (an unused app) has no target and is exempt.
+  if ( $group eq 'stray' ) {
+    my $refusal = stray_without_target($e);
+    return ( undef, $refusal ) if defined $refusal;
+  }
+
+  # Eligible leftover — but never delete outside $HOME.
+  return ( undef, "resolves outside \$HOME ($abs) - refused" )
+    unless index( $abs, "$home/" ) == 0;
+
+  my $kind = ( -d $abs && !-l $abs ) ? 'directory' : 'file';
+  return ( { type => 'delete', abs => $abs }, "$group - a leftover $kind" );
+} ## end sub plan_remove_action
+
+# A symlink: tear down only a check-dotfiles-managed (registered) link; a loose
+# or external link is refused — we unlink only what we understand and never
+# touch the canonical repo file.
+sub plan_remove_link {
+  my ( $e, $abs ) = @_;
+
+  my $dl = dotlinks_file();
+  if ( defined $dl && dotlinks_registered($e) ) {
+    return (
+      { type => 'teardown', abs => $abs, dl => $dl },
+      sprintf 'linked (check-dotfiles) - drop the link + its dotlinks entry (repo file %s kept)',
+      ( link_target($e) // '' ) );
+  }
+
+  return (
+    undef,
+    'linked (external / not check-dotfiles-managed) - not removed (use --fix to register a loose link)'
+  );
+}
+
+# The refusal for a stray whose redirect target does not exist, else undef.
+sub stray_without_target {
+  my ($e) = @_;
+
+  my $tgt = $e->{rewrite} ? expand_path( $e->{rewrite} ) : undef;
+  return if defined $tgt && -e $tgt;
+
+  return sprintf "stray, but its redirect target %s does not exist - migrate it (--migrate env), don't delete",
+    ( defined $tgt ? $tgt : '(none declared)' );
+}
+
+# Confirm (default No) and perform one --remove action. Returns 1 when the
+# item was removed, else 0.
+sub do_remove_action {
+  my ($action) = @_;
+
+  if ( $action->{type} eq 'teardown' ) {
+    return 0
+      unless prompt_yes("  Remove the symlink $action->{abs} and its dotlinks entry (the repo file stays)? [y/N] ");
+
+    my ( $ok, $msg ) = teardown_symlink( $action->{abs}, $action->{dl} );
+    if ($ok) {
+      print "  $msg\n";
+      return 1;
+    }
+    print {*STDERR} "  $PROG: $msg\n";
+    return 0;
+  }
+
+  return 0 unless prompt_yes("  Delete $action->{abs}? [y/N] ");
+
+  if ( remove_path( $action->{abs} ) ) {
+    print "  removed $action->{abs}\n";
+    return 1;
+  }
+  print {*STDERR} "  $PROG: could not remove $action->{abs}: $!\n";
+  return 0;
+} ## end sub do_remove_action
 
 # ------------------------------------------------------------------------------
 # Migration (guarded $HOME -> XDG move)
@@ -1464,7 +1484,7 @@ sub resolve_env_move {
 
   my $tgt = expand_path( $entry->{rewrite} );
   return { err => "target does not resolve to an absolute path ($tgt) - refused" }
-    if $tgt =~ /\$\{?\w+\}?/ || !File::Spec->file_name_is_absolute($tgt);
+    if $tgt =~ /\$\{?\w+\}?/x || !File::Spec->file_name_is_absolute($tgt);
 
   my $var    = $entry->{env} // '';
   my $val    = length $var ? $ENV{$var} : undef;
@@ -1535,14 +1555,14 @@ sub remove_dotlinks_line {
 
   my $orig = read_file($file);
   my @keep;
-  for my $line ( split /^/m, $orig ) {
+  for my $line ( split /^/mx, $orig ) {
     my $t = $line;
-    $t =~ s/\A\s+//;
-    $t =~ s/\s+\z//;
-    if ( length $t && $t !~ /^#/ ) {
-      my ( $src, $name ) = split /\s+/, $t, 2;
+    $t =~ s/\A\s+//x;
+    $t =~ s/\s+\z//x;
+    if ( length $t && $t !~ /^\#/x ) {
+      my ( $src, $name ) = split /\s+/x, $t, 2;
       $name = ( defined $name && length $name ) ? $name : $src;
-      $name =~ s{.*/}{};
+      $name =~ s{.*/}{}x;
       next if $name eq $linkname;
     }
     push @keep, $line;
@@ -1586,114 +1606,113 @@ sub mode_migrate_env {
   # hardcoded file moves (Slice 1); every other case refuses.
   my @moves;
   for my $e ( sort { $a->{path} cmp $b->{path} } @entries ) {
-    my $abs  = expand_path( $e->{path} );
-    my $disp = home_relative( $e->{path} );
-    my $mech = $e->{mechanism} // '';
-
-    if ( $e->{ignore} ) {
-      printf "  %-24s ignored (left in place)\n", $disp;
-      next;
-    }
-
-    # symlink -> env conversion: drop the link + its dotlinks entry and move the
-    # dereferenced canonical file to the XDG target (Slice 2).
-    if ( defined link_target($e) ) {
-      if ( $mech ne 'env' ) {
-        printf "  %-24s linked (managed symlink), recommended %s not env - not migrated\n",
-          $disp, ( length $mech ? $mech : 'none' );
-        next;
-      }
-
-      require Cwd;
-      my $canon = Cwd::abs_path($abs);
-      unless ( defined $canon && -e $canon ) {
-        printf "  %-24s broken symlink (target missing) - resolve by hand\n", $disp;
-        next;
-      }
-
-      my $plan = resolve_env_move($e);
-      if ( defined $plan->{err} ) { printf "  %-24s %s\n", $disp, $plan->{err}; next; }
-
-      ( my $linkname = $abs ) =~ s{.*/}{};
-      printf "  %-24s convert symlink -> move %s to %s (drop the link + dotlinks entry)\n",
-        $disp, $canon, $plan->{tgt};
-      push @moves, {
-        convert   => 1,
-        abs       => $abs,
-        canon     => $canon,
-        tgt       => $plan->{tgt},
-        link_text => readlink($abs),
-        linkname  => $linkname,
-        app       => $e->{name},
-        export    => $plan->{export},
-      };
-      next;
-    } ## end if ( defined link_target...)
-
-    if ( !path_exists($e) ) {
-      printf "  %-24s absent - nothing to migrate\n", $disp;
-      next;
-    }
-    if ( $mech ne 'env' ) {
-      printf "  %-24s recommended mechanism is %s, not env - not migrated\n",
-        $disp, ( length $mech ? $mech : 'none' );
-      next;
-    }
-
-    my $plan = resolve_env_move($e);
-    if ( defined $plan->{err} ) { printf "  %-24s %s\n", $disp, $plan->{err}; next; }
-    my $tgt = $plan->{tgt};
-
-    unless ( index( $abs, "$home/" ) == 0 ) {
-      printf "  %-24s resolves outside \$HOME (%s) - refused\n", $disp, $abs;
-      next;
-    }
-
-    if ( $plan->{active} ) {
-      printf "  %-24s move to %s\n", $disp, $tgt;
-    } else {
-      printf "  %-24s move to %s  (redirect \$%s inactive - export suggested)\n",
-        $disp, $tgt, $e->{env};
-    }
-    push @moves, { abs => $abs, tgt => $tgt, app => $e->{name}, export => $plan->{export} };
-  } ## end for my $e ( sort { $a->...})
+    my ( $move, $msg ) = plan_env_move( $e, $home );
+    printf "  %-24s %s\n", home_relative( $e->{path} ), $msg;
+    push @moves, $move if $move;
+  }
 
   # Second pass: confirm and perform each planned move/conversion (default No).
   # An inactive-redirect move (or a conversion needing one) prints the export.
   my $migrated = 0;
   if (@moves) {
     print "\n";
-    for my $m (@moves) {
-      if ( $m->{convert} ) {
-        next unless prompt_yes("  Convert $m->{abs} (symlink) to an env redirect at $m->{tgt}? [y/N] ");
-
-        my ( $ok, $msg ) = convert_symlink_to_env($m);
-        if ($ok) {
-  print "  $msg\n";
-  print_export_suggestion($m) if defined $m->{export};
-  $migrated++;
-        } else {
-  print {*STDERR} "  $PROG: $msg\n";
-        }
-        next;
-      }
-
-      next unless prompt_yes("  Move $m->{abs} -> $m->{tgt}? [y/N] ");
-
-      my ( $ok, $err ) = move_path( $m->{abs}, $m->{tgt} );
-      if ($ok) {
-        print "  migrated $m->{abs} -> $m->{tgt}\n";
-        print_export_suggestion($m) if defined $m->{export};
-        $migrated++;
-      } else {
-        print {*STDERR} "  $PROG: $err\n";
-      }
-    } ## end for my $m (@moves)
-  } ## end if (@moves)
+    $migrated += do_env_move($_) for @moves;
+  }
 
   print "\n$PROG: migrated $migrated item(s).\n";
   return 0;
 } ## end sub mode_migrate_env
+
+# Decide what --migrate env should do with one entry, and the disposition line
+# to show. Returns ($move, $message): $move is a hashref { abs, tgt, app,
+# export[, convert, canon, link_text, linkname] } when eligible, else undef.
+sub plan_env_move {
+  my ( $e, $home ) = @_;
+
+  return ( undef, 'ignored (left in place)' ) if $e->{ignore};
+
+  my $abs  = expand_path( $e->{path} );
+  my $mech = $e->{mechanism} // '';
+
+  return plan_env_convert( $e, $abs, $mech ) if defined link_target($e);
+
+  return ( undef, 'absent - nothing to migrate' ) unless path_exists($e);
+  if ( $mech ne 'env' ) {
+    my $rec = length $mech ? $mech : 'none';
+    return ( undef, "recommended mechanism is $rec, not env - not migrated" );
+  }
+
+  my $plan = resolve_env_move($e);
+  return ( undef, $plan->{err} ) if defined $plan->{err};
+  my $tgt = $plan->{tgt};
+
+  return ( undef, "resolves outside \$HOME ($abs) - refused" )
+    unless index( $abs, "$home/" ) == 0;
+
+  my $msg =
+    $plan->{active}
+    ? "move to $tgt"
+    : "move to $tgt  (redirect \$$e->{env} inactive - export suggested)";
+  return ( { abs => $abs, tgt => $tgt, app => $e->{name}, export => $plan->{export} }, $msg );
+} ## end sub plan_env_move
+
+# symlink -> env conversion: drop the link + its dotlinks entry and move the
+# dereferenced canonical file to the XDG target (Slice 2).
+sub plan_env_convert {
+  my ( $e, $abs, $mech ) = @_;
+
+  if ( $mech ne 'env' ) {
+    my $rec = length $mech ? $mech : 'none';
+    return ( undef, "linked (managed symlink), recommended $rec not env - not migrated" );
+  }
+
+  require Cwd;
+  my $canon = Cwd::abs_path($abs);
+  return ( undef, 'broken symlink (target missing) - resolve by hand' )
+    unless defined $canon && -e $canon;
+
+  my $plan = resolve_env_move($e);
+  return ( undef, $plan->{err} ) if defined $plan->{err};
+
+  ( my $linkname = $abs ) =~ s{.*/}{}x;
+  return (
+    { convert   => 1,
+      abs       => $abs,
+      canon     => $canon,
+      tgt       => $plan->{tgt},
+      link_text => readlink($abs),
+      linkname  => $linkname,
+      app       => $e->{name},
+      export    => $plan->{export},
+    },
+    "convert symlink -> move $canon to $plan->{tgt} (drop the link + dotlinks entry)"
+  );
+} ## end sub plan_env_convert
+
+# Confirm (default No) and perform one planned move or conversion. Returns 1
+# when it went through, else 0.
+sub do_env_move {
+  my ($m) = @_;
+
+  my ( $ok, $msg );
+  if ( $m->{convert} ) {
+    return 0 unless prompt_yes("  Convert $m->{abs} (symlink) to an env redirect at $m->{tgt}? [y/N] ");
+    ( $ok, $msg ) = convert_symlink_to_env($m);
+  } else {
+    return 0 unless prompt_yes("  Move $m->{abs} -> $m->{tgt}? [y/N] ");
+    ( $ok, $msg ) = move_path( $m->{abs}, $m->{tgt} );
+    $msg = "migrated $m->{abs} -> $m->{tgt}" if $ok;
+  }
+
+  unless ($ok) {
+    print {*STDERR} "  $PROG: $msg\n";
+    return 0;
+  }
+
+  print "  $msg\n";
+  print_export_suggestion($m) if defined $m->{export};
+  return 1;
+} ## end sub do_env_move
 
 # ------------------------------------------------------------------------------
 # Migration to the symlink mechanism (and --fix), delegating the actual linking
@@ -1769,7 +1788,7 @@ sub resolve_repo_target {
 
   my $tgt = expand_path( $e->{rewrite} );
   return ( undef, "target does not resolve to an absolute path ($tgt) - refused" )
-    if $tgt =~ /\$\{?\w+\}?/ || !File::Spec->file_name_is_absolute($tgt);
+    if $tgt =~ /\$\{?\w+\}?/x || !File::Spec->file_name_is_absolute($tgt);
 
   return ( undef, "target $tgt is not under \$DOTFILES - a symlink source must live in the repo" )
     unless index( $tgt, "$df/" ) == 0;
@@ -1792,7 +1811,7 @@ sub plan_symlink_action {
   return ( undef, 'ignored (left in place)' ) if $e->{ignore};
 
   my $abs = expand_path( $e->{path} );
-  ( my $linkname = $abs ) =~ s{.*/}{};
+  ( my $linkname = $abs ) =~ s{.*/}{}x;
   my $cur = current_mechanism($e);
 
   if ( $cur eq 'symlink' ) {
@@ -2024,7 +2043,7 @@ sub append_dotlinks_line {
   my ( $file, $source, $linkname ) = @_;
 
   my $prior = -e $file ? -s $file : 0;
-  ( my $base = $source ) =~ s{.*/}{};
+  ( my $base = $source ) =~ s{.*/}{}x;
   my $line =
     ( defined $linkname && length $linkname && $linkname ne $base )
     ? "$source $linkname\n"
@@ -2055,7 +2074,7 @@ sub run_check_dotfiles {
 
   local $ENV{HOME} = home_dir();
   open my $fh, '-|', $cd or return ( -1, "cannot run check-dotfiles: $!" );
-  local $/;
+  local $/ = undef;
   my $out = <$fh>;
   close $fh;
   return ( $? >> 8, $out // '' );
@@ -2103,7 +2122,7 @@ sub list_dotlinks_files {
   return unless defined $df && length $df && -d $df;
 
   opendir my $dh, $df or return;
-  my @names = sort grep { /^dotlinks-/ } readdir $dh;
+  my @names = sort grep { /^dotlinks-/x } readdir $dh;
   closedir $dh;
   return unless @names;
 
@@ -2141,46 +2160,16 @@ sub mode_update_db {
   my ($ref_arg) = @_;
   my $dbd       = db_dir();
   my $pin       = decode_file( File::Spec->catfile( $dbd, 'upstream.json' ) );
-  my $repo      = $pin->{repo};
   my $ref       = $ref_arg || 'HEAD';
 
-  require File::Temp;
-  my $tmp   = File::Temp::tempdir( CLEANUP => 1 );
-  my @clone = ( 'git', 'clone', '--quiet', '--depth', '1' );
-  push @clone, ( '--branch', $ref ) if $ref ne 'HEAD';
-  push @clone, ( $repo, $tmp );
-  system(@clone) == 0 or die "$PROG: git clone of $repo failed\n";
-
-  my $new_sha = qx(git -C "$tmp" rev-parse HEAD);
-  chomp $new_sha;
+  my ( $tmp, $new_sha ) = clone_upstream( $pin->{repo}, $ref );
 
   # Snapshot old overrides' recorded digests before overwriting the mirror.
-  my $local = name_index('programs-local');
-  my %override_digest;
-  for my $name ( keys %$local ) {
-    my $d = eval { decode_file( $local->{$name} ) } or next;
-    $override_digest{$name} = $d->{'upstream-digest'} if $d->{'upstream-digest'};
-  }
+  my $override_digest = override_digests();
 
   # Overwrite schema + programs from the fresh clone (keep the mirror pristine).
   my $prog_dst = File::Spec->catdir( $dbd, 'programs' );
-  my $prog_src = File::Spec->catdir( $tmp, 'programs' );
-
-  my @changed;
-  opendir my $dh, $prog_src or die "$PROG: no programs/ in clone\n";
-  for my $f ( readdir $dh ) {
-    next unless $f =~ /\.json$/;
-    my $src    = File::Spec->catfile( $prog_src, $f );
-    my $dst    = File::Spec->catfile( $prog_dst, $f );
-    my $before = ( -f $dst ) ? sha256_hex( read_file($dst) ) : '';
-    my $after  = sha256_hex( read_file($src) );
-    if ( $before ne $after ) {
-      _copy( $src, $dst );
-      ( my $name = $f ) =~ s/\.json$//;
-      push @changed, $name;
-    }
-  }
-  closedir $dh;
+  my @changed  = sync_programs( File::Spec->catdir( $tmp, 'programs' ), $prog_dst );
 
   _copy(
     File::Spec->catfile( $tmp, 'json-schema', 'program.json' ),
@@ -2196,27 +2185,97 @@ sub mode_update_db {
 
   build_index();
 
-  # Flag overrides that may now be obsolete.
+  my @obsolete = obsolete_overrides( $override_digest, $prog_dst );
+  report_update( $new_sha, \@changed, \@obsolete );
+  return 0;
+} ## end sub mode_update_db
+
+# Shallow-clone $repo at $ref (HEAD = the default branch) into a temp dir that
+# is removed at exit. Returns ($dir, $sha) for the cloned commit.
+sub clone_upstream {
+  my ( $repo, $ref ) = @_;
+
+  require File::Temp;
+  my $tmp   = File::Temp::tempdir( CLEANUP => 1 );
+  my @clone = ( 'git', 'clone', '--quiet', '--depth', '1' );
+  push @clone, ( '--branch', $ref ) if $ref ne 'HEAD';
+  push @clone, ( $repo, $tmp );
+  system(@clone) == 0 or die "$PROG: git clone of $repo failed\n";
+
+  open my $git, '-|', 'git', '-C', $tmp, 'rev-parse', 'HEAD'
+    or die "$PROG: cannot run git rev-parse: $!\n";
+  my $sha = <$git> // q{};
+  close $git;
+  chomp $sha;
+
+  return ( $tmp, $sha );
+} ## end sub clone_upstream
+
+# The upstream digest each override recorded, by app name (overrides without
+# one, or that fail to parse, are left out).
+sub override_digests {
+  my $local = name_index('programs-local');
+  my %digest;
+  for my $name ( keys %$local ) {
+    my $d = eval { decode_file( $local->{$name} ) } or next;
+    $digest{$name} = $d->{'upstream-digest'} if $d->{'upstream-digest'};
+  }
+  return \%digest;
+}
+
+# Copy every program file in $src_dir that differs from its $dst_dir copy.
+# Returns the changed app names, in directory order.
+sub sync_programs {
+  my ( $src_dir, $dst_dir ) = @_;
+
+  my @changed;
+  opendir my $dh, $src_dir or die "$PROG: no programs/ in clone\n";
+  for my $f ( readdir $dh ) {
+    next unless $f =~ /\.json$/x;
+    my $src    = File::Spec->catfile( $src_dir, $f );
+    my $dst    = File::Spec->catfile( $dst_dir, $f );
+    my $before = ( -f $dst ) ? sha256_hex( read_file($dst) ) : '';
+    my $after  = sha256_hex( read_file($src) );
+    if ( $before ne $after ) {
+      _copy( $src, $dst );
+      ( my $name = $f ) =~ s/\.json$//x;
+      push @changed, $name;
+    }
+  }
+  closedir $dh;
+  return @changed;
+} ## end sub sync_programs
+
+# Overrides whose upstream file no longer matches the digest they recorded.
+sub obsolete_overrides {
+  my ( $digest, $prog_dst ) = @_;
+
   my @obsolete;
-  for my $name ( keys %override_digest ) {
+  for my $name ( keys %$digest ) {
     my $up = File::Spec->catfile( $prog_dst, "$name.json" );
     next unless -f $up;
     my $now = sha256_hex( read_file($up) );
-    push @obsolete, $name if $now ne $override_digest{$name};
+    push @obsolete, $name if $now ne $digest->{$name};
   }
+  return @obsolete;
+}
+
+sub report_update {
+  my ( $new_sha, $changed, $obsolete ) = @_;
 
   if ( $cli{json} ) {
-    emit_json( { ref => $new_sha, changed => \@changed, obsolete_overrides => \@obsolete } );
-  } else {
-    print "$PROG: updated to $new_sha\n";
-    print "  changed programs: " . ( @changed ? join( ', ', sort @changed ) : 'none' ) . "\n";
-    if (@obsolete) {
-      print "  overrides possibly obsolete (upstream changed since the override):\n";
-      print "    $_  - review programs-local/$_.json; remove if upstream now suffices\n" for sort @obsolete;
-    }
+    emit_json( { ref => $new_sha, changed => $changed, obsolete_overrides => $obsolete } );
+    return;
   }
-  return 0;
-} ## end sub mode_update_db
+
+  print "$PROG: updated to $new_sha\n";
+  print "  changed programs: " . ( @$changed ? join( ', ', sort @$changed ) : 'none' ) . "\n";
+  if (@$obsolete) {
+    print "  overrides possibly obsolete (upstream changed since the override):\n";
+    print "    $_  - review programs-local/$_.json; remove if upstream now suffices\n" for sort @$obsolete;
+  }
+  return;
+}
 
 sub _copy {
   my ( $src, $dst ) = @_;
@@ -2380,7 +2439,7 @@ END_USAGE
 
   # -h prints the brief form (synopsis + options); --help prints all. Keeping
   # one heredoc and truncating it at the OUTPUT section keeps the two in sync.
-  $help =~ s/\nOUTPUT\n.*//s if $brief;
+  $help =~ s/\nOUTPUT\n.*//sx if $brief;
 
   print $help;
   exit $code;
@@ -2406,18 +2465,22 @@ GetOptions(
   'h'           => sub { usage( 0, 1 ) },
 ) or usage( 1, 1 );
 
-# Dispatch. A runtime failure (e.g. missing database) reports and exits 1;
-# a scan with actionable findings returns 2; a clean run returns 0.
-my $exit = eval {
-  if    ( $cli{update_db} )         { mode_update_db( $ARGV[0] ) }
-  elsif ( $cli{remove} )            { mode_remove( $ARGV[0] ) }
-  elsif ( $cli{fix} )               { mode_fix( $ARGV[0] ) }
-  elsif ( $cli{migrate} )           { mode_migrate( $ARGV[0], $ARGV[1] ) }
-  elsif ( defined $cli{search} )    { mode_search( $cli{search} ) }
-  elsif ( $cli{reindex} && !@ARGV ) { mode_reindex() }
-  elsif (@ARGV)                     { mode_lookup( $ARGV[0] ) }
-  else                              { mode_scan() }
-};
+# Pick the one mode the options select, first match wins, and return its exit
+# status.
+sub dispatch {
+  return mode_update_db( $ARGV[0] )         if $cli{update_db};
+  return mode_remove( $ARGV[0] )            if $cli{remove};
+  return mode_fix( $ARGV[0] )               if $cli{fix};
+  return mode_migrate( $ARGV[0], $ARGV[1] ) if $cli{migrate};
+  return mode_search( $cli{search} )        if defined $cli{search};
+  return mode_reindex()                     if $cli{reindex} && !@ARGV;
+  return mode_lookup( $ARGV[0] )            if @ARGV;
+  return mode_scan();
+}
+
+# A runtime failure (e.g. missing database) reports and exits 1; a scan with
+# actionable findings returns 2; a clean run returns 0.
+my $exit = eval { dispatch() };
 if ( !defined $exit ) {
   print {*STDERR} $@ if $@;
   $exit = 1;
