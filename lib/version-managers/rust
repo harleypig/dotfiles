@@ -1,0 +1,359 @@
+#!/usr/bin/env bash
+
+# lib/version-managers/rust - vmgr module wrapping rustup (the Rust toolchain
+# manager).
+#
+# Sourced by bin/vmgr (never executed). Declares the managers this language
+# provides and a <manager>_<verb> function per manager - the verbs are install,
+# update, remove, report, and help (see bin/vmgr). As a sourced library it uses
+# no `set -e` and calls no `exit` - it surfaces errors via return codes (see
+# the dotagents repo's rules/bash.md).
+#
+# rustup itself is installed from the PINNED rustup-init in rust-lang's
+# release archive (checksum-verified), so it does not depend on a distro
+# rustup package - the nvm-git-tag analogue. rustup-init runs with
+# --no-modify-path, so it never edits a shell profile. Shell-init (CARGO_HOME,
+# RUSTUP_HOME, PATH at login) is deliberately NOT handled here - it lives in
+# config/shell-startup/rust, a separate concern.
+#
+# The pins (RUSTUP_PIN, RUST_TOOLCHAIN_PIN) live in config/vmgr/rust, loaded
+# by _vmgr_load_pins.
+
+# shellcheck disable=SC2034  # read by bin/vmgr after it sources this module
+vmgr_managers=(rustup)
+
+# Shared vmgr helpers (_vmgr_load_pins), resolved relative to this module.
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=../vmgr-common
+source "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")/vmgr-common"
+
+# RUSTUP_PIN / RUST_TOOLCHAIN_PIN come from config/vmgr/rust via
+# _vmgr_load_pins (a runtime `source`), so shellcheck can't see them assigned.
+# shellcheck disable=SC2154
+
+###############################################################################
+# Internal helpers
+
+#------------------------------------------------------------------------------
+# Echo the XDG-compliant rustup home (honouring a caller-set RUSTUP_HOME).
+
+_rust_rustup_home() {
+  printf '%s' "${RUSTUP_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/rustup}"
+}
+
+#------------------------------------------------------------------------------
+# Echo the XDG-compliant cargo home (honouring a caller-set CARGO_HOME).
+
+_rust_cargo_home() {
+  printf '%s' "${CARGO_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/cargo}"
+}
+
+#------------------------------------------------------------------------------
+# Echo the vmgr-managed rustup path (present only after install). A distro
+# rustup elsewhere on PATH is deliberately not this.
+
+_rust_rustup_bin() {
+  printf '%s/bin/rustup' "$(_rust_cargo_home)"
+}
+
+#------------------------------------------------------------------------------
+# Echo the installed vmgr rustup's version (e.g. 1.29.1); nothing if absent.
+
+_rust_rustup_version() {
+  local bin
+  bin=$(_rust_rustup_bin)
+
+  [[ -x $bin ]] || return 0
+
+  # Run from / so a rust-toolchain file in the caller's directory cannot make
+  # rustup resolve (or auto-install) a toolchain just to print its version.
+  (cd / && RUSTUP_HOME=$(_rust_rustup_home) "$bin" --version 2> /dev/null) \
+    | awk 'NR == 1 { print $2 }'
+}
+
+#------------------------------------------------------------------------------
+# Echo the rustup-init host triple for this machine. Only the Linux triples
+# this repo runs on are mapped; anything else fails rather than guessing.
+
+_rust_host_triple() {
+  [[ $(uname -s) == Linux ]] || return 1
+
+  case $(uname -m) in
+    x86_64) printf 'x86_64-unknown-linux-gnu' ;;
+    aarch64 | arm64) printf 'aarch64-unknown-linux-gnu' ;;
+    *) return 1 ;;
+  esac
+}
+
+#------------------------------------------------------------------------------
+# Download rustup-init for RUSTUP_PIN, verify it against the published
+# sha256, and run it. On a fresh machine that installs rustup; over an
+# existing install it moves rustup to the pin and leaves toolchains alone.
+# --default-toolchain none: the toolchain is _rust_reconcile's job.
+
+_rust_run_rustup_init() {
+  local triple
+  triple=$(_rust_host_triple) || {
+    printf 'rustup: no rustup-init mapping for %s %s\n' \
+      "$(uname -s)" "$(uname -m)" >&2
+    return 1
+  }
+
+  local url="https://static.rust-lang.org/rustup/archive/$RUSTUP_PIN/$triple/rustup-init"
+  local tmp
+  tmp=$(mktemp -d) || return 1
+
+  printf 'installing rustup %s into %s\n' "$RUSTUP_PIN" "$(_rust_cargo_home)" >&2
+
+  if ! curl -fLsS "$url" -o "$tmp/rustup-init" \
+    || ! curl -fLsS "$url.sha256" -o "$tmp/rustup-init.sha256"; then
+    printf 'rustup: download of %s failed\n' "$url" >&2
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  local want got
+  want=$(awk '{ print $1 }' "$tmp/rustup-init.sha256")
+  got=$(sha256sum "$tmp/rustup-init" | awk '{ print $1 }')
+
+  [[ -n $want && $want == "$got" ]] || {
+    printf 'rustup: checksum mismatch for %s\n' "$url" >&2
+    rm -rf "$tmp"
+    return 1
+  }
+
+  chmod +x "$tmp/rustup-init"
+
+  RUSTUP_HOME=$(_rust_rustup_home) CARGO_HOME=$(_rust_cargo_home) \
+    "$tmp/rustup-init" -y --no-modify-path --default-toolchain none \
+    || {
+      printf 'rustup: rustup-init failed\n' >&2
+      rm -rf "$tmp"
+      return 1
+    }
+
+  rm -rf "$tmp"
+}
+
+#------------------------------------------------------------------------------
+# Reconcile the toolchain to the pins: move rustup to RUSTUP_PIN if it is
+# absent or another version, then install RUST_TOOLCHAIN_PIN and make it the
+# default. Shared by install and update.
+
+_rust_reconcile() {
+  local bin rustup_home cargo_home
+  bin=$(_rust_rustup_bin)
+  rustup_home=$(_rust_rustup_home)
+  cargo_home=$(_rust_cargo_home)
+
+  if [[ $(_rust_rustup_version) != "$RUSTUP_PIN" ]]; then
+    _rust_run_rustup_init || return 1
+  fi
+
+  printf 'installing Rust %s and setting it default\n' "$RUST_TOOLCHAIN_PIN" >&2
+
+  # --no-self-update keeps rustup at RUSTUP_PIN rather than letting the
+  # toolchain install move it to the latest release.
+  RUSTUP_HOME=$rustup_home CARGO_HOME=$cargo_home \
+    "$bin" toolchain install --no-self-update --profile default \
+    "$RUST_TOOLCHAIN_PIN" \
+    || {
+      printf 'rust %s install failed\n' "$RUST_TOOLCHAIN_PIN" >&2
+      return 1
+    }
+
+  RUSTUP_HOME=$rustup_home CARGO_HOME=$cargo_home \
+    "$bin" default "$RUST_TOOLCHAIN_PIN" \
+    || {
+      printf 'setting default rust toolchain failed\n' >&2
+      return 1
+    }
+}
+
+###############################################################################
+# Manager: rustup
+
+#------------------------------------------------------------------------------
+# Ensure rustup is present at the pin (install it if absent), then reconcile
+# the toolchain to the pins. Idempotent toward the pins: re-running re-asserts
+# them, including RESETTING the default toolchain to RUST_TOOLCHAIN_PIN. That
+# reset is intentional; vmgr owns only the pinned default - use rustup itself
+# to pick another, or bump RUST_TOOLCHAIN_PIN in config/vmgr/rust.
+
+rustup_install() {
+  _vmgr_load_pins rust RUSTUP_PIN RUST_TOOLCHAIN_PIN || return 1
+
+  _rust_reconcile
+}
+
+#------------------------------------------------------------------------------
+# Bring an existing install to the pins (the same reconcile as install, but
+# it refuses to install from scratch). Run it after bumping a pin.
+
+rustup_update() {
+  _vmgr_load_pins rust RUSTUP_PIN RUST_TOOLCHAIN_PIN || return 1
+
+  [[ -x $(_rust_rustup_bin) ]] || {
+    printf "rustup not installed at %s (run 'vmgr install rust')\n" \
+      "$(_rust_cargo_home)" >&2
+    return 1
+  }
+
+  _rust_reconcile
+}
+
+#------------------------------------------------------------------------------
+# Remove rustup and everything it installed, via rustup's own
+# `self uninstall` (it deletes RUSTUP_HOME and CARGO_HOME whole, including
+# anything `cargo install` put there). Idempotent: a missing install is a
+# successful no-op.
+
+rustup_remove() {
+  local bin rustup_home expected
+  bin=$(_rust_rustup_bin)
+  rustup_home=$(_rust_rustup_home)
+  expected="${XDG_DATA_HOME:-$HOME/.local/share}/rustup"
+
+  if [[ ! -x $bin ]]; then
+    printf 'rustup not installed at %s; nothing to remove\n' \
+      "$(_rust_cargo_home)" >&2
+    return 0
+  fi
+
+  # The pre-vmgr rustup home is $XDG_CONFIG_HOME/rustup, which in this repo is
+  # a tracked directory of the dotfiles checkout; a wholesale delete there
+  # would take tracked files with it. Only remove from the vmgr location.
+  if [[ $rustup_home != "$expected" ]]; then
+    printf 'rustup: RUSTUP_HOME is %s, not the vmgr location %s;\n' \
+      "$rustup_home" "$expected" >&2
+    printf "  'rustup self uninstall' would delete it whole - remove it by hand\n" >&2
+    return 1
+  fi
+
+  printf 'removing rustup (and its toolchains and cargo home) at %s and %s\n' \
+    "$rustup_home" "$(_rust_cargo_home)" >&2
+
+  RUSTUP_HOME=$rustup_home CARGO_HOME=$(_rust_cargo_home) \
+    "$bin" self uninstall -y
+}
+
+#------------------------------------------------------------------------------
+# Report expected (pins / location) vs. current (what is installed now), and
+# flag drift. Read-only: it inspects files and asks rustup only for its own
+# version - it never installs, switches, or moves anything.
+
+rustup_report() {
+  local expected_rh expected_ch current_rh current_ch src installed default=''
+  local on_path
+  local -a toolchains=()
+
+  _vmgr_load_pins rust RUSTUP_PIN RUST_TOOLCHAIN_PIN || {
+    RUSTUP_PIN='(no pins config)'
+    RUST_TOOLCHAIN_PIN='(no pins config)'
+  }
+
+  expected_rh="${XDG_DATA_HOME:-$HOME/.local/share}/rustup"
+  expected_ch="${XDG_DATA_HOME:-$HOME/.local/share}/cargo"
+  current_rh=$(_rust_rustup_home)
+  current_ch=$(_rust_cargo_home)
+  installed=$(_rust_rustup_version)
+
+  if [[ -n ${RUSTUP_HOME:-} ]]; then
+    src="from environment (RUSTUP_HOME)"
+  else
+    src="vmgr default"
+  fi
+
+  if [[ -d $current_rh/toolchains ]]; then
+    mapfile -t toolchains < <(
+      find "$current_rh/toolchains" -mindepth 1 -maxdepth 1 -type d \
+        -printf '%f\n' 2> /dev/null | sort -V
+    )
+  fi
+
+  if [[ -r $current_rh/settings.toml ]]; then
+    default=$(sed -n 's/^default_toolchain *= *"\(.*\)"/\1/p' \
+      "$current_rh/settings.toml")
+  fi
+
+  printf 'rust (manager: rustup)\n\n'
+
+  printf '  Expected (vmgr):\n'
+  printf '    rustup home : %s\n' "$expected_rh"
+  printf '    cargo home  : %s\n' "$expected_ch"
+  printf '    rustup      : %s\n' "$RUSTUP_PIN"
+  printf '    toolchain   : %s (default)\n\n' "$RUST_TOOLCHAIN_PIN"
+
+  printf '  Current:\n'
+  printf '    rustup home : %s (%s)\n' "$current_rh" "$src"
+  printf '    cargo home  : %s\n' "$current_ch"
+  printf '    rustup      : %s\n' "${installed:-not installed}"
+  if ((${#toolchains[@]})); then
+    printf '    toolchains  : %s (default -> %s)\n' \
+      "${toolchains[*]}" "${default:-none}"
+  else
+    printf '    toolchains  : none installed\n'
+  fi
+
+  printf '\n  Findings:\n'
+
+  if [[ -z $installed ]]; then
+    printf "    - rustup not installed at the current cargo home; run 'vmgr install rust'.\n"
+  fi
+
+  if [[ $current_rh != "$expected_rh" || $current_ch != "$expected_ch" ]]; then
+    printf '    - location: rustup home / cargo home are\n'
+    printf '        %s\n        %s\n' "$current_rh" "$current_ch"
+    printf '      but vmgr expects\n'
+    printf '        %s\n        %s\n' "$expected_rh" "$expected_ch"
+    printf '      Consider migrating; vmgr does not move them.\n'
+  else
+    printf '    - location: matches the expected vmgr location.\n'
+  fi
+
+  if [[ -n $installed && $installed != "$RUSTUP_PIN" ]]; then
+    printf "    - rustup version: %s installed vs %s pinned (run 'vmgr update rust').\n" \
+      "$installed" "$RUSTUP_PIN"
+  fi
+
+  on_path=$(command -v rustup 2> /dev/null)
+  if [[ -n $on_path && $on_path != "$(_rust_rustup_bin)" ]]; then
+    printf '    - another rustup is on PATH at %s (not vmgr-managed).\n' "$on_path"
+  fi
+}
+
+#------------------------------------------------------------------------------
+# Print rust-specific help: what vmgr manages, what each verb does, the pin
+# semantics, and where the install lives.
+
+rustup_help() {
+  cat << 'EOF'
+rust - managed via rustup (the Rust toolchain manager).
+
+vmgr keeps a pinned rustup plus a pinned default toolchain. The pins
+(RUSTUP_PIN, RUST_TOOLCHAIN_PIN) live in config/vmgr/rust - in config, not
+code - so they are set in one place. rustup itself comes from the pinned,
+checksum-verified rustup-init in rust-lang's release archive, run with
+--no-modify-path, so it does not depend on a distro rustup package and never
+edits your shell profile.
+
+Verbs:
+  install   Install rustup at RUSTUP_PIN if it is absent or another version,
+            then install RUST_TOOLCHAIN_PIN and set it the default.
+  update    Reconcile an existing install to the pins (the same as install,
+            but refuses to install from scratch). Run it after bumping a pin.
+  remove    Run 'rustup self uninstall', which deletes the rustup home and
+            the cargo home whole (every toolchain, and anything installed
+            with 'cargo install'). Refused unless the rustup home is the vmgr
+            location.
+  report    Show expected (pins / location) vs. current state, and flag drift.
+
+The pins govern only what vmgr installs and defaults; rustup stays usable
+directly. install and update RESET the default toolchain to
+RUST_TOOLCHAIN_PIN on every run - use rustup itself to pick another.
+
+Location: vmgr uses $RUSTUP_HOME and $CARGO_HOME if set, otherwise
+$XDG_DATA_HOME/rustup and $XDG_DATA_HOME/cargo. Run 'vmgr report rust' to see
+expected vs. current location and versions.
+EOF
+}

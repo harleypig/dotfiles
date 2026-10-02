@@ -3,20 +3,22 @@
 # vmgr and mise side by side (#435): when both manage a language, vmgr's
 # toolchain wins on PATH; mise is the fallback for whatever vmgr does not
 # manage. The mechanism is load order, not a switch -- config/shell-startup
-# sources mise before node/perl/python (glob order), mise's default
+# sources mise before node/perl/python/rust (glob order), mise's default
 # (non-aggressive) activation lets later PATH changes take precedence, and the
 # vmgr-side modules prepend their toolchain after it.
 #
-# So these tests source the four real modules in that order, in a fresh
+# So these tests source the five real modules in that order, in a fresh
 # non-interactive bash child, against a throwaway HOME/XDG tree holding:
 #   - a fake mise: a `mise` function whose `activate` output prepends a shims
-#     dir holding node/perl/python3 stand-ins (the shims path the module takes
-#     when non-interactive -- the full-activation path goes through the same
-#     eval and is covered by test_shell_startup_mise.bats);
+#     dir holding node/perl/python3/rustc/cargo stand-ins (the shims path the
+#     module takes when non-interactive -- the full-activation path goes
+#     through the same eval and is covered by test_shell_startup_mise.bats);
 #   - a fake vmgr node: nvm.sh plus a default alias naming an installed
 #     version, as `vmgr install node` leaves it;
 #   - a fake vmgr perl: a perlbrew etc/bashrc that prepends its default Perl,
-#     as perlbrew's real bashrc does.
+#     as perlbrew's real bashrc does;
+#   - a fake vmgr rust: rustc/cargo/rustup in $CARGO_HOME/bin, where
+#     `vmgr install rust` (rustup-init) puts rustup's proxies.
 # Each stand-in is a script that only exists under the throwaway tree, so a
 # resolved path says unambiguously which manager supplied the tool, whatever
 # the host or CI runner has installed system-wide.
@@ -31,6 +33,7 @@ setup() {
   SHIMS="$T/mise/shims"
   NVM_BIN="$T/data/nvm/versions/node/v22.23.1/bin"
   PB_BIN="$T/data/perlbrew/perls/perl-5.40.0/bin"
+  CARGO_BIN="$T/data/cargo/bin"
 }
 
 # A stand-in executable named $2 in dir $1.
@@ -43,7 +46,7 @@ fake_bin() {
 install_mise() {
   local tool
 
-  for tool in node perl python3; do
+  for tool in node perl python3 rustc cargo; do
     fake_bin "$SHIMS" "$tool"
   done
 }
@@ -62,8 +65,17 @@ install_vmgr_perl() {
   printf 'export PATH="%s:$PATH"\n' "$PB_BIN" > "$T/data/perlbrew/etc/bashrc"
 }
 
-# Source mise, node, perl, python in startup order and print where each tool
-# resolves, one `tool=path` per line (empty when nothing provides it).
+install_vmgr_rust() {
+  local tool
+
+  for tool in rustc cargo rustup; do
+    fake_bin "$CARGO_BIN" "$tool"
+  done
+}
+
+# Source mise, node, perl, python, rust in startup order and print where each
+# tool resolves, one `tool=path` per line (empty when nothing provides it),
+# then the rust homes the rust module chose.
 run_startup() {
   run bash --norc -c '
     root=$1 t=$2 shims=$3
@@ -89,44 +101,52 @@ run_startup() {
     # must stay findable because the perl module gates on havecmd perl.
     PATH=/usr/bin:/bin
 
-    for m in mise node perl python; do
+    for m in mise node perl python rust; do
       source "$root/config/shell-startup/$m"
     done
 
-    for tool in node perl python3; do
+    for tool in node perl python3 rustc cargo; do
       echo "$tool=$(type -P "$tool")"
     done
+    echo "CARGO_HOME=$CARGO_HOME"
+    echo "RUSTUP_HOME=$RUSTUP_HOME"
     echo "AGGRESSIVE=${MISE_ACTIVATE_AGGRESSIVE-unset}"
   ' _ "$ROOT" "$T" "$SHIMS"
 }
 
-@test "both installed: vmgr node and perl win, mise keeps python" {
+@test "both installed: vmgr node, perl and rust win, mise keeps python" {
   install_mise
   install_vmgr_node
   install_vmgr_perl
+  install_vmgr_rust
 
   run_startup
 
   assert_success
   assert_line "node=$NVM_BIN/node"
   assert_line "perl=$PB_BIN/perl"
+  assert_line "rustc=$CARGO_BIN/rustc"
+  assert_line "cargo=$CARGO_BIN/cargo"
   # vmgr manages uv/pipx, not a Python interpreter, so mise supplies it.
   assert_line "python3=$SHIMS/python3"
 }
 
-@test "only vmgr installed: vmgr node and perl are on PATH" {
+@test "only vmgr installed: vmgr node, perl and rust are on PATH" {
   install_vmgr_node
   install_vmgr_perl
+  install_vmgr_rust
 
   run_startup
 
   assert_success
   assert_line "node=$NVM_BIN/node"
   assert_line "perl=$PB_BIN/perl"
+  assert_line "rustc=$CARGO_BIN/rustc"
+  assert_line "cargo=$CARGO_BIN/cargo"
   refute_output --partial "$SHIMS"
 }
 
-@test "only mise installed: mise supplies node, perl and python" {
+@test "only mise installed: mise supplies node, perl, python and rust" {
   install_mise
 
   run_startup
@@ -135,6 +155,8 @@ run_startup() {
   assert_line "node=$SHIMS/node"
   assert_line "perl=$SHIMS/perl"
   assert_line "python3=$SHIMS/python3"
+  assert_line "rustc=$SHIMS/rustc"
+  assert_line "cargo=$SHIMS/cargo"
 }
 
 @test "neither installed: no tool resolves to either manager" {
@@ -144,6 +166,65 @@ run_startup() {
   refute_output --partial "$SHIMS"
   refute_output --partial "$NVM_BIN"
   refute_output --partial "$PB_BIN"
+  refute_output --partial "rustc=$CARGO_BIN"
+  refute_output --partial "cargo=$CARGO_BIN"
+}
+
+# The rust homes are XDG data, and $CARGO_HOME/bin is prepended only when it
+# exists, so a machine without it gains no dead PATH entry.
+@test "rust homes: CARGO_HOME and RUSTUP_HOME default to XDG_DATA_HOME" {
+  run_startup
+
+  assert_success
+  assert_line "CARGO_HOME=$T/data/cargo"
+  assert_line "RUSTUP_HOME=$T/data/rustup"
+}
+
+# Before vmgr managed rust, RUSTUP_HOME was $XDG_CONFIG_HOME/rustup. A machine
+# whose toolchains still live there keeps using them until the new home
+# exists, so moving the default cannot orphan an installed toolchain.
+@test "rust homes: toolchains only in the old config home keep it in use" {
+  mkdir -p "$T/cfg/rustup/toolchains/stable-x86_64-unknown-linux-gnu"
+
+  run_startup
+
+  assert_success
+  assert_line "RUSTUP_HOME=$T/cfg/rustup"
+}
+
+@test "rust homes: once the new data home has toolchains it wins" {
+  mkdir -p "$T/cfg/rustup/toolchains/stable-x86_64-unknown-linux-gnu"
+  mkdir -p "$T/data/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu"
+
+  run_startup
+
+  assert_success
+  assert_line "RUSTUP_HOME=$T/data/rustup"
+}
+
+# Any rustup call pointed at the new home creates it with only a
+# settings.toml; that alone must not strand the toolchains in the old home.
+@test "rust homes: a new data home with no toolchains does not win" {
+  mkdir -p "$T/cfg/rustup/toolchains/stable-x86_64-unknown-linux-gnu"
+  mkdir -p "$T/data/rustup"
+  touch "$T/data/rustup/settings.toml"
+
+  run_startup
+
+  assert_success
+  assert_line "RUSTUP_HOME=$T/cfg/rustup"
+}
+
+# The old home is a tracked directory in this repo (its settings.toml), so it
+# exists on every checkout; without toolchains it is not a reason to stay.
+@test "rust homes: an old config home with no toolchains is not used" {
+  mkdir -p "$T/cfg/rustup"
+  touch "$T/cfg/rustup/settings.toml"
+
+  run_startup
+
+  assert_success
+  assert_line "RUSTUP_HOME=$T/data/rustup"
 }
 
 # nvm's default alias can name something other than an installed version
