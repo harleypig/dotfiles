@@ -13,6 +13,10 @@
 # E265/E266 are ignored to allow the repo's section/function separator comments
 # (`#####` thick, `#----` thin — see code-style.md); the `#####` thick form is
 # inherently incompatible with E266, so honoring the convention requires this.
+#
+# max-complexity turns on flake8's bundled mccabe check (C901), which is
+# silent unless a threshold is set.
 [flake8]
 max-line-length = 79
+max-complexity = 10
 extend-ignore = E111,E114,E121,E123,E126,E133,E226,E24,E265,E266,E704,W503,W504
