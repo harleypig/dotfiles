@@ -5,6 +5,9 @@
 
 load ../helpers/common
 
+# --separate-stderr (the #512 TF_* warning tests) needs bats 1.5.
+bats_require_minimum_version 1.5.0
+
 setup() {
   load_bats_libs
   ROOT="$(dotfiles_root)"
@@ -540,6 +543,124 @@ teardown() {
   run cat "$STUB/docker.args"
   refute_output --partial "--env TF_VAR_region"
   refute_output --partial "canary_region"
+}
+
+# #512: terraform-behaviour TF_* vars (TF_CLI_ARGS*, TF_LOG*, TF_WORKSPACE)
+# always cross, and any other set TF_* that does not is named on stderr. These
+# run under `env -i` so a TF_* the host happens to export cannot add or mask a
+# warning.
+
+@test "terraform always forwards TF_CLI_ARGS*, TF_LOG* and TF_WORKSPACE" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  # version is outside the state-touching set, so it proves these cross for
+  # every subcommand rather than riding the credential gate.
+  run env -i "PATH=$STUB:$PATH" \
+    TF_CLI_ARGS=-no-color TF_CLI_ARGS_init=canary_backend_key \
+    TF_LOG=DEBUG TF_LOG_CORE=TRACE TF_LOG_PROVIDER=INFO TF_WORKSPACE=dev \
+    "$ROOT/bin/terraform" version
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--env TF_CLI_ARGS "
+  assert_output --partial "--env TF_CLI_ARGS_init"
+  assert_output --partial "--env TF_LOG "
+  assert_output --partial "--env TF_LOG_CORE"
+  assert_output --partial "--env TF_LOG_PROVIDER"
+  assert_output --partial "--env TF_WORKSPACE"
+  # Forwarded by name only — the value never reaches the command line.
+  refute_output --partial "canary_backend_key"
+}
+
+@test "terraform warns on stderr, by name, about a set TF_* it drops" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run --separate-stderr env -i "PATH=$STUB:$PATH" TF_FOO=canary_foo \
+    "$ROOT/bin/terraform" version
+  assert_success
+  assert_output ""
+
+  [[ $stderr == *"TF_FOO"* ]]
+  [[ $stderr == *"-e TF_FOO"* ]]
+  [[ $stderr != *canary_foo* ]]
+  (($(wc -l <<< "$stderr") == 1))
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "TF_FOO"
+}
+
+@test "terraform does not warn about a TF_* passed with a leading -e" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run --separate-stderr env -i "PATH=$STUB:$PATH" TF_FOO=canary_foo \
+    "$ROOT/bin/terraform" -e TF_FOO version
+  assert_success
+  assert_equal "$stderr" ""
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--env TF_FOO"
+}
+
+@test "terraform does not warn about an always-forwarded TF_*" {
+  # Falsifier named in #512: the warning firing for TF_CLI_CONFIG_FILE.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run --separate-stderr env -i "PATH=$STUB:$PATH" \
+    TF_CLI_CONFIG_FILE=/mnt/x.tfrc TF_LOG=DEBUG TF_CLI_ARGS_init=-upgrade \
+    "$ROOT/bin/terraform" version
+  assert_success
+  assert_equal "$stderr" ""
+}
+
+@test "terraform does not warn about TF_VAR_* withheld from fmt/validate/version" {
+  # Withholding them there is the credential-free gate working, not a drop.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  local sub
+  for sub in fmt validate version; do
+    run --separate-stderr env -i "PATH=$STUB:$PATH" TF_VAR_region=r \
+      "$ROOT/bin/terraform" "$sub"
+    assert_success
+    assert_equal "$stderr" ""
+  done
+}
+
+@test "terraform does not warn about TF_VAR_* on a state subcommand" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run --separate-stderr env -i "PATH=$STUB:$PATH" TF_VAR_region=r \
+    "$ROOT/bin/terraform" plan
+  assert_success
+  assert_equal "$stderr" ""
+}
+
+@test "terraform warns about TF_VAR_* dropped on an unlisted subcommand" {
+  # `terraform test` reads variables but sits outside the state set, so the
+  # fail-closed gate drops them — exactly the silent loss #512 surfaces.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run --separate-stderr env -i "PATH=$STUB:$PATH" TF_VAR_region=r \
+    "$ROOT/bin/terraform" test
+  assert_success
+  [[ $stderr == *"-e TF_VAR_region"* ]]
+}
+
+@test "terraform does not warn about a TF_* set to the empty string" {
+  # An empty value is skipped by -e too (dw_env), so there is nothing lost.
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run --separate-stderr env -i "PATH=$STUB:$PATH" TF_FOO= \
+    "$ROOT/bin/terraform" version
+  assert_success
+  assert_equal "$stderr" ""
 }
 
 # Leading -e/--env NAME wrapper flags forward named host vars into the container
