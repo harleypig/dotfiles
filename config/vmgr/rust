@@ -1,0 +1,24 @@
+# shellcheck shell=bash
+# shellcheck disable=SC2034  # consumed by code that sources this file
+# (lib/version-managers/rust, and anything else that needs the pins).
+
+# vmgr - rust toolchain pins (rustup). Same model as config/vmgr/node: the
+# version numbers live here, not in code. Bump deliberately.
+#
+#   - Fresh machine: `vmgr install rust` installs this rustup release (via its
+#     own rustup-init, not the distro package), installs this toolchain, and
+#     makes it the default.
+#   - Bump a pin: `vmgr update rust` brings an existing install to the new
+#     pins (and `install` does too). Either RESETS the default toolchain to
+#     RUST_TOOLCHAIN_PIN - intentional (idempotent toward the pins). Use
+#     rustup directly to install, switch, or default anything else (nightly
+#     included).
+
+# rustup release to install / pin to. vmgr downloads rustup-init from
+# static.rust-lang.org/rustup/archive/$RUSTUP_PIN/<host>/, so NO leading 'v'.
+RUSTUP_PIN=1.29.1
+
+# Exact toolchain vmgr installs and sets as the default. Pinned (NOT a
+# floating channel like `stable`) so a repeat `vmgr install rust` does not
+# pull a newer release and the default it sets is deterministic.
+RUST_TOOLCHAIN_PIN=1.99.0

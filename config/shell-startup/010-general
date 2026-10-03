@@ -35,17 +35,6 @@ fi
 umask 022
 
 #-----------------------------------------------------------------------------
-# rust/rustup
-
-if [[ -d $XDG_DATA_HOME ]]; then
-  export CARGO_HOME="$XDG_DATA_HOME/cargo"
-  export RUSTUP_HOME="$XDG_CONFIG_HOME/rustup"
-  # The env file hard codes the location and is wrong
-  #source "$CARGO_HOME/env"
-  addpath "$CARGO_HOME/bin"
-fi
-
-#-----------------------------------------------------------------------------
 # ruby (gems install under the user dir; only GEM_HOME + PATH, so it lives
 # here rather than in its own module)
 
