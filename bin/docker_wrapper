@@ -189,6 +189,18 @@ terraform() {
   # need the provider schema, not just init.
   [[ -n ${TF_CLI_CONFIG_FILE-} ]] && args+=(--env TF_CLI_CONFIG_FILE)
 
+  # Terraform's behaviour switches also cross for every subcommand: a host
+  # TF_CLI_ARGS_init or TF_LOG means the caller wants terraform to see it
+  # (#512 - dropping TF_CLI_ARGS_init made `init` prompt for the backend
+  # key). None is a credential or a host path; TF_LOG_PATH, TF_DATA_DIR and
+  # TF_PLUGIN_CACHE_DIR are paths, so they stay opt-in via -e and draw the
+  # warning below instead.
+  local var
+  for var in TF_CLI_ARGS "${!TF_CLI_ARGS_@}" TF_LOG TF_LOG_CORE \
+    TF_LOG_PROVIDER TF_WORKSPACE; do
+    [[ -n ${!var-} ]] && args+=(--env "$var")
+  done
+
   # Resolve the subcommand: the first non-flag word, since global options
   # (`-chdir=DIR`, `-help`, `-version`) precede it.
   local subcmd="" arg
@@ -213,7 +225,6 @@ terraform() {
       # ICEBOX: the Linode provider's config_profile / linode-cli config-file
       # auth path is not mounted — LINODE_TOKEN covers the credential need, so
       # mounting ~/.config/linode under HOME=/tmp was deliberately skipped.
-      local var
       for var in \
         AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_ENDPOINT_URL_S3 \
         AWS_REQUEST_CHECKSUM_CALCULATION AWS_RESPONSE_CHECKSUM_VALIDATION \
@@ -231,6 +242,31 @@ terraform() {
       done
       ;;
   esac
+
+  # A set TF_* that did not make it into args is otherwise lost without a
+  # word - the tool runs and fails naming some other cause. Name it and the
+  # fix on stderr, so stdout stays clean for `output -json`. TF_VAR_* held
+  # back from fmt/validate/version (or a bare `-version`) is the credential
+  # gate above doing its job, not a drop, so it stays quiet; on any other
+  # unlisted subcommand it is a drop and warns.
+  local -A forwarded=()
+  local -i i
+  for ((i = 0; i < ${#args[@]} - 1; i++)); do
+    [[ ${args[i]} == --env ]] && forwarded[${args[i + 1]%%=*}]=1
+  done
+
+  for var in "${!TF_@}"; do
+    [[ -z ${!var} || -v forwarded[$var] ]] && continue
+
+    if [[ $var == TF_VAR_* ]]; then
+      case $subcmd in
+        '' | fmt | validate | version) continue ;;
+      esac
+    fi
+
+    # One argument: dw_warn prints each argument on its own line.
+    dw_warn "$var is set but not forwarded into the container; pass it with a leading '-e $var' (before the subcommand)"
+  done
 
   exec docker run "${args[@]}" "${image[terraform]}" "$@"
 }
