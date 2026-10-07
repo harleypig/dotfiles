@@ -61,7 +61,7 @@ jobs:
       #     OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
       - name: Run OpenCode
-        uses: sst/opencode/github@aec0b9a6d8898f68f923aaf08b7306d931fd9d76 # v1.18.34
+        uses: sst/opencode/github@8a8bd622a3d7dc29ccf30ec17f84e363ed95ed72 # v2.0.21
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
