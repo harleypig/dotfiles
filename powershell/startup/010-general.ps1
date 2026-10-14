@@ -43,16 +43,26 @@ Set-Alias -Scope Global -Name .... -Value Set-UpThreeLevels
 #: alias g='grep --color=auto'
 
 #: #-----------------------------------------------------------------------------
-# XXX: Does powershell have similar history configuration options?
-#: HISTFILE="$XDG_CACHE_HOME/bash/history"
-#:
-#: HISTCONTROL="erasedups:ignoreboth"
-#: HISTFILESIZE=100000
-#: HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"
-#: HISTSIZE=500000
-#: HISTTIMEFORMAT='%F %T '
-#:
-#: shopt -s cmdhist histappend histreedit histverify
+# History, mirroring the bash HIST* settings in
+# config/shell-startup/010-general. Without XDG_STATE_HOME (e.g. on Windows)
+# PSReadLine keeps its own default save path.
+if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {
+  if ($env:XDG_STATE_HOME) {
+    $historyDir = Join-Path $env:XDG_STATE_HOME 'powershell'
+    New-Item -ItemType Directory -Force -Path $historyDir | Out-Null
+    Set-PSReadLineOption -HistorySavePath (Join-Path $historyDir 'history')
+    Remove-Variable historyDir
+  }
+
+  Set-PSReadLineOption -HistoryNoDuplicates -MaximumHistoryCount 100000
+
+  # bash's ignorespace plus its HISTIGNORE words, matched as whole lines.
+  Set-PSReadLineOption -AddToHistoryHandler {
+    param([string]$line)
+    if ($line -match '^\s') { return $false }
+    return $line.Trim() -notin @('exit', 'ls', 'bg', 'fg', 'history', 'clear')
+  }
+}
 
 #: #-----------------------------------------------------------------------------
 # XXX: ...
