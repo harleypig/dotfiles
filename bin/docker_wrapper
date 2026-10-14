@@ -37,7 +37,9 @@
 #   pwd-mounted linters  shellcheck shfmt yamllint prettier hadolint
 #                        markdownlint ansible-lint ruff vale
 #   scanners             trivy (pwd + socket)  dive (socket only)
-#   daemons              ollama openwebui (host-gated, detached)
+#   daemons              ollama openwebui (host-gated; start the containers
+#                        the ansible-stuff openwebui role creates, never
+#                        create them)
 #
 # IMAGE PINNING: the code-tools-backed tools (shellcheck, shfmt, hadolint,
 # markdownlint, prettier, ruff, vale), the python-tools pair (yamllint,
@@ -606,29 +608,33 @@ dive() {
 image[dive]="wagoodman/dive:v0.13.1@sha256:f1886e6c32c094fc41a623c1989f5cb3e48aa766da5f0be233f911fc1d85ce10"
 
 #------------------------------------------------------------------------------
+# Start an existing daemon container. The ansible-stuff openwebui role owns
+# both containers' definitions (#514), so nothing here may create one: a
+# missing container means the role has not run on this host. Not a tool —
+# it has no image[] entry, so the dispatcher cannot reach it.
+start_existing() {
+  local name=$1 err
+
+  err=$(docker start "$name" 2>&1 > /dev/null) && return 0
+
+  # Keyed on docker's own wording so an unreachable daemon is not misread
+  # as a missing container.
+  [[ $err == *'No such container'* ]] \
+    && dw_die 1 "no '${name}' container; the ansible-stuff openwebui role creates it" \
+      "run that repo's playbooks/beaker.yaml first"
+
+  dw_die 1 "could not start '${name}': ${err}"
+}
+
+#------------------------------------------------------------------------------
 ollama() {
   dw_require_host beaker
 
-  # Idempotent ensure-up: start the container if it already exists
-  # (running or stopped), else create it. Safe to call repeatedly — e.g.
-  # openwebui() calls it as a dependency. No exec, so callers continue
-  # afterward (`docker run -d` returns once the container is up).
-  docker start ollama > /dev/null 2>&1 && return 0
-
-  # --gpus=all needs the NVIDIA Container Toolkit + active proprietary
-  # driver on the host; verify with `docker run --rm --gpus=all ubuntu
-  # nvidia-smi`. --restart always brings it back after a reboot.
-  local -a args=(
-    -d
-    --gpus=all
-    -p 11434:11434
-    -v ollama:/root/.ollama
-    --name ollama
-    --restart always
-  )
-
-  docker run "${args[@]}" "${image[ollama]}" > /dev/null
+  # No exec: openwebui() calls this as a dependency and continues after.
+  start_existing ollama
 }
+# The ansible-stuff openwebui role pulls the image; this entry registers the
+# tool and records what the role runs.
 # Floats on purpose (#443): a long-running local app; tracks upstream.
 image[ollama]="ollama/ollama:latest"
 
@@ -639,18 +645,10 @@ openwebui() {
   # Open WebUI talks to Ollama, so make sure Ollama is up first.
   ollama
 
-  # Reaches host Ollama via host.docker.internal:11434.
-  local -a args=(
-    -d
-    -p 3000:8080
-    --add-host=host.docker.internal:host-gateway
-    -v open-webui:/app/backend/data
-    --name open-webui
-    --restart always
-  )
-
-  exec docker run "${args[@]}" "${image[openwebui]}"
+  start_existing open-webui
 }
+# The ansible-stuff openwebui role pulls the image; this entry registers the
+# tool and records what the role runs.
 # Floats on purpose (#443): a long-running local app; tracks upstream.
 image[openwebui]="ghcr.io/open-webui/open-webui:main"
 

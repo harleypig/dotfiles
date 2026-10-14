@@ -764,3 +764,101 @@ teardown() {
     return 1
   fi
 }
+
+#------------------------------------------------------------------------------
+# The daemons (#514): the ansible-stuff openwebui role owns the ollama and
+# open-webui containers, so the launchers only `docker start` them and never
+# create one. hostname is faked to beaker so dw_require_host passes.
+
+fake_beaker() {
+  make_script_stub "$STUB" hostname 'echo beaker'
+}
+
+# A docker stub whose `start` fails with docker's real missing-container
+# wording for any container whose name matches the glob $1.
+docker_missing() {
+  # shellcheck disable=SC2016 # $vars expand when the stub runs, not here.
+  make_script_stub "$STUB" docker '
+printf "%s\n" "$*" >> "$0.args"
+[[ $1 == start && $2 == '"$1"' ]] || exit 0
+echo "Error response from daemon: No such container: $2" >&2
+exit 1'
+}
+
+@test "ollama starts the existing container and never runs one" {
+  fake_beaker
+  make_stub "$STUB" docker
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/ollama"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output "start ollama"
+}
+
+@test "ollama with no container fails and points at the beaker playbook" {
+  fake_beaker
+  docker_missing '*'
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/ollama"
+  assert_failure 1
+  assert_output --partial "no 'ollama' container"
+  assert_output --partial "playbooks/beaker.yaml"
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "run"
+}
+
+@test "ollama reports docker's own error when start fails for another reason" {
+  fake_beaker
+
+  # An unreachable daemon must not be reported as a missing container.
+  # shellcheck disable=SC2016 # $vars expand when the stub runs, not here.
+  make_script_stub "$STUB" docker '
+printf "%s\n" "$*" >> "${0}.args"
+echo "failed to connect to the docker API" >&2
+exit 1'
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/ollama"
+  assert_failure 1
+  assert_output --partial "could not start 'ollama'"
+  assert_output --partial "failed to connect to the docker API"
+  refute_output --partial "beaker.yaml"
+}
+
+@test "openwebui starts ollama, then open-webui, and never runs one" {
+  fake_beaker
+  make_stub "$STUB" docker
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/openwebui"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output "$(printf 'start ollama\nstart open-webui')"
+}
+
+@test "openwebui with no containers fails and points at the beaker playbook" {
+  fake_beaker
+  docker_missing '*'
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/openwebui"
+  assert_failure 1
+  assert_output --partial "playbooks/beaker.yaml"
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "run"
+}
+
+@test "openwebui with ollama present but no open-webui names open-webui" {
+  fake_beaker
+
+  # ollama starts; open-webui is absent.
+  docker_missing open-webui
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/openwebui"
+  assert_failure 1
+  assert_output --partial "no 'open-webui' container"
+
+  run cat "$STUB/docker.args"
+  refute_output --partial "run"
+}

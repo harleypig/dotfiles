@@ -47,8 +47,8 @@ EOF
   run env "PATH=$STUB:$PATH" "$ROOT/bin/start-openwebui"
   assert_success
 
-  # It reached docker_wrapper's openwebui(), which runs the open-webui
-  # container detached.
+  # It reached docker_wrapper's openwebui(), which starts the existing
+  # open-webui container.
   run cat "$STUB/docker.args"
   assert_output --partial "open-webui"
 }
