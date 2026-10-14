@@ -165,11 +165,13 @@ managed separately (mostly on the Linode server):
   installer the python entries above use.
 - **ollama** — A self-hosted AI model-runtime service, not a dev package -
   managed separately (most services run on the Linode server, not this dev
-  machine) and Docker-native. Available locally via `bin/docker_wrapper`.
+  machine) and Docker-native. On beaker the ansible-stuff openwebui role
+  creates the container; `bin/ollama` (docker_wrapper) only starts it.
 - **openwebui** — A self-hosted web-UI service (python-installable, but
   service-oriented), not a dev package - managed separately (most services run
-  on the Linode server) and Docker-native. Available locally via
-  `bin/docker_wrapper`.
+  on the Linode server) and Docker-native. On beaker the ansible-stuff
+  openwebui role creates the container; `bin/openwebui` (docker_wrapper) only
+  starts it.
 
 ---
 

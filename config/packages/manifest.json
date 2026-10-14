@@ -235,11 +235,11 @@
     },
     {
       "name": "ollama",
-      "reason": "A self-hosted AI model-runtime service, not a dev package - managed separately (most services run on the Linode server, not this dev machine) and Docker-native. Available locally via `bin/docker_wrapper`."
+      "reason": "A self-hosted AI model-runtime service, not a dev package - managed separately (most services run on the Linode server, not this dev machine) and Docker-native. On beaker the ansible-stuff openwebui role creates the container; `bin/ollama` (docker_wrapper) only starts it."
     },
     {
       "name": "openwebui",
-      "reason": "A self-hosted web-UI service (python-installable, but service-oriented), not a dev package - managed separately (most services run on the Linode server) and Docker-native. Available locally via `bin/docker_wrapper`."
+      "reason": "A self-hosted web-UI service (python-installable, but service-oriented), not a dev package - managed separately (most services run on the Linode server) and Docker-native. On beaker the ansible-stuff openwebui role creates the container; `bin/openwebui` (docker_wrapper) only starts it."
     }
   ]
 }

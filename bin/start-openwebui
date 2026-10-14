@@ -7,9 +7,9 @@
 # host — wrong for something meant to run unconditionally (e.g. a future
 # system-startup hook). This launcher soft-gates instead: off the target host
 # it quietly no-ops (exit 0), so it is safe to call on any machine. On the
-# target host it delegates to bin/openwebui, which owns the container config
-# and runs the service detached (docker run -d) — so this returns immediately
-# and Open WebUI keeps running in the background.
+# target host it delegates to bin/openwebui, which starts the existing
+# containers (the ansible-stuff openwebui role creates them) — so this returns
+# immediately and Open WebUI keeps running in the background.
 
 set -euo pipefail
 
@@ -23,9 +23,8 @@ if [[ $host != "$want_host" ]]; then
   exit 0
 fi
 
-# Delegate to the docker_wrapper launcher — the single source of truth for the
-# Ollama + Open WebUI container definitions. Resolve the sibling by path (not
-# via PATH) so it works under a minimal startup environment.
+# Delegate to the docker_wrapper launcher. Resolve the sibling by path (not via
+# PATH) so it works under a minimal startup environment.
 self=$(readlink -f "${BASH_SOURCE[0]}")
 
 exec "$(dirname "$self")/openwebui"
