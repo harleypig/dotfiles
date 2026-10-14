@@ -83,6 +83,33 @@ PS_REPORT='
   refute_output --partial 'is not recognized'
 }
 
+@test "interactive pwsh applies the PSReadLine history settings" {
+  # XDG_STATE_HOME is seeded so the save path is checkable; the handler is
+  # probed directly with a leading-space line, a HISTIGNORE word and a line
+  # that must be kept.
+  ps_startup_interactive '
+    $o = Get-PSReadLineOption
+    Write-Output "noDups=$($o.HistoryNoDuplicates)"
+    Write-Output "maxCount=$($o.MaximumHistoryCount)"
+    Write-Output "savePath=$($o.HistorySavePath)"
+    Write-Output "dirExists=$(Test-Path /tmp/state/powershell)"
+    $h = $o.AddToHistoryHandler
+    Write-Output "space=$($h.Invoke(" Get-Date"))"
+    Write-Output "ignored=$($h.Invoke("exit"))"
+    Write-Output "kept=$($h.Invoke("Get-Date"))"
+  ' 'export XDG_STATE_HOME=/tmp/state'
+  assert_success
+  assert_output --partial 'noDups=True'
+  assert_output --partial 'maxCount=100000'
+  assert_output --partial 'savePath=/tmp/state/powershell/history'
+  assert_output --partial 'dirExists=True'
+  assert_output --partial 'space=False'
+  assert_output --partial 'ignored=False'
+  assert_output --partial 'kept=True'
+  refute_output --partial 'Exception'
+  refute_output --partial 'is not recognized'
+}
+
 @test "pwsh startup classifies each way of starting pwsh" {
   # One container, every invocation on a tty unless it pipes stdin, so only
   # the command line (or the pipe) decides. Each line is label=verdict.
