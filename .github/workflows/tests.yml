@@ -140,7 +140,7 @@ jobs:
           fi
 
           if git diff --name-only "$base...HEAD" | grep -qE \
-            '^(lib/version-managers/perl|config/vmgr/perl|config/shell-startup/perl|tests/docker/perl/|tests/shell/test_integration_vmgr_perl\.bats|tests/helpers/common\.bash)$'; then
+            '^(lib/version-managers/perl|config/vmgr/perl|config/shell-startup/perl|tests/docker/perl/.*|tests/shell/test_integration_vmgr_perl\.bats|tests/helpers/common\.bash)$'; then
             echo "run=1" >> "$GITHUB_OUTPUT"
           else
             echo "no perl-toolchain changes — skipping the Perl build"
