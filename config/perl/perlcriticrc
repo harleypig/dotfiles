@@ -23,3 +23,23 @@
 
 severity = 3
 verbose  = %f:%l:%c [%p] %m (severity %s)\n
+
+# Postfix controls stay prohibited at the policy's defaults. The guard
+# clauses this code relies on are already allowed: a postfix `if` after a
+# loop break or `return` (`return if …`, `next if …`) and after a
+# `flowcontrol` function (`die … if …`). What the policy flags is the
+# `unless` spelling of those guards and a postfix on an ordinary statement,
+# and both are cleared rather than allowed: the guards are written
+# `return if !…`, the form the newer code here already uses, and the rest
+# become blocks. Allowing `unless` would also permit it on ordinary
+# statements, which hides the control flow this policy is about.
+[ControlStructures::ProhibitPostfixControls]
+
+# These CLIs document their interface as NAME, SYNOPSIS, DESCRIPTION,
+# OPTIONS and EXIT STATUS (ADR-0002: the interface is the CLI, documented in
+# the OPTIONS POD). The policy's default script list is a distribution
+# template (AUTHOR, LICENSE AND COPYRIGHT, INCOMPATIBILITIES, …) that would
+# be empty boilerplate in a personal dotfiles script, so require the
+# sections these scripts already use instead.
+[Documentation::RequirePodSections]
+script_sections = NAME | SYNOPSIS | DESCRIPTION | OPTIONS | EXIT STATUS
