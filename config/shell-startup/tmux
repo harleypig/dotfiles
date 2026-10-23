@@ -5,11 +5,14 @@ havecmd tmux || return 0
 # Aliases — interactive shells only.
 [[ $- == *i* ]] || return 0
 
+# Despite the man page's wording, -d is what keeps focus on the moved window;
+# without it focus stays at the old index (tmux 3.4 and 3.6).
+
 # swap this window to the left
-alias swapl='tmux swap-window -t -1 ; tmux select_window -t -'
+alias swapl='tmux swap-window -d -t -1'
 
 # swap this window to the right
-alias swapr='tmux swap-window -t +1 ; tmux select_window -t +'
+alias swapr='tmux swap-window -d -t +1'
 
 # swap this window with the one passed in
 alias swapw='tmux swap-window -t'
