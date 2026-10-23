@@ -62,4 +62,12 @@ is($rc, 0, 'date accepts an ISO date');
 ($out, $err, $rc) = run_pp("d,date,when", '-d', 'not-a-date');
 is($rc, 1, 'date rejects garbage');
 
+# a short-only repeatable names its short flag in a bad-value message, with
+# no Perl warning (#565 - short-only repeatable error label)
+($out, $err, $rc) = run_pp("d,integer\@,nums", '-d', 'x');
+is($rc, 1, 'short-only repeatable rejects a bad value');
+like($err, qr/^parse_params: -d \(x\) is not a integer$/m,
+  'bad-value message names the short flag');
+unlike($err, qr/uninitialized/, 'no Perl warning on stderr');
+
 done_testing;

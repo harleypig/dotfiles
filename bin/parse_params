@@ -581,7 +581,7 @@ sub resolve_repeatable {
 
   for my $v (@vals) {
     if ( !valid_value( $type, $v ) ) {
-      push @errors, "--$o->{long} ($v) is not a $type";
+      push @errors, opt_label($o) . " ($v) is not a $type";
     }
   }
   if ( $o->{req} eq 'required' && !@vals ) {
