@@ -1,6 +1,6 @@
 # Perl::Critic profile for this repo.
 #
-# Design: a curated, CORE-only profile gated at severity 3. It deliberately
+# Design: a curated, CORE-only profile gated at severity 2. It deliberately
 # replaces an earlier 2287-line generated dump that ran at `severity = brutal`
 # and referenced third-party policy bundles (OTRS, TryTiny, Bangs, logicLAB,
 # Moose, Tics, StricterSubs, Reneeb's ProhibitAccessOfPrivateData, …) that are
@@ -17,11 +17,11 @@
 # dropped `profile-strictness = warn` crutch used to mask.
 #
 # Severity ladder (see the dotagents repo's rules/perlcritic.md): 5 = most
-# severe … 1 = brutal. We gate at 3 ("harsh") and ratchet toward 1 in stages,
+# severe … 1 = brutal. We gate at 2 ("cruel") and ratchet toward 1 in stages,
 # cleaning each level's findings before tightening. Bump `severity` below to
 # tighten; the staged ratchet is #361 - perlcritic severity ratchet.
 
-severity = 3
+severity = 2
 verbose  = %f:%l:%c [%p] %m (severity %s)\n
 
 # Postfix controls stay prohibited at the policy's defaults. The guard
@@ -43,3 +43,11 @@ verbose  = %f:%l:%c [%p] %m (severity %s)\n
 # sections these scripts already use instead.
 [Documentation::RequirePodSections]
 script_sections = NAME | SYNOPSIS | DESCRIPTION | OPTIONS | EXIT STATUS
+
+# A $VERSION is a module's interface: what `use Module 1.2` and the CPAN
+# toolchain read. Everything this profile gates is a script under bin/, where
+# nothing reads one, and an unread version string is never bumped, so it
+# would misstate the script rather than describe it. The scripts' version is
+# their git history. The policy is therefore off rather than satisfied with a
+# placeholder.
+[-Modules::RequireVersionVar]
