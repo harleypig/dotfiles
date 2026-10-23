@@ -75,6 +75,81 @@ setup() {
   assert_failure
 }
 
+# swapl / swapr: move the current window one place left or right, keeping
+# focus on it. Each alias line is extracted from the module and run in a
+# child bash against a real tmux on a throwaway -L server, so a command tmux
+# rejects, or a swap that leaves focus behind, fails the test.
+
+SWAP_SOCKET=tmuxswaptest
+
+teardown() {
+  if [[ -n $SWAP_SERVER ]]; then
+    "$SWAP_TMUX" -L "$SWAP_SOCKET" kill-server 2> /dev/null || true
+  fi
+}
+
+swap_srv() { "$SWAP_TMUX" -L "$SWAP_SOCKET" "$@"; }
+
+# Start windows a, b, c with b current, and stub tmux on PATH to reach it.
+swap_server() {
+  SWAP_TMUX=$(type -P tmux || true)
+  [[ -n $SWAP_TMUX ]] || skip "tmux not installed"
+
+  # A Unix socket path is capped near 104 bytes; tmux appends about 20.
+  ((${#BATS_TEST_TMPDIR} < 80)) \
+    || skip "BATS_TEST_TMPDIR too long for a tmux socket"
+
+  export TMUX_TMPDIR=$BATS_TEST_TMPDIR
+  unset TMUX
+
+  local stub=$BATS_TEST_TMPDIR/stub
+  mkdir -p "$stub"
+  make_script_stub "$stub" tmux "exec '$SWAP_TMUX' -L $SWAP_SOCKET \"\$@\""
+  export PATH="$stub:$PATH"
+
+  swap_srv -f /dev/null new-session -d -n a -c "$BATS_TEST_TMPDIR"
+  SWAP_SERVER=1
+  swap_srv new-window -d -n b
+  swap_srv new-window -d -n c
+  swap_srv select-window -t b
+}
+
+# Run the module's definition of alias $1 in a child bash.
+run_swap_alias() {
+  local driver=$BATS_TEST_TMPDIR/swap-driver
+
+  {
+    echo 'shopt -s expand_aliases'
+    grep -E "^alias $1=" "$(dotfiles_root)/$TMUX_MODULE_REL"
+    echo "$1"
+  } > "$driver"
+
+  run bash "$driver"
+}
+
+# Window names in index order, the current one starred.
+swap_layout() {
+  swap_srv list-windows -F '#{window_name}#{?window_active,*,}' | paste -sd' '
+}
+
+@test "swapl moves the current window left and keeps it current" {
+  swap_server
+  run_swap_alias swapl
+  assert_success
+
+  run swap_layout
+  assert_output 'b* a c'
+}
+
+@test "swapr moves the current window right and keeps it current" {
+  swap_server
+  run_swap_alias swapr
+  assert_success
+
+  run swap_layout
+  assert_output 'a c b*'
+}
+
 # ta(): attach a tmux session, choosing among several with bin/pickone. The
 # function is extracted from the module and run in a child bash against a
 # `tmux` and a `pickone` stubbed on PATH; each stub logs its arguments, so a
