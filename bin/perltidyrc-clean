@@ -96,7 +96,7 @@ sub check_undefined_keys {
 # Sections without numeric prefix return 999 to sort them at the end.
 sub section_order {
   my ($section) = @_;
-  my ($order)   = $section =~ /\A(\d+(?:\.\d+)?)/xms;
+  my ($order)   = $section =~ /\A(\d+(?:[.]\d+)?)/xms;
   return $order // UNNUMBERED_SECTION_ORDER();
 }
 
@@ -375,18 +375,18 @@ sub show_config_location {
 }
 
 # Get Perl::Tidy default options and abbreviations.
-# Returns: (\%Opts_default, \%abbreviations_default)
+# Returns: (\%opts_default, \%abbreviations_default)
 sub get_perltidy_defaults {
   my $stderr     = q{};
   my @argv_empty = ();
 
-  my %Opts_default;
+  my %opts_default;
   my %abbreviations_default;
 
   # Build parameter hash explicitly for defaults dump
   my %params_default = (
     perltidyrc         => \q{},        # empty scalar ref for empty config
-    dump_options       => \%Opts_default,
+    dump_options       => \%opts_default,
     dump_options_type  => 'full',
     dump_abbreviations => \%abbreviations_default,
     stderr             => \$stderr,
@@ -395,20 +395,20 @@ sub get_perltidy_defaults {
 
   call_perltidy( \%params_default, 'defaults dump', \$stderr, 'die' );
 
-  return ( \%Opts_default, \%abbreviations_default );
+  return ( \%opts_default, \%abbreviations_default );
 } ## end sub get_perltidy_defaults
 
 # Get Perl::Tidy config options from specified config file and command-line args.
 # Parameters:
 #   $config_file - Config file path (string), scalar ref (for --no-rc), or undef (use search)
 #   $perltidy_args - Array ref of command-line arguments to pass to Perl::Tidy (should be expanded already)
-# Returns: ($error_message, \%Opts, \%Getopt_flags, \%sections, \%abbreviations)
+# Returns: ($error_message, \%opts, \%getopt_flags, \%sections, \%abbreviations)
 sub get_perltidy_config {
   my ( $config_file, $perltidy_args ) = @_;
   $perltidy_args ||= [];
   my $error_message = q{};
-  my %Opts;
-  my %Getopt_flags;
+  my %opts;
+  my %getopt_flags;
   my %sections;
   my %abbreviations;
   my $stderr = q{};
@@ -416,9 +416,9 @@ sub get_perltidy_config {
   # Build parameter hash explicitly for config dump
   # Only include perltidyrc if --rc or --no-rc was used (not undef)
   my %params_config = (
-    dump_options          => \%Opts,
+    dump_options          => \%opts,
     dump_options_type     => 'perltidyrc',
-    dump_getopt_flags     => \%Getopt_flags,
+    dump_getopt_flags     => \%getopt_flags,
     dump_options_category => \%sections,
     dump_abbreviations    => \%abbreviations,
     stderr                => \$stderr,
@@ -438,7 +438,7 @@ sub get_perltidy_config {
   # This matches the original behavior where warnings in stderr also cause the script to die.
   $error_message .= $config_error;
 
-  return ( $error_message, \%Opts, \%Getopt_flags, \%sections, \%abbreviations );
+  return ( $error_message, \%opts, \%getopt_flags, \%sections, \%abbreviations );
 } ## end sub get_perltidy_config
 
 # Compare options against defaults and return a hash indicating which options
@@ -514,9 +514,9 @@ sub build_expansion_to_preferred {
     foreach my $abbr_key ( sort keys %{$abbr_hash} ) {
       my @mapped_opts = @{ $abbr_hash->{$abbr_key} };
       next if @mapped_opts < 2;
-      my $expansion_key = join( q{|}, sort @mapped_opts );
+      my $expansion_key = join q{|}, sort @mapped_opts;
       my $current       = $expansion_to_preferred{$expansion_key};
-      if ( !defined $current || length($abbr_key) > length($current) ) {
+      if ( !defined $current || length $abbr_key > length $current ) {
         $expansion_to_preferred{$expansion_key} = $abbr_key;
       }
     }
@@ -640,7 +640,7 @@ sub condense_candidates {
     push @candidates, [ $abbr_key, $long_names, $expected_value ];
   }
 
-  my @ordered = sort { @{ $b->[1] } <=> @{ $a->[1] } || $a->[0] cmp $b->[0] } @candidates;
+  my @ordered = sort { -( @{ $a->[1] } <=> @{ $b->[1] } ) || $a->[0] cmp $b->[0] } @candidates;
   return @ordered;
 } ## end sub condense_candidates
 
@@ -679,7 +679,7 @@ sub detect_conflicts {
     && is_true( $opts->{'non-indenting-braces'} ) ) {
     add_section_note(
       $sections, $section_notes, 'brace-left-and-indent',
-      "brace-left-and-indent conflicts with non-indenting-braces"
+      'brace-left-and-indent conflicts with non-indenting-braces'
     );
   }
 
@@ -687,7 +687,7 @@ sub detect_conflicts {
     && is_true( $opts->{'entab-leading-whitespace'} ) ) {
     add_section_note(
       $sections, $section_notes, 'tabs',
-      "tabs together with entab-leading-whitespace may conflict"
+      'tabs together with entab-leading-whitespace may conflict'
     );
   }
 
@@ -730,7 +730,7 @@ sub detect_conflicts {
   ) {
     add_section_note(
       $sections, $section_notes, 'format',
-      "format is disabled but format-skipping detection is enabled"
+      'format is disabled but format-skipping detection is enabled'
     );
   }
 
@@ -768,7 +768,7 @@ sub dump_section {
 
   if ( !$args->{quiet} ) {
     $append->("\n");
-    ( my $trimmed = $section ) =~ s/\A\d+\.[ ]//xms;
+    ( my $trimmed = $section ) =~ s/\A\d+[.][ ]//xms;
     $append->("# $trimmed\n");
     my $notes = $args->{section_notes}->{$section};
     foreach my $note ( @{ $notes || [] } ) {
@@ -782,11 +782,11 @@ sub dump_section {
       format_option( $long_name, $rname_value->{$long_name}, $args->{getopt_flags}->{$long_name}, $append );
 
     if ( $args->{keep_defaults} && $args->{equals_default}->{$long_name} ) {
-      my $padding = DEFAULT_MARKER_COLUMN() - length($long_option);
+      my $padding = DEFAULT_MARKER_COLUMN() - length $long_option;
       if ( $padding < 2 ) {
         $padding = 2;                  # Minimum 2 spaces
       }
-      $long_option .= q{ } x $padding . "#  default";
+      $long_option .= q{ } x $padding . '#  default';
     }
     $append->( $long_option . "\n" );
   }
@@ -821,7 +821,7 @@ sub dump_options {
   };
 
   if ( !$args{quiet} ) {
-    my $date = localtime();
+    my $date = localtime;
     $append->("# perltidy configuration file created $date\n");
     $append->("# using: $args{cmdline}\n");
     $append->("# source: $args{rc_origin}\n");
@@ -920,14 +920,14 @@ sub dump_and_exit {
 # loaded options for --no-rc or --add-missing-defaults; otherwise the loaded
 # options, less any equal to their default when defaults are being dropped.
 sub build_clean_opts {
-  my ( $clean_opts, $rOpts, $rOpts_default, $equals_default ) = @_;
+  my ( $clean_opts, $ropts, $ropts_default, $equals_default ) = @_;
 
   if ( $cli{no_rc} || $cli{add_missing_defaults} ) {
-    %{$clean_opts} = ( %{$rOpts_default}, %{$rOpts} );
+    %{$clean_opts} = ( %{$ropts_default}, %{$ropts} );
     return;
   }
 
-  %{$clean_opts} = %{$rOpts};
+  %{$clean_opts} = %{$ropts};
   if ( $cli{drop_defaults} ) {
     foreach my $long_name ( keys %{$clean_opts} ) {
       if ( $equals_default->{$long_name} ) {
@@ -945,7 +945,7 @@ sub write_output {
   if ( $cli{outfile} ) {
     open my $fh, '>', $cli{outfile}
       or die "Cannot open $cli{outfile} for writing: $OS_ERROR\n";
-    print $fh $output;
+    print {$fh} $output;
     close $fh
       or die "Cannot close $cli{outfile}: $OS_ERROR\n";
   } else {
@@ -982,21 +982,21 @@ sub main {
   # GetOptions already removed our CLI options, so @ARGV contains pass-through args.
   local @ARGV = grep { /\A-/xms } @ARGV;  # Keep only option-like arguments
 
-  my ( $rOpts_default, $rabbreviations_default ) = get_perltidy_defaults();
+  my ( $ropts_default, $rabbreviations_default ) = get_perltidy_defaults();
   if ( $cli{dump_perltidy_defaults} ) {
     dump_and_exit(
       q{},
-      Opts_default          => $rOpts_default,
+      Opts_default          => $ropts_default,
       abbreviations_default => $rabbreviations_default,
     );
   }
 
-  my ( $error_message, $rOpts, $rGetopt_flags, $rsections, $rabbreviations ) = get_perltidy_config( $rc_source, \@ARGV );
+  my ( $error_message, $ropts, $rgetopt_flags, $rsections, $rabbreviations ) = get_perltidy_config( $rc_source, \@ARGV );
   if ( $cli{dump_perltidy_config} ) {
     dump_and_exit(
       'error_message: ' . ( $error_message || '(empty)' ) . "\n\n",
-      Opts          => $rOpts,
-      Getopt_flags  => $rGetopt_flags,
+      Opts          => $ropts,
+      Getopt_flags  => $rgetopt_flags,
       sections      => $rsections,
       abbreviations => $rabbreviations,
     );
@@ -1009,12 +1009,12 @@ sub main {
     die "$message\n";
   }
 
-  my %equals_default = build_equals_default( $rOpts, $rOpts_default );
+  my %equals_default = build_equals_default( $ropts, $ropts_default );
   my %section_notes;
   my %clean_opts;
-  build_clean_opts( \%clean_opts, $rOpts, $rOpts_default, \%equals_default );
+  build_clean_opts( \%clean_opts, $ropts, $ropts_default, \%equals_default );
 
-  %equals_default = build_equals_default( \%clean_opts, $rOpts_default );
+  %equals_default = build_equals_default( \%clean_opts, $ropts_default );
 
   if ( $cli{condense} ) {
     condense_options( \%clean_opts, $rsections, \%section_notes, $rabbreviations, $rabbreviations_default );
@@ -1031,7 +1031,7 @@ sub main {
       cmdline            => join( q{ }, basename($PROGRAM_NAME), @original_argv ),
       rc_origin          => $rc_origin,
       opts               => \%clean_opts,
-      getopt_flags       => $rGetopt_flags,
+      getopt_flags       => $rgetopt_flags,
       sections           => $rsections,
       abbreviations      => $rabbreviations,
       equals_default     => \%equals_default,
@@ -1042,7 +1042,7 @@ sub main {
     );
     write_output($output);
   } else {
-    print STDERR "No configuration parameters remain after filtering.\n";
+    print {*STDERR} "No configuration parameters remain after filtering.\n";
   }
 
   exit 0;
