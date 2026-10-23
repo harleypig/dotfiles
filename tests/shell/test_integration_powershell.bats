@@ -10,7 +10,11 @@
 
 load ../helpers/common
 
-PS_IMAGE='mcr.microsoft.com/powershell'
+# The PowerShell team's own mcr.microsoft.com/powershell images are
+# deprecated and frozen (latest is pwsh 7.4.2); Microsoft now ships pwsh in
+# the .NET SDK image. 10.0.402-noble carries pwsh 7.6.7 (LTS) on Ubuntu
+# 24.04. Dependabot cannot see this pin, so bump it by hand.
+PS_IMAGE='mcr.microsoft.com/dotnet/sdk:10.0.402-noble@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2'
 
 setup() {
   load_bats_libs
