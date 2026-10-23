@@ -563,3 +563,114 @@ ps_profile_run() {
   assert_line 'interactive=False'
   refute_output --partial 'is not recognized'
 }
+
+# The scoping rule in ps-startup.ps1's header: Import-Files dot-sources each
+# module inside a function, so a function or alias not declared global is
+# gone once loading ends. Reports parsed=<count>, then one violation= line
+# per top-level function or Set-Alias/New-Alias that is neither global nor
+# under a "# load-time only" comment. Definitions nested in a function only
+# exist while it runs, so they are not the module's to export. Scans
+# $env:GUARD_DIR, default the repo's startup directory.
+SCOPE_GUARD='
+  using namespace System.Management.Automation.Language
+
+  $dir = if ($env:GUARD_DIR) { $env:GUARD_DIR } else {
+    "/dotfiles/powershell/startup"
+  }
+
+  # The loader picks files the same way.
+  $files = @(Get-ChildItem -Path $dir -File |
+    Where-Object Extension -eq ".ps1")
+
+  Write-Output "parsed=$($files.Count)"
+
+  function Test-GlobalScope ([CommandAst]$Command) {
+    $elements = $Command.CommandElements
+
+    for ($i = 1; $i -lt $elements.Count; $i++) {
+      $param = $elements[$i]
+
+      # pwsh takes any unambiguous prefix; none of Set-Alias other
+      # parameters starts with s.
+      if ($param -is [CommandParameterAst] -and
+          "scope".StartsWith($param.ParameterName, "OrdinalIgnoreCase")) {
+        $value = if ($param.Argument) { $param.Argument } else {
+          $elements[$i + 1]
+        }
+
+        return $value -is [StringConstantExpressionAst] -and
+          $value.Value -eq "Global"
+      }
+    }
+
+    $false
+  }
+
+  foreach ($file in $files) {
+    $tokens = $errors = $null
+    $ast = [Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors)
+
+    $markers = @($tokens | Where-Object {
+      $_.Kind -eq "Comment" -and $_.Text -match "^#\s*load-time only\b"
+    } | ForEach-Object { $_.Extent.StartLineNumber })
+
+    $ast.FindAll({
+      param ($node)
+      $node -is [FunctionDefinitionAst] -or ($node -is [CommandAst] -and
+        $node.GetCommandName() -in "Set-Alias", "New-Alias", "sal", "nal")
+    }, $true) | ForEach-Object {
+      $node = $_
+      $line = $node.Extent.StartLineNumber
+
+      for ($up = $node.Parent; $up; $up = $up.Parent) {
+        if ($up -is [FunctionDefinitionAst]) { return }
+      }
+
+      if ($markers -contains ($line - 1)) { return }
+
+      if ($node -is [FunctionDefinitionAst]) {
+        if ($node.Name -notmatch "^global:") {
+          Write-Output "violation=$($file.Name):${line}: function $($node.Name)"
+        }
+
+      } elseif (-not (Test-GlobalScope $node)) {
+        Write-Output "violation=$($file.Name):${line}: $($node.Extent.Text)"
+      }
+    }
+  }
+'
+
+@test "pwsh startup modules declare their functions and aliases global" {
+  ps_profile_run "$SCOPE_GUARD"
+  assert_success
+  refute_line --partial 'violation='
+
+  local parsed
+  parsed=$(grep -o 'parsed=[0-9]*' <<< "$output")
+  [[ ${parsed#parsed=} -gt 0 ]]
+}
+
+@test "pwsh scope guard flags a local function or alias and honours the marker" {
+  # A copy of the real modules plus planted cases: each kind of local
+  # definition, the marked and nested forms the guard must let through, and
+  # the global forms it must accept however they are spelled.
+  ps_profile_run "$SCOPE_GUARD" '
+    cp -r /dotfiles/powershell/startup /tmp/planted
+    export GUARD_DIR=/tmp/planted
+    cat > /tmp/planted/zz-planted.ps1 <<"PS"
+function Get-Planted { 1 }
+Set-Alias -Name pa -Value Get-Planted
+New-Alias pn Get-Planted -Scope Local
+# load-time only
+function Get-Marked { 1 }
+function Global:Get-Outer { function Get-Inner { 1 }; Set-Alias pi Get-Inner }
+Set-Alias -sc global -Name pg -Value Get-Outer
+Set-Alias -Scope:Global -Name ph -Value Get-Outer
+PS
+  '
+  assert_success
+  assert_line 'violation=zz-planted.ps1:1: function Get-Planted'
+  assert_line 'violation=zz-planted.ps1:2: Set-Alias -Name pa -Value Get-Planted'
+  assert_line 'violation=zz-planted.ps1:3: New-Alias pn Get-Planted -Scope Local'
+  assert_equal "$(grep -c '^violation=' <<< "$output")" 3
+}

@@ -35,6 +35,7 @@ if (-not $DOTFILES_INTERACTIVE) {
 # than $PSStyle: $PSStyle only exists on 7.2+, its members are the same
 # strings, and [char]27 works on 5.1 too.
 
+# load-time only
 function Get-PromptColor {
     <#
     .SYNOPSIS
