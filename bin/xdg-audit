@@ -105,7 +105,7 @@ sub home_dir {
 sub expand_path {
   my ($path) = @_;
   my $dirs = xdg_dirs();
-  $path =~ s{\$\{(\w+)\}}{ $dirs->{$1} // "\${$1}" }gexms;
+  $path =~ s{\$[{](\w+)[}]}{ $dirs->{$1} // "\${$1}" }gexms;
   $path =~ s{\$(\w+)}{ $dirs->{$1} // "\$$1" }gexms;
   return $path;
 }
@@ -155,8 +155,8 @@ sub name_index {
 
   opendir my $dh, $dir or die "$PROG: cannot open $dir: $OS_ERROR\n";
   for my $f ( readdir $dh ) {
-    next if $f =~ /\A\./xms;           # skip .schema.json and other dotfiles
-    my ($stem) = $f =~ /\A(\N+)\.json\Z/xms or next;
+    next if $f =~ /\A[.]/xms;          # skip .schema.json and other dotfiles
+    my ($stem) = $f =~ /\A(\N+)[.]json\Z/xms or next;
     $map{$stem} = File::Spec->catfile( $dir, $f );
   }
   closedir $dh;
@@ -611,7 +611,7 @@ sub term_width {
 
   # struct winsize is 4 unsigned shorts (rows, cols, ...).
   my $ws = pack 'S4', 0, 0, 0, 0;
-  if ( ioctl( STDOUT, TIOCGWINSZ(), $ws ) ) {
+  if ( ioctl STDOUT, TIOCGWINSZ(), $ws ) {
     my ( undef, $cols ) = unpack 'S4', $ws;
     return $cols if $cols;
   }
@@ -622,7 +622,7 @@ sub term_width {
 # only covers $HOME, so the prefix is noise.
 sub home_relative {
   my ($path) = @_;
-  $path =~ s{\A\$\{?HOME\}?/}{}xms;
+  $path =~ s{\A\$[{]?HOME[}]?/}{}xms;
   return $path;
 }
 
@@ -714,7 +714,7 @@ sub print_external_rows {
   my @sorted = sort { $a->{name} cmp $b->{name} || $a->{path} cmp $b->{path} } @{$rows};
   my $w      = 0;
   for my $r (@sorted) {
-    my $len = length sprintf( '%s (%s)', $r->{name}, $r->{display} );
+    my $len = length sprintf '%s (%s)', $r->{name}, $r->{display};
     if ( $len > $w ) {
       $w = $len;
     }
@@ -752,7 +752,7 @@ sub print_collapsed_rows {
     map { $agg{$_} } @order;
 
   for my $l (@lines) {
-    my $line = sprintf '%s (%s)', $l->{name}, join( q{,}, sort @{ $l->{dots} } );
+    my $line = sprintf '%s (%s)', $l->{name}, join q{,}, sort @{ $l->{dots} };
     if ( length $l->{tag} ) {
       $line .= " ($l->{tag})";
     }
@@ -909,7 +909,7 @@ sub scan_unknown {
 
   my @recs;
   for my $name ( readdir $dh ) {
-    next if $name !~ /\A\./xms;
+    next if $name !~ /\A[.]/xms;
     next if $skip{$name};
 
     my $abs = File::Spec->catfile( $home, $name );
@@ -1003,7 +1003,7 @@ sub mode_scan {
 sub mode_lookup {
   my ($query) = @_;
 
-  if ( $query =~ m{/}xms || $query =~ /\A\./xms ) {
+  if ( $query =~ m{/}xms || $query =~ /\A[.]/xms ) {
     return resolve_and_show( [ find_by_path($query) ], $query );
   }
 
@@ -1083,7 +1083,7 @@ sub print_matches {
   my $header = ( keys %by > 1 ) ? "Multiple apps match '$term':" : "Matches for '$term':";
   print "$header\n";
   for my $name ( sort keys %by ) {
-    printf "  %-22s %s\n", $name, join( q{, }, @{ $by{$name} } );
+    printf "  %-22s %s\n", $name, join q{, }, @{ $by{$name} };
   }
   return;
 } ## end sub print_matches
@@ -1119,7 +1119,7 @@ sub mode_search {
 sub resolve_target_entries {
   my ($query) = @_;
 
-  return find_by_path($query) if $query =~ m{/}xms || $query =~ /\A\./xms;
+  return find_by_path($query) if $query =~ m{/}xms || $query =~ /\A[.]/xms;
 
   my $exact = load_app($query);
   return @{$exact} if $exact;
@@ -1183,14 +1183,14 @@ sub teardown_symlink {
   my ( $abs, $dl ) = @_;
 
   ( my $linkname = $abs ) =~ s{\N*/}{}xms;
-  my $link_text = readlink($abs);
+  my $link_text = readlink $abs;
 
   return ( 0, "could not remove the symlink $abs: $OS_ERROR" )
     if !unlink $abs;
 
   my ( $ok, $err ) = remove_dotlinks_line( $dl, $linkname );
   if ( !$ok ) {
-    symlink( $link_text, $abs );       # recreate the link on rollback
+    symlink $link_text, $abs;          # recreate the link on rollback
     return ( 0, "could not update $dl ($err) - reverted (symlink restored)" );
   }
 
@@ -1305,7 +1305,7 @@ sub stray_without_target {
   my $tgt = $e->{rewrite} ? expand_path( $e->{rewrite} ) : undef;
   return if defined $tgt && -e $tgt;
 
-  return sprintf "stray, but its redirect target %s does not exist - migrate it (--migrate env), don't delete",
+  return sprintf q{stray, but its redirect target %s does not exist - migrate it (--migrate env), don't delete},
     ( defined $tgt ? $tgt : '(none declared)' );
 }
 
@@ -1474,7 +1474,7 @@ sub resolve_recommended_mechanism {
 
   if ( @mechs > 1 ) {
     my $breakdown = join "\n",
-      map { sprintf "    %-24s %s", home_relative( $_->{path} ), $_->{mechanism} }
+      map { sprintf '    %-24s %s', home_relative( $_->{path} ), $_->{mechanism} }
       sort { $a->{path} cmp $b->{path} } @named;
     return (
       undef,
@@ -1488,7 +1488,7 @@ sub resolve_recommended_mechanism {
   return (
     undef,
     "the recommended mechanism for $name is '$only', which --migrate cannot yet perform"
-      . " (alias/wrap are iceboxed, remove is via --remove - see ADR-0004 Phase 3 status)"
+      . ' (alias/wrap are iceboxed, remove is via --remove - see ADR-0004 Phase 3 status)'
   );
 } ## end sub resolve_recommended_mechanism
 
@@ -1558,12 +1558,12 @@ sub suggested_steps {
 sub resolve_env_move {
   my ($entry) = @_;
 
-  return { err => "no XDG target declared (needs an overlay 'rewrite')" }
+  return { err => q{no XDG target declared (needs an overlay 'rewrite')} }
     if !$entry->{rewrite};
 
   my $tgt = expand_path( $entry->{rewrite} );
   return { err => "target does not resolve to an absolute path ($tgt) - refused" }
-    if $tgt =~ /\$\{?\w+\}?/xms || !File::Spec->file_name_is_absolute($tgt);
+    if $tgt =~ /\$[{]?\w+[}]?/xms || !File::Spec->file_name_is_absolute($tgt);
 
   my $var    = $entry->{env} // q{};
   my $val    = length $var ? $ENV{$var} : undef;
@@ -1615,7 +1615,7 @@ sub convert_symlink_to_env {
   if ( defined $dl ) {
     my ( $ok, $err ) = remove_dotlinks_line( $dl, $m->{linkname} );
     if ( !$ok ) {
-      symlink( $m->{link_text}, $m->{abs} );  # recreate the link
+      symlink $m->{link_text}, $m->{abs};  # recreate the link
       move_path( $m->{tgt}, $m->{canon} );
       return ( 0, "could not update $dl ($err) - reverted" );
     }
@@ -1648,7 +1648,7 @@ sub remove_dotlinks_line {
   }
 
   open my $fh, '>:encoding(UTF-8)', $file or return ( 0, "$OS_ERROR" );
-  my $ok = print {$fh} join( q{}, @keep );
+  my $ok = print {$fh} join q{}, @keep;
   if ( !( $ok && close $fh ) ) {
     my $err = "$OS_ERROR";
     restore_file( $file, $orig );
@@ -1874,12 +1874,12 @@ sub resolve_repo_target {
   return ( undef, '$DOTFILES is not set - required for a symlink migrate' )
     if !( defined $df && length $df );
 
-  return ( undef, "no repo target declared (needs an overlay 'rewrite' under \$DOTFILES)" )
+  return ( undef, q{no repo target declared (needs an overlay 'rewrite' under $DOTFILES)} )
     if !$e->{rewrite};
 
   my $tgt = expand_path( $e->{rewrite} );
   return ( undef, "target does not resolve to an absolute path ($tgt) - refused" )
-    if $tgt =~ /\$\{?\w+\}?/xms || !File::Spec->file_name_is_absolute($tgt);
+    if $tgt =~ /\$[{]?\w+[}]?/xms || !File::Spec->file_name_is_absolute($tgt);
 
   return ( undef, "target $tgt is not under \$DOTFILES - a symlink source must live in the repo" )
     if index( $tgt, "$df/" ) != 0;
@@ -2005,7 +2005,7 @@ sub plan_fix_action {
 sub dotlinks_source_token {
   my ($path) = @_;
   my $df = $ENV{DOTFILES};
-  return '$DOTFILES' . substr( $path, length $df )
+  return '$DOTFILES' . substr $path, length $df
     if defined $df && length $df && index( $path, "$df/" ) == 0;
   return $path;
 }
@@ -2343,14 +2343,14 @@ sub sync_programs {
   my @changed;
   opendir my $dh, $src_dir or die "$PROG: no programs/ in clone\n";
   for my $f ( readdir $dh ) {
-    next if $f !~ /\.json\Z/xms;
+    next if $f !~ /[.]json\Z/xms;
     my $src    = File::Spec->catfile( $src_dir, $f );
     my $dst    = File::Spec->catfile( $dst_dir, $f );
     my $before = ( -f $dst ) ? sha256_hex( read_file($dst) ) : q{};
     my $after  = sha256_hex( read_file($src) );
     if ( $before ne $after ) {
       _copy( $src, $dst );
-      ( my $name = $f ) =~ s/\.json\Z//xms;
+      ( my $name = $f ) =~ s/[.]json\Z//xms;
       push @changed, $name;
     }
   }
@@ -2383,7 +2383,7 @@ sub report_update {
   }
 
   print "$PROG: updated to $new_sha\n";
-  print "  changed programs: " . ( @{$changed} ? join( q{, }, sort @{$changed} ) : 'none' ) . "\n";
+  print '  changed programs: ' . ( @{$changed} ? join( q{, }, sort @{$changed} ) : 'none' ) . "\n";
   if ( @{$obsolete} ) {
     print "  overrides possibly obsolete (upstream changed since the override):\n";
     for my $name ( sort @{$obsolete} ) {
