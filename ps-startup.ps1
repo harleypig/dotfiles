@@ -1,3 +1,15 @@
+# Scoping rule for startup modules. Import-Files, below, dot-sources each
+# powershell/startup/*.ps1 inside a function, so whatever a module defines
+# lands in that function's scope and is gone once loading finishes. A
+# function or alias meant to outlive startup must be declared global --
+# `function Global:Name { ... }`, `Set-Alias -Scope Global ...` -- and a
+# variable likewise, through $global:. A helper used only while its own
+# module loads may stay local, and says so with a `# load-time only` comment
+# on the line directly above its definition. The same rule holds for user
+# hooks in ~/.psshell_startup_hooks.d, which the same loader dot-sources.
+# tests/shell/test_integration_powershell.bats enforces it for the repo's
+# modules.
+
 # Declare and initialize variables, making some of them dual purpose
 $scriptPath = $MyInvocation.MyCommand.Path
 
