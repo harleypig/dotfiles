@@ -1,6 +1,6 @@
 # Perl::Critic profile for this repo.
 #
-# Design: a curated, CORE-only profile gated at severity 2. It deliberately
+# Design: a curated, CORE-only profile gated at severity 1. It deliberately
 # replaces an earlier 2287-line generated dump that ran at `severity = brutal`
 # and referenced third-party policy bundles (OTRS, TryTiny, Bangs, logicLAB,
 # Moose, Tics, StricterSubs, Reneeb's ProhibitAccessOfPrivateData, …) that are
@@ -17,11 +17,11 @@
 # dropped `profile-strictness = warn` crutch used to mask.
 #
 # Severity ladder (see the dotagents repo's rules/perlcritic.md): 5 = most
-# severe … 1 = brutal. We gate at 2 ("cruel") and ratchet toward 1 in stages,
-# cleaning each level's findings before tightening. Bump `severity` below to
-# tighten; the staged ratchet is #361 - perlcritic severity ratchet.
+# severe … 1 = brutal. We gate at 1, the bottom of the ladder, so every core
+# policy applies except the ones switched off below, each with its reason.
+# Loosening a policy is therefore an edit here, never a lower `severity`.
 
-severity = 2
+severity = 1
 verbose  = %f:%l:%c [%p] %m (severity %s)\n
 
 # Postfix controls stay prohibited at the policy's defaults. The guard
