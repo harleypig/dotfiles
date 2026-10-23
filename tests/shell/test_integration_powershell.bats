@@ -42,6 +42,14 @@ ps_startup() {
   ps_run '' '-File /tmp/cmd.ps1' "$@"
 }
 
+# A non-interactive run whose stderr comes back with each line prefixed
+# "stderr: ", so a test can tell the two streams apart. Arguments: script,
+# prep.
+ps_startup_split() {
+  ps_run '' '-File /tmp/cmd.ps1' "$1" "${2:-}
+    pwsh() { { command pwsh \"\$@\" 2>&1 1>&3 | sed 's/^/stderr: /'; } 3>&1; }"
+}
+
 # An interactive run: stdin is a pseudo-tty and -NoExit keeps the session at
 # its prompt after the script. The exit ends that session; it has to be in
 # -Command, since an exit inside a -File script only ends the script.
@@ -173,4 +181,40 @@ PS_REPORT='
   ' 'export PATH="$HOME/.local/bin:$PATH:/usr/bin"'
   assert_success
   assert_output --partial 'dups=0'
+}
+
+@test "pwsh debug is silent unless DEBUG is a non-zero integer" {
+  local script='debug "trace-msg"; "piped-msg" | debug; Write-Output done'
+
+  ps_startup_split "$script"
+  assert_success
+  assert_line 'done'
+  refute_output --partial 'msg'
+  refute_output --partial 'stderr:'
+
+  ps_startup_split "$script" 'export DEBUG=0'
+  assert_success
+  assert_line 'done'
+  refute_output --partial 'stderr:'
+}
+
+@test "pwsh debug writes a call-stack-prefixed line to stderr" {
+  ps_startup_split '
+    function Invoke-Outer { Invoke-Inner }
+    function Invoke-Inner { debug "trace-msg" }
+    Invoke-Outer
+    Write-Output done
+  ' 'export DEBUG=1'
+  assert_success
+  assert_line 'done'
+  assert_line --regexp \
+    '^stderr: \[i\+[0-9]+ms\]\[cmd\.ps1:[0-9]{3}\]\[cmd\.ps1:Invoke-Outer:[0-9]{3}\]\[cmd\.ps1:Invoke-Inner:[0-9]{3}\] trace-msg$'
+  refute_line 'stderr: done'
+}
+
+@test "pwsh debug traces each line of pipeline input" {
+  ps_startup_split '"one", "two" | debug' 'export DEBUG=1'
+  assert_success
+  assert_line --regexp '^stderr: \[i\+[0-9]+ms\]\[cmd\.ps1:[0-9]{3}\] one$'
+  assert_line --regexp '^stderr: \[i\+[0-9]+ms\]\[cmd\.ps1:[0-9]{3}\] two$'
 }
