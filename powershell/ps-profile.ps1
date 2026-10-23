@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-    This script checks if the PowerShell profile file ($PROFILE) exists. If the profile exists, the script exits with a message and suggests what to add if necessary. If the profile does not exist, it creates a new profile file that sources the `ps1-startup.ps1` file located in the directory where the script is run.
+    This script checks if the PowerShell profile file ($PROFILE) exists. If the profile exists, the script exits with a message and suggests what to add if necessary. If the profile does not exist, it creates a new profile file that sources the `ps-startup.ps1` file at the root of the repository this script lives in.
 
 .DESCRIPTION
-    The script is designed to simplify the setup of a PowerShell profile that includes custom startup configurations. The `ps1-startup.ps1` file in the current directory will be sourced in the profile file.
+    The script is designed to simplify the setup of a PowerShell profile that includes custom startup configurations. The profile dot-sources `ps-startup.ps1` by its absolute path, found from this script's own location rather than the current directory, so the script can be run from anywhere.
 
     HOW TO RUN
-    Save this script as `setup-profile.ps1` and run it in PowerShell: ./setup-profile.ps1
+    Run it in PowerShell from any directory: ./powershell/ps-profile.ps1
 
     Ensure you have the necessary permissions to create files in the profile's directory.
 
@@ -25,12 +25,14 @@ if ($h -or $help) {
   exit 0
 }
 
-# Get the current directory
-$currentDir = Get-Location
+# The repo root is this script's parent directory. $env:DOTFILES is not
+# consulted: the startup sets it from its own location, so a value already
+# in the environment can only agree with this one or name another checkout.
+$sourcePath = Join-Path (Split-Path -Parent $PSScriptRoot) 'ps-startup.ps1'
 
-# Calculate the content to be added to the profile
-$sourcePath = Join-Path $currentDir "ps1-startup.ps1"
-$profileContent = ". $sourcePath"
+# Single-quoted so a path holding spaces or $ is taken literally; a quote
+# inside it is doubled.
+$profileContent = ". '{0}'" -f ($sourcePath -replace "'", "''")
 
 # Check if $PROFILE exists
 if (Test-Path $PROFILE) {
@@ -55,7 +57,7 @@ and already includes the necessary content.
   exit 0
 }
 
-# Create a new profile file that sources ps1-startup.ps1
+# Create a new profile file that sources ps-startup.ps1
 try {
   # Ensure the profile directory exists
   $profileDir = Split-Path -Path $PROFILE

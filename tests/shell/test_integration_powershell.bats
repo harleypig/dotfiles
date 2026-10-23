@@ -487,3 +487,79 @@ STUB_PREP='
   expected=$(grep -o 'expected=[0-9]*' <<< "$output")
   [[ ${count#count=} -gt 1 && ${count#count=} == "${expected#expected=}" ]]
 }
+
+# Runs a pwsh script with no profile, from /tmp/elsewhere rather than the
+# repo, so powershell/ps-profile.ps1 cannot lean on the caller's directory.
+# Each script points $PROFILE at a throwaway path before running it.
+# Arguments: the script, and optional bash run first. Sets $output/$status.
+ps_profile_run() {
+  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" -e PSCMD="$1" \
+    -e PREP="${2:-}" "$PS_IMAGE" bash -c '
+      mkdir -p /tmp/elsewhere && cd /tmp/elsewhere
+      eval "$PREP"
+      printf "%s" "$PSCMD" > /tmp/cmd.ps1
+      pwsh -NoProfile -File /tmp/cmd.ps1
+    '
+}
+
+@test "ps-profile creates a profile that dot-sources the startup" {
+  # The profile directory does not exist yet. Each dot-sourced path is read
+  # back through the parser, so the check does not depend on its quoting.
+  ps_profile_run '
+    $PROFILE = "/tmp/new/profile.ps1"
+    & /dotfiles/powershell/ps-profile.ps1
+    $ast = [Management.Automation.Language.Parser]::ParseFile(
+      $PROFILE, [ref]$null, [ref]$null)
+    $ast.FindAll({
+      param ($n)
+      $n -is [Management.Automation.Language.CommandAst] -and
+        $n.InvocationOperator -eq "Dot"
+    }, $true) | ForEach-Object {
+      $path = $_.CommandElements[0].Value
+      Write-Output "sources=$path"
+      Write-Output "exists=$(Test-Path -LiteralPath $path -PathType Leaf)"
+    }
+  '
+  assert_success
+  assert_line --partial 'Profile created at: /tmp/new/profile.ps1'
+  assert_line 'sources=/dotfiles/ps-startup.ps1'
+  assert_line 'exists=True'
+}
+
+@test "ps-profile leaves an existing profile untouched" {
+  # First a profile without the line, then one that already carries it.
+  ps_profile_run '
+    $PROFILE = "/tmp/mine.ps1"
+    $before = (Get-FileHash $PROFILE).Hash
+    & /dotfiles/powershell/ps-profile.ps1
+    Write-Output "unchanged=$($before -eq (Get-FileHash $PROFILE).Hash)"
+    $PROFILE = "/tmp/done.ps1"
+    $before = (Get-FileHash $PROFILE).Hash
+    & /dotfiles/powershell/ps-profile.ps1
+    Write-Output "unchanged=$($before -eq (Get-FileHash $PROFILE).Hash)"
+  ' "printf '# mine\n' > /tmp/mine.ps1
+    printf '%s\n' '# mine' \". '/dotfiles/ps-startup.ps1'\" > /tmp/done.ps1"
+  assert_success
+  assert_line --partial 'add the following line to your profile'
+  assert_line --partial ". '/dotfiles/ps-startup.ps1'"
+  assert_line --partial 'already includes the necessary content'
+  assert_equal "$(grep -c '^unchanged=True$' <<< "$output")" 2
+}
+
+@test "a profile from ps-profile loads the startup wherever the repo is" {
+  # A copy of the startup under a path holding a space, run by path from
+  # elsewhere; a fresh pwsh then dot-sources the profile it wrote.
+  ps_profile_run '
+    $PROFILE = "/tmp/new/profile.ps1"
+    & "/tmp/my dots/powershell/ps-profile.ps1" | Out-Null
+    Set-Content /tmp/load.ps1 ". /tmp/new/profile.ps1",
+      "Write-Output DOTFILES=`$env:DOTFILES",
+      "Write-Output interactive=`$DOTFILES_INTERACTIVE"
+    pwsh -NoProfile -File /tmp/load.ps1
+  ' 'mkdir "/tmp/my dots"
+    cp -r /dotfiles/ps-startup.ps1 /dotfiles/powershell "/tmp/my dots/"'
+  assert_success
+  assert_line 'DOTFILES=/tmp/my dots'
+  assert_line 'interactive=False'
+  refute_output --partial 'is not recognized'
+}
