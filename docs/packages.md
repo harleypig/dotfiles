@@ -164,14 +164,13 @@ managed separately (mostly on the Linode server):
   install python pipx` (lib/version-managers/python). It is the primary
   installer the python entries above use.
 - **ollama** — A self-hosted AI model-runtime service, not a dev package -
-  managed separately (most services run on the Linode server, not this dev
-  machine) and Docker-native. On beaker the ansible-stuff openwebui role
-  creates the container; `bin/ollama` (docker_wrapper) only starts it.
-- **openwebui** — A self-hosted web-UI service (python-installable, but
-  service-oriented), not a dev package - managed separately (most services run
-  on the Linode server) and Docker-native. On beaker the ansible-stuff
-  openwebui role creates the container; `bin/openwebui` (docker_wrapper) only
+  Docker-native and managed separately: the ansible-stuff openwebui role
+  creates and runs the container on beaker; `bin/ollama` (docker_wrapper) only
   starts it.
+- **openwebui** — A self-hosted web-UI service (python-installable, but
+  service-oriented), not a dev package - Docker-native and managed separately:
+  the ansible-stuff openwebui role creates and runs the container on beaker;
+  `bin/openwebui` (docker_wrapper) only starts it.
 
 ---
 
