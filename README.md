@@ -234,7 +234,7 @@ for specific tools:
 **Core Configuration:**
 
 - **`000-loadtokens`**: Load authentication tokens
-- **`010-general`**: General environment setup
+- **`010-general`**: General environment setup, aliases and bash history
 - **`app_env_vars`**: Application-specific environment variables
 - **`bash_prompt`**: Custom bash prompt configuration
 
@@ -242,29 +242,41 @@ for specific tools:
 
 - **`aider`**: Aider AI coding assistant
 - **`binenv`**: Binary environment manager
+- **`claude`**: Claude Code CLI environment settings, when installed
+- **`docker`**: Docker CLI bash completion
 - **`gcloud`**: `gcloud-sa`, switch the shell's gcloud configuration and
   `GOOGLE_APPLICATION_CREDENTIALS`
+- **`gh`**: GitHub CLI bash completion, for both `gh` and `ghx`
 - **`git`**: Git configuration and aliases
 - **`go`**: Go language environment
+- **`grok`**: xAI grok CLI on `PATH`, with bash completion
+- **`jbang`**: jbang Java script runner on `PATH`, under XDG once migrated
 - **`mise`**: mise polyglot tool version manager, when installed
 - **`node`**: Node.js and NVM configuration
 - **`perl`**: Perl environment and configuration
-- **`python`**: Python environment and poetry setup
-- **`ruby`**: Ruby environment and configuration
+- **`python`**: Python environment, venv helpers and poetry completion
 - **`rust`**: Rust and Cargo setup
-- **`terraform`**: Terraform infrastructure tools
+- **`terraform`**: Terraform alias and bash completion
 
 **Applications:**
 
 - **`cuda`**: NVIDIA CUDA configuration
 - **`less`**: Less pager configuration
-- **`taskwarrior`**: Task management configuration
 - **`tmux`**: Tmux configuration
 - **`vim`**: Vim configuration
 
 **Completion:**
 
 - **`ssh-config-completion`**: SSH host completion
+
+**Startup Checks:**
+
+- **`zzz-check-dotfiles`**: Verify the dotfile links, after every other
+  module has loaded
+- **`zzz-check-dotvim`**: Verify the dotvim repo and its links
+
+Modules load in name order. A module whose name ends in `_inactive` is kept
+in the directory but never loaded.
 
 ### Configuration Directories
 
