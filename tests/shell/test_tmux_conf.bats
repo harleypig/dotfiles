@@ -60,3 +60,16 @@ start_server() {
   run tmux -L conftest list-keys -T prefix r
   assert_output --partial "source-file $CONF "
 }
+
+@test "window names and status call tmux_window_name for Claude windows" {
+  start_server
+
+  run tmux -L conftest show -gwv automatic-rename-format
+  assert_output --partial '#{@claude_name}'
+
+  run tmux -L conftest show -gwv window-status-format
+  assert_output --partial '#(tmux_window_name #{window_id})'
+
+  run tmux -L conftest show -gwv window-status-current-format
+  assert_output --partial '#(tmux_window_name #{window_id})'
+}
