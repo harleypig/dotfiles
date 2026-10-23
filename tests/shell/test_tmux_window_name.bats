@@ -177,7 +177,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour214]'
+  assert_output '#[fg=colour172]'
   assert_file_contains "$STUB_LOG" \
     'set-option -wq -t @7 @claude_name myrepo ;'
 }
@@ -190,7 +190,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour228]'
+  assert_output '#[fg=colour214]'
   assert_file_contains "$STUB_LOG" '@claude_name myrepo\[wt-feature\] ;'
 }
 
@@ -260,7 +260,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour214]'
+  assert_output '#[fg=colour172]'
   assert_file_exists "$STUB_JQ_LOG"
 }
 
@@ -272,7 +272,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour228]'
+  assert_output '#[fg=colour214]'
 }
 
 @test "a session whose procStart differs, a reused pid, is ignored" {
@@ -304,7 +304,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour228]'
+  assert_output '#[fg=colour214]'
   assert_file_contains "$STUB_LOG" '@claude_name myrepo ;'
 }
 
@@ -315,7 +315,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour214]'
+  assert_output '#[fg=colour172]'
   assert_file_contains "$STUB_LOG" '@claude_name myrepo ;'
 }
 
@@ -326,7 +326,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour214]'
+  assert_output '#[fg=colour172]'
   assert_file_contains "$STUB_LOG" '@claude_name myrepo ;'
 }
 
@@ -338,7 +338,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour214]'
+  assert_output '#[fg=colour172]'
   assert_file_contains "$STUB_LOG" '@claude_name myrepo ;'
 }
 
@@ -348,7 +348,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour214]'
+  assert_output '#[fg=colour172]'
   assert_file_not_exists "$STUB_LOG"
 }
 
@@ -358,7 +358,7 @@ real_server() {
 
   run "$TWN" @7
   assert_success
-  assert_output '#[fg=colour214]'
+  assert_output '#[fg=colour172]'
   assert_file_contains "$STUB_LOG" '@claude_name myrepo$'
   assert_file_not_contains "$STUB_LOG" 'automatic-rename'
 }
@@ -417,7 +417,7 @@ real_server() {
 
   run "$TWN" "$win"
   assert_success
-  assert_output '#[fg=colour214]'
+  assert_output '#[fg=colour172]'
 
   run tmux show-options -wqv -t "$win" @claude_name
   assert_output 'myrepo'

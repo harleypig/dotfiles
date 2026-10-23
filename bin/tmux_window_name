@@ -12,8 +12,8 @@
 #     `repo` for a main checkout, `repo[worktree]` for a linked worktree, the
 #     directory's basename outside git; automatic-rename-format shows it in
 #     place of the default name;
-#   - prints a style for the window list: #[fg=colour214] while Claude is
-#     busy (or its state is unknown), #[fg=colour228] otherwise.
+#   - prints a style for the window list: #[fg=colour172] while Claude is
+#     busy (or its state is unknown), #[fg=colour214] otherwise.
 #
 # Any other window has @claude_name unset and gets no output, so tmux's
 # default naming and style apply unchanged.
@@ -278,6 +278,6 @@ name=$(repo_name "${claude_cwd[$chosen]}")
 [[ $name == "$current_name" ]] || set_claude_name "$name"
 
 case ${claude_state[$chosen]} in
-  busy | unknown) printf '#[fg=colour214]' ;;
-  *) printf '#[fg=colour228]' ;;
+  busy | unknown) printf '#[fg=colour172]' ;;
+  *) printf '#[fg=colour214]' ;;
 esac
