@@ -155,7 +155,7 @@ it is pointless (a per-project dev dependency).
 
 These live in the repo tooling space but are deliberately not
 packages in this manifest — version managers themselves, or services
-managed separately (mostly on the Linode server):
+managed separately (by ansible-stuff, per host):
 
 - **uv** — A language version manager itself - installed and updated by `vmgr
   install python uv` (lib/version-managers/python), not through this package
