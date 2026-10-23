@@ -674,3 +674,24 @@ PS
   assert_line 'violation=zz-planted.ps1:3: New-Alias pn Get-Planted -Scope Local'
   assert_equal "$(grep -c '^violation=' <<< "$output")" 3
 }
+
+@test "pwsh agent-CLI module loads its env and commit-prompt files" {
+  # A copy of the startup under a throwaway DOTFILES holding fixture files,
+  # with a stub of the tool on PATH so the module does not skip itself.
+  ps_profile_run '
+    . /tmp/dots/ps-startup.ps1
+    Write-Output "key=$env:FIXTURE_KEY"
+    Write-Output "other=$env:FIXTURE_OTHER"
+    Write-Output "editor=$env:AIDER_EDITOR"
+    Write-Output "prompt=$($env:AIDER_COMMIT_PROMPT.Trim())"
+  ' "STUBS=aider $STUB_PREP"'
+    mkdir /tmp/dots
+    cp -r /dotfiles/ps-startup.ps1 /dotfiles/powershell /tmp/dots/
+    printf "%s\n" FIXTURE_KEY=value FIXTURE_OTHER=a=b > /tmp/dots/aider.env
+    printf "%s\n" fixture-prompt > /tmp/dots/aider.commit_prompt'
+  assert_success
+  assert_line 'key=value'
+  assert_line 'other=a=b'
+  assert_line 'editor=code --wait'
+  assert_line 'prompt=fixture-prompt'
+}
