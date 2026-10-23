@@ -64,6 +64,19 @@ updates:
       prefix: chore
       include: scope
 
+  # The PowerShell integration test's image. `directory` reads one directory
+  # and not its subdirectories, so /tests/docker above does not reach it.
+  # The Dockerfile is never built; the test runs the pinned stock image.
+  - package-ecosystem: docker
+    directory: /tests/docker/powershell
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+
   - package-ecosystem: docker
     directory: /config/nvm
     schedule:

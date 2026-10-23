@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.7.2
+**Version:** v2.7.3
 
 ## Purpose
 
@@ -60,11 +60,13 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   (login shell comes up with `DOTFILES`/XDG/PATH, double-source guard,
   cleanpath dedup) and `test_integration_check_dotfiles`.
 - `tests/shell/test_integration_powershell.bats` — drives the pinned
-  `mcr.microsoft.com/dotnet/sdk` image, which carries pwsh, directly (no
-  custom Dockerfile; the standalone powershell images are deprecated):
-  deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`, and asserts
-  the profile comes up (`DOTFILES` set, `powershell/startup/*` modules loaded)
-  with no parser errors. Same skip-if-no-docker guard.
+  `mcr.microsoft.com/dotnet/sdk` image, which carries pwsh, directly (the
+  standalone powershell images are deprecated). The pin lives in the `FROM`
+  line of `tests/docker/powershell/Dockerfile`, where Dependabot bumps it;
+  that file is never built, and the test reads the line and runs the stock
+  image. It deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`,
+  and asserts the profile comes up (`DOTFILES` set, `powershell/startup/*`
+  modules loaded) with no parser errors. Same skip-if-no-docker guard.
 - `tests/docker/xdg-audit/` + `tests/shell/test_integration_xdg_audit.bats` —
   a **fourth** harness image (Debian slim + `perl` + **git**, run as a
   **non-root** user since xdg-audit operates on a real user's `$HOME`, not
