@@ -17,7 +17,8 @@ setup() {
 
   # A Unix socket path is capped near 104 bytes, and tmux appends about 20
   # (tmux-UID/conftest); past that every test dies on "File name too long".
-  ((${#BATS_TEST_TMPDIR} < 80)) || skip "BATS_TEST_TMPDIR too long for a tmux socket"
+  ((${#BATS_TEST_TMPDIR} < 80)) \
+    || skip "BATS_TEST_TMPDIR too long for a tmux socket"
 
   CONF="$(dotfiles_root)/config/tmux/tmux.conf"
 
