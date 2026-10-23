@@ -18,6 +18,13 @@ use JSON::PP;
 my $SCRIPT = 'bin/xdg-audit';
 plan skip_all => "$SCRIPT not found" unless -f $SCRIPT;
 
+# bin/check-dotfiles pipes the dotlinks file through envsubst (gettext-base).
+# Without it no symlink gets made, so the tests that need one skip.
+my $NO_ENVSUBST =
+  ( grep { -x File::Spec->catfile( $_, 'envsubst' ) } File::Spec->path )
+  ? q{}
+  : 'envsubst not found (install gettext-base); bin/check-dotfiles needs it';
+
 # ------------------------------------------------------------------------------
 # Fixtures
 # ------------------------------------------------------------------------------
@@ -949,7 +956,8 @@ my $rd = sub { my ($p) = @_; open my $fh, '<', $p or return ''; local $/; my $c 
 # back by check-dotfiles. ~/.dotlinks pre-exists (the active file), so there is
 # no bootstrap prompt — one 'y' confirms the move.
 mg_entry( 'grok', mechanism => 'symlink', rewrite => '$DOTFILES/grok' );
-{
+SKIP: {
+  skip $NO_ENVSUBST, 5 if $NO_ENVSUBST;
   $wr->( $s3_dl, '' );
   $wr->( File::Spec->catfile( $s3home, '.grok' ), "grokcfg\n" );
 
@@ -964,7 +972,8 @@ mg_entry( 'grok', mechanism => 'symlink', rewrite => '$DOTFILES/grok' );
 }
 
 # The post-migrate state reports symlink / complete via --json.
-{
+SKIP: {
+  skip $NO_ENVSUBST, 2 if $NO_ENVSUBST;
   my ($out) = run_symlink( $s3home, $s3df, "", '--json', 'grok' );
   my $rec = JSON::PP->new->decode($out)->{files}[0];
   is( $rec->{current_mechanism},   'symlink',  'current mechanism is now symlink' );
@@ -974,7 +983,8 @@ mg_entry( 'grok', mechanism => 'symlink', rewrite => '$DOTFILES/grok' );
 # Bootstrap: no ~/.dotlinks -> offer to create it, seed from dotlinks-default.
 # Input: create? y / seed? y / move? y.
 mg_entry( 'boots', mechanism => 'symlink', rewrite => '$DOTFILES/boots' );
-{
+SKIP: {
+  skip $NO_ENVSUBST, 5 if $NO_ENVSUBST;
   unlink $s3_dl;
   $wr->( File::Spec->catfile( $s3df,   'dotlinks-default' ), "# seed\n\$DOTFILES/pre existing\n" );
   $wr->( File::Spec->catfile( $s3home, '.boots' ),           "b\n" );
@@ -990,7 +1000,8 @@ mg_entry( 'boots', mechanism => 'symlink', rewrite => '$DOTFILES/boots' );
 # Bootstrap empty: create? y / seed? n / move? y -> ~/.dotlinks holds only the
 # new line, no seed content.
 mg_entry( 'boote', mechanism => 'symlink', rewrite => '$DOTFILES/boote' );
-{
+SKIP: {
+  skip $NO_ENVSUBST, 3 if $NO_ENVSUBST;
   unlink $s3_dl;
   $wr->( File::Spec->catfile( $s3home, '.boote' ), "e\n" );
 
@@ -1003,7 +1014,8 @@ mg_entry( 'boote', mechanism => 'symlink', rewrite => '$DOTFILES/boote' );
 # Decline bootstrap -> append to the shared, tracked dotlinks-default instead.
 # Input: create ~/.dotlinks? n / append to default? y / move? y.
 mg_entry( 'bootd', mechanism => 'symlink', rewrite => '$DOTFILES/bootd' );
-{
+SKIP: {
+  skip $NO_ENVSUBST, 4 if $NO_ENVSUBST;
   unlink $s3_dl;
   my $def = File::Spec->catfile( $s3df, 'dotlinks-default' );
   $wr->( $def, "# seed\n" );
@@ -1200,7 +1212,8 @@ my $recenv_src = touch('.recenv');
 
 # --migrate recommended routes to symlink: reuse the real-check-dotfiles harness
 # so a symlink-recommended hardcoded file is migrated as --migrate symlink would.
-{
+SKIP: {
+  skip $NO_ENVSUBST, 2 if $NO_ENVSUBST;
   write_json( locl('recsym'),
     { name => 'recsym', files => [ { path => '$HOME/.recsym', movable => JSON::PP::true, help => "h\n", mechanism => 'symlink', rewrite => '$DOTFILES/recsym' } ] } );
   open my $fh, '>', File::Spec->catfile( $s3home, '.recsym' ) or die "recsym: $!";
@@ -1388,7 +1401,8 @@ SKIP: {
 
 # Happy path (real check-dotfiles): source moved into the repo, linked, export
 # instructed for removal.
-{
+SKIP: {
+  skip $NO_ENVSUBST, 7 if $NO_ENVSUBST;
   my $src = $wr->( File::Spec->catfile( $s2xdg, 'esrc' ), "esdata\n" );
   $wr->( $s2_dl, '' );
   write_json( locl('esym'),
@@ -1464,7 +1478,8 @@ SKIP: {
 }
 
 # recommended on an env-current mechanism:symlink+env entry converts (env->symlink).
-{
+SKIP: {
+  skip $NO_ENVSUBST, 1 if $NO_ENVSUBST;
   my $src = $wr->( File::Spec->catfile( $s2xdg, 'recesrc' ), "re\n" );
   $wr->( $s2_dl, '' );
   write_json( locl('rece'),
