@@ -1,6 +1,10 @@
 ---
 extends: default
 
+# gh rewrites its own config with 4-space indentation, so gh owns its format.
+ignore: |
+  config/gh/config.yml
+
 rules:
   # Line length - allow longer lines for Ansible
   line-length:
