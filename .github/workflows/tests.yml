@@ -101,11 +101,14 @@ jobs:
 
       # perl is preinstalled on the runner. Non-core deps: Test::Cmd (used by
       # the tests), Test::Pod (pod-syntax.t), and Perl::Tidy (loaded by the
-      # script under test); all from Debian packages.
+      # script under test); all from Debian packages. gettext-base provides
+      # envsubst, which bin/check-dotfiles needs; without it xdg-audit.t skips
+      # those tests rather than failing, so it is installed explicitly.
       - name: Install perl test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libtest-cmd-perl libtest-pod-perl perltidy
+          sudo apt-get install -y libtest-cmd-perl libtest-pod-perl perltidy \
+            gettext-base
 
       # Tests resolve `use lib 'tests/perl/lib'` and the data dir relative to
       # the repo root, so prove must run from the checkout root.

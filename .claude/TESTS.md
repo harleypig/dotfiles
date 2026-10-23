@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.7.1
+**Version:** v2.7.2
 
 ## Purpose
 
@@ -203,6 +203,25 @@ tests/scaffold/build-meta-tests   # (re)generate the meta tests first
 Run a single file or filter while iterating; reserve the full suite for
 pre-commit / CI.
 
+### The perl suite
+
+```bash
+prove tests/perl/                 # from the repo root; tests resolve paths
+                                  # relative to it
+```
+
+It needs the packages the CI `perl` job installs (see *CI* below). The one
+that is easy to miss is **`gettext-base`**, which provides `envsubst`:
+`xdg-audit.t` runs the real `bin/check-dotfiles`, and that pipes its dotlinks
+file through `envsubst`. Without it, `xdg-audit.t` **skips** every test that
+needs a symlink made, each with the reason `envsubst not found (install
+gettext-base)`. Run `prove -v` to see them; a plain `prove` reports the file
+as `ok` either way.
+
+Running as **root** is not a prerequisite. Root ignores file permissions, so
+the `xdg-audit.t` tests that rely on a read-only file skip themselves under
+root, and the rest pass.
+
 ## Perl coverage (Devel::Cover — non-gating)
 
 `tests/perl/` includes `pod-syntax.t` (Test::Pod over the CLIs). Coverage is
@@ -222,7 +241,8 @@ cover                              # prints a summary; writes cover_db/ (gitigno
 PRs: **bats** (`tests/shell/test_*.bats`, the gate), **meta** (regenerates and
 runs `tests/shell/*.meta.bats` with pinned `shellcheck`/`shfmt` — a required
 check, see the meta-suite note above), **perl** (`prove tests/perl/`,
-installing `libtest-cmd-perl` + `libtest-pod-perl` + `perltidy`), **python**
+installing `libtest-cmd-perl` + `libtest-pod-perl` + `perltidy` +
+`gettext-base`), **python**
 (`pytest tests/python`,
 self-activating once `tests/python/test_*.py` exist), and **pre-commit** (the
 check config via `pre-commit run --all-files`).
