@@ -211,7 +211,7 @@ generate() {
 
   printf 'These live in the repo tooling space but are deliberately not\n'
   printf 'packages in this manifest — version managers themselves, or services\n'
-  printf 'managed separately (mostly on the Linode server):\n\n'
+  printf 'managed separately (by ansible-stuff, per host):\n\n'
 
   local ex_name ex_reason
   while IFS=$'\t' read -r ex_name ex_reason; do
