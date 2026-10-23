@@ -1,0 +1,283 @@
+#!/usr/bin/env bash
+#
+# tmux_window_name - name and colour a tmux window that holds Claude Code
+#
+# Usage: tmux_window_name <window_id>
+#
+# Called by tmux from window-status-format as #(tmux_window_name
+# #{window_id}), once per window per status-interval. For a window with a
+# Claude Code pane it
+#
+#   - sets the window option @claude_name to the repo Claude is working in:
+#     `repo` for a main checkout, `repo[worktree]` for a linked worktree, the
+#     directory's basename outside git; automatic-rename-format shows it in
+#     place of the default name;
+#   - prints a style for the window list: #[fg=colour214] while Claude is
+#     busy (or its state is unknown), #[fg=colour228] otherwise.
+#
+# Any other window has @claude_name unset and gets no output, so tmux's
+# default naming and style apply unchanged.
+#
+# Claude panes come from Claude Code's session files,
+# ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/sessions/<pid>.json, matched on the
+# pane id in their "tmux" field. That format is Claude Code internals, not a
+# published interface, so a file that does not parse or lacks a field is
+# skipped. With no usable file for the window, a pane whose current command
+# is `claude` stands in, with its state unknown.
+#
+# With several Claude panes, the active one wins, else the first.
+
+##############################################################################
+# Setup and Sanity
+
+set -euo pipefail
+
+prog=${0##*/}
+
+usage() {
+  echo "Usage: $prog <window_id>" >&2
+  exit 2
+}
+
+(($# == 1)) || usage
+[[ $1 =~ ^@[0-9]+$ ]] || usage
+
+window=$1
+sessions_dir="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/sessions"
+
+##############################################################################
+# Functions
+
+#-----------------------------------------------------------------------------
+# True when pid is running inside the process tree rooted at ancestor and,
+# given start (the session file's procStart), was started at that time. The
+# tree check drops a session file left by a Claude that has exited and stops
+# a pane id from another tmux server (they number from %0 too) matching
+# here; the start time stops a reused pid matching. Without /proc, liveness
+# is the most that can be checked.
+
+runs_under() {
+  local pid=$1 ancestor=$2 start=$3 stat depth
+  local -a fields
+
+  [[ -d /proc ]] || {
+    kill -0 "$pid" 2> /dev/null
+    return
+  }
+
+  for ((depth = 0; depth < 16; depth++)); do
+    # Braced so the redirect's own error, for a pid gone, is silenced.
+    { read -r stat < "/proc/$pid/stat"; } 2> /dev/null || return 1
+
+    # The command name in field 2 may hold spaces and parentheses, so split
+    # what follows its closing parenthesis: fields[0] is field 3 (state),
+    # fields[1] the parent pid, fields[19] field 22, the start time.
+    read -r -a fields <<< "${stat##*) }"
+
+    if ((depth == 0)) && [[ -n $start && ${fields[19]-} != "$start" ]]; then
+      return 1
+    fi
+
+    [[ $pid == "$ancestor" ]] && return 0
+
+    pid=${fields[1]-0}
+    ((pid > 1)) || return 1
+  done
+
+  return 1
+}
+
+#-----------------------------------------------------------------------------
+# Print the window name for a Claude working in directory $1.
+
+repo_name() {
+  local dir=$1 info common git_dir top main
+
+  if ! info=$(git -C "$dir" rev-parse --path-format=absolute \
+    --git-common-dir --git-dir --show-toplevel 2> /dev/null); then
+    printf '%s' "${dir##*/}"
+    return
+  fi
+
+  {
+    read -r common
+    read -r git_dir
+    read -r top
+  } <<< "$info"
+
+  if [[ $common == "$git_dir" ]]; then
+    printf '%s' "${top##*/}"
+    return
+  fi
+
+  # A linked worktree: name the repository its common dir belongs to,
+  # whether that is <repo>/.git or a bare <repo>.git.
+  if [[ ${common##*/} == .git ]]; then
+    main=${common%/.git}
+    main=${main##*/}
+
+  else
+    main=${common##*/}
+    main=${main%.git}
+  fi
+
+  printf '%s[%s]' "$main" "${top##*/}"
+}
+
+#-----------------------------------------------------------------------------
+# ICEBOX: 2026-10-23 — generalise the Claude-specific pinned window name and
+# colour marker so other scripts and situations can pin a stable tmux window
+# name: a generic window option (a name option and a marker style that are
+# not Claude-specific) any tool can set, which automatic-rename-format and
+# the window-status formats honour. Keywords: stable window name, pinned
+# name, fixed tmux window title, sticky window name, window name override,
+# generic marker colour, non-claude windows. Revisit only when the operator
+# brings it up.
+
+#-----------------------------------------------------------------------------
+# Set @claude_name to $1, or unset it when $1 is empty.
+#
+# tmux renames a window only after its active pane has changed, and an idle
+# Claude may print nothing for a long time. Setting automatic-rename makes
+# tmux re-evaluate the name now; it is only set where it is already on, so a
+# manually named window stays as it is.
+
+set_claude_name() {
+  local -a cmd
+
+  if [[ -n $1 ]]; then
+    cmd=(set-option -wq -t "$window" @claude_name "$1")
+
+  else
+    cmd=(set-option -wqu -t "$window" @claude_name)
+  fi
+
+  if [[ $renaming == 1 ]]; then
+    cmd+=(';' set-option -wq -t "$window" automatic-rename on)
+  fi
+
+  tmux "${cmd[@]}"
+}
+
+##############################################################################
+# Read the window's options, then its panes, in one tmux call.
+
+# Fields are space-separated: tmux 3.4 (at least) escapes a control character
+# such as a tab or 0x1f in format output. The fields before the last hold
+# no spaces (the command's are replaced; "-" stands in for none), and the
+# last takes the rest of the line, spaces included.
+win_fmt='#{automatic-rename} #{@claude_name}'
+pane_fmt='#{pane_id} #{pane_active} #{pane_pid} '
+pane_fmt+='#{?pane_current_command,#{s/ /_/:pane_current_command},-} '
+pane_fmt+='#{pane_current_path}'
+
+if ! out=$(tmux display-message -p -t "$window" "$win_fmt" ';' \
+  list-panes -t "$window" -F "$pane_fmt" 2> /dev/null); then
+  echo "$prog: no such window: $window" >&2
+  exit 1
+fi
+
+declare -A pane_active=() pane_pid=() pane_cmd=() pane_path=()
+pane_order=()
+
+{
+  read -r renaming current_name
+
+  while read -r id active pid cmd path; do
+    pane_order+=("$id")
+    pane_active[$id]=$active
+    pane_pid[$id]=$pid
+    pane_cmd[$id]=$cmd
+    pane_path[$id]=$path
+  done
+} <<< "$out"
+
+if ((${#pane_order[@]} == 0)); then
+  echo "$prog: no panes in window: $window" >&2
+  exit 1
+fi
+
+##############################################################################
+# Map Claude sessions onto those panes.
+
+declare -A claude_state=() claude_cwd=()
+contents=()
+
+# Only a file naming one of these panes can matter, so the rest never reach
+# jq; with none, jq does not run at all.
+for file in "$sessions_dir"/*.json; do
+  [[ -f $file ]] || continue
+
+  # read -d '' reports end of file as failure, after filling content.
+  content=
+  IFS= read -r -d '' content < "$file" || true
+
+  for id in "${pane_order[@]}"; do
+    if [[ $content == *".$id\""* ]]; then
+      contents+=("$content")
+      break
+    fi
+  done
+done
+
+if ((${#contents[@]})) && command -v jq > /dev/null; then
+  # One line per session: pane id, pid, procStart, status, cwd.
+  # shellcheck disable=SC2016  # $ARGS is jq's, not the shell's
+  sessions=$(jq -nr '
+    $ARGS.positional[]
+    | fromjson?
+    | select(type == "object"
+        and (.pid | type) == "number"
+        and (.cwd | type) == "string"
+        and (.tmux | type) == "string")
+    | (.tmux | capture("\\.(?<pane>%[0-9]+)$")? | .pane) as $pane
+    | select($pane != null)
+    | [$pane, .pid, (.procStart // "" | tostring),
+       (.status // "" | tostring), .cwd]
+    | map(tostring)
+    | join("\u001f")' --args "${contents[@]}" 2> /dev/null) || sessions=
+
+  # jq's own output, so the unit separator survives here.
+  while IFS=$'\x1f' read -r id pid start status cwd; do
+    [[ -n $id && -n ${pane_pid[$id]-} ]] || continue
+
+    runs_under "$pid" "${pane_pid[$id]}" "$start" || continue
+
+    claude_state[$id]=${status:-unknown}
+    claude_cwd[$id]=$cwd
+  done <<< "$sessions"
+fi
+
+if ((${#claude_state[@]} == 0)); then
+  for id in "${pane_order[@]}"; do
+    [[ ${pane_cmd[$id]} == claude ]] || continue
+
+    claude_state[$id]=unknown
+    claude_cwd[$id]=${pane_path[$id]}
+  done
+fi
+
+##############################################################################
+# Pick the pane, then name and colour the window.
+
+chosen=
+
+for id in "${pane_order[@]}"; do
+  [[ -n ${claude_state[$id]-} ]] || continue
+
+  [[ -z $chosen || ${pane_active[$id]} == 1 ]] && chosen=$id
+done
+
+if [[ -z $chosen ]]; then
+  [[ -z $current_name ]] || set_claude_name ''
+  exit 0
+fi
+
+name=$(repo_name "${claude_cwd[$chosen]}")
+
+[[ $name == "$current_name" ]] || set_claude_name "$name"
+
+case ${claude_state[$chosen]} in
+  busy | unknown) printf '#[fg=colour214]' ;;
+  *) printf '#[fg=colour228]' ;;
+esac
