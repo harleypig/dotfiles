@@ -10,11 +10,11 @@
 
 load ../helpers/common
 
-# The PowerShell team's own mcr.microsoft.com/powershell images are
-# deprecated and frozen (latest is pwsh 7.4.2); Microsoft now ships pwsh in
-# the .NET SDK image. 10.0.402-noble carries pwsh 7.6.7 (LTS) on Ubuntu
-# 24.04. Dependabot cannot see this pin, so bump it by hand.
-PS_IMAGE='mcr.microsoft.com/dotnet/sdk:10.0.402-noble@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2'
+# The image is pinned in tests/docker/powershell/Dockerfile, where Dependabot
+# can bump it. That file is never built: its FROM line is read here and the
+# stock image is run directly.
+PS_IMAGE=$(sed -nE 's/^FROM[[:space:]]+//p' \
+  "$(dotfiles_root)/tests/docker/powershell/Dockerfile")
 
 setup() {
   load_bats_libs
@@ -111,6 +111,13 @@ PS_REPORT='
   Write-Output "hasPath=$(($env:PATH -split [IO.Path]::PathSeparator) -contains "/dotfiles/powershell/bin")"
   Write-Output "hasPrompt=$([bool](Get-Command Format-PromptGit -ErrorAction SilentlyContinue))"
 '
+
+@test "the pwsh image is one FROM line pinned by tag and digest" {
+  # A missing, doubled or unpinned FROM line fails here by name, rather than
+  # as a docker error in every other test.
+  assert_regex "$PS_IMAGE" \
+    '^[^[:space:]@]+:[^[:space:]@/]+@sha256:[0-9a-f]{64}$'
+}
 
 @test "non-interactive pwsh -File gets the env but not the interactive setup" {
   ps_startup "$PS_REPORT"
