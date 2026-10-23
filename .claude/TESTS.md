@@ -51,8 +51,8 @@ throwaway container as a sandbox — a mistake there can never touch the host.
 - `tests/docker/` — the harness image (Debian slim + bash/git/gettext/less +
   the `en_US.UTF-8` locale). The repo under test is mounted **read-only** at
   `/dotfiles` at run time, so tests exercise the current checkout. The default
-  entrypoint deploys `~/.bash_profile`/`~/.bashrc` → `shell-startup` and runs a
-  login shell; tests needing a pristine `HOME` override the entrypoint.
+  entrypoint deploys `~/.bash_profile`/`~/.bashrc` → `shell-startup` and runs
+  a login shell; tests needing a pristine `HOME` override the entrypoint.
 - `tests/helpers/common.bash` provides `dotfiles_harness_image` (builds the
   image, cached; **skips** the test when docker is unavailable or the build
   fails) and `dotfiles_login`.
@@ -79,12 +79,13 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   the mutating modes with **real filesystem side effects** in a throwaway
   `$HOME` (`--remove` deletes a stray / refuses a symlink; `--migrate` moves a
   file to its XDG target); `--migrate` **across a filesystem boundary** — a
-  FILE move must still succeed (`File::Copy::move` copy+unlink) and a DIRECTORY
-  move must be **refused** (`EXDEV`, core-only) — the regression guard for the
-  errno-clobbering bug the tempdir suite can't reach; and `--update-db`
-  against a **local git upstream** (hermetic, no network) proving the mirror
-  refresh + obsolete-override detection. The image carries git because
-  `--update-db` shells out to `git clone`. Same skip-if-no-docker guard.
+  FILE move must still succeed (`File::Copy::move` copy+unlink) and a
+  DIRECTORY move must be **refused** (`EXDEV`, core-only) — the regression
+  guard for the errno-clobbering bug the tempdir suite can't reach; and
+  `--update-db` against a **local git upstream** (hermetic, no network)
+  proving the mirror refresh + obsolete-override detection. The image carries
+  git because `--update-db` shells out to `git clone`. Same skip-if-no-docker
+  guard.
 - `tests/docker/vmgr/` + `tests/shell/test_integration_vmgr.bats` — a
   **second** harness image (Debian slim + git/curl/xz) because `bin/vmgr`
   installs **real** toolchains: the test actually clones nvm and downloads a
@@ -93,15 +94,15 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   skip-if-no-docker guard). Kept separate from the startup image, which
   deliberately lacks those download tools.
 - `tests/docker/perl/` + `tests/shell/test_integration_vmgr_perl.bats` — a
-  **third** harness image (Debian slim + `perl` + a C toolchain) for `bin/vmgr`'s
-  perl (perlbrew) manager, which **compiles Perl from source**. Because that
-  compile takes minutes, the always-run tests exercise everything *except* the
-  build — the pinned perlbrew self-install, `vmgr report perl`, and `vmgr
-  remove perl` (fast, one network fetch, enough to gate per-PR) — while the
-  full lifecycle that builds a real Perl + installs the module set is **opt-in
-  via `VMGR_PERL_COMPILE=1`**. `common.bash` provides `perl_harness_image` and
-  `perl_run`. Separate from the node/python `vmgr` image, which lacks a C
-  toolchain.
+  **third** harness image (Debian slim + `perl` + a C toolchain) for
+  `bin/vmgr`'s perl (perlbrew) manager, which **compiles Perl from source**.
+  Because that compile takes minutes, the always-run tests exercise everything
+  *except* the build — the pinned perlbrew self-install, `vmgr report perl`,
+  and `vmgr remove perl` (fast, one network fetch, enough to gate per-PR) —
+  while the full lifecycle that builds a real Perl + installs the module set
+  is **opt-in via `VMGR_PERL_COMPILE=1`**. `common.bash` provides
+  `perl_harness_image` and `perl_run`. Separate from the node/python `vmgr`
+  image, which lacks a C toolchain.
 
 These run wherever docker exists (CI, dev) and skip otherwise, so they sit in
 the same gating suite without breaking docker-less environments.
@@ -177,8 +178,8 @@ bash/sh → shebang + `bash -n` + shellcheck + shfmt; perl → shebang +
 scan repo-local `.claude/skills/` — that
 helper (`shell-startup-guard`'s `guard.sh`) is covered by the repo-wide
 pre-commit `shellcheck`/`shfmt` hooks plus its hand-written
-`test_shell_startup_md5_guard.bats`. The `bin/` + `lib/` + skill-helper debt is
-clean, so the
+`test_shell_startup_md5_guard.bats`. The `bin/` + `lib/` + skill-helper debt
+is clean, so the
 meta suite **gates in CI** — the `meta` job in `tests.yml` is a **required
 status check** on `master` (alongside `bats`, `perl`, `pre-commit`). Its
 `shellcheck`/`shfmt` are pinned to the repo's versions (matching the docker
@@ -187,8 +188,9 @@ generator prunes stale `*.meta.bats` so a renamed/deleted source can't leave a
 dangling test. The extensionless sourced shell files (`shell-startup`,
 `config/shell-startup/*`, `lib/*`) — which `identify` won't tag as shell
 because they're non-executable — are covered locally by dedicated
-path-selected pre-commit entries (`shellcheck-sourced` / `shfmt-sourced`), with
-sourced-file false positives scoped out via `config/shell-startup/.shellcheckrc`.
+path-selected pre-commit entries (`shellcheck-sourced` / `shfmt-sourced`),
+with sourced-file false positives scoped out via
+`config/shell-startup/.shellcheckrc`.
 
 ## Running
 

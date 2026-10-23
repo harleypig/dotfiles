@@ -4,14 +4,14 @@
 # replaces an earlier 2287-line generated dump that ran at `severity = brutal`
 # and referenced third-party policy bundles (OTRS, TryTiny, Bangs, logicLAB,
 # Moose, Tics, StricterSubs, Reneeb's ProhibitAccessOfPrivateData, …) that are
-# not part of the Perl::Critic distribution. Those bundles buried real findings
-# in noise and only survived because `profile-strictness = warn` downgraded the
-# resulting unknown-policy errors — "worse than nothing."
+# not part of the Perl::Critic distribution. Those bundles buried real
+# findings in noise and only survived because `profile-strictness = warn`
+# downgraded the resulting unknown-policy errors — "worse than nothing."
 #
 # This profile references ONLY policies shipped in the core Perl-Critic dist,
-# so it is deterministic and matches the gate exactly: the pre-commit / CI gate
-# runs perlcritic from a pinned `FROM perl + cpanm Perl::Critic` docker image
-# (a controlled policy set with none of the machine's stray third-party
+# so it is deterministic and matches the gate exactly: the pre-commit / CI
+# gate runs perlcritic from a pinned `FROM perl + cpanm Perl::Critic` docker
+# image (a controlled policy set with none of the machine's stray third-party
 # bundles). NEVER reference a non-core policy here — the gate image would not
 # have it installed, which would reintroduce the unknown-policy error the
 # dropped `profile-strictness = warn` crutch used to mask.
