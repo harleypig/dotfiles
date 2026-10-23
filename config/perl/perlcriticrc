@@ -44,6 +44,15 @@ verbose  = %f:%l:%c [%p] %m (severity %s)\n
 [Documentation::RequirePodSections]
 script_sections = NAME | SYNOPSIS | DESCRIPTION | OPTIONS | EXIT STATUS
 
+# open and close stay checked; print and say do not. A filehandle is
+# buffered, so a print's return value reports a failed write only when that
+# print happens to flush. The error otherwise surfaces at close, and an
+# explicit close stays checked here and by InputOutput::RequireCheckedClose.
+# Checking each print would add an `or die` to every line of output while
+# still missing most write failures.
+[InputOutput::RequireCheckedSyscalls]
+exclude_functions = print say
+
 # A $VERSION is a module's interface: what `use Module 1.2` and the CPAN
 # toolchain read. Everything this profile gates is a script under bin/, where
 # nothing reads one, and an unread version string is never bumped, so it
@@ -51,3 +60,19 @@ script_sections = NAME | SYNOPSIS | DESCRIPTION | OPTIONS | EXIT STATUS
 # their git history. The policy is therefore off rather than satisfied with a
 # placeholder.
 [-Modules::RequireVersionVar]
+
+# The ranges these CLIs enumerate are a shell variable name's, which POSIX
+# defines as ASCII letters, digits and underscore. The named class the
+# policy asks for is not the same set: [[:alpha:]] matches any letter Perl
+# knows, so on a decoded argument (PERL_UNICODE=A) it accepts `é`, which no
+# shell accepts as a name. The explicit range is the exact rule, so the
+# policy is off rather than satisfied with a wider class.
+[-RegularExpressions::ProhibitEnumeratedClasses]
+
+# Every string this policy flags in these CLIs carries a deliberate literal
+# sigil: a `$1` handed to `sh -c`, or `$HOME` / `$DOTFILES` named in a
+# message. The one other spelling, an escaped sigil in double quotes, is
+# flagged in turn by ValuesAndExpressions::ProhibitInterpolationOfLiterals,
+# so the two policies cannot both pass on a literal `$`. Single quotes are
+# the clearer of the two, so this policy is off.
+[-ValuesAndExpressions::RequireInterpolationOfMetachars]

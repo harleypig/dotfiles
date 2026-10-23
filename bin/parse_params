@@ -52,11 +52,11 @@ sub bail_input {
   my @msgs = @_;
   my $prog = length $PROG_NAME ? $PROG_NAME : $PROG;
   for my $msg (@msgs) {
-    print STDERR "$prog: $msg\n";
+    print {*STDERR} "$prog: $msg\n";
   }
   if ($AUTO) {
     if ( defined $OPTS ) {
-      print STDERR "\n", build_usage( $OPTS, $POSITIONALS );
+      print {*STDERR} "\n", build_usage( $OPTS, $POSITIONALS );
     }
     print "exit 2\n";
     exit 0;
@@ -68,7 +68,7 @@ sub bail_input {
 # `exit 2` so the caller's `eval` stops rather than running with unset vars.
 sub def_err {
   my $prog = length $PROG_NAME ? $PROG_NAME : $PROG;
-  print STDERR "$prog: definition error: $_[0]\n";
+  print {*STDERR} "$prog: definition error: $_[0]\n";
   if ($AUTO) { print "exit 2\n"; exit 0; }
   exit 2;
 }
@@ -155,7 +155,7 @@ sub parse_definition {
     my @f =
       $line =~ /,/xms
       ? split( /\s*,\s*/xms, $line, KEEP_TRAILING_FIELDS() )
-      : split( /\s+/xms, $line );
+      : split /\s+/xms, $line;
     my $opt = $f[0];
 
     if ( !( defined $opt && length $opt ) ) {
@@ -294,12 +294,12 @@ sub option_names {
   my ( $def, $line, $opt ) = @_;
 
   my ( $short, $long );
-  if ( $opt =~ /\|/xms ) {
-    ( $short, $long ) = split /\|/xms, $opt, 2;
+  if ( $opt =~ /[|]/xms ) {
+    ( $short, $long ) = split /[|]/xms, $opt, 2;
     if ( length($short) != 1 ) {
       def_err("short option must be one char ($opt) in: $line");
     }
-    if ( !length($long) ) {
+    if ( !length $long ) {
       def_err("long option missing after | ($opt) in: $line");
     }
   } elsif ( length($opt) == 1 ) {
@@ -396,7 +396,7 @@ sub build_usage {
         push @notes, "default: $o->{default}";
       }
       my $note = @notes ? '  (' . join( '; ', @notes ) . ')' : q{};
-      push @lines, sprintf( '  %s%s%s', $flag, $meta, $note );
+      push @lines, sprintf '  %s%s%s', $flag, $meta, $note;
     } ## end for my $o ( @{$opts} )
   } ## end if ( @{$opts} )
 
@@ -546,7 +546,7 @@ sub handle_caller_help {
   for my $a ( @{$args} ) {
     last if $a eq q{--};
     if ( $a eq '-h' || $a eq '--help' ) {
-      print STDERR build_usage( $OPTS, $POSITIONALS );
+      print {*STDERR} build_usage( $OPTS, $POSITIONALS );
       print "exit 0\n";
       exit 0;
     }
