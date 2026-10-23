@@ -32,6 +32,12 @@ root=$(readlink -f "$bindir/..")
 
 PROG=${0##*/}
 
+# Pin the locale so the output never depends on the caller's: `sort` orders
+# by byte and `${#var}` counts bytes, the same on every machine. C is the one
+# locale POSIX guarantees exists. wrap() turns byte counts back into
+# character counts itself.
+export LC_ALL=C
+
 ###############################################################################
 # Utility functions
 
@@ -61,23 +67,30 @@ usage() {
 # Word-wrap stdin's single paragraph to <width> columns (default 78) with no
 # trailing whitespace. An optional <indent> string prefixes every line after
 # the first (a hanging indent for list-item continuations). Pure bash so output
-# is deterministic across machines.
+# is deterministic across machines. Width is in characters: under LC_ALL=C a
+# word's length is its byte count, so UTF-8 continuation bytes (0x80-0xBF)
+# are stripped before measuring.
 
 wrap() {
-  local width=${1:-78} indent=${2:-} line='' word
+  local width=${1:-78} indent=${2:-} line='' len=0 word chars
 
   while read -r -d ' ' word || [[ -n $word ]]; do
     [[ -n $word ]] || continue
 
+    chars=${word//[$'\x80'-$'\xbf']/}
+
     if [[ -z $line ]]; then
       line=$word
+      len=${#chars}
 
-    elif ((${#line} + 1 + ${#word} <= width)); then
+    elif ((len + 1 + ${#chars} <= width)); then
       line+=" $word"
+      ((len += 1 + ${#chars}))
 
     else
       printf '%s\n' "$line"
       line="$indent$word"
+      len=$((${#indent} + ${#chars}))
     fi
   done
 

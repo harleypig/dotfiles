@@ -142,10 +142,37 @@ EOF
   [[ "$output" == *"manifest not found"* ]]
 }
 
+@test "wrap counts characters, not bytes, under a non-UTF-8 locale" {
+  # #547 - locale-dependent wrap. The first rendered line is exactly 78
+  # characters but 84 bytes (three em dashes), so a byte count would push the
+  # long word onto the continuation line.
+  local first long
+  long=$(printf 'y%.0s' {1..40})
+  first="- **zeta** — managed — elsewhere — by $long"
+  jq --arg r "managed — elsewhere — by $long tail" '.excluded[0].reason = $r' "$PKG_MANIFEST" \
+    > "$FIXDIR/m.json"
+  mv "$FIXDIR/m.json" "$PKG_MANIFEST"
+
+  env -u LANG -u LC_CTYPE LC_ALL=C "$GEN"
+
+  run grep -A1 '^- \*\*zeta\*\*' "$PKG_DOC"
+  [ "${lines[0]}" = "$first" ]
+  [ "${lines[1]}" = "  tail" ]
+}
+
 @test "guard: committed docs/packages.md is in sync with the manifest" {
   # No PKG_MANIFEST/PKG_DOC override: run against the real repo files.
   unset PKG_MANIFEST PKG_DOC
 
   run "$GEN" --check
+  [ "$status" -eq 0 ]
+}
+
+@test "guard: committed docs/packages.md is in sync under LC_ALL=C" {
+  # #547 - locale-dependent wrap: the guard must not depend on the caller
+  # having a UTF-8 locale.
+  unset PKG_MANIFEST PKG_DOC
+
+  run env -u LANG -u LC_CTYPE LC_ALL=C "$GEN" --check
   [ "$status" -eq 0 ]
 }
