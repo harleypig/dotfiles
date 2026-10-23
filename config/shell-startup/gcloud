@@ -9,10 +9,12 @@
 # the one thing configurations do not carry: GOOGLE_APPLICATION_CREDENTIALS,
 # which the client libraries read instead of gcloud's own credentials.
 #
-# A configuration's key lives at $XDG_DATA_HOME/gcloud/keys/<name>.json —
-# under the data dir, because XDG_CONFIG_HOME is this repository. With no key
+# A configuration's key lives at private_dotfiles/gcloud/keys/<name>.json,
+# beside the dotfiles checkout, as ghx and linx keep their tokens. With no key
 # there the variable is unset, so a user-account configuration falls back to
-# `gcloud auth application-default login` instead of the last key used.
+# `gcloud auth application-default login` instead of the last key used. A key
+# that exists but cannot be read fails the switch: falling back would point
+# the client libraries at a different identity than the one asked for.
 #
 # gcloud's own completion is loaded by 010-general.
 
@@ -49,11 +51,20 @@ point GOOGLE_APPLICATION_CREDENTIALS at its key, if it has one.'
       return 1
     fi
 
-    local key="${XDG_DATA_HOME:-$HOME/.local/share}/gcloud/keys/$1.json"
+    # Derived as bin/ghx derives it.
+    local dotfiles=${DOTFILES:-$HOME/projects/dotfiles} projects_dir
+    projects_dir=${PROJECTS_DIR:-$(dirname "$dotfiles")}
+
+    local key="$projects_dir/private_dotfiles/gcloud/keys/$1.json"
+
+    if [[ -e $key && ! -r $key ]]; then
+      printf 'gcloud-sa: key %s exists but is not readable\n' "$key" >&2
+      return 1
+    fi
 
     export CLOUDSDK_ACTIVE_CONFIG_NAME=$1
 
-    if [[ -r $key ]]; then
+    if [[ -e $key ]]; then
       export GOOGLE_APPLICATION_CREDENTIALS=$key
 
     else

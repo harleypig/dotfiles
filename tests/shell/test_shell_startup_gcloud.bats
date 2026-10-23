@@ -41,8 +41,8 @@ case "$*" in
 esac'
 
   PATH="$STUB:$PATH"
-  XDG_DATA_HOME="$BATS_TEST_TMPDIR/data"
-  KEYS="$XDG_DATA_HOME/gcloud/keys"
+  export PROJECTS_DIR="$BATS_TEST_TMPDIR/projects"
+  KEYS="$PROJECTS_DIR/private_dotfiles/gcloud/keys"
   mkdir -p "$KEYS"
 
   unset CLOUDSDK_ACTIVE_CONFIG_NAME GOOGLE_APPLICATION_CREDENTIALS
@@ -122,6 +122,37 @@ teardown() {
 
   run cat "$BATS_TEST_TMPDIR/out"
   assert_line --partial "no key at $KEYS/work.json"
+}
+
+@test "without PROJECTS_DIR, keys are found beside the dotfiles checkout" {
+  unset PROJECTS_DIR
+  export DOTFILES="$BATS_TEST_TMPDIR/elsewhere/dotfiles"
+  local keys="$BATS_TEST_TMPDIR/elsewhere/private_dotfiles/gcloud/keys"
+  mkdir -p "$keys"
+  touch "$keys/work.json"
+
+  gcloud-sa work > /dev/null
+
+  assert_equal "$GOOGLE_APPLICATION_CREDENTIALS" "$keys/work.json"
+}
+
+@test "an unreadable key fails and leaves the environment alone" {
+  if ((EUID == 0)); then
+    skip "root can read any file"
+  fi
+
+  touch "$KEYS/work.json"
+  chmod 000 "$KEYS/work.json"
+  export CLOUDSDK_ACTIVE_CONFIG_NAME=before
+  export GOOGLE_APPLICATION_CREDENTIALS="$KEYS/before.json"
+
+  run gcloud-sa work
+  assert_failure
+  assert_output --partial "exists but is not readable"
+
+  gcloud-sa work 2> /dev/null || true
+  assert_equal "$CLOUDSDK_ACTIVE_CONFIG_NAME" before
+  assert_equal "$GOOGLE_APPLICATION_CREDENTIALS" "$KEYS/before.json"
 }
 
 @test "an unknown configuration fails and leaves the environment alone" {
