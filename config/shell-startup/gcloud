@@ -1,0 +1,109 @@
+# shellcheck shell=bash
+
+#-----------------------------------------------------------------------------
+# gcloud-sa — switch this shell's gcloud service account.
+#
+# Account and project switching is gcloud's own named configurations; this
+# only scopes one to the current shell (CLOUDSDK_ACTIVE_CONFIG_NAME, rather
+# than `configurations activate`, which changes every shell at once) and adds
+# the one thing configurations do not carry: GOOGLE_APPLICATION_CREDENTIALS,
+# which the client libraries read instead of gcloud's own credentials.
+#
+# A configuration's key lives at $XDG_DATA_HOME/gcloud/keys/<name>.json —
+# under the data dir, because XDG_CONFIG_HOME is this repository. With no key
+# there the variable is unset, so a user-account configuration falls back to
+# `gcloud auth application-default login` instead of the last key used.
+#
+# gcloud's own completion is loaded by 010-general.
+
+havecmd gcloud || return 0
+
+# Shell functions and completion — interactive shells only.
+[[ $- == *i* ]] || return 0
+
+#-----------------------------------------------------------------------------
+gcloud-sa() {
+  local usage='Usage: gcloud-sa [<configuration>]
+
+With no argument, show the active configuration, account, project and
+credentials file. With one, switch this shell to that gcloud configuration and
+point GOOGLE_APPLICATION_CREDENTIALS at its key, if it has one.'
+
+  if (($# > 1)); then
+    printf '%s\n' "$usage" >&2
+    return 2
+
+  elif [[ $1 == -h || $1 == --help ]]; then
+    printf '%s\n' "$usage"
+    return 0
+
+  elif (($# == 1)); then
+    # gcloud's own name rule; it also keeps the name safe to use in a path.
+    if [[ ! $1 =~ ^[a-z][-a-z0-9]*$ ]]; then
+      printf "gcloud-sa: '%s' is not a valid configuration name\n" "$1" >&2
+      return 1
+    fi
+
+    if ! gcloud config configurations describe "$1" > /dev/null 2>&1; then
+      printf "gcloud-sa: no gcloud configuration named '%s'\n" "$1" >&2
+      return 1
+    fi
+
+    local key="${XDG_DATA_HOME:-$HOME/.local/share}/gcloud/keys/$1.json"
+
+    export CLOUDSDK_ACTIVE_CONFIG_NAME=$1
+
+    if [[ -r $key ]]; then
+      export GOOGLE_APPLICATION_CREDENTIALS=$key
+
+    else
+      unset GOOGLE_APPLICATION_CREDENTIALS
+      printf 'gcloud-sa: no key at %s; ADC falls back to its login\n' "$key"
+    fi
+  fi
+
+  local name account project
+  local creds=${GOOGLE_APPLICATION_CREDENTIALS-}
+
+  # A non-whitespace separator: IFS would merge the runs of tabs that
+  # gcloud's default prints for an unset field, shifting the fields after it.
+  local format='value[separator="|"]'
+  format+='(name,properties.core.account,properties.core.project)'
+
+  IFS='|' read -r name account project < <(
+    gcloud config configurations list --filter='is_active:true' \
+      --format="$format"
+  )
+
+  if [[ -z $creds ]]; then
+    creds='(unset)'
+
+  elif [[ ! -f $creds ]]; then
+    creds+=' (missing)'
+  fi
+
+  printf 'configuration: %s\n' "${name:-(none)}"
+  printf 'account:       %s\n' "${account:-(unset)}"
+  printf 'project:       %s\n' "${project:-(unset)}"
+  printf 'credentials:   %s\n' "$creds"
+}
+
+#-----------------------------------------------------------------------------
+# Completes configuration names from gcloud's config directory, so pressing
+# tab does not start the (slow) gcloud CLI.
+
+_gcloud_sa() {
+  local dir="${CLOUDSDK_CONFIG:-$HOME/.config/gcloud}/configurations"
+  local file names=()
+
+  for file in "$dir"/config_*; do
+    [[ -f $file ]] || continue
+    names+=("${file##*/config_}")
+  done
+
+  local cur=${COMP_WORDS[COMP_CWORD]}
+
+  mapfile -t COMPREPLY < <(compgen -W "${names[*]}" -- "$cur")
+}
+
+complete -F _gcloud_sa gcloud-sa

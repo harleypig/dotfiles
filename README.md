@@ -242,6 +242,8 @@ for specific tools:
 
 - **`aider`**: Aider AI coding assistant
 - **`binenv`**: Binary environment manager
+- **`gcloud`**: `gcloud-sa`, switch the shell's gcloud configuration and
+  `GOOGLE_APPLICATION_CREDENTIALS`
 - **`git`**: Git configuration and aliases
 - **`go`**: Go language environment
 - **`mise`**: mise polyglot tool version manager, when installed
