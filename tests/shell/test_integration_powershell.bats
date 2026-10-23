@@ -395,3 +395,95 @@ PS_REPORT='
   refute_output --partial 'is not recognized'
   refute_output --partial 'Exception'
 }
+
+# Stubs, put first on PATH before pwsh starts, for each command named in
+# $STUBS. Each prints its name and arguments, then any piped stdin line by
+# line.
+STUB_PREP='
+  mkdir -p /tmp/stub
+  for name in $STUBS; do
+    printf "%s\n" "#!/bin/sh" "echo \"\${0##*/}:\$*\"" \
+      "[ -t 0 ] || timeout 5 sed s/^/stdin:/" > /tmp/stub/$name
+    chmod +x /tmp/stub/$name
+  done
+  export PATH="/tmp/stub:$PATH"
+'
+
+@test "interactive pwsh ports grep and g with --color=auto" {
+  ps_startup_interactive '
+    Write-Output "grepIs=$((Get-Command grep).ResolvedCommand.Name)"
+    Write-Output "gIs=$((Get-Command g).ResolvedCommand.Name)"
+    Write-Output "colors=$env:GREP_COLORS"
+    grep -v -i "two words" file
+    g pat
+    "one", "two" | grep -e x
+  ' "STUBS=grep $STUB_PREP"
+  assert_success
+  assert_line --partial 'grepIs=Invoke-Grep'
+  assert_line --partial 'gIs=Invoke-Grep'
+  assert_line --partial 'colors=mt=1;33'
+  assert_line --partial 'grep:--color=auto -v -i two words file'
+  assert_line --partial 'grep:--color=auto pat'
+  assert_line --partial 'grep:--color=auto -e x'
+  assert_line --partial 'stdin:one'
+  assert_line --partial 'stdin:two'
+  refute_output --partial 'is not recognized'
+}
+
+@test "interactive pwsh ports diffdir and diff onto colordiff when present" {
+  ps_startup_interactive '
+    Write-Output "diffIs=$((Get-Command diff).Definition)"
+    diffdir a b
+    diff -u x y
+  ' "STUBS='diff colordiff' $STUB_PREP"
+  assert_success
+  assert_line --partial 'diffIs=colordiff'
+  assert_line --partial 'colordiff:-qr a b'
+  assert_line --partial 'colordiff:-u x y'
+  refute_output --partial 'is not recognized'
+}
+
+@test "interactive pwsh diffdir uses plain diff without colordiff" {
+  ps_startup_interactive '
+    Write-Output "diffType=$((Get-Command diff).CommandType)"
+    diffdir a b
+  ' "STUBS=diff $STUB_PREP"
+  assert_success
+  assert_line --partial 'diffType=Application'
+  assert_line --partial 'diff:-qr a b'
+  refute_output --partial 'colordiff'
+}
+
+@test "interactive pwsh defines no grep or diff commands without the tools" {
+  # PATH holds nothing else, so neither grep nor diff is found.
+  ps_startup_interactive '
+    foreach ($name in "grep", "g", "diff", "diffdir") {
+      $found = [bool](Get-Command $name -ErrorAction SilentlyContinue)
+      Write-Output "$name=$found"
+    }
+  ' 'mkdir /tmp/empty
+    pwsh() { PATH=/tmp/empty /usr/bin/pwsh "$@"; }'
+  assert_success
+  assert_line --partial 'grep=False'
+  assert_line --partial 'g=False'
+  assert_line --partial 'diff=False'
+  assert_line --partial 'diffdir=False'
+  refute_output --partial 'Exception'
+}
+
+@test "interactive pwsh dumppath prints one line per PATH entry" {
+  ps_startup_interactive '
+    $entries = @(dumppath)
+    Write-Output "count=$($entries.Count)"
+    Write-Output "expected=$(@($env:PATH -split ":").Count)"
+    $entries | ForEach-Object { Write-Output "entry=$_" }
+  '
+  assert_success
+  assert_line --partial 'entry=/dotfiles/powershell/bin'
+  refute_line --regexp 'entry=.*:'
+
+  local count expected
+  count=$(grep -o 'count=[0-9]*' <<< "$output")
+  expected=$(grep -o 'expected=[0-9]*' <<< "$output")
+  [[ ${count#count=} -gt 1 && ${count#count=} == "${expected#expected=}" ]]
+}
