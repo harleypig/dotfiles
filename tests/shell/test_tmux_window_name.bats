@@ -401,13 +401,15 @@ real_server() {
   # bash under the name claude, so its process name and argv[0] both read
   # "claude": tmux 3.6 reports argv[0], where a #!/bin/sh script named
   # claude shows as "sh". Not sleep: a multi-call coreutils (uutils) reads
-  # argv[0] and refuses "claude".
+  # argv[0] and refuses "claude". Separate arguments, so tmux execs it
+  # directly: one string goes through default-shell, and where that falls
+  # back to /bin/sh (dash) the pane reads "sh".
   mkdir "$BATS_TEST_TMPDIR/bin"
   ln -s "$(command -v bash)" "$BATS_TEST_TMPDIR/bin/claude"
 
   local win cmd tries
   win=$(tmux new-window -d -P -F '#{window_id}' -c "$REPO" \
-    "$BATS_TEST_TMPDIR/bin/claude -c 'while :; do sleep 1; done'")
+    "$BATS_TEST_TMPDIR/bin/claude" -c 'while :; do sleep 1; done')
 
   for ((tries = 0; tries < 20; tries++)); do
     cmd=$(tmux display-message -p -t "$win" '#{pane_current_command}')
