@@ -2,15 +2,15 @@
 
 <#
 .SYNOPSIS
-  Checks, and fixes where needed, the Windows machine prerequisites for
-  dotfiles and dotagents.
+  Checks, and fixes where needed, the Windows machine prerequisites this
+  dotfiles repository itself needs.
 
 .DESCRIPTION
-  Phase 1 of bringing dotfiles and dotagents up on Windows. It depends on
-  neither repository being set up, so it can run before the shell profile is
-  wired. Chocolatey is the package manager; winget is only for what the
-  Chocolatey community repository lacks. Each item is check-then-fix and
-  idempotent:
+  Phase 1 of bringing dotfiles up on Windows. It does not depend on the repo
+  being set up, so it can run before the shell profile is wired. It covers
+  only what this repo's own hooks, tests and scripts use; what other repos
+  need is theirs to install. Chocolatey is the package manager. Each item is
+  check-then-fix and idempotent:
 
     chocolatey  choco installed, from the official bootstrap if missing.
     python3     ~\.local\bin\python3.exe symlinks to the newest Python the py
@@ -25,8 +25,6 @@
     uv-tools    pre-commit, linode-cli and s3cmd run, as uv tools; dead pipx
                 shims and venvs they replace are removed.
     pester      Pester 5 or later installed for the current user.
-    winget      winget-managed packages that have an exact Chocolatey
-                equivalent are moved to choco (only with -ConvertWinget).
     docker      Docker Desktop installed with choco, and its engine answers.
 
   Each item reports ok, fixed, FAILED: <reason>, or PENDING: <action> for a
@@ -35,11 +33,6 @@
   declining it fails those steps and the rest still run. The script exits 1
   if any item failed or is pending.
 
-.PARAMETER ConvertWinget
-  Move winget-managed packages with an exact Chocolatey equivalent to choco.
-  Without it, the winget item only counts them. Mapping them takes several
-  minutes; review it first with -ConvertWinget -WhatIf.
-
 .EXAMPLE
   Install-WindowsPrereqs.ps1 -WhatIf
   Reports what would change, without changing anything.
@@ -47,17 +40,11 @@
 .EXAMPLE
   Install-WindowsPrereqs.ps1
   Checks every item and fixes the ones that need it.
-
-.EXAMPLE
-  Install-WindowsPrereqs.ps1 -ConvertWinget -WhatIf
-  Lists each winget package with its Chocolatey equivalent, if any.
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
 param (
-  [switch]$ConvertWinget,
-
-  # The rest are for the elevated copy this script launches of itself.
+  # For the elevated copy this script launches of itself.
   [Parameter(DontShow)]
   [string]$ElevatedItem,
 
@@ -185,9 +172,7 @@ function Invoke-ElevatedRun {
   [OutputType([pscustomobject])]
   param (
     [Parameter(Mandatory)]
-    [string[]]$Name,
-
-    [switch]$ConvertWinget
+    [string[]]$Name
   )
 
   $sid = Get-CurrentUserSid
@@ -196,9 +181,6 @@ function Invoke-ElevatedRun {
     '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"",
     '-ElevatedItem', ($Name -join ','), '-ResultPath', "`"$resultFile`"", '-ExpectedSid', $sid
   )
-  if ($ConvertWinget) {
-    $arguments += '-ConvertWinget'
-  }
 
   $failAll = {
     param($Reason)
@@ -1035,8 +1017,46 @@ function Repair-UvTool {
     return New-StepResult -Status 'would fix' -Detail ($pending -join '; ')
   }
 
+  # s3cmd as uv installs it cannot be run by name from Git Bash; this repo's
+  # bin/s3cmd is what makes it work there, so check it the way bash runs it.
+  $bash = Get-GitBash
+  $wrapper = Join-Path -Path $PSScriptRoot -ChildPath '..\..\bin\s3cmd'
+  if (-not $bash) {
+    return New-StepResult -Status FAILED -Detail 'Git Bash not found, so bin/s3cmd cannot be checked'
+  }
+
+  if (-not (Get-S3cmdWrapperVersion -Bash $bash -Wrapper $wrapper)) {
+    return New-StepResult -Status FAILED -Detail "bin/s3cmd does not run s3cmd from Git Bash ($wrapper)"
+  }
+
   $status = if ($changed) { 'fixed' } else { 'ok' }
-  New-StepResult -Status $status -Detail ($versions -join '; ')
+  New-StepResult -Status $status -Detail (($versions -join '; ') + '; bin/s3cmd runs it from Git Bash')
+}
+
+<#
+.SYNOPSIS
+  Returns the `--version` line of s3cmd run through this repo's bin/s3cmd
+  wrapper in Git Bash, or $null.
+#>
+function Get-S3cmdWrapperVersion {
+  [CmdletBinding()]
+  [OutputType([string])]
+  param (
+    [Parameter(Mandatory)]
+    [string]$Bash,
+
+    [Parameter(Mandatory)]
+    [string]$Wrapper
+  )
+
+  if (-not (Test-Path -LiteralPath $Wrapper)) {
+    return $null
+  }
+
+  # stdin closed: s3cmd waits on it when there is no console.
+  $posix = [IO.Path]::GetFullPath($Wrapper) -replace '\\', '/'
+  $line = @(& $Bash -c "'$posix' --version </dev/null" 2>$null) | Where-Object { $_ -match '^s3cmd version' } | Select-Object -First 1
+  $line
 }
 
 <#
@@ -1082,314 +1102,6 @@ function Install-Pester {
   }
 
   New-StepResult -Status fixed -Detail "Pester $($pester.Version)"
-}
-
-<#
-.SYNOPSIS
-  Returns the packages winget manages: the ones `winget export` can tie to
-  the winget or msstore source, not entries it only detects.
-#>
-function Get-WingetManagedPackage {
-  [CmdletBinding()]
-  [OutputType([pscustomobject])]
-  param ()
-
-  $file = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "winget-export-$PID.json"
-  winget export --output $file --accept-source-agreements --disable-interactivity 2>&1 | Out-Null
-  if (-not (Test-Path -LiteralPath $file)) {
-    throw 'winget export wrote nothing'
-  }
-
-  $export = Get-Content -LiteralPath $file -Raw | ConvertFrom-Json
-  # A scratch file: removed even under -WhatIf.
-  Remove-Item -LiteralPath $file -Force -WhatIf:$false
-
-  foreach ($source in $export.Sources) {
-    $sourceName = $source.SourceDetails.Name
-    if ($sourceName -in 'winget', 'msstore') {
-      foreach ($package in $source.Packages) {
-        [pscustomobject]@{ Id = $package.PackageIdentifier; Source = $sourceName }
-      }
-    }
-  }
-}
-
-<#
-.SYNOPSIS
-  Returns a winget package's name, moniker and homepage from `winget show`.
-#>
-function Get-WingetPackageInfo {
-  [CmdletBinding()]
-  [OutputType([pscustomobject])]
-  param (
-    [Parameter(Mandatory)]
-    [string]$Id,
-
-    [Parameter(Mandatory)]
-    [string]$Source
-  )
-
-  $info = [pscustomobject]@{ Name = ''; Moniker = ''; Homepage = '' }
-  foreach ($line in @(winget show --id $Id --exact --source $Source --accept-source-agreements --disable-interactivity 2>$null)) {
-    if ($line -match '^Found (.+) \[.+\]$') {
-      $info.Name = $Matches[1].Trim()
-    } elseif ($line -match '^Moniker:\s*(\S+)') {
-      $info.Moniker = $Matches[1]
-    } elseif ($line -match '^Homepage:\s*(\S+)') {
-      $info.Homepage = $Matches[1]
-    }
-  }
-
-  $info
-}
-
-<#
-.SYNOPSIS
-  Tests whether the Chocolatey community repository has a package with
-  exactly this id.
-#>
-function Test-ChocoRemotePackage {
-  [CmdletBinding()]
-  [OutputType([bool])]
-  param (
-    [Parameter(Mandatory)]
-    [string]$Id
-  )
-
-  $null -ne (@(choco search $Id --exact --limit-output 2>$null) | Where-Object { $_ -like "$Id|*" } | Select-Object -First 1)
-}
-
-<#
-.SYNOPSIS
-  Returns a Chocolatey package's Software Site and Software Source URLs.
-#>
-function Get-ChocoPackageSite {
-  [CmdletBinding()]
-  [OutputType([string])]
-  param (
-    [Parameter(Mandatory)]
-    [string]$Id
-  )
-
-  foreach ($line in @(choco info $Id 2>$null)) {
-    if ($line -match '^\s*Software (Site|Source):\s*(\S+)') {
-      $Matches[2]
-    }
-  }
-}
-
-<#
-.SYNOPSIS
-  Tests whether two URLs point at the same project: the same host, and on a
-  code host (GitHub and the like) the same owner/repository too.
-#>
-function Test-SameSite {
-  [CmdletBinding()]
-  [OutputType([bool])]
-  param (
-    [string]$Uri,
-    [string]$OtherUri
-  )
-
-  $a = $null
-  $b = $null
-  if (-not [Uri]::TryCreate($Uri, 'Absolute', [ref]$a) -or -not [Uri]::TryCreate($OtherUri, 'Absolute', [ref]$b)) {
-    return $false
-  }
-
-  $hostA = $a.Host.ToLowerInvariant() -replace '^www\.', ''
-  $hostB = $b.Host.ToLowerInvariant() -replace '^www\.', ''
-  if ($hostA -ne $hostB) {
-    return $false
-  }
-
-  if ($hostA -notin 'github.com', 'gitlab.com', 'sourceforge.net', 'codeberg.org', 'bitbucket.org') {
-    return $true
-  }
-
-  $repoA = (@($a.AbsolutePath.Trim('/') -split '/') | Select-Object -First 2) -join '/'
-  $repoB = (@($b.AbsolutePath.Trim('/') -split '/') | Select-Object -First 2) -join '/'
-  $repoA -and $repoA -eq $repoB
-}
-
-<#
-.SYNOPSIS
-  Maps one winget package to its Chocolatey equivalent, if it has one.
-
-.DESCRIPTION
-  Nothing is guessed. Candidate ids come from the winget moniker, id and
-  name; each is looked up exactly in the community repository. A candidate
-  counts only when its Software Site or Source is the winget homepage's
-  project. One such candidate is a match; several are ambiguous; a name hit
-  without a homepage match is low confidence. Only a match is converted,
-  and only if Chocolatey does not already own the software (winget also
-  lists what choco installed, and uninstalling that would remove it).
-#>
-function Resolve-ChocoEquivalent {
-  [CmdletBinding()]
-  [OutputType([pscustomobject])]
-  param (
-    [Parameter(Mandatory)]
-    [pscustomobject]$Package,
-
-    [Parameter(Mandatory)]
-    [AllowEmptyCollection()]
-    [string[]]$LocalChoco
-  )
-
-  $row = [pscustomobject]@{
-    WingetId = $Package.Id; Source = $Package.Source; ChocoId = ''; Confidence = ''; Action = ''
-  }
-
-  if ($Package.Id -eq 'Microsoft.AppInstaller') {
-    $row.Action = 'keep: this is winget itself'
-    return $row
-  }
-
-  $info = Get-WingetPackageInfo -Id $Package.Id -Source $Package.Source
-  $segments = @($Package.Id -split '\.')
-  $candidates = @(
-    $info.Moniker
-    $segments[-1]
-    ($segments | Select-Object -Skip 1) -join '-'
-    $info.Name -replace '\s+', '-'
-    $info.Name -replace '\s+', ''
-  ) | ForEach-Object { "$_".ToLowerInvariant() } |
-    Where-Object { $_ -match '^[a-z0-9][a-z0-9._-]*$' } |
-    Select-Object -Unique
-
-  $found = @($candidates | Where-Object { Test-ChocoRemotePackage -Id $_ })
-  if ($found.Count -eq 0) {
-    $row.Action = 'keep on winget: no choco equivalent'
-    return $row
-  }
-
-  $matched = @($found | Where-Object {
-      $id = $_
-      $info.Homepage -and @(Get-ChocoPackageSite -Id $id | Where-Object { Test-SameSite -Uri $_ -OtherUri $info.Homepage }).Count -gt 0
-    })
-
-  $owned = @(@($matched) + @($found) | Where-Object { $LocalChoco -contains $_ } | Select-Object -First 1)
-  if ($owned.Count -gt 0) {
-    $row.ChocoId = $owned[0]
-    $row.Confidence = if ($matched -contains $owned[0]) { 'exact id + same homepage' } else { 'exact id, name only' }
-    $row.Action = 'skip: already installed by choco'
-    return $row
-  }
-
-  if ($matched.Count -eq 1) {
-    $row.ChocoId = $matched[0]
-    $row.Confidence = 'exact id + same homepage'
-    $row.Action = 'convert'
-  } elseif ($matched.Count -gt 1) {
-    $row.ChocoId = $matched -join ' | '
-    $row.Confidence = 'ambiguous'
-    $row.Action = 'keep on winget: ambiguous'
-  } else {
-    $row.ChocoId = $found -join ' | '
-    $row.Confidence = 'exact id, name only (homepage differs or missing)'
-    $row.Action = 'keep on winget: low confidence'
-  }
-
-  $row
-}
-
-<#
-.SYNOPSIS
-  Item winget: move winget-managed packages that have an exact Chocolatey
-  equivalent to choco. Only maps and converts with -Convert.
-
-.DESCRIPTION
-  Each conversion uninstalls the winget copy first and then installs the
-  choco one: both usually drive the same vendor installer and share one
-  Add/Remove Programs entry, so uninstalling after the choco install would
-  remove what choco had just installed. If the choco install fails, the
-  winget package is put back.
-#>
-function Convert-WingetPackage {
-  [CmdletBinding(SupportsShouldProcess)]
-  [OutputType([pscustomobject])]
-  param (
-    [switch]$Convert
-  )
-
-  Sync-ProcessPath
-  if (-not (Get-Command -Name winget -CommandType Application -ErrorAction SilentlyContinue)) {
-    return New-StepResult -Status ok -Detail 'winget not installed; nothing to convert'
-  }
-
-  if (-not (Test-Choco)) {
-    $status = if ($WhatIfPreference) { 'skipped' } else { 'FAILED' }
-    return New-StepResult -Status $status -Detail 'needs Chocolatey (the chocolatey item)'
-  }
-
-  $packages = @(Get-WingetManagedPackage)
-  if (-not $Convert) {
-    return New-StepResult -Status skipped -Detail "$($packages.Count) winget-managed packages; map and convert them with -ConvertWinget"
-  }
-
-  $localChoco = @(@(choco list --limit-output 2>$null) | ForEach-Object { ($_ -split '\|')[0].ToLowerInvariant() })
-  $rows = @($packages | ForEach-Object { Resolve-ChocoEquivalent -Package $_ -LocalChoco $localChoco })
-
-  # Several winget packages on one choco id (WindowsAppRuntime 1.0 and 1.2
-  # both -> windows-app-sdk) are not each other's equivalent: keep them all.
-  $rows | Where-Object { $_.Action -eq 'convert' } | Group-Object -Property ChocoId |
-    Where-Object { $_.Count -gt 1 } | ForEach-Object {
-      foreach ($shared in $_.Group) {
-        $shared.Confidence = 'ambiguous'
-        $shared.Action = "keep on winget: $($_.Count) winget packages map to $($_.Name)"
-      }
-    }
-
-  $toConvert = @($rows | Where-Object { $_.Action -eq 'convert' })
-
-  if ($toConvert.Count -gt 0 -and -not $WhatIfPreference -and -not (Test-Elevated)) {
-    return New-StepResult -Status 'needs admin' -Detail "convert $($toConvert.Count) packages"
-  }
-
-  $converted = 0
-  $failures = 0
-  foreach ($row in $toConvert) {
-    if (-not $PSCmdlet.ShouldProcess($row.WingetId, "winget uninstall, then choco install $($row.ChocoId)")) {
-      continue
-    }
-
-    winget uninstall --id $row.WingetId --exact --source $row.Source --silent --accept-source-agreements --disable-interactivity | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-      $row.Action = "FAILED: winget uninstall exited $LASTEXITCODE; left on winget"
-      $failures++
-      continue
-    }
-
-    $outcome = Install-ChocoPackage -Id $row.ChocoId
-    if ($outcome -and $outcome -ne 'reboot') {
-      winget install --id $row.WingetId --exact --source $row.Source --silent --accept-package-agreements --accept-source-agreements --disable-interactivity | Out-Null
-      $row.Action = "FAILED: $outcome; reinstalled from winget (exit $LASTEXITCODE)"
-      $failures++
-      continue
-    }
-
-    $row.Action = if ($outcome -eq 'reboot') { 'converted (reboot requested)' } else { 'converted' }
-    $converted++
-  }
-
-  $table = @($rows | ForEach-Object {
-      $choco = if ($_.ChocoId) { $_.ChocoId } else { '-' }
-      $confidence = if ($_.Confidence) { " [$($_.Confidence)]" } else { '' }
-      "$($_.WingetId) -> $choco$confidence : $($_.Action)"
-    })
-
-  $summary = "$($packages.Count) winget-managed, $($toConvert.Count) convertible, $converted converted"
-  if ($failures -gt 0) {
-    return New-StepResult -Status FAILED -Detail "$summary, $failures failed" -Line $table
-  }
-
-  if ($WhatIfPreference -and $toConvert.Count -gt 0) {
-    return New-StepResult -Status 'would fix' -Detail $summary -Line $table
-  }
-
-  $status = if ($converted -gt 0) { 'fixed' } else { 'ok' }
-  New-StepResult -Status $status -Detail $summary -Line $table
 }
 
 <#
@@ -1544,7 +1256,6 @@ function Invoke-ElevatedItem {
   $announce = @{
     chocolatey = 'installing Chocolatey from community.chocolatey.org'
     jq         = 'installing jq via choco, then removing the winget copy'
-    winget     = 'moving winget packages to choco (winget uninstall, then choco install, one at a time)'
     docker     = 'downloading Docker Desktop (~1 GB) via choco - this can take 20+ minutes'
   }
 
@@ -1616,7 +1327,6 @@ if ($MyInvocation.InvocationName -ne '.') {
     pytest     = { Install-Pytest }
     'uv-tools' = { Repair-UvTool }
     pester     = { Install-Pester }
-    winget     = { Convert-WingetPackage -Convert:$ConvertWinget }
     docker     = { Install-DockerDesktop }
   }
 
@@ -1635,7 +1345,7 @@ if ($MyInvocation.InvocationName -ne '.') {
 
   $admin = @($results.Keys | Where-Object { $results[$_].Status -eq 'needs admin' })
   if ($admin.Count -gt 0) {
-    $elevated = Invoke-ElevatedRun -Name $admin -ConvertWinget:$ConvertWinget
+    $elevated = Invoke-ElevatedRun -Name $admin
     Write-Output "elevation: $($elevated.Note)"
 
     # Rerun each unelevated, to verify and finish the user-scope part

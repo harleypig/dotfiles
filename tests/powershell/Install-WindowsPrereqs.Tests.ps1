@@ -104,11 +104,11 @@ Describe 'Invoke-ElevatedRun' {
       ForEach-Object { [IO.File]::Delete($_.FullName) }
   }
 
-  It 'passes -ConvertWinget through' {
+  It 'fails the items when the elevated copy writes no results' {
     Mock Start-Process { [pscustomobject]@{ ExitCode = 1 } }
-    $run = Invoke-ElevatedRun -Name winget -ConvertWinget
-    $run.Results['winget'].Detail | Should -BeLike '*wrote no results*'
-    Should -Invoke Start-Process -Times 1 -ParameterFilter { $ArgumentList -contains '-ConvertWinget' }
+    $run = Invoke-ElevatedRun -Name docker
+    $run.Results['docker'].Status | Should -Be 'FAILED'
+    $run.Results['docker'].Detail | Should -BeLike '*wrote no results (exit 1)*'
   }
 }
 
@@ -784,14 +784,32 @@ Describe 'Repair-UvTool' {
     }
     Mock Get-ChildItem { }
     Mock Test-Path -ParameterFilter { $LiteralPath -like '*pipx\venvs\*' } { $true }
+    Mock Get-GitBash { 'C:\Git\bin\bash.exe' }
+    Mock Get-S3cmdWrapperVersion { 's3cmd version 2.4.0' }
   }
 
   It 'is ok when every tool runs' {
     $script:working = @('pre-commit', 'linode-cli', 's3cmd')
     $result = Repair-UvTool
     $result.Status | Should -Be 'ok'
-    $result.Detail | Should -Be 'pre-commit 1.0; linode-cli 1.0; s3cmd 1.0'
+    $result.Detail | Should -Be 'pre-commit 1.0; linode-cli 1.0; s3cmd 1.0; bin/s3cmd runs it from Git Bash'
     Should -Invoke uv -Times 0 -ParameterFilter { $args[1] -eq 'install' }
+  }
+
+  It 'checks s3cmd through this repo''s bin/s3cmd in Git Bash' {
+    $script:working = @('pre-commit', 'linode-cli', 's3cmd')
+    Repair-UvTool | Out-Null
+    Should -Invoke Get-S3cmdWrapperVersion -Times 1 -ParameterFilter {
+      $Bash -eq 'C:\Git\bin\bash.exe' -and $Wrapper -like '*\bin\s3cmd'
+    }
+  }
+
+  It 'fails when bin/s3cmd cannot run s3cmd from Git Bash' {
+    $script:working = @('pre-commit', 'linode-cli', 's3cmd')
+    Mock Get-S3cmdWrapperVersion { }
+    $result = Repair-UvTool
+    $result.Status | Should -Be 'FAILED'
+    $result.Detail | Should -BeLike 'bin/s3cmd does not run s3cmd from Git Bash*'
   }
 
   It 'reinstalls a dead tool with uv and removes its pipx venv' {
@@ -852,155 +870,6 @@ Describe 'Install-Pester' {
   It 'changes nothing under -WhatIf' {
     (Install-Pester -WhatIf).Status | Should -Be 'would fix'
     Should -Invoke Install-Module -Times 0
-  }
-}
-
-Describe 'Test-SameSite' {
-  It 'matches the same host, ignoring www.' {
-    Test-SameSite -Uri 'https://www.videolan.org/vlc/' -OtherUri 'https://videolan.org/' | Should -BeTrue
-  }
-
-  It 'rejects different hosts' {
-    Test-SameSite -Uri 'https://cli.github.com/' -OtherUri 'https://git-scm.com/' | Should -BeFalse
-  }
-
-  It 'needs the same owner/repo on a code host' {
-    Test-SameSite -Uri 'https://github.com/cli/cli' -OtherUri 'https://github.com/cli/cli/releases' | Should -BeTrue
-    Test-SameSite -Uri 'https://github.com/cli/cli' -OtherUri 'https://github.com/jqlang/jq' | Should -BeFalse
-  }
-
-  It 'rejects an empty or relative URL' {
-    Test-SameSite -Uri '' -OtherUri 'https://x.org' | Should -BeFalse
-  }
-}
-
-Describe 'Resolve-ChocoEquivalent' {
-  BeforeEach {
-    Mock Get-WingetPackageInfo { [pscustomobject]@{ Name = 'GitHub CLI'; Moniker = 'gh'; Homepage = 'https://cli.github.com/' } }
-    Mock Test-ChocoRemotePackage { $Id -eq 'gh' }
-    Mock Get-ChocoPackageSite { if ($Id -eq 'gh') { 'https://cli.github.com/' } }
-    $package = [pscustomobject]@{ Id = 'GitHub.cli'; Source = 'winget' }
-  }
-
-  It 'converts one exact id with the same homepage' {
-    $row = Resolve-ChocoEquivalent -Package $package -LocalChoco @()
-    $row.ChocoId | Should -Be 'gh'
-    $row.Confidence | Should -Be 'exact id + same homepage'
-    $row.Action | Should -Be 'convert'
-  }
-
-  It 'looks up only exact candidate ids from the moniker, id and name' {
-    Resolve-ChocoEquivalent -Package $package -LocalChoco @() | Out-Null
-    Should -Invoke Test-ChocoRemotePackage -ParameterFilter { $Id -eq 'gh' }
-    Should -Invoke Test-ChocoRemotePackage -ParameterFilter { $Id -eq 'cli' }
-    Should -Invoke Test-ChocoRemotePackage -ParameterFilter { $Id -eq 'github-cli' }
-    Should -Invoke Test-ChocoRemotePackage -ParameterFilter { $Id -eq 'githubcli' }
-  }
-
-  It 'skips software Chocolatey already installed' {
-    (Resolve-ChocoEquivalent -Package $package -LocalChoco @('gh')).Action | Should -Be 'skip: already installed by choco'
-  }
-
-  It 'keeps a name-only hit on winget' {
-    Mock Get-ChocoPackageSite { 'https://example.org/' }
-    $row = Resolve-ChocoEquivalent -Package $package -LocalChoco @()
-    $row.Action | Should -Be 'keep on winget: low confidence'
-    $row.Confidence | Should -BeLike 'exact id, name only*'
-  }
-
-  It 'keeps an ambiguous match on winget' {
-    Mock Test-ChocoRemotePackage { $Id -in 'gh', 'github-cli' }
-    Mock Get-ChocoPackageSite { 'https://cli.github.com/' }
-    $row = Resolve-ChocoEquivalent -Package $package -LocalChoco @()
-    $row.Action | Should -Be 'keep on winget: ambiguous'
-    $row.ChocoId | Should -Be 'gh | github-cli'
-  }
-
-  It 'reports a package with no choco equivalent' {
-    Mock Test-ChocoRemotePackage { $false }
-    (Resolve-ChocoEquivalent -Package $package -LocalChoco @()).Action | Should -Be 'keep on winget: no choco equivalent'
-  }
-
-  It 'never converts winget itself' {
-    $row = Resolve-ChocoEquivalent -Package ([pscustomobject]@{ Id = 'Microsoft.AppInstaller'; Source = 'winget' }) -LocalChoco @()
-    $row.Action | Should -Be 'keep: this is winget itself'
-    Should -Invoke Test-ChocoRemotePackage -Times 0
-  }
-}
-
-Describe 'Convert-WingetPackage' {
-  BeforeEach {
-    $script:calls = [System.Collections.Generic.List[string]]::new()
-    Mock Get-Command -ParameterFilter { $Name -eq 'winget' } { & $script:fakeCommand 'C:\winget.exe' }
-    Mock Test-Choco { $true }
-    Mock choco { 'firefox|1.0' }
-    Mock Get-WingetManagedPackage {
-      [pscustomobject]@{ Id = 'GitHub.cli'; Source = 'winget' }
-      [pscustomobject]@{ Id = 'Mozilla.Firefox'; Source = 'winget' }
-    }
-    Mock Resolve-ChocoEquivalent {
-      if ($Package.Id -eq 'GitHub.cli') {
-        [pscustomobject]@{ WingetId = 'GitHub.cli'; Source = 'winget'; ChocoId = 'gh'; Confidence = 'exact id + same homepage'; Action = 'convert' }
-      } else {
-        [pscustomobject]@{ WingetId = 'Mozilla.Firefox'; Source = 'winget'; ChocoId = 'firefox'; Confidence = 'exact id + same homepage'; Action = 'skip: already installed by choco' }
-      }
-    }
-    Mock winget { $script:calls.Add("winget $($args[0]) $($args[2])"); $global:LASTEXITCODE = 0 }
-    Mock Install-ChocoPackage { $script:calls.Add("choco $Id"); '' }
-  }
-
-  It 'only counts the packages without -Convert' {
-    $result = Convert-WingetPackage
-    $result.Status | Should -Be 'skipped'
-    $result.Detail | Should -BeLike '2 winget-managed packages*-ConvertWinget'
-    Should -Invoke Resolve-ChocoEquivalent -Times 0
-  }
-
-  It 'asks for admin before converting anything' {
-    (Convert-WingetPackage -Convert).Status | Should -Be 'needs admin'
-    Should -Invoke winget -Times 0
-  }
-
-  It 'uninstalls the winget copy before the choco install, and only convertible rows' {
-    Mock Test-Elevated { $true }
-    $result = Convert-WingetPackage -Convert
-    $result.Status | Should -Be 'fixed'
-    $script:calls | Should -Be @('winget uninstall GitHub.cli', 'choco gh')
-    $result.Lines | Should -Contain 'GitHub.cli -> gh [exact id + same homepage] : converted'
-    $result.Lines | Should -Contain 'Mozilla.Firefox -> firefox [exact id + same homepage] : skip: already installed by choco'
-  }
-
-  It 'puts the winget package back when the choco install fails' {
-    Mock Test-Elevated { $true }
-    Mock Install-ChocoPackage { $script:calls.Add("choco $Id"); 'choco install gh exited 1' }
-    $result = Convert-WingetPackage -Convert
-    $result.Status | Should -Be 'FAILED'
-    $script:calls | Should -Be @('winget uninstall GitHub.cli', 'choco gh', 'winget install GitHub.cli')
-  }
-
-  It 'lists the mapping and changes nothing under -WhatIf' {
-    $result = Convert-WingetPackage -Convert -WhatIf
-    $result.Status | Should -Be 'would fix'
-    $result.Lines.Count | Should -Be 2
-    Should -Invoke winget -Times 0
-    Should -Invoke Install-ChocoPackage -Times 0
-  }
-
-  It 'keeps every winget package that shares a choco id with another' {
-    Mock Test-Elevated { $true }
-    Mock Get-WingetManagedPackage {
-      [pscustomobject]@{ Id = 'Microsoft.WindowsAppRuntime.1.0'; Source = 'winget' }
-      [pscustomobject]@{ Id = 'Microsoft.WindowsAppRuntime.1.2'; Source = 'winget' }
-    }
-    Mock Resolve-ChocoEquivalent {
-      [pscustomobject]@{ WingetId = $Package.Id; Source = 'winget'; ChocoId = 'windows-app-sdk'; Confidence = 'exact id + same homepage'; Action = 'convert' }
-    }
-
-    $result = Convert-WingetPackage -Convert
-    $result.Status | Should -Be 'ok'
-    $result.Lines | Should -Contain 'Microsoft.WindowsAppRuntime.1.0 -> windows-app-sdk [ambiguous] : keep on winget: 2 winget packages map to windows-app-sdk'
-    Should -Invoke winget -Times 0
-    Should -Invoke Install-ChocoPackage -Times 0
   }
 }
 
