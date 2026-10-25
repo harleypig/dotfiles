@@ -926,8 +926,9 @@ function Merge-PrereqPackage {
   winget, checkOnly), else 'user' (npm, pip, uv, psgallery).
 
 .DESCRIPTION
-  System packages run first, so that the Python and the like that
-  user-scope managers need are in place before they are used.
+  System packages run first, and the one elevated pass with them, so that
+  what the user-scope managers need (Python, Node.js for npm, uv) is in
+  place before they are used, wherever a list puts those entries.
 #>
 function Get-PackagePhase {
   [CmdletBinding()]

@@ -1,6 +1,24 @@
 {
   "packages": [
     {
+      "name": "nodejs",
+      "why": "npm, which the bats entries install with (win-prereqs.json:42, :47, :52, :58), comes with Node.js.",
+      "command": "node",
+      "install": [
+        { "manager": "choco", "id": "nodejs-lts" },
+        { "manager": "winget", "id": "OpenJS.NodeJS.LTS" }
+      ]
+    },
+    {
+      "name": "uv",
+      "why": "The pre-commit, linode-cli and s3cmd entries install as uv tools (win-prereqs.json:71, :79, :84).",
+      "command": "uv",
+      "install": [
+        { "manager": "choco", "id": "uv" },
+        { "manager": "winget", "id": "astral-sh.uv" }
+      ]
+    },
+    {
       "name": "python3",
       "why": "The prose-wrap hook runs python3 (.pre-commit-config.yaml:281); the python3 link step points python3 at the newest Python this installs.",
       "command": "python3",

@@ -775,6 +775,13 @@ Describe 'Install-Prereqs.ps1' {
         (Build-TestPackage -Name bats -Install (Build-TestSpec npm bats))
       )
       & $writeRepo 'user' @((Build-TestPackage -Name bats -Install (Build-TestSpec npm bats)))
+      # The npm package is listed before the Node.js it needs, on purpose.
+      & $writeRepo 'order' @(
+        (Build-TestPackage -Name bats -Install (Build-TestSpec npm bats))
+        (Build-TestPackage -Name nodejs -Command node -Install (Build-TestSpec choco nodejs-lts), (Build-TestSpec winget OpenJS.NodeJS.LTS))
+        (Build-TestPackage -Name pre-commit -Install (Build-TestSpec uv pre-commit))
+        (Build-TestPackage -Name uv -Command uv -Install (Build-TestSpec choco uv), (Build-TestSpec winget astral-sh.uv))
+      )
       & $writeRepo 'late' @((Build-TestPackage -Name late -Install (Build-TestSpec npm late), (Build-TestSpec choco late)))
       & $writeRepo 'mixed' @(
         (Build-TestPackage -Name jq -Install (Build-TestSpec choco jq))
@@ -830,6 +837,28 @@ Describe 'Install-Prereqs.ps1' {
         $jq = @($Plan['Packages'] | Where-Object { $_['Name'] -eq 'jq' })[0]
         (@($jq['Specs'] | ForEach-Object { $_['manager'] }) -join ',') -eq 'choco,winget'
       }
+    }
+
+    It 'installs Node.js and uv in the one elevation before the npm and uv packages, whatever the list order' {
+      $script:sequence = [Collections.Generic.List[string]]::new()
+      Mock Invoke-ElevatedRun {
+        $script:sequence.Add('elevate:' + (@($Plan['Packages'] | ForEach-Object { $_['Name'] }) -join ','))
+        $results = @{}
+        foreach ($p in @($Plan['Packages'])) {
+          $script:installed["$($p['Specs'][0]['manager']):$($p['Specs'][0]['id'])"] = '1.0'
+          $results[$p['Name']] = New-StepResult -Status fixed -Detail 'elevated'
+        }
+        [pscustomobject]@{ Note = 'UAC accepted'; Results = $results }
+      }
+      Mock Invoke-SpecInstall {
+        $script:sequence.Add("$($Spec['manager']):$($Spec['id'])")
+        $script:installed["$($Spec['manager']):$($Spec['id'])"] = '1.0'
+        ''
+      }
+
+      & $run 'order' | Should -Be 0
+      $script:sequence | Should -Be @('elevate:nodejs,uv', 'npm:bats', 'uv:pre-commit')
+      Should -Invoke Invoke-ElevatedRun -Times 1 -Exactly
     }
 
     It 'raises no UAC prompt when nothing needs admin' {
