@@ -1,0 +1,84 @@
+{
+  "packages": [
+    {
+      "name": "python3",
+      "why": "The prose-wrap hook runs python3 (.pre-commit-config.yaml:281); the python3 link step points python3 at the newest Python this installs.",
+      "command": "python3",
+      "install": [
+        { "manager": "choco", "id": "python3" },
+        { "manager": "winget", "id": "Python.Python.3.14" }
+      ]
+    },
+    {
+      "name": "jq",
+      "why": "bin/gen-package-doc:128 runs jq.",
+      "command": "jq",
+      "install": [
+        { "manager": "choco", "id": "jq" },
+        { "manager": "winget", "id": "jqlang.jq" }
+      ]
+    },
+    {
+      "name": "bats",
+      "why": "The test gate runs bats under Git Bash (.github/workflows/tests.yml:47).",
+      "install": [{ "manager": "npm", "id": "bats" }]
+    },
+    {
+      "name": "bats-support",
+      "why": "tests/helpers/common.bash:19 loads it from BATS_LIB_PATH (npm root -g).",
+      "install": [{ "manager": "npm", "id": "bats-support" }]
+    },
+    {
+      "name": "bats-assert",
+      "why": "tests/helpers/common.bash:20 loads it from BATS_LIB_PATH (npm root -g).",
+      "install": [{ "manager": "npm", "id": "bats-assert" }]
+    },
+    {
+      "name": "bats-file",
+      "why": "tests/helpers/common.bash:21 loads it. The npm registry's bats-file is a security placeholder, so it comes from the project's repository.",
+      "install": [
+        { "manager": "npm", "id": "bats-file", "source": "github:bats-core/bats-file" }
+      ]
+    },
+    {
+      "name": "pytest",
+      "why": "The python job runs pytest tests/python (.github/workflows/tests.yml:185), importable by python3.",
+      "install": [{ "manager": "pip", "id": "pytest" }]
+    },
+    {
+      "name": "pre-commit",
+      "why": "The check config runs as pre-commit run --all-files (.github/workflows/tests.yml:225) and on every commit.",
+      "command": "pre-commit",
+      "install": [
+        { "manager": "uv", "id": "pre-commit" },
+        { "manager": "pip", "id": "pre-commit" }
+      ]
+    },
+    {
+      "name": "linode-cli",
+      "why": "bin/linx:539 execs linode-cli.",
+      "command": "linode-cli",
+      "install": [{ "manager": "uv", "id": "linode-cli" }]
+    },
+    {
+      "name": "s3cmd",
+      "why": "bin/s3cmd:55 runs the s3cmd uv installs; the bin/s3cmd step checks it from Git Bash.",
+      "install": [{ "manager": "uv", "id": "s3cmd" }]
+    },
+    {
+      "name": "Pester",
+      "why": "The PowerShell tests need Pester 5 or later (tests/powershell/Install-Prereqs.Tests.ps1:1), beside the in-box 3.4.",
+      "install": [{ "manager": "psgallery", "id": "Pester" }]
+    },
+    {
+      "name": "docker-desktop",
+      "why": "The docker_image pre-commit hooks (.pre-commit-config.yaml:48) and bin/docker_wrapper:102 run docker.",
+      "command": "docker",
+      "slow": "about 1 GB to download; this can take 20+ minutes",
+      "install": [
+        { "manager": "choco", "id": "docker-desktop" },
+        { "manager": "winget", "id": "Docker.DockerDesktop" }
+      ]
+    }
+  ]
+}

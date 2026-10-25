@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/harleypig/dotfiles/blob/master/powershell/win-prereqs.schema.json",
+  "title": "Windows prerequisites list",
+  "description": "A <repo>/win-prereqs.json (packages only) or a dotfiles hosts/win-<hostname>.json (repos plus host-only packages), read by powershell/bin/Install-Prereqs.ps1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["packages"],
+  "properties": {
+    "repos": {
+      "description": "Host files only: the repos whose win-prereqs.json this host also installs, in order.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" }
+    },
+    "packages": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/package" }
+    }
+  },
+  "$defs": {
+    "name": {
+      "description": "The package's name across every list; two entries with one name must agree on everything but why.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "why": {
+      "description": "Evidence of use in the owning repo: at least one path:line.",
+      "type": "string",
+      "pattern": "[^\\s:]+:\\d+"
+    },
+    "command": {
+      "description": "An executable whose presence on PATH counts as installed, by whatever tool (the WindowsApps Store stubs do not count).",
+      "type": "string",
+      "minLength": 1
+    },
+    "package": {
+      "oneOf": [
+        { "$ref": "#/$defs/installable" },
+        { "$ref": "#/$defs/checkOnly" }
+      ]
+    },
+    "installable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "why", "install"],
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "why": { "$ref": "#/$defs/why" },
+        "command": { "$ref": "#/$defs/command" },
+        "slow": {
+          "description": "A warning printed before installing it, for a large or slow install.",
+          "type": "string",
+          "minLength": 1
+        },
+        "install": {
+          "description": "Manager specs, tried in order until one works.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/spec" }
+        }
+      }
+    },
+    "checkOnly": {
+      "description": "Must be present, but is never installed or upgraded here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "why", "checkOnly", "command"],
+      "properties": {
+        "name": { "$ref": "#/$defs/name" },
+        "why": { "$ref": "#/$defs/why" },
+        "checkOnly": { "const": true },
+        "command": { "$ref": "#/$defs/command" }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manager", "id"],
+      "properties": {
+        "manager": {
+          "description": "choco and winget run in the elevated pass; npm (-g), pip (--user, into the Python python3 runs), uv (uv tool) and psgallery (Install-Module -Scope CurrentUser) run unelevated.",
+          "enum": ["choco", "winget", "npm", "pip", "uv", "psgallery"]
+        },
+        "id": { "type": "string", "minLength": 1 },
+        "version": {
+          "description": "A pin: installed at exactly this version, and changed only when the installed version differs.",
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "description": "npm only: install from this GitHub repository instead of the registry.",
+          "type": "string",
+          "pattern": "^github:[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+        }
+      },
+      "if": { "required": ["source"] },
+      "then": { "properties": { "manager": { "const": "npm" } } }
+    }
+  }
+}
