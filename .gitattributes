@@ -1,0 +1,4 @@
+# PowerShell runs LF scripts on every platform it supports, and most of the
+# repo's .ps1 files were already LF, so they are kept LF everywhere,
+# including a Windows checkout with core.autocrlf set.
+*.ps1 text eol=lf

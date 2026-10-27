@@ -40,13 +40,15 @@
 
   When dotfiles is part of the target, its built-in setup steps run too:
   the ~\.local\bin\python3.exe link and User PATH order, the MSYS symlink
-  mode, and the bin/s3cmd check. They are fixes, not packages.
+  mode, removing repeated entries and those whose directory is missing from
+  the User and the Machine PATH (the Machine one in the elevated pass), and
+  the bin/s3cmd check. They are fixes, not packages.
 
   Each item reports ok, fixed, would fix, skipped, FAILED: <reason>, or
   PENDING: <action> for a step only the operator can take (a reboot).
-  Everything that needs admin (Chocolatey's bootstrap, choco and winget)
-  runs in one elevated copy of this script, behind one UAC prompt, and only
-  when something needs it. The script exits 1 if any item failed or is
+  Everything that needs admin (Chocolatey's bootstrap, choco and winget,
+  the Machine PATH) runs in one elevated copy of this script, behind one
+  UAC prompt, and only when something needs it. The script exits 1 if any item failed or is
   pending.
 
 .EXAMPLE
@@ -395,6 +397,10 @@ function Get-PlanItemName {
   foreach ($p in @($Plan['Packages'])) {
     if ($p) { $p['Name'] }
   }
+
+  if ($Plan['MachinePath']) {
+    'machine PATH'
+  }
 }
 
 <#
@@ -453,6 +459,18 @@ function Invoke-ElevatedPlan {
     }
 
     Write-StepResult -Name $p['Name'] -Result $results[$p['Name']]
+  }
+
+  # Last, so a directory a package above just created is not dropped.
+  if ($Plan['MachinePath']) {
+    Write-Report '[machine PATH] removing repeated and missing entries...'
+    $results['machine PATH'] = if ($guard) {
+      New-StepResult -Status FAILED -Detail $guard
+    } else {
+      Invoke-PrereqStep -Step { Repair-PathValue -Scope Machine }
+    }
+
+    Write-StepResult -Name 'machine PATH' -Result $results['machine PATH']
   }
 
   [pscustomobject]@{ Sid = $sid; Results = $results } |
@@ -520,18 +538,40 @@ function Sync-ProcessPath {
 
 <#
 .SYNOPSIS
-  Returns a User environment variable's raw value, %VARS% unexpanded, or
-  $null when it is unset.
+  Returns the registry key that holds the User or the Machine environment.
+#>
+function Get-EnvironmentKeyPath {
+  [CmdletBinding()]
+  [OutputType([string])]
+  param (
+    [ValidateSet('User', 'Machine')]
+    [string]$Scope = 'User'
+  )
+
+  if ($Scope -eq 'Machine') {
+    'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+  } else {
+    'HKCU:\Environment'
+  }
+}
+
+<#
+.SYNOPSIS
+  Returns a User (or, with -Scope Machine, a Machine) environment
+  variable's raw value, %VARS% unexpanded, or $null when it is unset.
 #>
 function Get-UserEnvironmentValue {
   [CmdletBinding()]
   [OutputType([string])]
   param (
     [Parameter(Mandatory)]
-    [string]$Name
+    [string]$Name,
+
+    [ValidateSet('User', 'Machine')]
+    [string]$Scope = 'User'
   )
 
-  (Get-Item -Path 'HKCU:\Environment').GetValue($Name, $null, 'DoNotExpandEnvironmentNames')
+  (Get-Item -Path (Get-EnvironmentKeyPath -Scope $Scope)).GetValue($Name, $null, 'DoNotExpandEnvironmentNames')
 }
 
 <#
@@ -561,12 +601,14 @@ public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg,
 
 <#
 .SYNOPSIS
-  Writes a User environment variable, keeping the registry value kind it
-  already has (the User Path is usually REG_EXPAND_SZ, which
-  [Environment]::SetEnvironmentVariable would flatten to REG_SZ).
+  Writes a User (or, with -Scope Machine, a Machine) environment variable,
+  keeping the registry value kind it already has (Path is usually
+  REG_EXPAND_SZ, which [Environment]::SetEnvironmentVariable would flatten
+  to REG_SZ).
 
 .DESCRIPTION
-  Callers gate this with ShouldProcess; it does not ask again.
+  Callers gate this with ShouldProcess; it does not ask again. -Scope
+  Machine needs admin.
 #>
 function Write-UserEnvironmentValue {
   [CmdletBinding()]
@@ -575,16 +617,20 @@ function Write-UserEnvironmentValue {
     [string]$Name,
 
     [Parameter(Mandatory)]
-    [string]$Value
+    [string]$Value,
+
+    [ValidateSet('User', 'Machine')]
+    [string]$Scope = 'User'
   )
 
-  $key = Get-Item -Path 'HKCU:\Environment'
+  $keyPath = Get-EnvironmentKeyPath -Scope $Scope
+  $key = Get-Item -Path $keyPath
   $kind = 'String'
   if ($key.GetValueNames() -contains $Name) {
     $kind = $key.GetValueKind($Name).ToString()
   }
 
-  New-ItemProperty -Path 'HKCU:\Environment' -Name $Name -Value $Value -PropertyType $kind -Force | Out-Null
+  New-ItemProperty -Path $keyPath -Name $Name -Value $Value -PropertyType $kind -Force | Out-Null
   Send-EnvironmentChange
 }
 
@@ -1791,6 +1837,114 @@ function Get-ReorderedUserPath {
 
 <#
 .SYNOPSIS
+  Tests whether a PATH entry names a directory that is gone from a drive
+  or share that is there.
+
+.DESCRIPTION
+  A disconnected drive or share, or an entry that is not a rooted path,
+  does not count as missing: nothing can be told about it from here.
+#>
+function Test-MissingDirectory {
+  [CmdletBinding()]
+  [OutputType([bool])]
+  param (
+    [Parameter(Mandatory)]
+    [string]$Path
+  )
+
+  if (-not [IO.Path]::IsPathRooted($Path)) {
+    return $false
+  }
+
+  (Test-Path -LiteralPath ([IO.Path]::GetPathRoot($Path)) -PathType Container) -and
+  -not (Test-Path -LiteralPath $Path -PathType Container)
+}
+
+<#
+.SYNOPSIS
+  Returns a PATH value without its repeated entries and without those whose
+  directory is missing, and lists what it removed.
+
+.DESCRIPTION
+  Entries compare with %VARS% expanded, ignoring case and a trailing \.
+  The first of a repeat keeps its place, and every kept entry is written as
+  it was, %VARS% included. Missing is Test-MissingDirectory's sense.
+  Returns Value, the cleaned value, and Repeated and Missing, the entries
+  removed as written.
+#>
+function Get-CleanPath {
+  [CmdletBinding()]
+  [OutputType([pscustomobject])]
+  param (
+    [Parameter(Mandatory)]
+    [AllowEmptyString()]
+    [AllowNull()]
+    [string]$Value
+  )
+
+  $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+  $kept = [Collections.Generic.List[string]]::new()
+  $repeated = [Collections.Generic.List[string]]::new()
+  $missing = [Collections.Generic.List[string]]::new()
+
+  foreach ($entry in @($Value -split ';' | Where-Object { $_ })) {
+    $expanded = [Environment]::ExpandEnvironmentVariables($entry).TrimEnd('\')
+
+    if (-not $seen.Add($expanded)) {
+      $repeated.Add($entry)
+    } elseif (Test-MissingDirectory -Path $expanded) {
+      $missing.Add($entry)
+    } else {
+      $kept.Add($entry)
+    }
+  }
+
+  [pscustomobject]@{ Value = $kept -join ';'; Repeated = @($repeated); Missing = @($missing) }
+}
+
+<#
+.SYNOPSIS
+  dotfiles step: remove the repeated entries, and those whose directory is
+  missing, from the User or the Machine PATH.
+
+.DESCRIPTION
+  Safe to rerun: a clean PATH is ok and is not written. The value keeps its
+  registry kind (REG_EXPAND_SZ). Fixing the Machine PATH needs admin, so
+  unelevated it comes back 'needs admin' for the one elevated pass.
+#>
+function Repair-PathValue {
+  [CmdletBinding(SupportsShouldProcess)]
+  [OutputType([pscustomobject])]
+  param (
+    [ValidateSet('User', 'Machine')]
+    [string]$Scope = 'User'
+  )
+
+  $clean = Get-CleanPath -Value (Get-UserEnvironmentValue -Name Path -Scope $Scope)
+  $count = $clean.Repeated.Count + $clean.Missing.Count
+  if ($count -eq 0) {
+    return New-StepResult -Status ok
+  }
+
+  $summary = "$($clean.Repeated.Count) repeated, $($clean.Missing.Count) missing"
+  $lines = @($clean.Repeated | ForEach-Object { "repeated: $_" }) +
+  @($clean.Missing | ForEach-Object { "missing: $_" })
+
+  if (-not $PSCmdlet.ShouldProcess("$Scope PATH", "Remove $count entries ($summary)")) {
+    $admin = if ($Scope -eq 'Machine') { ' (needs admin)' } else { '' }
+    return New-StepResult -Status 'would fix' -Detail "remove $summary$admin" -Line $lines
+  }
+
+  if ($Scope -eq 'Machine' -and -not (Test-Elevated)) {
+    return New-StepResult -Status 'needs admin' -Detail "remove $summary from the Machine PATH" -Line $lines -Plan @{}
+  }
+
+  Write-UserEnvironmentValue -Name Path -Value $clean.Value -Scope $Scope
+  New-StepResult -Status fixed -Detail "removed $summary" -Line $lines
+}
+
+<#
+.SYNOPSIS
   dotfiles step: symlink ~\.local\bin\python3.exe to the newest Python and
   put ~\.local\bin ahead of WindowsApps in the User PATH.
 #>
@@ -1988,9 +2142,9 @@ function Invoke-AdminPass {
   )
 
   $names = @($Results.Keys | Where-Object { $Results[$_].Status -eq 'needs admin' })
-  $plan = @{ Chocolatey = $names -contains 'chocolatey'; Packages = @() }
+  $plan = @{ Chocolatey = $names -contains 'chocolatey'; MachinePath = $names -contains 'machine PATH'; Packages = @() }
   foreach ($n in $names) {
-    if ($n -eq 'chocolatey') { continue }
+    if ($n -in 'chocolatey', 'machine PATH') { continue }
 
     $p = $Results[$n].Plan
     $plan.Packages += @{
@@ -2015,6 +2169,11 @@ function Invoke-AdminPass {
     if ($n -eq 'chocolatey') {
       if ($fromAdmin.Status -eq 'fixed' -and -not (Test-Choco)) {
         $final = New-StepResult -Status FAILED -Detail 'the elevated run installed Chocolatey, but choco is not on PATH here'
+      }
+    } elseif ($n -eq 'machine PATH') {
+      $left = Get-CleanPath -Value (Get-UserEnvironmentValue -Name Path -Scope Machine)
+      if ($fromAdmin.Status -eq 'fixed' -and ($left.Repeated.Count + $left.Missing.Count) -gt 0) {
+        $final = New-StepResult -Status FAILED -Detail 'the elevated run cleaned the Machine PATH, but here it still has repeated or missing entries'
       }
     } elseif ($fromAdmin.Status -eq 'fixed') {
       $state = Get-PackageState -Package $Packages[$n]
@@ -2113,6 +2272,11 @@ function Invoke-PrereqRun {
     Invoke-PrereqItem -Results $results -Name $m.Name -Step { Invoke-Package -Package $m.Package }
   }
 
+  # A dotfiles step, but checked here so a fix rides the one elevated pass.
+  if ($withDotfiles) {
+    Invoke-PrereqItem -Results $results -Name 'machine PATH' -Step { Repair-PathValue -Scope Machine }
+  }
+
   if (@($results.Values | Where-Object { $_.Status -eq 'needs admin' }).Count -gt 0) {
     Invoke-AdminPass -Results $results -Packages $packages
     $elevationUsed = $true
@@ -2146,6 +2310,8 @@ function Invoke-PrereqRun {
   }
 
   if ($withDotfiles) {
+    # After every install, so a directory one just created is not dropped.
+    Invoke-PrereqItem -Results $results -Name 'user PATH' -Step { Repair-PathValue -Scope User }
     Invoke-PrereqItem -Results $results -Name 'bin/s3cmd' -Step { Test-S3cmdWrapper -DotfilesRoot $DotfilesRoot }
   }
 

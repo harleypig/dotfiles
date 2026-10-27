@@ -48,10 +48,12 @@ in order; installed by any tool counts as ok; nothing is uninstalled, and
 nothing is upgraded unless a pin differs. A `checkOnly` entry (git) is only
 looked for. Chocolatey itself is bootstrapped if it is missing.
 
-When dotfiles is part of the target, three built-in steps run as well: the
+When dotfiles is part of the target, four built-in steps run as well: the
 `~\.local\bin\python3.exe` link to the newest Python, ahead of WindowsApps in
-the User `PATH`; `MSYS=winsymlinks:nativestrict`; and a check that
-`bin/s3cmd` runs s3cmd from Git Bash.
+the User `PATH`; `MSYS=winsymlinks:nativestrict`; removing repeated entries,
+and those whose directory is missing, from the User and the Machine `PATH`
+(the Machine one in the elevated window); and a check that `bin/s3cmd` runs
+s3cmd from Git Bash.
 
 [script]: bin/Install-Prereqs.ps1
 [schema]: win-prereqs.schema.json
@@ -73,6 +75,8 @@ in the appropriate locations.
   case, in which case you'll know what you need to do).
 
   Run `Elevate Set-ExecutionPolicy RemoteSigned`. `Elevate` is a script in the
-  bin directory this document is stored in.
+  bin directory this document is stored in. If the command fails, its
+  elevated window stays open, with the output readable, until you press
+  Enter.
 
 * Install the modules listed in `ps-packages.txt` in this directory.

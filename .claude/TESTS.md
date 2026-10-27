@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.7.3
+**Version:** v2.8.0
 
 ## Purpose
 
@@ -246,8 +246,15 @@ check, see the meta-suite note above), **perl** (`prove tests/perl/`,
 installing `libtest-cmd-perl` + `libtest-pod-perl` + `perltidy` +
 `gettext-base`), **python**
 (`pytest tests/python`,
-self-activating once `tests/python/test_*.py` exist), and **pre-commit** (the
-check config via `pre-commit run --all-files`).
+self-activating once `tests/python/test_*.py` exist), **pester** (every
+`tests/powershell/*.Tests.ps1`, run in the pinned pwsh image from
+`tests/docker/powershell/Dockerfile` after installing a pinned Pester), and
+**pre-commit** (the check config via `pre-commit run --all-files`).
+
+**pester** is not a required check: adding it means editing the `master`
+ruleset, which is the operator's call (#590). Off Windows, the
+`Install-Prereqs.Tests.ps1` tests that need Windows paths skip with that
+reason (`tests/powershell/README.md`).
 
 ## Test development
 
