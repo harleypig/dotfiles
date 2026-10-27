@@ -11,6 +11,8 @@ name: tests
 #             module set) — runs only when a PR touches the perl toolchain,
 #             but always reports so it can be a required check
 #   - python: pytest over tests/python/ (activates once tests exist)
+#   - pester: the Pester suites (tests/powershell/*.Tests.ps1) under the
+#             pinned pwsh image — not a required check (see the job)
 #   - pre-commit: the check config (lint/format/secret hooks) via
 #                 `pre-commit run --all-files`
 #   - json-schema: validate the xdg-audit program database (pristine mirror
@@ -186,6 +188,42 @@ jobs:
           else
             echo "no python tests yet — skipping"
           fi
+
+  # Non-gating: it is not among the master ruleset's required checks.
+  # Making it one means editing that ruleset, which lives outside this repo
+  # and is the operator's call (#590). A failure still shows on the PR.
+  #
+  # The image is the one test_integration_powershell.bats runs, read off the
+  # FROM line Dependabot bumps. It carries no Pester, so a pinned version is
+  # installed from the PowerShell Gallery first; Dependabot cannot see that
+  # pin, so bump PESTER_VERSION by hand.
+  pester:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run the Pester suites in the pinned pwsh image
+        env:
+          PESTER_VERSION: 5.9.1
+        run: |
+          image=$(sed -nE 's/^FROM[[:space:]]+//p' tests/docker/powershell/Dockerfile)
+          docker run --rm -v "$PWD:/dotfiles:ro" -w /dotfiles \
+            -e PESTER_VERSION "$image" pwsh -NoProfile -Command '
+              # -ErrorAction, not $ErrorActionPreference: the preference
+              # would reach the tests and turn Write-Error terminating.
+              Install-Module -Name Pester -RequiredVersion $env:PESTER_VERSION `
+                -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
+              Import-Module -Name Pester -RequiredVersion $env:PESTER_VERSION `
+                -ErrorAction Stop
+              $config = New-PesterConfiguration
+              $config.Run.Path = "tests/powershell"
+              $config.Run.Exit = $true
+              $config.Output.Verbosity = "Detailed"
+              Invoke-Pester -Configuration $config
+            '
 
   pre-commit:
     runs-on: ubuntu-latest

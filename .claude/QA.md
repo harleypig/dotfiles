@@ -1,6 +1,6 @@
 # Quality Assurance
 
-**Version:** v1.6.0
+**Version:** v1.7.0
 
 ## Purpose
 
@@ -34,10 +34,10 @@ Two pre-commit configs (see the dotagents repo's `rules/pre-commit.md`):
 
 CI (`.github/workflows/tests.yml`) runs on push to `master`, on PRs, and on
 manual dispatch: jobs **bats**, **meta**, **perl**, **perl-compile**,
-**python**, **pre-commit** (plus `tool-images.yml`, which calls the reusable
-`publish-tool-images.yml` to build and publish the tool images). The
-`master` ruleset requires **bats + meta + perl + perl-compile + pre-commit**
-green to merge (squash-only).
+**python**, **pester**, **pre-commit** (plus `tool-images.yml`, which calls
+the reusable `publish-tool-images.yml` to build and publish the tool images).
+The `master` ruleset requires **bats + meta + perl + perl-compile +
+pre-commit** green to merge (squash-only); **pester** is not required.
 
 ## Dimension status
 
@@ -51,7 +51,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 3 | Type-check | **Off** | No type checker. `pyright` was removed when `config/claude/hooks` (its only typed surface) was extracted to the dotagents repo; the small remaining first-party Python (`tests/lint/prose_wrap.py`, `tests/python/test_prose_wrap.py`) is not type-checked. Revisit if a substantial typed Python surface returns. |
 | 4 | Code smell / complexity | **Active (partial)** | Python: flake8's mccabe `C901` gates cyclomatic complexity above 10 (see Lint). Bash: `shellcheck` catches some; no dedicated bash complexity tool. Acknowledged gap, no tracked owner yet. |
 | 5 | Security | **Active (partial)** | Secrets: `gitleaks` + `detect-private-key` (commit-time check) **plus `trufflehog`** — PR-time *verified* scan in CI (`secret-scan.yml`, non-required for now). SCA / supply-chain: Dependabot alerts + version updates (`.github/dependabot.yml`). SAST: `semgrep` via the `security-scan` skill; **Checkmarx evaluated & declined** (commercial, no free tier — disproportionate). **`Snyk` & `CodeFactor` evaluated (2026-06-19) & not formalized** — both are hosted SaaS App checks that fail this repo's *worthwhile-results* bar (`security-scan` §4 escape hatch): no real dependency tree, so Snyk is a near-noise advisory check, and CodeFactor only re-runs ShellCheck/yamllint already gated locally. **Snyk dropped (uninstall the App); CodeFactor kept as a passive, non-required badge.** DAST: **N/A** (no running service). Deeper triage → `security-scan` skill. |
-| 6 | Tests | **Active** | `bats tests/shell/test_*.bats` (gate), `prove tests/perl/` (incl. `pod-syntax.t` — Test::Pod), `pytest tests/python` (self-activating). **Perl coverage** (Devel::Cover) is a non-gating on-demand report (`TESTS.md`); a gating threshold is **Planned**. Layout/policy in `TESTS.md`. Suite *quality/coverage* → the **test-review** skill (qa.md dim 6), which `qa-check` composes. |
+| 6 | Tests | **Active** | `bats tests/shell/test_*.bats` (gate), `prove tests/perl/` (incl. `pod-syntax.t` — Test::Pod), `pytest tests/python` (self-activating), Pester over `tests/powershell/` in the pinned pwsh image (the `pester` CI job, **not** a required check — #590). **Perl coverage** (Devel::Cover) is a non-gating on-demand report (`TESTS.md`); a gating threshold is **Planned**. Layout/policy in `TESTS.md`. Suite *quality/coverage* → the **test-review** skill (qa.md dim 6), which `qa-check` composes. |
 | 7 | UI/UX & accessibility | **N/A** | Headless dotfiles / CLI — no UI. |
 | 8 | End-to-end | **N/A** | No application. Docker integration tests that bring up a real login shell / pwsh profile live under Tests (`TESTS.md`). |
 | 9 | Compatibility | **N/A** | No external API / data-format contracts. Cross-shell (bash + PowerShell) and the docker context matrix are exercised under Tests. |
@@ -60,7 +60,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 12 | Build | **N/A** | Nothing compiles / bundles. The test docker harness image is test infra, not a product artifact. |
 | 13 | Documentation | **Active** | `markdownlint` (Markdown structure); **`vale`** (prose) — a check-only pre-commit hook running the code-tools image against the repo-local `.vale.ini`: the `proselint` style, baked into the image (no `vale sync`), with `Annotations` / `Typography` / `Needless` off so technical docs stay quiet (#385). Inline-first doc philosophy (`WORKFLOW.md`); no changelog is kept — `CHANGELOG.md` is frozen, git log + PR bodies are the record. **`lychee`** (links) — a check-only pre-commit hook running the code-tools image against the repo-local `lychee.toml`, which sets `offline = true`: relative/internal links and their `#anchor` fragments are checked, external links are reported as Excluded, so a flaky site can never block a commit (#452). The hook reads staged Markdown only; a full pass is `bin/lychee $(git ls-files '*.md')`. In CI, the required `pre-commit` job runs that same offline hook over all files. External links are checked by `.github/workflows/docs-links.yml` (#350): an online lychee pass over every tracked Markdown file, run weekly and on `workflow_dispatch` (and on a PR that edits the workflow itself). It is advisory, not a required check, so a flaky site never reddens a PR; a broken link shows up as a failed scheduled run. A manual external pass is `bin/lychee --offline=false <files>`. |
 | 14 | Code review | **Active (solo)** | `master` ruleset requires a PR (no bypass) with review-thread resolution; **0 required approvals** (solo repo) — review is self-review. |
-| 15 | CI | **Active** | `tests.yml` jobs bats / meta / perl / perl-compile / python / pre-commit (+ `tool-images.yml` → `publish-tool-images.yml`: PR runs build with `packages: read` only, master runs publish with `packages: write` — #482); required checks **bats + meta + perl + perl-compile + pre-commit** gate merges. **Workflow lint** — two check-only pre-commit hooks on the code-tools image, gated in CI through the pre-commit job (#482): **`actionlint`** (workflow syntax, expressions, types; runs the image's shellcheck over `run:` scripts) over `.github/workflows/*.y*ml`, and **`zizmor --offline`** (template injection, persisted credentials, excessive permissions, unpinned actions, Dependabot cooldown) over the workflows and `.github/dependabot.yml`. A deliberate finding is suppressed inline with a reason (`# zizmor: ignore[<audit>]`). `perl-compile` builds a real pinned Perl only when a PR touches the perl toolchain (else early-green). Watch via the `push-pr` skill's `ci-watch`. |
+| 15 | CI | **Active** | `tests.yml` jobs bats / meta / perl / perl-compile / python / pester / pre-commit (+ `tool-images.yml` → `publish-tool-images.yml`: PR runs build with `packages: read` only, master runs publish with `packages: write` — #482); required checks **bats + meta + perl + perl-compile + pre-commit** gate merges; `pester` is advisory, since making it required means editing the ruleset, the operator's call (#590). **Workflow lint** — two check-only pre-commit hooks on the code-tools image, gated in CI through the pre-commit job (#482): **`actionlint`** (workflow syntax, expressions, types; runs the image's shellcheck over `run:` scripts) over `.github/workflows/*.y*ml`, and **`zizmor --offline`** (template injection, persisted credentials, excessive permissions, unpinned actions, Dependabot cooldown) over the workflows and `.github/dependabot.yml`. A deliberate finding is suppressed inline with a reason (`# zizmor: ignore[<audit>]`). `perl-compile` builds a real pinned Perl only when a PR touches the perl toolchain (else early-green). Watch via the `push-pr` skill's `ci-watch`. |
 
 ## Optimization stance
 
