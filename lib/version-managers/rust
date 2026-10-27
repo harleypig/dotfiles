@@ -220,9 +220,9 @@ rustup_remove() {
     return 0
   fi
 
-  # The pre-vmgr rustup home is $XDG_CONFIG_HOME/rustup, which in this repo is
-  # a tracked directory of the dotfiles checkout; a wholesale delete there
-  # would take tracked files with it. Only remove from the vmgr location.
+  # self uninstall deletes RUSTUP_HOME whole, and a home vmgr did not create
+  # (the retired $XDG_CONFIG_HOME/rustup, say) may sit inside a directory
+  # holding other files. Only remove from the vmgr location.
   if [[ $rustup_home != "$expected" ]]; then
     printf 'rustup: RUSTUP_HOME is %s, not the vmgr location %s;\n' \
       "$rustup_home" "$expected" >&2

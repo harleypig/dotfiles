@@ -250,8 +250,8 @@ mod() {
   grep -q -- "^self uninstall -y | RUSTUP_HOME=$XDG_DATA_HOME/rustup" "$CARGO_BIN/rustup.args"
 }
 
-# self uninstall deletes RUSTUP_HOME whole, and the old home is a tracked
-# directory of the dotfiles checkout.
+# self uninstall deletes RUSTUP_HOME whole, so a home vmgr did not create is
+# left for the user to remove.
 @test "remove: refuses when RUSTUP_HOME is not the vmgr location" {
   fake_rustup 9.9.9
   mkdir -p "$XDG_CONFIG_HOME/rustup"
