@@ -10,4 +10,9 @@ export CLAUDE_CODE_NO_FLICKER=1
 if [[ $HOSTNAME == harleypig.com ]]; then
   export CLAUDE_CODE_TMPDIR="$HOME/.cache/claude-tmp"
   mkdir -p "$CLAUDE_CODE_TMPDIR"
+
+  # Tools an agent runs (pip, bats, pre-commit) would otherwise fill the
+  # quota-limited /tmp. Agent sessions only: the operator's own shells keep
+  # the system default.
+  [[ -n $CLAUDECODE ]] && export TMPDIR="$CLAUDE_CODE_TMPDIR"
 fi
