@@ -44,3 +44,31 @@ gh pr view <N> --json projectCards    # returns null (not an error) once fixed
 ```
 
 [cli/cli#11983]: https://github.com/cli/cli/issues/11983
+
+## bats-core and its helper libraries
+
+The test suite's runner (`bats`) and the three helper libraries its tests
+load (`bats-support`, `bats-assert`, `bats-file`). The helpers are separate
+packages from `bats` itself; with `bats` alone the suite cannot run.
+
+**Why the distro packages:** they install the helpers under `/usr/lib/bats`,
+which is the `BATS_LIB_PATH` default that `load_bats_libs` in
+`tests/helpers/common.bash` falls back to. A per-user install (npm, a git
+clone) would need `BATS_LIB_PATH` set in every shell and in CI.
+
+**Install:**
+
+```bash
+sudo apt-get install -y bats bats-support bats-assert bats-file
+```
+
+**Verify:**
+
+```bash
+bats --version                        # Bats 1.x
+ls /usr/lib/bats                      # bats-assert  bats-file  bats-support
+bats tests/shell/test_*.bats          # from the repo root
+```
+
+`pre-commit`, the other tool the test workflow needs, is a Python package and
+is listed in [`packages.md`](packages.md) (`pipx install pre-commit`).
