@@ -4,3 +4,10 @@
 havecmd claude || return 0
 
 export CLAUDE_CODE_NO_FLICKER=1
+
+# Keep the harness's internal temp files out of /tmp on this host. It must be
+# set from the shell: project-level settings env cannot set it.
+if [[ $HOSTNAME == harleypig.com ]]; then
+  export CLAUDE_CODE_TMPDIR="$HOME/.cache/claude-tmp"
+  mkdir -p "$CLAUDE_CODE_TMPDIR"
+fi
