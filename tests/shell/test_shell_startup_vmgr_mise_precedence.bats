@@ -180,46 +180,10 @@ run_startup() {
   assert_line "RUSTUP_HOME=$T/data/rustup"
 }
 
-# Before vmgr managed rust, RUSTUP_HOME was $XDG_CONFIG_HOME/rustup. A machine
-# whose toolchains still live there keeps using them until the new home
-# exists, so moving the default cannot orphan an installed toolchain.
-@test "rust homes: toolchains only in the old config home keep it in use" {
+# The pre-vmgr home, $XDG_CONFIG_HOME/rustup, is retired: toolchains left
+# there must not pull RUSTUP_HOME back to it.
+@test "rust homes: toolchains in the retired config home are ignored" {
   mkdir -p "$T/cfg/rustup/toolchains/stable-x86_64-unknown-linux-gnu"
-
-  run_startup
-
-  assert_success
-  assert_line "RUSTUP_HOME=$T/cfg/rustup"
-}
-
-@test "rust homes: once the new data home has toolchains it wins" {
-  mkdir -p "$T/cfg/rustup/toolchains/stable-x86_64-unknown-linux-gnu"
-  mkdir -p "$T/data/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu"
-
-  run_startup
-
-  assert_success
-  assert_line "RUSTUP_HOME=$T/data/rustup"
-}
-
-# Any rustup call pointed at the new home creates it with only a
-# settings.toml; that alone must not strand the toolchains in the old home.
-@test "rust homes: a new data home with no toolchains does not win" {
-  mkdir -p "$T/cfg/rustup/toolchains/stable-x86_64-unknown-linux-gnu"
-  mkdir -p "$T/data/rustup"
-  touch "$T/data/rustup/settings.toml"
-
-  run_startup
-
-  assert_success
-  assert_line "RUSTUP_HOME=$T/cfg/rustup"
-}
-
-# The old home is a tracked directory in this repo (its settings.toml), so it
-# exists on every checkout; without toolchains it is not a reason to stay.
-@test "rust homes: an old config home with no toolchains is not used" {
-  mkdir -p "$T/cfg/rustup"
-  touch "$T/cfg/rustup/settings.toml"
 
   run_startup
 

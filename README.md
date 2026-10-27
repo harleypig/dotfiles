@@ -285,7 +285,7 @@ application. Each tool may have its own subdirectory with configuration files
 and documentation:
 
 - **Development**: ansible, binenv, docker, gh, git, go, npm, perl, python,
-  pypoetry, rustup
+  pypoetry
 - **CLI Tools**: act, glow, htop, linode-cli, opencode, pgcli, snyk, yamllint
 - **Applications**: audacity, Cursor, cursor, gnome-initial-setup-done
 - **Configuration**: completions, configstore, readline, shell-startup, subdir

@@ -9,19 +9,7 @@
 # $RUSTUP_HOME.
 
 export CARGO_HOME="$XDG_DATA_HOME/cargo"
-
-# RUSTUP_HOME used to be $XDG_CONFIG_HOME/rustup. While toolchains are still
-# only there, keep using it, so the move cannot orphan an installed toolchain;
-# once the data home has toolchains it wins. Both checks look at toolchains/,
-# not the dir: the old dir is tracked in this repo (settings.toml), and any
-# rustup call creates the new one with just a settings.toml.
-_rust_home="$XDG_DATA_HOME/rustup"
-
-[[ ! -d $_rust_home/toolchains && -d $XDG_CONFIG_HOME/rustup/toolchains ]] \
-  && _rust_home="$XDG_CONFIG_HOME/rustup"
-
-export RUSTUP_HOME="$_rust_home"
-unset _rust_home
+export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
 
 # Prepending after the mise module ran is what puts vmgr's rust ahead of
 # mise's when both are installed (ADR-0007). It also puts anything
