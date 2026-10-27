@@ -29,15 +29,25 @@ Describe 'Elevate.ps1' {
 exit [int]$env:ELEVATE_TEST_EXIT
 '@)
     $script:received = Join-Path -Path $TestDrive -ChildPath 'received.json'
+    $script:window = Join-Path -Path $TestDrive -ChildPath 'window.txt'
+
+    function Get-WindowText {
+      Get-Content -LiteralPath $script:window -Raw
+    }
   }
 
   BeforeEach {
     Remove-Item -LiteralPath $script:received -ErrorAction SilentlyContinue
     $env:ELEVATE_TEST_EXIT = '0'
 
+    # The piped line answers the close wait on a failure, and the window's
+    # output, prompt included, goes to window.txt for the tests to read.
+    Remove-Item -LiteralPath $script:window -ErrorAction SilentlyContinue
     Mock Start-Process {
-      & $FilePath @ArgumentList
-      [pscustomobject]@{ ExitCode = $LASTEXITCODE }
+      $output = '' | & $FilePath @ArgumentList 2>&1 | Out-String
+      $code = $LASTEXITCODE
+      [IO.File]::WriteAllText((Join-Path -Path $TestDrive -ChildPath 'window.txt'), $output)
+      [pscustomobject]@{ ExitCode = $code }
     }
   }
 
@@ -116,6 +126,47 @@ exit [int]$env:ELEVATE_TEST_EXIT
     & $script:elevate Get-Item -LiteralPath $TestDrive
 
     $LASTEXITCODE | Should -Be 0
+  }
+
+  It 'lets the window close on its own when the command succeeds' {
+    & $script:elevate $script:helper
+
+    $LASTEXITCODE | Should -Be 0
+    (Get-WindowText) | Should -Not -Match 'press Enter'
+  }
+
+  It 'keeps the window open on a non-zero exit, until Enter, then returns the code' {
+    $env:ELEVATE_TEST_EXIT = '7'
+
+    & $script:elevate $script:helper
+
+    $LASTEXITCODE | Should -Be 7
+    (Get-WindowText) | Should -Match 'failed \(exit 7\); press Enter to close this window'
+  }
+
+  It 'keeps the window open, with the error readable, when a cmdlet fails' {
+    & $script:elevate Get-Item -LiteralPath (Join-Path -Path $TestDrive -ChildPath 'missing') 2>$null
+
+    $LASTEXITCODE | Should -Be 1
+    (Get-WindowText) | Should -Match 'Cannot find path'
+    (Get-WindowText) | Should -Match 'failed \(exit 1\); press Enter'
+  }
+
+  It 'keeps the window open when the elevated session cannot reach the directory' {
+    $dir = Join-Path -Path $TestDrive -ChildPath 'gone'
+    [IO.Directory]::CreateDirectory($dir) | Out-Null
+
+    Push-Location -LiteralPath $dir
+    try {
+      [IO.Directory]::Delete($dir)
+      & $script:elevate $script:helper
+    } finally {
+      Pop-Location
+    }
+
+    $LASTEXITCODE | Should -Be 1
+    Test-Path -LiteralPath $script:received | Should -BeFalse
+    (Get-WindowText) | Should -Match 'failed \(exit 1\); press Enter'
   }
 
   It 'fails when UAC is declined' {

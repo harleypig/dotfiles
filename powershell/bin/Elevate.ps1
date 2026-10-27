@@ -17,9 +17,13 @@
   like a parameter name (-Scope, --version), which stays bare so a cmdlet
   binds it by name.
 
-  The elevated window closes when the command ends, so its output is not
-  kept. Where the current directory does not exist for the elevated session
-  (a mapped network drive), the command does not run and the exit code is 1.
+  The command's output shows only in the elevated window. When the command
+  succeeds the window closes as it ends. When it fails (a non-zero exit, a
+  cmdlet error) the window stays open, its output readable, until Enter is
+  pressed, and the exit code comes back once it closes. Where the current
+  directory does not exist for the elevated session (a mapped network
+  drive), the command does not run, the window waits the same way, and the
+  exit code is 1.
 
   Elevate -h shows this help.
 
@@ -59,13 +63,23 @@ $words = for ($i = 0; $i -lt $args.Count; $i++) {
 $location = "'" + ((Get-Location).Path -replace "'", "''") + "'"
 
 # pwsh -Command reduces any other native exit code to 1, so pass it on
-# explicitly.
+# explicitly. The elevated window is the only place the output shows, so on
+# a failure it waits for Enter before closing; the catch keeps a terminating
+# error, an unreachable directory included, from closing it first.
 $script = @"
-Set-Location -LiteralPath $location -ErrorAction Stop
-& $($words -join ' ')
-`$ok = `$?
-if (`$null -ne `$LASTEXITCODE) { exit `$LASTEXITCODE }
-if (-not `$ok) { exit 1 }
+`$code = 1
+try {
+  Set-Location -LiteralPath $location -ErrorAction Stop
+  & $($words -join ' ')
+  `$ok = `$?
+  `$code = if (`$null -ne `$LASTEXITCODE) { `$LASTEXITCODE } elseif (`$ok) { 0 } else { 1 }
+} catch {
+  Write-Error -ErrorRecord `$_
+}
+if (`$code -ne 0) {
+  Read-Host -Prompt "Elevate: the command failed (exit `$code); press Enter to close this window" | Out-Null
+}
+exit `$code
 "@
 
 # -EncodedCommand sidesteps quoting the script for the command line.

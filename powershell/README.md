@@ -73,6 +73,8 @@ in the appropriate locations.
   case, in which case you'll know what you need to do).
 
   Run `Elevate Set-ExecutionPolicy RemoteSigned`. `Elevate` is a script in the
-  bin directory this document is stored in.
+  bin directory this document is stored in. If the command fails, its
+  elevated window stays open, with the output readable, until you press
+  Enter.
 
 * Install the modules listed in `ps-packages.txt` in this directory.
