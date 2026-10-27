@@ -776,10 +776,22 @@ Describe 'Install-Prereqs.ps1' {
       Should -Invoke Wait-ElevatedWindowClose -Times 1 -ParameterFilter { -not $Failed }
     }
 
+    It 'cleans the Machine PATH when the plan asks, after the packages' {
+      Mock Repair-PathValue { New-StepResult -Status fixed -Detail 'removed 1 repeated, 0 missing' }
+      $plan.MachinePath = $true
+      Invoke-ElevatedPlan -Plan $plan -ExpectedSid 'S-1-5-21-1' -ResultPath $resultPath
+      $script:report[0] | Should -Be 'Admin steps: chocolatey, jq, docker-desktop, machine PATH'
+      $script:report | Should -Contain 'machine PATH: fixed (removed 1 repeated, 0 missing)'
+      Should -Invoke Repair-PathValue -Times 1 -Exactly -ParameterFilter { $Scope -eq 'Machine' }
+    }
+
     It 'changes nothing when elevated as a different account' {
+      Mock Repair-PathValue { New-StepResult -Status fixed }
+      $plan.MachinePath = $true
       Invoke-ElevatedPlan -Plan $plan -ExpectedSid 'S-1-5-21-2' -ResultPath $resultPath
       Should -Invoke Install-Chocolatey -Times 0
       Should -Invoke Install-PackageSpec -Times 0
+      Should -Invoke Repair-PathValue -Times 0
       $script:report | Should -Contain 'jq: FAILED: elevated as a different account; nothing changed'
     }
   }
@@ -856,6 +868,7 @@ Describe 'Install-Prereqs.ps1' {
       }
       Mock Repair-Python3 { New-StepResult -Status ok }
       Mock Set-MsysSymlinkMode { New-StepResult -Status ok }
+      Mock Repair-PathValue { New-StepResult -Status ok }
       Mock Test-S3cmdWrapper { New-StepResult -Status ok }
     }
 
@@ -970,9 +983,12 @@ Describe 'Install-Prereqs.ps1' {
 
       & $run 'user' | Out-Null
       Should -Invoke Repair-Python3 -Times 0
+      Should -Invoke Repair-PathValue -Times 0
       & $run 'dotfiles' | Should -Be 0
       Should -Invoke Repair-Python3 -Times 1
       Should -Invoke Set-MsysSymlinkMode -Times 1
+      Should -Invoke Repair-PathValue -Times 1 -Exactly -ParameterFilter { $Scope -eq 'Machine' }
+      Should -Invoke Repair-PathValue -Times 1 -Exactly -ParameterFilter { $Scope -eq 'User' }
       Should -Invoke Test-S3cmdWrapper -Times 1
     }
 
@@ -1083,6 +1099,159 @@ Describe 'Install-Prereqs.ps1' {
     It 'writes a new value as REG_SZ' {
       Write-UserEnvironmentValue -Name MSYS -Value 'winsymlinks:nativestrict'
       Should -Invoke New-ItemProperty -Times 1 -ParameterFilter { $Name -eq 'MSYS' -and $PropertyType -eq 'String' }
+    }
+
+    It 'writes the Machine environment, keeping its kind, with -Scope Machine' {
+      $machine = 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+      Mock Get-Item -ParameterFilter { $Path -eq $machine } { $fakeKey }
+      Write-UserEnvironmentValue -Name Path -Value 'C:\x' -Scope Machine
+      Should -Invoke New-ItemProperty -Times 1 -ParameterFilter {
+        $Path -eq $machine -and $Name -eq 'Path' -and $PropertyType -eq 'ExpandString'
+      }
+    }
+  }
+
+  Describe 'PATH clean-up' {
+    BeforeAll {
+      $a = Join-Path -Path $TestDrive -ChildPath 'a'
+      $b = Join-Path -Path $TestDrive -ChildPath 'b'
+      $gone = Join-Path -Path $TestDrive -ChildPath 'gone'
+      [IO.Directory]::CreateDirectory($a) | Out-Null
+      [IO.Directory]::CreateDirectory($b) | Out-Null
+      $sep = [IO.Path]::DirectorySeparatorChar
+    }
+
+    Describe 'Get-CleanPath' {
+      It 'leaves a clean PATH as it is' {
+        $r = Get-CleanPath -Value "$a;$b"
+        $r.Value | Should -Be "$a;$b"
+        $r.Repeated | Should -BeNullOrEmpty
+        $r.Missing | Should -BeNullOrEmpty
+      }
+
+      It 'removes a repeat, keeping the first in its place' {
+        $r = Get-CleanPath -Value "$a;$b;$a"
+        $r.Value | Should -Be "$a;$b"
+        $r.Repeated | Should -Be @($a)
+      }
+
+      It 'counts an entry differing only in case or a trailing \ as a repeat' {
+        $r = Get-CleanPath -Value "$a;$($a.ToUpperInvariant())\"
+        $r.Value | Should -Be $a
+        $r.Repeated | Should -Be @("$($a.ToUpperInvariant())\")
+      }
+
+      It 'drops an entry whose directory is missing' {
+        $r = Get-CleanPath -Value "$a;$gone;$b"
+        $r.Value | Should -Be "$a;$b"
+        $r.Missing | Should -Be @($gone)
+      }
+
+      It 'keeps an entry on a drive or share that is not there' {
+        $root = [IO.Path]::GetPathRoot($gone)
+        Mock Test-Path -ParameterFilter { $LiteralPath -eq $root } { $false }
+        (Get-CleanPath -Value "$a;$gone").Value | Should -Be "$a;$gone"
+      }
+
+      It 'compares %VARS% expanded, and keeps them as written' {
+        $env:PREREQ_TEST_DRIVE = $TestDrive
+        try {
+          $r = Get-CleanPath -Value "$a;%PREREQ_TEST_DRIVE%${sep}a;%PREREQ_TEST_DRIVE%${sep}b"
+          $r.Value | Should -Be "$a;%PREREQ_TEST_DRIVE%${sep}b"
+          $r.Repeated | Should -Be @("%PREREQ_TEST_DRIVE%${sep}a")
+        } finally {
+          Remove-Item -Path Env:PREREQ_TEST_DRIVE
+        }
+      }
+
+      It 'drops empty entries and takes an unset PATH' {
+        (Get-CleanPath -Value ";$a;;").Value | Should -Be $a
+        (Get-CleanPath -Value $null).Value | Should -Be ''
+      }
+    }
+
+    Describe 'Test-MissingDirectory' {
+      It 'is false for an entry that is not a rooted path' {
+        Test-MissingDirectory -Path 'relative' | Should -BeFalse
+      }
+    }
+
+    Describe 'Repair-PathValue' {
+      BeforeEach {
+        # The PATH lives in $script:pathValue; writing it changes what the
+        # next read returns, so a rerun sees the first run's fix.
+        $script:pathValue = "$a;$gone;$b;$a"
+        Mock Get-UserEnvironmentValue { $script:pathValue }
+        Mock Write-UserEnvironmentValue { $script:pathValue = $Value }
+      }
+
+      It 'is ok, and writes nothing, when the PATH is clean' {
+        $script:pathValue = "$a;$b"
+        (Repair-PathValue).Status | Should -Be 'ok'
+        Should -Invoke Write-UserEnvironmentValue -Times 0
+      }
+
+      It 'removes the repeated and missing entries from the User PATH, keeping its order' {
+        $r = Repair-PathValue -Scope User
+        $r.Status | Should -Be 'fixed'
+        $r.Detail | Should -Be 'removed 1 repeated, 1 missing'
+        $r.Lines | Should -Be @("repeated: $a", "missing: $gone")
+        Should -Invoke Get-UserEnvironmentValue -ParameterFilter { $Name -eq 'Path' -and $Scope -eq 'User' }
+        Should -Invoke Write-UserEnvironmentValue -Times 1 -Exactly -ParameterFilter {
+          $Name -eq 'Path' -and $Value -eq "$a;$b" -and $Scope -eq 'User'
+        }
+      }
+
+      It 'is safe to rerun: the second run finds nothing to fix' {
+        (Repair-PathValue).Status | Should -Be 'fixed'
+        (Repair-PathValue).Status | Should -Be 'ok'
+        Should -Invoke Write-UserEnvironmentValue -Times 1 -Exactly
+      }
+
+      It 'says what it would remove under -WhatIf, writing nothing' {
+        $r = Repair-PathValue -Scope Machine -WhatIf
+        $r.Status | Should -Be 'would fix'
+        $r.Detail | Should -Be 'remove 1 repeated, 1 missing (needs admin)'
+        Should -Invoke Write-UserEnvironmentValue -Times 0
+      }
+
+      It 'leaves the Machine PATH to the elevated pass when unelevated' {
+        $r = Repair-PathValue -Scope Machine
+        $r.Status | Should -Be 'needs admin'
+        Should -Invoke Write-UserEnvironmentValue -Times 0
+      }
+
+      It 'fixes the Machine PATH when elevated' {
+        Mock Test-Elevated { $true }
+        (Repair-PathValue -Scope Machine).Status | Should -Be 'fixed'
+        Should -Invoke Write-UserEnvironmentValue -Times 1 -Exactly -ParameterFilter {
+          $Value -eq "$a;$b" -and $Scope -eq 'Machine'
+        }
+      }
+    }
+
+    Describe 'Invoke-AdminPass with the Machine PATH' {
+      BeforeEach {
+        Mock Invoke-ElevatedRun {
+          [pscustomobject]@{ Note = 'UAC accepted'; Results = @{ 'machine PATH' = (New-StepResult -Status fixed -Detail 'removed 1 repeated, 0 missing') } }
+        }
+        $results = [ordered]@{ 'machine PATH' = (New-StepResult -Status 'needs admin' -Detail 'remove 1 repeated, 0 missing from the Machine PATH' -Plan @{}) }
+      }
+
+      It 'cleans it in the one elevated pass and checks the result unelevated' {
+        Mock Get-UserEnvironmentValue -ParameterFilter { $Scope -eq 'Machine' } { "$a;$b" }
+        Invoke-AdminPass -Results $results -Packages @{}
+        Should -Invoke Invoke-ElevatedRun -Times 1 -Exactly -ParameterFilter {
+          $Plan['MachinePath'] -and @($Plan['Packages']).Count -eq 0
+        }
+        $results['machine PATH'].Status | Should -Be 'fixed'
+      }
+
+      It 'fails the item when the Machine PATH still needs cleaning afterwards' {
+        Mock Get-UserEnvironmentValue -ParameterFilter { $Scope -eq 'Machine' } { "$a;$a" }
+        Invoke-AdminPass -Results $results -Packages @{}
+        $results['machine PATH'].Status | Should -Be 'FAILED'
+      }
     }
   }
 
