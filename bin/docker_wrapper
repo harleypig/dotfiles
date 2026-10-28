@@ -24,7 +24,7 @@
 #   named while config is still found from $PWD. Outside a checkout, or with
 #   DW_MOUNT=pwd set, only $PWD is mounted. An absolute path under the mount
 #   is rewritten to its /mnt path. markdownlint alone also mounts a file from
-#   anywhere else on the host. trivy and dive are not covered.
+#   anywhere else on the host. dive is not covered.
 #
 # Add a tool:
 #   1. write a <tool>() function below (build args, exec docker run)
@@ -560,47 +560,23 @@ image[perlcritic]="ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a6699
 
 #------------------------------------------------------------------------------
 trivy() {
-  # Path guard, but skip the token after `image` (an image ref, not a
-  # path) and the subcommand keywords themselves.
-  local arg abs prev=""
-  for arg in "$@"; do
-    if [[ $arg == -* || $prev == image ]]; then
-      prev="$arg"
-      continue
-    fi
+  local -a args=(--rm)
+  dw_user args
+  dw_env args "${DW_ENV[@]}"
 
-    case $arg in
-      image | fs | config | repo | rootfs | sbom | filesystem)
-        prev="$arg"
-        continue
-        ;;
-    esac
-
-    abs=$(realpath -- "$arg" 2> /dev/null) || {
-      prev="$arg"
-      continue
-    }
-
-    if [[ -e $arg && $abs != "$PWD" && $abs != "$PWD"/* ]]; then
-      dw_die 1 "${arg} is not under the current directory; cd to its parent or edit bin/docker_wrapper"
-    fi
-
-    prev="$arg"
-  done
+  # Subcommand keywords and image refs name no existing path, so the shared
+  # guard passes them through untouched.
+  dw_mount_workdir args trivy "$@" || exit 1
 
   # Persistent vuln-DB cache so it is not re-downloaded every run.
   local cache="${XDG_CACHE_HOME:-$HOME/.cache}/trivy"
   mkdir -p "$cache"
 
-  local -a args=(--rm)
-  dw_user args
-  dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt --env "TRIVY_CACHE_DIR=/cache")
+  args+=(--env "TRIVY_CACHE_DIR=/cache")
   dw_mount args "$cache" /cache
   dw_docker_socket args
 
-  exec docker run "${args[@]}" "${image[trivy]}" "$@"
+  exec docker run "${args[@]}" "${image[trivy]}" "${DW_ARGV[@]}"
 }
 image[trivy]="aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969"
 

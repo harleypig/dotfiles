@@ -510,6 +510,51 @@ teardown() {
   assert_output --partial "fmt /mnt/main.tf"
 }
 
+@test "trivy from a subdir accepts a path elsewhere in the checkout" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/sub" "$repo/other"
+  git init -q "$repo"
+  cd "$repo/sub"
+
+  run env "PATH=$STUB:$PATH" XDG_CACHE_HOME="$BATS_TEST_TMPDIR/cache" \
+    "$ROOT/bin/trivy" fs ../other "$repo/other"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume $repo:/mnt --workdir /mnt/sub"
+  assert_output --partial "TRIVY_CACHE_DIR=/cache"
+  assert_output --partial "fs ../other /mnt/other"
+}
+
+@test "trivy refuses a path outside the mounted root before docker runs" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo"
+  git init -q "$repo"
+  cd "$repo"
+
+  run env "PATH=$STUB:$PATH" XDG_CACHE_HOME="$BATS_TEST_TMPDIR/cache" \
+    "$ROOT/bin/trivy" fs /etc
+  assert_failure
+  assert_output --partial "not under the mounted directory"
+  assert_file_not_exist "$STUB/docker.args"
+}
+
+@test "trivy still mounts the docker socket" {
+  [[ -S /var/run/docker.sock ]] || skip "no docker socket on this host"
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" XDG_CACHE_HOME="$BATS_TEST_TMPDIR/cache" \
+    "$ROOT/bin/trivy" image alpine:3.20
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume /var/run/docker.sock:/var/run/docker.sock"
+  assert_output --partial "image alpine:3.20"
+}
+
 @test "terraform plan forwards set cloud credentials by name" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
