@@ -128,25 +128,76 @@ setup() {
 }
 
 #------------------------------------------------------------------------------
-# dw_guard_pwd_paths
+# dw_mount_workdir
 
-@test "dw_guard_pwd_paths allows a path under PWD" {
+# A git checkout for the top-level cases; the ceiling keeps git from finding
+# any repository that happens to sit above the bats temp dir.
+make_checkout() {
+  export GIT_CEILING_DIRECTORIES
+  GIT_CEILING_DIRECTORIES=$(dirname "$(realpath "$BATS_TEST_TMPDIR")")
+  REPO=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$REPO/sub"
+  git init -q "$REPO"
+}
+
+@test "dw_mount_workdir mounts PWD at /mnt outside a git checkout" {
+  export GIT_CEILING_DIRECTORIES
+  GIT_CEILING_DIRECTORIES=$(dirname "$(realpath "$BATS_TEST_TMPDIR")")
   cd "$BATS_TEST_TMPDIR"
-  touch f
-  run dw_guard_pwd_paths tool f
+  local -a args=()
+  dw_mount_workdir args
+  assert_equal "${args[*]}" "--volume $(realpath .):/mnt --workdir /mnt"
+}
+
+@test "dw_mount_workdir mounts the checkout's top level and maps the workdir" {
+  make_checkout
+  cd "$REPO/sub"
+  local -a args=()
+  dw_mount_workdir args
+  assert_equal "${args[*]}" "--volume $REPO:/mnt --workdir /mnt/sub"
+  assert_equal "$DW_ROOT" "$REPO"
+}
+
+@test "dw_mount_workdir with DW_MOUNT=pwd mounts only PWD in a checkout" {
+  make_checkout
+  cd "$REPO/sub"
+  local -a args=()
+  DW_MOUNT='pwd' dw_mount_workdir args
+  assert_equal "${args[*]}" "--volume $REPO/sub:/mnt --workdir /mnt"
+}
+
+@test "dw_mount_workdir allows a path elsewhere in the checkout" {
+  make_checkout
+  touch "$REPO/top.md"
+  cd "$REPO/sub"
+  local -a args=()
+  run dw_mount_workdir args tool ../top.md
   assert_success
 }
 
-@test "dw_guard_pwd_paths rejects a path outside PWD" {
-  cd "$BATS_TEST_TMPDIR"
-  run dw_guard_pwd_paths tool /etc/passwd
+@test "dw_mount_workdir rejects a path outside the mounted root" {
+  make_checkout
+  cd "$REPO/sub"
+  local -a args=()
+  run dw_mount_workdir args tool /etc/passwd
   assert_failure
-  assert_output --partial "not under the current directory"
+  assert_output --partial "not under the mounted directory"
 }
 
-@test "dw_guard_pwd_paths skips flag arguments" {
+@test "dw_mount_workdir rejects a path outside PWD when DW_MOUNT=pwd" {
+  make_checkout
+  touch "$REPO/top.md"
+  cd "$REPO/sub"
+  local -a args=()
+  DW_MOUNT='pwd' run dw_mount_workdir args tool ../top.md
+  assert_failure
+  assert_output --partial "not under the mounted directory"
+}
+
+@test "dw_mount_workdir skips flag arguments" {
   cd "$BATS_TEST_TMPDIR"
-  run dw_guard_pwd_paths tool -x
+  local -a args=()
+  run dw_mount_workdir args tool -x
   assert_success
 }
 

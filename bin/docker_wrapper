@@ -18,6 +18,13 @@
 #   (shellcheck, whose -e is --exclude — see native_e_tools below); the daemons
 #   do not take them.
 #
+# What is mounted:
+#   Inside a git checkout, the checkout's top level is mounted at /mnt and the
+#   workdir is $PWD's place under it, so a file anywhere in the repo can be
+#   named while config is still found from $PWD. Outside a checkout, or with
+#   DW_MOUNT=pwd set, only $PWD is mounted. markdownlint alone also mounts a
+#   file from anywhere else on the host. trivy and dive are not covered.
+#
 # Add a tool:
 #   1. write a <tool>() function below (build args, exec docker run)
 #   2. register its image next to the function:
@@ -78,13 +85,10 @@ declare -A image=()
 
 #------------------------------------------------------------------------------
 shellcheck() {
-  dw_guard_pwd_paths shellcheck "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args shellcheck "$@" || exit 1
 
   # `shellcheck -` reads a script from stdin.
   dw_stdin_if_piped args
@@ -112,13 +116,10 @@ image[shellcheck]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a3
 
 #------------------------------------------------------------------------------
 shfmt() {
-  dw_guard_pwd_paths shfmt "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args shfmt "$@" || exit 1
 
   # shfmt is a filter (bin/showvars pipes `shfmt -tojson < script`).
   dw_stdin_if_piped args
@@ -137,13 +138,10 @@ image[shfmt]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a
 
 #------------------------------------------------------------------------------
 yamllint() {
-  dw_guard_pwd_paths yamllint "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args yamllint "$@" || exit 1
 
   # yamllint reads from stdin with `yamllint -`.
   dw_stdin_if_piped args
@@ -167,10 +165,10 @@ image[yamllint]="ghcr.io/harleypig/python-tools:1.0.0@sha256:fef8150131e202bbe8e
 
 #------------------------------------------------------------------------------
 # IaC tools (terraform / packer / tflint). Subcommand-driven, so they skip
-# dw_guard_pwd_paths (args are subcommands/flags, not just file paths) — the
-# caller passes pwd-relative targets. dw_user makes files that `terraform fmt` /
-# `packer fmt` rewrite land host-owned, not root; HOME=/tmp gives a writable
-# home under --user for any plugin/cache path.
+# dw_mount_workdir's path guard (args are subcommands/flags, not just file
+# paths) — the caller passes pwd-relative targets. dw_user makes files that
+# `terraform fmt` / `packer fmt` rewrite land host-owned, not root; HOME=/tmp
+# gives a writable home under --user for any plugin/cache path.
 terraform() {
   local -a args=(--rm --env HOME=/tmp)
   # Keep stdin open for piped input (`terraform fmt -`); add a TTY when
@@ -179,13 +177,13 @@ terraform() {
   [[ -t 0 && -t 1 ]] && args+=(-t)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args
 
-  # Forward a caller-supplied CLI config file (provider_installation, credential
-  # helpers, etc.) when set. Forwarded by name so the value comes from the host
-  # env; the value must be a path INSIDE the mount (/mnt/...), since only $PWD
-  # is mounted. A repo uses this to point terraform at, e.g., a credential
+  # Forward a caller-supplied CLI config file (provider_installation,
+  # credential helpers, etc.) when set. Forwarded by name so the value comes
+  # from the host env; the value must be a path INSIDE the mount (/mnt/...),
+  # and /mnt is the git checkout's top level (dw_mount_workdir), or $PWD
+  # outside one. A repo uses this to point terraform at, e.g., a credential
   # helper, or a provider_installation filesystem_mirror / network_mirror for
   # an internally hosted provider. Set for every subcommand: validate/plan
   # need the provider schema, not just init.
@@ -279,8 +277,7 @@ packer() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args
 
   # packer reads a template from stdin with `packer fmt -`.
   dw_stdin_if_piped args
@@ -294,8 +291,7 @@ tflint() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args
 
   exec docker run "${args[@]}" "${image[tflint]}" "$@"
 }
@@ -304,14 +300,13 @@ image[tflint]="ghcr.io/terraform-linters/tflint:v0.63.1@sha256:890e37827d7b5e400
 #------------------------------------------------------------------------------
 # terraform-docs generates/injects module READMEs from .tf sources (static
 # parse — no init, no credentials). Subcommand/flag-driven like the other IaC
-# tools, so it skips dw_guard_pwd_paths; dw_user keeps the injected README
+# tools, so it skips the path guard; dw_user keeps the injected README
 # host-owned, HOME=/tmp gives a writable home under --user.
 terraform-docs() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args
 
   # Quote the literal key: shfmt would otherwise read the `-` in the
   # associative-array subscript as arithmetic and mangle it (terraform - docs).
@@ -321,20 +316,17 @@ image["terraform-docs"]="quay.io/terraform-docs/terraform-docs:0.20.0@sha256:373
 
 #------------------------------------------------------------------------------
 prettier() {
-  dw_guard_pwd_paths prettier "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args prettier "$@" || exit 1
 
   # prettier reads from stdin with `--stdin-filepath <name>`.
   dw_stdin_if_piped args
 
   # The combined code-tools image (ADR-0005) has no ENTRYPOINT, so name the
   # tool. A repo-local .prettierrc / prettier config is auto-discovered from
-  # /mnt (= $PWD). Re-pointed off the old unpinned `prettier:latest`.
+  # the workdir (= $PWD). Re-pointed off the old unpinned `prettier:latest`.
   exec docker run "${args[@]}" "${image[prettier]}" prettier "$@"
 }
 # SYNC: code-tools is the combined ADR-0005 image (re-pin tag+digest after a
@@ -345,13 +337,10 @@ image[prettier]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324
 
 #------------------------------------------------------------------------------
 hadolint() {
-  dw_guard_pwd_paths hadolint "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args hadolint "$@" || exit 1
 
   # hadolint reads a Dockerfile from stdin with `hadolint -`.
   dw_stdin_if_piped args
@@ -377,20 +366,56 @@ image[hadolint]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324
 
 #------------------------------------------------------------------------------
 markdownlint() {
-  dw_guard_pwd_paths markdownlint "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args
+
+  # Unlike the other pwd-mounted tools, a path outside the mounted root is
+  # allowed (#612): its resolved directory is mounted at /host<dir> and the
+  # argument rewritten to match. The workdir is still $PWD, so the
+  # .markdownlint.json found there applies. Resolving first matters: a
+  # symlink's target may sit outside every mount. Extra mounts are read-only
+  # unless --fix will write.
+  local root=$DW_ROOT arg abs dir mode=ro
+  local -a argv=()
+  local -A mounted=()
+
+  for arg in "$@"; do
+    [[ $arg == -f || $arg == --fix ]] && mode=rw
+  done
+
+  for arg in "$@"; do
+    if [[ $arg == -* || ! -e $arg ]]; then
+      argv+=("$arg")
+      continue
+    fi
+
+    abs=$(realpath -- "$arg")
+
+    if [[ $abs == "$root" || $abs == "$root"/* ]]; then
+      # An absolute host path does not exist in the container; map it.
+      [[ $arg == /* ]] && arg=/mnt${abs#"$root"}
+      argv+=("$arg")
+      continue
+    fi
+
+    dir=$abs
+    [[ -d $dir ]] || dir=$(dirname -- "$abs")
+
+    if [[ -z ${mounted[$dir]-} ]]; then
+      dw_mount args "$dir" "/host$dir" "$mode"
+      mounted[$dir]=1
+    fi
+
+    argv+=("/host$abs")
+  done
 
   # markdownlint reads from stdin with `--stdin`.
   dw_stdin_if_piped args
 
-  # code-tools has no ENTRYPOINT, so name the tool (ADR-0006). The repo-local
-  # .markdownlint.json is auto-discovered from /mnt (= $PWD).
-  exec docker run "${args[@]}" "${image[markdownlint]}" markdownlint "$@"
+  # code-tools has no ENTRYPOINT, so name the tool (ADR-0006).
+  exec docker run "${args[@]}" "${image[markdownlint]}" markdownlint "${argv[@]}"
 }
 # SYNC (ADR-0006): markdownlint runs from the combined code-tools image here AND
 # in the pre-commit `markdownlint` hooks (check + fix) — all reference this same
@@ -400,19 +425,16 @@ image[markdownlint]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79
 
 #------------------------------------------------------------------------------
 vale() {
-  dw_guard_pwd_paths vale "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args vale "$@" || exit 1
 
   # vale lints stdin when given no file arguments.
   dw_stdin_if_piped args
 
   # code-tools has no ENTRYPOINT, so name the tool. The repo-local .vale.ini
-  # is auto-discovered from /mnt (= $PWD); the image's VALE_STYLES_PATH
+  # is auto-discovered from the workdir (= $PWD); the image's VALE_STYLES_PATH
   # supplies the baked-in styles, so no `vale sync` is needed.
   exec docker run "${args[@]}" "${image[vale]}" vale "$@"
 }
@@ -424,20 +446,17 @@ image[vale]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a5
 
 #------------------------------------------------------------------------------
 lychee() {
-  dw_guard_pwd_paths lychee "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args lychee "$@" || exit 1
 
   # lychee reads link inputs from stdin when given `-`.
   dw_stdin_if_piped args
 
-  # code-tools has no ENTRYPOINT, so name the tool. The repo-local
-  # lychee.toml is auto-discovered from /mnt (= $PWD); it sets --offline, so
-  # an online check needs `--offline=false` on the command line.
+  # code-tools has no ENTRYPOINT, so name the tool. The repo-local lychee.toml
+  # is auto-discovered from the workdir (= $PWD); it sets --offline, so an
+  # online check needs `--offline=false` on the command line.
   exec docker run "${args[@]}" "${image[lychee]}" lychee "$@"
 }
 # SYNC: lychee runs from the combined code-tools image here AND in the
@@ -448,21 +467,18 @@ image[lychee]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4
 
 #------------------------------------------------------------------------------
 ansible-lint() {
-  dw_guard_pwd_paths ansible-lint "$@" || exit 1
-
   local -a args=(--rm --env HOME=/tmp --env ANSIBLE_HOME=/tmp/.ansible)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args ansible-lint "$@" || exit 1
 
   # No ENTRYPOINT in the image (one image, tool named explicitly, like the
   # perl-tools images); the repo-local .ansible-lint is auto-discovered from
-  # /mnt (= $PWD). HOME=/tmp + ANSIBLE_HOME=/tmp/.ansible give ansible-lint a
-  # writable cache OUTSIDE the mount under --user — without ANSIBLE_HOME it
-  # would cache into $PWD/.ansible and litter the caller's repo. Quote the
-  # array key: shfmt reads a bare `-` in an associative-array subscript as
-  # arithmetic (see terraform-docs).
+  # the workdir (= $PWD). HOME=/tmp + ANSIBLE_HOME=/tmp/.ansible give
+  # ansible-lint a writable cache OUTSIDE the mount under --user — without
+  # ANSIBLE_HOME it would cache into $PWD/.ansible and litter the caller's
+  # repo. Quote the array key: shfmt reads a bare `-` in an associative-array
+  # subscript as arithmetic (see terraform-docs).
   exec docker run "${args[@]}" "${image["ansible-lint"]}" ansible-lint "$@"
 }
 # SYNC (#370): the same python-tools image as image[yamllint] above; keep the
@@ -472,21 +488,19 @@ image["ansible-lint"]="ghcr.io/harleypig/python-tools:1.0.0@sha256:fef8150131e20
 
 #------------------------------------------------------------------------------
 ruff() {
-  dw_guard_pwd_paths ruff "$@" || exit 1
-
   local -a args=(--rm --env HOME=/tmp --env RUFF_CACHE_DIR=/tmp/ruff-cache)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args ruff "$@" || exit 1
 
   # `ruff check -` / `ruff format -` read source from stdin.
   dw_stdin_if_piped args
 
   # The code-tools image (ADR-0005) has no entrypoint — it holds many tools —
   # so name the tool. A repo-local ruff.toml / .ruff.toml / pyproject.toml is
-  # auto-discovered from /mnt (= $PWD). RUFF_CACHE_DIR=/tmp keeps the cache OUT
-  # of the mounted repo (ruff otherwise writes $PWD/.ruff_cache under --user).
+  # auto-discovered from the workdir (= $PWD). RUFF_CACHE_DIR=/tmp keeps the
+  # cache OUT of the mounted repo (ruff otherwise writes $PWD/.ruff_cache
+  # under --user).
   exec docker run "${args[@]}" "${image[ruff]}" ruff "$@"
 }
 # SYNC: code-tools is the combined ADR-0005 image; re-pin this tag+digest after
@@ -499,20 +513,18 @@ image[ruff]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a5
 
 #------------------------------------------------------------------------------
 perltidy() {
-  dw_guard_pwd_paths perltidy "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args perltidy "$@" || exit 1
 
   # perltidy is a filter: with no file it reformats stdin -> stdout.
   dw_stdin_if_piped args
 
   # The perl-tools image has no entrypoint (one image can host several tools),
   # so name the tool. The repo-root .perltidyrc (-> config/perl/perltidyrc) is
-  # auto-discovered from /mnt (= $PWD), matching how shfmt finds .editorconfig.
+  # auto-discovered from the workdir (= $PWD), matching how shfmt finds
+  # .editorconfig.
   exec docker run "${args[@]}" "${image[perltidy]}" perltidy "$@"
 }
 # SYNC: perltidy and perlcritic share the one combined perl-tools image. Keep
@@ -526,20 +538,17 @@ image[perltidy]="ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a66991d
 
 #------------------------------------------------------------------------------
 perlcritic() {
-  dw_guard_pwd_paths perlcritic "$@" || exit 1
-
   local -a args=(--rm)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt)
+  dw_mount_workdir args perlcritic "$@" || exit 1
 
   # perlcritic reads from stdin with `perlcritic -`.
   dw_stdin_if_piped args
 
   # The perl-tools image has no entrypoint, so name the tool. The repo-root
-  # .perlcriticrc (-> config/perl/perlcriticrc) is auto-discovered from /mnt
-  # (= $PWD), matching how perltidy finds .perltidyrc.
+  # .perlcriticrc (-> config/perl/perlcriticrc) is auto-discovered from the
+  # workdir (= $PWD), matching how perltidy finds .perltidyrc.
   exec docker run "${args[@]}" "${image[perlcritic]}" perlcritic "$@"
 }
 # SYNC: the same combined perl-tools image as image[perltidy] above; keep the

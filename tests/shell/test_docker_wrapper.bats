@@ -12,6 +12,10 @@ setup() {
   load_bats_libs
   ROOT="$(dotfiles_root)"
   STUB="$(make_stub_dir)"
+  # The wrappers mount the enclosing git checkout; keep any repository above
+  # the bats temp dir from becoming that checkout.
+  export GIT_CEILING_DIRECTORIES
+  GIT_CEILING_DIRECTORIES=$(dirname "$(realpath "$BATS_TEST_TMPDIR")")
 }
 
 teardown() {
@@ -111,6 +115,68 @@ teardown() {
   # code-tools has no ENTRYPOINT, so the tool is named after the image.
   assert_output --partial "ghcr.io/harleypig/code-tools"
   assert_output --partial "markdownlint doc.md"
+}
+
+@test "markdownlint mounts an outside file's directory read-only and rewrites it" {
+  make_stub "$STUB" docker
+  mkdir "$BATS_TEST_TMPDIR/cwd" "$BATS_TEST_TMPDIR/ext"
+  printf '# Title\n' > "$BATS_TEST_TMPDIR/ext/outside.md"
+  ext=$(realpath "$BATS_TEST_TMPDIR/ext")
+  cd "$BATS_TEST_TMPDIR/cwd"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/markdownlint" "$ext/outside.md"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  # $PWD stays the workdir, so config discovery is unchanged.
+  assert_output --partial "--volume $PWD:/mnt --workdir /mnt"
+  assert_output --partial "--volume $ext:/host$ext:ro"
+  assert_output --partial "markdownlint /host$ext/outside.md"
+}
+
+@test "markdownlint follows a symlink to the target's directory" {
+  make_stub "$STUB" docker
+  mkdir "$BATS_TEST_TMPDIR/cwd" "$BATS_TEST_TMPDIR/ext"
+  printf '# Title\n' > "$BATS_TEST_TMPDIR/ext/outside.md"
+  ext=$(realpath "$BATS_TEST_TMPDIR/ext")
+  cd "$BATS_TEST_TMPDIR/cwd"
+  ln -s "$ext/outside.md" link.md
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/markdownlint" link.md
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume $ext:/host$ext:ro"
+  assert_output --partial "markdownlint /host$ext/outside.md"
+}
+
+@test "markdownlint --fix mounts an outside directory writable" {
+  make_stub "$STUB" docker
+  mkdir "$BATS_TEST_TMPDIR/cwd" "$BATS_TEST_TMPDIR/ext"
+  printf '# Title\n' > "$BATS_TEST_TMPDIR/ext/outside.md"
+  ext=$(realpath "$BATS_TEST_TMPDIR/ext")
+  cd "$BATS_TEST_TMPDIR/cwd"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/markdownlint" --fix "$ext/outside.md"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume $ext:/host$ext:rw"
+  assert_output --partial "markdownlint --fix /host$ext/outside.md"
+}
+
+@test "markdownlint maps an absolute path under PWD into /mnt" {
+  make_stub "$STUB" docker
+  mkdir "$BATS_TEST_TMPDIR/cwd"
+  cd "$BATS_TEST_TMPDIR/cwd"
+  printf '# Title\n' > doc.md
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/markdownlint" "$(realpath doc.md)"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "markdownlint /mnt/doc.md"
+  refute_output --partial "/host"
 }
 
 @test "vale dispatch assembles the expected docker run command" {
@@ -339,13 +405,75 @@ teardown() {
   refute_output --partial "--interactive"
 }
 
+@test "a pwd-mounted tool mounts the git checkout's top level from a subdir" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/sub"
+  git init -q "$repo"
+  printf '#!/bin/sh\n' > "$repo/top.sh"
+  cd "$repo/sub"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/shellcheck" ../top.sh
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume $repo:/mnt --workdir /mnt/sub"
+  assert_output --partial "shellcheck ../top.sh"
+}
+
+@test "an IaC tool mounts the git checkout's top level from a subdir" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/env/prod"
+  git init -q "$repo"
+  cd "$repo/env/prod"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/tflint"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume $repo:/mnt --workdir /mnt/env/prod"
+}
+
+@test "DW_MOUNT=pwd keeps the old current-directory mount" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/sub"
+  git init -q "$repo"
+  printf '#!/bin/sh\n' > "$repo/top.sh"
+  cd "$repo/sub"
+
+  run env "PATH=$STUB:$PATH" DW_MOUNT=pwd "$ROOT/bin/shellcheck" ../top.sh
+  assert_failure
+  assert_output --partial "not under the mounted directory"
+  assert_file_not_exist "$STUB/docker.args"
+}
+
+@test "markdownlint from a checkout subdir still mounts an outside file" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/sub" "$BATS_TEST_TMPDIR/ext"
+  git init -q "$repo"
+  printf '# Title\n' > "$BATS_TEST_TMPDIR/ext/outside.md"
+  ext=$(realpath "$BATS_TEST_TMPDIR/ext")
+  cd "$repo/sub"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/markdownlint" "$ext/outside.md" "$repo/README.md"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume $repo:/mnt --workdir /mnt/sub"
+  assert_output --partial "--volume $ext:/host$ext:ro"
+  assert_output --partial "markdownlint /host$ext/outside.md $repo/README.md"
+}
+
 @test "the path guard blocks a file outside PWD before docker runs" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
 
   run env "PATH=$STUB:$PATH" "$ROOT/bin/shellcheck" /etc/passwd
   assert_failure
-  assert_output --partial "not under the current directory"
+  assert_output --partial "not under the mounted directory"
   # docker must not have been invoked
   assert_file_not_exist "$STUB/docker.args"
 }
