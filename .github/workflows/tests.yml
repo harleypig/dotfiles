@@ -196,7 +196,12 @@ jobs:
   # The image is the one test_integration_powershell.bats runs, read off the
   # FROM line Dependabot bumps. It carries no Pester, so a pinned version is
   # installed from the PowerShell Gallery first; Dependabot cannot see that
-  # pin, so bump PESTER_VERSION by hand.
+  # pin, so bump PESTER_VERSION by hand (#605). To see the newest 5.x, in the
+  # same image:
+  #   docker run --rm <image> pwsh -NoProfile -Command \
+  #     'Find-Module Pester -AllVersions | ? Version -like "5.*" | select -First 1'
+  # Pester 6 is a separate decision: check its breaking changes against
+  # tests/powershell/ first.
   pester:
     runs-on: ubuntu-latest
     steps:
