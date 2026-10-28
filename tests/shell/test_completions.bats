@@ -35,9 +35,17 @@ FIRST_PARTY="proj ghx"
 }
 
 @test "each generated completion registers its command when sourced" {
+  # cargo's completion registers only when `command -v cargo` succeeds, and
+  # sourcing it runs nothing else, so a stub on PATH is enough on a host
+  # without cargo (#602 - cargo completion test fails without cargo).
+  local stub="$BATS_TEST_TMPDIR/bin"
+  mkdir -p "$stub"
+  make_stub "$stub" cargo
+
   local t
   for t in $GENERATED; do
-    run bash -c "source '$(dotfiles_root)/config/completions/$t' && complete -p $t"
+    run env "PATH=$stub:$PATH" bash -c \
+      "source '$(dotfiles_root)/config/completions/$t' && complete -p $t"
     assert_success
     assert_output --partial " $t"
   done
