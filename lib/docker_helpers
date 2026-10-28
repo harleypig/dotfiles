@@ -235,6 +235,10 @@ dw_stdin_if_piped() {
 # Given a tool name and its argv, it also fails fast: every non-flag argument
 # naming an EXISTING path must resolve under DW_ROOT, the only directory
 # mounted. Returns non-zero on the first offending path, before mounting.
+# The argv is copied to DW_ARGV with each absolute one of those paths
+# rewritten to its /mnt equivalent, since the host path does not exist in the
+# container; relative paths already resolve from the workdir and are kept.
+# Run the tool with "${DW_ARGV[@]}". Without a tool name DW_ARGV is empty.
 
 dw_mount_workdir() {
   # dw_mount takes the array by name too; handing it our own nameref would
@@ -255,13 +259,17 @@ dw_mount_workdir() {
   # Read by the caller (bin/docker_wrapper's markdownlint), not here.
   # shellcheck disable=SC2034
   DW_ROOT=$root
+  DW_ARGV=()
 
   if (($#)); then
     local tool=$1
     shift
 
     for arg in "$@"; do
-      [[ $arg == -* || ! -e $arg ]] && continue
+      if [[ $arg == -* || ! -e $arg ]]; then
+        DW_ARGV+=("$arg")
+        continue
+      fi
 
       abs=$(realpath -- "$arg")
 
@@ -269,6 +277,9 @@ dw_mount_workdir() {
         DW_TAG="${tool}: " dw_warn "${arg} is not under the mounted directory ${root}; cd nearer to it or edit bin/docker_wrapper"
         return 1
       fi
+
+      [[ $arg == /* ]] && arg=/mnt${abs#"$root"}
+      DW_ARGV+=("$arg")
     done
   fi
 

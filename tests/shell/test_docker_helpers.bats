@@ -201,6 +201,32 @@ make_checkout() {
   assert_success
 }
 
+@test "dw_mount_workdir maps an absolute path under the root to /mnt in DW_ARGV" {
+  make_checkout
+  touch "$REPO/top.md"
+  cd "$REPO/sub"
+  local -a args=()
+  dw_mount_workdir args tool "$REPO/top.md" ../top.md -x "$REPO/missing"
+  assert_equal "${DW_ARGV[*]}" "/mnt/top.md ../top.md -x $REPO/missing"
+}
+
+@test "dw_mount_workdir maps an absolute path under PWD when DW_MOUNT=pwd" {
+  make_checkout
+  touch "$REPO/sub/f.md"
+  cd "$REPO/sub"
+  local -a args=()
+  DW_MOUNT='pwd' dw_mount_workdir args tool "$REPO/sub/f.md"
+  assert_equal "${DW_ARGV[*]}" "/mnt/f.md"
+}
+
+@test "dw_mount_workdir without a tool leaves DW_ARGV empty" {
+  cd "$BATS_TEST_TMPDIR"
+  local -a args=()
+  DW_ARGV=(stale)
+  dw_mount_workdir args
+  assert_equal "${#DW_ARGV[@]}" 0
+}
+
 #------------------------------------------------------------------------------
 # dw_tty_if_attached (no tty under bats -> no-op)
 

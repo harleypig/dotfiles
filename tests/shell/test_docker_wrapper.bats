@@ -478,6 +478,38 @@ teardown() {
   assert_file_not_exist "$STUB/docker.args"
 }
 
+@test "an absolute in-repo path reaches the container as its /mnt path" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/sub"
+  git init -q "$repo"
+  printf '#!/bin/sh\n' > "$repo/top.sh"
+  cd "$repo/sub"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/shellcheck" "$repo/top.sh"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "shellcheck /mnt/top.sh"
+  refute_output --partial "$repo/top.sh"
+}
+
+@test "an IaC tool maps an absolute in-repo path to /mnt" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/env"
+  git init -q "$repo"
+  touch "$repo/main.tf"
+  cd "$repo/env"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/terraform" fmt "$repo/main.tf"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--workdir /mnt/env"
+  assert_output --partial "fmt /mnt/main.tf"
+}
+
 @test "terraform plan forwards set cloud credentials by name" {
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
