@@ -2,7 +2,7 @@
   "packages": [
     {
       "name": "nodejs",
-      "why": "npm, which the bats entries install with (win-prereqs.json:42, :47, :52, :58), comes with Node.js.",
+      "why": "npm, which the bats entries install with (win-prereqs.json:42, :47, :52, :59), comes with Node.js.",
       "command": "node",
       "install": [
         { "manager": "choco", "id": "nodejs-lts" },
@@ -11,7 +11,7 @@
     },
     {
       "name": "uv",
-      "why": "The pre-commit, linode-cli and s3cmd entries install as uv tools (win-prereqs.json:71, :79, :84).",
+      "why": "The pre-commit, linode-cli and s3cmd entries install as uv tools (win-prereqs.json:75, :83, :88).",
       "command": "uv",
       "install": [
         { "manager": "choco", "id": "uv" },
