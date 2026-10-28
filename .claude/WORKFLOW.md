@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.17.1
+**Version:** v1.18.0
 
 ## Purpose
 
@@ -542,7 +542,6 @@ tag+digest in the pre-commit config(s) — re-pin the digest after it publishes
 Currently integrated:
 
 * **GitHub Actions:** CI/CD workflows in `.github/workflows/`
-* **OpenCode:** Issue management via `.github/workflows/opencode.yml`
 
 ### Environment Variables
 
