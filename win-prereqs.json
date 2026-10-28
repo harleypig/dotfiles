@@ -55,7 +55,11 @@
       "name": "bats-file",
       "why": "tests/helpers/common.bash:21 loads it. The npm registry's bats-file is a security placeholder, so it comes from the project's repository.",
       "install": [
-        { "manager": "npm", "id": "bats-file", "source": "github:bats-core/bats-file" }
+        {
+          "manager": "npm",
+          "id": "bats-file",
+          "source": "github:bats-core/bats-file"
+        }
       ]
     },
     {
