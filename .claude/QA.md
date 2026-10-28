@@ -1,6 +1,6 @@
 # Quality Assurance
 
-**Version:** v1.7.0
+**Version:** v1.8.0
 
 ## Purpose
 
@@ -46,7 +46,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 
 | # | Dimension | Status | This repo |
 |---|-----------|--------|-----------|
-| 1 | Format | **Active** | `shfmt`, `yapf`, `isort`, `prettier`, `markdownlint-fix`, trailing-whitespace, end-of-file-fixer (fix config) |
+| 1 | Format | **Active** | `shfmt`, `yapf`, `isort`, `prettier`, `markdownlint-fix`, trailing-whitespace, end-of-file-fixer, mixed-line-ending `--fix=lf` (fix config). **Line endings** are gated by `forbid-crlf`, a check-only pygrep hook that fails on any CRLF line (mixed-line-ending's own `--fix=no` misses a file that is CRLF throughout). The vendored xdg-ninja mirror (`config/xdg-audit/{programs,json-schema}/`) is exempt and marked `-text` in `.gitattributes`, because it stays byte-identical to upstream — `programs/mintty.json` is CRLF there (#604). |
 | 2 | Lint | **Active** | `shellcheck`, `yamllint` (docker-image hook on the pinned private `ghcr.io/harleypig/python-tools` image, which also backs `bin/ansible-lint` — #370), `markdownlint`, `flake8` (with mccabe `C901` at `max-complexity = 10`, `config/flake8` — #496); **Perl** `perltidy` + `perlcritic` (severity 1, set in the curated core-only `config/perl/perlcriticrc`) via pinned private ghcr **docker-image** pre-commit hooks (`ghcr.io/harleypig/{perltidy,perlcritic}`, `docker login` required — see `WORKFLOW.md`) |
 | 3 | Type-check | **Off** | No type checker. `pyright` was removed when `config/claude/hooks` (its only typed surface) was extracted to the dotagents repo; the small remaining first-party Python (`tests/lint/prose_wrap.py`, `tests/python/test_prose_wrap.py`) is not type-checked. Revisit if a substantial typed Python surface returns. |
 | 4 | Code smell / complexity | **Active (partial)** | Python: flake8's mccabe `C901` gates cyclomatic complexity above 10 (see Lint). Bash: `shellcheck` catches some; no dedicated bash complexity tool. Acknowledged gap, no tracked owner yet. |

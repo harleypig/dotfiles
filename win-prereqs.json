@@ -20,7 +20,7 @@
     },
     {
       "name": "python3",
-      "why": "The prose-wrap hook runs python3 (.pre-commit-config.yaml:281); the python3 link step points python3 at the newest Python this installs.",
+      "why": "The prose-wrap hook runs python3 (.pre-commit-config.yaml:295); the python3 link step points python3 at the newest Python this installs.",
       "command": "python3",
       "install": [
         { "manager": "choco", "id": "python3" },
@@ -94,7 +94,7 @@
     },
     {
       "name": "docker-desktop",
-      "why": "The docker_image pre-commit hooks (.pre-commit-config.yaml:48) and bin/docker_wrapper:102 run docker.",
+      "why": "The docker_image pre-commit hooks (.pre-commit-config.yaml:62) and bin/docker_wrapper:102 run docker.",
       "command": "docker",
       "slow": "about 1 GB to download; this can take 20+ minutes",
       "install": [
