@@ -35,6 +35,20 @@ repos:
       # Secret detection (Phase 2): catch committed private keys.
       - id: detect-private-key
 
+  # Line endings (#604). The fixer (mixed-line-ending --fix=lf) lives in the
+  # fix config. That hook's --fix=no mode only reports a file that MIXES
+  # endings, so it would pass a file that is CRLF throughout; this check-only
+  # pygrep flags any CRLF line instead. The vendored xdg-ninja mirror is
+  # excluded: it stays byte-identical to upstream (see .gitattributes).
+  - repo: local
+    hooks:
+      - id: forbid-crlf
+        name: forbid CRLF line endings
+        language: pygrep
+        entry: '\r$'
+        types: [text]
+        exclude: ^config/xdg-audit/(programs|json-schema)/
+
   # shellcheck via the combined code-tools image (ADR-0006 — replaces the
   # upstream koalaman/shellcheck-precommit docker_image hook). Same shellcheck
   # (v0.11.0, from the code-tools Dockerfile FROM), same --external-sources,

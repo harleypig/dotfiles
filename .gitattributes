@@ -2,3 +2,11 @@
 # repo's .ps1 files were already LF, so they are kept LF everywhere,
 # including a Windows checkout with core.autocrlf set.
 *.ps1 text eol=lf
+
+# The vendored xdg-ninja mirror is kept byte-identical to upstream:
+# xdg-audit --update-db compares files by SHA-256 and overrides record an
+# upstream-digest, so normalizing an upstream CRLF file (programs/mintty.json
+# is one) would make it differ on every refresh. -text stops git from
+# converting it; the CRLF check hook excludes the same paths.
+config/xdg-audit/programs/** -text
+config/xdg-audit/json-schema/** -text

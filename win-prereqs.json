@@ -2,7 +2,7 @@
   "packages": [
     {
       "name": "nodejs",
-      "why": "npm, which the bats entries install with (win-prereqs.json:42, :47, :52, :58), comes with Node.js.",
+      "why": "npm, which the bats entries install with (win-prereqs.json:42, :47, :52, :59), comes with Node.js.",
       "command": "node",
       "install": [
         { "manager": "choco", "id": "nodejs-lts" },
@@ -11,7 +11,7 @@
     },
     {
       "name": "uv",
-      "why": "The pre-commit, linode-cli and s3cmd entries install as uv tools (win-prereqs.json:71, :79, :84).",
+      "why": "The pre-commit, linode-cli and s3cmd entries install as uv tools (win-prereqs.json:75, :83, :88).",
       "command": "uv",
       "install": [
         { "manager": "choco", "id": "uv" },
@@ -20,7 +20,7 @@
     },
     {
       "name": "python3",
-      "why": "The prose-wrap hook runs python3 (.pre-commit-config.yaml:281); the python3 link step points python3 at the newest Python this installs.",
+      "why": "The prose-wrap hook runs python3 (.pre-commit-config.yaml:295); the python3 link step points python3 at the newest Python this installs.",
       "command": "python3",
       "install": [
         { "manager": "choco", "id": "python3" },
@@ -55,7 +55,11 @@
       "name": "bats-file",
       "why": "tests/helpers/common.bash:21 loads it. The npm registry's bats-file is a security placeholder, so it comes from the project's repository.",
       "install": [
-        { "manager": "npm", "id": "bats-file", "source": "github:bats-core/bats-file" }
+        {
+          "manager": "npm",
+          "id": "bats-file",
+          "source": "github:bats-core/bats-file"
+        }
       ]
     },
     {
@@ -90,7 +94,7 @@
     },
     {
       "name": "docker-desktop",
-      "why": "The docker_image pre-commit hooks (.pre-commit-config.yaml:48) and bin/docker_wrapper:102 run docker.",
+      "why": "The docker_image pre-commit hooks (.pre-commit-config.yaml:62) and bin/docker_wrapper:102 run docker.",
       "command": "docker",
       "slow": "about 1 GB to download; this can take 20+ minutes",
       "install": [
