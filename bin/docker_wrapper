@@ -22,8 +22,9 @@
 #   Inside a git checkout, the checkout's top level is mounted at /mnt and the
 #   workdir is $PWD's place under it, so a file anywhere in the repo can be
 #   named while config is still found from $PWD. Outside a checkout, or with
-#   DW_MOUNT=pwd set, only $PWD is mounted. markdownlint alone also mounts a
-#   file from anywhere else on the host. trivy and dive are not covered.
+#   DW_MOUNT=pwd set, only $PWD is mounted. An absolute path under the mount
+#   is rewritten to its /mnt path. markdownlint alone also mounts a file from
+#   anywhere else on the host. dive is not covered.
 #
 # Add a tool:
 #   1. write a <tool>() function below (build args, exec docker run)
@@ -103,7 +104,7 @@ shellcheck() {
   fi
 
   # code-tools has no ENTRYPOINT, so name the tool (ADR-0006).
-  exec docker run "${args[@]}" "${image[shellcheck]}" shellcheck "$@"
+  exec docker run "${args[@]}" "${image[shellcheck]}" shellcheck "${DW_ARGV[@]}"
 }
 # SYNC (ADR-0006): shellcheck runs from the combined code-tools image here AND
 # in the pre-commit `shellcheck` hook — both reference this same image, so they
@@ -125,7 +126,7 @@ shfmt() {
   dw_stdin_if_piped args
 
   # code-tools has no ENTRYPOINT, so name the tool (ADR-0006).
-  exec docker run "${args[@]}" "${image[shfmt]}" shfmt "$@"
+  exec docker run "${args[@]}" "${image[shfmt]}" shfmt "${DW_ARGV[@]}"
 }
 # SYNC (ADR-0006): shfmt runs from the combined code-tools image here AND in the
 # pre-commit `shfmt` hooks (check + fix) — all reference this same image, so
@@ -154,7 +155,7 @@ yamllint() {
   fi
 
   # python-tools has no ENTRYPOINT, so name the tool.
-  exec docker run "${args[@]}" "${image[yamllint]}" yamllint "$@"
+  exec docker run "${args[@]}" "${image[yamllint]}" yamllint "${DW_ARGV[@]}"
 }
 # SYNC (#370): yamllint runs from the python-tools image here AND in the
 # pre-commit `yamllint` hook, and image["ansible-lint"] below is the same
@@ -164,11 +165,13 @@ yamllint() {
 image[yamllint]="ghcr.io/harleypig/python-tools:1.0.0@sha256:fef8150131e202bbe8ead2544b45295c12d8543fec4d8f58879e401a66414abb"
 
 #------------------------------------------------------------------------------
-# IaC tools (terraform / packer / tflint). Subcommand-driven, so they skip
-# dw_mount_workdir's path guard (args are subcommands/flags, not just file
-# paths) — the caller passes pwd-relative targets. dw_user makes files that
-# `terraform fmt` / `packer fmt` rewrite land host-owned, not root; HOME=/tmp
-# gives a writable home under --user for any plugin/cache path.
+# IaC tools (terraform / packer / tflint). Subcommand-driven, but the path
+# guard still fits: subcommands and resource addresses name no existing path,
+# and a path outside the mount could not be read in the container anyway.
+# An absolute in-repo path is mapped to /mnt like every other tool's. dw_user
+# makes files that `terraform fmt` / `packer fmt` rewrite land host-owned, not
+# root; HOME=/tmp gives a writable home under --user for any plugin/cache
+# path.
 terraform() {
   local -a args=(--rm --env HOME=/tmp)
   # Keep stdin open for piped input (`terraform fmt -`); add a TTY when
@@ -177,7 +180,7 @@ terraform() {
   [[ -t 0 && -t 1 ]] && args+=(-t)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount_workdir args
+  dw_mount_workdir args terraform "$@" || exit 1
 
   # Forward a caller-supplied CLI config file (provider_installation,
   # credential helpers, etc.) when set. Forwarded by name so the value comes
@@ -268,7 +271,7 @@ terraform() {
     dw_warn "$var is set but not forwarded into the container; pass it with a leading '-e $var' (before the subcommand)"
   done
 
-  exec docker run "${args[@]}" "${image[terraform]}" "$@"
+  exec docker run "${args[@]}" "${image[terraform]}" "${DW_ARGV[@]}"
 }
 image[terraform]="hashicorp/terraform:1.15.9@sha256:fd5debae63188975d6febc6aa5bd1a982a588f55e4a4ddb7de28be923f250456"
 
@@ -277,12 +280,12 @@ packer() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount_workdir args
+  dw_mount_workdir args packer "$@" || exit 1
 
   # packer reads a template from stdin with `packer fmt -`.
   dw_stdin_if_piped args
 
-  exec docker run "${args[@]}" "${image[packer]}" "$@"
+  exec docker run "${args[@]}" "${image[packer]}" "${DW_ARGV[@]}"
 }
 image[packer]="hashicorp/packer:1.15.4@sha256:8be72877859e00e13124b26373f0505b2a2597c5393ecbea900be28b4be58186"
 
@@ -291,26 +294,26 @@ tflint() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount_workdir args
+  dw_mount_workdir args tflint "$@" || exit 1
 
-  exec docker run "${args[@]}" "${image[tflint]}" "$@"
+  exec docker run "${args[@]}" "${image[tflint]}" "${DW_ARGV[@]}"
 }
 image[tflint]="ghcr.io/terraform-linters/tflint:v0.63.1@sha256:890e37827d7b5e400f26137c5189c7efa581365fe9299b5b9814e5148d5978b9"
 
 #------------------------------------------------------------------------------
 # terraform-docs generates/injects module READMEs from .tf sources (static
 # parse — no init, no credentials). Subcommand/flag-driven like the other IaC
-# tools, so it skips the path guard; dw_user keeps the injected README
+# tools, and guarded the same way; dw_user keeps the injected README
 # host-owned, HOME=/tmp gives a writable home under --user.
 terraform-docs() {
   local -a args=(--rm --env HOME=/tmp)
   dw_user args
   dw_env args "${DW_ENV[@]}"
-  dw_mount_workdir args
+  dw_mount_workdir args terraform-docs "$@" || exit 1
 
   # Quote the literal key: shfmt would otherwise read the `-` in the
   # associative-array subscript as arithmetic and mangle it (terraform - docs).
-  exec docker run "${args[@]}" "${image["terraform-docs"]}" "$@"
+  exec docker run "${args[@]}" "${image["terraform-docs"]}" "${DW_ARGV[@]}"
 }
 image["terraform-docs"]="quay.io/terraform-docs/terraform-docs:0.20.0@sha256:37329e2dc2518e7f719a986a3954b10771c3fe000f50f83fd4d98d489df2eae2"
 
@@ -327,7 +330,7 @@ prettier() {
   # The combined code-tools image (ADR-0005) has no ENTRYPOINT, so name the
   # tool. A repo-local .prettierrc / prettier config is auto-discovered from
   # the workdir (= $PWD). Re-pointed off the old unpinned `prettier:latest`.
-  exec docker run "${args[@]}" "${image[prettier]}" prettier "$@"
+  exec docker run "${args[@]}" "${image[prettier]}" prettier "${DW_ARGV[@]}"
 }
 # SYNC: code-tools is the combined ADR-0005 image (re-pin tag+digest after a
 # publish). prettier's pre-commit gate is a SEPARATE node hook (mirrors-prettier
@@ -356,7 +359,7 @@ hadolint() {
   # The combined code-tools image (ADR-0005) has no ENTRYPOINT, so name the
   # binary explicitly to pass file arguments through (hadolint's own image is
   # likewise entrypoint-less).
-  exec docker run "${args[@]}" "${image[hadolint]}" hadolint "$@"
+  exec docker run "${args[@]}" "${image[hadolint]}" hadolint "${DW_ARGV[@]}"
 }
 # SYNC: code-tools is the combined ADR-0005 image, digest-pinned per docker.md
 # (re-pin the digest when it republishes). It carries hadolint v2.14.0 (built
@@ -436,7 +439,7 @@ vale() {
   # code-tools has no ENTRYPOINT, so name the tool. The repo-local .vale.ini
   # is auto-discovered from the workdir (= $PWD); the image's VALE_STYLES_PATH
   # supplies the baked-in styles, so no `vale sync` is needed.
-  exec docker run "${args[@]}" "${image[vale]}" vale "$@"
+  exec docker run "${args[@]}" "${image[vale]}" vale "${DW_ARGV[@]}"
 }
 # SYNC: vale runs from the combined code-tools image here AND in the pre-commit
 # `vale` hook — both reference this same image. Its version and the proselint
@@ -457,7 +460,7 @@ lychee() {
   # code-tools has no ENTRYPOINT, so name the tool. The repo-local lychee.toml
   # is auto-discovered from the workdir (= $PWD); it sets --offline, so an
   # online check needs `--offline=false` on the command line.
-  exec docker run "${args[@]}" "${image[lychee]}" lychee "$@"
+  exec docker run "${args[@]}" "${image[lychee]}" lychee "${DW_ARGV[@]}"
 }
 # SYNC: lychee runs from the combined code-tools image here AND in the
 # pre-commit `lychee` hook — both reference this same image. Its version lives
@@ -479,7 +482,7 @@ ansible-lint() {
   # ANSIBLE_HOME it would cache into $PWD/.ansible and litter the caller's
   # repo. Quote the array key: shfmt reads a bare `-` in an associative-array
   # subscript as arithmetic (see terraform-docs).
-  exec docker run "${args[@]}" "${image["ansible-lint"]}" ansible-lint "$@"
+  exec docker run "${args[@]}" "${image["ansible-lint"]}" ansible-lint "${DW_ARGV[@]}"
 }
 # SYNC (#370): the same python-tools image as image[yamllint] above; keep the
 # two on one tag+digest. The ansible-lint VERSION lives in the python-tools
@@ -501,7 +504,7 @@ ruff() {
   # auto-discovered from the workdir (= $PWD). RUFF_CACHE_DIR=/tmp keeps the
   # cache OUT of the mounted repo (ruff otherwise writes $PWD/.ruff_cache
   # under --user).
-  exec docker run "${args[@]}" "${image[ruff]}" ruff "$@"
+  exec docker run "${args[@]}" "${image[ruff]}" ruff "${DW_ARGV[@]}"
 }
 # SYNC: code-tools is the combined ADR-0005 image; re-pin this tag+digest after
 # a publish (docker pull, then `docker inspect --format '{{index .RepoDigests
@@ -525,7 +528,7 @@ perltidy() {
   # so name the tool. The repo-root .perltidyrc (-> config/perl/perltidyrc) is
   # auto-discovered from the workdir (= $PWD), matching how shfmt finds
   # .editorconfig.
-  exec docker run "${args[@]}" "${image[perltidy]}" perltidy "$@"
+  exec docker run "${args[@]}" "${image[perltidy]}" perltidy "${DW_ARGV[@]}"
 }
 # SYNC: perltidy and perlcritic share the one combined perl-tools image. Keep
 # this tag+digest in lock-step with image[perlcritic] below, the perltidy and
@@ -549,7 +552,7 @@ perlcritic() {
   # The perl-tools image has no entrypoint, so name the tool. The repo-root
   # .perlcriticrc (-> config/perl/perlcriticrc) is auto-discovered from the
   # workdir (= $PWD), matching how perltidy finds .perltidyrc.
-  exec docker run "${args[@]}" "${image[perlcritic]}" perlcritic "$@"
+  exec docker run "${args[@]}" "${image[perlcritic]}" perlcritic "${DW_ARGV[@]}"
 }
 # SYNC: the same combined perl-tools image as image[perltidy] above; keep the
 # two identical (see the perltidy note for every other place it is pinned).
@@ -557,47 +560,23 @@ image[perlcritic]="ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a6699
 
 #------------------------------------------------------------------------------
 trivy() {
-  # Path guard, but skip the token after `image` (an image ref, not a
-  # path) and the subcommand keywords themselves.
-  local arg abs prev=""
-  for arg in "$@"; do
-    if [[ $arg == -* || $prev == image ]]; then
-      prev="$arg"
-      continue
-    fi
+  local -a args=(--rm)
+  dw_user args
+  dw_env args "${DW_ENV[@]}"
 
-    case $arg in
-      image | fs | config | repo | rootfs | sbom | filesystem)
-        prev="$arg"
-        continue
-        ;;
-    esac
-
-    abs=$(realpath -- "$arg" 2> /dev/null) || {
-      prev="$arg"
-      continue
-    }
-
-    if [[ -e $arg && $abs != "$PWD" && $abs != "$PWD"/* ]]; then
-      dw_die 1 "${arg} is not under the current directory; cd to its parent or edit bin/docker_wrapper"
-    fi
-
-    prev="$arg"
-  done
+  # Subcommand keywords and image refs name no existing path, so the shared
+  # guard passes them through untouched.
+  dw_mount_workdir args trivy "$@" || exit 1
 
   # Persistent vuln-DB cache so it is not re-downloaded every run.
   local cache="${XDG_CACHE_HOME:-$HOME/.cache}/trivy"
   mkdir -p "$cache"
 
-  local -a args=(--rm)
-  dw_user args
-  dw_env args "${DW_ENV[@]}"
-  dw_mount args "$PWD" /mnt
-  args+=(--workdir /mnt --env "TRIVY_CACHE_DIR=/cache")
+  args+=(--env "TRIVY_CACHE_DIR=/cache")
   dw_mount args "$cache" /cache
   dw_docker_socket args
 
-  exec docker run "${args[@]}" "${image[trivy]}" "$@"
+  exec docker run "${args[@]}" "${image[trivy]}" "${DW_ARGV[@]}"
 }
 image[trivy]="aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969"
 
