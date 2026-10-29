@@ -12,4 +12,4 @@
 # Microsoft publishes this image only on mcr.microsoft.com, which the
 # global hadolint baseline does not list as a trusted registry.
 # hadolint ignore=DL3026
-FROM mcr.microsoft.com/dotnet/sdk:10.0.402-noble@sha256:747cbade5bfd918a175ac32f8f1d931edec2c7d0d5397a3de72eaef1ac1f66d2
+FROM mcr.microsoft.com/dotnet/sdk:10.0.403-noble@sha256:de4fe90a98845d75910b9769662465c84de1a934665c431279d1382b2bddc02b
