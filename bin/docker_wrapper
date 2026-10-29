@@ -26,6 +26,11 @@
 #   is rewritten to its /mnt path. markdownlint alone also mounts a file from
 #   anywhere else on the host. dive is not covered.
 #
+#   Beyond that, tool parameters are not rewritten: only a plain path
+#   argument is mapped, never a path inside a flag's value (--config=/abs/x,
+#   -chdir=/abs). Those are the tool's to interpret and the caller's to pass
+#   correctly; a relative path works.
+#
 # Add a tool:
 #   1. write a <tool>() function below (build args, exec docker run)
 #   2. register its image next to the function:
@@ -384,6 +389,11 @@ markdownlint() {
   local -a argv=()
   local -A mounted=()
 
+  # ICEBOX: 2026-10-29 — only a standalone -f / --fix counts as fix mode, so
+  # combined (bundled, getopt-style clustered) short flags such as -qf leave
+  # the extra outside-repo mounts read-only and the fix fails loudly; pass
+  # -q -f instead. Whatever adds support for combining short flags must
+  # support every possible combination, this one included.
   for arg in "$@"; do
     [[ $arg == -f || $arg == --fix ]] && mode=rw
   done

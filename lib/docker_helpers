@@ -140,6 +140,12 @@ dw_user() {
 # Append a bind mount: dw_mount <array> <src> <dst> [mode]. A non-empty
 # mode is appended to the spec (e.g. `ro` -> src:dst:ro); omit it for a
 # read-write mount.
+#
+# ICEBOX: 2026-10-29 — a host path with a colon in it (~/notes:old/) cannot
+# be mounted: Docker splits a --volume / -v src:dst[:mode] volume spec on
+# `:`. The fix is the bind mount syntax --mount
+# type=bind,source=…,target=…[,readonly]; deferred as real but unlikely on
+# this machine.
 
 dw_mount() {
   local -n _a=$1
