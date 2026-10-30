@@ -34,6 +34,7 @@ check_link() {
 
   else
     debug "linking $link_file to $link"
+    [[ $link == */* ]] && mkdir -p "${link%/*}"
     ln -fs "$link_file" "$link"
   fi
 }

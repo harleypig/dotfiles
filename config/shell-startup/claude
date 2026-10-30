@@ -9,10 +9,13 @@ export CLAUDE_CODE_NO_FLICKER=1
 # set from the shell: project-level settings env cannot set it.
 if [[ $HOSTNAME == harleypig.com ]]; then
   export CLAUDE_CODE_TMPDIR="$HOME/.cache/claude-tmp"
-  mkdir -p "$CLAUDE_CODE_TMPDIR"
 
-  # Tools an agent runs (pip, bats, pre-commit) would otherwise fill the
-  # quota-limited /tmp. Agent sessions only: the operator's own shells keep
-  # the system default.
-  [[ -n $CLAUDECODE ]] && export TMPDIR="$CLAUDE_CODE_TMPDIR"
+  # /tmp is a quota-limited tmpfs that pip, bats and pre-commit fill. Every
+  # shell, not just agents: Claude Code snapshots this profile before
+  # CLAUDECODE exists, so a guard on it never fires. A directory of its own,
+  # so its age-based cleanup (config/user-tmpfiles.d/tmp.conf) cannot reach
+  # live session state under CLAUDE_CODE_TMPDIR.
+  export TMPDIR="$HOME/.cache/tmp"
+
+  mkdir -p "$CLAUDE_CODE_TMPDIR" "$TMPDIR"
 fi
