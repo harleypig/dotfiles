@@ -58,3 +58,16 @@ in_container() {
   assert_success
   assert_output --partial 'skipped'
 }
+
+# A link under a directory that does not exist yet (~/.config/user-tmpfiles.d
+# on a fresh host): ln alone fails, so the parent must be created first.
+@test "check-dotfiles creates a missing parent directory for a nested link" {
+  in_container '
+    export DOTFILES=/dotfiles
+    printf "\$DOTFILES/dotlinks-default .new/nested/dir/link\n" > "$HOME/.dotlinks"
+    /dotfiles/bin/check-dotfiles
+    echo "nested -> $(readlink "$HOME/.new/nested/dir/link")"
+  '
+  assert_success
+  assert_output --partial 'nested -> /dotfiles/dotlinks-default'
+}

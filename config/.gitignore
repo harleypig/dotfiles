@@ -36,6 +36,7 @@
 !/shell-startup/
 !/task/
 !/tmux/
+!/user-tmpfiles.d/
 !/vmgr/
 !/xdg-audit/
 !/yamllint/
