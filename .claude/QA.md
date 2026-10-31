@@ -1,6 +1,6 @@
 # Quality Assurance
 
-**Version:** v1.8.0
+**Version:** v1.9.0
 
 ## Purpose
 
@@ -50,7 +50,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 2 | Lint | **Active** | `shellcheck`, `yamllint` (docker-image hook on the pinned private `ghcr.io/harleypig/python-tools` image, which also backs `bin/ansible-lint` — #370), `markdownlint`, `flake8` (with mccabe `C901` at `max-complexity = 10`, `config/flake8` — #496); **Perl** `perltidy` + `perlcritic` (severity 1, set in the curated core-only `config/perl/perlcriticrc`) via pinned private ghcr **docker-image** pre-commit hooks (`ghcr.io/harleypig/{perltidy,perlcritic}`, `docker login` required — see `WORKFLOW.md`) |
 | 3 | Type-check | **Off** | No type checker. `pyright` was removed when `config/claude/hooks` (its only typed surface) was extracted to the dotagents repo; the small remaining first-party Python (`tests/lint/prose_wrap.py`, `tests/python/test_prose_wrap.py`) is not type-checked. Revisit if a substantial typed Python surface returns. |
 | 4 | Code smell / complexity | **Active (partial)** | Python: flake8's mccabe `C901` gates cyclomatic complexity above 10 (see Lint). Bash: `shellcheck` catches some; no dedicated bash complexity tool. Acknowledged gap, no tracked owner yet. |
-| 5 | Security | **Active (partial)** | Secrets: `gitleaks` + `detect-private-key` (commit-time check) **plus `trufflehog`** — PR-time *verified* scan in CI (`secret-scan.yml`, non-required for now). SCA / supply-chain: Dependabot alerts + version updates (`.github/dependabot.yml`). SAST: `semgrep` via the `security-scan` skill; **Checkmarx evaluated & declined** (commercial, no free tier — disproportionate). **`Snyk` & `CodeFactor` evaluated (2026-06-19) & not formalized** — both are hosted SaaS App checks that fail this repo's *worthwhile-results* bar (`security-scan` §4 escape hatch): no real dependency tree, so Snyk is a near-noise advisory check, and CodeFactor only re-runs ShellCheck/yamllint already gated locally. **Snyk dropped (uninstall the App); CodeFactor kept as a passive, non-required badge.** DAST: **N/A** (no running service). Deeper triage → `security-scan` skill. |
+| 5 | Security | **Active (partial)** | Secrets: `gitleaks` + `detect-private-key` (commit-time check) **plus `trufflehog`** — PR-time *verified* scan in CI (`secret-scan.yml`, non-required for now). SCA / supply-chain: Dependabot alerts + version updates (`.github/dependabot.yml`). SAST: `semgrep` via the `security-scan` skill; **Checkmarx evaluated & declined** (commercial, no free tier — disproportionate). **`Snyk` & `CodeFactor` evaluated (2026-06-19) & not formalized** — both are hosted SaaS App checks that fail this repo's *worthwhile-results* bar (`security-scan` §4 escape hatch): no real dependency tree, so Snyk is a near-noise advisory check, and CodeFactor only re-runs ShellCheck/yamllint already gated locally. **Snyk dropped (uninstall the App); CodeFactor kept as a passive, non-required badge.** Supply-chain posture: **OpenSSF Scorecard** (`scorecard.yml`, weekly + on push to `master`), its standing decisions in *Scorecard decisions* below. DAST: **N/A** (no running service). Deeper triage → `security-scan` skill. |
 | 6 | Tests | **Active** | `bats tests/shell/test_*.bats` (gate), `prove tests/perl/` (incl. `pod-syntax.t` — Test::Pod), `pytest tests/python` (self-activating), Pester over `tests/powershell/` in the pinned pwsh image (the `pester` CI job, **not** a required check — #590); its Pester version (`PESTER_VERSION` in that job) is **bumped by hand**, because Dependabot has no PowerShell Gallery ecosystem — the job's comment gives the command that lists the newest 5.x, and moving to Pester 6 is a separate decision (#605). **Perl coverage** (Devel::Cover) is a non-gating on-demand report (`TESTS.md`); a gating threshold is **Planned**. Layout/policy in `TESTS.md`. Suite *quality/coverage* → the **test-review** skill (qa.md dim 6), which `qa-check` composes. |
 | 7 | UI/UX & accessibility | **N/A** | Headless dotfiles / CLI — no UI. |
 | 8 | End-to-end | **N/A** | No application. Docker integration tests that bring up a real login shell / pwsh profile live under Tests (`TESTS.md`). |
@@ -61,6 +61,57 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | 13 | Documentation | **Active** | `markdownlint` (Markdown structure); **`vale`** (prose) — a check-only pre-commit hook running the code-tools image against the repo-local `.vale.ini`: the `proselint` style, baked into the image (no `vale sync`), with `Annotations` / `Typography` / `Needless` off so technical docs stay quiet (#385). Inline-first doc philosophy (`WORKFLOW.md`); no changelog is kept — `CHANGELOG.md` is frozen, git log + PR bodies are the record. **`lychee`** (links) — a check-only pre-commit hook running the code-tools image against the repo-local `lychee.toml`, which sets `offline = true`: relative/internal links and their `#anchor` fragments are checked, external links are reported as Excluded, so a flaky site can never block a commit (#452). The hook reads staged Markdown only; a full pass is `bin/lychee $(git ls-files '*.md')`. In CI, the required `pre-commit` job runs that same offline hook over all files. External links are checked by `.github/workflows/docs-links.yml` (#350): an online lychee pass over every tracked Markdown file, run weekly and on `workflow_dispatch` (and on a PR that edits the workflow itself). It is advisory, not a required check, so a flaky site never reddens a PR; a broken link shows up as a failed scheduled run. A manual external pass is `bin/lychee --offline=false <files>`. |
 | 14 | Code review | **Active (solo)** | `master` ruleset requires a PR (no bypass) with review-thread resolution; **0 required approvals** (solo repo) — review is self-review. |
 | 15 | CI | **Active** | `tests.yml` jobs bats / meta / perl / perl-compile / python / pester / pre-commit (+ `tool-images.yml` → `publish-tool-images.yml`: PR runs build with `packages: read` only, master runs publish with `packages: write` — #482); required checks **bats + meta + perl + perl-compile + pre-commit** gate merges; `pester` is advisory, since making it required means editing the ruleset, the operator's call (#590). **Workflow lint** — two check-only pre-commit hooks on the code-tools image, gated in CI through the pre-commit job (#482): **`actionlint`** (workflow syntax, expressions, types; runs the image's shellcheck over `run:` scripts) over `.github/workflows/*.y*ml`, and **`zizmor --offline`** (template injection, persisted credentials, excessive permissions, unpinned actions, Dependabot cooldown) over the workflows and `.github/dependabot.yml`. A deliberate finding is suppressed inline with a reason (`# zizmor: ignore[<audit>]`). `perl-compile` builds a real pinned Perl only when a PR touches the perl toolchain (else early-green). Watch via the `push-pr` skill's `ci-watch`. |
+
+## Scorecard decisions
+
+OpenSSF Scorecard (`scorecard.yml`) reports into code scanning. Each class of
+finding below is decided, so a re-raised alert of the same class is dismissed
+with a pointer here rather than re-argued (#637). A class not listed here is
+undecided: triage it, then add it.
+
+**Fixed:**
+
+- **Test-harness base images** (`tests/docker/*/Dockerfile`) pin `debian` by
+  tag and digest. Dependabot's docker entry lists every harness directory and
+  groups a base refresh into one PR.
+- **CI pip installs** (`tests.yml`) install from the hash-pinned pip-compile
+  files in `.github/requirements/` with `--require-hashes`, kept current by
+  Dependabot's pip entry for that directory.
+- **Security policy** — `.github/SECURITY.md` points at GitHub private
+  vulnerability reporting.
+
+**Dismissed — won't fix**, with the reason Scorecard cannot see:
+
+- **Tool-image Dockerfiles** (`config/docker/*`: `FROM` lines, and the
+  `pip` / `npm` installs) are pinned by version, not digest or hash. Each
+  image is published under an **immutable** tag that consumers pin by
+  tag@digest, so the published image is the reproducible unit. Any change
+  to a build context fails `tool-images` until the tag is bumped, so
+  digest-pinning the bases would turn every upstream base refresh into a
+  tag bump plus a re-pin SYNC (`WORKFLOW.md` *Perl QA toolchain*) without
+  changing what a consumer runs. Hash-pinning the pip / npm installs would
+  need a lockfile inside each image for the same result.
+- **`vmgr` installers** (`lib/version-managers/*`) pin each tool by version
+  in `config/vmgr/<lang>`. They install onto a workstation (CI runs them
+  only inside the throwaway vmgr harness container), and hash-pinning every
+  installer script and wheel would double the work of each pin bump for a
+  tool whose fallback chain exists to get past firewalled hosts.
+- **TokenPermissions** — `tool-images.yml`'s `publish` job holds
+  `packages: write` because it pushes to ghcr; the grant is job-scoped and
+  that job runs only on `master` (#482). `publish-tool-images.yml` has no
+  top-level `permissions:` on purpose: a reusable workflow can only narrow
+  its caller's grant, and its two callers differ in exactly that scope.
+- **BranchProtection / CodeReview** — one maintainer and no bypass actors:
+  required approvals, code-owner review and last-push approval cannot be
+  met by a solo repo. The ruleset is the operator's to change.
+- **SAST** — Scorecard counts only the SAST tools it recognises on each
+  commit. Here `shellcheck`, `perlcritic` and `zizmor` gate every commit
+  through pre-commit, and `semgrep` runs on demand (dim 5); adding a
+  recognised tool such as CodeQL just for the score is not planned.
+- **Fuzzing** — no parser or service surface that fuzzing would exercise;
+  the code is shell start-up and small CLIs.
+- **CII Best Practices** — a badge programme for distributed projects; a
+  personal dotfiles repo has no consumers to signal to.
 
 ## Optimization stance
 
