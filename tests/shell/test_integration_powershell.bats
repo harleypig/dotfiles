@@ -4,7 +4,7 @@
 # powershell/startup/*.ps1 modules), run in a pwsh container. Deploys
 # ps-startup.ps1 as the profile and asserts it comes up with DOTFILES set,
 # the startup modules loaded, and no parser errors. Skips when docker is
-# unavailable.
+# unavailable, and fails instead under CI (require_docker).
 
 # shellcheck disable=SC2016  # PowerShell $env: refs are evaluated by pwsh.
 
@@ -18,7 +18,7 @@ PS_IMAGE=$(sed -nE 's/^FROM[[:space:]]+//p' \
 
 setup() {
   load_bats_libs
-  command -v docker > /dev/null 2>&1 || skip "docker not available"
+  require_docker
 }
 
 # Deploy ps-startup.ps1 as the pwsh profile and run a pwsh script (passed via

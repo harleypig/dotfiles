@@ -3,7 +3,8 @@
 # Guards the docker integration harness helpers in tests/helpers/common.bash
 # (#642 - harness build failure skipped): a harness image that will not build
 # must turn the calling test red, and only a docker that cannot be used at all
-# may skip it.
+# may skip it -- and then only outside CI, where an unusable docker is a broken
+# runner and must turn the test red too (#646 - docker unreachable in CI).
 #
 # Most cases run a generated fixture .bats file through a nested bats, because
 # what is under test is how bats *reports* the calling test (ok / not ok /
@@ -69,11 +70,14 @@ exit 0"
 }
 
 #------------------------------------------------------------------------------
-# Run the fixture under a nested bats with <path> as PATH.
+# Run the fixture under a nested bats with <path> as PATH, and CI set to <ci>
+# when given. CI is always cleared first: GitHub Actions exports CI=true, and
+# inherited into the nested run it would turn every skip case below into a
+# failure in CI while it still passed on a workstation.
 
 run_fixture() {
   write_fixture
-  run env "PATH=$1" bats --formatter tap "$FIXTURE"
+  run env -u CI "PATH=$1" ${2:+"CI=$2"} bats --formatter tap "$FIXTURE"
 }
 
 #------------------------------------------------------------------------------
@@ -133,8 +137,9 @@ path_without_docker() {
   refute_output --partial '# skip'
 }
 
-# Red if a docker CLI with no daemon fails the test instead of skipping it.
-@test "an unreachable docker daemon skips the calling test" {
+# Red if a docker CLI with no daemon fails the test instead of skipping it,
+# outside CI.
+@test "an unreachable docker daemon skips the calling test outside CI" {
   write_docker_stub 1 1 'build must not be reached'
 
   run_fixture "$STUB:$PATH"
@@ -144,8 +149,9 @@ path_without_docker() {
   refute_output --partial 'build must not be reached'
 }
 
-# Red if a host with no docker at all fails the test instead of skipping it.
-@test "no docker CLI skips the calling test" {
+# Red if a host with no docker at all fails the test instead of skipping it,
+# outside CI.
+@test "no docker CLI skips the calling test outside CI" {
   local nodocker
   nodocker=$(path_without_docker)
 
@@ -153,6 +159,35 @@ path_without_docker() {
 
   assert_success
   assert_line 'ok 1 fixture # skip docker not available'
+}
+
+# Red if, with CI set, a docker CLI with no daemon still skips (a CI runner
+# whose daemon is down would pass every docker test unrun), reaches the build,
+# or fails without saying why.
+@test "with CI set, an unreachable docker daemon fails the calling test" {
+  write_docker_stub 1 1 'build must not be reached'
+
+  run_fixture "$STUB:$PATH" true
+
+  assert_failure
+  assert_line 'not ok 1 fixture'
+  refute_output --partial '# skip'
+  refute_output --partial 'build must not be reached'
+  assert_output --partial 'docker daemon not reachable, and CI is set'
+}
+
+# Red if, with CI set, a host with no docker CLI still skips, or fails without
+# saying why.
+@test "with CI set, no docker CLI fails the calling test" {
+  local nodocker
+  nodocker=$(path_without_docker)
+
+  run_fixture "$nodocker" true
+
+  assert_failure
+  assert_line 'not ok 1 fixture'
+  refute_output --partial '# skip'
+  assert_output --partial 'docker not available, and CI is set'
 }
 
 # Red if docker's real build failure stops reaching build_harness_image as a

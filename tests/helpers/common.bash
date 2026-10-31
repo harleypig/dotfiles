@@ -153,11 +153,30 @@ source_funcs() {
 # Skip the calling test when docker cannot be used: no docker CLI on PATH, or
 # a CLI whose daemon does not answer (stopped, or a socket this user cannot
 # open). Must be called directly, never inside $(...) (see above).
+#
+# With CI set (GitHub Actions exports CI=true) the same condition fails the
+# test instead: a runner is meant to have docker, so an unusable one is a
+# broken runner, and skipping would let every docker test pass unrun (#646 -
+# docker unreachable in CI). Returns 1 rather than calling `fail`, which needs
+# bats-support -- callers' setup runs under errexit, so that is a failure.
 
 require_docker() {
-  command -v docker > /dev/null 2>&1 || skip "docker not available"
+  local why
 
-  docker info > /dev/null 2>&1 || skip "docker daemon not reachable"
+  if ! command -v docker > /dev/null 2>&1; then
+    why='docker not available'
+
+  elif ! docker info > /dev/null 2>&1; then
+    why='docker daemon not reachable'
+
+  else
+    return 0
+  fi
+
+  [[ -n ${CI:-} ]] || skip "$why"
+
+  printf '%s, and CI is set: refusing to skip a docker test\n' "$why" >&2
+  return 1
 }
 
 #------------------------------------------------------------------------------
