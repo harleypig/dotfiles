@@ -119,3 +119,16 @@ in_container() {
   assert_output --partial 'logout -> /dotfiles/dot-general/.bash_logout'
   assert_output --partial 'tmpfiles absent'
 }
+
+# dotlinks-sweetums named a .bash_logout at the repo root, which does not
+# exist; check_link skips a missing source silently, so nothing was linked.
+@test "check-dotfiles links .bash_logout from dotlinks-sweetums" {
+  in_container '
+    export DOTFILES=/dotfiles
+    rm -f "$HOME/.dotlinks" "$HOME/.bash_logout"
+    /dotfiles/bin/check-dotfiles
+    echo "logout -> $(readlink "$HOME/.bash_logout")"
+  ' sweetums
+  assert_success
+  assert_output --partial 'logout -> /dotfiles/dot-general/.bash_logout'
+}
