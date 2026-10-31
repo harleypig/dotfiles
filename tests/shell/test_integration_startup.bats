@@ -14,6 +14,7 @@ load ../helpers/common
 
 setup() {
   load_bats_libs
+  require_docker
   IMAGE="$(dotfiles_harness_image)"
 }
 

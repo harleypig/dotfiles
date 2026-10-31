@@ -17,6 +17,7 @@ load ../helpers/common
 
 setup() {
   load_bats_libs
+  require_docker
   IMAGE="$(perl_harness_image)"
 }
 
