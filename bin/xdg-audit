@@ -6,7 +6,8 @@ use File::Spec;
 use Digest::SHA qw(sha256_hex);
 use FindBin     qw($RealBin);
 use JSON::PP;
-use English qw( -no_match_vars );
+use English       qw( -no_match_vars );
+use Sys::Hostname qw(hostname);
 
 # ------------------------------------------------------------------------------
 # xdg-audit — audit $HOME for dotfiles that could move to XDG locations.
@@ -438,19 +439,38 @@ sub effective_owner {
     :                                                         undef;
 }
 
-# The dotlinks file check-dotfiles actually reads: $HOME/.dotlinks when present,
-# else $DOTFILES/dotlinks-default. Undef when neither is readable (e.g. $DOTFILES
-# unset). Mirrors check-dotfiles' own resolution — deliberately NOT the private
-# set, which is a separate concern.
-sub dotlinks_file {
-  my $home = home_dir();
-  my $user = File::Spec->catfile( $home, '.dotlinks' );
-  return $user if -r $user;
+# The dotlinks files check-dotfiles chooses between, as a hashref: user
+# ($HOME/.dotlinks), host ($DOTFILES/dotlinks-<hostname>) and default
+# ($DOTFILES/dotlinks-default), the last two only when $DOTFILES is set. The
+# order user, host, default is check-dotfiles' own and must stay in step with
+# it — deliberately NOT the private set, which is a separate concern.
+sub dotlinks_candidates {
+  my %c = ( user => File::Spec->catfile( home_dir(), '.dotlinks' ) );
 
   my $df = $ENV{DOTFILES};
-  return if !( defined $df && length $df );  # scalar/boolean caller: undef is fine
-  my $def = File::Spec->catfile( $df, 'dotlinks-default' );
-  return -r $def ? $def : undef;
+  if ( defined $df && length $df ) {
+    $c{host}    = File::Spec->catfile( $df, 'dotlinks-' . host_name() );
+    $c{default} = File::Spec->catfile( $df, 'dotlinks-default' );
+  }
+
+  return \%c;
+}
+
+# bash takes $HOSTNAME from the environment when it is exported, else from
+# gethostname(2), so this is the name check-dotfiles sees when run from here.
+sub host_name {
+  return $ENV{HOSTNAME} if defined $ENV{HOSTNAME};
+  return hostname();
+}
+
+# The dotlinks file check-dotfiles actually reads: the first readable of
+# ~/.dotlinks, the host file, dotlinks-default. Undef when none is.
+sub dotlinks_file {
+  my $c = dotlinks_candidates();
+  for my $file ( grep { defined } @{$c}{qw(user host default)} ) {
+    return $file if -r $file;
+  }
+  return;                              # scalar/boolean caller: undef is fine
 }
 
 # Is the entry's $HOME symlink one check-dotfiles maintains? True when a dotlinks
@@ -2182,20 +2202,26 @@ sub run_check_dotfiles {
   return ( $rc, $out // q{} );
 }
 
-# Choose the dotlinks file to append to, bootstrapping ~/.dotlinks when it is
-# absent. All prompts default No, so a non-interactive/fixture run declines and
-# aborts cleanly. Prints the $DOTFILES/dotlinks-* files, marking the active one
-# (check-dotfiles reads ~/.dotlinks if present, else the dotlinks-default).
-# Returns ($file, $preexisted), or an empty list if the user declines.
+# Choose the dotlinks file to append to: ~/.dotlinks when present, else this
+# host's file when present, else bootstrap ~/.dotlinks or fall back to
+# dotlinks-default. All prompts default No, so a non-interactive/fixture run
+# declines and aborts cleanly. Prints the $DOTFILES/dotlinks-* files, marking
+# the active one. Returns ($file, $preexisted), or an empty list if the user
+# declines.
 sub dotlinks_target_file {
-  my $home = home_dir();
-  my $user = File::Spec->catfile( $home, '.dotlinks' );
-  my $df   = $ENV{DOTFILES};
-  my $def  = ( defined $df && length $df ) ? File::Spec->catfile( $df, 'dotlinks-default' ) : undef;
+  my ( $user, $host, $def ) = @{ dotlinks_candidates() }{qw(user host default)};
+  my $active = dotlinks_file();
 
-  list_dotlinks_files( $df, ( -e $user ? $user : $def ) );
+  list_dotlinks_files( $ENV{DOTFILES}, $active );
 
   return ( $user, 1 ) if -e $user;     # ~/.dotlinks is the active file already
+
+  # The host file is active. A new ~/.dotlinks would shadow it wholesale, so
+  # only appending to it is offered.
+  if ( defined $active && defined $host && $active eq $host ) {
+    return ( $host, 1 ) if prompt_yes("  Append to $host (this host's file, tracked)? [y/N] ");
+    return;
+  }
 
   # ~/.dotlinks absent: offer to bootstrap it (the active file check-dotfiles
   # would read), else fall back to the shared, tracked dotlinks-default.
@@ -2523,8 +2549,10 @@ MIGRATE
   declared 'rewrite' (which must live under $DOTFILES - a symlink source must be
   repo-resident), registers it in a dotlinks file, then runs check-dotfiles to
   create the $HOME symlink back to the repo copy. xdg-audit never runs 'ln'
-  itself; check-dotfiles owns the linking. It offers to bootstrap ~/.dotlinks
-  (the active dotlinks file) when absent, or to append to the shared, tracked
+  itself; check-dotfiles owns the linking. It appends to the dotlinks file
+  check-dotfiles reads: ~/.dotlinks, else $DOTFILES/dotlinks-<hostname>, else
+  dotlinks-default. With neither of the first two present it offers to
+  bootstrap ~/.dotlinks, or to append to the shared, tracked
   $DOTFILES/dotlinks-default. It writes into the TRACKED repo but never commits
   - the git commit stays yours. A partial-failure rolls back (the file is moved
   back and the dotlinks line stripped). It refuses when no repo 'rewrite' is
