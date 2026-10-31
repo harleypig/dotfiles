@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.19.0
+**Version:** v1.20.0
 
 ## Purpose
 
@@ -421,6 +421,7 @@ alongside the taxonomy's labels, never instead of them.
 | `code` | A change to product code in `bin/` or `lib/`, or to the code-quality bar applied to it |
 | `option parsing` | Command-line option parsing (so far only the `parse_params` library) |
 | `python` | Python code or dependencies; Dependabot applies it to its pip updates under `config/pypoetry` |
+| `docker` | Docker images and their pins: `bin/docker_wrapper` and its pinned tool images, `config/docker/`, the test harness images; Dependabot applies it to its docker updates |
 | `codex` | A pull request opened by the OpenAI Codex agent, from a `codex/*` branch |
 | `patch` | A Dependabot pull request whose version bump is a patch release |
 
