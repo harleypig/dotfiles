@@ -5,7 +5,7 @@ use warnings;
 
 use Exporter 'import';
 use IPC::Open3 ();
-use Symbol qw(gensym);
+use Symbol     qw(gensym);
 use File::Spec ();
 
 our @EXPORT = qw(run_pp run_pp_argv);
@@ -18,9 +18,9 @@ our @EXPORT = qw(run_pp run_pp_argv);
 sub run_pp_argv {
   my @argv = @_;
 
-  my $script = File::Spec->catfile('bin', 'parse_params');
-  my $err = gensym;
-  my $pid = IPC::Open3::open3(my $in, my $out, $err, $script, @argv);
+  my $script = File::Spec->catfile( 'bin', 'parse_params' );
+  my $err    = gensym;
+  my $pid    = IPC::Open3::open3( my $in, my $out, $err, $script, @argv );
 
   close $in;
   local $/;
@@ -28,15 +28,15 @@ sub run_pp_argv {
   my $stderr = <$err> // '';
   waitpid $pid, 0;
 
-  return ($stdout, $stderr, $? >> 8);
+  return ( $stdout, $stderr, $? >> 8 );
 }
 
 # run_pp($def_string, @args) -> ($stdout, $stderr, $exit_code)
 #
 # The common case: definition string first, then the args to parse.
 sub run_pp {
-  my ($def, @args) = @_;
-  return run_pp_argv($def, @args);
+  my ( $def, @args ) = @_;
+  return run_pp_argv( $def, @args );
 }
 
 1;
