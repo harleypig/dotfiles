@@ -34,6 +34,23 @@ updates:
           - minor
           - patch
 
+  # The hash-pinned pip-compile files tests.yml installs its CI tools from
+  # (#637). Dependabot re-runs pip-compile, so the hashes move with the bump.
+  - package-ecosystem: pip
+    directory: /.github/requirements
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
   # GitHub Actions in .github/workflows — keeps actions off deprecated
   # runtimes automatically (cf. the manual Node 20 bump in PR #101).
   - package-ecosystem: github-actions
@@ -54,8 +71,16 @@ updates:
   # Docker base-image (FROM) pins in the repo's own Dockerfiles. The
   # vendored Dockerfiles under config/coc/.../node_modules and the plugin
   # marketplace are third-party and are not covered here.
+  #
+  # The test-harness images pin debian by tag and digest (#637), so every
+  # harness directory is listed: a digest nobody refreshes goes stale.
+  # group-by keeps one base-image refresh to one PR across all four.
   - package-ecosystem: docker
-    directory: /tests/docker
+    directories:
+      - /tests/docker
+      - /tests/docker/perl
+      - /tests/docker/vmgr
+      - /tests/docker/xdg-audit
     schedule:
       interval: weekly
     cooldown:
@@ -63,6 +88,11 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    groups:
+      harness-base-images:
+        group-by: dependency-name
+        patterns:
+          - '*'
 
   # The PowerShell integration test's image. `directory` reads one directory
   # and not its subdirectories, so /tests/docker above does not reach it.
