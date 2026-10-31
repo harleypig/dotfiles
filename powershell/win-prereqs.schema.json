@@ -25,9 +25,9 @@
       "pattern": "^[A-Za-z0-9._-]+$"
     },
     "why": {
-      "description": "Evidence of use in the owning repo: at least one path:line.",
+      "description": "Evidence of use in the owning repo: at least one path:`anchor`, where anchor is a literal string found in that file. A path:line also matches, but goes stale whenever the file above it changes.",
       "type": "string",
-      "pattern": "[^\\s:]+:\\d+"
+      "pattern": "[^\\s:`]+:(\\d+|`[^`]+`)"
     },
     "command": {
       "description": "An executable whose presence on PATH counts as installed, by whatever tool (the WindowsApps Store stubs do not count).",

@@ -2,7 +2,7 @@
   "packages": [
     {
       "name": "nodejs",
-      "why": "npm, which the bats entries install with (win-prereqs.json:42, :47, :52, :59), comes with Node.js.",
+      "why": "npm, which the bats entries install with (win-prereqs.json:`\"manager\": \"npm\"`), comes with Node.js.",
       "command": "node",
       "install": [
         { "manager": "choco", "id": "nodejs-lts" },
@@ -11,7 +11,7 @@
     },
     {
       "name": "uv",
-      "why": "The pre-commit and linode-cli entries install as uv tools (win-prereqs.json:75, :83).",
+      "why": "The pre-commit and linode-cli entries install as uv tools (win-prereqs.json:`\"manager\": \"uv\"`).",
       "command": "uv",
       "install": [
         { "manager": "choco", "id": "uv" },
@@ -20,7 +20,7 @@
     },
     {
       "name": "python3",
-      "why": "The prose-wrap hook runs python3 (.pre-commit-config.yaml:295); the python3 link step points python3 at the newest Python this installs.",
+      "why": "The prose-wrap hook runs python3 (.pre-commit-config.yaml:`entry: python3 tests/lint/prose_wrap.py`); the python3 link step points python3 at the newest Python this installs.",
       "command": "python3",
       "install": [
         { "manager": "choco", "id": "python3" },
@@ -29,7 +29,7 @@
     },
     {
       "name": "jq",
-      "why": "bin/gen-package-doc:128 runs jq.",
+      "why": "bin/gen-package-doc runs jq (bin/gen-package-doc:`jq -r --arg n`).",
       "command": "jq",
       "install": [
         { "manager": "choco", "id": "jq" },
@@ -38,22 +38,22 @@
     },
     {
       "name": "bats",
-      "why": "The test gate runs bats under Git Bash (.github/workflows/tests.yml:47).",
+      "why": "The test gate runs bats under Git Bash (.github/workflows/tests.yml:`run: bats tests/shell/test_*.bats`).",
       "install": [{ "manager": "npm", "id": "bats" }]
     },
     {
       "name": "bats-support",
-      "why": "tests/helpers/common.bash:19 loads it from BATS_LIB_PATH (npm root -g).",
+      "why": "tests/helpers/common.bash:`bats_load_library bats-support` loads it from BATS_LIB_PATH (npm root -g).",
       "install": [{ "manager": "npm", "id": "bats-support" }]
     },
     {
       "name": "bats-assert",
-      "why": "tests/helpers/common.bash:20 loads it from BATS_LIB_PATH (npm root -g).",
+      "why": "tests/helpers/common.bash:`bats_load_library bats-assert` loads it from BATS_LIB_PATH (npm root -g).",
       "install": [{ "manager": "npm", "id": "bats-assert" }]
     },
     {
       "name": "bats-file",
-      "why": "tests/helpers/common.bash:21 loads it. The npm registry's bats-file is a security placeholder, so it comes from the project's repository.",
+      "why": "tests/helpers/common.bash:`bats_load_library bats-file` loads it. The npm registry's bats-file is a security placeholder, so it comes from the project's repository.",
       "install": [
         {
           "manager": "npm",
@@ -64,12 +64,12 @@
     },
     {
       "name": "pytest",
-      "why": "The python job runs pytest tests/python (.github/workflows/tests.yml:185), importable by python3.",
+      "why": "The python job runs pytest tests/python (.github/workflows/tests.yml:`pytest tests/python`), importable by python3.",
       "install": [{ "manager": "pip", "id": "pytest" }]
     },
     {
       "name": "pre-commit",
-      "why": "The check config runs as pre-commit run --all-files (.github/workflows/tests.yml:225) and on every commit.",
+      "why": "The check config runs as pre-commit run --all-files (.github/workflows/tests.yml:`pre-commit run --all-files`) and on every commit.",
       "command": "pre-commit",
       "install": [
         { "manager": "uv", "id": "pre-commit" },
@@ -78,18 +78,18 @@
     },
     {
       "name": "linode-cli",
-      "why": "bin/linx:539 execs linode-cli.",
+      "why": "bin/linx execs linode-cli (bin/linx:`exec linode-cli`).",
       "command": "linode-cli",
       "install": [{ "manager": "uv", "id": "linode-cli" }]
     },
     {
       "name": "Pester",
-      "why": "The PowerShell tests need Pester 5 or later (tests/powershell/Install-Prereqs.Tests.ps1:1), beside the in-box 3.4.",
+      "why": "The PowerShell tests need Pester 5 or later (tests/powershell/Install-Prereqs.Tests.ps1:`ModuleVersion = '5.0'`), beside the in-box 3.4.",
       "install": [{ "manager": "psgallery", "id": "Pester" }]
     },
     {
       "name": "docker-desktop",
-      "why": "The docker_image pre-commit hooks (.pre-commit-config.yaml:62) and bin/docker_wrapper:102 run docker.",
+      "why": "The docker_image pre-commit hooks (.pre-commit-config.yaml:`language: docker_image`) and bin/docker_wrapper (bin/docker_wrapper:`exec docker run`) run docker.",
       "command": "docker",
       "slow": "about 1 GB to download; this can take 20+ minutes",
       "install": [
