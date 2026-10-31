@@ -494,6 +494,59 @@ teardown() {
   refute_output --partial "$repo/top.sh"
 }
 
+@test "an absolute path to an in-repo symlink keeps the link's name" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/sub"
+  git init -q "$repo"
+  printf '#!/bin/sh\n' > "$repo/real.sh"
+  ln -s real.sh "$repo/link.sh"
+  cd "$repo/sub"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/shellcheck" "$repo/link.sh"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "shellcheck /mnt/link.sh"
+  refute_output --partial "real.sh"
+}
+
+@test "markdownlint keeps an in-repo symlink's name for an absolute path" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo/docs"
+  git init -q "$repo"
+  printf '# Title\n' > "$repo/docs/guide.md"
+  ln -s guide.md "$repo/docs/README.md"
+  cd "$repo"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/markdownlint" "$repo/docs/README.md"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "markdownlint /mnt/docs/README.md"
+  refute_output --partial "guide.md"
+  refute_output --partial "/host"
+}
+
+@test "markdownlint still resolves an in-repo symlink pointing outside" {
+  make_stub "$STUB" docker
+  repo=$(realpath "$BATS_TEST_TMPDIR")/repo
+  mkdir -p "$repo" "$BATS_TEST_TMPDIR/ext"
+  git init -q "$repo"
+  printf '# Title\n' > "$BATS_TEST_TMPDIR/ext/outside.md"
+  ext=$(realpath "$BATS_TEST_TMPDIR/ext")
+  ln -s ../ext/outside.md "$repo/link.md"
+  cd "$repo"
+
+  run env "PATH=$STUB:$PATH" "$ROOT/bin/markdownlint" "$repo/link.md"
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume $ext:/host$ext:ro"
+  assert_output --partial "markdownlint /host$ext/outside.md"
+}
+
 @test "an IaC tool maps an absolute in-repo path to /mnt" {
   make_stub "$STUB" docker
   repo=$(realpath "$BATS_TEST_TMPDIR")/repo

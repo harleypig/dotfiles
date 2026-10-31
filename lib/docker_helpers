@@ -231,6 +231,35 @@ dw_stdin_if_piped() {
 }
 
 #-----------------------------------------------------------------------------
+# Print a symlink's own host path, its parent directory resolved but the link
+# itself not followed, when the container can follow it inside the mount:
+#   own=$(dw_in_tree_link <path> <root>)
+# <root> is the resolved mounted directory. Succeeds only when <path> is a
+# symlink, its own path lies under <root>, and every hop of the chain is a
+# relative link (an absolute target names a host path the container lacks).
+# The caller has already checked that the chain's final target is under
+# <root>; a dangling or looping chain never gets here, since it fails -e.
+
+dw_in_tree_link() {
+  local path=$1 root=$2 own target
+
+  [[ -L $path ]] || return 1
+
+  own=$(realpath -- "$(dirname -- "$path")")/${path##*/}
+  [[ $own == "$root"/* ]] || return 1
+
+  path=$own
+
+  while [[ -L $path ]]; do
+    target=$(readlink -- "$path")
+    [[ $target == /* ]] && return 1
+    path=$(dirname -- "$path")/$target
+  done
+
+  printf '%s\n' "$own"
+}
+
+#-----------------------------------------------------------------------------
 # Mount the working tree at /mnt and set --workdir to $PWD's place inside it:
 #   dw_mount_workdir <array> [<tool> <arg>...]
 # The tree is the enclosing git checkout's top level, so any path in the repo
@@ -253,7 +282,7 @@ dw_mount_workdir() {
   local -n _a=$1
   shift
 
-  local here root arg abs
+  local here root arg abs own
 
   here=$(realpath -- "$PWD")
   root=$here
@@ -284,7 +313,13 @@ dw_mount_workdir() {
         return 1
       fi
 
-      [[ $arg == /* ]] && arg=/mnt${abs#"$root"}
+      # An in-tree link keeps its own name, so the tool reports the path
+      # the caller typed (#622).
+      if [[ $arg == /* ]]; then
+        own=$(dw_in_tree_link "$arg" "$root") && abs=$own
+        arg=/mnt${abs#"$root"}
+      fi
+
       DW_ARGV+=("$arg")
     done
   fi
