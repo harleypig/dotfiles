@@ -14,7 +14,7 @@
 #   read from the host env, never placed on the command line). This lets a
 #   caller pass whatever a run needs without editing per-tool forwarding here.
 #   The flags must lead (parsing stops at the first non-flag argument), and
-#   apply to every $PWD-mounted tool except those whose own CLI claims -e
+#   apply to every mounted tool except those whose own CLI claims -e
 #   (shellcheck, whose -e is --exclude — see native_e_tools below); the daemons
 #   do not take them.
 #
@@ -46,10 +46,11 @@
 # bin/docker_wrapper-links checks/repairs the bin/<tool> symlinks against
 # --known-tools.
 #
-# Families (how each function is shaped):
-#   pwd-mounted linters  shellcheck shfmt yamllint prettier hadolint
+# Families (how each function is shaped; "repo mount" is the mount
+# described under What is mounted):
+#   repo-mounted linters shellcheck shfmt yamllint prettier hadolint
 #                        markdownlint ansible-lint ruff vale
-#   scanners             trivy (pwd + socket)  dive (socket only)
+#   scanners             trivy (repo mount + socket)  dive (socket only)
 #   daemons              ollama openwebui (host-gated; start the containers
 #                        the ansible-stuff openwebui role creates, never
 #                        create them)
@@ -379,7 +380,7 @@ markdownlint() {
   dw_env args "${DW_ENV[@]}"
   dw_mount_workdir args
 
-  # Unlike the other pwd-mounted tools, a path outside the mounted root is
+  # Unlike the other repo-mounted tools, a path outside the mounted root is
   # allowed (#612): its resolved directory is mounted at /host<dir> and the
   # argument rewritten to match. The workdir is still $PWD, so the
   # .markdownlint.json found there applies. Resolving first matters: a
