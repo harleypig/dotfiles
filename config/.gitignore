@@ -16,7 +16,6 @@
 # Allowed subdirectories (each manages its own contents)
 !/claude/
 !/ansible/
-!/binenv/
 !/burn-my-windows/
 !/completions/
 !/docker/

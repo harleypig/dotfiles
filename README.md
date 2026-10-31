@@ -241,7 +241,6 @@ for specific tools:
 **Development Tools:**
 
 - **`aider`**: Aider AI coding assistant
-- **`binenv`**: Binary environment manager
 - **`claude`**: Claude Code CLI environment settings, when installed
 - **`docker`**: Docker CLI bash completion
 - **`gcloud`**: `gcloud-sa`, switch the shell's gcloud configuration and
@@ -284,8 +283,7 @@ The `config/` directory contains tool-specific configurations organized by
 application. Each tool may have its own subdirectory with configuration files
 and documentation:
 
-- **Development**: ansible, binenv, docker, gh, git, go, npm, perl, python,
-  pypoetry
+- **Development**: ansible, docker, gh, git, go, npm, perl, python, pypoetry
 - **CLI Tools**: act, glow, htop, linode-cli, opencode, pgcli, snyk, yamllint
 - **Applications**: audacity, Cursor, cursor, gnome-initial-setup-done
 - **Configuration**: completions, configstore, readline, shell-startup, subdir
