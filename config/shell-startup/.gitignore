@@ -9,7 +9,6 @@
 !aider
 !app_env_vars
 !bash_prompt
-!binenv
 !claude
 !cuda
 !docker

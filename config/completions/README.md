@@ -47,7 +47,6 @@ config/shell-startup/         # Shell startup files that load completions
 ├── python                   # Loads poetry completion
 ├── ssh-config-completion    # Defines SSH completion
 ├── terraform                # Loads terraform completion
-├── binenv                   # Loads binenv completion (dynamic)
 ├── perl                     # Loads Perlbrew completion
 └── taskwarrior_inactive     # TaskWarrior completion (currently inactive)
 ```
@@ -57,9 +56,7 @@ config/shell-startup/         # Shell startup files that load completions
 Most completions are **vendored**: the tool's official `completion` output is
 generated once and committed, then sourced as a static file. Sourcing a file
 is far cheaper than forking the tool at every interactive shell — `docker
-completion bash` and `npm completion` each measured ~300ms. `binenv` is the
-exception: it loads dynamically (`source <(binenv completion bash)`), cheap
-enough to not bother vendoring.
+completion bash` and `npm completion` each measured ~300ms.
 
 The trade-off is staleness — a vendored completion reflects the tool version
 it was generated from, so regenerate it after a tool upgrade (see
@@ -139,7 +136,6 @@ for the exact generator commands.
 
 - **Terraform**: Loaded in `config/shell-startup/terraform`
 - **Node.js/NVM**: Loaded in `config/shell-startup/nodejs`
-- **binenv**: Loaded in `config/shell-startup/binenv` (dynamic)
 - **Perl**: Loaded in `config/shell-startup/perl`
 - **TaskWarrior**: `config/shell-startup/taskwarrior_inactive` (inactive)
 
