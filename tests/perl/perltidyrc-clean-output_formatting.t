@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 use Test::More;
+use lib 'tests/perl/lib';
+use TestPerltidyrcClean ();   # skips the file without Perl::Tidy
 use File::Spec;
 use Cwd;
 use File::Temp qw(tempfile);
