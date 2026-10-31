@@ -50,17 +50,19 @@ environments:
   environment
 - **`dotlinks-sweetums`**: Configuration for sweetums environment
 
-**When to use**: Choose the dotlinks file that matches your environment or
-create your own custom one.
+**Which one is used**: `check-dotfiles` reads the first of these that
+exists:
 
-**How to set up**:
+1. `~/.dotlinks`, your own list;
+2. `dotlinks-$HOSTNAME`, the file named after this host;
+3. `dotlinks-default`.
+
+A host with its own file needs no setup. Create `~/.dotlinks` only to
+override the per-host or default list:
 
 ```bash
-# Copy the appropriate dotlinks file
+# Start from an existing list and edit it
 cp dotlinks-default ~/.dotlinks
-
-# Or create your own custom dotlinks file
-# Edit ~/.dotlinks to specify which configuration files to link
 ```
 
 **File format** — one entry per line, environment variables expanded:

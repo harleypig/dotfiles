@@ -3,6 +3,8 @@
 # touch $HOME/.nochecklinks to not check links against dotfiles
 # touch $HOME/.nocheckprivatelinks to not check links against private_dotfiles
 #
+# Links are read from the first of these that exists:
+#   $HOME/.dotlinks, $DOTFILES/dotlinks-$HOSTNAME, $DOTFILES/dotlinks-default
 # Create $HOME/.dotlinks with one entry per line to check against dotfiles
 # Create $HOME/.privatedotlinks with one entry per line to check against private_dotfiles
 
@@ -66,8 +68,16 @@ check_dotfiles() {
   done
 
   #---------------------------------------------------------------------------
-  links_file="$DOTFILES/dotlinks-default"
-  [[ -r "$HOME/.dotlinks" ]] && links_file="$HOME/.dotlinks"
+  if [[ -r "$HOME/.dotlinks" ]]; then
+    links_file="$HOME/.dotlinks"
+
+  elif [[ -r "$DOTFILES/dotlinks-$HOSTNAME" ]]; then
+    links_file="$DOTFILES/dotlinks-$HOSTNAME"
+
+  else
+    links_file="$DOTFILES/dotlinks-default"
+  fi
+
   check_links "$links_file"
 }
 
