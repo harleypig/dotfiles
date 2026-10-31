@@ -1041,6 +1041,90 @@ mg_entry( 'bootn', mechanism => 'symlink', rewrite => '$DOTFILES/bootn' );
   ok( !-e $s3_dl, 'no ~/.dotlinks was created on a full decline' );
 }
 
+# This host's file — $DOTFILES/dotlinks-<hostname> — sits between ~/.dotlinks
+# and dotlinks-default, the order check-dotfiles reads them in. HOSTNAME is
+# pinned so the host file's name is known; check-dotfiles inherits it too.
+my $s3_host = File::Spec->catfile( $s3df, 'dotlinks-testhost' );
+my $s3_def  = File::Spec->catfile( $s3df, 'dotlinks-default' );
+my $hostenv = { HOSTNAME => 'testhost' };
+
+mg_entry( 'hreg', mechanism => 'symlink', rewrite => '$DOTFILES/hreg' );
+my $hreg_tgt = File::Spec->catfile( $s3df, 'hreg' );
+$wr->( $hreg_tgt, "h\n" );
+symlink( $hreg_tgt, File::Spec->catfile( $s3home, '.hreg' ) ) or die "symlink: $!";
+
+my $hreg_status = sub {
+  my ($env) = @_;
+  my ($out) = run_symlink_env( $env, $s3home, $s3df, '', '--json', 'hreg' );
+  return JSON::PP->new->decode($out)->{files}[0]{current_completeness};
+};
+
+# No ~/.dotlinks: the host file is the one read, so a link registered only
+# there is complete.
+{
+  unlink $s3_dl;
+  $wr->( $s3_host, "$DOLLAR_DOTFILES/hreg .hreg\n" );
+  $wr->( $s3_def,  "# nothing\n" );
+  is( $hreg_status->($hostenv), 'complete', 'a link registered in the host file is complete when ~/.dotlinks is absent' );
+}
+
+# ~/.dotlinks present: it overrides the host file, which is then not read.
+{
+  $wr->( $s3_dl, "# nothing\n" );
+  is( $hreg_status->($hostenv), 'partial', '~/.dotlinks overrides the host file' );
+  unlink $s3_dl;
+}
+
+# No host file for this hostname: dotlinks-default is read.
+{
+  unlink $s3_host;
+  $wr->( $s3_def, "$DOLLAR_DOTFILES/hreg .hreg\n" );
+  is( $hreg_status->($hostenv), 'complete', 'with no host file, dotlinks-default is read' );
+}
+
+# HOSTNAME unset (not exported to xdg-audit): the system hostname names the
+# host file, as bash's own $HOSTNAME would for check-dotfiles.
+{
+  require Sys::Hostname;
+  my $sys_host = File::Spec->catfile( $s3df, 'dotlinks-' . Sys::Hostname::hostname() );
+  $wr->( $s3_def,   "# nothing\n" );
+  $wr->( $sys_host, "$DOLLAR_DOTFILES/hreg .hreg\n" );
+  is( $hreg_status->( { HOSTNAME => undef } ), 'complete', 'with HOSTNAME unset, the system hostname picks the host file' );
+  unlink $sys_host;
+}
+
+# --migrate symlink with the host file active and no ~/.dotlinks appends to
+# the host file and does not create ~/.dotlinks, which would shadow it.
+# Input: append to the host file? y / move? y.
+mg_entry( 'hmig', mechanism => 'symlink', rewrite => '$DOTFILES/hmig' );
+SKIP: {
+  skip $NO_ENVSUBST, 6 if $NO_ENVSUBST;
+  unlink $s3_dl;
+  $wr->( $s3_host, "# host\n" );
+  $wr->( $s3_def,  "# default\n" );
+  $wr->( File::Spec->catfile( $s3home, '.hmig' ), "m\n" );
+
+  my ( $out, $rc ) = run_symlink_env( $hostenv, $s3home, $s3df, "y\ny\n", '--migrate', 'symlink', 'hmig' );
+  is( $rc, 0, 'host-file migrate exits 0' );
+  like( $out, qr/\Q$s3_host\E \(active\)/, 'the host file is listed as the active one' );
+  ok( !-e $s3_dl, '~/.dotlinks was NOT created while the host file is in use' );
+  like( $rd->($s3_host), qr/\Q$DOLLAR_DOTFILES\E\/hmig \.hmig/, 'the entry was appended to the host file' );
+  unlike( $rd->($s3_def), qr/hmig/, 'dotlinks-default was left alone' );
+  ok( -l File::Spec->catfile( $s3home, '.hmig' ), '~/.hmig was linked by check-dotfiles from the host file' );
+}
+
+# Declining the host-file append changes nothing.
+mg_entry( 'hdec', mechanism => 'symlink', rewrite => '$DOTFILES/hdec' );
+{
+  my $src = $wr->( File::Spec->catfile( $s3home, '.hdec' ), "d\n" );
+  my ( $out, $rc ) = run_symlink_env( $hostenv, $s3home, $s3df, "n\nn\nn\n", '--migrate', 'symlink', 'hdec' );
+  is( $rc, 0, 'a declined host-file migrate exits 0' );
+  ok( -f $src && !-l $src, 'the source is left as the original hardcoded file' );
+  ok( !-e $s3_dl, 'no ~/.dotlinks was created on a declined host-file migrate' );
+  unlike( $rd->($s3_host) . $rd->($s3_def), qr/hdec/, 'no dotlinks file gained an entry' );
+}
+unlink $s3_host, $s3_def;
+
 # Refusals (no move, message shown). ~/.dotlinks present so no bootstrap prompt.
 $wr->( $s3_dl, '' );
 
