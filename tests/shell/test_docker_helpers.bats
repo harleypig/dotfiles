@@ -219,6 +219,48 @@ make_checkout() {
   assert_equal "${DW_ARGV[*]}" "/mnt/f.md"
 }
 
+@test "dw_mount_workdir keeps an in-repo symlink's own name for an absolute path" {
+  make_checkout
+  mkdir "$REPO/docs"
+  touch "$REPO/docs/guide.md"
+  ln -s guide.md "$REPO/docs/README.md"
+  cd "$REPO/sub"
+  local -a args=()
+  dw_mount_workdir args tool "$REPO/docs/README.md"
+  assert_equal "${DW_ARGV[*]}" "/mnt/docs/README.md"
+}
+
+@test "dw_mount_workdir resolves an in-repo symlink whose target is absolute" {
+  make_checkout
+  touch "$REPO/guide.md"
+  ln -s "$REPO/guide.md" "$REPO/README.md"
+  cd "$REPO/sub"
+  local -a args=()
+  dw_mount_workdir args tool "$REPO/README.md"
+  assert_equal "${DW_ARGV[*]}" "/mnt/guide.md"
+}
+
+@test "dw_mount_workdir still refuses an in-repo symlink pointing outside" {
+  make_checkout
+  mkdir "$BATS_TEST_TMPDIR/ext"
+  touch "$BATS_TEST_TMPDIR/ext/out.md"
+  ln -s ../ext/out.md "$REPO/out.md"
+  cd "$REPO/sub"
+  local -a args=()
+  run dw_mount_workdir args tool "$REPO/out.md"
+  assert_failure
+  assert_output --partial "not under the mounted directory"
+}
+
+@test "dw_in_tree_link refuses a link whose own path is outside the root" {
+  make_checkout
+  touch "$REPO/guide.md"
+  ln -s repo/guide.md "$BATS_TEST_TMPDIR/link.md"
+  run dw_in_tree_link "$BATS_TEST_TMPDIR/link.md" "$REPO"
+  assert_failure
+  assert_output ''
+}
+
 @test "dw_mount_workdir without a tool leaves DW_ARGV empty" {
   cd "$BATS_TEST_TMPDIR"
   local -a args=()

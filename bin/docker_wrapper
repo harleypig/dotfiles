@@ -385,7 +385,7 @@ markdownlint() {
   # .markdownlint.json found there applies. Resolving first matters: a
   # symlink's target may sit outside every mount. Extra mounts are read-only
   # unless --fix will write.
-  local root=$DW_ROOT arg abs dir mode=ro
+  local root=$DW_ROOT arg abs own dir mode=ro
   local -a argv=()
   local -A mounted=()
 
@@ -407,8 +407,13 @@ markdownlint() {
     abs=$(realpath -- "$arg")
 
     if [[ $abs == "$root" || $abs == "$root"/* ]]; then
-      # An absolute host path does not exist in the container; map it.
-      [[ $arg == /* ]] && arg=/mnt${abs#"$root"}
+      # An absolute host path does not exist in the container; map it. An
+      # in-tree link keeps its own name (#622).
+      if [[ $arg == /* ]]; then
+        own=$(dw_in_tree_link "$arg" "$root") && abs=$own
+        arg=/mnt${abs#"$root"}
+      fi
+
       argv+=("$arg")
       continue
     fi
