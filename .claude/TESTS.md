@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.9.0
+**Version:** v2.10.0
 
 ## Purpose
 
@@ -53,9 +53,13 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   `/dotfiles` at run time, so tests exercise the current checkout. The default
   entrypoint deploys `~/.bash_profile`/`~/.bashrc` → `shell-startup` and runs
   a login shell; tests needing a pristine `HOME` override the entrypoint.
-- `tests/helpers/common.bash` provides `dotfiles_harness_image` (builds the
-  image, cached; **skips** the test when docker is unavailable or the build
-  fails) and `dotfiles_login`.
+- `tests/helpers/common.bash` provides `require_docker` (**skips** the test
+  when there is no docker CLI or its daemon does not answer),
+  `dotfiles_harness_image` (builds the image, cached; a failed build **fails**
+  the test, so a broken harness can never merge green) and `dotfiles_login`.
+  A test calls `require_docker` in its own `setup`, then
+  `IMAGE="$(dotfiles_harness_image)"`: a `skip` inside `$(...)` ends only the
+  subshell. `test_harness_image.bats` guards both behaviours.
 - `tests/shell/test_integration_*.bats` — e.g. `test_integration_startup`
   (login shell comes up with `DOTFILES`/XDG/PATH, double-source guard,
   cleanpath dedup) and `test_integration_check_dotfiles`.

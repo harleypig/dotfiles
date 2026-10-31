@@ -27,6 +27,7 @@ load ../helpers/common
 
 setup() {
   load_bats_libs
+  require_docker
   IMAGE="$(xdg_audit_harness_image)"
 }
 

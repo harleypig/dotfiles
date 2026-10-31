@@ -134,19 +134,59 @@ source_funcs() {
 }
 
 #------------------------------------------------------------------------------
-# Docker integration harness. Build (cached) the dotfiles test image and echo
-# its tag; skip the calling test when docker is unavailable or the build
-# fails. The image is the runtime only — tests mount the repo read-only at
-# /dotfiles (see tests/docker/).
+# Docker integration harness: a test that needs a harness image calls
+# require_docker, then takes the tag from a *_harness_image helper, in that
+# order and in setup():
+#
+#   setup() {
+#     load_bats_libs
+#     require_docker
+#     IMAGE="$(dotfiles_harness_image)"
+#   }
+#
+# The split is load-bearing. `skip` ends the shell it runs in, and inside
+# $(...) that is only the subshell: the test carries on with an empty IMAGE
+# and is never marked skipped. So the skip lives in require_docker, called in
+# the test's own shell, and the image helpers never skip at all.
 
-dotfiles_harness_image() {
+#------------------------------------------------------------------------------
+# Skip the calling test when docker cannot be used: no docker CLI on PATH, or
+# a CLI whose daemon does not answer (stopped, or a socket this user cannot
+# open). Must be called directly, never inside $(...) (see above).
+
+require_docker() {
   command -v docker > /dev/null 2>&1 || skip "docker not available"
 
-  local tag=dotfiles-test:latest
-  docker build -q -t "$tag" "$(dotfiles_root)/tests/docker" > /dev/null 2>&1 \
-    || skip "could not build the dotfiles test image"
+  docker info > /dev/null 2>&1 || skip "docker daemon not reachable"
+}
+
+#------------------------------------------------------------------------------
+# Build (cached) the harness image <tag> from the context directory <context>
+# and echo the tag. A failed build is a failed test, never a skip: docker is
+# known to be usable by now (require_docker), so a build that fails means the
+# harness itself is broken -- a bad base-image bump, a Dockerfile typo -- and
+# skipping would let that merge green (#642 - harness build failure skipped).
+# On failure the tail of docker's own output goes to stderr, which bats shows
+# under the failing test, and the status is 1.
+
+build_harness_image() {
+  local tag=$1 context=$2 out
+
+  if ! out=$(docker build -q -t "$tag" "$context" 2>&1); then
+    printf 'docker build of %s from %s failed; last lines:\n' "$tag" "$context" >&2
+    tail -n 20 <<< "$out" >&2
+    return 1
+  fi
 
   printf '%s' "$tag"
+}
+
+#------------------------------------------------------------------------------
+# The dotfiles startup image. The image is the runtime only — tests mount the
+# repo read-only at /dotfiles (see tests/docker/).
+
+dotfiles_harness_image() {
+  build_harness_image dotfiles-test:latest "$(dotfiles_root)/tests/docker"
 }
 
 #------------------------------------------------------------------------------
@@ -167,19 +207,12 @@ dotfiles_login_interactive() {
 }
 
 #------------------------------------------------------------------------------
-# vmgr integration harness. Build (cached) the vmgr test image and echo its
-# tag; skip the calling test when docker is unavailable or the build fails.
-# Unlike dotfiles_harness_image, this image carries git + curl + xz so a real
-# nvm + Node install can be exercised end to end (see tests/docker/vmgr/).
+# The vmgr image. Unlike dotfiles_harness_image, this image carries git + curl
+# + xz so a real nvm + Node install can be exercised end to end (see
+# tests/docker/vmgr/).
 
 vmgr_harness_image() {
-  command -v docker > /dev/null 2>&1 || skip "docker not available"
-
-  local tag=dotfiles-vmgr-test:latest
-  docker build -q -t "$tag" "$(dotfiles_root)/tests/docker/vmgr" > /dev/null 2>&1 \
-    || skip "could not build the vmgr test image"
-
-  printf '%s' "$tag"
+  build_harness_image dotfiles-vmgr-test:latest "$(dotfiles_root)/tests/docker/vmgr"
 }
 
 #------------------------------------------------------------------------------
@@ -193,19 +226,12 @@ vmgr_run() {
 }
 
 #------------------------------------------------------------------------------
-# perlbrew integration harness. Build (cached) the perl vmgr test image and
-# echo its tag; skip the calling test when docker is unavailable or the build
-# fails. A SEPARATE image from vmgr_harness_image because perlbrew compiles
-# Perl from source and needs a C toolchain (see tests/docker/perl/).
+# The perlbrew image. A SEPARATE image from vmgr_harness_image because
+# perlbrew compiles Perl from source and needs a C toolchain (see
+# tests/docker/perl/).
 
 perl_harness_image() {
-  command -v docker > /dev/null 2>&1 || skip "docker not available"
-
-  local tag=dotfiles-vmgr-perl-test:latest
-  docker build -q -t "$tag" "$(dotfiles_root)/tests/docker/perl" > /dev/null 2>&1 \
-    || skip "could not build the perl vmgr test image"
-
-  printf '%s' "$tag"
+  build_harness_image dotfiles-vmgr-perl-test:latest "$(dotfiles_root)/tests/docker/perl"
 }
 
 #------------------------------------------------------------------------------
@@ -220,20 +246,12 @@ perl_run() {
 }
 
 #------------------------------------------------------------------------------
-# xdg-audit integration harness. Build (cached) the xdg-audit test image and
-# echo its tag; skip the calling test when docker is unavailable or the build
-# fails. Carries git so `xdg-audit --update-db` (a git clone) can run against a
-# local upstream, and full perl for the core modules xdg-audit uses (see
-# tests/docker/xdg-audit/).
+# The xdg-audit image. Carries git so `xdg-audit --update-db` (a git clone)
+# can run against a local upstream, and full perl for the core modules
+# xdg-audit uses (see tests/docker/xdg-audit/).
 
 xdg_audit_harness_image() {
-  command -v docker > /dev/null 2>&1 || skip "docker not available"
-
-  local tag=dotfiles-xdg-audit-test:latest
-  docker build -q -t "$tag" "$(dotfiles_root)/tests/docker/xdg-audit" > /dev/null 2>&1 \
-    || skip "could not build the xdg-audit test image"
-
-  printf '%s' "$tag"
+  build_harness_image dotfiles-xdg-audit-test:latest "$(dotfiles_root)/tests/docker/xdg-audit"
 }
 
 #------------------------------------------------------------------------------
