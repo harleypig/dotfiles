@@ -48,12 +48,11 @@ in order; installed by any tool counts as ok; nothing is uninstalled, and
 nothing is upgraded unless a pin differs. A `checkOnly` entry (git) is only
 looked for. Chocolatey itself is bootstrapped if it is missing.
 
-When dotfiles is part of the target, four built-in steps run as well: the
+When dotfiles is part of the target, three built-in steps run as well: the
 `~\.local\bin\python3.exe` link to the newest Python, ahead of WindowsApps in
-the User `PATH`; `MSYS=winsymlinks:nativestrict`; removing repeated entries,
-and those whose directory is missing, from the User and the Machine `PATH`
-(the Machine one in the elevated window); and a check that `bin/s3cmd` runs
-s3cmd from Git Bash.
+the User `PATH`; `MSYS=winsymlinks:nativestrict`; and removing repeated
+entries, and those whose directory is missing, from the User and the Machine
+`PATH` (the Machine one in the elevated window).
 
 [script]: bin/Install-Prereqs.ps1
 [schema]: win-prereqs.schema.json

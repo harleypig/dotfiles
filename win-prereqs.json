@@ -11,7 +11,7 @@
     },
     {
       "name": "uv",
-      "why": "The pre-commit, linode-cli and s3cmd entries install as uv tools (win-prereqs.json:75, :83, :88).",
+      "why": "The pre-commit and linode-cli entries install as uv tools (win-prereqs.json:75, :83).",
       "command": "uv",
       "install": [
         { "manager": "choco", "id": "uv" },
@@ -81,11 +81,6 @@
       "why": "bin/linx:539 execs linode-cli.",
       "command": "linode-cli",
       "install": [{ "manager": "uv", "id": "linode-cli" }]
-    },
-    {
-      "name": "s3cmd",
-      "why": "bin/s3cmd:55 runs the s3cmd uv installs; the bin/s3cmd step checks it from Git Bash.",
-      "install": [{ "manager": "uv", "id": "s3cmd" }]
     },
     {
       "name": "Pester",

@@ -107,7 +107,6 @@ PS_REPORT='
   Write-Output "interactive=$DOTFILES_INTERACTIVE"
   Write-Output "hasAlias=$([bool](Get-Alias c -ErrorAction SilentlyContinue))"
   Write-Output "hasFunc=$([bool](Get-Command Set-ParentDirectory -ErrorAction SilentlyContinue))"
-  Write-Output "hasS3cmd=$([bool](Get-Command s3cmd -ErrorAction SilentlyContinue))"
   Write-Output "hasPath=$(($env:PATH -split [IO.Path]::PathSeparator) -contains "/dotfiles/powershell/bin")"
   Write-Output "hasPrompt=$([bool](Get-Command Format-PromptGit -ErrorAction SilentlyContinue))"
 '
@@ -127,7 +126,6 @@ PS_REPORT='
   assert_output --partial 'interactive=False'
   assert_output --partial 'hasAlias=False'
   assert_output --partial 'hasFunc=False'
-  assert_output --partial 'hasS3cmd=False'
   assert_output --partial 'hasPrompt=False'
 }
 
@@ -139,7 +137,6 @@ PS_REPORT='
   assert_output --partial 'interactive=True'
   assert_output --partial 'hasAlias=True'
   assert_output --partial 'hasFunc=True'
-  assert_output --partial 'hasS3cmd=True'
   assert_output --partial 'hasPrompt=True'
   refute_output --partial 'ParserError'
   refute_output --partial 'is not recognized'

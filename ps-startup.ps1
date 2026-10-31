@@ -193,28 +193,6 @@ Remove-Variable -Name scriptPath, pathEntries, pathComparer, pathSeen
 Remove-Item -Path Function:Import-Files, Function:Test-InteractiveSession
 
 #-----------------------------------------------------------------------------
-if ($DOTFILES_INTERACTIVE) {
-    function s3cmd {
-        $venvPath = "$HOME\pipx\venvs\s3cmd\Scripts"
-        $activateScript = Join-Path -Path $venvPath -ChildPath "Activate.ps1"
-
-        try {
-            # Activate the virtual environment
-            Invoke-Expression "& $activateScript"
-
-            # Run s3cmd with all provided arguments
-            $arguments = "$HOME\.local\bin\s3cmd " + ($args -join ' ')
-            Start-Process -FilePath "python" -ArgumentList $arguments -NoNewWindow -Wait
-        } finally {
-            # Deactivate the virtual environment to clean up
-            if (Test-Path function:deactivate) {
-                Invoke-Expression "& deactivate"
-            }
-        }
-    }
-}
-
-#-----------------------------------------------------------------------------
 # TBD:
 
 # Depends on PSReadline

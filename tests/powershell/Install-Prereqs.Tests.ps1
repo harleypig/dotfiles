@@ -869,7 +869,6 @@ Describe 'Install-Prereqs.ps1' {
       Mock Repair-Python3 { New-StepResult -Status ok }
       Mock Set-MsysSymlinkMode { New-StepResult -Status ok }
       Mock Repair-PathValue { New-StepResult -Status ok }
-      Mock Test-S3cmdWrapper { New-StepResult -Status ok }
     }
 
     AfterEach {
@@ -989,7 +988,6 @@ Describe 'Install-Prereqs.ps1' {
       Should -Invoke Set-MsysSymlinkMode -Times 1
       Should -Invoke Repair-PathValue -Times 1 -Exactly -ParameterFilter { $Scope -eq 'Machine' }
       Should -Invoke Repair-PathValue -Times 1 -Exactly -ParameterFilter { $Scope -eq 'User' }
-      Should -Invoke Test-S3cmdWrapper -Times 1
     }
 
     It 'fails before doing anything when a name does not resolve' {
@@ -1400,48 +1398,6 @@ Describe 'Install-Prereqs.ps1' {
       Mock Get-UserEnvironmentValue { $null }
       (Set-MsysSymlinkMode -WhatIf).Status | Should -Be 'would fix'
       Should -Invoke Write-UserEnvironmentValue -Times 0
-    }
-  }
-
-  Describe 'Test-S3cmdWrapper' {
-    BeforeEach {
-      Mock Get-GitBash { 'C:\Git\bin\bash.exe' }
-    }
-
-    It 'checks s3cmd through dotfiles'' bin/s3cmd in Git Bash' {
-      Skip-OffWindows
-
-      Mock Get-S3cmdWrapperVersion { 's3cmd version 2.4.0' }
-      (Test-S3cmdWrapper -DotfilesRoot 'C:\p\dotfiles').Status | Should -Be 'ok'
-      Should -Invoke Get-S3cmdWrapperVersion -Times 1 -ParameterFilter { $Wrapper -eq 'C:\p\dotfiles\bin\s3cmd' }
-    }
-
-    It 'fails when bin/s3cmd cannot run s3cmd' {
-      Skip-OffWindows
-
-      Mock Get-S3cmdWrapperVersion { }
-      (Test-S3cmdWrapper -DotfilesRoot 'C:\p\dotfiles').Status | Should -Be 'FAILED'
-    }
-
-    It 'fails when Git Bash is missing' {
-      Mock Get-GitBash { $null }
-      (Test-S3cmdWrapper -DotfilesRoot 'C:\p\dotfiles').Status | Should -Be 'FAILED'
-    }
-  }
-
-  Describe 'Get-GitBash' {
-    It 'finds bin\bash.exe beside git.exe in cmd\' {
-      Skip-OffWindows
-
-      Mock Get-Command -ParameterFilter { $Name -eq 'git' } { & $script:fakeCommand 'C:\Program Files\Git\cmd\git.exe' }
-      Mock Test-Path { $true }
-      Get-GitBash | Should -Be 'C:\Program Files\Git\bin\bash.exe'
-    }
-
-    It 'returns $null when bash.exe is not there' {
-      Mock Get-Command -ParameterFilter { $Name -eq 'git' } { & $script:fakeCommand 'C:\Git\cmd\git.exe' }
-      Mock Test-Path { $false }
-      Get-GitBash | Should -BeNullOrEmpty
     }
   }
 }
