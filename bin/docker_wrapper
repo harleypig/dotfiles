@@ -119,7 +119,7 @@ shellcheck() {
 # installs a pinned binary, so keep SC_VER in tests.yml in step with that FROM
 # tag (test_docker_wrapper.bats guards it). Re-pin the digest when code-tools
 # republishes.
-image[shellcheck]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079"
+image[shellcheck]="ghcr.io/harleypig/code-tools:0.6.0@sha256:5c808c4081a7c6773c13ef2fa7360fcc71b27da9e970727e93238c2c7886a611"
 
 #------------------------------------------------------------------------------
 shfmt() {
@@ -141,7 +141,7 @@ shfmt() {
 # pinned binary, so keep SHFMT_VER in tests.yml in step with that FROM tag
 # (test_docker_wrapper.bats guards it). Re-pin the digest when code-tools
 # republishes.
-image[shfmt]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079"
+image[shfmt]="ghcr.io/harleypig/code-tools:0.6.0@sha256:5c808c4081a7c6773c13ef2fa7360fcc71b27da9e970727e93238c2c7886a611"
 
 #------------------------------------------------------------------------------
 yamllint() {
@@ -342,7 +342,7 @@ prettier() {
 # publish). prettier's pre-commit gate is a SEPARATE node hook (mirrors-prettier
 # in -fix.yaml), not tied to this wrapper — but keep the prettier version in the
 # code-tools Dockerfile roughly aligned with that hook's.
-image[prettier]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079"
+image[prettier]="ghcr.io/harleypig/code-tools:0.6.0@sha256:5c808c4081a7c6773c13ef2fa7360fcc71b27da9e970727e93238c2c7886a611"
 
 #------------------------------------------------------------------------------
 hadolint() {
@@ -368,10 +368,10 @@ hadolint() {
   exec docker run "${args[@]}" "${image[hadolint]}" hadolint "${DW_ARGV[@]}"
 }
 # SYNC: code-tools is the combined ADR-0005 image, digest-pinned per docker.md
-# (re-pin the digest when it republishes). It carries hadolint v2.14.0 (built
-# FROM hadolint/hadolint:v2.14.0-alpine). hadolint has no pre-commit hook — the
+# (re-pin the digest when it republishes). It carries hadolint v2.15.1 (built
+# FROM hadolint/hadolint:v2.15.1-alpine). hadolint has no pre-commit hook — the
 # wrapper is its only consumer.
-image[hadolint]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079"
+image[hadolint]="ghcr.io/harleypig/code-tools:0.6.0@sha256:5c808c4081a7c6773c13ef2fa7360fcc71b27da9e970727e93238c2c7886a611"
 
 #------------------------------------------------------------------------------
 markdownlint() {
@@ -440,7 +440,7 @@ markdownlint() {
 # in the pre-commit `markdownlint` hooks (check + fix) — all reference this same
 # image, so they can't drift. Its version lives in the code-tools Dockerfile
 # (`ARG MARKDOWNLINT_VERSION`); re-pin the digest when code-tools republishes.
-image[markdownlint]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079"
+image[markdownlint]="ghcr.io/harleypig/code-tools:0.6.0@sha256:5c808c4081a7c6773c13ef2fa7360fcc71b27da9e970727e93238c2c7886a611"
 
 #------------------------------------------------------------------------------
 vale() {
@@ -461,7 +461,7 @@ vale() {
 # `vale` hook — both reference this same image. Its version and the proselint
 # style's live in the code-tools Dockerfile (`ARG VALE_VERSION`,
 # `ARG PROSELINT_VERSION`); re-pin the digest when code-tools republishes.
-image[vale]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079"
+image[vale]="ghcr.io/harleypig/code-tools:0.6.0@sha256:5c808c4081a7c6773c13ef2fa7360fcc71b27da9e970727e93238c2c7886a611"
 
 #------------------------------------------------------------------------------
 lychee() {
@@ -482,7 +482,7 @@ lychee() {
 # pre-commit `lychee` hook — both reference this same image. Its version lives
 # in the code-tools Dockerfile (`ARG LYCHEE_VERSION`); re-pin the digest when
 # code-tools republishes.
-image[lychee]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079"
+image[lychee]="ghcr.io/harleypig/code-tools:0.6.0@sha256:5c808c4081a7c6773c13ef2fa7360fcc71b27da9e970727e93238c2c7886a611"
 
 #------------------------------------------------------------------------------
 ansible-lint() {
@@ -528,7 +528,7 @@ ruff() {
 # binary (needs no Python runtime), so it lives in the combined image; the
 # Python-runtime linters (yamllint, ansible-lint) live in python-tools (#370).
 # ruff has no pre-commit hook yet.
-image[ruff]="ghcr.io/harleypig/code-tools:0.5.0@sha256:3a19f544d2d309c79a324f4a529de80b1c30977ecd14e6bf5693157e87ab1079"
+image[ruff]="ghcr.io/harleypig/code-tools:0.6.0@sha256:5c808c4081a7c6773c13ef2fa7360fcc71b27da9e970727e93238c2c7886a611"
 
 #------------------------------------------------------------------------------
 perltidy() {
