@@ -29,9 +29,15 @@ setup() {
 
 #------------------------------------------------------------------------------
 # Write the fixture: one test whose setup is exactly the documented calling
-# pattern for the startup image.
+# pattern for the startup image. The fixture's test keyword comes from $at:
+# bats 1.10 (Ubuntu 24.04's, which CI installs) finds tests by matching
+# `@test` at the start of a line, heredoc or not, so a literal one here is
+# taken as a sixth test of THIS file -- which then fails as "unknown test
+# name" and leaves every nested run reporting `1..0`.
 
 write_fixture() {
+  local at='@test'
+
   cat > "$FIXTURE" << EOF
 load '$ROOT/tests/helpers/common'
 
@@ -40,7 +46,7 @@ setup() {
   IMAGE="\$(dotfiles_harness_image)"
 }
 
-@test "fixture" {
+$at "fixture" {
   echo "IMAGE=\$IMAGE"
   true
 }
