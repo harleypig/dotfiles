@@ -41,8 +41,8 @@
   When dotfiles is part of the target, its built-in setup steps run too:
   the ~\.local\bin\python3.exe link and User PATH order, the MSYS symlink
   mode, removing repeated entries and those whose directory is missing from
-  the User and the Machine PATH (the Machine one in the elevated pass), and
-  the bin/s3cmd check. They are fixes, not packages.
+  the User and the Machine PATH (the Machine one in the elevated pass).
+  They are fixes, not packages.
 
   Each item reports ok, fixed, would fix, skipped, FAILED: <reason>, or
   PENDING: <action> for a step only the operator can take (a reboot).
@@ -2044,83 +2044,6 @@ function Set-MsysSymlinkMode {
   New-StepResult -Status fixed -Detail "MSYS=$value"
 }
 
-<#
-.SYNOPSIS
-  Returns the Git Bash bash.exe that sits beside git.exe, or $null.
-#>
-function Get-GitBash {
-  [CmdletBinding()]
-  [OutputType([string])]
-  param ()
-
-  $git = Get-Command -Name git -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
-  if (-not $git) {
-    return $null
-  }
-
-  # git.exe is in <Git>\cmd or <Git>\bin; bash.exe is in <Git>\bin.
-  $bash = Join-Path -Path (Split-Path -Path (Split-Path -Path $git.Source)) -ChildPath 'bin\bash.exe'
-  if (-not (Test-Path -LiteralPath $bash)) {
-    return $null
-  }
-
-  $bash
-}
-
-<#
-.SYNOPSIS
-  Returns the `--version` line of s3cmd run through dotfiles' bin/s3cmd
-  wrapper in Git Bash, or $null.
-#>
-function Get-S3cmdWrapperVersion {
-  [CmdletBinding()]
-  [OutputType([string])]
-  param (
-    [Parameter(Mandatory)]
-    [string]$Bash,
-
-    [Parameter(Mandatory)]
-    [string]$Wrapper
-  )
-
-  if (-not (Test-Path -LiteralPath $Wrapper)) {
-    return $null
-  }
-
-  # stdin closed: s3cmd waits on it when there is no console.
-  $posix = [IO.Path]::GetFullPath($Wrapper) -replace '\\', '/'
-  $line = @(& $Bash -c "'$posix' --version </dev/null" 2>$null) | Where-Object { $_ -match '^s3cmd version' } | Select-Object -First 1
-  $line
-}
-
-<#
-.SYNOPSIS
-  dotfiles step: s3cmd, as uv installs it, runs by name from Git Bash
-  through dotfiles' bin/s3cmd.
-#>
-function Test-S3cmdWrapper {
-  [CmdletBinding()]
-  [OutputType([pscustomobject])]
-  param (
-    [Parameter(Mandatory)]
-    [string]$DotfilesRoot
-  )
-
-  $bash = Get-GitBash
-  if (-not $bash) {
-    return New-StepResult -Status FAILED -Detail 'Git Bash not found, so bin/s3cmd cannot be checked'
-  }
-
-  $wrapper = Join-Path -Path $DotfilesRoot -ChildPath 'bin\s3cmd'
-  $version = Get-S3cmdWrapperVersion -Bash $bash -Wrapper $wrapper
-  if (-not $version) {
-    $status = if ($WhatIfPreference) { 'skipped' } else { 'FAILED' }
-    return New-StepResult -Status $status -Detail "bin/s3cmd does not run s3cmd from Git Bash ($wrapper)"
-  }
-
-  New-StepResult -Status ok -Detail "$version, through bin/s3cmd in Git Bash"
-}
-
 #endregion
 
 #region The run
@@ -2312,7 +2235,6 @@ function Invoke-PrereqRun {
   if ($withDotfiles) {
     # After every install, so a directory one just created is not dropped.
     Invoke-PrereqItem -Results $results -Name 'user PATH' -Step { Repair-PathValue -Scope User }
-    Invoke-PrereqItem -Results $results -Name 'bin/s3cmd' -Step { Test-S3cmdWrapper -DotfilesRoot $DotfilesRoot }
   }
 
   Write-Summary -Results $results
