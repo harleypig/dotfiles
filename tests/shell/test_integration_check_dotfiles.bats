@@ -14,10 +14,15 @@ setup() {
 }
 
 # Run a command directly (bypassing the login-shell entrypoint) so check-dotfiles
-# starts from a pristine HOME. Sets $output/$status via bats `run`.
+# starts from a pristine HOME. An optional second argument sets the container's
+# hostname, which selects the per-host dotlinks file. Sets $output/$status via
+# bats `run`.
 in_container() {
-  run docker run --rm -v "$(dotfiles_root):/dotfiles:ro" --entrypoint bash \
-    "$IMAGE" -c "$1"
+  local -a host=()
+  [[ -n ${2:-} ]] && host=(--hostname "$2")
+
+  run docker run --rm "${host[@]}" -v "$(dotfiles_root):/dotfiles:ro" \
+    --entrypoint bash "$IMAGE" -c "$1"
 }
 
 @test "check-dotfiles links the shell entry points to shell-startup" {
@@ -70,4 +75,47 @@ in_container() {
   '
   assert_success
   assert_output --partial 'nested -> /dotfiles/dotlinks-default'
+}
+
+# The per-host file is chosen by hostname alone (#625 - one gate for host
+# settings). user-tmpfiles.d/tmp.conf is listed only in dotlinks-harleypig.com,
+# so its link says which file was read.
+@test "check-dotfiles uses dotlinks-\$HOSTNAME when ~/.dotlinks is absent" {
+  in_container '
+    export DOTFILES=/dotfiles
+    rm -f "$HOME/.dotlinks"
+    /dotfiles/bin/check-dotfiles
+    echo "tmpfiles -> $(readlink "$HOME/.config/user-tmpfiles.d/tmp.conf")"
+  ' harleypig.com
+  assert_success
+  assert_output --partial 'tmpfiles -> /dotfiles/config/user-tmpfiles.d/tmp.conf'
+}
+
+@test "check-dotfiles prefers ~/.dotlinks over dotlinks-\$HOSTNAME" {
+  in_container '
+    export DOTFILES=/dotfiles
+    rm -f "$HOME/.bash_logout"
+    printf "\$DOTFILES/dot-general/.bash_logout\n" > "$HOME/.dotlinks"
+    /dotfiles/bin/check-dotfiles
+    echo "logout -> $(readlink "$HOME/.bash_logout")"
+    [[ -e "$HOME/.config/user-tmpfiles.d/tmp.conf" ]] \
+      && echo "tmpfiles linked" || echo "tmpfiles absent"
+  ' harleypig.com
+  assert_success
+  assert_output --partial 'logout -> /dotfiles/dot-general/.bash_logout'
+  assert_output --partial 'tmpfiles absent'
+}
+
+@test "check-dotfiles falls back to dotlinks-default with no host file" {
+  in_container '
+    export DOTFILES=/dotfiles
+    rm -f "$HOME/.dotlinks" "$HOME/.bash_logout"
+    /dotfiles/bin/check-dotfiles
+    echo "logout -> $(readlink "$HOME/.bash_logout")"
+    [[ -e "$HOME/.config/user-tmpfiles.d/tmp.conf" ]] \
+      && echo "tmpfiles linked" || echo "tmpfiles absent"
+  ' no-such-host
+  assert_success
+  assert_output --partial 'logout -> /dotfiles/dot-general/.bash_logout'
+  assert_output --partial 'tmpfiles absent'
 }
