@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.8.0
+**Version:** v2.9.0
 
 ## Purpose
 
@@ -219,6 +219,10 @@ file through `envsubst`. Without it, `xdg-audit.t` **skips** every test that
 needs a symlink made, each with the reason `envsubst not found (install
 gettext-base)`. Run `prove -v` to see them; a plain `prove` reports the file
 as `ok` either way.
+
+Without **Perl::Tidy**, every `perltidyrc-clean-*.t` skips as a whole file,
+naming the two ways to get it: `vmgr install perl`, or the distro `perltidy`
+package (which CI installs, so there they run).
 
 Running as **root** is not a prerequisite. Root ignores file permissions, so
 the `xdg-audit.t` tests that rely on a read-only file skip themselves under

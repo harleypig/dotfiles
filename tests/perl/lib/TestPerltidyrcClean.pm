@@ -3,8 +3,19 @@ package TestPerltidyrcClean;
 use strict;
 use warnings;
 use Exporter 'import';
+use Test::More ();
 
 our @EXPORT = qw(load_perltidyrc_clean);
+
+# bin/perltidyrc-clean dies at load without Perl::Tidy, so every test of it
+# would error rather than say why. Skip the whole file instead, at `use` time
+# so a test file skips before its first assertion even when it calls
+# load_perltidyrc_clean() later, or never (the files that only run the script
+# use this module for this check alone). Inert where Perl::Tidy is installed,
+# which CI's perl job guarantees, so there the tests still run.
+Test::More::plan( skip_all => 'Perl::Tidy not installed (run `vmgr install perl`,'
+    . ' or install the distro perltidy package); bin/perltidyrc-clean needs it' )
+  unless eval { require Perl::Tidy; 1 };
 
 # Load the perltidyrc-clean script and make its functions available for testing.
 # Overrides exit so the script doesn't exit the test when it calls exit.
