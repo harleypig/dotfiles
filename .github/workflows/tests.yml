@@ -177,7 +177,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install pytest
-        run: pip install pytest
+        run: pip install --require-hashes -r .github/requirements/pytest.txt
 
       # tests/python/ has no tests yet; run pytest only once some exist so
       # this job is green-ready and self-activates with the first test.
@@ -246,7 +246,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install pre-commit
-        run: pip install pre-commit
+        run: pip install --require-hashes -r .github/requirements/pre-commit.txt
 
       # Several docker_image hooks pull PRIVATE ghcr.io/harleypig images —
       # perltidy/perlcritic and, since ADR-0006, code-tools (shellcheck / shfmt
@@ -286,7 +286,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install check-jsonschema
-        run: pip install check-jsonschema
+        run: pip install --require-hashes -r .github/requirements/check-jsonschema.txt
 
       - name: Validate vendored programs against the pristine schema
         run: >

@@ -1,0 +1,6 @@
+# CI install for tests.yml, hash-pinned so Scorecard's PinnedDependencies
+# check passes and a tampered release is refused (#637). Regenerate the
+# .txt after editing this file; Dependabot's pip entry keeps it current:
+#   pip-compile --generate-hashes --allow-unsafe --strip-extras \
+#     --no-emit-index-url -o pre-commit.txt pre-commit.in
+pre-commit
