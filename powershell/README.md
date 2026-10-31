@@ -40,13 +40,14 @@ name under `$PROJECTS_DIR` (or, when it is unset, the parent of this
 checkout) with a `win-prereqs.json`. The `win-` prefix keeps these apart
 from the bash/Linux setup.
 
-Each package has a `name`, a `why` (file:line evidence of use), and an
-ordered `install` list of manager specs: `choco`, `winget`, `npm`, `pip`
-(into the Python `python3` runs), `uv` (uv tool) or `psgallery`. A spec may
-pin a `version`; an npm spec may name a GitHub `source`. Managers are tried
-in order; installed by any tool counts as ok; nothing is uninstalled, and
-nothing is upgraded unless a pin differs. A `checkOnly` entry (git) is only
-looked for. Chocolatey itself is bootstrapped if it is missing.
+Each package has a `name`, a `why` (evidence of use: a file and a string
+quoted from it in backticks, ``file:`text` ``, rather than a line number that
+drifts), and an ordered `install` list of manager specs: `choco`, `winget`,
+`npm`, `pip` (into the Python `python3` runs), `uv` (uv tool) or `psgallery`.
+A spec may pin a `version`; an npm spec may name a GitHub `source`. Managers
+are tried in order; installed by any tool counts as ok; nothing is
+uninstalled, and nothing is upgraded unless a pin differs. A `checkOnly` entry
+(git) is only looked for. Chocolatey itself is bootstrapped if it is missing.
 
 When dotfiles is part of the target, three built-in steps run as well: the
 `~\.local\bin\python3.exe` link to the newest Python, ahead of WindowsApps in

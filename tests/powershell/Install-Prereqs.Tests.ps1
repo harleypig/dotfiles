@@ -183,6 +183,11 @@ Describe 'Install-Prereqs.ps1' {
       $read = { param($Text, $Kind = 'repo') Write-TestFile -Path $file -Content $Text; Read-PrereqFile -Path $file -SchemaPath $script:schema -Kind $Kind }
     }
 
+    It 'accepts a why that cites a search anchor instead of a line' {
+      $data = & $read '{"packages":[{"name":"jq","why":"bin/a:`jq -r`","command":"jq","install":[{"manager":"choco","id":"jq"}]}]}'
+      $data['packages'].Count | Should -Be 1
+    }
+
     It 'accepts an install entry and a check-only entry' {
       $data = & $read '{"packages":[{"name":"jq","why":"bin/a:1","command":"jq","install":[{"manager":"choco","id":"jq","version":"1.8.2"}]},{"name":"git","why":"bin/b:2","checkOnly":true,"command":"git"}]}'
       $data['packages'].Count | Should -Be 2
@@ -191,6 +196,7 @@ Describe 'Install-Prereqs.ps1' {
     It 'rejects <case>' -ForEach @(
       @{ case = 'an entry with no why'; json = '{"packages":[{"name":"jq","install":[{"manager":"choco","id":"jq"}]}]}' }
       @{ case = 'a why with no file:line evidence'; json = '{"packages":[{"name":"jq","why":"because","install":[{"manager":"choco","id":"jq"}]}]}' }
+      @{ case = 'a why with an empty anchor'; json = '{"packages":[{"name":"jq","why":"bin/a:``","install":[{"manager":"choco","id":"jq"}]}]}' }
       @{ case = 'an unknown manager'; json = '{"packages":[{"name":"jq","why":"a:1","install":[{"manager":"apt","id":"jq"}]}]}' }
       @{ case = 'a source on a non-npm spec'; json = '{"packages":[{"name":"x","why":"a:1","install":[{"manager":"pip","id":"x","source":"github:a/b"}]}]}' }
       @{ case = 'a check-only entry that also installs'; json = '{"packages":[{"name":"git","why":"a:1","checkOnly":true,"command":"git","install":[{"manager":"choco","id":"git"}]}]}' }
@@ -215,6 +221,28 @@ Describe 'Install-Prereqs.ps1' {
       foreach ($h in Get-ChildItem -Path (Join-Path -Path $script:checkout -ChildPath 'hosts') -Filter 'win-*.json') {
         Read-PrereqFile -Path $h.FullName -SchemaPath $script:schema -Kind host | Should -Not -BeNullOrEmpty
       }
+    }
+
+    # This checkout's own evidence: a line number drifts silently whenever
+    # the cited file changes (#609 - stale why references), and an anchor
+    # rots when the text it quotes is edited away.
+    It 'resolves every why anchor in this checkout''s list, and cites no line numbers' {
+      $list = Join-Path -Path $script:checkout -ChildPath 'win-prereqs.json'
+      $whys = @((Get-Content -Path $list -Raw | ConvertFrom-Json).packages | ForEach-Object { $_.why })
+      $cited = 0
+
+      foreach ($why in $whys) {
+        $why | Should -Not -Match '[^\s:`]+:\d+' -Because "a line number drifts: $why"
+
+        foreach ($m in [regex]::Matches($why, '([^\s:`(]+):`([^`]+)`')) {
+          $path = Join-Path -Path $script:checkout -ChildPath $m.Groups[1].Value
+          $path | Should -Exist -Because "cited by: $why"
+          (Get-Content -Path $path -Raw).Contains($m.Groups[2].Value) | Should -BeTrue -Because "'$($m.Groups[2].Value)' is quoted from $($m.Groups[1].Value)"
+          $cited++
+        }
+      }
+
+      $cited | Should -BeGreaterOrEqual $whys.Count
     }
   }
 
