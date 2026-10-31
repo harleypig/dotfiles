@@ -74,3 +74,10 @@ start_server() {
   run tmux -L conftest show -gwv window-status-current-format
   assert_output --partial '#(tmux_window_name #{window_id})'
 }
+
+@test "status-right shows the load average from tmux_loadavg" {
+  start_server
+
+  run tmux -L conftest show -gv status-right
+  assert_output --partial '#(tmux_loadavg)'
+}
