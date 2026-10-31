@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.20.0
+**Version:** v1.21.0
 
 ## Purpose
 
@@ -425,11 +425,10 @@ alongside the taxonomy's labels, never instead of them.
 | `codex` | A pull request opened by the OpenAI Codex agent, from a `codex/*` branch |
 | `patch` | A Dependabot pull request whose version bump is a patch release |
 
-**These names are not machine-recognised as declared.** The github-issues
-skill's step 1d label reconciliation reads a per-repo register only from
-first-cell tokens of the form `prefix:value`. Plain names like these do not
-match, so step 1d still reports them as *live, not declared*. Treat that
-finding as expected for the labels above; the fix belongs in dotagents.
+**Keep this section's heading as it is.** The github-issues skill's label
+sweep reads this table as the declaration only under a heading named
+`Repo-local labels`, so renaming it makes every label above report as
+*live, not declared*.
 
 ## Tool Setup Procedures
 
