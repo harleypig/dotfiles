@@ -547,7 +547,7 @@ record going forward; entries below are historical (#407).
   `json-schema` job validates both dirs. Recorded the `~/.config ->
   $DOTFILES/config` decision in
   [ADR-0003](docs/adr/0003-home-config-symlink.md); refined the `$HOME` dotfile
-  audit [TODO.md](TODO.md) into a tool-driven per-app checklist. (PR #275)
+  audit `TODO.md` into a tool-driven per-app checklist. (PR #275)
 
 ### Changed
 
@@ -1538,7 +1538,7 @@ real costs (xtrace artifacts).
 ## Planning-doc history (TODO.md)
 
 Revision history of the planning document itself, moved here from
-[`TODO.md`](TODO.md):
+`TODO.md`:
 
 - **v1.2.0** (2026-06-17): Merge-finalization opt-in. Pruned all completed
   `- [x]` items (whole DONE sections: spotify-patterns, gmailctl move,

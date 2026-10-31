@@ -89,7 +89,7 @@ repos:
         name: agent-config markdown hygiene (78-col prose reflow)
         language: system
         entry: python3 tests/lint/prose_wrap.py --fix
-        files: ^(TODO\.md|README\.md|docs/.*\.md|\.claude/.*\.md)$
+        files: ^(README\.md|docs/.*\.md|\.claude/.*\.md)$
         exclude: ^docs/packages\.md$
 
   # Phase 3 (Language) — Python fixers (manual). Same scope-exclude as the

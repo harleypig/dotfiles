@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.18.0
+**Version:** v1.19.0
 
 ## Purpose
 
@@ -41,8 +41,6 @@ and `CLAUDE.md` for test-related operations.
 * **`CLAUDE.md`** - AI agent behavior specification
 * **`WORKFLOW.md`** - This file
 * **`TESTS.md`** - Testing framework and strategy
-* **`TODO.md`** - Temporary stub pointing at the GitHub issue list, where
-  work is tracked (see *TODO Routing*); #432 - remove this stub
 
 ## Development Workflow
 
@@ -311,15 +309,14 @@ This repo opts in to the merge-time documentation finalization (push-pr
 Step 4.5). The `merge-finalization: enforce` sentinel in the heading above
 activates the `PreToolUse` hook (`~/.claude/hooks/merge-finalization.py`),
 which **blocks** a `gh pr merge` while any completed
-`- [x]` items remain in the planning docs (`TODO.md`, and `ROADMAP.md` if
-one exists). Work is tracked as GitHub issues (*TODO Routing*), so `TODO.md`
-is a stub with no items: the hook finds nothing to prune and does not block.
+`- [x]` items remain in the repo's planning docs. Work is tracked as GitHub
+issues (*TODO Routing*), so this repo carries no planning doc: the hook skips
+a missing one, finds nothing to prune, and does not block.
 See the dotagents repo's `skills/push-pr/SKILL.md` and `summoned/git.md`.
 
 The agent-config planning backlog now lives in the **dotagents** repo (it was
-extracted there with `config/claude`), so this repo's merge-finalization only
-enforces its own `TODO.md` (and `ROADMAP.md` if one exists) — no extra
-`merge-finalization-docs` are declared.
+extracted there with `config/claude`), so no extra `merge-finalization-docs`
+are declared here.
 
 **Team-managed (`team-managed: enabled`):**
 
@@ -390,8 +387,7 @@ the working tree.
 This repo tracks its work as **GitHub issues** in
 [harleypig/dotfiles](https://github.com/harleypig/dotfiles/issues): `bin/`,
 `lib/`, `config/`, shell-startup, tests, CI, packaging, the OS/$HOME setup.
-Root [`TODO.md`](../TODO.md) is a stub pointing there; nothing is added to
-it.
+There is no planning file, and none should be created.
 
 When capturing a follow-up, decide where it belongs before filing it:
 
