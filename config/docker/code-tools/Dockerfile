@@ -27,7 +27,7 @@
 
 FROM koalaman/shellcheck:v0.11.0 AS shellcheck
 FROM mvdan/shfmt:v3.13.1 AS shfmt
-FROM hadolint/hadolint:v2.14.0-alpine AS hadolint
+FROM hadolint/hadolint:v2.15.1-alpine AS hadolint
 FROM ghcr.io/astral-sh/ruff:0.16.0 AS ruff
 # GitHub Actions linters (#482). actionlint checks workflow syntax,
 # expressions and types, and runs the shellcheck above over `run:` scripts
