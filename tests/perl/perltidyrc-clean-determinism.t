@@ -48,7 +48,7 @@ foreach my $case (@cases) {
   my ( $first_exit, $first ) = run_with_seed( $seeds[0], @{$case} );
 
   is( $first_exit, 0, "$label: exits 0" );
-  like( $first, qr/^\# [ ] NOTE: .* [ ] can [ ] be [ ] condensed [ ] to [ ]/mx, "$label: produces condense notes" );
+  like( $first, qr/^\# [ ] NOTE: .* [ ] condensed [ ] to [ ]/mx, "$label: produces condense notes" );
 
   my @differing;
   foreach my $seed ( @seeds[ 1 .. $#seeds ] ) {
@@ -86,9 +86,9 @@ sub condense_notes {
 # Overlap: 'aa' sorts before 'wide' but covers less, so it must not win.
 is_deeply(
   condense_notes( { 'aa' => [qw(a=1 b=1)], 'wide' => [qw(a=1 b=1 c=1)] } ),
-  [ 'alpha removed; can be condensed to wide',
-    'bravo removed; can be condensed to wide',
-    'charlie removed; can be condensed to wide',
+  [ 'alpha condensed to wide',
+    'bravo condensed to wide',
+    'charlie condensed to wide',
   ],
   'overlapping abbreviations: the broadest one condenses the shared options'
 );
@@ -96,17 +96,17 @@ is_deeply(
 # Same expansion, same name length: the name that sorts first is preferred.
 is_deeply(
   condense_notes( { 'xb' => [qw(a=1 b=1)], 'xa' => [qw(a=1 b=1)] } ),
-  [ 'alpha removed; can be condensed to xa', 'bravo removed; can be condensed to xa', ],
+  [ 'alpha condensed to xa', 'bravo condensed to xa', ],
   'equal-length names for one expansion: the first by name wins'
 );
 
 # Disjoint abbreviations of equal breadth: notes follow abbreviation name.
 is_deeply(
   condense_notes( { 'zz' => [qw(a=1 b=1)], 'yy' => [qw(c=1 d=1)] } ),
-  [ 'charlie removed; can be condensed to yy',
-    'delta removed; can be condensed to yy',
-    'alpha removed; can be condensed to zz',
-    'bravo removed; can be condensed to zz',
+  [ 'charlie condensed to yy',
+    'delta condensed to yy',
+    'alpha condensed to zz',
+    'bravo condensed to zz',
   ],
   'equally broad abbreviations: notes are ordered by abbreviation name'
 );

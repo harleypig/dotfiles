@@ -160,4 +160,36 @@ load_perltidyrc_clean();
   is( $opts{'line-length'}, '80', 'Preserves unrelated option value' );
 }
 
+# Test 9: Replaces a fully matched abbreviation's options with the
+# abbreviation itself (#664). The abbreviation takes the first option's
+# section and an undef value, so dump_options writes the bare --pair=1; red
+# if the options are dropped without it.
+{
+  my %opts = (
+    'alpha'   => '1',
+    'bravo'   => '1',
+    'charlie' => '2',
+  );
+  my %sections = (
+    'alpha'   => '1. First',
+    'bravo'   => '2. Second',
+    'charlie' => '1. First',
+  );
+  my %section_notes         = ();
+  my %abbreviations_default = (
+    a        => ['alpha'],
+    b        => ['bravo'],
+    'pair=1' => [qw(a=1 b=1)],
+  );
+  condense_options( \%opts, \%sections, \%section_notes, {}, \%abbreviations_default );
+
+  is_deeply( \%opts, { 'pair=1' => undef, charlie => '2' }, 'Replaces the expansion with the abbreviation' );
+  is( $sections{'pair=1'}, '1. First', 'The abbreviation takes the first option\'s section' );
+  is_deeply(
+    \%section_notes,
+    { '1. First' => ['alpha condensed to pair=1'], '2. Second' => ['bravo condensed to pair=1'] },
+    'Notes each condensed option in its own section'
+  );
+}
+
 done_testing();

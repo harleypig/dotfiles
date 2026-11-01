@@ -102,9 +102,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
   );
 
   # The three closing-*-indentation options are cti's whole expansion, so
-  # with condensing on they are removed and noted. continuation-indentation
-  # (same section, not part of cti) keeps the section printed so the note
-  # is visible. This asserts that condensing ran, not what it emits.
+  # with condensing on they are replaced by the abbreviation and noted. This
+  # asserts that condensing ran; what it emits is
+  # perltidyrc-clean-condense_equivalence.t's.
   my ( $fh, $condense_rc ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
   print {$fh} "--closing-paren-indentation=1\n";
   print {$fh} "--closing-brace-indentation=1\n";
@@ -114,7 +114,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 
   my $condensed = `$script --rc $condense_rc --keep-defaults 2>&1`;
   like(
-    $condensed, qr/^# NOTE: closing-paren-indentation removed; can be condensed to /m,
+    $condensed, qr/^# NOTE: closing-paren-indentation condensed to /m,
     '--keep-defaults leaves condensing on'
   );
 }
@@ -130,7 +130,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 #   add_missing_defaults left at 0 -> continuation-indentation absent -> red
 #   keep_defaults left at 0        -> added lines lose the mark       -> red
 #   condense left at 1             -> closing-paren-indentation is
-#                                     condensed away into a note       -> red
+#                                     condensed into an abbreviation   -> red
 #   drop_defaults left at 1        -> not observable here:
 #                                     build_clean_opts returns before
 #                                     reading it when add_missing is set
@@ -150,7 +150,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
     '--add-missing-defaults marks an added default as default'
   );
   like( $stdout, qr/^--closing-paren-indentation=0\s/m, '--add-missing-defaults implies --no-condense' );
-  unlike( $stdout, qr/can be condensed to/, '--add-missing-defaults writes no condensing notes' );
+  unlike( $stdout, qr/condensed to/, '--add-missing-defaults writes no condensing notes' );
   like( $stdout, qr/^--indent-columns=8$/m, "--add-missing-defaults keeps the file's value, unmarked" );
   unlike( $stdout, qr/^--indent-columns=4/m, '--add-missing-defaults does not overlay a default on a set option' );
 }

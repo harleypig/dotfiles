@@ -472,15 +472,15 @@ my $cmd = Test::Cmd->new(
   # Verify that the options that vtc=3 expands to are present
   # Note: Some may be filtered as defaults or condensed, so check what's actually present
   like(
-    $stdout, qr/--paren-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+    $stdout, qr/--paren-vertical-tightness-closing=3|condensed to vertical-tightness-closing=3/i,
     'Options from vtc=3 expansion are present or condensed (paren-vertical-tightness-closing)'
   );
   like(
-    $stdout, qr/--brace-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+    $stdout, qr/--brace-vertical-tightness-closing=3|condensed to vertical-tightness-closing=3/i,
     'Options from vtc=3 expansion are present or condensed (brace-vertical-tightness-closing)'
   );
   like(
-    $stdout, qr/--square-bracket-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+    $stdout, qr/--square-bracket-vertical-tightness-closing=3|condensed to vertical-tightness-closing=3/i,
     'Options from vtc=3 expansion are present or condensed (square-bracket-vertical-tightness-closing)'
   );
 }
@@ -494,11 +494,11 @@ my $cmd = Test::Cmd->new(
 
   is( $exit_code, 0, 'Abbreviation condensing exits with code 0' );
 
-  # The specific "can be condensed to" note depends on the option values
+  # The specific "condensed to" note depends on the option values
   # Perl::Tidy reports, which vary by version; accept the note OR the
   # expanded options being present (condensing ran either way).
   like(
-    $stdout, qr/can be condensed to|--paren-tightness=3/i,
+    $stdout, qr/condensed to|--paren-tightness=3/i,
     'condensing ran (a condensing note, or expanded options, present)'
   );
 
