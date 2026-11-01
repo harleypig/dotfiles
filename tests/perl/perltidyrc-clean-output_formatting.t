@@ -138,63 +138,42 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   is( $exit_code, 0, 'Default comments padded exits with code 0' );
 
-  # Find lines with default comments
-  my $found_default = 0;
-  foreach my $line ( split /\n/, $stdout ) {
-    if ( $line =~ /#\s+default/ ) {
-      $found_default = 1;
+  # indent-columns=4 is the Perl::Tidy default, so under --keep-defaults its
+  # line carries the default marker. The marker's presence is asserted first,
+  # so the padding check cannot pass by finding no marked line. Red if the
+  # marker is dropped, or padded short of column 40.
+  my ($marked) = grep { /#\s+default/ } split /\n/, $stdout;
+  ok( defined $marked, 'A default option carries the default marker' );
 
-      # Check padding - # should be at or after column 40
-      my $hash_pos = index $line, '#';
-      if ( $hash_pos >= 0 ) {
-        ok( $hash_pos >= 40, "Default comment padded (# at column $hash_pos, should be >= 40)" );
-      }
-      last;
-    }
-  }
-
-  # If no default comments found, that's okay (indent-columns=4 might not be default)
-  if ( !$found_default ) {
-    pass('Default comments test (no defaults found in output)');
-  }
+  my $hash_pos = defined $marked ? index $marked, q{#} : -1;
+  cmp_ok( $hash_pos, '>=', 40, 'Default comment padded to column 40' );
 }
 
 # Test 4: Section notes appear in correct sections
+#
+# brace-left-and-indent and non-indenting-braces conflict, and the note is
+# filed under brace-left-and-indent's section. non-indenting-braces is a
+# Perl::Tidy default, so --keep-defaults is needed for both to reach the
+# conflict check at all; it also puts the two options in different
+# sections, so a note filed under the wrong one is visible. Each section is
+# a blank-line-separated block. Red if the note is dropped, or lands in a
+# block other than the one holding --brace-left-and-indent.
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-
-  # Add conflicting options to trigger section notes
   print {$fh} "--brace-left-and-indent\n";
   print {$fh} "--non-indenting-braces\n";
   close $fh;
 
-  my $stdout    = `$script --rc $tmpfile 2>&1`;
+  my $stdout    = `$script --rc $tmpfile --keep-defaults 2>&1`;
   my $exit_code = $? >> 8;
 
   is( $exit_code, 0, 'Section notes appear exits with code 0' );
 
-  # Check if section notes appear
-  my $in_section = 0;
-  my $found_note = 0;
-  foreach my $line ( split /\n/, $stdout ) {
+  my $note  = qr/^# NOTE: brace-left-and-indent conflicts with non-indenting-braces$/m;
+  my @noted = grep { /$note/ } split /\n\n/, $stdout;
 
-    # Section headers can have numeric prefix or not
-    if ( $line =~ /^#\s+(?:\d+\.\s+)?(.+)$/ && $line !~ /^#\s+(?:perltidy|using|source)/ ) {
-      $in_section = 1;
-    }
-    if ( $in_section && $line =~ /#\s+NOTE:/ ) {
-      $found_note = 1;
-
-      # Verify note is within a section (should have section header before it)
-      pass('Section notes appear in correct sections');
-      last;
-    }
-  }
-
-  # Notes may or may not appear depending on conflicts
-  if ( !$found_note ) {
-    pass('Section notes test (no conflicts detected or notes not needed)');
-  }
+  is( scalar @noted, 1, 'The conflict note appears in exactly one section' );
+  like( $noted[0] // q{}, qr/^--brace-left-and-indent$/m, 'The note is in the section of the option it is about' );
 }
 
 # Test 5: Header includes date, cmdline, and source
@@ -296,13 +275,13 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
     }
   }
 
-  # Verify options are sorted
-  if ( @options >= 2 ) {
-    my @sorted = sort @options;
-    is_deeply( \@options, \@sorted, 'Options within sections are sorted alphabetically' );
-  } else {
-    pass('Options sorted test (not enough options to verify)');
-  }
+  # Both options are in Basic formatting options, so the first section holds
+  # two; asserting that first keeps the sort check from passing on one.
+  # Red if dump_section stops sorting: the input order is reverse-sorted.
+  # (Unsorted output would follow hash order, so a regression shows red on
+  # only some runs.)
+  cmp_ok( scalar @options, '>=', 2, 'First section holds at least two options' );
+  is_deeply( \@options, [ sort @options ], 'Options within sections are sorted alphabetically' );
 }
 
 # Test 8: Output format consistency (no duplicate sections)
@@ -375,30 +354,20 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   is( $exit_code, 0, 'Abbreviations section appears exits with code 0' );
 
-  # Find positions of sections and abbreviations
-  my @lines            = split /\n/, $stdout;
-  my $last_section_pos = -1;
-  my $abbrev_pos       = -1;
+  # The abbreviation heading must exist, and every option line must come
+  # before it. (The old check matched "# Abbreviations" as an ordinary
+  # section heading first, so it never found the abbreviations and always
+  # took its unconditional-ok branch.) Red if the heading is dropped, or the
+  # abbreviations are emitted ahead of an option.
+  my @lines       = split /\n/, $stdout;
+  my ($abbrev_at) = grep { $lines[$_] eq '# Abbreviations' } 0 .. $#lines;
+  my @option_at   = grep { $lines[$_] =~ /^--/ } 0 .. $#lines;
 
-  for my $i ( 0 .. $#lines ) {
-
-    # Section headers can have numeric prefix or not
-    if ( $lines[$i] =~ /^#\s+(?:\d+\.\s+)?(.+)$/ && $lines[$i] !~ /^#\s+(?:perltidy|using|source)/ ) {
-      $last_section_pos = $i;
-    } elsif ( $lines[$i] =~ /^#\s+Abbreviations/ ) {
-      $abbrev_pos = $i;
-    }
-  }
-
-  # Abbreviations should come after all sections
-  if ( $abbrev_pos >= 0 && $last_section_pos >= 0 ) {
-    ok(
-      $abbrev_pos > $last_section_pos,
-      'Abbreviations section appears after options sections'
-    );
-  } else {
-    pass('Abbreviations section test (may not appear if no abbreviations)');
-  }
+  ok( defined $abbrev_at, 'Abbreviations heading is present' );
+  cmp_ok( scalar @option_at,    '>=', 1,                'At least one option line is present' );
+  cmp_ok( $option_at[-1] // -1, '<',  $abbrev_at // -1, 'Abbreviations section appears after options sections' );
+  my $after_heading = defined $abbrev_at ? $lines[ $abbrev_at + 1 ] : undef;
+  like( $after_heading // q{}, qr/^myindent \{indent-columns\}$/, 'The abbreviation follows its heading' );
 }
 
 done_testing();
