@@ -16,7 +16,7 @@ use JSON::PP;
 # the enriched-index build + auto-rebuild, and the --json shape.
 
 my $SCRIPT = 'bin/xdg-audit';
-plan skip_all => "$SCRIPT not found" unless -f $SCRIPT;
+plan skip_all => "$SCRIPT not found" if !-f $SCRIPT;
 
 # bin/check-dotfiles pipes the dotlinks file through envsubst (gettext-base).
 # Without it no symlink gets made, so the tests that need one skip.
@@ -39,12 +39,14 @@ make_path($home);
 sub write_json {
   my ( $path, $data ) = @_;
   open my $fh, '>:encoding(UTF-8)', $path or die "write $path: $!";
-  print {$fh} JSON::PP->new->utf8(0)->canonical->encode($data);
+  my $json = JSON::PP->new->utf8(0)->canonical;
+  print {$fh} $json->encode($data);
   close $fh;
+  return;
 }
 
-sub prog { File::Spec->catfile( $db, 'programs',       "$_[0].json" ) }
-sub locl { File::Spec->catfile( $db, 'programs-local', "$_[0].json" ) }
+sub prog { return File::Spec->catfile( $db, 'programs',       "$_[0].json" ) }
+sub locl { return File::Spec->catfile( $db, 'programs-local', "$_[0].json" ) }
 
 sub touch {
   my ($name) = @_;
@@ -120,7 +122,7 @@ touch('.shared');
 # A symlinked dotfile (a managed link into "another repo").
 my $other = File::Spec->catdir( $root, 'other-repo' );
 make_path($other);
-symlink( $other, File::Spec->catfile( $home, '.linkme' ) ) or die "symlink: $!";
+symlink $other, File::Spec->catfile( $home, '.linkme' ) or die "symlink: $!";
 write_json(
   prog('linky'),
   { name => 'linky', files => [ { path => '$HOME/.linkme', movable => JSON::PP::true, help => "l\n" } ] } );
@@ -188,9 +190,9 @@ sub run_audit {
   delete local $ENV{XDG_AUDIT_HOME};
   delete local $ENV{DOTFILES};
 
-  my $pid = open( my $fh, '-|', $^X, $SCRIPT, '--db', $db, '--home', $home, @args )
+  my $pid = open my $fh, '-|', $^X, $SCRIPT, '--db', $db, '--home', $home, @args
     or die "cannot run $SCRIPT: $!";
-  local $/;
+  local $/ = undef;
   my $out = <$fh> // '';
   close $fh;
   my $rc = $? >> 8;
@@ -224,7 +226,7 @@ sub run_audit_stdin {
   my $pid = open2( $out_fh, $in_fh, $^X, $SCRIPT, '--db', $db, '--home', $home, @args );
   print {$in_fh} $input;
   close $in_fh;
-  local $/;
+  local $/ = undef;
   my $out = <$out_fh> // '';
   close $out_fh;
   waitpid $pid, 0;
@@ -246,27 +248,23 @@ sub run_audit_env {
   delete local $ENV{XDG_AUDIT_HOME};
   delete local $ENV{DOTFILES};
 
-  my %saved;
-  for my $k ( keys %$extra ) {
-    $saved{$k} = exists $ENV{$k} ? $ENV{$k} : undef;
-    if ( defined $extra->{$k} ) { $ENV{$k} = $extra->{$k} }
-    else                        { delete $ENV{$k} }
+  # local %ENV restores every variable, set or deleted here, when the sub
+  # returns; a defined value sets the var, an undef one unsets it.
+  local %ENV = ( %ENV, map { $_ => $extra->{$_} } grep { defined $extra->{$_} } keys %{$extra} );
+  for my $k ( grep { !defined $extra->{$_} } keys %{$extra} ) {
+    delete $ENV{$k};
   }
 
   my ( $out_fh, $in_fh );
   my $pid = open2( $out_fh, $in_fh, $^X, $SCRIPT, '--db', $db, '--home', $home, @args );
   print {$in_fh} $input;
   close $in_fh;
-  local $/;
+  local $/ = undef;
   my $out = <$out_fh> // '';
   close $out_fh;
   waitpid $pid, 0;
   my $rc = $? >> 8;
 
-  for my $k ( keys %saved ) {
-    if ( defined $saved{$k} ) { $ENV{$k} = $saved{$k} }
-    else                      { delete $ENV{$k} }
-  }
   return ( $out, $rc );
 } ## end sub run_audit_env
 
@@ -286,7 +284,7 @@ sub run_audit_merged {
   my $out_fh;
   my $pid = open3( my $in_fh, $out_fh, $out_fh, $^X, $SCRIPT, '--db', $db, '--home', $home, @args );
   close $in_fh;
-  local $/;
+  local $/ = undef;
   my $out = <$out_fh> // '';
   close $out_fh;
   waitpid $pid, 0;
@@ -314,7 +312,7 @@ sub run_symlink {
   my $pid = open3( my $in_fh, $out_fh, $out_fh, $^X, $SCRIPT, '--db', $db, '--home', $h, @args );
   print {$in_fh} $input;
   close $in_fh;
-  local $/;
+  local $/ = undef;
   my $out = <$out_fh> // '';
   close $out_fh;
   waitpid $pid, 0;
@@ -327,19 +325,16 @@ sub run_symlink {
 # (for real check-dotfiles) and the redirect var set to locate the source file.
 sub run_symlink_env {
   my ( $extra, $h, $df, $input, @args ) = @_;
-  my %saved;
-  for my $k ( keys %$extra ) {
-    $saved{$k} = exists $ENV{$k} ? $ENV{$k} : undef;
-    if ( defined $extra->{$k} ) { $ENV{$k} = $extra->{$k} }
-    else                        { delete $ENV{$k} }
+
+  # local %ENV restores every variable, set or deleted here, when the sub
+  # returns; a defined value sets the var, an undef one unsets it.
+  local %ENV = ( %ENV, map { $_ => $extra->{$_} } grep { defined $extra->{$_} } keys %{$extra} );
+  for my $k ( grep { !defined $extra->{$_} } keys %{$extra} ) {
+    delete $ENV{$k};
   }
 
   my ( $out, $rc ) = run_symlink( $h, $df, $input, @args );
 
-  for my $k ( keys %saved ) {
-    if ( defined $saved{$k} ) { $ENV{$k} = $saved{$k} }
-    else                      { delete $ENV{$k} }
-  }
   return ( $out, $rc );
 }
 
@@ -359,7 +354,7 @@ sub run_symlink_env {
 {
   my ( $data, $rc ) = run_json();
   is( ref $data, 'ARRAY', 'scan --json is a JSON array' );
-  my %by = map { $_->{name} => $_ } @$data;
+  my %by = map { $_->{name} => $_ } @{$data};
   ok( $by{foo},    'foo present in json scan' );
   ok( $by{docker}, 'docker present in json scan' );
   is( $by{docker}{group},    'stray',              'docker groups as stray (present + redirect active)' );
@@ -369,7 +364,7 @@ sub run_symlink_env {
   is( $by{secret}{group},    'ignored',            'ignored entry carries group "ignored" in json' );
   is( $by{reasoned}{reason}, 'left because tests', 'ignore reason carried in json' );
 
-  my ($mystery) = grep { ( $_->{group} // '' ) eq 'unknown' } @$data;
+  my ($mystery) = grep { ( $_->{group} // '' ) eq 'unknown' } @{$data};
   is( $mystery->{display}, '.mystery', 'a $HOME dotfile with no db entry is json group "unknown"' );
 }
 
@@ -485,8 +480,8 @@ sub run_symlink_env {
 {
   my $clean = File::Spec->catdir( $root, 'clean-home' );
   make_path($clean);
-  my $pid = open( my $fh, '-|', $^X, $SCRIPT, '--db', $db, '--home', $clean );
-  local $/;
+  my $pid = open my $fh, '-|', $^X, $SCRIPT, '--db', $db, '--home', $clean;
+  local $/ = undef;
   my $out = <$fh> // '';
   close $fh;
   my $rc = $? >> 8;
@@ -510,12 +505,12 @@ sub run_symlink_env {
     prog('bar'),
     { name => 'bar', files => [ { path => '$HOME/.bar', movable => JSON::PP::true, help => "b\n" } ] } );
   my $future = time + 5;
-  utime( $future, $future, prog('bar') )                           or die "utime: $!";
-  utime( $future, $future, File::Spec->catdir( $db, 'programs' ) ) or die "utime: $!";
+  utime $future, $future, prog('bar')                           or die "utime: $!";
+  utime $future, $future, File::Spec->catdir( $db, 'programs' ) or die "utime: $!";
 
   run_audit();
   my $doc = JSON::PP->new->decode(
-    do { open my $fh, '<', $idx or die; local $/; <$fh> }
+    do { open my $fh, '<', $idx or die; local $/ = undef; my $c = <$fh>; close $fh; $c }
   );
   my %seen = map { $_->{name} => 1 } @{ $doc->{entries} };
   ok( $seen{bar}, 'index auto-rebuilds and picks up a newly-added program' );
@@ -561,7 +556,7 @@ sub run_symlink_env {
 
 {
   my ( $data, $rc ) = run_json();
-  my %by = map { $_->{name} => $_ } @$data;
+  my %by = map { $_->{name} => $_ } @{$data};
   is( $by{linky}{group}, 'linked', 'a symlinked dotfile groups as "linked"' );
   like( $by{linky}{link_target}, qr/other-repo/, 'the link target is reported' );
 }
@@ -613,7 +608,7 @@ my $rmunh = touch('.rmunh');
 my $rmlink_target = File::Spec->catdir( $root, 'rmlink-target' );
 make_path($rmlink_target);
 my $rmlink = File::Spec->catfile( $home, '.rmlink' );
-symlink( $rmlink_target, $rmlink ) or die "symlink: $!";
+symlink $rmlink_target, $rmlink or die "symlink: $!";
 write_json(
   prog('rmlinky'),
   { name => 'rmlinky', files => [ { path => '$HOME/.rmlink', movable => JSON::PP::true, help => "l\n" } ] } );
@@ -744,7 +739,7 @@ touch('.mgalias');
 my $mgl_tgt = File::Spec->catdir( $root, 'mglink-target' );
 make_path($mgl_tgt);
 my $mglink = File::Spec->catfile( $home, '.mglink' );
-symlink( $mgl_tgt, $mglink ) or die "symlink: $!";
+symlink $mgl_tgt, $mglink or die "symlink: $!";
 mg_entry( 'mglink', mechanism => 'env', env => 'FIXTURE_MG_LN', rewrite => File::Spec->catfile( $xdgdata, 'mglink' ) );
 
 # A directory leftover, moved recursively (same filesystem).
@@ -903,7 +898,7 @@ write_json(
 # $DOTFILES/dotlinks-default, so this is hermetic (the helpers unset $DOTFILES).
 my $slink_reg_tgt = File::Spec->catdir( $root, 'slink-reg-target' );
 make_path($slink_reg_tgt);
-symlink( $slink_reg_tgt, File::Spec->catfile( $home, '.slinkreg' ) ) or die "symlink: $!";
+symlink $slink_reg_tgt, File::Spec->catfile( $home, '.slinkreg' ) or die "symlink: $!";
 write_json(
   locl('slinkreg'),
   { name  => 'slinkreg',
@@ -913,7 +908,7 @@ write_json(
 
 my $slink_loose_tgt = File::Spec->catdir( $root, 'slink-loose-target' );
 make_path($slink_loose_tgt);
-symlink( $slink_loose_tgt, File::Spec->catfile( $home, '.slinkloose' ) ) or die "symlink: $!";
+symlink $slink_loose_tgt, File::Spec->catfile( $home, '.slinkloose' ) or die "symlink: $!";
 write_json(
   locl('slinkloose'),
   { name  => 'slinkloose',
@@ -952,7 +947,7 @@ touch('.ownedapp');
 # Detection + completeness + owner + divergence in the --json feed.
 {
   my ( $data, $rc ) = run_json();
-  my %by = map { $_->{name} => $_ } @$data;
+  my %by = map { $_->{name} => $_ } @{$data};
 
   is( $by{slinkreg}{current_mechanism},    'symlink',           'a symlink reports current_mechanism symlink' );
   is( $by{slinkreg}{current_completeness}, 'complete',          'a registered symlink is complete' );
@@ -976,7 +971,7 @@ touch('.ownedapp');
   is( $by{ownedapp}{owner},             'some-manager', 'an explicit owner annotation round-trips' );
   is( $by{ownedapp}{current_mechanism}, 'hardcoded',    'the owned present file is hardcoded' );
 
-  my ($mystery) = grep { ( $_->{display} // '' ) eq '.mystery' } @$data;
+  my ($mystery) = grep { ( $_->{display} // '' ) eq '.mystery' } @{$data};
   is( $mystery->{current_mechanism}, 'unknown', 'a db-less $HOME dotfile is current unknown' );
 
   # Regression: the existing group/status vocabulary is unchanged.
@@ -1017,7 +1012,7 @@ my $s3_dl = File::Spec->catfile( $s3home, '.dotlinks' );
 my $DOLLAR_DOTFILES = '$DOTFILES';
 
 my $wr = sub { my ( $p, $c ) = @_; open my $fh, '>', $p or die "wr $p: $!"; print {$fh} $c; close $fh; return $p; };
-my $rd = sub { my ($p) = @_; open my $fh, '<', $p or return ''; local $/; my $c = <$fh>; close $fh; return $c // ''; };
+my $rd = sub { my ($p) = @_; open my $fh, '<', $p or return ''; local $/ = undef; my $c = <$fh>; close $fh; return $c // ''; };
 
 # Happy path: a hardcoded ~/.grok is moved into the repo, registered, and linked
 # back by check-dotfiles. ~/.dotlinks pre-exists (the active file), so there is
@@ -1118,7 +1113,7 @@ my $hostenv = { HOSTNAME => 'testhost' };
 mg_entry( 'hreg', mechanism => 'symlink', rewrite => '$DOTFILES/hreg' );
 my $hreg_tgt = File::Spec->catfile( $s3df, 'hreg' );
 $wr->( $hreg_tgt, "h\n" );
-symlink( $hreg_tgt, File::Spec->catfile( $s3home, '.hreg' ) ) or die "symlink: $!";
+symlink $hreg_tgt, File::Spec->catfile( $s3home, '.hreg' ) or die "symlink: $!";
 
 my $hreg_status = sub {
   my ($env) = @_;
@@ -1206,11 +1201,12 @@ mg_entry( 'norw', mechanism => 'symlink' );
 
 # rewrite is not under $DOTFILES.
 {
-  my $outside = File::Spec->catfile( $root, 'not-in-df' );
+  my $outside_df = File::Spec->catfile( $root, 'not-in-df' );
   write_json(
     locl('offdf'),
     { name  => 'offdf',
-      files => [ { path => '$HOME/.offdf', movable => JSON::PP::true, help => "o\n", mechanism => 'symlink', rewrite => $outside } ] } );
+      files => [ { path => '$HOME/.offdf', movable => JSON::PP::true, help => "o\n", mechanism => 'symlink', rewrite => $outside_df } ] }
+  );
   $wr->( File::Spec->catfile( $s3home, '.offdf' ), "o\n" );
   my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--migrate', 'symlink', 'offdf' );
   like( $out, qr/is not under \$DOTFILES/, 'a rewrite outside $DOTFILES is refused' );
@@ -1251,7 +1247,7 @@ mg_entry( 'loose', mechanism => 'symlink', rewrite => '$DOTFILES/loosetgt' );
   my $ltgt = $wr->( File::Spec->catfile( $s3df, 'loosetgt' ), "loose\n" );
   my $llnk = File::Spec->catfile( $s3home, '.loose' );
   unlink $llnk;
-  symlink( $ltgt, $llnk ) or die "symlink: $!";
+  symlink $ltgt, $llnk or die "symlink: $!";
   $wr->( $s3_dl, '' );
 
   my ( $out, $rc ) = run_symlink( $s3home, $s3df, "y\n", '--fix', 'loose' );
@@ -1443,7 +1439,7 @@ my $s2_dl = File::Spec->catfile( $s2home, '.dotlinks' );
 # recommended env, an 'export' suggested step.
 {
   my $c = $wr->( File::Spec->catfile( $s2df, 'rsym' ), "c\n" );
-  symlink( $c, File::Spec->catfile( $s2home, '.rsym' ) ) or die "symlink: $!";
+  symlink $c, File::Spec->catfile( $s2home, '.rsym' ) or die "symlink: $!";
   write_json(
     locl('rsym'),
     { name  => 'rsym',
@@ -1492,7 +1488,7 @@ my $s2_dl = File::Spec->catfile( $s2home, '.dotlinks' );
 {
   my $canon = $wr->( File::Spec->catfile( $s2df, 'sev' ), "sevdata\n" );
   my $link  = File::Spec->catfile( $s2home, '.sev' );
-  symlink( $canon, $link ) or die "symlink: $!";
+  symlink $canon, $link or die "symlink: $!";
   $wr->( $s2_dl, "$DOLLAR_DOTFILES/sev .sev\n" );
   my $tgt = File::Spec->catfile( $s2xdg, 'sev' );
   write_json(
@@ -1514,7 +1510,7 @@ my $s2_dl = File::Spec->catfile( $s2home, '.dotlinks' );
 # Redirect active & matching -> converts, but no export suggestion.
 {
   my $canon = $wr->( File::Spec->catfile( $s2df, 'seva' ), "a\n" );
-  symlink( $canon, File::Spec->catfile( $s2home, '.seva' ) ) or die "symlink: $!";
+  symlink $canon, File::Spec->catfile( $s2home, '.seva' ) or die "symlink: $!";
   $wr->( $s2_dl, '' );
   my $tgt = File::Spec->catfile( $s2xdg, 'seva' );
   write_json(
@@ -1533,7 +1529,7 @@ my $s2_dl = File::Spec->catfile( $s2home, '.dotlinks' );
 {
   my $canon = $wr->( File::Spec->catfile( $s2df, 'sevm' ), "m\n" );
   my $link  = File::Spec->catfile( $s2home, '.sevm' );
-  symlink( $canon, $link ) or die "symlink: $!";
+  symlink $canon, $link or die "symlink: $!";
   $wr->( $s2_dl, '' );
   write_json(
     locl('sevm'),
@@ -1553,7 +1549,7 @@ my $s2_dl = File::Spec->catfile( $s2home, '.dotlinks' );
 # Broken symlink (canonical missing) -> refused.
 {
   my $link = File::Spec->catfile( $s2home, '.sevb' );
-  symlink( File::Spec->catfile( $s2df, 'no-such-file' ), $link ) or die "symlink: $!";
+  symlink File::Spec->catfile( $s2df, 'no-such-file' ), $link or die "symlink: $!";
   write_json(
     locl('sevb'),
     { name  => 'sevb',
@@ -1569,7 +1565,7 @@ my $s2_dl = File::Spec->catfile( $s2home, '.dotlinks' );
 # A symlink whose entry recommends something other than env -> refined refusal.
 {
   my $canon = $wr->( File::Spec->catfile( $s2df, 'sevn' ), "n\n" );
-  symlink( $canon, File::Spec->catfile( $s2home, '.sevn' ) ) or die "symlink: $!";
+  symlink $canon, File::Spec->catfile( $s2home, '.sevn' ) or die "symlink: $!";
   write_json(
     locl('sevn'),
     { name  => 'sevn',
@@ -1586,7 +1582,7 @@ SKIP: {
   skip 'runs as root (file perms ignored)', 3 if $> == 0;
   my $canon = $wr->( File::Spec->catfile( $s2df, 'sevr' ), "r\n" );
   my $link  = File::Spec->catfile( $s2home, '.sevr' );
-  symlink( $canon, $link ) or die "symlink: $!";
+  symlink $canon, $link or die "symlink: $!";
   $wr->( $s2_dl, "$DOLLAR_DOTFILES/sevr .sevr\n" );
   chmod 0444, $s2_dl;
   my $tgt = File::Spec->catfile( $s2xdg, 'sevr' );
@@ -1696,7 +1692,7 @@ SKIP: {
 # recommended on a symlink-current mechanism:env entry converts (symlink->env).
 {
   my $canon = $wr->( File::Spec->catfile( $s2df, 'recs' ), "rc\n" );
-  symlink( $canon, File::Spec->catfile( $s2home, '.recs' ) ) or die "symlink: $!";
+  symlink $canon, File::Spec->catfile( $s2home, '.recs' ) or die "symlink: $!";
   $wr->( $s2_dl, '' );
   my $tgt = File::Spec->catfile( $s2xdg, 'recs' );
   write_json(
@@ -1760,7 +1756,7 @@ my $td_dl = File::Spec->catfile( $tdhome, '.dotlinks' );
 {
   my $repo = $wr->( File::Spec->catfile( $tddf, 'tdok' ), "keep-me\n" );
   my $link = File::Spec->catfile( $tdhome, '.tdok' );
-  symlink( $repo, $link ) or die "symlink: $!";
+  symlink $repo, $link or die "symlink: $!";
   $wr->( $td_dl, "$DOLLAR_DOTFILES/tdok .tdok\n" );
   write_json(
     locl('tdok'),
@@ -1782,7 +1778,7 @@ my $td_dl = File::Spec->catfile( $tdhome, '.dotlinks' );
 {
   my $repo = $wr->( File::Spec->catfile( $tddf, 'tdloose' ), "l\n" );
   my $link = File::Spec->catfile( $tdhome, '.tdloose' );
-  symlink( $repo, $link ) or die "symlink: $!";
+  symlink $repo, $link or die "symlink: $!";
   $wr->( $td_dl, '' );                 # not registered
   write_json(
     locl('tdloose'),
@@ -1800,7 +1796,7 @@ my $td_dl = File::Spec->catfile( $tdhome, '.dotlinks' );
 {
   my $repo = $wr->( File::Spec->catfile( $tddf, 'tdno' ), "n\n" );
   my $link = File::Spec->catfile( $tdhome, '.tdno' );
-  symlink( $repo, $link ) or die "symlink: $!";
+  symlink $repo, $link or die "symlink: $!";
   $wr->( $td_dl, "$DOLLAR_DOTFILES/tdno .tdno\n" );
   write_json(
     locl('tdno'),
@@ -1819,7 +1815,7 @@ SKIP: {
   skip 'runs as root (file perms ignored)', 2 if $> == 0;
   my $repo = $wr->( File::Spec->catfile( $tddf, 'tdrb' ), "rb\n" );
   my $link = File::Spec->catfile( $tdhome, '.tdrb' );
-  symlink( $repo, $link ) or die "symlink: $!";
+  symlink $repo, $link or die "symlink: $!";
   $wr->( $td_dl, "$DOLLAR_DOTFILES/tdrb .tdrb\n" );
   chmod 0444, $td_dl;
   write_json(

@@ -20,9 +20,9 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Add options from different sections
-  print $fh "--indent-columns=8\n";    # Basic formatting section
-  print $fh "--maximum-line-length=120\n";  # Basic formatting section
-  print $fh "--brace-tightness=2\n";   # Brace formatting section
+  print {$fh} "--indent-columns=8\n";  # Basic formatting section
+  print {$fh} "--maximum-line-length=120\n";  # Basic formatting section
+  print {$fh} "--brace-tightness=2\n"; # Brace formatting section
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -41,7 +41,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
       && $line !~ /^#\s+(?:perltidy|using|source)/
       && $line !~ /^#\s+perltidy/i ) {
       $current_section = $1;
-      $sections_found{$current_section} = [] unless exists $sections_found{$current_section};
+      $sections_found{$current_section} //= [];
     } elsif ( $line =~ /^--([^=]+)/ && $current_section ) {
       push @{ $sections_found{$current_section} }, $1;
     }
@@ -92,9 +92,9 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Add options from different sections (out of order)
-  print $fh "--brace-tightness=2\n";   # Section 2
-  print $fh "--indent-columns=8\n";    # Section 1
-  print $fh "--maximum-line-length=120\n";  # Section 1
+  print {$fh} "--brace-tightness=2\n"; # Section 2
+  print {$fh} "--indent-columns=8\n";  # Section 1
+  print {$fh} "--maximum-line-length=120\n";  # Section 1
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -130,7 +130,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Use a default value (if indent-columns=4 is default)
-  print $fh "--indent-columns=4\n";
+  print {$fh} "--indent-columns=4\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --keep-defaults 2>&1`;
@@ -145,7 +145,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
       $found_default = 1;
 
       # Check padding - # should be at or after column 40
-      my $hash_pos = index( $line, '#' );
+      my $hash_pos = index $line, '#';
       if ( $hash_pos >= 0 ) {
         ok( $hash_pos >= 40, "Default comment padded (# at column $hash_pos, should be >= 40)" );
       }
@@ -164,8 +164,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Add conflicting options to trigger section notes
-  print $fh "--brace-left-and-indent\n";
-  print $fh "--non-indenting-braces\n";
+  print {$fh} "--brace-left-and-indent\n";
+  print {$fh} "--non-indenting-braces\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -200,7 +200,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 5: Header includes date, cmdline, and source
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";
+  print {$fh} "--indent-columns=8\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -226,7 +226,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 6: Quiet mode omits headers
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";
+  print {$fh} "--indent-columns=8\n";
   close $fh;
 
   my $stdout_quiet  = `$script --rc $tmpfile --quiet 2>&1`;
@@ -268,8 +268,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Add options in non-alphabetical order
-  print $fh "--maximum-line-length=120\n";
-  print $fh "--indent-columns=8\n";
+  print {$fh} "--maximum-line-length=120\n";
+  print {$fh} "--indent-columns=8\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -308,8 +308,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 8: Output format consistency (no duplicate sections)
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";
-  print $fh "--maximum-line-length=120\n";
+  print {$fh} "--indent-columns=8\n";
+  print {$fh} "--maximum-line-length=120\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -336,8 +336,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 9: Empty lines between sections
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";
-  print $fh "--brace-tightness=2\n";
+  print {$fh} "--indent-columns=8\n";
+  print {$fh} "--brace-tightness=2\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -350,7 +350,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my $prev_was_section = 0;
   my $found_separator  = 0;
 
-  for ( my $i = 1 ; $i < @lines ; $i++ ) {
+  for my $i ( 1 .. $#lines ) {
 
     # Section headers can have numeric prefix or not
     if ( $lines[$i] =~ /^#\s+(?:\d+\.\s+)?(.+)$/ && $lines[$i] !~ /^#\s+(?:perltidy|using|source)/ ) {
@@ -367,8 +367,10 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
     }
   }
 
+  my $numbered_headers = grep { /^#\s+\d+\.\s+/ } @lines;
+
   # Sections should be separated by empty lines
-  if ( $found_separator || scalar( grep { /^#\s+\d+\.\s+/ } @lines ) <= 1 ) {
+  if ( $found_separator || $numbered_headers <= 1 ) {
     pass('Sections are properly separated');
   } else {
     pass('Section separation test (format may vary)');
@@ -378,8 +380,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 10: Abbreviations section appears after options
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";
-  print $fh "myindent {indent-columns}\n";
+  print {$fh} "--indent-columns=8\n";
+  print {$fh} "myindent {indent-columns}\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -392,7 +394,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my $last_section_pos = -1;
   my $abbrev_pos       = -1;
 
-  for ( my $i = 0 ; $i < @lines ; $i++ ) {
+  for my $i ( 0 .. $#lines ) {
 
     # Section headers can have numeric prefix or not
     if ( $lines[$i] =~ /^#\s+(?:\d+\.\s+)?(.+)$/ && $lines[$i] !~ /^#\s+(?:perltidy|using|source)/ ) {

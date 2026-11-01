@@ -70,7 +70,7 @@ load_perltidyrc_clean();
 
 # Test 8: Dies if `-o` followed by option (starts with `-`)
 {
-  my @args = ( '-o', '--no-rc', '--other' );
+  my @args = qw( -o --no-rc --other );
   eval { extract_outfile( \@args ) };
   like( $@, qr/Error: --outfile or -o requires a filename/, 'Dies if -o followed by option' );
   is_deeply( \@args, [ '--no-rc', '--other' ], 'Does not consume option after -o' );
@@ -78,7 +78,7 @@ load_perltidyrc_clean();
 
 # Test 9: Dies if `--outfile` followed by option
 {
-  my @args = ( '--outfile', '--help', '--other' );
+  my @args = qw( --outfile --help --other );
   eval { extract_outfile( \@args ) };
   like( $@, qr/Error: --outfile or -o requires a filename/, 'Dies if --outfile followed by option' );
   is_deeply( \@args, [ '--help', '--other' ], 'Does not consume option after --outfile' );
@@ -94,7 +94,7 @@ load_perltidyrc_clean();
 
 # Test 11: Returns undef if no outfile specified
 {
-  my @args    = ( '--option1', '--option2' );
+  my @args    = qw( --option1 --option2 );
   my $outfile = extract_outfile( \@args );
   is( $outfile, undef, 'Returns undef if no outfile specified' );
   is_deeply( \@args, [ '--option1', '--option2' ], 'Args unchanged when no outfile' );

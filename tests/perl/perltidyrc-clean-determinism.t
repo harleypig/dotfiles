@@ -53,12 +53,14 @@ foreach my $case (@cases) {
   my @differing;
   foreach my $seed ( @seeds[ 1 .. $#seeds ] ) {
     my ( undef, $output ) = run_with_seed( $seed, @{$case} );
-    push @differing, $seed if $output ne $first;
+    if ( $output ne $first ) {
+      push @differing, $seed;
+    }
   }
 
   is_deeply( \@differing, [], "$label: identical output across PERL_HASH_SEED values" )
     or diag "seeds whose output differs from seed $seeds[0]: @differing";
-}
+} ## end foreach my $case (@cases)
 
 # The order condense_options applies abbreviations in, pinned directly with
 # synthetic abbreviations: broadest first, then by name.

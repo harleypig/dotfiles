@@ -63,9 +63,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Add comments and blank lines (no valid options)
-  print $fh "# This is a comment\n";
-  print $fh "\n";
-  print $fh "# Another comment\n";
+  print {$fh} "# This is a comment\n";
+  print {$fh} "\n";
+  print {$fh} "# Another comment\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -191,9 +191,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 10: RC file with mixed valid and invalid options
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";    # Valid
-  print $fh "--invalid-option=value\n";     # Invalid
-  print $fh "--maximum-line-length=120\n";  # Valid
+  print {$fh} "--indent-columns=8\n";  # Valid
+  print {$fh} "--invalid-option=value\n";     # Invalid
+  print {$fh} "--maximum-line-length=120\n";  # Valid
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -222,7 +222,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # (Already tested in usage.t, but verify here too)
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";
+  print {$fh} "--indent-columns=8\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --no-rc 2>&1`;
@@ -238,7 +238,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 12: Dies if -o without filename
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";
+  print {$fh} "--indent-columns=8\n";
   close $fh;
 
   # Try -o without filename (followed by another option)
@@ -264,7 +264,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 13: Dies if cannot write output file
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=8\n";
+  print {$fh} "--indent-columns=8\n";
   close $fh;
 
   # Try to write to a non-existent directory
@@ -289,7 +289,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Add an option that Perl::Tidy doesn't recognize
-  print $fh "--completely-invalid-option-name=value\n";
+  print {$fh} "--completely-invalid-option-name=value\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -315,7 +315,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Use only default values
-  print $fh "--indent-columns=4\n";    # If this is default
+  print {$fh} "--indent-columns=4\n";  # If this is default
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -340,10 +340,10 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 16: Handles RC file with only comments and whitespace
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "# Comment line\n";
-  print $fh "   \n";                   # Whitespace
-  print $fh "# Another comment\n";
-  print $fh "\n";
+  print {$fh} "# Comment line\n";
+  print {$fh} "   \n";                 # Whitespace
+  print {$fh} "# Another comment\n";
+  print {$fh} "\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -364,7 +364,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
   my $tmpdir = tempdir( CLEANUP => 1 );
   my $rcfile = File::Spec->catfile( $tmpdir, 'file with spaces.rc' );
   open my $fh, '>', $rcfile or die "Cannot create $rcfile: $!";
-  print $fh "--indent-columns=8\n";
+  print {$fh} "--indent-columns=8\n";
   close $fh;
 
   # Use shell escaping for filename with spaces
@@ -386,7 +386,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 
   # Create a large RC file with many options
   for my $i ( 1 .. 100 ) {
-    print $fh "--indent-columns=$i\n";
+    print {$fh} "--indent-columns=$i\n";
   }
   close $fh;
 
@@ -402,8 +402,8 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 19: Handles RC file with duplicate options (last one wins)
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=4\n";
-  print $fh "--indent-columns=8\n";    # Duplicate, should override
+  print {$fh} "--indent-columns=4\n";
+  print {$fh} "--indent-columns=8\n";  # Duplicate, should override
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;
@@ -422,7 +422,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 20: Handles empty string values
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--output-encoding=\n";    # Empty value
+  print {$fh} "--output-encoding=\n";  # Empty value
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile 2>&1`;

@@ -23,7 +23,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 2: --overwrite with --outfile should fail (mutually exclusive)
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "# test config\n";
+  print {$fh} "# test config\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --overwrite --outfile /tmp/other 2>&1`;
@@ -37,8 +37,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Use non-default options that won't be filtered out
-  print $fh "--indent-columns=2\n";
-  print $fh "--maximum-line-length=132\n";
+  print {$fh} "--indent-columns=2\n";
+  print {$fh} "--maximum-line-length=132\n";
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --overwrite 2>&1`;
@@ -50,7 +50,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # Verify file was overwritten
   open my $read_fh, '<', $tmpfile or die "Cannot read $tmpfile: $!";
-  my $content = do { local $/; <$read_fh> };
+  my $content = do { local $/ = undef; <$read_fh> };
   close $read_fh;
 
   like( $content, qr/perltidy configuration file created/, 'Overwritten file contains header' );
@@ -62,8 +62,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Write a config with some non-default options
-  print $fh "--indent-columns=2\n";    # Non-default
-  print $fh "--maximum-line-length=132\n";  # Non-default
+  print {$fh} "--indent-columns=2\n";  # Non-default
+  print {$fh} "--maximum-line-length=132\n";  # Non-default
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --overwrite 2>&1`;
@@ -72,7 +72,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # Read the overwritten file
   open my $read_fh, '<', $tmpfile or die "Cannot read $tmpfile: $!";
-  my $content = do { local $/; <$read_fh> };
+  my $content = do { local $/ = undef; <$read_fh> };
   close $read_fh;
 
   # The file should be cleaned (defaults removed unless --keep-defaults)
@@ -83,8 +83,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 5: --overwrite with --keep-defaults should preserve defaults
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=2\n";    # Non-default
-  print $fh "--maximum-line-length=132\n";  # Non-default
+  print {$fh} "--indent-columns=2\n";  # Non-default
+  print {$fh} "--maximum-line-length=132\n";  # Non-default
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --overwrite --keep-defaults 2>&1`;
@@ -93,7 +93,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # Read the overwritten file
   open my $read_fh, '<', $tmpfile or die "Cannot read $tmpfile: $!";
-  my $content = do { local $/; <$read_fh> };
+  my $content = do { local $/ = undef; <$read_fh> };
   close $read_fh;
 
   like( $content, qr/perltidy configuration file created/, 'Overwritten file with --keep-defaults has content' );
@@ -102,8 +102,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 6: --overwrite with --quiet should omit header comments
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=2\n";    # Non-default
-  print $fh "--maximum-line-length=132\n";  # Non-default
+  print {$fh} "--indent-columns=2\n";  # Non-default
+  print {$fh} "--maximum-line-length=132\n";  # Non-default
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --overwrite --quiet 2>&1`;
@@ -112,7 +112,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # Read the overwritten file
   open my $read_fh, '<', $tmpfile or die "Cannot read $tmpfile: $!";
-  my $content = do { local $/; <$read_fh> };
+  my $content = do { local $/ = undef; <$read_fh> };
   close $read_fh;
 
   unlike( $content, qr/perltidy configuration file created/, 'Overwritten file with --quiet omits header' );
@@ -125,8 +125,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # Create test file with non-default options
   open my $fh, '>', $tmpfile or die "Cannot create $tmpfile: $!";
-  print $fh "--indent-columns=2\n";
-  print $fh "--maximum-line-length=132\n";
+  print {$fh} "--indent-columns=2\n";
+  print {$fh} "--maximum-line-length=132\n";
   close $fh;
 
   my $rel_path  = File::Spec->abs2rel($tmpfile);
@@ -136,7 +136,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # Verify file was overwritten
   open my $read_fh, '<', $tmpfile or die "Cannot read $tmpfile: $!";
-  my $content = do { local $/; <$read_fh> };
+  my $content = do { local $/ = undef; <$read_fh> };
   close $read_fh;
 
   like( $content, qr/perltidy configuration file created/, 'Overwritten file with relative path has content' );
@@ -148,8 +148,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 8: --overwrite should preserve file permissions (or at least not fail)
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=2\n";    # Non-default
-  print $fh "--maximum-line-length=132\n";  # Non-default
+  print {$fh} "--indent-columns=2\n";  # Non-default
+  print {$fh} "--maximum-line-length=132\n";  # Non-default
   close $fh;
 
   # Set restrictive permissions
@@ -170,7 +170,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Create file with only default options (will be filtered out)
-  print $fh "--indent-columns=4\n";    # Default value
+  print {$fh} "--indent-columns=4\n";  # Default value
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --overwrite 2>&1`;
@@ -182,7 +182,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # File should remain unchanged (not overwritten when no options)
   open my $read_fh, '<', $tmpfile or die "Cannot read $tmpfile: $!";
-  my $content = do { local $/; <$read_fh> };
+  my $content = do { local $/ = undef; <$read_fh> };
   close $read_fh;
 
   like( $content, qr/--indent-columns=4/, 'File unchanged when no options remain' );
@@ -191,8 +191,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 10: --overwrite should work with --condense
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=2\n";    # Non-default
-  print $fh "--maximum-line-length=132\n";  # Non-default
+  print {$fh} "--indent-columns=2\n";  # Non-default
+  print {$fh} "--maximum-line-length=132\n";  # Non-default
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --overwrite --condense 2>&1`;
@@ -205,8 +205,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 # Test 11: --overwrite should work with --no-condense
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=2\n";    # Non-default
-  print $fh "--maximum-line-length=132\n";  # Non-default
+  print {$fh} "--indent-columns=2\n";  # Non-default
+  print {$fh} "--maximum-line-length=132\n";  # Non-default
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --overwrite --no-condense 2>&1`;
@@ -221,8 +221,8 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Use non-default options so file will be opened for writing
-  print $fh "--indent-columns=2\n";
-  print $fh "--maximum-line-length=132\n";
+  print {$fh} "--indent-columns=2\n";
+  print {$fh} "--maximum-line-length=132\n";
   close $fh;
 
   # Make file read-only

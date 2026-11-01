@@ -23,7 +23,7 @@ sub run_pp_argv {
   my $pid    = IPC::Open3::open3( my $in, my $out, $err, $script, @argv );
 
   close $in;
-  local $/;
+  local $/ = undef;
   my $stdout = <$out> // '';
   my $stderr = <$err> // '';
   waitpid $pid, 0;

@@ -47,7 +47,7 @@ like( $stdout, qr/--overwrite requires --rc/, 'Error message mentions --rc requi
 
 # Test 4: --overwrite and --outfile are mutually exclusive
 my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-print $fh "# test\n";
+print {$fh} "# test\n";
 close $fh;
 $stdout    = `$script --rc $tmpfile --overwrite --outfile /tmp/other 2>&1`;
 $exit_code = $? >> 8;

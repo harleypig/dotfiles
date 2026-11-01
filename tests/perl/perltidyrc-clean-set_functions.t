@@ -25,7 +25,7 @@ my $simple_rc     = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 # Verified by checking that defaults are kept when --keep-defaults is used
 {
   # Create a temporary script that calls set_keep_defaults and checks %cli
-  my $test_code = q{
+  my $test_code = <<~'END_TEST_CODE';
         package main;
         use lib 'tests/perl/lib';
         require TestPerltidyrcClean;
@@ -44,7 +44,7 @@ my $simple_rc     = File::Spec->catfile( $test_data_dir, 'simple.rc' );
         } else {
             print "FAIL: drop_defaults=$cli{drop_defaults}, keep_defaults=$cli{keep_defaults}\n";
         }
-    };
+    END_TEST_CODE
 
   # This won't work because %cli is lexical. Let's test differently.
   # Instead, we'll test through actual script execution.

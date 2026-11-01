@@ -212,7 +212,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
   ok( ref($opts) eq 'HASH', 'Returns opts hash ref' );
 
   # Empty RC file should have no options (or only defaults if they match)
-  ok( keys(%$opts) >= 0, 'Empty RC file produces valid opts hash' );
+  ok( keys( %{$opts} ) >= 0, 'Empty RC file produces valid opts hash' );
 }
 
 # Test 13: perltidy_args override RC file options

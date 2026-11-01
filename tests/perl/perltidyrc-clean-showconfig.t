@@ -92,7 +92,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   my $tmpdir  = tempdir( CLEANUP => 1 );
   my $rc_file = File::Spec->catfile( $tmpdir, '.perltidyrc' );
   open my $fh, '>', $rc_file or die "Cannot create test file: $!";
-  print $fh "# test config\n";
+  print {$fh} "# test config\n";
   close $fh;
 
   local $ENV{PERLTIDY} = $tmpdir;
@@ -111,7 +111,7 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # Create a temporary config file
   open my $fh, '>', $rc_file or die "Cannot create test file: $!";
-  print $fh "# test config\n";
+  print {$fh} "# test config\n";
   close $fh;
 
   # Change to temp directory for this test

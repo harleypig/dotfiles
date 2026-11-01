@@ -43,13 +43,13 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 3: Dies on invalid stderr_ref (not a scalar ref)
 {
   my $empty_scalar = "";
-  my %Opts_default;
+  my %opts_default;
   my $stderr_var = "";
   my @argv_empty = ();
 
   my %valid_params = (
     perltidyrc         => \$empty_scalar,
-    dump_options       => \%Opts_default,
+    dump_options       => \%opts_default,
     dump_options_type  => 'full',
     dump_abbreviations => {},
     stderr             => \$stderr_var,
@@ -65,13 +65,13 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 4: Dies on invalid error_mode
 {
   my $empty_scalar = "";
-  my %Opts_default;
+  my %opts_default;
   my $stderr_var = "";
   my @argv_empty = ();
 
   my %valid_params = (
     perltidyrc         => \$empty_scalar,
-    dump_options       => \%Opts_default,
+    dump_options       => \%opts_default,
     dump_options_type  => 'full',
     dump_abbreviations => {},
     stderr             => \$stderr_var,
@@ -92,14 +92,14 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 5: Returns error code 0 on success (die mode)
 {
   my $empty_scalar = "";
-  my %Opts_default;
+  my %opts_default;
   my %abbreviations_default;
   my $stderr     = "";
   my @argv_empty = ();
 
   my %params = (
     perltidyrc         => \$empty_scalar,
-    dump_options       => \%Opts_default,
+    dump_options       => \%opts_default,
     dump_options_type  => 'full',
     dump_abbreviations => \%abbreviations_default,
     stderr             => \$stderr,
@@ -112,13 +112,13 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 6: Dies on error (err == 1) in die mode
 {
   my $nonexistent_file = "nonexistent-file.rc";
-  my %Opts;
+  my %opts;
   my $stderr     = "";
   my @argv_empty = ();
 
   my %params = (
     perltidyrc        => $nonexistent_file,
-    dump_options      => \%Opts,
+    dump_options      => \%opts,
     dump_options_type => 'perltidyrc',
     stderr            => \$stderr,
     argv              => \@argv_empty,
@@ -142,13 +142,13 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
   # Use a valid but potentially warning-generating scenario
   # (e.g., reading a config file that might have warnings)
   my $rc_file = File::Spec->catfile( $test_data_dir, 'simple.rc' );
-  my %Opts;
+  my %opts;
   my $stderr     = "";
   my @argv_empty = ();
 
   my %params = (
     perltidyrc        => $rc_file,
-    dump_options      => \%Opts,
+    dump_options      => \%opts,
     dump_options_type => 'perltidyrc',
     stderr            => \$stderr,
     argv              => \@argv_empty,
@@ -172,14 +172,14 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 8: Returns (0, "") on success (accumulate mode)
 {
   my $empty_scalar = "";
-  my %Opts_default;
+  my %opts_default;
   my %abbreviations_default;
   my $stderr     = "";
   my @argv_empty = ();
 
   my %params = (
     perltidyrc         => \$empty_scalar,
-    dump_options       => \%Opts_default,
+    dump_options       => \%opts_default,
     dump_options_type  => 'full',
     dump_abbreviations => \%abbreviations_default,
     stderr             => \$stderr,
@@ -193,13 +193,13 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 9: Returns error message on error (err == 1) in accumulate mode
 {
   my $nonexistent_file = "nonexistent-file.rc";
-  my %Opts;
+  my %opts;
   my $stderr     = "";
   my @argv_empty = ();
 
   my %params = (
     perltidyrc        => $nonexistent_file,
-    dump_options      => \%Opts,
+    dump_options      => \%opts,
     dump_options_type => 'perltidyrc',
     stderr            => \$stderr,
     argv              => \@argv_empty,
@@ -227,13 +227,13 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Test 10: Returns stderr content in error message (accumulate mode)
 {
   my $nonexistent_file = "nonexistent-file.rc";
-  my %Opts;
+  my %opts;
   my $stderr     = "";
   my @argv_empty = ();
 
   my %params = (
     perltidyrc        => $nonexistent_file,
-    dump_options      => \%Opts,
+    dump_options      => \%opts,
     dump_options_type => 'perltidyrc',
     stderr            => \$stderr,
     argv              => \@argv_empty,
@@ -252,14 +252,14 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 # Note: Warnings are harder to trigger reliably, but we can test the structure
 {
   my $empty_scalar = "";
-  my %Opts_default;
+  my %opts_default;
   my %abbreviations_default;
   my $stderr     = "";
   my @argv_empty = ();
 
   my %params = (
     perltidyrc         => \$empty_scalar,
-    dump_options       => \%Opts_default,
+    dump_options       => \%opts_default,
     dump_options_type  => 'full',
     dump_abbreviations => \%abbreviations_default,
     stderr             => \$stderr,
@@ -286,14 +286,14 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 
 # Test 12: Works with valid defaults dump parameters
 {
-  my %Opts_default;
+  my %opts_default;
   my %abbreviations_default;
   my $stderr     = "";
   my @argv_empty = ();
 
   my %params = (
     perltidyrc         => \"",
-    dump_options       => \%Opts_default,
+    dump_options       => \%opts_default,
     dump_options_type  => 'full',
     dump_abbreviations => \%abbreviations_default,
     stderr             => \$stderr,
@@ -302,15 +302,15 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 
   my $err = call_perltidy( \%params, 'defaults dump', \$stderr, 'die' );
   is( $err, 0, 'Successfully calls Perl::Tidy for defaults dump' );
-  ok( keys(%Opts_default) > 0,          'Defaults hash is populated' );
+  ok( keys(%opts_default) > 0,          'Defaults hash is populated' );
   ok( keys(%abbreviations_default) > 0, 'Default abbreviations are populated' );
 }
 
 # Test 13: Works with valid config dump parameters
 {
   my $rc_file = File::Spec->catfile( $test_data_dir, 'simple.rc' );
-  my %Opts;
-  my %Getopt_flags;
+  my %opts;
+  my %getopt_flags;
   my %sections;
   my %abbreviations;
   my $stderr     = "";
@@ -318,9 +318,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 
   my %params = (
     perltidyrc            => $rc_file,
-    dump_options          => \%Opts,
+    dump_options          => \%opts,
     dump_options_type     => 'perltidyrc',
-    dump_getopt_flags     => \%Getopt_flags,
+    dump_getopt_flags     => \%getopt_flags,
     dump_options_category => \%sections,
     dump_abbreviations    => \%abbreviations,
     stderr                => \$stderr,
@@ -330,7 +330,7 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
   my ( $err, $error_message ) = call_perltidy( \%params, 'parsing options', \$stderr, 'accumulate' );
   is( $err,           0,  'Successfully calls Perl::Tidy for config dump' );
   is( $error_message, "", 'No error message on success' );
-  ok( keys(%Opts) > 0,     'Options hash is populated' );
+  ok( keys(%opts) > 0,     'Options hash is populated' );
   ok( keys(%sections) > 0, 'Sections hash is populated' );
 }
 

@@ -19,9 +19,9 @@ load_perltidyrc_clean();
     ref($abbreviations_default) eq 'HASH',
     'Returns abbreviations_default hash ref'
   );
-  ok( keys(%$opts_default) > 0, 'Defaults hash is populated' );
+  ok( keys( %{$opts_default} ) > 0, 'Defaults hash is populated' );
   ok(
-    keys(%$abbreviations_default) > 0,
+    keys( %{$abbreviations_default} ) > 0,
     'Default abbreviations hash is populated'
   );
 }
@@ -74,10 +74,10 @@ load_perltidyrc_clean();
   # Check that abbreviations have valid structure (array refs)
   my $valid_count = 0;
   my $total_count = 0;
-  foreach my $abbr ( keys %$abbreviations_default ) {
+  foreach my $abbr ( keys %{$abbreviations_default} ) {
     $total_count++;
     my $val = $abbreviations_default->{$abbr};
-    if ( ref($val) eq 'ARRAY' && @$val > 0 ) {
+    if ( ref($val) eq 'ARRAY' && @{$val} > 0 ) {
       $valid_count++;
     }
   }

@@ -41,7 +41,6 @@ load_perltidyrc_clean();
   # Check that options are grouped by section
   my @lines = split /\n/, $output;
   my %section_groups;
-  my $current_section;
   foreach my $line (@lines) {
     if ( $line =~ /^--(\S+)/ ) {
       my $opt = $1;
@@ -97,7 +96,9 @@ load_perltidyrc_clean();
       $opt =~ s/^no-//;
       $opt =~ s/=.*$//;
       if ( exists $sections{$opt} ) {
-        push @section_order, $sections{$opt} unless @section_order && $section_order[-1] eq $sections{$opt};
+        if ( !@section_order || $section_order[-1] ne $sections{$opt} ) {
+  push @section_order, $sections{$opt};
+        }
       }
     }
   }
@@ -325,7 +326,7 @@ load_perltidyrc_clean();
 
       # Check padding - # should be at or after column 40
       # Find position of # character
-      my $hash_pos = index( $line, '#' );
+      my $hash_pos = index $line, '#';
       ok( $hash_pos >= 40, "Default comment padded (# at column $hash_pos, should be >= 40)" );
     }
   }
@@ -361,7 +362,7 @@ load_perltidyrc_clean();
       # Check that there are at least 2 spaces before #
       my ($spaces) = $line =~ /=\d+(\s+)#/;
       if ( defined $spaces ) {
-        my $space_count = length($spaces);
+        my $space_count = length $spaces;
         ok( $space_count >= 2, "Minimum 2 spaces padding (found: $space_count)" );
       }
     }
@@ -443,7 +444,9 @@ load_perltidyrc_clean();
   # Capture stdout using a scalar reference
   my $stdout_output = "";
   {
-    local *STDOUT;
+    # The open below is the initialization; a localized glob has no value to
+    # assign first.
+    local *STDOUT; ## no critic (Variables::RequireInitializationForLocalVars)
     open STDOUT, '>', \$stdout_output or die "Cannot redirect STDOUT: $!";
 
     dump_options(

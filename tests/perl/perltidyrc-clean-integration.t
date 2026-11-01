@@ -140,7 +140,7 @@ my $cmd = Test::Cmd->new(
 # Test 8: Short options in command-line args are automatically expanded by Perl::Tidy
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--indent-columns=4\n";    # Use long option in RC file
+  print {$fh} "--indent-columns=4\n";  # Use long option in RC file
   close $fh;
 
   # Pass short option via command line - Perl::Tidy expands it automatically
@@ -228,7 +228,7 @@ my $cmd = Test::Cmd->new(
   my $tmpdir = tempdir( CLEANUP => 1 );
   my $rcfile = File::Spec->catfile( $tmpdir, '.perltidyrc' );
   open my $fh, '>', $rcfile or die "Cannot create $rcfile: $!";
-  print $fh "--indent-columns=8\n";    # Non-default value
+  print {$fh} "--indent-columns=8\n";  # Non-default value
   close $fh;
 
   # Change to temp directory and run script
@@ -265,7 +265,7 @@ my $cmd = Test::Cmd->new(
   ok( -f $outfile, 'Output file was created' );
   if ( -f $outfile ) {
     open my $rfh, '<', $outfile or die "Cannot read $outfile: $!";
-    my $content = do { local $/; <$rfh> };
+    my $content = do { local $/ = undef; <$rfh> };
     close $rfh;
     like( $content, qr/--indent-columns=8/, 'Output file contains expected content' );
   }
@@ -287,7 +287,7 @@ my $cmd = Test::Cmd->new(
   ok( -f $outfile, 'Output file was created' );
   if ( -f $outfile ) {
     open my $rfh, '<', $outfile or die "Cannot read $outfile: $!";
-    my $content = do { local $/; <$rfh> };
+    my $content = do { local $/ = undef; <$rfh> };
     close $rfh;
     like( $content, qr/--indent-columns=8/, 'Output file contains expected content' );
   }
@@ -382,7 +382,7 @@ my $cmd = Test::Cmd->new(
 # Test 21: --add-missing-defaults: adds missing defaults, keeps existing
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
-  print $fh "--maximum-line-length=120\n";  # Non-default value
+  print {$fh} "--maximum-line-length=120\n";  # Non-default value
   close $fh;
 
   my $stdout    = `$script --rc $tmpfile --add-missing-defaults 2>&1`;
