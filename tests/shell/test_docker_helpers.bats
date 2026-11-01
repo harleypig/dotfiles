@@ -10,7 +10,7 @@ setup() {
   ROOT="$(dotfiles_root)"
   # shellcheck source=/dev/null
   source "$ROOT/lib/docker_helpers"
-  unset DW_TAG DW_LOG
+  unset DW_TAG DW_LOG DOCKER_HOST
 }
 
 #------------------------------------------------------------------------------
@@ -267,6 +267,81 @@ make_checkout() {
   DW_ARGV=(stale)
   dw_mount_workdir args
   assert_equal "${#DW_ARGV[@]}" 0
+}
+
+#------------------------------------------------------------------------------
+# dw_docker_socket_path / dw_docker_socket
+
+# Make a real (unbound) unix socket at $1. The bind runs from the socket's own
+# directory with a relative name because sun_path caps a socket path at 107
+# bytes, which a deep $BATS_TEST_TMPDIR can exceed.
+make_socket() {
+  (cd "${1%/*}" && python3 -c \
+    'import socket, sys; socket.socket(socket.AF_UNIX).bind(sys.argv[1])' \
+    "${1##*/}")
+}
+
+@test "dw_docker_socket_path falls back to /var/run/docker.sock" {
+  run dw_docker_socket_path
+  assert_success
+  assert_output "/var/run/docker.sock"
+
+  DOCKER_HOST="" run dw_docker_socket_path
+  assert_success
+  assert_output "/var/run/docker.sock"
+}
+
+@test "dw_docker_socket_path takes the path from a unix:// DOCKER_HOST" {
+  DOCKER_HOST=unix:///run/user/1000/docker.sock run dw_docker_socket_path
+  assert_success
+  assert_output "/run/user/1000/docker.sock"
+}
+
+@test "dw_docker_socket_path treats a bare unix:// as the default path" {
+  DOCKER_HOST=unix:// run dw_docker_socket_path
+  assert_success
+  assert_output "/var/run/docker.sock"
+}
+
+@test "dw_docker_socket_path fails for a non-unix DOCKER_HOST" {
+  local host
+
+  for host in tcp://127.0.0.1:2376 ssh://user@example.com npipe:////./pipe/x; do
+    DOCKER_HOST=$host run dw_docker_socket_path
+    assert_failure
+    assert_output ""
+  done
+}
+
+@test "dw_docker_socket mounts a DOCKER_HOST socket at the default path" {
+  local sock="$BATS_TEST_TMPDIR/docker.sock"
+  make_socket "$sock"
+
+  local -a args=()
+  DOCKER_HOST="unix://$sock" dw_docker_socket args
+  assert_equal "${args[*]}" \
+    "--volume $sock:/var/run/docker.sock --group-add $(stat -c %g "$sock")"
+}
+
+@test "dw_docker_socket adds nothing when the socket is absent" {
+  local -a args=()
+  DOCKER_HOST="unix://$BATS_TEST_TMPDIR/missing.sock" dw_docker_socket args
+  assert_equal "${args[*]}" ""
+}
+
+@test "dw_docker_socket adds nothing when the path is not a socket" {
+  local file="$BATS_TEST_TMPDIR/plain"
+  touch "$file"
+
+  local -a args=()
+  DOCKER_HOST="unix://$file" dw_docker_socket args
+  assert_equal "${args[*]}" ""
+}
+
+@test "dw_docker_socket adds nothing for a remote DOCKER_HOST" {
+  local -a args=()
+  DOCKER_HOST=tcp://127.0.0.1:2376 dw_docker_socket args
+  assert_equal "${args[*]}" ""
 }
 
 #------------------------------------------------------------------------------

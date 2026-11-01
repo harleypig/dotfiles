@@ -31,6 +31,12 @@
 #   -chdir=/abs). Those are the tool's to interpret and the caller's to pass
 #   correctly; a relative path works.
 #
+#   trivy and dive also get the docker socket, mounted at
+#   /var/run/docker.sock. It is the path of a unix:// DOCKER_HOST when one is
+#   set (rootless docker's $XDG_RUNTIME_DIR/docker.sock), else
+#   /var/run/docker.sock. A tcp:// or ssh:// DOCKER_HOST, or a missing
+#   socket, mounts none.
+#
 # Add a tool:
 #   1. write a <tool>() function below (build args, exec docker run)
 #   2. register its image next to the function:
