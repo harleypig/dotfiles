@@ -184,17 +184,46 @@ dw_env() {
 }
 
 #-----------------------------------------------------------------------------
+# Print the host path of the docker daemon's unix socket: the path of a
+# `unix://` DOCKER_HOST (rootless docker sets unix://$XDG_RUNTIME_DIR/
+# docker.sock), else docker's default /var/run/docker.sock. A bare `unix://`
+# means the default, as it does to the docker CLI. Returns 1, printing
+# nothing, for any other scheme (tcp://, ssh://, npipe://): that daemon is
+# not on this host, so there is no socket here to mount.
+
+dw_docker_socket_path() {
+  local host=${DOCKER_HOST-}
+
+  if [[ -z $host ]]; then
+    printf '%s\n' /var/run/docker.sock
+
+  elif [[ $host == unix://* ]]; then
+    host=${host#unix://}
+    printf '%s\n' "${host:-/var/run/docker.sock}"
+
+  else
+    return 1
+  fi
+}
+
+#-----------------------------------------------------------------------------
 # Mount the docker socket and add its group, so a non-root --user can reach
-# the daemon (dive, `trivy image`). No-op when the socket is absent.
+# the daemon (dive, `trivy image`). The host socket comes from
+# dw_docker_socket_path and is mounted at /var/run/docker.sock, the default
+# the containerized docker client looks for. No-op when the daemon is remote
+# or the socket is absent.
 
 dw_docker_socket() {
   local -n _a=$1
 
-  [[ -S /var/run/docker.sock ]] || return 0
+  local sock
+  sock=$(dw_docker_socket_path) || return 0
+
+  [[ -S $sock ]] || return 0
 
   _a+=(
-    --volume /var/run/docker.sock:/var/run/docker.sock
-    --group-add "$(stat -c %g /var/run/docker.sock)"
+    --volume "$sock:/var/run/docker.sock"
+    --group-add "$(stat -c %g "$sock")"
   )
 }
 

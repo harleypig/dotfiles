@@ -595,27 +595,37 @@ teardown() {
 }
 
 @test "trivy still mounts the docker socket" {
-  # dw_docker_socket reads the hard-coded /var/run/docker.sock and adds the
-  # mount only when it is a socket, so with no socket there is nothing for
-  # this test to see. docker itself is stubbed, which is why require_docker
-  # is the wrong guard. Skip on a workstation without one, but fail under
-  # CI: a runner missing the socket would otherwise pass this unrun (#659).
-  if [[ ! -S /var/run/docker.sock ]]; then
-    [[ -n ${CI:-} ]] || skip "no docker socket on this host"
-
-    printf 'no docker socket, and CI is set: refusing to skip\n' >&2
-    return 1
-  fi
+  # A real socket under $BATS_TEST_TMPDIR, named through DOCKER_HOST, so the
+  # test runs on any host whether or not a docker daemon is there. Bound from
+  # its own directory: sun_path caps a socket path at 107 bytes.
+  local sock="$BATS_TEST_TMPDIR/docker.sock"
+  (cd "$BATS_TEST_TMPDIR" && python3 -c \
+    'import socket; socket.socket(socket.AF_UNIX).bind("docker.sock")')
 
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
 
   run env "PATH=$STUB:$PATH" XDG_CACHE_HOME="$BATS_TEST_TMPDIR/cache" \
+    DOCKER_HOST="unix://$sock" "$ROOT/bin/trivy" image alpine:3.20
+  assert_success
+
+  run cat "$STUB/docker.args"
+  assert_output --partial "--volume $sock:/var/run/docker.sock"
+  assert_output --partial "image alpine:3.20"
+}
+
+@test "trivy mounts no socket when DOCKER_HOST names a missing one" {
+  make_stub "$STUB" docker
+  cd "$BATS_TEST_TMPDIR"
+
+  run env "PATH=$STUB:$PATH" XDG_CACHE_HOME="$BATS_TEST_TMPDIR/cache" \
+    DOCKER_HOST="unix://$BATS_TEST_TMPDIR/missing.sock" \
     "$ROOT/bin/trivy" image alpine:3.20
   assert_success
 
   run cat "$STUB/docker.args"
-  assert_output --partial "--volume /var/run/docker.sock:/var/run/docker.sock"
+  refute_output --partial "docker.sock"
+  refute_output --partial "--group-add"
   assert_output --partial "image alpine:3.20"
 }
 
