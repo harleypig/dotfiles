@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.11.1
+**Version:** v2.11.2
 
 ## Purpose
 
@@ -28,11 +28,17 @@ One `tests/` root with per-language subdirs (see the dotagents repo's
 
 ```text
 tests/
-  helpers/common.bash   # shared bash/bats support (load_bats_libs, dotfiles_root, make_stub, make_test_repo, docker harness)
+  helpers/common.bash   # shared bash/bats support (load_bats_libs,
+                        #   dotfiles_root, make_stub, make_test_repo,
+                        #   docker harness)
   scaffold/             # meta-test generator + templates (build-meta-tests)
-  lint/                 # repo lint helpers, not tests (e.g. prose_wrap.py, run via a pre-commit hook); their unit tests live in python/
-  docker/               # integration-test harness image (Dockerfile, entrypoint)
-  shell/                # bats: *.bats hand-written, *_integration_*.bats, *.meta.bats (generated, gitignored)
+  lint/                 # repo lint helpers, not tests (e.g. prose_wrap.py,
+                        #   run via a pre-commit hook); their unit tests
+                        #   live in python/
+  docker/               # integration-test harness image (Dockerfile,
+                        #   entrypoint)
+  shell/                # bats: *.bats hand-written, *_integration_*.bats,
+                        #   *.meta.bats (generated, gitignored)
   python/               # pytest: test_*.py
   perl/                 # prove: *.t
   powershell/           # Pester: *.Tests.ps1
@@ -110,8 +116,9 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   and `vmgr remove perl` (fast, one network fetch, enough to gate per-PR) —
   while the full lifecycle that builds a real Perl + installs the module set
   is **opt-in via `VMGR_PERL_COMPILE=1`**. `common.bash` provides
-  `perl_harness_image` and `perl_run`. Separate from the node/python `vmgr`
-  image, which lacks a C toolchain.
+  `perl_harness_image` and `perl_run` (same `require_docker` guard: skips
+  locally, fails in CI). Separate from the node/python `vmgr` image, which
+  lacks a C toolchain.
 
 These run wherever docker exists and skip otherwise on a workstation, so they
 sit in the same gating suite without breaking docker-less environments. In CI
@@ -229,6 +236,13 @@ needs a symlink made, each with the reason `envsubst not found (install
 gettext-base)`. Run `prove -v` to see them; a plain `prove` reports the file
 as `ok` either way.
 
+The other is **`perl-doc`**, which the CI job does not install (it relies on
+the runner image). `parse_params-modes.t` checks `bin/parse_params -h`, which
+renders its POD through `perldoc`. Without `perl-doc`, Debian's `perldoc`
+stub only says to install it, and Pod::Usage falls back to paging the raw
+script through `$PAGER` or `more`; where neither exists either, as in a slim
+container, `-h` prints nothing and 4 of its tests **fail**.
+
 Without **Perl::Tidy**, every `perltidyrc-clean-*.t` skips as a whole file,
 naming the two ways to get it: `vmgr install perl`, or the distro `perltidy`
 package (which CI installs, so there they run).
@@ -247,7 +261,7 @@ two scripts would be brittle — a gating threshold is Planned, see `QA.md`):
 ```bash
 cover -delete
 HARNESS_PERL_SWITCHES=-MDevel::Cover prove tests/perl/
-cover                              # prints a summary; writes cover_db/ (gitignored)
+cover    # prints a summary; writes cover_db/ (gitignored)
 ```
 
 ## CI
