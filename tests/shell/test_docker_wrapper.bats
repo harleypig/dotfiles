@@ -595,7 +595,18 @@ teardown() {
 }
 
 @test "trivy still mounts the docker socket" {
-  [[ -S /var/run/docker.sock ]] || skip "no docker socket on this host"
+  # dw_docker_socket reads the hard-coded /var/run/docker.sock and adds the
+  # mount only when it is a socket, so with no socket there is nothing for
+  # this test to see. docker itself is stubbed, which is why require_docker
+  # is the wrong guard. Skip on a workstation without one, but fail under
+  # CI: a runner missing the socket would otherwise pass this unrun (#659).
+  if [[ ! -S /var/run/docker.sock ]]; then
+    [[ -n ${CI:-} ]] || skip "no docker socket on this host"
+
+    printf 'no docker socket, and CI is set: refusing to skip\n' >&2
+    return 1
+  fi
+
   make_stub "$STUB" docker
   cd "$BATS_TEST_TMPDIR"
 
