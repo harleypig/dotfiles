@@ -497,7 +497,9 @@ sub parse_leading_options {
   my $usage_mode = 0;
 
   # parse_params's own reference, rendered from the POD below; exits 0.
-  my $help = sub { pod2usage( -verbose => 2, -exitval => 0 ) };
+  # -noperldoc renders in-process with Pod::Text: an external perldoc may be
+  # missing, and Pod::Usage then pages the raw source, or prints nothing.
+  my $help = sub { pod2usage( -verbose => 2, -exitval => 0, -noperldoc => 1 ) };
 
   my %leading = (
     '-h'      => $help,

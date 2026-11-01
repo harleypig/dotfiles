@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.11.2
+**Version:** v2.11.3
 
 ## Purpose
 
@@ -235,13 +235,6 @@ file through `envsubst`. Without it, `xdg-audit.t` **skips** every test that
 needs a symlink made, each with the reason `envsubst not found (install
 gettext-base)`. Run `prove -v` to see them; a plain `prove` reports the file
 as `ok` either way.
-
-The other is **`perl-doc`**, which the CI job does not install (it relies on
-the runner image). `parse_params-modes.t` checks `bin/parse_params -h`, which
-renders its POD through `perldoc`. Without `perl-doc`, Debian's `perldoc`
-stub only says to install it, and Pod::Usage falls back to paging the raw
-script through `$PAGER` or `more`; where neither exists either, as in a slim
-container, `-h` prints nothing and 4 of its tests **fail**.
 
 Without **Perl::Tidy**, every `perltidyrc-clean-*.t` skips as a whole file,
 naming the two ways to get it: `vmgr install perl`, or the distro `perltidy`

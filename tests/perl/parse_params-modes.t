@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Test::More;
+use File::Temp qw(tempdir);
 use lib 'tests/perl/lib';
 use TestParseParams;
 
@@ -18,6 +19,29 @@ like( $out, qr/parse_params - validate/, '-h prints parse_params own help' );
 # formats differently across versions.
 like( $out, qr/OPTION, TYPE, VARNAME/, '-h documents the definition format' );
 like( $out, qr/--auto/,                '-h lists parse_params own options (from POD)' );
+
+# -h renders the POD itself, with PATH holding only perl. Handing off to an
+# external perldoc fails two ways where perldoc is missing: with no pager it
+# prints nothing, and with one it pages the raw script source, shebang and
+# POD directives included. Discriminating only where perl-doc is absent: an
+# installed perldoc is found by absolute path and renders correctly.
+{
+  my $bindir = tempdir( CLEANUP => 1 );
+  symlink $^X, "$bindir/perl" or die "symlink perl: $!";
+
+  for my $pager ( undef, 'perl -pe1' ) {
+    my $case = defined $pager ? 'with a pager' : 'with no pager';
+
+    my %env = ( %ENV, PATH => $bindir, PAGER => $pager );
+    if ( !defined $pager ) { delete $env{PAGER} }
+    local %ENV = %env;
+
+    ( $out, $err, $rc ) = run_pp_argv('-h');
+    is( $rc, 0, "-h exits 0 $case" );
+    like( $out, qr/OPTION, TYPE, VARNAME/, "-h renders help $case" );
+    unlike( $out, qr/^#!|^=head1/m, "-h output is rendered POD, not raw source, $case" );
+  }
+}
 
 ( $out, $err, $rc ) = run_pp_argv('--help');
 is( $rc, 0, '--help exits 0' );
