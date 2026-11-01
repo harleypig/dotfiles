@@ -7,11 +7,10 @@ use TestPerltidyrcClean;
 
 # Test the detect_conflicts function from bin/perltidyrc-clean
 #
-# We use load_perltidyrc_clean() to load the script, which executes it but
-# makes the function available for testing. This approach tests the actual
-# function from the working code.
+# load_perltidyrc_clean() loads the script's functions without running it,
+# so this tests the actual function from the working code.
 
-# Load the script - it will execute but exit quickly with --help
+# Load the script's functions
 load_perltidyrc_clean();
 
 # Test 1: Detects conflict between brace-left-and-indent and non-indenting-braces
@@ -433,6 +432,36 @@ load_perltidyrc_clean();
   detect_conflicts( \%opts, \%sections, \%section_notes );
 
   is( scalar keys %section_notes, 0, 'No conflicts detected for empty opts hash' );
+}
+
+# Test 22: Conflicts are checked against the effective settings and noted
+# only where the cleaned file sets one side (#665). Here non-indenting-braces
+# is a default the file does not carry.
+{
+  my %opts = (
+    'brace-left-and-indent' => '1',
+    'non-indenting-braces'  => '1',
+  );
+  my %sections = (
+    'brace-left-and-indent' => '1. Section',
+    'non-indenting-braces'  => '1. Section',
+  );
+
+  # Red if a conflict with a default is dropped because the file does not
+  # carry the default.
+  my %one_side = ();
+  detect_conflicts( \%opts, \%sections, \%one_side, { 'brace-left-and-indent' => '1' } );
+  is_deeply(
+    \%one_side,
+    { '1. Section' => ['brace-left-and-indent conflicts with non-indenting-braces'] },
+    'Notes a conflict when the file carries one side'
+  );
+
+  # Red if a conflict between two settings the file leaves at their defaults
+  # is noted.
+  my %neither = ();
+  detect_conflicts( \%opts, \%sections, \%neither, { 'indent-columns' => '4' } );
+  is_deeply( \%neither, {}, 'Notes nothing when the file carries neither side' );
 }
 
 done_testing();

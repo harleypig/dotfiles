@@ -7,11 +7,10 @@ use TestPerltidyrcClean;
 
 # Test the condense_options function from bin/perltidyrc-clean
 #
-# We use load_perltidyrc_clean() to load the script, which executes it but
-# makes the function available for testing. This approach tests the actual
-# function from the working code.
+# load_perltidyrc_clean() loads the script's functions without running it,
+# so this tests the actual function from the working code.
 
-# Load the script - it will execute but exit quickly with --help
+# Load the script's functions
 load_perltidyrc_clean();
 
 # Test 1: Doesn't remove brace-specific options that differ from brace-tightness
@@ -159,6 +158,38 @@ load_perltidyrc_clean();
   ok( exists $opts{'line-length'},    'Keeps unrelated options' );
   ok( exists $opts{'indent-columns'}, 'Keeps indent-columns when continuation-indentation missing' );
   is( $opts{'line-length'}, '80', 'Preserves unrelated option value' );
+}
+
+# Test 9: Replaces a fully matched abbreviation's options with the
+# abbreviation itself (#664). The abbreviation takes the first option's
+# section and an undef value, so dump_options writes the bare --pair=1; red
+# if the options are dropped without it.
+{
+  my %opts = (
+    'alpha'   => '1',
+    'bravo'   => '1',
+    'charlie' => '2',
+  );
+  my %sections = (
+    'alpha'   => '1. First',
+    'bravo'   => '2. Second',
+    'charlie' => '1. First',
+  );
+  my %section_notes         = ();
+  my %abbreviations_default = (
+    a        => ['alpha'],
+    b        => ['bravo'],
+    'pair=1' => [qw(a=1 b=1)],
+  );
+  condense_options( \%opts, \%sections, \%section_notes, {}, \%abbreviations_default );
+
+  is_deeply( \%opts, { 'pair=1' => undef, charlie => '2' }, 'Replaces the expansion with the abbreviation' );
+  is( $sections{'pair=1'}, '1. First', 'The abbreviation takes the first option\'s section' );
+  is_deeply(
+    \%section_notes,
+    { '1. First' => ['alpha condensed to pair=1'], '2. Second' => ['bravo condensed to pair=1'] },
+    'Notes each condensed option in its own section'
+  );
 }
 
 done_testing();

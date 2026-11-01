@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config bundling pass_through);
 use Scalar::Util qw(looks_like_number);
+use List::Util   qw(any);
 use File::Basename;
 use Carp qw(croak);
 use Cwd;
@@ -184,8 +185,8 @@ perltidyrc-clean [--rc FILE | --no-rc] [--keep-defaults] [--[no-]condense]
   --add-missing-defaults
                     Add any missing default options (implies --keep-defaults
                     and --no-condense).
-  --[no-]condense   Drop fine-grained options that duplicate broader settings
-                    (on by default).
+  --[no-]condense   Replace fine-grained options that duplicate a broader
+                    setting with its abbreviation (on by default).
   --outfile FILE, -o FILE
                     Write output to FILE instead of stdout. Recognized even
                     though not used when parsing options.
@@ -645,8 +646,15 @@ sub condense_candidates {
 } ## end sub condense_candidates
 
 # Condense options using abbreviations (e.g., pt=0, sbt=0, bt=0, bbt=0 ->
-# act=0): where every option an abbreviation expands to is set to the same
-# value, remove them and note that the abbreviation can replace them.
+# all-containers-tightness=0): where every option an abbreviation expands to
+# is set to the same value, replace them with the abbreviation. A perltidyrc
+# takes parameters exactly as a command line does, abbreviations included, so
+# the cleaned file sets the same options.
+#
+# The abbreviation goes into $opts under its full key with an undef value, in
+# the section of the first option it replaces. It has no getopt flag, so
+# dump_options writes it as the bare --<key>; the key already carries any
+# value (closing-token-indentation=1).
 sub condense_options {
   my ( $opts, $sections, $section_notes, $abbreviations, $abbreviations_default ) = @_;
   return if !$abbreviations_default;
@@ -655,40 +663,52 @@ sub condense_options {
     my ( $abbr_key, $long_names, $expected_value ) = @{$candidate};
     next if !all_opts_equal( $opts, $long_names, $expected_value );
 
-    # Remove the individual options and add notes
-    # Note: We don't add the abbreviation itself to $opts since abbreviations
-    # are not valid option names - they expand to multiple options.
-    # The user can use the abbreviation when writing the config file if desired.
     foreach my $long_name ( @{$long_names} ) {
-      add_section_note(
-        $sections, $section_notes, $long_name,
-        "$long_name removed; can be condensed to $abbr_key"
-      );
+      add_section_note( $sections, $section_notes, $long_name, "$long_name condensed to $abbr_key" );
       delete $opts->{$long_name};
     }
+
+    $sections->{$abbr_key} //= $sections->{ $long_names->[0] };
+    $opts->{$abbr_key} = undef;
   }
 
   return;
 } ## end sub condense_options
 
+# Add $text as a note in the first involved option's section when any of the
+# @involved options is in $carried.
+sub add_conflict_note {
+  my ( $carried, $sections, $section_notes, $text, @involved ) = @_;
+  return if !any { exists $carried->{$_} } @involved;
+  add_section_note( $sections, $section_notes, $involved[0], $text );
+  return;
+}
+
+# Note conflicting or shadowed settings in $opts, the effective settings to
+# check. A conflict is noted only when at least one option in it is in
+# $carried, the options the cleaned file sets ($opts itself when omitted): one
+# between two settings the file leaves at Perl::Tidy's defaults is nothing the
+# file can change.
 sub detect_conflicts {
-  my ( $opts, $sections, $section_notes ) = @_;
+  my ( $opts, $sections, $section_notes, $carried ) = @_;
   $section_notes ||= {};
+  $carried       ||= $opts;
+  my $add_note = sub {
+    my ( $text, @involved ) = @_;
+    add_conflict_note( $carried, $sections, $section_notes, $text, @involved );
+  };
 
   if ( is_true( $opts->{'brace-left-and-indent'} )
     && is_true( $opts->{'non-indenting-braces'} ) ) {
-    add_section_note(
-      $sections, $section_notes, 'brace-left-and-indent',
-      'brace-left-and-indent conflicts with non-indenting-braces'
+    $add_note->(
+      'brace-left-and-indent conflicts with non-indenting-braces',
+      'brace-left-and-indent', 'non-indenting-braces'
     );
   }
 
   if ( is_true( $opts->{tabs} )
     && is_true( $opts->{'entab-leading-whitespace'} ) ) {
-    add_section_note(
-      $sections, $section_notes, 'tabs',
-      'tabs together with entab-leading-whitespace may conflict'
-    );
+    $add_note->( 'tabs together with entab-leading-whitespace may conflict', 'tabs', 'entab-leading-whitespace' );
   }
 
   if ( defined $opts->{'brace-tightness'} ) {
@@ -700,10 +720,7 @@ sub detect_conflicts {
     ) {
       next if !defined $opts->{$specific};
       if ( $opts->{$specific} ne $general ) {
-        add_section_note(
-          $sections, $section_notes, $specific,
-          "$specific differs from brace-tightness; specific wins"
-        );
+        $add_note->( "$specific differs from brace-tightness; specific wins", $specific, 'brace-tightness' );
       }
     }
   }
@@ -715,9 +732,9 @@ sub detect_conflicts {
     if ( looks_like_integer($max)
       && looks_like_integer($fuzzy)
       && $fuzzy > $max ) {
-      add_section_note(
-        $sections, $section_notes, 'fuzzy-line-length',
-        "fuzzy-line-length ($fuzzy) exceeds maximum-line-length ($max)"
+      $add_note->(
+        "fuzzy-line-length ($fuzzy) exceeds maximum-line-length ($max)",
+        'fuzzy-line-length', 'maximum-line-length'
       );
     }
   }
@@ -728,9 +745,9 @@ sub detect_conflicts {
     && ( is_true( $opts->{'format-skipping'} )
       || is_true( $opts->{'detect-format-skipping-from-start'} ) )
   ) {
-    add_section_note(
-      $sections, $section_notes, 'format',
-      'format is disabled but format-skipping detection is enabled'
+    $add_note->(
+      'format is disabled but format-skipping detection is enabled',
+      'format', 'format-skipping', 'detect-format-skipping-from-start'
     );
   }
 
@@ -1016,11 +1033,17 @@ sub main {
 
   %equals_default = build_equals_default( \%clean_opts, $ropts_default );
 
+  # Conflicts are checked against the effective settings, defaults included,
+  # and noted where the cleaned file sets at least one side. Taken before
+  # condensing, which renames options but changes no setting.
+  my %effective = ( %{$ropts_default}, %{$ropts} );
+  my %carried   = %clean_opts;
+
   if ( $cli{condense} ) {
     condense_options( \%clean_opts, $rsections, \%section_notes, $rabbreviations, $rabbreviations_default );
   }
 
-  detect_conflicts( \%clean_opts, $rsections, \%section_notes );
+  detect_conflicts( \%effective, $rsections, \%section_notes, \%carried );
 
   my %abbreviations_user = user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
 
@@ -1048,7 +1071,11 @@ sub main {
   exit 0;
 } ## end sub main
 
-main();
+# Run only as a program, so the tests can load the functions with `do`
+# without running main().
+if ( !caller ) {
+  main();
+}
 
 __END__
 
@@ -1080,6 +1107,21 @@ are dropped (unless C<--keep-defaults>), fine-grained options that duplicate a
 broader setting are condensed into that setting (unless C<--no-condense>),
 conflicting or shadowed options are annotated, and the result is regrouped by
 the Formatting Options sections of the perltidy manual.
+
+Condensing replaces a group of options with the Perl::Tidy abbreviation that
+sets them all to the same value: C<--closing-paren-indentation=1>,
+C<--closing-brace-indentation=1> and C<--closing-square-bracket-indentation=1>
+become C<--closing-token-indentation=1>. A perltidyrc takes parameters exactly
+as the command line does, abbreviations included, so the cleaned file sets the
+same options as the original. Unless C<--quiet>, a note in the section names
+each option condensed.
+
+Conflicts are checked against the effective settings: Perl::Tidy's defaults
+overlaid with the file's own. A conflict is noted when the cleaned file sets
+at least one of the options in it, so a file setting
+C<--brace-left-and-indent> is told that it conflicts with the default
+C<--non-indenting-braces>. A conflict between two options the file leaves at
+their defaults is not noted.
 
 The cleaned configuration is written to stdout by default, to C<--outfile>, or
 back over the source file with C<--overwrite>. Any arguments not recognised as
@@ -1113,8 +1155,8 @@ C<--no-condense>.
 
 =item B<--condense>, B<--no-condense>
 
-Condense fine-grained options that duplicate a broader setting (on by
-default; disable with C<--no-condense>).
+Condense fine-grained options that duplicate a broader setting into the
+abbreviation for it (on by default; disable with C<--no-condense>).
 
 =item B<--outfile> I<FILE>, B<-o> I<FILE>
 

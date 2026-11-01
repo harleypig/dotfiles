@@ -410,20 +410,22 @@ my $cmd = Test::Cmd->new(
 
 # Test 24: Conflict detection adds section notes
 #
-# conflicts.rc sets brace-left-and-indent and non-indenting-braces.
-# non-indenting-braces is a Perl::Tidy default, so without --keep-defaults it
-# is dropped before detect_conflicts runs and no note can appear; with it,
-# both reach the check. Red if that check stops noting the pair.
-{
+# conflicts.rc sets brace-left-and-indent and non-indenting-braces, and
+# non-indenting-braces is a Perl::Tidy default. Conflicts are checked against
+# the effective settings (#665), so the note appears whether the default is
+# dropped from the output or kept. Red, in default mode, if the check sees
+# only the options left after defaults are dropped.
+foreach my $flags ( [], ['--keep-defaults'] ) {
   my $rc_file = File::Spec->catfile( $test_data_dir, 'conflicts.rc' );
+  my $label   = join q{ }, 'Conflict detection', @{$flags};
 
-  my $stdout    = `$script --rc $rc_file --keep-defaults 2>&1`;
+  my $stdout    = `$script --rc $rc_file @{$flags} 2>&1`;
   my $exit_code = $? >> 8;
 
-  is( $exit_code, 0, 'Conflict detection exits with code 0' );
+  is( $exit_code, 0, "$label exits with code 0" );
   like(
     $stdout, qr/^# NOTE: brace-left-and-indent conflicts with non-indenting-braces$/m,
-    'Conflict detection adds a section note'
+    "$label adds a section note"
   );
 }
 
@@ -472,15 +474,15 @@ my $cmd = Test::Cmd->new(
   # Verify that the options that vtc=3 expands to are present
   # Note: Some may be filtered as defaults or condensed, so check what's actually present
   like(
-    $stdout, qr/--paren-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+    $stdout, qr/--paren-vertical-tightness-closing=3|condensed to vertical-tightness-closing=3/i,
     'Options from vtc=3 expansion are present or condensed (paren-vertical-tightness-closing)'
   );
   like(
-    $stdout, qr/--brace-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+    $stdout, qr/--brace-vertical-tightness-closing=3|condensed to vertical-tightness-closing=3/i,
     'Options from vtc=3 expansion are present or condensed (brace-vertical-tightness-closing)'
   );
   like(
-    $stdout, qr/--square-bracket-vertical-tightness-closing=3|can be condensed to.*vertical-tightness-closing=3/i,
+    $stdout, qr/--square-bracket-vertical-tightness-closing=3|condensed to vertical-tightness-closing=3/i,
     'Options from vtc=3 expansion are present or condensed (square-bracket-vertical-tightness-closing)'
   );
 }
@@ -494,11 +496,11 @@ my $cmd = Test::Cmd->new(
 
   is( $exit_code, 0, 'Abbreviation condensing exits with code 0' );
 
-  # The specific "can be condensed to" note depends on the option values
+  # The specific "condensed to" note depends on the option values
   # Perl::Tidy reports, which vary by version; accept the note OR the
   # expanded options being present (condensing ran either way).
   like(
-    $stdout, qr/can be condensed to|--paren-tightness=3/i,
+    $stdout, qr/condensed to|--paren-tightness=3/i,
     'condensing ran (a condensing note, or expanded options, present)'
   );
 

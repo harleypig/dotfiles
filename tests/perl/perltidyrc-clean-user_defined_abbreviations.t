@@ -7,11 +7,10 @@ use TestPerltidyrcClean;
 
 # Test the user_defined_abbreviations function from bin/perltidyrc-clean
 #
-# We use load_perltidyrc_clean() to load the script, which executes it but
-# makes the function available for testing. This approach tests the actual
-# function from the working code.
+# load_perltidyrc_clean() loads the script's functions without running it,
+# so this tests the actual function from the working code.
 
-# Load the script - it will execute but exit quickly with --help
+# Load the script's functions
 load_perltidyrc_clean();
 
 # Test 1: Returns only abbreviations not in defaults

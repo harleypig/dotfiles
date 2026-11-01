@@ -9,7 +9,7 @@ use TestPerltidyrcClean;
 # This is a developer error - hash keys should never be undefined or empty strings.
 # Note: Perl stringifies undef to "" when used as a hash key, so we check for empty strings.
 
-# Load the script - it will execute but exit quickly with --help
+# Load the script's functions
 load_perltidyrc_clean();
 
 # Test 1: build_equals_default dies on empty string key in opts
