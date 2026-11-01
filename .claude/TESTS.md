@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.10.0
+**Version:** v2.11.0
 
 ## Purpose
 
@@ -54,12 +54,14 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   entrypoint deploys `~/.bash_profile`/`~/.bashrc` → `shell-startup` and runs
   a login shell; tests needing a pristine `HOME` override the entrypoint.
 - `tests/helpers/common.bash` provides `require_docker` (**skips** the test
-  when there is no docker CLI or its daemon does not answer),
+  when there is no docker CLI or its daemon does not answer — or, with `CI`
+  set, **fails** it, since a runner without a usable docker is broken),
   `dotfiles_harness_image` (builds the image, cached; a failed build **fails**
   the test, so a broken harness can never merge green) and `dotfiles_login`.
   A test calls `require_docker` in its own `setup`, then
   `IMAGE="$(dotfiles_harness_image)"`: a `skip` inside `$(...)` ends only the
-  subshell. `test_harness_image.bats` guards both behaviours.
+  subshell. `test_harness_image.bats` guards these behaviours, clearing `CI`
+  for its nested runs so they behave the same locally and in Actions.
 - `tests/shell/test_integration_*.bats` — e.g. `test_integration_startup`
   (login shell comes up with `DOTFILES`/XDG/PATH, double-source guard,
   cleanpath dedup) and `test_integration_check_dotfiles`.
@@ -110,8 +112,10 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   `perl_harness_image` and `perl_run`. Separate from the node/python `vmgr`
   image, which lacks a C toolchain.
 
-These run wherever docker exists (CI, dev) and skip otherwise, so they sit in
-the same gating suite without breaking docker-less environments.
+These run wherever docker exists and skip otherwise on a workstation, so they
+sit in the same gating suite without breaking docker-less environments. In CI
+(`CI` set, as GitHub Actions does) an unusable docker **fails** them instead:
+a runner whose daemon is down must not pass every docker test unrun.
 
 ### Verifying shell-startup by hand, on the host
 
