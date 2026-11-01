@@ -17,4 +17,6 @@ my @files = ( 'bin/parse_params', 'bin/perltidyrc-clean', 'bin/xdg-audit' );
 
 plan tests => scalar @files;
 
-pod_file_ok( $_, "POD syntax OK: $_" ) for @files;
+for my $file (@files) {
+  pod_file_ok( $file, "POD syntax OK: $file" );
+}

@@ -5,5 +5,6 @@
 *
 !.gitignore
 !perlcriticrc
+!perlcriticrc-tests
 !perldb
 !perltidyrc

@@ -1,6 +1,6 @@
 # Quality Assurance
 
-**Version:** v1.9.0
+**Version:** v1.10.0
 
 ## Purpose
 
@@ -47,7 +47,7 @@ Every dimension from `qa.md`, with its status (**Active** / **Planned** +link
 | # | Dimension | Status | This repo |
 |---|-----------|--------|-----------|
 | 1 | Format | **Active** | `shfmt`, `yapf`, `isort`, `prettier`, `markdownlint-fix`, trailing-whitespace, end-of-file-fixer, mixed-line-ending `--fix=lf` (fix config). **Line endings** are gated by `forbid-crlf`, a check-only pygrep hook that fails on any CRLF line (mixed-line-ending's own `--fix=no` misses a file that is CRLF throughout). The vendored xdg-ninja mirror (`config/xdg-audit/{programs,json-schema}/`) is exempt and marked `-text` in `.gitattributes`, because it stays byte-identical to upstream — `programs/mintty.json` is CRLF there (#604). |
-| 2 | Lint | **Active** | `shellcheck`, `yamllint` (docker-image hook on the pinned private `ghcr.io/harleypig/python-tools` image, which also backs `bin/ansible-lint` — #370), `markdownlint`, `flake8` (with mccabe `C901` at `max-complexity = 10`, `config/flake8` — #496); **Perl** `perltidy` + `perlcritic` (severity 1, set in the curated core-only `config/perl/perlcriticrc`) via pinned private ghcr **docker-image** pre-commit hooks (`ghcr.io/harleypig/{perltidy,perlcritic}`, `docker login` required — see `WORKFLOW.md`) |
+| 2 | Lint | **Active** | `shellcheck`, `yamllint` (docker-image hook on the pinned private `ghcr.io/harleypig/python-tools` image, which also backs `bin/ansible-lint` — #370), `markdownlint`, `flake8` (with mccabe `C901` at `max-complexity = 10`, `config/flake8` — #496); **Perl** `perltidy` + `perlcritic` (severity 1, set in the curated core-only `config/perl/perlcriticrc`) via pinned private ghcr **docker-image** pre-commit hooks on the combined `ghcr.io/harleypig/perl-tools` image (`docker login` required — see `WORKFLOW.md`), over `bin/` and over `tests/perl/` `*.t` / `*.pm` (separate `-tests` hooks; the test code is linted against `config/perl/perlcriticrc-tests` — see *Notes*, #647) |
 | 3 | Type-check | **Off** | No type checker. `pyright` was removed when `config/claude/hooks` (its only typed surface) was extracted to the dotagents repo; the small remaining first-party Python (`tests/lint/prose_wrap.py`, `tests/python/test_prose_wrap.py`) is not type-checked. Revisit if a substantial typed Python surface returns. |
 | 4 | Code smell / complexity | **Active (partial)** | Python: flake8's mccabe `C901` gates cyclomatic complexity above 10 (see Lint). Bash: `shellcheck` catches some; no dedicated bash complexity tool. Acknowledged gap, no tracked owner yet. |
 | 5 | Security | **Active (partial)** | Secrets: `gitleaks` + `detect-private-key` (commit-time check) **plus `trufflehog`** — PR-time *verified* scan in CI (`secret-scan.yml`, non-required for now). SCA / supply-chain: Dependabot alerts + version updates (`.github/dependabot.yml`). SAST: `semgrep` via the `security-scan` skill; **Checkmarx evaluated & declined** (commercial, no free tier — disproportionate). **`Snyk` & `CodeFactor` evaluated (2026-06-19) & not formalized** — both are hosted SaaS App checks that fail this repo's *worthwhile-results* bar (`security-scan` §4 escape hatch): no real dependency tree, so Snyk is a near-noise advisory check, and CodeFactor only re-runs ShellCheck/yamllint already gated locally. **Snyk dropped (uninstall the App); CodeFactor kept as a passive, non-required badge.** Supply-chain posture: **OpenSSF Scorecard** (`scorecard.yml`, weekly + on push to `master`), its standing decisions in *Scorecard decisions* below. DAST: **N/A** (no running service). Deeper triage → `security-scan` skill. |
@@ -133,6 +133,32 @@ code changed (see `CHANGELOG.md`).
   SAST, B::Lint, B::Deparse, Perl::Analyzer, a perl-QA skill) are recorded in
   [ADR-0002](../docs/adr/0002-perl-qa-tooling-scope.md). The remaining perl
   work is #362 - combined tool image.
+- **Perl test code is linted with recorded relaxations** (#647). The
+  `perltidy-check-tests` / `perlcritic-check-tests` hooks (and the
+  `perltidy-tests` fixer) cover `tests/perl/*.t` and `tests/perl/lib/*.pm`,
+  selected by file name because `identify` does not tag a `.t` file as perl.
+  perltidy uses the same `.perltidyrc` as `bin/`. perlcritic uses
+  `config/perl/perlcriticrc-tests`: the repo profile at the same severity 1,
+  with these policies off or narrowed for test code, each reason written in
+  that file:
+  - **Asserting on literal output** — the `/x` `/m` `/s` requirements
+    (adding `/m` or `/s` by rote changes what an assertion matches),
+    escaped metacharacters and complex regexes, empty / noisy quotes,
+    interpolation of literals, magic numbers.
+  - **Inspecting what a test inspects** — punctuation vars (`$?` `$@` `$!`
+    `$/`), backtick capture of CLI output, unchecked eval return
+    (`eval { … }; like( $@, … )`), `die` over `croak` in helpers.
+  - **Pipe-opened children expected to fail** — `close` is excluded from
+    checked syscalls and `RequireCheckedClose` is off: such a close returns
+    false exactly when the child exits non-zero, which the tests then read
+    from `$?`.
+  - **Test structure** — auto-export from test-helper modules, main-body
+    complexity, and `skip … if` / `plan skip_all … if` allowed as
+    postfix guards.
+
+  Policies that only asked for a tidier spelling were satisfied in the code
+  instead. The profile repeats the repo profile's settings (no include in
+  Perl::Critic), so a change there is mirrored there.
 - This doc must give **every** dimension a status; when a new dimension
   becomes relevant (e.g. a UI is added), update its row rather than leaving
   it silent.

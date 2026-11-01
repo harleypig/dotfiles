@@ -15,7 +15,7 @@ load_perltidyrc_clean();
 
 # Get path to test data
 my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' );
-my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
+my $simple_rc     = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 
 # Since %cli is lexical to bin/perltidyrc-clean, we test these functions
 # indirectly by verifying their effects through the script's behavior.
@@ -24,8 +24,8 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 # Test 1: set_keep_defaults sets drop_defaults to 0
 # Verified by checking that defaults are kept when --keep-defaults is used
 {
-    # Create a temporary script that calls set_keep_defaults and checks %cli
-    my $test_code = q{
+  # Create a temporary script that calls set_keep_defaults and checks %cli
+  my $test_code = <<~'END_TEST_CODE';
         package main;
         use lib 'tests/perl/lib';
         require TestPerltidyrcClean;
@@ -44,10 +44,10 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
         } else {
             print "FAIL: drop_defaults=$cli{drop_defaults}, keep_defaults=$cli{keep_defaults}\n";
         }
-    };
+    END_TEST_CODE
 
-    # This won't work because %cli is lexical. Let's test differently.
-    # Instead, we'll test through actual script execution.
+  # This won't work because %cli is lexical. Let's test differently.
+  # Instead, we'll test through actual script execution.
 }
 
 # Test the functions through their actual usage in the script
@@ -56,18 +56,18 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 
 # Test 1: Verify set_keep_defaults function exists and is callable
 {
-    ok( defined &set_keep_defaults, 'set_keep_defaults function is defined' );
+  ok( defined &set_keep_defaults, 'set_keep_defaults function is defined' );
 
-    eval { set_keep_defaults(); };
-    is( $@, "", 'set_keep_defaults can be called without error' );
+  eval { set_keep_defaults(); };
+  is( $@, "", 'set_keep_defaults can be called without error' );
 }
 
 # Test 2: Verify set_add_missing_defaults function exists and is callable
 {
-    ok( defined &set_add_missing_defaults, 'set_add_missing_defaults function is defined' );
+  ok( defined &set_add_missing_defaults, 'set_add_missing_defaults function is defined' );
 
-    eval { set_add_missing_defaults(); };
-    is( $@, "", 'set_add_missing_defaults can be called without error' );
+  eval { set_add_missing_defaults(); };
+  is( $@, "", 'set_add_missing_defaults can be called without error' );
 }
 
 # Test 3-8: Test functions through script behavior
@@ -79,49 +79,49 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 
 # Test 3: set_keep_defaults can be called multiple times
 {
-    eval {
-        set_keep_defaults();
-        set_keep_defaults();
-    };
-    is( $@, "", 'set_keep_defaults can be called multiple times' );
+  eval {
+    set_keep_defaults();
+    set_keep_defaults();
+  };
+  is( $@, "", 'set_keep_defaults can be called multiple times' );
 }
 
 # Test 4: set_add_missing_defaults can be called multiple times
 {
-    eval {
-        set_add_missing_defaults();
-        set_add_missing_defaults();
-    };
-    is( $@, "", 'set_add_missing_defaults can be called multiple times' );
+  eval {
+    set_add_missing_defaults();
+    set_add_missing_defaults();
+  };
+  is( $@, "", 'set_add_missing_defaults can be called multiple times' );
 }
 
 # Test 5: Both functions can be called together
 {
-    eval {
-        set_keep_defaults();
-        set_add_missing_defaults();
-    };
-    is( $@, "", 'Both functions can be called together' );
+  eval {
+    set_keep_defaults();
+    set_add_missing_defaults();
+  };
+  is( $@, "", 'Both functions can be called together' );
 }
 
 # Test 6: Functions can be called in any order
 {
-    eval {
-        set_add_missing_defaults();
-        set_keep_defaults();
-    };
-    is( $@, "", 'Functions can be called in reverse order' );
+  eval {
+    set_add_missing_defaults();
+    set_keep_defaults();
+  };
+  is( $@, "", 'Functions can be called in reverse order' );
 }
 
 # Test 7: Verify set_keep_defaults behavior through script execution
 # We test this by checking that when --keep-defaults is used, options matching
 # defaults are kept in the output (they would normally be removed)
 {
-    # This is tested indirectly through the script's behavior.
-    # The function sets drop_defaults=0 and keep_defaults=1, which causes
-    # build_equals_default to not filter out default options.
-    # This is verified in integration tests for --keep-defaults option.
-    pass('set_keep_defaults behavior verified through --keep-defaults integration tests');
+  # This is tested indirectly through the script's behavior.
+  # The function sets drop_defaults=0 and keep_defaults=1, which causes
+  # build_equals_default to not filter out default options.
+  # This is verified in integration tests for --keep-defaults option.
+  pass('set_keep_defaults behavior verified through --keep-defaults integration tests');
 }
 
 # Test 8: Verify set_add_missing_defaults behavior through script execution
@@ -131,10 +131,10 @@ my $simple_rc = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 # - keep_defaults=1 (keeps defaults)
 # - condense=0 (disables condensing)
 {
-    # This is tested indirectly through the script's behavior.
-    # The function sets multiple flags that affect script behavior.
-    # This is verified in integration tests for --add-missing-defaults option.
-    pass('set_add_missing_defaults behavior verified through --add-missing-defaults integration tests');
+  # This is tested indirectly through the script's behavior.
+  # The function sets multiple flags that affect script behavior.
+  # This is verified in integration tests for --add-missing-defaults option.
+  pass('set_add_missing_defaults behavior verified through --add-missing-defaults integration tests');
 }
 
 # Note: Full testing of these functions' direct effects on %cli would require:
