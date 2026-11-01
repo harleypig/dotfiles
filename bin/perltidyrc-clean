@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config bundling pass_through);
 use Scalar::Util qw(looks_like_number);
+use List::Util   qw(any);
 use File::Basename;
 use Carp qw(croak);
 use Cwd;
@@ -674,24 +675,40 @@ sub condense_options {
   return;
 } ## end sub condense_options
 
+# Add $text as a note in the first involved option's section when any of the
+# @involved options is in $carried.
+sub add_conflict_note {
+  my ( $carried, $sections, $section_notes, $text, @involved ) = @_;
+  return if !any { exists $carried->{$_} } @involved;
+  add_section_note( $sections, $section_notes, $involved[0], $text );
+  return;
+}
+
+# Note conflicting or shadowed settings in $opts, the effective settings to
+# check. A conflict is noted only when at least one option in it is in
+# $carried, the options the cleaned file sets ($opts itself when omitted): one
+# between two settings the file leaves at Perl::Tidy's defaults is nothing the
+# file can change.
 sub detect_conflicts {
-  my ( $opts, $sections, $section_notes ) = @_;
+  my ( $opts, $sections, $section_notes, $carried ) = @_;
   $section_notes ||= {};
+  $carried       ||= $opts;
+  my $add_note = sub {
+    my ( $text, @involved ) = @_;
+    add_conflict_note( $carried, $sections, $section_notes, $text, @involved );
+  };
 
   if ( is_true( $opts->{'brace-left-and-indent'} )
     && is_true( $opts->{'non-indenting-braces'} ) ) {
-    add_section_note(
-      $sections, $section_notes, 'brace-left-and-indent',
-      'brace-left-and-indent conflicts with non-indenting-braces'
+    $add_note->(
+      'brace-left-and-indent conflicts with non-indenting-braces',
+      'brace-left-and-indent', 'non-indenting-braces'
     );
   }
 
   if ( is_true( $opts->{tabs} )
     && is_true( $opts->{'entab-leading-whitespace'} ) ) {
-    add_section_note(
-      $sections, $section_notes, 'tabs',
-      'tabs together with entab-leading-whitespace may conflict'
-    );
+    $add_note->( 'tabs together with entab-leading-whitespace may conflict', 'tabs', 'entab-leading-whitespace' );
   }
 
   if ( defined $opts->{'brace-tightness'} ) {
@@ -703,10 +720,7 @@ sub detect_conflicts {
     ) {
       next if !defined $opts->{$specific};
       if ( $opts->{$specific} ne $general ) {
-        add_section_note(
-          $sections, $section_notes, $specific,
-          "$specific differs from brace-tightness; specific wins"
-        );
+        $add_note->( "$specific differs from brace-tightness; specific wins", $specific, 'brace-tightness' );
       }
     }
   }
@@ -718,9 +732,9 @@ sub detect_conflicts {
     if ( looks_like_integer($max)
       && looks_like_integer($fuzzy)
       && $fuzzy > $max ) {
-      add_section_note(
-        $sections, $section_notes, 'fuzzy-line-length',
-        "fuzzy-line-length ($fuzzy) exceeds maximum-line-length ($max)"
+      $add_note->(
+        "fuzzy-line-length ($fuzzy) exceeds maximum-line-length ($max)",
+        'fuzzy-line-length', 'maximum-line-length'
       );
     }
   }
@@ -731,9 +745,9 @@ sub detect_conflicts {
     && ( is_true( $opts->{'format-skipping'} )
       || is_true( $opts->{'detect-format-skipping-from-start'} ) )
   ) {
-    add_section_note(
-      $sections, $section_notes, 'format',
-      'format is disabled but format-skipping detection is enabled'
+    $add_note->(
+      'format is disabled but format-skipping detection is enabled',
+      'format', 'format-skipping', 'detect-format-skipping-from-start'
     );
   }
 
@@ -1019,11 +1033,17 @@ sub main {
 
   %equals_default = build_equals_default( \%clean_opts, $ropts_default );
 
+  # Conflicts are checked against the effective settings, defaults included,
+  # and noted where the cleaned file sets at least one side. Taken before
+  # condensing, which renames options but changes no setting.
+  my %effective = ( %{$ropts_default}, %{$ropts} );
+  my %carried   = %clean_opts;
+
   if ( $cli{condense} ) {
     condense_options( \%clean_opts, $rsections, \%section_notes, $rabbreviations, $rabbreviations_default );
   }
 
-  detect_conflicts( \%clean_opts, $rsections, \%section_notes );
+  detect_conflicts( \%effective, $rsections, \%section_notes, \%carried );
 
   my %abbreviations_user = user_defined_abbreviations( $rabbreviations, $rabbreviations_default );
 
@@ -1095,6 +1115,13 @@ become C<--closing-token-indentation=1>. A perltidyrc takes parameters exactly
 as the command line does, abbreviations included, so the cleaned file sets the
 same options as the original. Unless C<--quiet>, a note in the section names
 each option condensed.
+
+Conflicts are checked against the effective settings: Perl::Tidy's defaults
+overlaid with the file's own. A conflict is noted when the cleaned file sets
+at least one of the options in it, so a file setting
+C<--brace-left-and-indent> is told that it conflicts with the default
+C<--non-indenting-braces>. A conflict between two options the file leaves at
+their defaults is not noted.
 
 The cleaned configuration is written to stdout by default, to C<--outfile>, or
 back over the source file with C<--overwrite>. Any arguments not recognised as

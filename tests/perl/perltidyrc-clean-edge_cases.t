@@ -74,11 +74,9 @@ my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' )
 
 # Test 4: RC file with conflicts
 #
-# tabs and entab-leading-whitespace are both non-default, so both survive the
-# default filter and reach detect_conflicts. (conflicts.rc's pair does not:
-# non-indenting-braces is a default and is dropped first; that pair is
-# covered under --keep-defaults in integration.t Test 24.) Red if the
-# tabs/entab check stops noting the pair.
+# tabs and entab-leading-whitespace are both non-default, so both appear in
+# the output. (A pair with a default side, conflicts.rc's, is integration.t
+# Test 24.) Red if the tabs/entab check stops noting the pair.
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
   print {$fh} "--tabs\n";

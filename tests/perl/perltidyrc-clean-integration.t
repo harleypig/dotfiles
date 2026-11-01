@@ -410,20 +410,22 @@ my $cmd = Test::Cmd->new(
 
 # Test 24: Conflict detection adds section notes
 #
-# conflicts.rc sets brace-left-and-indent and non-indenting-braces.
-# non-indenting-braces is a Perl::Tidy default, so without --keep-defaults it
-# is dropped before detect_conflicts runs and no note can appear; with it,
-# both reach the check. Red if that check stops noting the pair.
-{
+# conflicts.rc sets brace-left-and-indent and non-indenting-braces, and
+# non-indenting-braces is a Perl::Tidy default. Conflicts are checked against
+# the effective settings (#665), so the note appears whether the default is
+# dropped from the output or kept. Red, in default mode, if the check sees
+# only the options left after defaults are dropped.
+foreach my $flags ( [], ['--keep-defaults'] ) {
   my $rc_file = File::Spec->catfile( $test_data_dir, 'conflicts.rc' );
+  my $label   = join q{ }, 'Conflict detection', @{$flags};
 
-  my $stdout    = `$script --rc $rc_file --keep-defaults 2>&1`;
+  my $stdout    = `$script --rc $rc_file @{$flags} 2>&1`;
   my $exit_code = $? >> 8;
 
-  is( $exit_code, 0, 'Conflict detection exits with code 0' );
+  is( $exit_code, 0, "$label exits with code 0" );
   like(
     $stdout, qr/^# NOTE: brace-left-and-indent conflicts with non-indenting-braces$/m,
-    'Conflict detection adds a section note'
+    "$label adds a section note"
   );
 }
 
