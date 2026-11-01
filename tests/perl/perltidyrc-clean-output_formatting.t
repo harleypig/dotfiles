@@ -334,6 +334,13 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 }
 
 # Test 9: Empty lines between sections
+#
+# dump_section writes "\n" before every section heading, so each heading
+# line must be preceded by an empty line. Goes red if that separator is
+# dropped for any section. Two options from two different sections are
+# used, and the heading count is asserted first, so the per-heading check
+# cannot pass by finding no headings. The preamble lines and "# NOTE:"
+# lines are comments too but not headings, so they are excluded.
 {
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
   print {$fh} "--indent-columns=8\n";
@@ -345,36 +352,15 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   is( $exit_code, 0, 'Empty lines between sections exits with code 0' );
 
-  # Check for empty lines before section headers (except first)
-  my @lines            = split /\n/, $stdout;
-  my $prev_was_section = 0;
-  my $found_separator  = 0;
+  my @lines = split /\n/, $stdout;
+  my @heading_at =
+    grep { $lines[$_] =~ /^#\s/ && $lines[$_] !~ /^#\s+(?:perltidy|using:|source:|NOTE:)/ } 0 .. $#lines;
 
-  for my $i ( 1 .. $#lines ) {
+  cmp_ok( scalar @heading_at, '>=', 2, 'Output has at least two section headings' );
 
-    # Section headers can have numeric prefix or not
-    if ( $lines[$i] =~ /^#\s+(?:\d+\.\s+)?(.+)$/ && $lines[$i] !~ /^#\s+(?:perltidy|using|source)/ ) {
-      if ($prev_was_section) {
+  my @unseparated = map { $lines[$_] } grep { $_ == 0 || $lines[ $_ - 1 ] ne q{} } @heading_at;
 
-        # Previous line should be empty
-        if ( $lines[ $i - 1 ] eq '' ) {
-  $found_separator = 1;
-        }
-      }
-      $prev_was_section = 1;
-    } else {
-      $prev_was_section = 0;
-    }
-  }
-
-  my $numbered_headers = grep { /^#\s+\d+\.\s+/ } @lines;
-
-  # Sections should be separated by empty lines
-  if ( $found_separator || $numbered_headers <= 1 ) {
-    pass('Sections are properly separated');
-  } else {
-    pass('Section separation test (format may vary)');
-  }
+  is_deeply( \@unseparated, [], 'Every section heading is preceded by an empty line' );
 }
 
 # Test 10: Abbreviations section appears after options

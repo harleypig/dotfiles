@@ -21,35 +21,6 @@ my $simple_rc     = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 # indirectly by verifying their effects through the script's behavior.
 # We'll use get_perltidy_config and build_equals_default to verify the effects.
 
-# Test 1: set_keep_defaults sets drop_defaults to 0
-# Verified by checking that defaults are kept when --keep-defaults is used
-{
-  # Create a temporary script that calls set_keep_defaults and checks %cli
-  my $test_code = <<~'END_TEST_CODE';
-        package main;
-        use lib 'tests/perl/lib';
-        require TestPerltidyrcClean;
-        TestPerltidyrcClean::load_perltidyrc_clean();
-
-        # Initialize %cli to known state
-        $cli{drop_defaults} = 1;
-        $cli{keep_defaults} = 0;
-
-        # Call the function
-        set_keep_defaults();
-
-        # Check results
-        if ($cli{drop_defaults} == 0 && $cli{keep_defaults} == 1) {
-            print "PASS\n";
-        } else {
-            print "FAIL: drop_defaults=$cli{drop_defaults}, keep_defaults=$cli{keep_defaults}\n";
-        }
-    END_TEST_CODE
-
-  # This won't work because %cli is lexical. Let's test differently.
-  # Instead, we'll test through actual script execution.
-}
-
 # Test the functions through their actual usage in the script
 # We'll verify that when --keep-defaults is used, defaults are kept,
 # and when --add-missing-defaults is used, missing defaults are added.
