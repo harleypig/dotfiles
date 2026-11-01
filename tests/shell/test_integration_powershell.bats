@@ -699,3 +699,32 @@ PS
   assert_line 'editor=code --wait'
   assert_line 'prompt=fixture-prompt'
 }
+
+@test "pwsh startup adds no Python user-scripts entry where none exists" {
+  ps_startup '
+    $env:PATH -split [IO.Path]::PathSeparator |
+      ForEach-Object { Write-Output "entry=$_" }
+  '
+  assert_success
+  assert_line 'entry=/dotfiles/powershell/bin'
+  refute_output --partial 'Python'
+  refute_output --partial 'Exception'
+}
+
+@test "pwsh startup puts the Python user scripts right after its own entries" {
+  # Python39 sorts after Python312 by version, not by name; Python311 has no
+  # Scripts directory; the inherited PATH already carries Python312's, which
+  # must not stay behind as a second entry.
+  ps_startup '
+    $entries = @($env:PATH -split [IO.Path]::PathSeparator)
+    Write-Output "head=$($entries[0..3] -join ",")"
+    Write-Output "count=$(@($entries -like "*Python*").Count)"
+  ' 'py=$HOME/AppData/Roaming/Python
+    mkdir -p "$py/Python312/Scripts" "$py/Python39/Scripts" "$py/Python311"
+    export PATH="$PATH:$py/Python312/Scripts"'
+  assert_success
+  assert_line "head=$(printf '%s,' /dotfiles/powershell/bin /root/.local/bin \
+    /root/AppData/Roaming/Python/Python312/Scripts \
+    /root/AppData/Roaming/Python/Python39/Scripts | sed 's/,$//')"
+  assert_line 'count=2'
+}
