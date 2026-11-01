@@ -5,6 +5,10 @@ set -euo pipefail
 
 has() { command -v "$1" &> /dev/null; }
 
+self=$(readlink -f "${BASH_SOURCE[0]}")
+# shellcheck source=/dev/null
+source "${self%/*}/../lib/loadavg"
+
 if has ansi; then
   c_label=$(ansi fg cyan)
   c_warn=$(ansi fg yellow)
@@ -37,30 +41,24 @@ show_uptime() {
 #-----------------------------------------------------------------------------
 
 show_load() {
-  [[ -r /proc/loadavg ]] || return 0
+  loads=() levels=()
+  loadavg_classify loads levels || return 0
 
-  read -r l1 l5 l15 _ < /proc/loadavg
+  colors=()
 
-  ncpu=$(
-    nproc 2> /dev/null \
-      || grep -c '^processor' /proc/cpuinfo 2> /dev/null \
-      || echo 1
-  )
-
-  load_color=$c_ok
-
-  if awk -v l="$l15" -v n="$ncpu" 'BEGIN{exit !(l+0 > n*2)}'; then
-    load_color=$c_alert
-
-  elif awk -v l="$l15" -v n="$ncpu" 'BEGIN{exit !(l+0 > n+0)}'; then
-    load_color=$c_warn
-  fi
+  for level in "${levels[@]}"; do
+    case $level in
+      alert) colors+=("$c_alert") ;;
+      warn) colors+=("$c_warn") ;;
+      *) colors+=("$c_ok") ;;
+    esac
+  done
 
   printf '%s %s%s%s (1m)  %s%s%s (5m)  %s%s%s (15m)\n' \
     "$(lbl 'System load:')" \
-    "$load_color" "$l1" "$c_off" \
-    "$load_color" "$l5" "$c_off" \
-    "$load_color" "$l15" "$c_off"
+    "${colors[0]}" "${loads[0]}" "$c_off" \
+    "${colors[1]}" "${loads[1]}" "$c_off" \
+    "${colors[2]}" "${loads[2]}" "$c_off"
 }
 
 #-----------------------------------------------------------------------------
