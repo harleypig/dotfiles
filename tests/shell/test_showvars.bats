@@ -6,8 +6,10 @@
 #   1. no args            → usage heredoc, exit 1
 #   2. missing dependency → "depends on <tool>", exit 1 (shfmt/jq absent)
 #   3. unreadable file    → "<file> is not readable.", exit 1
-# The success path runs the real shfmt docker wrapper + jq, so it is gated on
-# docker (skips otherwise). It also regression-guards the docker_wrapper stdin
+# The success path runs the real shfmt docker wrapper + jq, so it calls
+# require_docker in its own body rather than in the shared setup, which would
+# gate the three guard tests too: it skips without a usable docker locally and
+# fails with CI set. It also regression-guards the docker_wrapper stdin
 # fix: showvars pipes `shfmt -tojson < file`, which returns an empty AST unless
 # the wrapper forwards stdin (-i).
 
@@ -47,7 +49,7 @@ setup() {
 }
 
 @test "showvars lists a script's assigned variables (docker integration)" {
-  command -v docker > /dev/null 2>&1 || skip "docker not available"
+  require_docker
   command -v jq > /dev/null 2>&1 || skip "jq not available"
 
   local sample="$BATS_TEST_TMPDIR/sample.sh"
