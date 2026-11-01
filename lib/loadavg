@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# Load-average classification shared by bin/loadavg (the bash prompt),
+# bin/tmux_loadavg (the tmux status line) and bin/motd; each caller formats
+# the result its own way. This is a SOURCED library that defines functions
+# and nothing else, so sourcing it leaves no variables behind.
+#
+# This file is a single section: each function gets a thin separator and
+# there are no thick ones.
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  printf 'loadavg is a library; source it, do not execute it.\n' >&2
+  exit 1
+fi
+
+#-----------------------------------------------------------------------------
+# loadavg_classify LOADS LEVELS [FILE]
+#
+# Fills the arrays named LOADS and LEVELS with the 1, 5 and 15 minute load
+# averages from FILE (default /proc/loadavg) and a level for each: alert
+# above two loads per CPU, warn above one, ok otherwise. One CPU is assumed
+# when the count cannot be found. Returns 1, with both arrays empty, when
+# FILE cannot be read or its first three fields are not loads with two
+# decimals, which is the /proc/loadavg format.
+
+loadavg_classify() {
+  local -n _la_loads=$1 _la_levels=$2
+  local _la_file=${3:-/proc/loadavg}
+  local _la_fields=() _la_ncpu _la_load _la_hundredths
+
+  _la_loads=() _la_levels=()
+
+  { read -r -a _la_fields < "$_la_file"; } 2> /dev/null || return 1
+  ((${#_la_fields[@]} >= 3)) || return 1
+
+  _la_ncpu=$(nproc 2> /dev/null || getconf _NPROCESSORS_ONLN 2> /dev/null || true)
+  [[ $_la_ncpu =~ ^[1-9][0-9]*$ ]] || _la_ncpu=1
+
+  for _la_load in "${_la_fields[@]:0:3}"; do
+    if ! [[ $_la_load =~ ^([0-9]+)\.([0-9]{2})$ ]]; then
+      _la_loads=() _la_levels=()
+      return 1
+    fi
+
+    # Hundredths, so the thresholds compare as integers; 10# keeps a leading
+    # zero from reading as octal.
+    _la_hundredths=$((10#${BASH_REMATCH[1]}${BASH_REMATCH[2]}))
+
+    _la_loads+=("$_la_load")
+
+    if ((_la_hundredths > _la_ncpu * 200)); then
+      _la_levels+=(alert)
+
+    elif ((_la_hundredths > _la_ncpu * 100)); then
+      _la_levels+=(warn)
+
+    else
+      _la_levels+=(ok)
+    fi
+  done
+}
