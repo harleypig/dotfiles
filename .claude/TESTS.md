@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.11.0
+**Version:** v2.11.1
 
 ## Purpose
 
@@ -72,7 +72,8 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   that file is never built, and the test reads the line and runs the stock
   image. It deploys `ps-startup.ps1` as the pwsh profile, runs `pwsh -File`,
   and asserts the profile comes up (`DOTFILES` set, `powershell/startup/*`
-  modules loaded) with no parser errors. Same skip-if-no-docker guard.
+  modules loaded) with no parser errors. Same `require_docker` guard: skips
+  locally, fails in CI.
 - `tests/docker/xdg-audit/` + `tests/shell/test_integration_xdg_audit.bats` —
   a **fourth** harness image (Debian slim + `perl` + **git**, run as a
   **non-root** user since xdg-audit operates on a real user's `$HOME`, not
@@ -92,15 +93,15 @@ throwaway container as a sandbox — a mistake there can never touch the host.
   guard for the errno-clobbering bug the tempdir suite can't reach; and
   `--update-db` against a **local git upstream** (hermetic, no network)
   proving the mirror refresh + obsolete-override detection. The image carries
-  git because `--update-db` shells out to `git clone`. Same skip-if-no-docker
-  guard.
+  git because `--update-db` shells out to `git clone`. Same `require_docker`
+  guard: skips locally, fails in CI.
 - `tests/docker/vmgr/` + `tests/shell/test_integration_vmgr.bats` — a
   **second** harness image (Debian slim + git/curl/xz) because `bin/vmgr`
   installs **real** toolchains: the test actually clones nvm and downloads a
   Node, then proves the install → expose → update → remove lifecycle.
   `common.bash` provides `vmgr_harness_image` and `vmgr_run` (same
-  skip-if-no-docker guard). Kept separate from the startup image, which
-  deliberately lacks those download tools.
+  `require_docker` guard: skips locally, fails in CI). Kept separate from the
+  startup image, which deliberately lacks those download tools.
 - `tests/docker/perl/` + `tests/shell/test_integration_vmgr_perl.bats` — a
   **third** harness image (Debian slim + `perl` + a C toolchain) for
   `bin/vmgr`'s perl (perlbrew) manager, which **compiles Perl from source**.
