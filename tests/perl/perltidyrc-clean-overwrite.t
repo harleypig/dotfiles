@@ -216,8 +216,10 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
   ok( -f $tmpfile, 'Overwritten file exists after --no-condense' );
 }
 
-# Test 12: --overwrite should fail if file is not writable
-{
+# Test 12: --overwrite should fail if file is not writable. Skipped as root,
+# which ignores file permissions, so the write succeeds.
+SKIP: {
+  skip 'runs as root (file perms ignored)', 2 if $> == 0;
   my ( $fh, $tmpfile ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
 
   # Use non-default options so file will be opened for writing
@@ -235,6 +237,6 @@ my $script = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 
   # Restore permissions for cleanup
   chmod 0644, $tmpfile;
-}
+} ## end SKIP:
 
 done_testing();
