@@ -46,37 +46,30 @@ my $cmd = Test::Cmd->new(
 
   is( $exit_code, 0, '--no-rc exits with code 0' );
 
-  # With --no-rc and no options, output should be empty or minimal
-  # The output might be empty or contain only headers
-  pass('--no-rc uses empty config (output may be empty or minimal)');
+  # --no-rc processes from Perl::Tidy's defaults with no file read, so the
+  # source is reported as the empty profile and the defaults are emitted
+  # (indent-columns=4 is one). Red if --no-rc reads a file, or emits nothing.
+  like( $stdout, qr/^# source: none \(empty profile\)$/m, '--no-rc reports the empty profile as its source' );
+  like( $stdout, qr/^--indent-columns=4$/m,               '--no-rc emits Perl::Tidy defaults' );
 }
 
 # Test 3: --keep-defaults keeps default options
+#
+# defaults-only.rc sets only Perl::Tidy defaults (indent-columns=4,
+# maximum-line-length=80), so the flag is the whole difference between the
+# two runs: dropped without it, kept with it. (custom.rc, used here before,
+# sets no default, so its output is the same either way and could not show
+# the flag doing anything.) Red if --keep-defaults stops keeping defaults.
+# The per-flag effects of set_keep_defaults are set_functions.t Test 7.
 {
-  my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
+  my $rc_file = File::Spec->catfile( $test_data_dir, 'defaults-only.rc' );
 
-  # Without --keep-defaults, default options are removed
   my $stdout_no_keep = `$script --rc $rc_file 2>&1`;
+  unlike( $stdout_no_keep, qr/^--indent-columns=4/m, 'Without --keep-defaults, a default option is dropped' );
 
-  # Default options should be removed, non-default kept
-  like(
-    $stdout_no_keep, qr/--maximum-line-length=120/,
-    'Without --keep-defaults, non-default options are kept'
-  );
-
-  # With --keep-defaults, default options are kept
   my $stdout_keep = `$script --rc $rc_file --keep-defaults 2>&1`;
-  like(
-    $stdout_keep, qr/--maximum-line-length=120/,
-    'With --keep-defaults, non-default options are kept'
-  );
-
-  # If indent-columns=8 is default, it should appear with --keep-defaults
-  if ( $stdout_keep =~ /--indent-columns=8/ ) {
-    pass('With --keep-defaults, options are kept');
-  } else {
-    pass('--keep-defaults keeps options');
-  }
+  like( $stdout_keep, qr/^--indent-columns=4\s/m,       'With --keep-defaults, a default option is kept' );
+  like( $stdout_keep, qr/^--maximum-line-length=80\s/m, 'With --keep-defaults, every default option is kept' );
 }
 
 # Test 4: --add-missing-defaults adds missing defaults
@@ -102,11 +95,11 @@ my $cmd = Test::Cmd->new(
 
   is( $exit_code, 0, '--condense (default) exits with code 0' );
 
-  # With condensing, continuation-indentation should be removed if it equals indent-columns
   like( $stdout, qr/--indent-columns=8/, 'General option is kept' );
 
-  # continuation-indentation should be removed (tested in condense_options tests)
-  pass('Condensing removes duplicate options');
+  # condense.rc's two options are not an abbreviation's expansion, so
+  # nothing here is condensed; what condensing removes is covered by
+  # perltidyrc-clean-condense_options.t and Tests 26-27 below.
 }
 
 # Test 6: --no-condense disables condensing
@@ -178,16 +171,11 @@ my $cmd = Test::Cmd->new(
   my $stdout    = `$script --rc $rc_file --unknown-option 2>&1`;
   my $exit_code = $? >> 8;
 
-  # Perl::Tidy should report an error for unknown options
-  # The script should pass through the error
-  if ( $exit_code != 0 ) {
-    like(
-      $stdout, qr/error|Error|unknown/i,
-      'Unknown options cause Perl::Tidy to report error'
-    );
-  } else {
-    pass('Unknown options are passed to Perl::Tidy');
-  }
+  # The script does not know --unknown-option, so it passes it through;
+  # Perl::Tidy does not know it either and refuses it. Red if the script
+  # swallows the option (exit 0), or the error stops naming it.
+  isnt( $exit_code, 0, 'Unknown options exit non-zero' );
+  like( $stdout, qr/unknown-option/, 'Unknown options are reported by Perl::Tidy, by name' );
 }
 
 # Test 11: Perl::Tidy errors are reported correctly
@@ -197,14 +185,11 @@ my $cmd = Test::Cmd->new(
   my $stdout    = `$script --rc $rc_file 2>&1`;
   my $exit_code = $? >> 8;
 
-  # Should report Perl::Tidy error
-  if ( $exit_code != 0 ) {
-    like( $stdout, qr/error|Error/i, 'Perl::Tidy errors are reported' );
-  } else {
-
-    # Some invalid options might be silently ignored
-    pass('Invalid options are handled');
-  }
+  # invalid.rc's unclosed quote is a parse error in every Perl::Tidy this
+  # runs against; wording and exit code vary, so neither is pinned. Red if
+  # the error is swallowed and the script exits 0.
+  isnt( $exit_code, 0, 'Perl::Tidy errors exit non-zero' );
+  like( $stdout, qr/error/i, 'Perl::Tidy errors are reported' );
 }
 
 # ============================================================================
@@ -235,17 +220,20 @@ my $cmd = Test::Cmd->new(
   my $old_cwd = Cwd::getcwd();
   chdir $tmpdir or die "Cannot chdir to $tmpdir: $!";
 
-  my $stdout    = `$old_cwd/$script 2>&1`;
-  my $exit_code = $? >> 8;
+  # ./.perltidyrc is the first place Perl::Tidy looks, ahead of $PERLTIDY
+  # (cleared so it cannot take precedence) and $HOME, so the result does not
+  # depend on the host. Red if the search stops finding the cwd file.
+  my ( $stdout, $exit_code );
+  {
+    delete local $ENV{PERLTIDY};
+    $stdout    = `$old_cwd/$script 2>&1`;
+    $exit_code = $? >> 8;
+  }
 
   chdir $old_cwd or die "Cannot chdir back: $!";
 
-  # Should find and read the RC file
-  if ( $exit_code == 0 ) {
-    like( $stdout, qr/--indent-columns=8/, 'Finds RC file in current directory' );
-  } else {
-    pass('Script searches for RC file (may not find one in test environment)');
-  }
+  is( $exit_code, 0, 'Search for RC file exits with code 0' );
+  like( $stdout, qr/--indent-columns=8/, 'Finds RC file in current directory' );
 }
 
 # Test 14: Writes output to file with -o FILE
@@ -314,15 +302,9 @@ my $cmd = Test::Cmd->new(
   my $stdout    = `$script --rc $rc_file --outfile $bad_outfile 2>&1`;
   my $exit_code = $? >> 8;
 
-  # Should handle error gracefully (either die with message or report error)
-  if ( $exit_code != 0 ) {
-    like(
-      $stdout, qr/error|Error|cannot|Cannot/i,
-      'File write errors are reported'
-    );
-  } else {
-    pass('File write errors are handled');
-  }
+  # Red if the open failure is ignored and the script exits 0.
+  isnt( $exit_code, 0, 'File write errors exit non-zero' );
+  like( $stdout, qr/Cannot open \S+ for writing/, 'File write errors are reported' );
 }
 
 # Test 18: Creates output file if it doesn't exist
@@ -352,13 +334,9 @@ my $cmd = Test::Cmd->new(
 
   is( $exit_code, 0, 'Default behavior exits with code 0' );
 
-  # Default options should be removed (output may be empty or minimal)
-  # If indent-columns=4 is default, it should be removed
-  if ( $stdout !~ /--indent-columns=4/ ) {
-    pass('Default behavior removes options matching defaults');
-  } else {
-    pass('Default behavior test (indent-columns=4 may not be default)');
-  }
+  # Red if a default survives the filter without --keep-defaults.
+  unlike( $stdout, qr/^--indent-columns=4/m,       'Default behavior removes indent-columns=4' );
+  unlike( $stdout, qr/^--maximum-line-length=80/m, 'Default behavior removes maximum-line-length=80' );
 }
 
 # Test 20: --keep-defaults: keeps all options including defaults
@@ -431,21 +409,22 @@ my $cmd = Test::Cmd->new(
 }
 
 # Test 24: Conflict detection adds section notes
+#
+# conflicts.rc sets brace-left-and-indent and non-indenting-braces.
+# non-indenting-braces is a Perl::Tidy default, so without --keep-defaults it
+# is dropped before detect_conflicts runs and no note can appear; with it,
+# both reach the check. Red if that check stops noting the pair.
 {
   my $rc_file = File::Spec->catfile( $test_data_dir, 'conflicts.rc' );
 
-  my $stdout    = `$script --rc $rc_file 2>&1`;
+  my $stdout    = `$script --rc $rc_file --keep-defaults 2>&1`;
   my $exit_code = $? >> 8;
 
   is( $exit_code, 0, 'Conflict detection exits with code 0' );
-
-  # Conflicts should add section notes (tested in detect_conflicts tests)
-  # The output should contain NOTE comments if conflicts are detected
-  if ( $stdout =~ /NOTE/i ) {
-    like( $stdout, qr/NOTE/i, 'Conflict detection adds section notes' );
-  } else {
-    pass('Conflict detection works (may not add notes if conflicts resolved)');
-  }
+  like(
+    $stdout, qr/^# NOTE: brace-left-and-indent conflicts with non-indenting-braces$/m,
+    'Conflict detection adds a section note'
+  );
 }
 
 # Test 25: User-defined abbreviations are preserved

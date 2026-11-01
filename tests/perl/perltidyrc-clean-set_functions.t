@@ -13,17 +13,13 @@ use TestPerltidyrcClean;
 # Load the script
 load_perltidyrc_clean();
 
-# Get path to test data
+my $script        = File::Spec->catfile( 'bin', 'perltidyrc-clean' );
 my $test_data_dir = File::Spec->catdir( Cwd::getcwd(), 'tests', 'perl', 'data' );
-my $simple_rc     = File::Spec->catfile( $test_data_dir, 'simple.rc' );
 
-# Since %cli is lexical to bin/perltidyrc-clean, we test these functions
-# indirectly by verifying their effects through the script's behavior.
-# We'll use get_perltidy_config and build_equals_default to verify the effects.
-
-# Test the functions through their actual usage in the script
-# We'll verify that when --keep-defaults is used, defaults are kept,
-# and when --add-missing-defaults is used, missing defaults are added.
+# %cli is lexical to bin/perltidyrc-clean, so a test cannot read what the
+# setters write. Tests 1-6 call them in-process for errors only; Tests 7 and
+# 8 run the script with --keep-defaults / --add-missing-defaults and assert
+# the effect of each flag the setter sets, one falsifier per flag.
 
 # Test 1: Verify set_keep_defaults function exists and is callable
 {
@@ -40,13 +36,6 @@ my $simple_rc     = File::Spec->catfile( $test_data_dir, 'simple.rc' );
   eval { set_add_missing_defaults(); };
   is( $@, "", 'set_add_missing_defaults can be called without error' );
 }
-
-# Test 3-8: Test functions through script behavior
-# We'll create a test that runs the script with --keep-defaults and verifies
-# that defaults are kept by checking the output.
-
-# For now, let's test that the functions can be called and don't die.
-# Full behavior testing requires access to %cli or integration testing.
 
 # Test 3: set_keep_defaults can be called multiple times
 {
@@ -84,41 +73,86 @@ my $simple_rc     = File::Spec->catfile( $test_data_dir, 'simple.rc' );
   is( $@, "", 'Functions can be called in reverse order' );
 }
 
-# Test 7: Verify set_keep_defaults behavior through script execution
-# We test this by checking that when --keep-defaults is used, options matching
-# defaults are kept in the output (they would normally be removed)
+# Test 7: --keep-defaults (set_keep_defaults) end to end
+#
+# set_keep_defaults sets drop_defaults=0 and keep_defaults=1, and leaves
+# add_missing_defaults and condense alone (the POD: "Does not add missing
+# defaults"; only --add-missing-defaults implies --no-condense).
+# defaults-only.rc sets exactly two options, both Perl::Tidy defaults.
+#
+#   drop_defaults=0 left at 1   -> the default lines are dropped     -> red
+#   keep_defaults=1 left at 0   -> lines lose the "#  default" mark  -> red
+#   add_missing_defaults set    -> every other default is emitted    -> red
+#   condense set to 0           -> the condensing note disappears    -> red
 {
-  # This is tested indirectly through the script's behavior.
-  # The function sets drop_defaults=0 and keep_defaults=1, which causes
-  # build_equals_default to not filter out default options.
-  # This is verified in integration tests for --keep-defaults option.
-  pass('set_keep_defaults behavior verified through --keep-defaults integration tests');
+  my $rc_file = File::Spec->catfile( $test_data_dir, 'defaults-only.rc' );
+
+  my $stdout    = `$script --rc $rc_file --keep-defaults 2>&1`;
+  my $exit_code = $? >> 8;
+
+  is( $exit_code, 0, '--keep-defaults exits with code 0' );
+  like( $stdout, qr/^--indent-columns=4\b/m,             '--keep-defaults does not drop a default option' );
+  like( $stdout, qr/^--indent-columns=4\s+#  default$/m, '--keep-defaults marks a default option as default' );
+
+  my @option_lines = $stdout =~ /^(--\S+)/mg;
+  is_deeply(
+    [ sort @option_lines ],
+    [ '--indent-columns=4', '--maximum-line-length=80' ],
+    '--keep-defaults emits only the options the file set (adds no missing defaults)'
+  );
+
+  # The three closing-*-indentation options are cti's whole expansion, so
+  # with condensing on they are removed and noted. continuation-indentation
+  # (same section, not part of cti) keeps the section printed so the note
+  # is visible. This asserts that condensing ran, not what it emits.
+  my ( $fh, $condense_rc ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
+  print {$fh} "--closing-paren-indentation=1\n";
+  print {$fh} "--closing-brace-indentation=1\n";
+  print {$fh} "--closing-square-bracket-indentation=1\n";
+  print {$fh} "--continuation-indentation=3\n";
+  close $fh;
+
+  my $condensed = `$script --rc $condense_rc --keep-defaults 2>&1`;
+  like(
+    $condensed, qr/^# NOTE: closing-paren-indentation removed; can be condensed to /m,
+    '--keep-defaults leaves condensing on'
+  );
 }
 
-# Test 8: Verify set_add_missing_defaults behavior through script execution
-# We test this by checking that when --add-missing-defaults is used:
-# - add_missing_defaults=1 (adds missing defaults)
-# - drop_defaults=0 (doesn't drop defaults)
-# - keep_defaults=1 (keeps defaults)
-# - condense=0 (disables condensing)
+# Test 8: --add-missing-defaults (set_add_missing_defaults) end to end
+#
+# set_add_missing_defaults sets add_missing_defaults=1, drop_defaults=0,
+# keep_defaults=1 and condense=0. custom.rc sets indent-columns=8,
+# maximum-line-length=120 and brace-tightness=2, none of them defaults.
+# continuation-indentation=2 and closing-paren-indentation=0 are Perl::Tidy
+# defaults it does not set.
+#
+#   add_missing_defaults left at 0 -> continuation-indentation absent -> red
+#   keep_defaults left at 0        -> added lines lose the mark       -> red
+#   condense left at 1             -> closing-paren-indentation is
+#                                     condensed away into a note       -> red
+#   drop_defaults left at 1        -> not observable here:
+#                                     build_clean_opts returns before
+#                                     reading it when add_missing is set
+#
+# The file's own value must win over the default it overlays, so a reversed
+# merge in build_clean_opts (defaults over file) is red as well.
 {
-  # This is tested indirectly through the script's behavior.
-  # The function sets multiple flags that affect script behavior.
-  # This is verified in integration tests for --add-missing-defaults option.
-  pass('set_add_missing_defaults behavior verified through --add-missing-defaults integration tests');
-}
+  my $rc_file = File::Spec->catfile( $test_data_dir, 'custom.rc' );
 
-# Note: Full testing of these functions' direct effects on %cli would require:
-# 1. Refactoring %cli to be accessible for testing, OR
-# 2. Creating a test helper function in the script that returns %cli state, OR
-# 3. Using integration tests (which are planned for the main script behavior section)
-#
-# The functions are simple setters that modify %cli, and their correctness
-# is verified through:
-# - Unit tests: Functions exist, are callable, don't error
-# - Integration tests: Script behavior with --keep-defaults and --add-missing-defaults
-#
-# The TODO tasks for these functions will be marked complete when integration
-# tests verify the actual behavior.
+  my $stdout    = `$script --rc $rc_file --add-missing-defaults 2>&1`;
+  my $exit_code = $? >> 8;
+
+  is( $exit_code, 0, '--add-missing-defaults exits with code 0' );
+  like( $stdout, qr/^--continuation-indentation=2\b/m, '--add-missing-defaults adds a default the file did not set' );
+  like(
+    $stdout, qr/^--continuation-indentation=2\s+#  default$/m,
+    '--add-missing-defaults marks an added default as default'
+  );
+  like( $stdout, qr/^--closing-paren-indentation=0\s/m, '--add-missing-defaults implies --no-condense' );
+  unlike( $stdout, qr/can be condensed to/, '--add-missing-defaults writes no condensing notes' );
+  like( $stdout, qr/^--indent-columns=8$/m, "--add-missing-defaults keeps the file's value, unmarked" );
+  unlike( $stdout, qr/^--indent-columns=4/m, '--add-missing-defaults does not overlay a default on a set option' );
+}
 
 done_testing();
