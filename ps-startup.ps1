@@ -166,7 +166,6 @@ Import-Files
 
 # We want this to be after all the other files are loaded because these paths
 # take precedence.
-# XXX: Move python path to dedicated python setup file
 # Built with the platform's own separators so the same file works under
 # Windows and Linux pwsh, then deduplicated keeping the first occurrence so
 # these prepended entries win. Windows paths are case-insensitive, so dedup
@@ -174,7 +173,6 @@ Import-Files
 $pathEntries = @(
     [IO.Path]::Combine($DOTFILES, 'powershell', 'bin')
     [IO.Path]::Combine($HOME, '.local', 'bin')
-    [IO.Path]::Combine($HOME, 'AppData', 'Roaming', 'Python', 'Python312', 'Scripts')
 ) + ($env:PATH -split [IO.Path]::PathSeparator)
 
 $pathComparer = if ([IO.Path]::DirectorySeparatorChar -eq '\') {
