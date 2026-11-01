@@ -211,11 +211,12 @@ repos:
   # ghcr.io` first (see WORKFLOW.md). The image has no entrypoint, so the tool
   # is named; the check tidies each file to stdout and diffs it against the
   # source (no in-place write, no stray .tdy/.ERR files), failing if any file
-  # is not tidy. Scoped to bin/ (the CLIs); the hand-written tests/perl/*.t
-  # keep their own layout.
-  # SYNC the tag+digest with bin/docker_wrapper image[perltidy] /
-  # image[perlcritic], the perlcritic hook below, and the fixer in
-  # .pre-commit-config-fix.yaml.
+  # is not tidy. Two hooks, one entry: bin/ is selected by `types: [perl]`
+  # (identify tags the CLIs by shebang), and tests/perl/ by file name, because
+  # identify does not tag a .t file as perl (#647).
+  # SYNC the tag+digest across both perltidy hooks here, with
+  # bin/docker_wrapper image[perltidy] / image[perlcritic], the perlcritic
+  # hooks below, and both fixers in .pre-commit-config-fix.yaml.
   - repo: local
     hooks:
       - id: perltidy-check
@@ -225,15 +226,26 @@ repos:
         files: ^bin/
         types: [perl]
 
+      # tests/perl/ test files and helper modules, tidied with the same
+      # repo perltidyrc as bin/.
+      - id: perltidy-check-tests
+        name: perltidy (check — assert tidy, tests/perl)
+        language: docker_image
+        entry: 'ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a66991d69ce531a3984670bff9fbb1db2fe48d3e73142bd8fe sh -c ''rc=0; for f in "$@"; do perltidy -st "$f" 2>/dev/null | diff -q "$f" - >/dev/null || { echo "not tidy: $f" >&2; rc=1; }; done; exit $rc'' --'
+        files: ^tests/perl/.*\.(t|pm)$
+
   # Phase 3 (Language) — Perl / perlcritic: ACTIVE. Linting is gated via the
   # same pinned, self-contained (PRIVATE) perl-tools image as perltidy above
   # (built by publish-tool-images.yml; `docker login ghcr.io` required — see
   # WORKFLOW.md). perlcritic handles multiple files natively and auto-discovers
   # the repo-root .perlcriticrc (-> config/perl/perlcriticrc, the curated
-  # core-severity-1 profile from F0), exiting non-zero on any violation. Scoped
-  # to bin/ like perltidy. There is deliberately no in-suite Test::Perl::Critic
-  # — this docker gate is the enforcement (a recorded decision). SYNC the
-  # tag+digest with the perltidy hook above (see its note).
+  # core-severity-1 profile from F0), exiting non-zero on any violation. Split
+  # into a bin/ hook and a tests/perl/ hook like perltidy; the tests hook
+  # names config/perl/perlcriticrc-tests, the same gate with test-only
+  # relaxations, each with its reason in that file (#647). There is
+  # deliberately no in-suite Test::Perl::Critic — this docker gate is the
+  # enforcement (a recorded decision). SYNC the tag+digest with the perltidy
+  # hooks above (see their note).
   - repo: local
     hooks:
       - id: perlcritic-check
@@ -242,6 +254,12 @@ repos:
         entry: ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a66991d69ce531a3984670bff9fbb1db2fe48d3e73142bd8fe perlcritic
         files: ^bin/
         types: [perl]
+
+      - id: perlcritic-check-tests
+        name: perlcritic (test profile severity 1, tests/perl)
+        language: docker_image
+        entry: ghcr.io/harleypig/perl-tools:1.0.0@sha256:878767d692b9a3a66991d69ce531a3984670bff9fbb1db2fe48d3e73142bd8fe perlcritic --profile config/perl/perlcriticrc-tests
+        files: ^tests/perl/.*\.(t|pm)$
 
   # Phase 3 (Language) — Rust: N/A (no Rust in this repo).
 

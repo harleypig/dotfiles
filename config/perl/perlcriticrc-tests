@@ -1,0 +1,107 @@
+# Perl::Critic profile for the test code under tests/perl/ (*.t and lib/*.pm).
+#
+# Design: the repo profile (config/perl/perlcriticrc, which bin/ is gated
+# against) with a recorded set of test-only relaxations. Perl::Critic has no
+# profile include, so the repo profile's settings are repeated here. SYNC:
+# a change to the repo profile's severity, verbose format or its own
+# policy settings is mirrored below, under "Carried from the repo profile".
+#
+# The gate is the same: severity 1, the bottom of the ladder, CORE policies
+# only (the pinned perl-tools image has no others). Every policy applies
+# except the ones switched off below, each with its reason. A relaxation is
+# an edit here, never a lower `severity`, so each one stays visible.
+#
+# What a relaxation must clear: the policy is about code that other code
+# calls or a user runs, and a test is neither. A test asserts on literal
+# output, inspects $? and $@, and drives the CLIs as child processes, so
+# policies that forbid exactly those things are switched off. A policy that
+# only asks for a tidier spelling of something a test does anyway was
+# satisfied in the code instead (braced print handles, `local $/ = undef`,
+# no double sigils, no C-style loops), and is still on.
+
+severity = 1
+verbose  = %f:%l:%c [%p] %m (severity %s)\n
+
+##############################################################################
+# Carried from the repo profile (see that file for each reason)
+
+[-Modules::RequireVersionVar]
+[-RegularExpressions::ProhibitEnumeratedClasses]
+[-ValuesAndExpressions::RequireInterpolationOfMetachars]
+
+##############################################################################
+# Configured, not off
+
+# The repo profile's postfix rule, plus Test::More's skip idioms: `skip $why,
+# $n if $cond` inside a SKIP block and `plan skip_all => $why if $cond` are
+# the forms Test::More documents, and both are guard clauses. The default
+# list is restated because naming `flowcontrol` replaces it.
+[ControlStructures::ProhibitPostfixControls]
+flowcontrol = carp cluck confess croak die exit goto warn plan skip
+
+# print and say are excluded for the repo profile's reason. close is excluded
+# because the tests close pipe-opened handles (open '-|', open2, open3) on
+# children they expect to exit non-zero: such a close returns false exactly
+# when the child failed, and the test reads that outcome from $? next. A
+# checked close would die on the case under test. Every other syscall stays
+# checked.
+[InputOutput::RequireCheckedSyscalls]
+exclude_functions = print say close
+
+# Same reason as close above: this policy is close's own check.
+[-InputOutput::RequireCheckedClose]
+
+##############################################################################
+# Off for test code
+
+# Tests assert on CLI output with short one-line patterns. /x /m /s on each
+# would change nothing for most of them, and for the rest /m and /s change
+# what ^ $ and . match against multi-line output, so adding them by rote can
+# turn a failing assertion into a passing one. Each pattern's flags are a
+# choice about what it should match, made per assertion.
+[-RegularExpressions::RequireDotMatchAnything]
+[-RegularExpressions::RequireLineBoundaryMatching]
+[-RegularExpressions::RequireExtendedFormatting]
+
+# The expected output is literal text with dots, brackets and parentheses in
+# it; escaping them is the readable way to match that text, and the patterns
+# are as long as the output they assert on.
+[-RegularExpressions::ProhibitEscapedMetacharacters]
+[-RegularExpressions::ProhibitComplexRegexes]
+
+# $? (a child's exit status), $@ (the error under test), $! (why a fixture
+# failed) and $/ (slurping captured output) are what a test inspects. The
+# English names would be a second vocabulary for the same values in every
+# assertion.
+[-Variables::ProhibitPunctuationVars]
+
+# Expected values are written as the strings they are compared against: ''
+# for empty output, "x" beside "x\n". Rewriting them as q{} spellings makes
+# the expected value harder to read against the actual one.
+[-ValuesAndExpressions::ProhibitEmptyQuotes]
+[-ValuesAndExpressions::ProhibitNoisyQuotes]
+[-ValuesAndExpressions::ProhibitInterpolationOfLiterals]
+
+# Exit codes, counts and sizes in assertions are the expected values; naming
+# each as a constant would move the expectation away from its assertion.
+[-ValuesAndExpressions::ProhibitMagicNumbers]
+
+# Running a CLI and capturing what it prints is the subject of these tests.
+[-InputOutput::ProhibitBacktickOperators]
+
+# carp/croak report from the caller's perspective, which matters for a
+# library's callers. A test helper's die is read by the person running the
+# test, and Test::More already reports where.
+[-ErrorHandling::RequireCarping]
+
+# `eval { ... }; like( $@, ... )` is how a test asserts that something dies;
+# the eval's return value is deliberately not what is checked.
+[-ErrorHandling::RequireCheckingReturnValueOfEval]
+
+# A test-helper module exists to hand its sibling .t files their helpers;
+# @EXPORT_OK would add an import list to every test file for no gain.
+[-Modules::ProhibitAutomaticExportation]
+
+# A test file's main body is its sequence of assertions and is long by
+# nature; splitting it into subs would hide the order the tests run in.
+[-Modules::ProhibitExcessMainComplexity]
