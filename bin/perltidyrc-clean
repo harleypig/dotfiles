@@ -711,20 +711,6 @@ sub detect_conflicts {
     $add_note->( 'tabs together with entab-leading-whitespace may conflict', 'tabs', 'entab-leading-whitespace' );
   }
 
-  if ( defined $opts->{'brace-tightness'} ) {
-    my $general = $opts->{'brace-tightness'};
-    foreach my $specific (
-      qw(block-brace-tightness brace-vertical-tightness
-      brace-vertical-tightness-closing brace-follower-vertical-tightness
-      block-brace-vertical-tightness)
-    ) {
-      next if !defined $opts->{$specific};
-      if ( $opts->{$specific} ne $general ) {
-        $add_note->( "$specific differs from brace-tightness; specific wins", $specific, 'brace-tightness' );
-      }
-    }
-  }
-
   if ( defined $opts->{'maximum-line-length'}
     && defined $opts->{'fuzzy-line-length'} ) {
     my $max   = $opts->{'maximum-line-length'};

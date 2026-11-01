@@ -509,4 +509,23 @@ foreach my $flags ( [], ['--keep-defaults'] ) {
   like( $stdout, qr/--closing-paren-indentation=3/, 'Closing indentation options are present' );
 }
 
+# Test 28: An rc setting only brace-tightness gets no conflict note (#672).
+#
+# Conflicts are checked against the effective settings, so block-brace-
+# tightness and the brace *-vertical-tightness options are present at their
+# defaults. Per perltidy(1) none of them overlaps brace-tightness. Red if
+# any is noted against it.
+{
+  my ( $fh, $rc_file ) = tempfile( SUFFIX => '.rc', UNLINK => 1 );
+  print {$fh} "--brace-tightness=2\n";
+  close $fh;
+
+  my $stdout    = `$script --rc $rc_file 2>&1`;
+  my $exit_code = $? >> 8;
+
+  is( $exit_code, 0, 'brace-tightness-only rc exits with code 0' );
+  like( $stdout, qr/^--brace-tightness=2$/m, 'brace-tightness is carried' );
+  unlike( $stdout, qr/^# NOTE:/m, 'brace-tightness-only rc gets no note' );
+}
+
 done_testing();

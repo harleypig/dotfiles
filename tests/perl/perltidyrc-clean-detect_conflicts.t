@@ -112,109 +112,47 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 6: Detects when specific brace options differ from brace-tightness
+# Test 6: brace-tightness has nothing to conflict with (#672). Per
+# perltidy(1), it sets the spaces inside non-block braces;
+# block-brace-tightness sets them inside code-block braces, a different set,
+# and the *-vertical-tightness options set line breaks, not spaces. Here the
+# rc sets only brace-tightness and the others are at Perl::Tidy's defaults.
+# Red if any of them is noted against brace-tightness.
 {
   my %opts = (
-    'brace-tightness'       => '2',
-    'block-brace-tightness' => '3',    # Different
+    'brace-tightness'                   => '2',
+    'block-brace-tightness'             => '0',
+    'brace-vertical-tightness'          => '0',
+    'brace-vertical-tightness-closing'  => '0',
+    'brace-follower-vertical-tightness' => '1',
+    'block-brace-vertical-tightness'    => '0',
   );
-  my %sections = (
-    'brace-tightness'       => '1. Section',
-    'block-brace-tightness' => '1. Section',
+  my %sections      = map { $_ => '1. Section' } keys %opts;
+  my %section_notes = ();
+  detect_conflicts( \%opts, \%sections, \%section_notes, { 'brace-tightness' => '2' } );
+
+  is_deeply( \%section_notes, {}, 'An rc setting only brace-tightness gets no note' );
+}
+
+# Test 7: The same holds when the rc sets every one of them to a different
+# value. Red if a difference between them is noted.
+{
+  my %opts = (
+    'brace-tightness'                   => '2',
+    'block-brace-tightness'             => '1',
+    'brace-vertical-tightness'          => '1',
+    'brace-vertical-tightness-closing'  => '1',
+    'brace-follower-vertical-tightness' => '0',
+    'block-brace-vertical-tightness'    => '1',
   );
+  my %sections      = map { $_ => '1. Section' } keys %opts;
   my %section_notes = ();
   detect_conflicts( \%opts, \%sections, \%section_notes );
 
-  ok( exists $section_notes{'1. Section'}, 'Section notes hash created' );
-  is( scalar @{ $section_notes{'1. Section'} }, 1, 'One conflict note added' );
-  like(
-    $section_notes{'1. Section'}->[0], qr/block-brace-tightness differs from brace-tightness; specific wins/,
-    'Conflict message is correct'
-  );
+  is_deeply( \%section_notes, {}, 'brace options that differ from brace-tightness get no note' );
 }
 
-# Test 7: Doesn't detect conflict when specific brace option equals brace-tightness
-{
-  my %opts = (
-    'brace-tightness'       => '2',
-    'block-brace-tightness' => '2',    # Same
-  );
-  my %sections = (
-    'brace-tightness'       => '1. Section',
-    'block-brace-tightness' => '1. Section',
-  );
-  my %section_notes = ();
-  detect_conflicts( \%opts, \%sections, \%section_notes );
-
-  ok(
-    !exists $section_notes{'1. Section'} || scalar @{ $section_notes{'1. Section'} } == 0,
-    'No conflict detected when specific brace option equals brace-tightness'
-  );
-}
-
-# Test 8: Handles multiple specific brace options that differ
-{
-  my %opts = (
-    'brace-tightness'                  => '2',
-    'block-brace-tightness'            => '3',  # Different
-    'brace-vertical-tightness'         => '4',  # Different
-    'brace-vertical-tightness-closing' => '2',  # Same - no conflict
-  );
-  my %sections = (
-    'brace-tightness'                  => '1. Section',
-    'block-brace-tightness'            => '1. Section',
-    'brace-vertical-tightness'         => '1. Section',
-    'brace-vertical-tightness-closing' => '1. Section',
-  );
-  my %section_notes = ();
-  detect_conflicts( \%opts, \%sections, \%section_notes );
-
-  ok( exists $section_notes{'1. Section'}, 'Section notes hash created' );
-  is( scalar @{ $section_notes{'1. Section'} }, 2, 'Two conflict notes added for differing options' );
-  my @notes          = @{ $section_notes{'1. Section'} };
-  my $found_block    = grep { /block-brace-tightness differs/ } @notes;
-  my $found_vertical = grep { /brace-vertical-tightness differs/ } @notes;
-  ok( $found_block,    'Found conflict note for block-brace-tightness' );
-  ok( $found_vertical, 'Found conflict note for brace-vertical-tightness' );
-}
-
-# Test 9: Handles undefined specific brace option (skips it)
-{
-  my %opts = (
-    'brace-tightness'       => '2',
-    'block-brace-tightness' => undef,
-  );
-  my %sections = (
-    'brace-tightness'       => '1. Section',
-    'block-brace-tightness' => '1. Section',
-  );
-  my %section_notes = ();
-  detect_conflicts( \%opts, \%sections, \%section_notes );
-
-  ok(
-    !exists $section_notes{'1. Section'} || scalar @{ $section_notes{'1. Section'} } == 0,
-    'No conflict detected when specific brace option is undefined'
-  );
-}
-
-# Test 10: Handles missing brace-tightness gracefully
-{
-  my %opts = (
-    'block-brace-tightness' => '3',
-  );
-  my %sections = (
-    'block-brace-tightness' => '1. Section',
-  );
-  my %section_notes = ();
-  detect_conflicts( \%opts, \%sections, \%section_notes );
-
-  ok(
-    !exists $section_notes{'1. Section'} || scalar @{ $section_notes{'1. Section'} } == 0,
-    'No conflict detected when brace-tightness is missing'
-  );
-}
-
-# Test 11: Detects when fuzzy-line-length exceeds maximum-line-length
+# Test 8: Detects when fuzzy-line-length exceeds maximum-line-length
 {
   my %opts = (
     'maximum-line-length' => '80',
@@ -235,7 +173,7 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 12: Doesn't detect conflict when fuzzy-line-length equals maximum-line-length
+# Test 9: Doesn't detect conflict when fuzzy-line-length equals maximum-line-length
 {
   my %opts = (
     'maximum-line-length' => '80',
@@ -254,7 +192,7 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 13: Doesn't detect conflict when fuzzy-line-length is less than maximum-line-length
+# Test 10: Doesn't detect conflict when fuzzy-line-length is less than maximum-line-length
 {
   my %opts = (
     'maximum-line-length' => '80',
@@ -273,7 +211,7 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 14: Handles non-integer values for line length options
+# Test 11: Handles non-integer values for line length options
 {
   my %opts = (
     'maximum-line-length' => '80.5',   # Not an integer
@@ -292,7 +230,7 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 15: Handles missing maximum-line-length gracefully
+# Test 12: Handles missing maximum-line-length gracefully
 {
   my %opts = (
     'fuzzy-line-length' => '100',
@@ -309,7 +247,7 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 16: Detects format disabled but format-skipping enabled
+# Test 13: Detects format disabled but format-skipping enabled
 {
   my %opts = (
     'format'          => '0',
@@ -330,7 +268,7 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 17: Detects format disabled but detect-format-skipping-from-start enabled
+# Test 14: Detects format disabled but detect-format-skipping-from-start enabled
 {
   my %opts = (
     'format'                            => '0',
@@ -351,7 +289,7 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 18: Doesn't detect conflict when format is enabled
+# Test 15: Doesn't detect conflict when format is enabled
 {
   my %opts = (
     'format'          => '1',
@@ -370,7 +308,7 @@ load_perltidyrc_clean();
   );
 }
 
-# Test 19: Handles missing section_notes hash (creates empty)
+# Test 16: Handles missing section_notes hash (creates empty)
 {
   my %opts = (
     'brace-left-and-indent' => '1',
@@ -391,7 +329,7 @@ load_perltidyrc_clean();
   is( scalar @{ $section_notes{'1. Section'} }, 1, 'Conflict note added to empty hash' );
 }
 
-# Test 20: Handles multiple conflicts simultaneously
+# Test 17: Handles multiple conflicts simultaneously
 {
   my %opts = (
     'brace-left-and-indent'    => '1',
@@ -421,10 +359,10 @@ load_perltidyrc_clean();
   detect_conflicts( \%opts, \%sections, \%section_notes );
 
   ok( exists $section_notes{'1. Section'}, 'Section notes hash created' );
-  is( scalar @{ $section_notes{'1. Section'} }, 5, 'Five conflict notes added for multiple conflicts' );
+  is( scalar @{ $section_notes{'1. Section'} }, 4, 'Four conflict notes added for multiple conflicts' );
 }
 
-# Test 21: Handles empty opts hash
+# Test 18: Handles empty opts hash
 {
   my %opts          = ();
   my %sections      = ();
@@ -434,7 +372,7 @@ load_perltidyrc_clean();
   is( scalar keys %section_notes, 0, 'No conflicts detected for empty opts hash' );
 }
 
-# Test 22: Conflicts are checked against the effective settings and noted
+# Test 19: Conflicts are checked against the effective settings and noted
 # only where the cleaned file sets one side (#665). Here non-indenting-braces
 # is a default the file does not carry.
 {
