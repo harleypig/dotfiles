@@ -1048,7 +1048,11 @@ sub main {
   exit 0;
 } ## end sub main
 
-main();
+# Run only as a program, so the tests can load the functions with `do`
+# without running main().
+if ( !caller ) {
+  main();
+}
 
 __END__
 
