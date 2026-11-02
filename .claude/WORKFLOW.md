@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.21.0
+**Version:** v1.22.0
 
 ## Purpose
 
@@ -422,7 +422,7 @@ alongside the taxonomy's labels, never instead of them.
 | `option parsing` | Command-line option parsing (so far only the `parse_params` library) |
 | `python` | Python code or dependencies; Dependabot applies it to its pip updates under `config/pypoetry` |
 | `docker` | Docker images and their pins: `bin/docker_wrapper` and its pinned tool images, `config/docker/`, the test harness images; Dependabot applies it to its docker updates |
-| `codex` | A pull request opened by the OpenAI Codex agent, from a `codex/*` branch |
+| `external agent` | A pull request opened by an external coding agent rather than by a session of this team; applied to the PRs that agent opens from its own branches |
 | `patch` | A Dependabot pull request whose version bump is a patch release |
 
 **Keep this section's heading as it is.** The github-issues skill's label
