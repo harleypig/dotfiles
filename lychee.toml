@@ -14,9 +14,8 @@ include_fragments = "anchor-only"
 
 no_progress = true
 
-# www.gnu.org rate-limits the weekly online check from CI runners (429),
-# which fails docs-links with no broken link behind it. One request at a
-# time, spaced out, keeps it under the limit.
-[hosts."www.gnu.org"]
-concurrency = 1
-request_interval = "1s"
+# A 429 says the host is throttling us, not that the link is broken. Hosts
+# that rate-limit CI runners by IP (www.gnu.org answers a single request
+# with 429) would otherwise fail the online check with nothing wrong.
+# Offline runs fetch nothing, so this only affects --offline=false.
+accept = ["100..=103", "200..=299", "429"]
