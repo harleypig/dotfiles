@@ -13,3 +13,10 @@ offline = true
 include_fragments = "anchor-only"
 
 no_progress = true
+
+# www.gnu.org rate-limits the weekly online check from CI runners (429),
+# which fails docs-links with no broken link behind it. One request at a
+# time, spaced out, keeps it under the limit.
+[hosts."www.gnu.org"]
+concurrency = 1
+request_interval = "1s"
