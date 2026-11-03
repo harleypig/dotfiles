@@ -117,6 +117,65 @@ init_gone_repo() {
   assert_output ''
 }
 
+@test "-f skips a gone branch checked out in another worktree and cleans the rest" {
+  init_gone_repo
+  git -C "$REPO" branch -q aaa-gone
+  git -C "$REPO" push -q origin aaa-gone
+  git -C "$REPO" branch -q --set-upstream-to=origin/aaa-gone aaa-gone
+  git -C "$REPO" push -q origin --delete aaa-gone
+  git -C "$REPO" worktree add -q "$BATS_TEST_TMPDIR/wt" feature
+  cd "$REPO"
+  run "$GBC" -f
+  assert_success
+  assert_output --partial 'Skipping branch: feature (checked out in worktree'
+  assert_output --partial 'Deleting branch: aaa-gone'
+  run git -C "$REPO" branch --list feature aaa-gone
+  assert_output --partial 'feature'
+  refute_output --partial 'aaa-gone'
+}
+
+@test "-n reports, not offers, a gone branch checked out in another worktree" {
+  init_gone_repo
+  git -C "$REPO" worktree add -q "$BATS_TEST_TMPDIR/wt" feature
+  cd "$REPO"
+  run "$GBC" -n
+  assert_success
+  assert_output --partial 'Skipping branch: feature (checked out in worktree'
+  refute_output --partial 'Would delete branch: feature'
+}
+
+@test "-f -a skips a never-pushed branch checked out in another worktree" {
+  init_gone_repo
+  git -C "$REPO" worktree add -q "$BATS_TEST_TMPDIR/wt" local-only
+  cd "$REPO"
+  run "$GBC" -f -a
+  assert_success
+  assert_output --partial 'Skipping branch: local-only (checked out in worktree'
+  refute_output --partial 'Deleting branch: local-only'
+  run git -C "$REPO" branch --list local-only
+  assert_output --partial 'local-only'
+}
+
+@test "-f carries on past a branch git refuses to delete, then fails" {
+  init_gone_repo
+  git -C "$REPO" branch -q zzz-gone
+  git -C "$REPO" push -q origin zzz-gone
+  git -C "$REPO" branch -q --set-upstream-to=origin/zzz-gone zzz-gone
+  git -C "$REPO" push -q origin --delete zzz-gone
+  # A stub git that refuses the first deletion makes the refusal deterministic.
+  local stub
+  stub=$(make_stub_dir)
+  make_script_stub "$stub" git 'if [[ $1 == branch && $2 == -D && $3 == feature ]]; then
+  echo "refused" >&2
+  exit 1
+fi
+exec /usr/bin/git "$@"'
+  cd "$REPO"
+  run env "PATH=$stub:$PATH" "$GBC" -f
+  assert_failure
+  assert_output --partial 'Deleting branch: zzz-gone'
+}
+
 @test "-h prints usage (exit 0 via parse_params)" {
   init_repo
   cd "$REPO"
