@@ -200,7 +200,7 @@ A core-only Perl port took 8.6 ms per call. A fork-free bash version built
 on `cd -P` took about 7 ms. The current script takes about 45 ms, and it
 runs once per login. So Perl is slower than the bash fix and adds a second
 language to maintain. It also does nothing for the parallel WSL `/mnt`
-lookups that [#59](https://github.com/harleypig/dotfiles/issues/59) added.
+lookups that [#59](https://github.com/harleypig/dotfiles/pull/59) added.
 The speed-up went to bash instead, in
 [#495](https://github.com/harleypig/dotfiles/issues/495).
 
@@ -232,7 +232,7 @@ Rejected in [#436](https://github.com/harleypig/dotfiles/issues/436),
 the tmux plugins as a git submodule.
 
 Nothing would use it. The plugin stack has been disabled since
-[#330](https://github.com/harleypig/dotfiles/issues/330), the repo has had
+[#330](https://github.com/harleypig/dotfiles/pull/330), the repo has had
 no submodules since 2025-09-01, and no plugins are installed. tpm is never
 needed for a vendored plugin, which loads with
 `run-shell <dir>/<plugin>.tmux`.
