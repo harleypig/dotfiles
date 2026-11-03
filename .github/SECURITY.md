@@ -16,4 +16,4 @@ an attacker could do with it. This is a personal project maintained by one
 person, so expect a reply on a best-effort basis rather than to a fixed
 schedule.
 
-[pvr]: https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability
+[pvr]: https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately

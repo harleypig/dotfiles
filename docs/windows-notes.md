@@ -1,18 +1,18 @@
 # Windows Dotfiles Setup
 
-## Cheerfully stolen from [changyuheng's dotfiles](https://github.com/changyuheng/dotfiles)
+## Cheerfully stolen from [changyuheng's dotfiles](https://github.com/johannjhang/dotfiles)
 
 1 `$HOME` (`%USERPROFILE%`) folder **has to** be on an [NTFS](https://en.wikipedia.org/wiki/NTFS) volume.
 
-1. [Activate Developer Mode](https://docs.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development)
+1. [Activate Developer Mode](https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode)
    from: Start > Settings > Update & Security > For developers > Developer
    Mode. Enabling this feature will enable the symbolic link support.
 
 1. Install
-   [OpenSSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse)
+   [OpenSSH Client](https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse)
    from: Start > Settings > Apps > Apps & Features > Optional Features
 
-1. Enable the [long file path support](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd)
+1. Enable the [long file path support](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd)
    from: Start > Local Group Policy Editor > Local Computer Policy > Computer
    Configuration > Administrative Templates > System > Filesystem > Enable
    Win32 long paths

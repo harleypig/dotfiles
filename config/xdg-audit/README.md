@@ -276,5 +276,5 @@ To contribute a local addition or fix back upstream:
 xdg-audit --submit <app>       # planned: opens an upstream PR (local fields stripped)
 ```
 
-[xdg]: https://specifications.freedesktop.org/basedir-spec/latest/
+[xdg]: https://specifications.freedesktop.org/basedir/latest/
 [xdgninja]: https://github.com/b3nj5m1n/xdg-ninja

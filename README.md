@@ -299,7 +299,7 @@ tool-specific documentation, check for README files within each subdirectory.
 ### XDG Base Directory Specification
 
 This repository follows the [XDG Base Directory
-Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
+Specification](https://specifications.freedesktop.org/basedir/basedir-spec-latest.html)
 for organizing configuration, data, and cache files:
 
 **Environment Variables:**
