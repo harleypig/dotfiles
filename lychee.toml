@@ -13,9 +13,3 @@ offline = true
 include_fragments = "anchor-only"
 
 no_progress = true
-
-# A 429 says the host is throttling us, not that the link is broken. Hosts
-# that rate-limit CI runners by IP (www.gnu.org answers a single request
-# with 429) would otherwise fail the online check with nothing wrong.
-# Offline runs fetch nothing, so this only affects --offline=false.
-accept = ["100..=103", "200..=299", "429"]

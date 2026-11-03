@@ -59,6 +59,9 @@ jobs:
       #   read this repo, so those links always come back 404.
       # - stackoverflow.com returns 403 to CI runners whether or not the
       #   page exists.
+      # - www.gnu.org throttles by IP and answers even a single request with
+      #   429 (#680 - gnu.org rate limiting), so the link can't be checked
+      #   online.
       - name: Check links (online)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,6 +73,7 @@ jobs:
           bin/lychee -e GITHUB_TOKEN --offline=false \
             --exclude '^https://github\.com/(harleypig|Harleypig-LLC)/dotagents([/#?]|$)' \
             --exclude '^https://stackoverflow\.com/' \
+            --exclude '^https://www\.gnu\.org/' \
             --format markdown --output lychee-report.md \
             "${files[@]}" </dev/null || rc=$?
 
