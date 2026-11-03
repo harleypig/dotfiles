@@ -21,7 +21,11 @@ Describe 'ghx.ps1' {
 
     $script:tokenDir = Join-Path -Path $TestDrive -ChildPath 'private_dotfiles/github/tokens'
 
-    function global:gh {
+    # The stub reaches the recorder through a closure, not a global variable.
+    $script:recorder = @{ Call = $null; Exit = 0 }
+    $recorder = $script:recorder
+
+    ${function:global:gh} = {
       if ($args[0] -eq '__ghx_probe_unknown_command__') {
         'Usage: gh <command> <subcommand> [flags]'
         ''
@@ -34,13 +38,13 @@ Describe 'ghx.ps1' {
         return
       }
 
-      $global:GhStubCall = [pscustomobject]@{
+      $recorder.Call = [pscustomobject]@{
         Args        = @($args | ForEach-Object { [string]$_ })
         TokenLength = if ($env:GH_TOKEN) { $env:GH_TOKEN.Length } else { 0 }
         GithubToken = [bool]$env:GITHUB_TOKEN
       }
-      $global:LASTEXITCODE = $global:GhStubExit
-    }
+      $global:LASTEXITCODE = $recorder.Exit
+    }.GetNewClosure()
 
     function Write-Token {
       param ([string]$Scope, [string]$Content)
@@ -49,9 +53,9 @@ Describe 'ghx.ps1' {
     }
 
     function Invoke-Ghx {
-      $global:GhStubCall = $null
+      $script:recorder.Call = $null
       $output = & $script:ghx @args *>&1 | ForEach-Object { "$_" }
-      [pscustomobject]@{ Output = ($output -join "`n"); Code = $LASTEXITCODE; Call = $global:GhStubCall }
+      [pscustomobject]@{ Output = ($output -join "`n"); Code = $LASTEXITCODE; Call = $script:recorder.Call }
     }
   }
 
@@ -59,7 +63,7 @@ Describe 'ghx.ps1' {
     $env:PROJECTS_DIR = $TestDrive
     $env:GH_TOKEN = $null
     $env:GITHUB_TOKEN = 'ambient-dummy'
-    $global:GhStubExit = 0
+    $script:recorder.Exit = 0
     Remove-Item -LiteralPath $script:tokenDir -Recurse -Force -ErrorAction SilentlyContinue
     Write-Token -Scope 'acme' -Content "acme-dummy-token`n"
     Write-Token -Scope 'plain' -Content ''
@@ -70,7 +74,6 @@ Describe 'ghx.ps1' {
       [Environment]::SetEnvironmentVariable($name, $script:saved[$name])
     }
     Remove-Item -Path Function:\gh -ErrorAction SilentlyContinue
-    Remove-Variable -Name GhStubCall, GhStubExit -Scope Global -ErrorAction SilentlyContinue
   }
 
   It 'runs gh under the scope token, dropping the scope from the arguments' {
@@ -119,7 +122,7 @@ Describe 'ghx.ps1' {
   }
 
   It 'passes on gh''s exit code' {
-    $global:GhStubExit = 7
+    $script:recorder.Exit = 7
 
     (Invoke-Ghx acme pr list).Code | Should -Be 7
   }
