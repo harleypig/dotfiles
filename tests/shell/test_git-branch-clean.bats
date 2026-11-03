@@ -84,6 +84,29 @@ init_gone_repo() {
   assert_output --partial 'Would delete branch: local-only'
 }
 
+@test "-n -a reports a never-pushed branch whose subject has [brackets]" {
+  init_gone_repo
+  git -C "$REPO" checkout -q -b wip
+  git -C "$REPO" commit --allow-empty -q -m 'fix [WIP] thing [skip ci]'
+  git -C "$REPO" checkout -q master
+  cd "$REPO"
+  run "$GBC" -n -a
+  assert_success
+  assert_output --partial 'Would delete branch: wip (never pushed)'
+}
+
+@test "-n -a leaves a pushed branch with a live upstream alone" {
+  init_gone_repo
+  git -C "$REPO" checkout -q -b kept
+  git -C "$REPO" commit --allow-empty -q -m 'plain subject'
+  git -C "$REPO" push -q -u origin kept
+  git -C "$REPO" checkout -q master
+  cd "$REPO"
+  run "$GBC" -n -a
+  assert_success
+  refute_output --partial 'branch: kept'
+}
+
 @test "-f deletes the gone branch" {
   init_gone_repo
   cd "$REPO"
