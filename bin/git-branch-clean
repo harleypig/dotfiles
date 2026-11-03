@@ -72,13 +72,11 @@ readarray -t branches < <(
     git for-each-ref --format '%(refname) %(upstream:track)' refs/heads \
       | awk '$2 == "[gone]" {sub("refs/heads/", "", $1); print $1 "\tremote branch gone"}'
 
-    # If -a specified, get branches never pushed
+    # If -a specified, get branches never pushed: a line with only a refname
+    # (no upstream, not the checked-out branch) — fields cannot hold a subject
     if ((all)); then
-      git branch -vv \
-        | awk '/^[^*]/ && ! /\[.*\]/ {
-          gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1)
-          print $1 "\tnever pushed"
-        }'
+      git for-each-ref --format '%(refname) %(upstream) %(HEAD)' refs/heads \
+        | awk 'NF == 1 {sub("refs/heads/", "", $1); print $1 "\tnever pushed"}'
     fi
   }
 )
