@@ -26,18 +26,27 @@ bindir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # Functions
 
 #-----------------------------------------------------------------------------
+# A branch checked out in any worktree cannot be deleted, so it is reported
+# and skipped. A refused deletion is recorded in $failed rather than aborting,
+# so one stubborn branch does not stop the rest being cleaned.
 remove_branch() {
   local branch="$1"
   local reason="$2"
+  local worktree="$3"
 
-  if [[ -n $branch ]]; then
-    if ((dry_run)); then
-      echo "Would delete branch: $branch ($reason)"
+  if [[ -z $branch ]]; then
+    return 0
+  fi
 
-    elif ((force)); then
-      echo "Deleting branch: $branch"
-      git branch -D "$branch"
-    fi
+  if [[ -n $worktree ]]; then
+    echo "Skipping branch: $branch (checked out in worktree $worktree)"
+
+  elif ((dry_run)); then
+    echo "Would delete branch: $branch ($reason)"
+
+  elif ((force)); then
+    echo "Deleting branch: $branch"
+    git branch -D "$branch" || failed=1
   fi
 }
 
@@ -64,26 +73,31 @@ eval "$("$bindir/parse_params" --auto --prog "${0##*/}" "$PARM_DEF" "$@")"
 # Fetch and prune to ensure we have current remote information
 git fetch --prune
 
-# Get all branch information at once
-# For each branch, output: branch_name<tab>reason
+# One pass over the refs: branch_name<tab>reason<tab>worktree_path. The
+# worktree field is empty unless the branch is checked out in some worktree
+# (this one included). Tab-separated because upstream and worktree can be
+# empty, which whitespace splitting would collapse.
 readarray -t branches < <(
-  {
-    # Get branches with gone upstreams
-    git for-each-ref --format '%(refname) %(upstream:track)' refs/heads \
-      | awk '$2 == "[gone]" {sub("refs/heads/", "", $1); print $1 "\tremote branch gone"}'
-
-    # If -a specified, get branches never pushed: a line with only a refname
-    # (no upstream, not the checked-out branch) — fields cannot hold a subject
-    if ((all)); then
-      git for-each-ref --format '%(refname) %(upstream) %(HEAD)' refs/heads \
-        | awk 'NF == 1 {sub("refs/heads/", "", $1); print $1 "\tnever pushed"}'
-    fi
-  }
+  git for-each-ref \
+    --format '%(refname)%09%(upstream)%09%(upstream:track)%09%(worktreepath)' \
+    refs/heads \
+    | awk -F'\t' -v all="$all" '
+      {
+        name = $1
+        sub("refs/heads/", "", name)
+        if ($3 == "[gone]") {
+          print name "\tremote branch gone\t" $4
+        } else if (all && $2 == "") {
+          print name "\tnever pushed\t" $4
+        }
+      }'
 )
 
-# Process all branches
+failed=0
+
 for branch_info in "${branches[@]}"; do
-  branch=${branch_info%%$'\t'*}
-  reason=${branch_info#*$'\t'}
-  remove_branch "$branch" "$reason"
+  IFS=$'\t' read -r branch reason worktree <<< "$branch_info"
+  remove_branch "$branch" "$reason" "$worktree"
 done
+
+exit "$failed"
