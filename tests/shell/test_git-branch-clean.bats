@@ -165,6 +165,7 @@ init_gone_repo() {
   # A stub git that refuses the first deletion makes the refusal deterministic.
   local stub
   stub=$(make_stub_dir)
+  # shellcheck disable=SC2016  # $vars must expand when the stub runs
   make_script_stub "$stub" git 'if [[ $1 == branch && $2 == -D && $3 == feature ]]; then
   echo "refused" >&2
   exit 1
