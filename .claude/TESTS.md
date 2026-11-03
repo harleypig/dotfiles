@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.11.3
+**Version:** v2.11.4
 
 ## Purpose
 
@@ -11,20 +11,20 @@ policy. It is deliberately thin.
 **bats conventions are not repeated here.** The framework, helper-library
 install/loading (`bats_load_library` + `BATS_LIB_PATH`), the `bats-toolbox`
 helper lib, file naming, how to write tests and stub externals, linting
-`.bats`, and the meta-test generator all live in the global rule
-**the dotagents repo's `rules/bats.md`** — read that first. This file only
+`.bats`, and the meta-test generator all live in the global bats
+conventions rule — read that first. This file only
 covers what is specific to this repo.
 
 For general workflow see `WORKFLOW.md`.
 
 **Precedence:** `TESTS.md` > `WORKFLOW.md` > `CLAUDE.md`. Where this repo's
-testing needs differ from `rules/bats.md`, this file wins for this repo;
-otherwise the rule applies.
+testing needs differ from the global bats conventions, this file wins for
+this repo; otherwise they apply.
 
 ## Layout (this repo)
 
-One `tests/` root with per-language subdirs (see the dotagents repo's
-`rules/testing.md` for the general convention):
+One `tests/` root with per-language subdirs (see the global testing
+rule for the general convention):
 
 ```text
 tests/
@@ -287,7 +287,7 @@ reason (`tests/powershell/README.md`).
 
 ## Questions
 
-- Test structure (all languages) → the dotagents repo's `rules/testing.md`
-- bats how-to → the dotagents repo's `rules/bats.md`
+- Test structure (all languages) → the global testing rule
+- bats how-to → the global bats conventions rule
 - General workflow → `WORKFLOW.md`
 - Examples → `tests/shell/`
