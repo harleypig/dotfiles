@@ -132,9 +132,10 @@ known_cmd['context7']=1
 #------------------------------------------------------------------------------
 # https://github.com/Harleypig-LLC/dotagents/issues/2929 — xai-consult, a
 # guarded stdio MCP server for consulting xAI. dotagents ships it as
-# bin/xai-consult-mcp and publishes it into the Claude config dir. Wanted
-# globally, so register it once at user scope:
-#   claude mcp add xai-consult --scope user -- mymcp xai-consult
+# bin/xai-consult-mcp and publishes it into the Claude config dir. Its
+# processor permit covers the dotagents repository only, so register it at
+# LOCAL scope from the dotagents checkout, never at user scope:
+#   claude mcp add xai-consult -- mymcp xai-consult
 # The key is read from the private store (api-key/grok, the file
 # api-keys.cfg maps XAI_API_KEY to) and passed only in the server's env.
 xai-consult() {
