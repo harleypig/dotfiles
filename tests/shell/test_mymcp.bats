@@ -123,3 +123,57 @@ EOF
   run cat "$STUB/docker.env"
   assert_output "tok-abc123"
 }
+
+@test "xai-consult reads its grok key and execs the published server with it" {
+  local keydir="$BATS_TEST_TMPDIR/projects/private_dotfiles/api-key"
+  mkdir -p "$keydir"
+  printf 'xai-fixture-key' > "$keydir/grok"
+
+  # Fake Claude config dir holding the server. The stub reports which fixture
+  # key arrived by name, never the value (see common.bash *Secret-bearing
+  # stubs*).
+  local cfg="$BATS_TEST_TMPDIR/claude"
+  mkdir -p "$cfg/bin"
+  make_script_stub "$cfg/bin" xai-consult-mcp "case \$XAI_API_KEY in
+  xai-fixture-key) echo fixture > '$STUB/xai.env' ;;
+  *) echo other > '$STUB/xai.env' ;;
+esac"
+
+  # -u: a key already exported in the calling shell would reach the server
+  # whether or not mymcp exports it.
+  run env -u XAI_API_KEY PROJECTS_DIR="$BATS_TEST_TMPDIR/projects" \
+    DOTFILES="$FAKE" CLAUDE_CONFIG_DIR="$cfg" "$ROOT/bin/mymcp" xai-consult
+  assert_success
+
+  run cat "$STUB/xai.env"
+  assert_output "fixture"
+
+  # The launch line is logged; the key never is.
+  run cat "$FAKE"/.mymcp/mymcp-xai-consult-*.log
+  assert_output --partial "$cfg/bin/xai-consult-mcp"
+  refute_output --partial "xai-fixture-key"
+}
+
+@test "xai-consult fails with a clear error when the server is not installed" {
+  run env PROJECTS_DIR="$BATS_TEST_TMPDIR/projects" DOTFILES="$FAKE" \
+    CLAUDE_CONFIG_DIR="$BATS_TEST_TMPDIR/no-claude" \
+    "$ROOT/bin/mymcp" xai-consult
+  assert_failure 1
+
+  run cat "$FAKE"/.mymcp/mymcp-xai-consult-*.log
+  assert_output --partial "xai-consult-mcp not found or not executable"
+}
+
+@test "xai-consult fails with a clear error when its grok key file is missing" {
+  local cfg="$BATS_TEST_TMPDIR/claude"
+  mkdir -p "$cfg/bin"
+  make_stub "$cfg/bin" xai-consult-mcp
+
+  run env PROJECTS_DIR="$BATS_TEST_TMPDIR/projects" DOTFILES="$FAKE" \
+    CLAUDE_CONFIG_DIR="$cfg" "$ROOT/bin/mymcp" xai-consult
+  assert_failure
+
+  run cat "$FAKE"/.mymcp/mymcp-xai-consult-*.log
+  assert_output --partial "api-key file not found"
+  assert_file_not_exists "$cfg/bin/xai-consult-mcp.args"
+}
