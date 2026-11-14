@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.11.5
+**Version:** v2.11.6
 
 ## Purpose
 
@@ -248,8 +248,10 @@ root, and the rest pass.
 
 `tests/perl/` includes `pod-syntax.t` (Test::Pod over the CLIs). Coverage is
 measured **on demand** with Devel::Cover (in the perlbrew toolchain — see
-`config/vmgr/perl`); it is a **report, not a gate** (a percentage threshold on
-two scripts would be brittle — a gating threshold is Planned, see `QA.md`):
+`config/vmgr/perl`); it is a **report, not a gate**. There is no threshold,
+and none is planned: coverage is measured to be read — name the behaviours a
+test must cover, and read the percentage for what it says about the rest. A
+threshold would reward covering lines rather than behaviour. To measure it:
 
 ```bash
 cover -delete
