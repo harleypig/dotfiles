@@ -1,6 +1,6 @@
 # Quality Assurance
 
-**Version:** v1.10.0
+**Version:** v1.10.1
 
 ## Purpose
 
@@ -11,10 +11,10 @@ the dimensions, their ordering, and the fix/check discipline (generic); this
 file records what each dimension *is* here. The **qa-check** skill reads this
 doc for the commands.
 
-**Precedence:** `WORKFLOW.md` > `TESTS.md` > this file. Testing specifics live
-in `TESTS.md`; pre-commit policy in the dotagents repo's
-`rules/pre-commit.md`; this file is the QA map that ties them to the global
-dimensions.
+**Precedence:** `WORKFLOW.md` > `CONVENTIONS.md` > `TESTS.md` > this file >
+`CLAUDE.md`. Testing specifics live in `TESTS.md`; pre-commit policy in the
+dotagents repo's `rules/pre-commit.md`; this file is the QA map that ties
+them to the global dimensions.
 
 ## How QA runs here
 

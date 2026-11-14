@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.22.0
+**Version:** v1.22.1
 
 ## Purpose
 
@@ -10,11 +10,10 @@ guidance that extends and, where necessary, overrides `CLAUDE.md`.
 
 For testing procedures and framework details, see `TESTS.md`.
 
-**Precedence hierarchy:** `WORKFLOW.md` > `TESTS.md` > `CLAUDE.md`
+**Precedence:** `WORKFLOW.md` > `CONVENTIONS.md` > `TESTS.md` > `CLAUDE.md`
 
 Repository-specific rules in this document override general principles in
-`CLAUDE.md`. Testing-specific rules in `TESTS.md` override both `WORKFLOW.md`
-and `CLAUDE.md` for test-related operations.
+`CLAUDE.md`, and outrank `CONVENTIONS.md` and `TESTS.md` where they conflict.
 
 ## Repository Structure
 

@@ -1,12 +1,12 @@
 # Coding Conventions
 
-**Version:** v1.2.1
+**Version:** v1.2.2
 
 This document defines coding standards, style rules, and development
 principles for this repository. It is repository-specific and overrides
 the generic principles in `CLAUDE.md`.
 
-**Precedence:** This file > `CLAUDE.md`
+**Precedence:** `WORKFLOW.md` > `CONVENTIONS.md` > `TESTS.md` > `CLAUDE.md`
 
 ## General Development Principles
 
