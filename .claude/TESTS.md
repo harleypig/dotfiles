@@ -1,6 +1,6 @@
 # Testing Strategy
 
-**Version:** v2.11.4
+**Version:** v2.11.5
 
 ## Purpose
 
@@ -17,9 +17,9 @@ covers what is specific to this repo.
 
 For general workflow see `WORKFLOW.md`.
 
-**Precedence:** `TESTS.md` > `WORKFLOW.md` > `CLAUDE.md`. Where this repo's
-testing needs differ from the global bats conventions, this file wins for
-this repo; otherwise they apply.
+**Precedence:** `WORKFLOW.md` > `CONVENTIONS.md` > `TESTS.md` > `CLAUDE.md`.
+Separately, where this repo's testing needs differ from the global bats
+conventions, this file wins for this repo; otherwise they apply.
 
 ## Layout (this repo)
 
