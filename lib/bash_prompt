@@ -201,8 +201,11 @@ _update_prompt() {
 
   # loadavg is bin/loadavg — always present in this setup; if it is missing
   # something is badly broken and should be fixed, so do not guard it.
-  loadavg="$(loadavg)"
-  [[ -n $loadavg ]] && PS1+="$loadavg\n"
+  # Inside tmux the status line shows the load (tmux_loadavg), so skip it.
+  if [[ -z $TMUX ]]; then
+    loadavg="$(loadavg)"
+    [[ -n $loadavg ]] && PS1+="$loadavg\n"
+  fi
 
   # For tmux status line
   #PS1+='\[\e]0;\u@\H\a\]'

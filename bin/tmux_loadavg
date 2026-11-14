@@ -5,9 +5,12 @@
 # Usage: tmux_loadavg [loadavg_file]
 #
 # Called by tmux from status-right as #(tmux_loadavg), once per
-# status-interval. Prints the 1, 5 and 15 minute load averages followed by a
-# space, each coloured against the CPU count the way motd colours them:
-# yellow above one load per CPU, red above two, the status style otherwise.
+# status-interval. Prints the 15 minute load average with bin/loadavg's
+# thresholds and colours -- yellow above one load per CPU, yellow on red
+# above two -- but always, where loadavg prints only while the machine is
+# busy. The value is right-aligned in six columns and followed by one space,
+# with the padding outside the colour so a background covers only the
+# digits; status-right places it straight after the mode indicator.
 #
 # loadavg_file defaults to /proc/loadavg. Where it cannot be read or does
 # not parse (macOS, Windows outside WSL) nothing is printed and the exit
@@ -28,14 +31,11 @@ source "${self%/*}/../lib/loadavg" 2> /dev/null || exit 0
 loads=() levels=()
 loadavg_classify loads levels "${1:-}" || exit 0
 
-out=
+pad=$(printf '%6s' "${loads[2]}")
+pad=${pad%"${loads[2]}"}
 
-for i in 0 1 2; do
-  case ${levels[i]} in
-    alert) out+="#[fg=red]${loads[i]}#[default] " ;;
-    warn) out+="#[fg=yellow]${loads[i]}#[default] " ;;
-    *) out+="${loads[i]} " ;;
-  esac
-done
-
-printf '%s' "$out"
+case ${levels[2]} in
+  alert) printf '%s#[fg=yellow,bg=red]%s#[default] ' "$pad" "${loads[2]}" ;;
+  warn) printf '%s#[fg=yellow]%s#[default] ' "$pad" "${loads[2]}" ;;
+  *) printf '%s%s ' "$pad" "${loads[2]}" ;;
+esac

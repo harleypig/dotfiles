@@ -11,9 +11,8 @@
 # exercise the real function bodies in isolation — the same in-isolation
 # approach as test_havecmd.
 #
-# _update_prompt is intentionally NOT unit-tested here: it orchestrates many
-# external commands (loadavg, dir-readable, git-status) and shell history
-# state, and is covered in aggregate by test_integration_context.
+# _update_prompt is covered in aggregate by test_integration_context; only
+# its load line is tested here, with the external commands it calls stubbed.
 
 load ../helpers/common
 
@@ -138,4 +137,38 @@ true"
 @test "_bash_prompt_supports_hooks succeeds on this bash (5.1+)" {
   run _bash_prompt_supports_hooks
   assert_success
+}
+
+# _update_prompt's load line: bin/loadavg's output goes on its own line of
+# the prompt outside tmux, and is left off inside tmux (where $TMUX is set),
+# whose status line shows the load instead. The external commands it calls
+# are stubbed so only the load line varies; so is the history builtin, whose
+# -r fails in a non-interactive shell and is not under test here.
+
+_update_prompt_with_load_stub() {
+  local stub=$BATS_TEST_TMPDIR/stub
+
+  mkdir -p "$stub"
+  make_script_stub "$stub" loadavg 'printf "LOADLINE"'
+  make_script_stub "$stub" dir-readable ':'
+  make_script_stub "$stub" git-status ':'
+  PATH="$stub:$PATH"
+
+  history() { :; }
+  unset _HAS_PACMAN_STATUS
+  _update_prompt
+}
+
+@test "_update_prompt shows the load line outside tmux" {
+  unset TMUX
+  _update_prompt_with_load_stub
+  [[ $PS1 == *'LOADLINE\n'* ]]
+}
+
+@test "_update_prompt leaves the load line off inside tmux" {
+  # shellcheck disable=SC2034  # read by the eval'd _update_prompt
+  TMUX=/tmp/tmux-1000/default,1234,0
+  _update_prompt_with_load_stub
+  [[ $PS1 != *LOADLINE* ]]
+  [[ -n $PS1 ]]
 }
