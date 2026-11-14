@@ -1,6 +1,6 @@
 # Repository Workflow
 
-**Version:** v1.22.1
+**Version:** v1.23.0
 
 ## Purpose
 
@@ -352,8 +352,18 @@ disposition is *do-now*, the task-type is *trivial or small*, a bug was
 reproduced (or a feature's approach is clear) with no dead end or clarifying
 question, `qa-check` passes, and CI is green (`ci-watch` exit **0** — never on
 1, and it stops on 2 or warnings). Any failure, non-trivial verdict, or
-ambiguity falls back to the gated path: stop and ask. Still one task, one PR —
-there is no queue-draining loop.
+ambiguity falls back to the gated path: stop and ask. There is no
+queue-draining loop.
+
+**Batches: one unit of work → one PR.** A PR may close several issues and
+still proceed without the ask, but only when every member would have run
+autonomously on its own: each is *do-now*, *trivial or small*, a reproduced
+bug or a clear approach with no dead end or clarifying question, and touches
+nothing in `shell-startup`, `config/shell-startup/` or `lib/`; `qa-check`
+passes on each member's change; and CI is green on the PR as above. A member
+that fails any of these leaves the batch and is asked about on its own, and
+the rest proceed. A batch is still one PR composed up front, not a loop that
+drains the queue (operator, 2026-11-14, #700 - batch autonomy).
 
 Merge autonomy remains push-pr's, via `auto-merge: enabled` above; a
 zero-touch resolve needs **both** sentinels, and this repo has both. Every
