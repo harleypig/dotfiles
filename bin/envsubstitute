@@ -10,8 +10,10 @@
 # - Uses alternation regex to handle both $WORD and ${WORD} formats separately
 # - Implements NO_WARN mode that preserves unknown variables instead of
 #   erroring
-# - Uses --SKIP-- marker technique to prevent infinite loops when preserving
-#   variables
+# - Builds the output left to right: each match's prefix and replacement are
+#   appended to the output and scanning continues on the remainder, so a
+#   substituted value is never rescanned (a value may itself contain $WORD or
+#   %WORD% text, including a reference to its own name)
 #
 # Key implementation details:
 # - Regex: '\$\{([a-zA-Z_]+)\}|\$([a-zA-Z_]+)' for default mode
@@ -19,11 +21,8 @@
 #   mode
 # - BASH_REMATCH[1] captures ${WORD} format, BASH_REMATCH[2] captures $WORD
 #   format
-# - When NO_WARN is set, unknown variables are temporarily replaced with
-#   --SKIP-- markers to avoid regex re-matching, then restored after processing
-# - Uses --SKIPSLASH-- markers to handle escaped variables (e.g., \$WORD)
-#   which are temporarily replaced during processing and restored as literal
-#   text with backslash prefix
+# - Escaped variables (e.g., \$WORD) and, under NO_WARN, unknown variables
+#   are copied to the output unchanged
 # - Error messages convert $WORD to ${WORD} format for consistency
 
 ##############################################################################
@@ -107,12 +106,8 @@ for arg in "$@"; do
 done
 
 _envsubst() {
-  local s match regex skipslash skiptext skipvar value varname words
-  local -i loopcount rc
-
-  skiptext='--SKIP--'
-  skipslash='--SKIPSLASH--'
-  loopcount=1000
+  local s out prefix match regex value varname words
+  local -i rc
 
   # Check for help in the function too, in case it's called directly
   if [[ $1 == "-h" || $1 == "--help" ]]; then
@@ -130,19 +125,16 @@ _envsubst() {
   #---------------------------------------------------------------------------
   if [[ -n $SUBST_DELIM ]]; then
     regex="\\\\?$SUBST_DELIM([a-zA-Z_][a-zA-Z0-9_]*)$SUBST_DELIM"
-    skipvar="$SUBST_DELIM"
     words="${SUBST_DELIM}WORD${SUBST_DELIM}s"
 
   else
     # shellcheck disable=SC2016  # literal $ in the regex, not a shell expansion
     regex='\\?\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}|\\?\$([a-zA-Z_][a-zA-Z0-9_]*)'
-    skipvar='$'
     # shellcheck disable=SC2016  # literal $ in the message, not expansion
     words='$WORDs or ${WORD}s'
   fi
 
   debug "regex: $regex"
-  debug "skipvar: $skipvar"
 
   #---------------------------------------------------------------------------
   [[ $s =~ $regex ]] || {
@@ -162,7 +154,7 @@ _envsubst() {
   }
 
   #---------------------------------------------------------------------------
-  count=0
+  out=''
 
   while [[ $s =~ $regex ]]; do
     match="${BASH_REMATCH[0]}"
@@ -178,40 +170,35 @@ _envsubst() {
       value="\${$varname}"
     fi
 
+    # =~ reports the leftmost match, and that is also the first literal
+    # occurrence of the matched text, so this strips exactly what precedes it.
+    prefix="${s%%"$match"*}"
+    s="${s:${#prefix}+${#match}}"
+
     debug "($LINENO) match:   $match"
     debug "($LINENO) varname: $varname"
     debug "($LINENO) value:   $value"
 
     if [[ $match == \\* ]]; then
-      value="${skipslash}${match:2}"
-      debug "($LINENO) value: $value"
-      s=${s//\\$match/$value}
+      value="$match"
+
+    elif [[ -v $varname ]]; then
+      value="${!varname}"
+
+    elif [[ -z $NO_WARN ]]; then
+      warn "Variable '$varname' does not exist in the environment"
+      value="${value%?}: NOT FOUND${value: -1}"
 
     else
-      if [[ -v $varname ]]; then
-        value="${!varname}"
-
-      elif [[ -z $NO_WARN ]]; then
-        warn "Variable '$varname' does not exist in the environment"
-        value="${value%?}: NOT FOUND${value: -1}"
-
-      else
-        value="${skiptext}${match:1}"
-      fi
-
-      debug "($LINENO) value: $value"
-      s=${s//$match/$value}
+      value="$match"
     fi
 
-    debug "($LINENO) s: $s"
-
-    ((count++))
-    ((count > loopcount)) && die "Too many substitutions - possible infinite loop"
+    debug "($LINENO) value: $value"
+    out+="$prefix$value"
+    debug "($LINENO) out: $out"
   done
 
-  s="${s//$skiptext/$skipvar}"
-  s="${s//$skipslash/\\$skipvar}"
-  printf '%s' "$s"
+  printf '%s' "$out$s"
 }
 
 ((NOT_SOURCED)) \

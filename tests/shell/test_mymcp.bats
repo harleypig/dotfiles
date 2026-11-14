@@ -6,6 +6,9 @@
 
 load ../helpers/common
 
+# --separate-stderr (the #696 stderr test) needs bats 1.5.
+bats_require_minimum_version 1.5.0
+
 setup() {
   load_bats_libs
   ROOT="$(dotfiles_root)"
@@ -176,4 +179,11 @@ esac"
   run cat "$FAKE"/.mymcp/mymcp-xai-consult-*.log
   assert_output --partial "api-key file not found"
   assert_file_not_exists "$cfg/bin/xai-consult-mcp.args"
+}
+
+# Regression (#696 - a leftover debug echo put the arguments on stderr).
+@test "arguments are not echoed to stderr" {
+  run --separate-stderr env DOTFILES="$FAKE" "$ROOT/bin/mymcp" bogus MYMCP_SENTINEL
+  assert_failure 2
+  refute_stderr --partial MYMCP_SENTINEL
 }
