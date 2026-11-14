@@ -66,3 +66,30 @@ setup() {
   assert_success
   assert_output --partial 'Usage:'
 }
+
+# Regression (#691 - substituted values were rescanned): each value below
+# contains placeholder text, which must come out verbatim.
+
+@test "envsubstitute does not rescan a %NAME% value that references itself" {
+  SUBST_DELIM='%' FOO='%FOO%' run bin/envsubstitute 'x%FOO%y'
+  assert_success
+  assert_output 'x%FOO%y'
+}
+
+@test "envsubstitute does not expand a %WORD% inside a substituted value" {
+  SUBST_DELIM='%' FOO='%BAR%' BAR=b run bin/envsubstitute 'x%FOO%y'
+  assert_success
+  assert_output 'x%BAR%y'
+}
+
+@test "envsubstitute does not expand a \$WORD inside a substituted value" {
+  FOO='$BAR' BAR=b run bin/envsubstitute 'x${FOO}y'
+  assert_success
+  assert_output 'x$BARy'
+}
+
+@test "envsubstitute keeps an escaped \$NAME literal beside an expanded one" {
+  NO_WARN=1 FOO=1 run bin/envsubstitute '$NOPE $FOO \$FOO'
+  assert_success
+  assert_output '$NOPE 1 \$FOO'
+}
