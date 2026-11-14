@@ -242,3 +242,23 @@ with a `SOURCE.md` in the
 [#389](https://github.com/harleypig/dotfiles/issues/389) format. The
 exception is tmux-menus. At about 12.5k lines and about 44 commits a year,
 it is cheaper to keep as a pinned, ignored clone than to vendor.
+
+## PowerShell ports of linx, gcloud-auth, gh-app-token, check-vendored
+
+**Revisit when** one of the four is used from Windows.
+
+Set aside under the PowerShell parity epic ([#387 - PowerShell
+parity][i387]), 2026-11-14. The question was whether to give `bin/linx`
+(Linode CLI scopes), `bin/gcloud-auth` (gcloud credentials),
+`bin/gh-app-token` (GitHub App tokens) and `bin/check-vendored` each a
+Windows port: a PowerShell / pwsh equivalent loaded from `ps-startup.ps1`. The
+operator's answer, mirrored on the epic: *"I don't at the moment. Set them
+aside for now."*
+
+They are deferred, not dropped. Each port is worth its maintenance only if
+the tool is run from Windows, and none is today. The epic's live scope is
+completions, the inputrc / run-help marker and the check-dotfiles port.
+When one of them is needed on Windows, file that one port as a small
+sub-issue of the epic.
+
+[i387]: https://github.com/harleypig/dotfiles/issues/387
