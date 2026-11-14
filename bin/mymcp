@@ -11,8 +11,6 @@ set -euo pipefail
 
 selfname="${0##*/}"
 
-echo "0: $0 ::: $PWD ::: $* <<<" >&2
-
 # Use $DOTFILES for log directory
 : "${DOTFILES:?DOTFILES environment variable is not set}"
 log_dir="$DOTFILES/.mymcp"
