@@ -9,11 +9,11 @@ this file to report when upstream has moved on.
 | Upstream repo  | `git/git`                                                    |
 | Path           | `contrib/completion/git-completion.bash`                     |
 | License        | GPL-2.0 (see the file header)                                |
-| Vendored SHA   | `f6f2cf3` (full: `f6f2cf39ea21d116302e076a4dab9250553736b2`) |
-| Vendored date  | 2026-09-25 (commit date); installed 2026-10-14               |
+| Vendored SHA   | `1ae1dde` (full: `1ae1ddeba3fbc3295a5984c8b232ecd737e69192`) |
+| Vendored date  | 2026-10-23 (commit date); installed 2026-11-14               |
 
 With the local edit below removed, the file's git blob hash
-(`c3a49e2e22fda1e850e90e6f225002228d52eb93`) is exactly the upstream path's
+(`9cd9c7cadbc5eeaf37003ae6164c6e5e2d848be7`) is exactly the upstream path's
 blob at that commit.
 
 Local edits: added `# shellcheck shell=bash` as the first line. It only tells
