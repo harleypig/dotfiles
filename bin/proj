@@ -6,19 +6,91 @@ warn() { printf '%s\n' "$@" >&2; }
 
 usage() {
   cat >&2 << 'EOF'
-Usage: proj [name]
+Usage: proj [name [-c|--claude [claude args...]]]
 
 Output the path to cd into: $PROJECTS_DIR or $PROJECTS_DIR/<name>.
 
 With no argument, outputs $PROJECTS_DIR.
-With one argument, outputs $PROJECTS_DIR/<name> if it exists. If not,
-prompts to create it, output $PROJECTS_DIR, or cancel.
+With a name, outputs $PROJECTS_DIR/<name> if it exists. If not, prompts to
+create it, output $PROJECTS_DIR, or cancel.
+
+With -c or --claude after the name, cds to the project and runs claude
+instead, passing every later argument to claude unchanged. If the project
+root holds a .proj file, each non-blank line is a directory added with
+--add-dir, and CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 is exported.
+Only $VAR and ${VAR} are expanded in .proj, and only for exported
+variables; relative paths resolve against the project root. An unset
+variable or a missing directory is an error and claude is not run.
+
+Any other argument after the name is ignored with a warning.
 
 Intended to be called via the proj() shell wrapper function.
 EOF
   exit "${1:-0}"
 }
 
+#-----------------------------------------------------------------------------
+# Expand $VAR and ${VAR} in one .proj line, from exported variables only, so
+# none of this script's own variables can leak in. Nothing is evaluated: a
+# '$' not followed by a name, $(...) and backticks stay literal.
+
+expand_proj_line() {
+  local rest=$1 out='' var
+
+  while [[ $rest == *'$'* ]]; do
+    out+=${rest%%\$*}
+    rest=${rest#*\$}
+
+    if [[ $rest =~ ^\{([A-Za-z_][A-Za-z0-9_]*)\}(.*)$ ]] \
+      || [[ $rest =~ ^([A-Za-z_][A-Za-z0-9_]*)(.*)$ ]]; then
+      var=${BASH_REMATCH[1]}
+      rest=${BASH_REMATCH[2]}
+
+      if ! [[ -v $var && ${!var@a} == *x* ]]; then
+        warn "proj: .proj: variable '$var' is not set"
+        return 1
+      fi
+
+      out+=${!var}
+
+    else
+      out+='$'
+    fi
+  done
+
+  printf '%s' "$out$rest"
+}
+
+#-----------------------------------------------------------------------------
+launch_claude() {
+  local target=$1 line dir
+  local -a add_dirs=()
+
+  shift
+  cd "$target"
+
+  if [[ -f .proj ]]; then
+    while IFS= read -r line || [[ -n $line ]]; do
+      [[ $line =~ ^[[:space:]]*$ ]] && continue
+
+      dir=$(expand_proj_line "$line") || exit 1
+      [[ $dir == /* ]] || dir="$target/$dir"
+
+      if [[ ! -d $dir ]]; then
+        warn "proj: .proj: no such directory: $dir"
+        exit 1
+      fi
+
+      add_dirs+=(--add-dir "$dir")
+    done < .proj
+
+    export CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1
+  fi
+
+  exec claude "${add_dirs[@]}" "$@"
+}
+
+#-----------------------------------------------------------------------------
 while [[ ${1-} == -* ]]; do
   case $1 in
     -h | --help) usage ;;
@@ -28,11 +100,6 @@ while [[ ${1-} == -* ]]; do
       ;;
   esac
 done
-
-if [[ $# -gt 1 ]]; then
-  warn "Usage: proj [name]"
-  exit 2
-fi
 
 if [[ -z ${PROJECTS_DIR:-} ]]; then
   warn "proj: PROJECTS_DIR is not set"
@@ -44,32 +111,50 @@ if [[ $# -eq 0 ]]; then
   exit 0
 fi
 
-target="$PROJECTS_DIR/$1"
+name=$1
+shift
 
-if [[ -d $target ]]; then
-  printf '%s\n' "$target"
-  exit 0
+claude=0
+
+if [[ ${1-} == -c || ${1-} == --claude ]]; then
+  claude=1
+  shift
+
+elif [[ $# -gt 0 ]]; then
+  warn "proj: ignoring extra arguments: $*"
+  set --
 fi
 
-create="Create $target"
-goto="Go to $PROJECTS_DIR"
-cancel="Cancel"
+target="$PROJECTS_DIR/$name"
 
-COLUMNS=1
-PS3="'$1' not found. Choose: "
-select choice in "$create" "$goto" "$cancel"; do
-  case $choice in
-    "$create")
-      mkdir -p "$target"
-      printf '%s\n' "$target"
-      exit 0
-      ;;
-    "$goto")
-      printf '%s\n' "$PROJECTS_DIR"
-      exit 0
-      ;;
-    "$cancel") exit 1 ;;
-  esac
-done
+if [[ ! -d $target ]]; then
+  create="Create $target"
+  goto="Go to $PROJECTS_DIR"
+  cancel="Cancel"
 
-exit 1
+  COLUMNS=1
+  PS3="'$name' not found. Choose: "
+  choice=''
+
+  select choice in "$create" "$goto" "$cancel"; do
+    case $choice in
+      "$create")
+        mkdir -p "$target"
+        break
+        ;;
+      "$goto")
+        printf '%s\n' "$PROJECTS_DIR"
+        exit 0
+        ;;
+      "$cancel") exit 1 ;;
+    esac
+  done
+
+  [[ $choice == "$create" ]] || exit 1
+fi
+
+if ((claude)); then
+  launch_claude "$target" "$@"
+fi
+
+printf '%s\n' "$target"

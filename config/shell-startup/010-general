@@ -80,8 +80,16 @@ tailfile() { tail -f "$1" | xargs -IX printf "$(date -u)\\t%s\\n" X; }
 # shellcheck disable=SC2164
 md() { mkdir -p "$@" && cd "$@" || return; }
 
+# In -c mode the script runs claude itself, so its output must reach the
+# terminal rather than be captured as a path to cd into.
 proj() {
   local dir
+
+  if [[ ${2-} == -c || ${2-} == --claude ]]; then
+    command proj "$@"
+    return
+  fi
+
   dir=$(command proj "$@") || return
   cd "$dir" || return
 }
