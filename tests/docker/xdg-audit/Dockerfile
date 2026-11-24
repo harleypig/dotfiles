@@ -21,7 +21,7 @@
 # Separate from the vmgr harnesses: those carry download/build toolchains this
 # one does not need, and this one carries git, which they do not.
 
-FROM debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+FROM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
