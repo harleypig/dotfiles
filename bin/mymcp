@@ -122,7 +122,7 @@ known_cmd['snyk']=1
 context7() {
   export CONTEXT7_API_KEY
   CONTEXT7_API_KEY="$(read_api_key context7)"
-  npx_run '@upstash/context7-mcp'
+  npx_run '@upstash/context7-mcp@latest'
 }
 
 known_cmd['context7']=1
@@ -180,8 +180,11 @@ known_cmd['spec_client']=1
 # --user cannot write it). Activating a project therefore writes a root-owned
 # <project>/.serena/ into it; redirect that via project_serena_folder_location
 # in the volume's serena_config.yml to keep host projects clean.
+# --pull=always: docker run otherwise reuses a cached :latest, so the tag alone
+# would mean "whatever was last pulled", not the newest image.
 serena() {
   docker_run \
+    '--pull=always' \
     '-v' "${PROJECTS_DIR:-$(dirname "$DOTFILES")}:/workspaces/projects" \
     '-v' 'serena-config:/workspaces/serena/config' \
     'ghcr.io/oraios/serena:latest' \
@@ -209,9 +212,11 @@ known_cmd['serena']=1
 # Register per-repo at LOCAL scope (like context7 — this is per-engagement,
 # not always-on):
 #   claude mcp add playwright -- mymcp playwright
+# --pull=always for the reason serena() above states.
 playwright() {
   docker_run \
-    'mcr.microsoft.com/playwright/mcp' \
+    '--pull=always' \
+    'mcr.microsoft.com/playwright/mcp:latest' \
     '--headless' \
     '--isolated' \
     "$@"
