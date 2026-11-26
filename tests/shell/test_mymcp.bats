@@ -49,6 +49,20 @@ teardown() {
   assert_output --partial "-y snyk@latest mcp -t stdio"
 }
 
+@test "context7 dispatches to npx with the latest package" {
+  local keydir="$BATS_TEST_TMPDIR/projects/private_dotfiles/api-key"
+  mkdir -p "$keydir"
+  printf 'ctx7-fixture-key' > "$keydir/context7"
+
+  make_stub "$STUB" npx
+  run env PROJECTS_DIR="$BATS_TEST_TMPDIR/projects" DOTFILES="$FAKE" \
+    "PATH=$STUB:$PATH" "$ROOT/bin/mymcp" context7
+  assert_success
+
+  run cat "$STUB/npx.args"
+  assert_output "-y @upstash/context7-mcp@latest"
+}
+
 @test "github fails with a clear error when its token file is missing" {
   run env PROJECTS_DIR="$BATS_TEST_TMPDIR/projects" DOTFILES="$FAKE" \
     "$ROOT/bin/mymcp" github
@@ -71,7 +85,7 @@ EOF
   assert_success
 
   run cat "$STUB/docker.args"
-  assert_output --partial "run --rm -i"
+  assert_output --partial "run --rm -i --pull=always -v $BATS_TEST_TMPDIR/projects:/workspaces/projects"
   assert_output --partial "-v $BATS_TEST_TMPDIR/projects:/workspaces/projects"
   assert_output --partial "-v serena-config:/workspaces/serena/config"
   assert_output --partial "ghcr.io/oraios/serena:latest serena start-mcp-server --transport stdio --enable-web-dashboard false"
@@ -89,14 +103,14 @@ EOF
   assert_success
 
   run cat "$STUB/docker.args"
-  assert_output --partial "run --rm -i mcr.microsoft.com/playwright/mcp --headless --isolated"
+  assert_output --partial "run --rm -i --pull=always mcr.microsoft.com/playwright/mcp:latest --headless --isolated"
 
   run env DOTFILES="$FAKE" "PATH=$STUB:$PATH" "$ROOT/bin/mymcp" playwright \
     --allowed-origins http://localhost:3000
   assert_success
 
   run cat "$STUB/docker.args"
-  assert_output --partial "run --rm -i mcr.microsoft.com/playwright/mcp --headless --isolated --allowed-origins http://localhost:3000"
+  assert_output --partial "run --rm -i --pull=always mcr.microsoft.com/playwright/mcp:latest --headless --isolated --allowed-origins http://localhost:3000"
 }
 
 @test "github reads its mcp-github token file and passes it to docker" {
